@@ -60,10 +60,16 @@ jobs:
           python -m quan_engine.scanner
 
       - name: Push picks to audit trail
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
         run: python quan_engine/audit_push.py
         continue-on-error: true
 
       - name: Resolve TP/SL outcomes
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
         run: |
           echo "============================================"
           echo "  RESOLVING TP/SL OUTCOMES"

@@ -6141,6 +6141,74 @@ def main():
         except Exception as _bs_err:
             print(f"  [BLOCKED-SYMBOLS] skipped (non-fatal): {_bs_err}")
 
+        # AGE-PRUNE: drop picks older than ACTIVE_PICKS_MAX_AGE_SECS (default 24h).
+        # Symmetric with signal_aggregator/aggregator_fixed.py:211 freshness threshold
+        # (86400s). Without this, stale picks (e.g. ~50 March-19 entries observed
+        # 2026-05-27) accumulate in active_picks.json and the aggregator drops them
+        # downstream as stale, polluting the file with no consumer benefit.
+        # Idempotent: re-running with no new data is a no-op the second time.
+        # Backup is atomic (temp-and-rename) and written under
+        # alpha_engine/data/active_picks.json.bak.prune_<utc_ts>.
+        try:
+            import os as _os_prune
+            import json as _json_prune
+            import tempfile as _tempfile_prune
+            from datetime import datetime as _dt_prune, timezone as _tz_prune
+            from pathlib import Path as _Path_prune
+
+            _max_age_secs = int(_os_prune.environ.get("ACTIVE_PICKS_MAX_AGE_SECS", "86400"))
+            _now_prune = _dt_prune.now(_tz_prune.utc)
+
+            def _pick_age_secs(p: dict) -> float | None:
+                for _k in ("timestamp", "submitted_at", "created_at", "entry_ts", "entry_time"):
+                    _v = p.get(_k)
+                    if not _v:
+                        continue
+                    try:
+                        _t = _dt_prune.fromisoformat(str(_v).replace("Z", "+00:00"))
+                        if _t.tzinfo is None:
+                            _t = _t.replace(tzinfo=_tz_prune.utc)
+                        return (_now_prune - _t).total_seconds()
+                    except (ValueError, TypeError):
+                        continue
+                return None
+
+            _pre_prune = len(active)
+            _ages = [(p, _pick_age_secs(p)) for p in active]
+            _kept = [p for p, a in _ages if a is None or a <= _max_age_secs]
+            _dropped_ages = [a for p, a in _ages if a is not None and a > _max_age_secs]
+            _dropped = _pre_prune - len(_kept)
+            if _dropped:
+                # Atomic backup of the current on-disk active_picks.json before mutating.
+                try:
+                    _ap_path = _Path_prune(__file__).resolve().parent / "data" / "active_picks.json"
+                    if _ap_path.exists():
+                        _ts_tag = _now_prune.strftime("%Y%m%dT%H%M%SZ")
+                        _bak_path = _ap_path.with_suffix(
+                            _ap_path.suffix + f".bak.prune_{_ts_tag}"
+                        )
+                        _tmp_fd, _tmp_name = _tempfile_prune.mkstemp(
+                            prefix="active_picks.bak.", dir=str(_ap_path.parent)
+                        )
+                        with _os_prune.fdopen(_tmp_fd, "wb") as _tf:
+                            _tf.write(_ap_path.read_bytes())
+                        _os_prune.replace(_tmp_name, _bak_path)
+                except Exception as _bak_err:
+                    print(f"  [PRUNE] backup skipped (non-fatal): {_bak_err}")
+                _oldest = max(_dropped_ages) if _dropped_ages else 0
+                print(
+                    f"  [prune] kept {len(_kept)} picks; dropped {_dropped} stale picks "
+                    f"(oldest age = {int(_oldest)} seconds)"
+                )
+                active = _kept
+            else:
+                print(
+                    f"  [prune] kept {len(_kept)} picks; dropped 0 stale picks "
+                    f"(oldest age = 0 seconds)"
+                )
+        except Exception as _prune_err:
+            print(f"  [PRUNE] age-prune skipped (non-fatal): {_prune_err}")
+
         try:
             from forward_validator import save_active_picks
 

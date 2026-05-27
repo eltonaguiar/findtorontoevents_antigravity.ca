@@ -62,6 +62,9 @@ jobs:
     - name: Health Check
       if: github.event.schedule == '0 * * * *' || inputs.action == 'health_check' || inputs.action == 'full'
       continue-on-error: true
+      env:
+        DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+        DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
       run: |
         echo "=== Running Health Check ==="
         pip install requests -q

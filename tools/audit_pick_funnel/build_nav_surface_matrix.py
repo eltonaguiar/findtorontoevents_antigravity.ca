@@ -170,7 +170,18 @@ def _chrono_split_pf(picks):
     return _pf(train), _pf(hold)
 
 
-def _why_no_edge(picks, surface_id, ac, wr_pct, pf, train_pf, holdout_pf, pass_bonferroni):
+def _top_source_concentration(picks):
+    """Return (top_source_share, top_source_name) for concentration check.
+    top_source_share = fraction of picks from the single most-common source_system."""
+    src_counts = Counter(p.get("source_system") or "unknown" for p in picks)
+    if not src_counts:
+        return 0, ""
+    top_src, top_n = src_counts.most_common(1)[0]
+    return top_n / len(picks), top_src
+
+
+def _why_no_edge(picks, surface_id, ac, wr_pct, pf, train_pf, holdout_pf, pass_bonferroni,
+                 top_src_share=0, top_src_name=""):
     reasons = []
     n = len(picks)
     if n < 30:
@@ -180,7 +191,13 @@ def _why_no_edge(picks, surface_id, ac, wr_pct, pf, train_pf, holdout_pf, pass_b
         gap = (train_pf if train_pf != float("inf") else 0) - (holdout_pf if holdout_pf != float("inf") else 0)
         if gap > 1.5:
             reasons.append(f"overfit=train_pf-holdout_pf={round(gap,2)}")
-    # Concentration
+    # Single-source concentration (P0: >60% → automatic is_edge=false)
+    if top_src_share > 0.60:
+        reasons.append(
+            f"concentration=single_source_share={int(top_src_share*100)}% ({top_src_name}) — "
+            f"cohort dominated by one source, not generalizable"
+        )
+    # Symbol concentration
     syms = Counter(p.get("symbol") for p in picks)
     if syms:
         top, top_n = syms.most_common(1)[0]
@@ -284,8 +301,17 @@ def build():
             tr_pf, ho_pf = _chrono_split_pf(bucket)
             pass_ho = ho_pf is not None and ho_pf != float("inf") and ho_pf >= 1.2
             pass_bf = _bonferroni_test(wins, n, n_surfaces=n_surfaces)
-            why = _why_no_edge(bucket, sid, ac, wr, pf, tr_pf, ho_pf, pass_bf)
+            # Concentration check (P0: >60% single-source → override is_edge)
+            top_src_share, top_src_name = _top_source_concentration(bucket)
             is_edge = pass_ho and pass_bf and (pf is not None and (pf == float("inf") or pf >= 1.5))
+            # Override: single-source concentration > 60% → NOT an edge
+            # (e.g. CRYPTO Smart Picks: 91.7% claude_gainer_ml — see
+            #  reports/2026-05-25_crypto_78pct_wr_verification.md)
+            concentrated = top_src_share > 0.60
+            if is_edge and concentrated:
+                is_edge = False
+            why = _why_no_edge(bucket, sid, ac, wr, pf, tr_pf, ho_pf, pass_bf,
+                              top_src_share=top_src_share, top_src_name=top_src_name)
             if is_edge and ac != "_overall":
                 edge_classes.append(ac)
             per_class_rows.append({

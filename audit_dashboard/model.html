@@ -107,6 +107,7 @@
     <th>Status</th>
     <th>Fwd-test</th>
     <th class="num">Days</th>
+    <th class="num" title="Closed: exit price. Open: current price from price-tracker (may be — if price-tracker has not refreshed yet)">Close / Now</th>
     <th class="num">PnL %</th>
     <th>Persona / Rationale</th>
   </tr></thead>
@@ -424,6 +425,7 @@ function renderPicks(){
       <td>${statusBadge(p.status)}</td>
       <td class="small ${fwdStatus(p).cls}">${fwdStatus(p).label}</td>
       <td class="num">${daysSince(p.submitted_at) == null ? '—' : daysSince(p.submitted_at)+'d'}</td>
+      <td class="num" title="${p.status==='OPEN'?'Latest current price from price-tracker':'Exit / close price'}">${(() => { const px = (p.status==='OPEN') ? (p.current_price ?? null) : (p.exit_price ?? null); return px==null ? '<span class="small" style="color:#6b7280">—</span>' : fmtNum(px); })()}</td>
       <td class="num ${pnlClass(pnl)}">${pnl==null?'—':fmtPct(pnl)}</td>
       <td class="rationale-cell" id="rc-${idx}">
         <div><strong>${esc(persona)}</strong>${strat ? ' · <span class="small">'+esc(strat)+'</span>':''}</div>
@@ -435,7 +437,7 @@ function renderPicks(){
     </tr>`;
   }).join('');
   if(filtered.length > cap){
-    body.insertAdjacentHTML('beforeend', '<tr><td colspan="14" style="text-align:center;color:#6b7280;padding:12px">Showing first '+cap+' of '+filtered.length+' — narrow your filter to see more.</td></tr>');
+    body.insertAdjacentHTML('beforeend', '<tr><td colspan="15" style="text-align:center;color:#6b7280;padding:12px">Showing first '+cap+' of '+filtered.length+' — narrow your filter to see more.</td></tr>');
   }
 }
 
