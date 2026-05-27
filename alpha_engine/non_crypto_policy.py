@@ -198,6 +198,18 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.50,
         "allow_without_forward": False,
     },
+    # PR4 (2026-05-27): Promote equity_pead from shadow to probation.
+    # Bernard & Thomas (1989) PEAD anomaly. 62.2% OOS WR on 2-day window.
+    # Only WF-VERIFIED equity strategy. 30-day hold, 6% TP / 3% SL (2:1 R:R).
+    "equity_pead": {
+        "categories": {"equity"},
+        "min_confidence": 0.58,
+        "min_rr": 1.50,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.50,
+        "allow_without_forward": True,  # Probation: build forward record
+    },
     "cot_positioning": {
         "categories": {"forex", "commodity", "futures", "bond", "equity"},
         "min_confidence": 0.55,
