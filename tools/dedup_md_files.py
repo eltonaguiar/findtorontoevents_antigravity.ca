@@ -16,6 +16,9 @@ Usage:
     # JSON output (for piping to another tool)
     python3 tools/dedup_md_files.py --from-file /tmp/paths.txt --json
 
+    # Exact canonical paths only (one per line)
+    python3 tools/dedup_md_files.py --from-file /tmp/paths.txt --paths-only
+
 Output (text mode):
     CANONICAL (N unique of M total):
       reports/asset_class_90day_plan_BOND_2026-05-15.md   (12 copies, saved 11 reads)
@@ -76,8 +79,17 @@ def main():
     ap.add_argument("--from-stdin", action="store_true", help="Read newline-delimited path list from stdin")
     ap.add_argument("--repo-root", default=os.getcwd(), help="Repo root for path normalization")
     ap.add_argument("--json", action="store_true", help="Emit JSON instead of human text")
+    ap.add_argument("--paths-only", action="store_true",
+                    help="Emit only the canonical file paths, one per line")
     ap.add_argument("--show-dupes", action="store_true", help="Also print the suppressed paths under each canonical")
     args = ap.parse_args()
+
+    if args.paths_only and args.json:
+        print("ERROR: --paths-only and --json are mutually exclusive", file=sys.stderr)
+        return 1
+    if args.paths_only and args.show_dupes:
+        print("ERROR: --paths-only and --show-dupes are mutually exclusive", file=sys.stderr)
+        return 1
 
     paths: list[str] = []
     if args.glob:
@@ -148,6 +160,9 @@ def main():
             ],
         }
         print(json.dumps(out, indent=2))
+    elif args.paths_only:
+        for c in canonical:
+            print(c["canonical"])
     else:
         print(f"CANONICAL ({total_unique} unique of {total_input} input):")
         for c in canonical:

@@ -47,6 +47,12 @@ python3 tools/dedup_md_files.py \
 python3 tools/dedup_md_files.py --from-file /tmp/paths.txt --json | jq -r '.canonical[].canonical'
 ```
 
+**Paths-only mode (direct canonical file list, one per line):**
+
+```bash
+python3 tools/dedup_md_files.py --from-file /tmp/paths.txt --paths-only
+```
+
 ## What "shortest path" means
 
 Given identical content at:
