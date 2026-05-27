@@ -28,6 +28,15 @@ OUT_MD = REPO / "reports" / f"{datetime.now().strftime('%Y-%m-%d')}_portfolio_wi
 WINNER_STREAK_DAYS = 3
 LOSER_STREAK_DAYS = 3
 DRAWDOWN_LOOKBACK = 30  # days
+# 2026-05-27 fix: streak alone produced "REPEAT_WINNER" labels for portfolios
+# still down -3% with 17% WR (e.g. Anti-Meme). A real winner needs the streak
+# to be backed by overall positive equity AND a non-disastrous win rate.
+# Symmetric gates apply for REPEAT_LOSER so a 60%-WR portfolio with a 3-day
+# cool-down doesn't get mislabeled as a loser (e.g. Beaten Majors Long-Only).
+WINNER_MIN_EQUITY_PCT = 0.0        # must be above water
+WINNER_MIN_WR_PCT = 45.0           # below this, the streak is noise
+LOSER_MAX_EQUITY_PCT = 0.0         # must be below water
+LOSER_MAX_WR_PCT = 50.0            # break-even+ WR portfolios are not losers
 
 
 def _parse_dt(s):
@@ -150,11 +159,21 @@ def classify_portfolio(pid: str, p: dict) -> dict:
 
     if len(daily) < 5:
         bucket = "INSUFFICIENT_HISTORY"
-    elif pos_streak >= WINNER_STREAK_DAYS:
-        # Sustained recent winning days = repeat winner pattern, even if still
-        # climbing out of an earlier drawdown.
+    elif (
+        pos_streak >= WINNER_STREAK_DAYS
+        and pct > WINNER_MIN_EQUITY_PCT
+        and (wr is None or wr >= WINNER_MIN_WR_PCT)
+    ):
+        # A real REPEAT_WINNER: sustained recent winning days, AND the portfolio
+        # is actually above water, AND its WR is not catastrophic. Streak alone
+        # is insufficient — a portfolio can post 5 green days while still being
+        # down -3% with 17% WR (the Anti-Meme case that triggered this fix).
         bucket = "REPEAT_WINNER"
-    elif neg_streak >= LOSER_STREAK_DAYS:
+    elif (
+        neg_streak >= LOSER_STREAK_DAYS
+        and pct < LOSER_MAX_EQUITY_PCT
+        and (wr is None or wr < LOSER_MAX_WR_PCT)
+    ):
         bucket = "REPEAT_LOSER"
     else:
         bucket = "MIXED"
@@ -220,7 +239,11 @@ def main():
         "source": "audit_dashboard/data/claudes_test_state.json",
         "thresholds": {
             "winner_streak_days": WINNER_STREAK_DAYS,
+            "winner_min_equity_pct": WINNER_MIN_EQUITY_PCT,
+            "winner_min_wr_pct": WINNER_MIN_WR_PCT,
             "loser_streak_days": LOSER_STREAK_DAYS,
+            "loser_max_equity_pct": LOSER_MAX_EQUITY_PCT,
+            "loser_max_wr_pct": LOSER_MAX_WR_PCT,
             "drawdown_lookback_days": DRAWDOWN_LOOKBACK,
         },
         "counts": {k: len(v) for k, v in by_bucket.items()},
