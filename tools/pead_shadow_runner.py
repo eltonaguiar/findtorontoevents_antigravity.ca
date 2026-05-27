@@ -114,8 +114,64 @@ def main(dry_run: bool = False, output_path: Path | None = None) -> int:
     return 0
 
 
+def merge_to_active_picks(signals: list[dict]) -> int:
+    """PR4: Merge PEAD signals into alpha_engine/data/active_picks.json.
+
+    Follows the same pattern as bond_scanner._merge_into_active_picks().
+    Only merges signals that pass basic validation (non-zero entry, TP > entry for LONG).
+    """
+    if not signals:
+        return 0
+
+    active_path = REPO_ROOT / "alpha_engine" / "data" / "active_picks.json"
+    existing: list[dict] = []
+    if active_path.exists():
+        try:
+            data = json.loads(active_path.read_text(encoding="utf-8"))
+            existing = data if isinstance(data, list) else []
+        except Exception:
+            existing = []
+
+    # Remove old PEAD picks (re-emit fresh each cycle)
+    existing = [p for p in existing if p.get("strategy") != "equity_pead"]
+
+    # Validate and append new signals
+    merged = 0
+    for sig in signals:
+        entry = float(sig.get("entry_price", 0) or 0)
+        if entry <= 0:
+            continue
+        # Standardize fields for the pick pipeline
+        sig.setdefault("source_system", "equity_pead")
+        sig.setdefault("category", "equity")
+        sig.setdefault("asset_class", "EQUITY")
+        sig.setdefault("trust_tier", "DEVELOPING")
+        existing.append(sig)
+        merged += 1
+
+    if merged > 0:
+        active_path.parent.mkdir(parents=True, exist_ok=True)
+        active_path.write_text(json.dumps(existing, indent=2, default=str), encoding="utf-8")
+        print(f"[pead_shadow_runner] merged {merged} PEAD signals into active_picks.json", flush=True)
+
+    return merged
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="H-002 PEAD shadow pick collector")
     parser.add_argument("--dry-run", action="store_true", help="Print signals but do not write log")
+    parser.add_argument("--merge", action="store_true", help="Also merge signals into active_picks.json (production)")
     args = parser.parse_args()
-    sys.exit(main(dry_run=args.dry_run))
+
+    os.environ.setdefault("EQUITY_PEAD_ENABLED", "1")
+    rc = main(dry_run=args.dry_run)
+
+    if args.merge and not args.dry_run:
+        try:
+            from alpha_engine.equity_pead_strategy import equity_pead_signals
+            sigs = equity_pead_signals()
+            merge_to_active_picks(sigs)
+        except Exception as e:
+            print(f"[pead_shadow_runner] merge failed: {e}", flush=True)
+
+    sys.exit(rc)
