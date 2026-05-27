@@ -41,7 +41,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add battleground/data/luxalgo_active_picks.json battleground/data/luxalgo_closed_picks.json
+          git add -f battleground/data/luxalgo_active_picks.json 2>/dev/null || true
+          git add -f battleground/data/luxalgo_closed_picks.json 2>/dev/null || true
           git diff --cached --quiet && echo "No changes" && exit 0
           git stash
           git pull --rebase -X theirs origin main 2>/dev/null || {
@@ -59,7 +60,8 @@ jobs:
               git add "$f" 2>/dev/null || true
             done
           }
-          git add battleground/data/luxalgo_active_picks.json battleground/data/luxalgo_closed_picks.json
+          git add -f battleground/data/luxalgo_active_picks.json 2>/dev/null || true
+          git add -f battleground/data/luxalgo_closed_picks.json 2>/dev/null || true
           git diff --cached --quiet && echo "No changes after pull" && exit 0
           # issue #141: block conflict-marker commits after stash-pop recovery
           bash .github/scripts/assert_no_conflict_markers.sh || exit 1

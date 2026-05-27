@@ -39,9 +39,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add alpha_engine/data/missed_gainers_log.json \
-                  alpha_engine/data/wrong_guesses_log.json \
-                  alpha_engine/data/hourly_improvement_report.json
+          git add -f alpha_engine/data/missed_gainers_log.json 2>/dev/null || true
+          git add -f alpha_engine/data/wrong_guesses_log.json 2>/dev/null || true
+          git add -f alpha_engine/data/hourly_improvement_report.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
