@@ -193,6 +193,9 @@ jobs:
         continue-on-error: true
 
       - name: Track consensus pick outcomes (TP/SL)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
         run: |
           echo "Tracking consensus + super signal TP/SL outcomes..."
           python -m cross_aggregation.consensus_outcome_tracker || echo "Consensus outcome tracking failed (non-fatal)"
