@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strategy Incubator — Live Signal Tracker</title>
+  <meta name="description" content="Track incubator strategy signals in real-time with live Binance prices, PnL tracking, and strategy performance metrics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a12;
+      --bg-card: #12121f;
+      --bg-card-hover: #1a1a2e;
+      --bg-elevated: #16162a;
+      --border: #1e1e3a;
+      --border-bright: #2a2a50;
+      --text-primary: #e8e8f0;
+      --text-secondary: #8888aa;
+      --text-muted: #555577;
+      --accent-green: #22c55e;
+      --accent-green-dim: rgba(34, 197, 94, 0.15);
+      --accent-red: #ef4444;
+      --accent-red-dim: rgba(239, 68, 68, 0.15);
+      --accent-blue: #3b82f6;
+      --accent-blue-dim: rgba(59, 130, 246, 0.15);
+      --accent-amber: #f59e0b;
+      --accent-amber-dim: rgba(245, 158, 11, 0.15);
+      --accent-purple: #a855f7;
+      --accent-purple-dim: rgba(168, 85, 247, 0.15);
+      --gradient-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-green: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      --gradient-red: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.4);
+      --shadow-glow-green: 0 0 20px rgba(34, 197, 94, 0.2);
+      --shadow-glow-red: 0 0 20px rgba(239, 68, 68, 0.2);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    .header {
+      background: linear-gradient(180deg, rgba(102, 126, 234, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 24px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+    .header .subtitle {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+    .header .nav-links {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .header .nav-links a {
+      font-size: 0.78rem;
+      color: var(--accent-blue);
+      text-decoration: none;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .header .nav-links a:hover {
+      border-color: var(--accent-blue);
+      background: var(--accent-blue-dim);
+    }
+
+    /* ── Stats Bar ──────────────────────────────── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      padding: 16px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-bright);
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .stat-value.green { color: var(--accent-green); }
+    .stat-value.red { color: var(--accent-red); }
+    .stat-value.blue { color: var(--accent-blue); }
+    .stat-value.amber { color: var(--accent-amber); }
+    .stat-value.purple { color: var(--accent-purple); }
+
+    /* ── Signals Container ──────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 8px 24px 40px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .section-title .dot.live { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); animation: pulse 2s infinite; }
+    .section-title .dot.closed { background: var(--text-muted); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .refresh-info {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Signal Cards ───────────────────────────── */
+    .signal-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .signal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+    .signal-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+    .signal-card.positive { border-left: 3px solid var(--accent-green); }
+    .signal-card.negative { border-left: 3px solid var(--accent-red); }
+    .signal-card.neutral  { border-left: 3px solid var(--accent-blue); }
+    .signal-card.closed    { opacity: 0.6; }
+
+    .signal-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      padding: 14px 16px 10px;
+      gap: 12px;
+      align-items: start;
+    }
+    .signal-symbol {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .signal-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-buy   { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-sell  { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-strat { background: var(--accent-purple-dim); color: var(--accent-purple); border: 1px solid rgba(168,85,247,0.3); }
+    .badge-sweep { background: var(--accent-amber-dim); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-tp    { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-sl    { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-open  { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+
+    .signal-prices {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      padding: 0 16px 12px;
+    }
+    .price-item {
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .price-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .price-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .price-value.entry { color: var(--text-primary); }
+    .price-value.tp    { color: var(--accent-green); }
+    .price-value.sl    { color: var(--accent-red); }
+    .price-value.live  { color: var(--accent-amber); }
+
+    .signal-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pnl-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .pnl-display.positive { color: var(--accent-green); text-shadow: 0 0 12px rgba(34,197,94,0.3); }
+    .pnl-display.negative { color: var(--accent-red); text-shadow: 0 0 12px rgba(239,68,68,0.3); }
+
+    .signal-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .signal-meta span { display: flex; align-items: center; gap: 3px; }
+
+    .signal-reason {
+      padding: 0 16px 12px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Progress Bar (TP/SL) ───────────────────── */
+    .progress-container {
+      padding: 0 16px 10px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      position: relative;
+      overflow: visible;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+    .progress-fill.to-tp { background: var(--gradient-green); }
+    .progress-fill.to-sl { background: var(--gradient-red); }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Empty State ────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 8px; }
+
+    /* ── How-To Section ─────────────────────────── */
+    .how-to {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+    .how-to h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--accent-blue);
+    }
+    .how-to ol {
+      padding-left: 20px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .how-to ol li { margin-bottom: 8px; }
+    .how-to code {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-elevated);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: var(--accent-purple);
+    }
+
+    /* ── Footer ─────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      margin-top: 32px;
+    }
+
+    /* ── Strategy filter pills ──────────────────── */
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .filter-pill {
+      font-size: 0.72rem;
+      padding: 5px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .filter-pill:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+    .filter-pill.active { background: var(--accent-blue-dim); border-color: var(--accent-blue); color: var(--accent-blue); }
+
+    /* ── Responsive ─────────────────────────────── */
+    @media (max-width: 640px) {
+      .signal-prices { grid-template-columns: repeat(2, 1fr); }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .header h1 { font-size: 1.3rem; }
+      .signal-top { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧪 Strategy Incubator — Live Tracker</h1>
+  <div class="subtitle">New strategies in forward-test mode. Signals tracked with live Binance prices. Need 30+ trades to graduate.</div>
+  <div class="nav-links">
+    <a href="/updates/">← Updates</a>
+    <a href="/audit/">Audit Dashboard</a>
+    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/hub/" target="_blank">Trading Hub</a>
+    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/" target="_blank">Battleground</a>
+    <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/monitor/" target="_blank">Cross-Agg Monitor</a>
+  </div>
+</div>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat-card"><div class="stat-label">Total Signals</div><div class="stat-value blue" id="statTotal">—</div></div>
+  <div class="stat-card"><div class="stat-label">Open</div><div class="stat-value amber" id="statOpen">—</div></div>
+  <div class="stat-card"><div class="stat-label">TP Hits</div><div class="stat-value green" id="statTP">—</div></div>
+  <div class="stat-card"><div class="stat-label">SL Hits</div><div class="stat-value red" id="statSL">—</div></div>
+  <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="statWR">—</div></div>
+  <div class="stat-card"><div class="stat-label">Avg PnL</div><div class="stat-value" id="statAvgPnL">—</div></div>
+  <div class="stat-card"><div class="stat-label">Strategies</div><div class="stat-value purple" id="statStrategies">—</div></div>
+  <div class="stat-card"><div class="stat-label">Last Update</div><div class="stat-value" id="statLastUpdate" style="font-size:0.75rem;">—</div></div>
+</div>
+
+<div class="filter-pills" id="filterPills">
+  <button class="filter-pill active" data-filter="all">All Strategies</button>
+</div>
+
+<div class="container">
+  <div class="section-header">
+    <div class="section-title">
+      <span class="dot live"></span> Open Signals
+    </div>
+    <div class="refresh-info" id="refreshInfo">Prices refresh every 30s</div>
+  </div>
+  <div class="signal-grid" id="openSignals">
+    <div class="empty-state"><div class="icon">⏳</div><h3>Loading signals...</h3><p>Fetching from forward_signals/ and live Binance prices</p></div>
+  </div>
+
+  <div class="section-header" style="margin-top:32px;">
+    <div class="section-title">
+      <span class="dot closed"></span> Resolved Signals
+    </div>
+    <div class="refresh-info" id="resolvedCount">—</div>
+  </div>
+  <div class="signal-grid" id="closedSignals">
+    <div class="empty-state"><div class="icon">📭</div><h3>No resolved signals yet</h3><p>Signals are checked against TP/SL on each price refresh</p></div>
+  </div>
+
+  <div class="how-to">
+    <h3>📖 How This Works</h3>
+    <ol>
+      <li><strong>Strategies generate signals</strong> by scanning live Binance 15m/1h/4h candle data for patterns (e.g., Smart Money Concepts Fair Value Gaps, OI Divergence).</li>
+      <li><strong>Signals are saved</strong> to <code>battleground/incubator/forward_signals/</code> with entry price, TP, SL, and metadata.</li>
+      <li><strong>This dashboard fetches live prices</strong> from Binance every 30 seconds and calculates unrealized PnL, progress to TP/SL.</li>
+      <li><strong>When a signal hits TP or SL</strong>, it moves to "Resolved" and contributes to the win rate statistics.</li>
+      <li><strong>After 30+ resolved trades</strong>, a strategy can be promoted to production (Battleground or System A).</li>
+    </ol>
+    <p style="margin-top:12px; font-size:0.8rem; color:var(--text-muted);">
+      <strong>To add signals:</strong> Run <code>python -m battleground.incubator.strategies.smc_fair_value_gap_v1</code> or any strategy in the incubator folder. Signals auto-append to the tracking JSON.
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  Strategy Incubator v1.0 — Part of the findtorontoevents.ca Trading Ecosystem<br>
+  Prices via Binance API • Not financial advice • Incubator = Experimental
+</div>
+
+<script>
+// ── Configuration ────────────────────────────────────────────
+const REPO = 'eltonaguiar/findtorontoevents_antigravity.ca';
+const BRANCH = 'main';
+const SIGNAL_FILES = [
+  'battleground/incubator/forward_signals/smc_fvg_signals.json',
+  'battleground/incubator/forward_signals/oi_divergence_signals.json',
+  'battleground/incubator/forward_signals/chronos_bolt_signals.json',
+];
+const BINANCE_API = 'https://api.binance.com/api/v3/ticker/price';
+const REFRESH_INTERVAL = 30000; // 30 seconds
+
+// ── State ────────────────────────────────────────────────────
+let allSignals = [];
+let livePrices = {};
+let resolvedSignals = JSON.parse(localStorage.getItem('incubator_resolved') || '[]');
+let activeFilter = 'all';
+
+// ── Fetch Signals from GitHub ────────────────────────────────
+async function fetchSignals() {
+  const signals = [];
+  for (const path of SIGNAL_FILES) {
+    try {
+      const url = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${path}`;
+      const resp = await fetch(url, { cache: 'no-cache' });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (Array.isArray(data)) {
+          data.forEach(s => {
+            s._file = path.split('/').pop().replace('_signals.json', '');
+            // Generate unique ID if not present
+            if (!s._id) {
+              s._id = `${s.symbol}_${s.entry_price}_${s.direction}_${s.strategy || s._file}`;
+            }
+          });
+          signals.push(...data);
+        }
+      }
+    } catch (e) {
+      console.warn(`Failed to fetch ${path}:`, e);
+    }
+  }
+  return signals;
+}
+
+// ── Fetch Live Prices from Binance ───────────────────────────
+async function fetchPrices(symbols) {
+  const unique = [...new Set(symbols)];
+  const prices = {};
+  try {
+    // Fetch all at once
+    const resp = await fetch(BINANCE_API);
+    const data = await resp.json();
+    const priceMap = {};
+    data.forEach(t => priceMap[t.symbol] = parseFloat(t.price));
+    unique.forEach(sym => {
+      if (priceMap[sym]) prices[sym] = priceMap[sym];
+    });
+  } catch (e) {
+    console.warn('Binance API error:', e);
+    // Fallback: fetch individually
+    for (const sym of unique.slice(0, 10)) {
+      try {
+        const resp = await fetch(`${BINANCE_API}?symbol=${sym}`);
+        const data = await resp.json();
+        if (data.price) prices[sym] = parseFloat(data.price);
+      } catch (e2) { /* skip */ }
+    }
+  }
+  return prices;
+}
+
+// ── Calculate PnL ────────────────────────────────────────────
+function calcPnL(signal, currentPrice) {
+  const entry = signal.entry_price;
+  if (!entry || !currentPrice) return { pnl: 0, pnlPct: 0, status: 'unknown' };
+  
+  const dir = (signal.direction || 'BUY').toUpperCase();
+  let pnlPct;
+  if (dir === 'BUY' || dir === 'LONG') {
+    pnlPct = ((currentPrice - entry) / entry) * 100;
+  } else {
+    pnlPct = ((entry - currentPrice) / entry) * 100;
+  }
+
+  // Check TP/SL
+  let status = 'OPEN';
+  const tp = signal.take_profit;
+  const sl = signal.stop_loss;
+  if (tp && sl) {
+    if (dir === 'BUY' || dir === 'LONG') {
+      if (currentPrice >= tp) status = 'TP_HIT';
+      else if (currentPrice <= sl) status = 'SL_HIT';
+    } else {
+      if (currentPrice <= tp) status = 'TP_HIT';
+      else if (currentPrice >= sl) status = 'SL_HIT';
+    }
+  }
+
+  return { pnl: currentPrice - entry, pnlPct, status };
+}
+
+// ── Progress to TP/SL ────────────────────────────────────────
+function calcProgress(signal, currentPrice) {
+  const entry = signal.entry_price;
+  const tp = signal.take_profit;
+  const sl = signal.stop_loss;
+  if (!entry || !tp || !sl) return { toTP: 0, toSL: 0 };
+
+  const dir = (signal.direction || 'BUY').toUpperCase();
+  let tpDist, slDist, currentDist;
+  
+  if (dir === 'BUY' || dir === 'LONG') {
+    tpDist = tp - entry;
+    slDist = entry - sl;
+    currentDist = currentPrice - entry;
+  } else {
+    tpDist = entry - tp;
+    slDist = sl - entry;
+    currentDist = entry - currentPrice;
+  }
+
+  const toTP = tpDist > 0 ? Math.min(Math.max(currentDist / tpDist * 100, 0), 100) : 0;
+  const toSL = slDist > 0 ? Math.min(Math.max(-currentDist / slDist * 100, 0), 100) : 0;
+  return { toTP, toSL };
+}
+
+// ── Format Price ─────────────────────────────────────────────
+function fmtPrice(price, symbol) {
+  if (!price) return '—';
+  if (price >= 1000) return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (price >= 1) return '$' + price.toFixed(4);
+  return '$' + price.toFixed(6);
+}
+
+// ── Render Signal Card ───────────────────────────────────────
+function renderSignalCard(signal, currentPrice, isResolved = false) {
+  const { pnlPct, status } = calcPnL(signal, currentPrice);
+  const progress = calcProgress(signal, currentPrice);
+  const dir = (signal.direction || 'BUY').toUpperCase();
+  const stratName = (signal.strategy || signal._file || 'unknown').replace(/_/g, ' ');
+  const hasSweep = signal.metadata?.sweep_confluence;
+  const hasOB = signal.metadata?.order_block;
+  
+  const cardClass = isResolved 
+    ? (status === 'TP_HIT' ? 'positive' : 'negative') + ' closed'
+    : pnlPct > 0 ? 'positive' : pnlPct < 0 ? 'negative' : 'neutral';
+
+  const pnlClass = pnlPct >= 0 ? 'positive' : 'negative';
+  const statusBadge = isResolved
+    ? (status === 'TP_HIT' ? '<span class="badge badge-tp">✓ TP HIT</span>' : '<span class="badge badge-sl">✗ SL HIT</span>')
+    : '<span class="badge badge-open">● OPEN</span>';
+
+  let progressHTML = '';
+  if (!isResolved) {
+    const isToTP = progress.toTP > progress.toSL;
+    progressHTML = `
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill ${isToTP ? 'to-tp' : 'to-sl'}" style="width:${isToTP ? progress.toTP : progress.toSL}%"></div>
+        </div>
+        <div class="progress-labels">
+          <span>SL ${fmtPrice(signal.stop_loss, signal.symbol)}</span>
+          <span>${isToTP ? progress.toTP.toFixed(0) : -progress.toSL.toFixed(0)}% → ${isToTP ? 'TP' : 'SL'}</span>
+          <span>TP ${fmtPrice(signal.take_profit, signal.symbol)}</span>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="signal-card ${cardClass}" data-strategy="${signal.strategy || signal._file}" data-symbol="${signal.symbol}">
+      <div class="signal-top">
+        <div>
+          <div class="signal-symbol">${signal.symbol}</div>
+        </div>
+        <div class="signal-badges">
+          <span class="badge ${dir === 'BUY' || dir === 'LONG' ? 'badge-buy' : 'badge-sell'}">${dir}</span>
+          <span class="badge badge-strat">${stratName}</span>
+          ${hasSweep ? '<span class="badge badge-sweep">🔥 SWEEP</span>' : ''}
+          ${hasOB ? '<span class="badge badge-sweep">📦 ORDER BLOCK</span>' : ''}
+          ${statusBadge}
+        </div>
+      </div>
+      <div class="signal-prices">
+        <div class="price-item">
+          <div class="price-label">Entry</div>
+          <div class="price-value entry">${fmtPrice(signal.entry_price, signal.symbol)}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-label">Take Profit</div>
+          <div class="price-value tp">${fmtPrice(signal.take_profit, signal.symbol)}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-label">Stop Loss</div>
+          <div class="price-value sl">${fmtPrice(signal.stop_loss, signal.symbol)}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-label">Live Price</div>
+          <div class="price-value live">${currentPrice ? fmtPrice(currentPrice, signal.symbol) : '⏳'}</div>
+        </div>
+      </div>
+      ${progressHTML}
+      <div class="signal-reason">${signal.reason || '—'}</div>
+      <div class="signal-bottom">
+        <div class="pnl-display ${pnlClass}">${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(3)}%</div>
+        <div class="signal-meta">
+          <span>📐 Conf: ${((signal.confidence||0)*100).toFixed(0)}%</span>
+          <span>⏱ ${signal.timeframe || '15m'}</span>
+          ${signal.metadata?.volume_ratio ? `<span>📊 Vol: ${signal.metadata.volume_ratio}x</span>` : ''}
+          ${signal.metadata?.fvg_type ? `<span>📈 ${signal.metadata.fvg_type}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Update Stats ─────────────────────────────────────────────
+function updateStats(openSigs, resolvedSigs) {
+  const total = openSigs.length + resolvedSigs.length;
+  const tpHits = resolvedSigs.filter(r => r.status === 'TP_HIT').length;
+  const slHits = resolvedSigs.filter(r => r.status === 'SL_HIT').length;
+  const resolved = tpHits + slHits;
+  const wr = resolved > 0 ? (tpHits / resolved * 100) : 0;
+  
+  // Calculate avg PnL from resolved
+  let totalPnL = 0;
+  resolvedSigs.forEach(r => { totalPnL += r.pnlPct || 0; });
+  const avgPnL = resolved > 0 ? totalPnL / resolved : 0;
+
+  // Count unique strategies
+  const strategies = new Set([...openSigs, ...resolvedSigs].map(s => s.strategy || s._file));
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statOpen').textContent = openSigs.length;
+  document.getElementById('statTP').textContent = tpHits;
+  document.getElementById('statSL').textContent = slHits;
+  
+  const wrEl = document.getElementById('statWR');
+  wrEl.textContent = resolved > 0 ? wr.toFixed(1) + '%' : '—';
+  wrEl.className = `stat-value ${wr >= 50 ? 'green' : wr > 0 ? 'red' : ''}`;
+  
+  const pnlEl = document.getElementById('statAvgPnL');
+  pnlEl.textContent = resolved > 0 ? (avgPnL >= 0 ? '+' : '') + avgPnL.toFixed(3) + '%' : '—';
+  pnlEl.className = `stat-value ${avgPnL >= 0 ? 'green' : 'red'}`;
+  
+  document.getElementById('statStrategies').textContent = strategies.size;
+  document.getElementById('statLastUpdate').textContent = new Date().toLocaleTimeString();
+}
+
+// ── Update Filter Pills ──────────────────────────────────────
+function updateFilters(signals) {
+  const strategies = [...new Set(signals.map(s => s.strategy || s._file))];
+  const container = document.getElementById('filterPills');
+  container.innerHTML = '<button class="filter-pill active" data-filter="all">All Strategies</button>';
+  strategies.forEach(strat => {
+    const count = signals.filter(s => (s.strategy || s._file) === strat).length;
+    const label = strat.replace(/_/g, ' ');
+    container.innerHTML += `<button class="filter-pill" data-filter="${strat}">${label} (${count})</button>`;
+  });
+  
+  // Re-attach listeners
+  container.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      container.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeFilter = pill.dataset.filter;
+      renderAll();
+    });
+  });
+}
+
+// ── Main Render ──────────────────────────────────────────────
+function renderAll() {
+  const openContainer = document.getElementById('openSignals');
+  const closedContainer = document.getElementById('closedSignals');
+
+  // Separate open vs resolved
+  const resolvedIds = new Set(resolvedSignals.map(r => r._id));
+  let openSigs = allSignals.filter(s => !resolvedIds.has(s._id));
+  
+  // Check if any open signals have hit TP/SL
+  const newlyResolved = [];
+  openSigs = openSigs.filter(sig => {
+    const price = livePrices[sig.symbol];
+    if (!price) return true;
+    const { status, pnlPct } = calcPnL(sig, price);
+    if (status === 'TP_HIT' || status === 'SL_HIT') {
+      newlyResolved.push({ ...sig, status, pnlPct, resolvedAt: new Date().toISOString(), resolvedPrice: price });
+      return false;
+    }
+    return true;
+  });
+
+  // Persist newly resolved
+  if (newlyResolved.length > 0) {
+    resolvedSignals.push(...newlyResolved);
+    localStorage.setItem('incubator_resolved', JSON.stringify(resolvedSignals));
+  }
+
+  // Apply filter
+  const filteredOpen = activeFilter === 'all' ? openSigs : openSigs.filter(s => (s.strategy || s._file) === activeFilter);
+  const filteredClosed = activeFilter === 'all' ? resolvedSignals : resolvedSignals.filter(s => (s.strategy || s._file) === activeFilter);
+
+  // Render open
+  if (filteredOpen.length === 0) {
+    openContainer.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><h3>No open signals</h3><p>Run an incubator strategy to generate new signals</p></div>';
+  } else {
+    openContainer.innerHTML = filteredOpen.map(sig => 
+      renderSignalCard(sig, livePrices[sig.symbol])
+    ).join('');
+  }
+
+  // Render closed
+  if (filteredClosed.length === 0) {
+    closedContainer.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>No resolved signals yet</h3><p>Signals auto-resolve when price hits TP or SL</p></div>';
+  } else {
+    closedContainer.innerHTML = filteredClosed.map(sig => 
+      renderSignalCard(sig, sig.resolvedPrice || livePrices[sig.symbol], true)
+    ).join('');
+  }
+
+  document.getElementById('resolvedCount').textContent = `${filteredClosed.length} resolved`;
+  updateStats(openSigs, resolvedSignals);
+}
+
+// ── Main Loop ────────────────────────────────────────────────
+async function init() {
+  // Fetch signals
+  allSignals = await fetchSignals();
+  updateFilters([...allSignals, ...resolvedSignals]);
+  
+  // Fetch initial prices
+  const symbols = [...new Set(allSignals.map(s => s.symbol))];
+  livePrices = await fetchPrices(symbols);
+  
+  renderAll();
+
+  // Set up refresh
+  setInterval(async () => {
+    const syms = [...new Set(allSignals.map(s => s.symbol))];
+    livePrices = await fetchPrices(syms);
+    renderAll();
+    document.getElementById('refreshInfo').textContent = `Last refresh: ${new Date().toLocaleTimeString()}`;
+  }, REFRESH_INTERVAL);
+}
+
+// ── Start ────────────────────────────────────────────────────
+init().catch(e => {
+  console.error('Init failed:', e);
+  document.getElementById('openSignals').innerHTML = 
+    `<div class="empty-state"><div class="icon">⚠️</div><h3>Error loading signals</h3><p>${e.message}</p></div>`;
+});
+</script>
+
+</body>
+</html>
