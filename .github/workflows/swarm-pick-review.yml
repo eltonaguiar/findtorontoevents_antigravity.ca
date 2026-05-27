@@ -1,4 +1,4 @@
-name: Swarm Pick Review (resolve + weekly + patterns)
+name: Swarm Pick Review (resolve + weekly + patterns + tournament promotion)
 
 on:
   schedule:
@@ -27,6 +27,21 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install yfinance pandas
+
+      # EAGLE P1-02 (2026-05-27): Promote tournament consensus picks before
+      # resolution. This is the missing piece that caused swarm_picks.json to
+      # stay at 38 picks since 2026-05-12. Reads AI tournament submissions,
+      # finds picks with >=2-model consensus on same (symbol, direction), and
+      # promotes them into the live swarm_picks.json store. Idempotent.
+      - name: Promote tournament consensus picks
+        run: |
+          echo "::group::Tournament consensus promotion"
+          python tools/swarm/promote_tournament_picks.py
+          _promo_rc=$?
+          echo "::endgroup::"
+          if [ $_promo_rc -ne 0 ]; then
+            echo "::warning title=swarm_promotion::tournament promotion returned $_promo_rc (non-fatal — resolver still runs below)"
+          fi
 
       - name: Resolve open swarm picks
         run: python tools/swarm/outcome_resolver_swarm.py

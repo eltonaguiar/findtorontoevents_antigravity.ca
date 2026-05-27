@@ -132,19 +132,30 @@ jobs:
       # INC #10 fix (2026-05-26): mirror resolved outcomes into MySQL at_signal_outcomes
       # so the audit dashboard's signal_outcomes coverage stops being 82-days stale.
       # backfill_local_sources.py uses INSERT IGNORE so re-running is idempotent (safe
-      # to call hourly even though it scans more than just new picks). Soft-fail so
-      # MySQL connectivity issues don't break the resolver chain above.
+      # to call hourly even though it scans more than just new picks).
+      # EAGLE P1-01 (2026-05-27): fixed credential pattern — was using
+      # secrets.DB_STOCKS_HOST/USER/PASSWORD (unset secrets → empty → auth fail).
+      # Now uses same hardcoded host/user + secret fallback chain as Active Picks Sync.
+      # Also upgraded from silent warning to job annotation + error log for visibility.
       - name: Mirror resolved outcomes to MySQL at_signal_outcomes (INC #10)
         if: ${{ inputs.dry_run != 'true' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
-          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
-          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
-          DB_STOCKS_PASSWORD: ${{ secrets.DB_STOCKS_PASSWORD }}
-          DB_STOCKS_NAME: ${{ secrets.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PORT: '3306'
         run: |
-          python audit_trail/backfill_local_sources.py 2>&1 \
-            || echo "::warning title=at_signal_outcomes_mirror::backfill_local_sources failed — outcomes not mirrored to MySQL this cycle (resolver above still wrote JSON outputs)"
+          echo "::group::at_signal_outcomes mirror (INC #10)"
+          python audit_trail/backfill_local_sources.py 2>&1
+          _mirror_rc=$?
+          echo "::endgroup::"
+          if [ $_mirror_rc -ne 0 ]; then
+            echo "::error title=at_signal_outcomes_mirror::backfill_local_sources failed (exit=$_mirror_rc) — outcomes NOT mirrored to MySQL this cycle"
+          else
+            echo "at_signal_outcomes mirror: OK"
+          fi
 
       - name: Commit resolved picks
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.dry_run != 'true' }}
