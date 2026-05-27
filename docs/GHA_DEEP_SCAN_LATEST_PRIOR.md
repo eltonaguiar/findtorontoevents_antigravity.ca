@@ -1,319 +1,111 @@
 # GitHub Actions deep scan (latest + prior on failure)
 
-Generated: **2026-04-16 18:48 UTC**
+Generated: **2026-05-27 06:31 UTC**
 
 ## Method
 
 - **Repo:** `eltonaguiar/findtorontoevents_antigravity.ca`
 - **Branch:** `main`
-- **Discovery:** workflows seen in the last **24h** among the **250** newest runs.
+- **Discovery:** workflows seen in the last **48h** among the **250** newest runs.
 - **Runs per workflow:** **latest** always; **if latest is `completed` and not `success`/`skipped`,** also the **previous** run.
 - **Logs:** `gh run view --log-failed` first; if empty, tail of full `--log`.
-- **Shards:** merged from parallel runs (part 0 + part 1)
 
 ## Summary table
 
 | Workflow | Latest | Prior (if scanned) | Signal hits (latest) |
 |----------|--------|--------------------|----------------------|
-| [torontoevent.net] Deploy Rise of the Claw | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527293101) | — | 2 hit(s) |
-| [torontoevent.net] Goldmine Tracker - Archive & Maintain | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527156848) | — | 0 hits |
-| [torontoevent.net] Rapid Validation Engine | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527694815) | — | 2 hit(s) |
-| [torontoevent.net] Run Backtests & Deploy Dashboards | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527702003) | — | 0 hits |
-| [torontoevent.net] Spike Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527334509) | — | 0 hits |
-| ALPHA  Verify Predictions | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527951908) | — | 0 hits |
-| ALPHA ENGINE - Dynamic Runner (Cloud or Local) | [- / pending](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527800989) | — | 0 hits |
-| ALPHA ENGINE - Incubator Strategies | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527696978) | — | 2 hit(s) |
-| ALPHA ENGINE - Live Autonomous Scanner | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527372635) | — | 0 hits |
-| ALPHA ENGINE - Quant Stack (KAMA + ATR + Regime) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527460785) | — | 3 hit(s) |
-| ALPHA ENGINE - Universe Expander | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523987327) | — | 2 hit(s) |
-| ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527463068) | — | 0 hits |
-| ALPHA ENGINE Gainer Capture (15min) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527542667) | — | 2 hit(s) |
-| Analyst Tracker  Top 20 Crypto Analysts | [skipped / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526967300) | — | 0 hits |
-| ANTIGRAVITY ML  Hourly Discord Status + Picks | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526977785) | — | 2 hit(s) |
-| ANTIGRAVITY-CLAUDEOPUS  Live Picks & Discord | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527287815) | — | 2 hit(s) |
-| AsterDEX Paper Trading | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527498779) | — | 2 hit(s) |
-| Audit Drift Telemetry | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527552041) | — | 2 hit(s) |
-| Audit Impact Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526787959) | — | 2 hit(s) |
-| Baby Strat Real Forward Monitor | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527689670) | — | 0 hits |
-| Backfill Missing Audit Trail Sources | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527246630) | — | 2 hit(s) |
-| Breakout Arena  3 Approaches | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527521448) | — | 2 hit(s) |
-| Buy Now Analysis & Tracking | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527126348) | — | 2 hit(s) |
-| Check Streamer Live Status | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526900107) | — | 2 hit(s) |
-| CI Tests | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527927111) | — | 0 hits |
-| Claude Gainer ML  Live Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527626441) | — | 3 hit(s) |
-| Claude Gainer Short-Term Predictor | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527505847) | — | 0 hits |
-| Coinglass DNA Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527491854) | — | 2 hit(s) |
-| Conflict Marker Check | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527927089) | — | 0 hits |
-| Consensus Outcome Tracker | [cancelled / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527045714) | [cancelled](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24524564588) | 4 hit(s) |
-| Contested Pick Checker (Claude vs Antigravity) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527315850) | — | 7 hit(s) |
-| Conviction Picks Ultra-Selective Discord Alert | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526619131) | — | 4 hit(s) |
-| Copy Trader Forward Test | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527772251) | — | 0 hits |
-| Copy Trader Intelligence  Scrape + Analyze + Track | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526551492) | — | 3 hit(s) |
-| Copy Trader Portfolio Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523526046) | — | 2 hit(s) |
-| Cross-Asset Correlation Monitor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527696167) | — | 2 hit(s) |
-| Cross-System Signal Aggregator | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527526278) | — | 2 hit(s) |
-| Crypto Gainer ML Live Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526727097) | — | 2 hit(s) |
-| Crypto ML Edge GSD Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527152125) | — | 2 hit(s) |
-| Crypto Signal Engine | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527327900) | — | 2 hit(s) |
-| CRYPTO SMART PICKS - Portfolio A/B/C/D Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523804396) | — | 2 hit(s) |
-| Crypto Winner Scanner  Auto Scan | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527163971) | — | 0 hits |
-| Daily Feed Summary | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526697150) | — | 2 hit(s) |
-| DARWIN ENGINE - DNA Evolution Pipeline | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526950663) | — | 2 hit(s) |
-| Dashboard Pick Trader | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526187035) | — | 5 hit(s) |
-| Data Pipeline Reliability Test | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527288845) | — | 2 hit(s) |
-| Deploy Battleground to FTP | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523671674) | — | 2 hit(s) |
-| Deploy Competition to Live Site | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527780727) | — | 2 hit(s) |
-| Deploy FindCryptoPairs to FTP | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527691177) | — | 2 hit(s) |
-| Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527552693) | — | 2 hit(s) |
-| Deploy Rise of the Claw Dashboard | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527014074) | — | 2 hit(s) |
-| Discord Bot  Persistent | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527446176) | — | 0 hits |
-| Discord ML Status Report | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527051216) | — | 2 hit(s) |
-| DNA Genome Daily Pipeline | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526740896) | — | 0 hits |
-| EMA Retracement Mean Reversion Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527619278) | — | 2 hit(s) |
-| Enhanced ML Crypto Train & Predict | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527730704) | — | 0 hits |
-| FC-CRYPTO PRO Top Actionable Picks | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527459655) | — | 2 hit(s) |
-| Feed Health Check | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527931095) | — | 0 hits |
-| Fix Battleground Deployment | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523671656) | — | 4 hit(s) |
-| Forex Agent | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24524371833) | — | 3 hit(s) |
-| Forex Smart Picks Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526742659) | — | 2 hit(s) |
-| Forward Signal Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526870556) | — | 2 hit(s) |
-| Forward Trade Tracking v2 | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526921107) | — | 2 hit(s) |
-| Forward-Test New Strategies Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526710872) | — | 2 hit(s) |
-| Gainer Predictor Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527339871) | — | 2 hit(s) |
-| Goldmine Tracker - Archive & Maintain | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527198769) | — | 0 hits |
-| Hindsight Learner  Hourly Winner Analysis | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527494185) | — | 2 hit(s) |
-| Hoffman IRB Strategy Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527076059) | — | 2 hit(s) |
-| Hourly Master Picks to Discord | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527489476) | — | 2 hit(s) |
-| Hub Data Sync | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527849217) | — | 3 hit(s) |
-| KIMI Goldmine Data Collection | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527099221) | — | 2 hit(s) |
-| KIMI_FEB172026 - Live Trading System | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526946515) | — | 2 hit(s) |
-| Live Picks Tracker | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527879218) | — | 0 hits |
-| Live Trading Monitor  Auto Refresh | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525966757) | — | 19 hit(s) |
-| Low-Score Winner Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527496439) | — | 2 hit(s) |
-| LuxAlgo Signal Generator | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527905682) | — | 0 hits |
-| Market Beating System - Crypto & Forex Priority | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527199994) | — | 2 hit(s) |
-| Master Automation Scheduler | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526825943) | — | 3 hit(s) |
-| Mega Mutation Live Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526292713) | — | 2 hit(s) |
-| Meme Coin Scanner Auto Scan & Resolve | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526954553) | — | 2 hit(s) |
-| Meme Coin Scanner v2  Fixed & Monitored | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527538051) | — | 2 hit(s) |
-| Mercury 2  Signal Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525743796) | — | 2 hit(s) |
-| Meta-Strategy Permutation Engine | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527797288) | — | 2 hit(s) |
-| Mirror: findtorontoevents.ca  torontoevent.net | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526892351) | — | 0 hits |
-| Missed Opportunity Analyzer Hourly Self-Improvement | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527812901) | — | 2 hit(s) |
-| ML Battleground System F (Claws of Doom) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526350305) | — | 2 hit(s) |
-| ML Crypto  Discord Hourly Status | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527084524) | — | 2 hit(s) |
-| ML Feedback Loop | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527077157) | — | 3 hit(s) |
-| ML Model Auto-Training | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527353891) | — | 2 hit(s) |
-| ML Strategy Reviver Bridge & Standalone | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527926226) | — | 0 hits |
-| ML System Health Monitor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527078580) | — | 2 hit(s) |
-| MOMENTUM CATCHER - Real-time Pump Detector | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527271439) | — | 3 hit(s) |
-| MOMENTUM TRACKER - Real-Time Gainer Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525805221) | — | 2 hit(s) |
-| Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527319847) | — | 2 hit(s) |
-| Mutation Lab  Strategy Evolution Pipeline | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526805282) | — | 2 hit(s) |
-| MySQL Trading Picks Sync | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24528090792) | — | 0 hits |
-| OBI Hourly Snapshot | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525620571) | — | 2 hit(s) |
-| Outcome Resolver  Validate Unresolved Picks | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527582125) | — | 2 hit(s) |
-| Pick Monitor & Price Validator (30min) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526698444) | — | 2 hit(s) |
-| Pine Script Generator | [skipped / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527226891) | — | 0 hits |
-| Polymarket Prediction Market Signals | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527625955) | — | 2 hit(s) |
-| Portfolio Trackers (Real Money + Theory) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527659606) | — | 2 hit(s) |
-| Prediction Market Agents | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527696055) | — | 2 hit(s) |
-| Prediction Quality Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526207107) | — | 2 hit(s) |
-| Proven Strategies Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526878799) | — | 2 hit(s) |
-| QUAN ENGINE - Live Autonomous Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527429546) | — | 3 hit(s) |
-| QuantumFusion Crypto Engine | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527176355) | — | 2 hit(s) |
-| Quick Guess ML Agent | [cancelled / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527537305) | [cancelled](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525009553) | 4 hit(s) |
-| Rapid Fire - NOW Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527655948) | — | 3 hit(s) |
-| Real-Time Battle Test - Eliminate Losers, Optimize Winners | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527197115) | — | 2 hit(s) |
-| Recommended Portfolio Generator | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24528072515) | — | 0 hits |
-| Refresh Top Movies Data | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527428933) | — | 15 hit(s) |
-| Regime Terminal  HMM Live Scanner | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24528055782) | — | 0 hits |
-| Run Backtests & Deploy Dashboards | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526988058) | — | 2 hit(s) |
-| Send Accountability Reminders | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526874460) | — | 0 hits |
-| Signal Integrator - Isolated Source Aggregator | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527655699) | — | 0 hits |
-| Signal Quality Monitor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527633915) | — | 2 hit(s) |
-| Signal Recorder | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526337700) | — | 6 hit(s) |
-| Signal Tracking & Validation - Beat the Market | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526852966) | — | 2 hit(s) |
-| Skyrocket Detector  Live Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525773385) | — | 2 hit(s) |
-| Smart Picks Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526607370) | — | 2 hit(s) |
-| Specialized Scanners - Rocket, Short Engine, TSMOM | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24524677383) | — | 2 hit(s) |
-| Spike Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526896060) | — | 0 hits |
-| Sports Betting  Odds Refresh & Auto-Settle | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526714447) | — | 0 hits |
-| Strategy Forward Tester | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527624992) | — | 0 hits |
-| Strategy Genome Evolution | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527654815) | — | 0 hits |
-| SUPERPOWERS - Bootstrap All 3 ML Systems | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527185464) | — | 0 hits |
-| Sustained Gainer Confluence Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527618414) | — | 2 hit(s) |
-| System Health Check | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527286198) | — | 2 hit(s) |
-| Test Portfolios  Hourly Strategy Validation | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527852846) | — | 2 hit(s) |
-| Top Gainers Spike Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527432809) | — | 3 hit(s) |
-| TV Paper TP/SL Watchdog | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527735597) | — | 2 hit(s) |
-| Unified Audit Dashboard | [- / pending](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527927103) | — | 0 hits |
-| Update Creator News | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527280242) | — | 0 hits |
-| VOLATILE ALT SCANNER Hyperliquid High-Vol Alts | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527462857) | — | 2 hit(s) |
-| Winner Pattern Precursor Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527856166) | — | 2 hit(s) |
+| DNA Mutation Cycle | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494861980) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26435963792) | 1 hit(s) |
+| Meta-Strategy Permutation Engine | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494801409) | — | 4 hit(s) |
+| Deploy Competition to Live Site | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494670457) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657812) | 1 hit(s) |
+| Conflict Marker Check | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657810) | — | 5 hit(s) |
+| Audit Drift Telemetry | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657811) | — | 5 hit(s) |
+| No stale DB passwords | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657771) | — | 7 hit(s) |
+| CI Tests | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657798) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494484762) | 3 hit(s) |
+| [torontoevent.net] Deploy Rise of the Claw | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657829) | — | 3 hit(s) |
+| Conviction Picks Ultra-Selective Discord Alert | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494611769) | — | 5 hit(s) |
+| ALPHA ENGINE - Universe Expander | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494552503) | — | 3 hit(s) |
+| Money-Ready Registry Gate | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494484723) | — | 3 hit(s) |
+| Copy Trader Intelligence  Scrape + Analyze + Track | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494445746) | — | 0 hits |
+| Pine Script Generator | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494436071) | — | 3 hit(s) |
+| Signal Recorder | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494332603) | — | 7 hit(s) |
+| ML Battleground System F (Claws of Doom) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494248384) | — | 3 hit(s) |
+| CRYPTO SMART PICKS - Portfolio A/B/C/D Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494223852) | — | 3 hit(s) |
+| Prediction Quality Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494169429) | — | 3 hit(s) |
+| Dashboard Pick Trader | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494135334) | — | 3 hit(s) |
+| Mega Mutation Live Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494106314) | — | 3 hit(s) |
+| Live Trading Monitor  Auto Refresh | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494080670) | — | 18 hit(s) |
+| Copy Trader Portfolio Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493958380) | — | 3 hit(s) |
+| Continuous Improvement Monitor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493875627) | — | 3 hit(s) |
+| Dynamic Universe Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493874176) | — | 3 hit(s) |
+| MOMENTUM TRACKER - Real-Time Gainer Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493853580) | — | 3 hit(s) |
+| Mercury 2  Signal Scanner | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493849748) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26489776815) | 1 hit(s) |
+| Skyrocket Detector  Live Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493806374) | — | 3 hit(s) |
+| OBI Hourly Snapshot | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493748802) | — | 3 hit(s) |
+| MySQL Trading Picks Sync | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493744957) | — | 3 hit(s) |
+| Incidents + Enhancements — Nightly Page Render | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493708528) | — | 3 hit(s) |
+| ML Forward Test 1745 Models | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493674120) | — | 3 hit(s) |
+| Social Media Prediction Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493661488) | — | 3 hit(s) |
+| Master-Picks Health Score | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493656648) | — | 3 hit(s) |
+| Recommended Portfolio Generator | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493656600) | — | 3 hit(s) |
+| ALPHA  Verify Predictions | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493641697) | — | 3 hit(s) |
+| LIVE SPIKE TRADING - Autonomous Crypto Monitor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493631288) | — | 4 hit(s) |
+| LuxAlgo Signal Generator | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493601416) | — | 3 hit(s) |
+| Feed Health Check | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493583335) | — | 3 hit(s) |
+| ML Strategy Reviver Bridge & Standalone | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493517200) | — | 3 hit(s) |
+| Live Picks Tracker | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493509970) | — | 3 hit(s) |
+| Hub Data Sync | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493446105) | — | 3 hit(s) |
+| Test Portfolios  Hourly Strategy Validation | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493435463) | — | 3 hit(s) |
+| Deploy FindCryptoPairs to FTP | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493396183) | — | 3 hit(s) |
+| Missed Opportunity Analyzer Hourly Self-Improvement | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493353356) | — | 4 hit(s) |
+| [torontoevent.net] Rapid Validation Engine | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493349265) | — | 3 hit(s) |
+| Claude Gainer ML  Live Scanner | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493348067) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26490326666) | 1 hit(s) |
+| Rapid Fire - NOW Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493338115) | — | 3 hit(s) |
+| [torontoevent.net] Deploy Competition to Live Site | [skipped / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493325410) | — | 0 hits |
+| Audit Hourly Update | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493315264) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26489018169) | 1 hit(s) |
+| Copy Trader Forward Test | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493300628) | — | 3 hit(s) |
+| Enhanced ML Crypto Train & Predict | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493290164) | — | 3 hit(s) |
+| Sustained Gainer Confluence Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493247647) | — | 3 hit(s) |
+| Claude Code Gainer ML Tracker | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493245187) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26484971958) | 1 hit(s) |
+| UEPS Pick Runner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493245040) | — | 3 hit(s) |
+| Baby Strat Real Forward Monitor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493245039) | — | 4 hit(s) |
+| Quick Guess ML Agent | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493237594) | — | 3 hit(s) |
+| ALPHA ENGINE - Dynamic Runner (Cloud or Local) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493231726) | — | 5 hit(s) |
+| Claude Gainer Short-Term Predictor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493230701) | — | 3 hit(s) |
+| Cross-System Signal Aggregator | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493230676) | — | 3 hit(s) |
+| Signal Integrator - Isolated Source Aggregator | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493228357) | — | 3 hit(s) |
+| Outcome Resolver  Validate Unresolved Picks | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493222328) | — | 3 hit(s) |
+| Rapid Validation Engine | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493215563) | — | 3 hit(s) |
+| ALPHA ENGINE - Incubator Strategies | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493215579) | — | 3 hit(s) |
+| Winner Pattern Precursor Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493207534) | — | 3 hit(s) |
+| Sports endpoint smoke + Playwright | [failure / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493202620) | [failure](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26488877603) | 1 hit(s) |
+| Deploy Vetted Master-Picks | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493202603) | — | 4 hit(s) |
+| Portfolio Trackers (Real Money + Theory) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493202080) | — | 3 hit(s) |
+| Strategy Forward Tester | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493197591) | — | 3 hit(s) |
+| Analyst Tracker  Top 20 Crypto Analysts | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493197213) | — | 10 hit(s) |
+| Signal Quality Monitor | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493196344) | — | 3 hit(s) |
+| Deploy Battleground to FTP | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493195310) | — | 3 hit(s) |
+| Prediction Market Agents | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493195059) | — | 3 hit(s) |
+| EMA Retracement Mean Reversion Scanner | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493174065) | — | 3 hit(s) |
+| Crypto Test Portfolios | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493174037) | — | 3 hit(s) |
+| Polymarket Prediction Market Signals (Multi-Asset) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493154080) | — | 3 hit(s) |
+| Unified Audit Dashboard | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493150403) | — | 3 hit(s) |
+| DNA Strategy Pipeline | [- / in_progress](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493149255) | — | 0 hits |
+| ALPHA ENGINE Gainer Capture (15min) | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493145424) | — | 3 hit(s) |
+| ML Picks  Hourly Discord Alert | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493144404) | — | 3 hit(s) |
+| Breakout Arena  3 Approaches | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493144217) | — | 3 hit(s) |
+| Meme Coin Scanner v2  Fixed & Monitored | [success / completed](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493143643) | — | 3 hit(s) |
 
 ## Detailed excerpts
 
-### [torontoevent.net] Deploy Rise of the Claw — **latest** (success / completed) [run 24527293101](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527293101)
+### DNA Mutation Cycle — **latest** (failure / completed) [run 26494861980](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494861980)
 
 Signal lines:
 
 ```text
-deploy	Post Checkout repository	2026-04-16T18:39:40.6682839Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-deploy	Post Checkout repository	2026-04-16T18:39:40.6939581Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+mutation-cycle	Commit mutation data	2026-05-27T06:30:39.4323222Z ##[error]Process completed with exit code 1.
 ```
 
-### [torontoevent.net] Goldmine Tracker - Archive & Maintain — **latest** (success / completed) [run 24527156848](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527156848)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8293800Z [36;1mecho " Current alerts..."[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8294783Z [36;1mALERTS=$(curl -sf --max-time 10 \[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8296214Z [36;1m  "https://torontoevent.net/live-monitor/api/goldmine_tracker.php?action=alerts" \[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8297604Z [36;1m  2>&1 || echo '{"ok":false}')[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8299821Z [36;1mALERT_COUNT=$(echo "$ALERTS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('active_count','?'))" 2>/dev/null || echo "?")[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8301811Z [36;1mecho "Active alerts: $ALERT_COUNT"[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8302759Z [36;1m[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8303497Z [36;1mecho ""[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8304504Z [36;1mecho " Goldmine tracker maintenance complete on torontoevent.net"[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8525190Z shell: /usr/bin/bash -e {0}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8526591Z ##[endgroup]
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:09.8748031Z  Triggering goldmine tracker archive + outcomes on torontoevent.net...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.2102640Z Archive response: {"ok":false,"error":"timeout or blocked"}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.2103866Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.2104288Z  Running maintenance tasks...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.5259784Z Maintenance response: {"status":{"stale_sports_picks":0,"stale_meme_picks":0,"stale_penny_picks":0,"consolidated_missing_price":0,"active_alerts":10,"duplicate_alerts":0},"expire":{"sports_expired":0,"meme_expired":0,"other_expired":0,"consolidated_missing_prices":[]},"prices":{"fixed":0,"failed":[],"details":[]},"alerts":{"duplicates_resolved":0,"remaining_active":[{"source_system":"portfolio","alert_type":"systemic_failure","severity":"warning","title":"Portfolio: 2 systems underperforming","alert_date":"2026-02-16"},{"source_system":"sports","alert_type":"stale_data","severity":"warning","title":"sports: 4 days since last pick","alert_date":"2026-02-16"},{"source_system":"meme","alert_type":"stale_data","severity":"warning","title":"meme: 4 days since last pick","alert_date":"2026-02-16"},{"source_system":"meme","alert_type":"losing_streak","severity":"warning","title":"meme: 6 consecutive losses","alert_date":"2026-02-16"},{"source_system":"edge","alert_type":"stale_data","severity":"warning","title":"edge: 6 days since last pick","alert_date":"2026-02-16"},{"source_system":"live_signal","alert_type":"algo_underperform","severity":"warning","title":"live_signal: Algorithm \"Consensus\" underperforming (24.2% win rate)","alert_date":"2026-02-16"},{"source_system":"consolidated","alert_type":"negative_roi","severity":"warning","title":"consolidated: Average return negative (-3.3%)","alert_date":"2026-02-16"},{"source_system":"live_signal","alert_type":"losing_streak","severity":"critical","title":"live_signal: 11 consecutive losses","alert_date":"2026-02-16"},{"source_system":"meme","alert_type":"algo_underperform","severity":"critical","title":"meme: Algorithm \"Meme Scanner\" failing (0% win rate)","alert_date":"2026-02-16"},{"source_system":"consolidated","alert_type":"accuracy_drop","severity":"critical","title":"consolidated: Win rate critically low (11.1%)","alert_date":"2026-02-16"}],"remaining_count":10},"ok":true,"action":"run","dry_run":false,"timestamp":"2026-04-16 18:30:10"}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.5271528Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.5271856Z  Final status check...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.8101416Z Status: {"status":{"stale_sports_picks":0,"stale_meme_picks":0,"stale_penny_picks":0,"consolidated_missing_price":0,"active_alerts":10,"duplicate_alerts":0},"ok":true,"action":"status","dry_run":false,"timestamp":"2026-04-16 18:30:10"}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.8104768Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:10.8105301Z  Current alerts...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:11.0603029Z Active alerts: ?
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:11.0604006Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:30:11.0605091Z  Goldmine tracker maintenance complete on torontoevent.net
-track-and-maintain	Complete job	﻿2026-04-16T18:30:11.0746042Z Cleaning up orphan processes
-```
-
-### [torontoevent.net] Rapid Validation Engine — **latest** (success / completed) [run 24527694815](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527694815)
-
-Signal lines:
-
-```text
-rapid-validation	Post Checkout repository	2026-04-16T18:44:43.0398969Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-rapid-validation	Post Checkout repository	2026-04-16T18:44:43.0644835Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### [torontoevent.net] Run Backtests & Deploy Dashboards — **latest** (- / in_progress) [run 24527702003](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527702003)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527702003 is still in progress; logs will be available when it is complete
-```
-
-### [torontoevent.net] Spike Scanner — **latest** (success / completed) [run 24527334509](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527334509)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-scan	Trigger Spike Scan	2026-04-16T18:34:08.2234338Z ##[endgroup]
-scan	Trigger Spike Scan	2026-04-16T18:34:09.2255109Z Spike scan triggered on torontoevent.net
-scan	Trigger Pattern Build	﻿2026-04-16T18:34:09.2549836Z ##[group]Run curl -s "https://torontoevent.net/live-monitor/api/pair_fingerprint.php?action=build&key=livetrader2026" || true
-scan	Trigger Pattern Build	2026-04-16T18:34:09.2552920Z [36;1mcurl -s "https://torontoevent.net/live-monitor/api/pair_fingerprint.php?action=build&key=livetrader2026" || true[0m
-scan	Trigger Pattern Build	2026-04-16T18:34:09.2555516Z [36;1mecho "Pattern build triggered on torontoevent.net"[0m
-scan	Trigger Pattern Build	2026-04-16T18:34:09.2593930Z shell: /usr/bin/bash -e {0}
-scan	Trigger Pattern Build	2026-04-16T18:34:09.2594883Z ##[endgroup]
-scan	Trigger Pattern Build	2026-04-16T18:34:09.9858661Z Pattern build triggered on torontoevent.net
-scan	Wait for processing	﻿2026-04-16T18:34:09.9970307Z ##[group]Run sleep 30
-scan	Wait for processing	2026-04-16T18:34:09.9972293Z [36;1msleep 30[0m
-scan	Wait for processing	2026-04-16T18:34:10.0013320Z shell: /usr/bin/bash -e {0}
-scan	Wait for processing	2026-04-16T18:34:10.0015793Z ##[endgroup]
-scan	Check Status	﻿2026-04-16T18:34:40.0195751Z ##[group]Run echo "Spike Scanner Status (torontoevent.net):"
-scan	Check Status	2026-04-16T18:34:40.0196652Z [36;1mecho "Spike Scanner Status (torontoevent.net):"[0m
-scan	Check Status	2026-04-16T18:34:40.0197796Z [36;1mcurl -s "https://torontoevent.net/live-monitor/api/spike_scanner.php?action=status" | head -c 500[0m
-scan	Check Status	2026-04-16T18:34:40.0198659Z [36;1mecho ""[0m
-scan	Check Status	2026-04-16T18:34:40.0199172Z [36;1mecho "Pair Fingerprint Status (torontoevent.net):"[0m
-scan	Check Status	2026-04-16T18:34:40.0200155Z [36;1mcurl -s "https://torontoevent.net/live-monitor/api/pair_fingerprint.php?action=status" | head -c 500[0m
-scan	Check Status	2026-04-16T18:34:40.0236581Z shell: /usr/bin/bash -e {0}
-scan	Check Status	2026-04-16T18:34:40.0237105Z ##[endgroup]
-scan	Check Status	2026-04-16T18:34:40.0304816Z Spike Scanner Status (torontoevent.net):
-scan	Check Status	2026-04-16T18:34:40.3499324Z {"ok":true,"engine":"Multi-Asset Spike Scanner","version":"CURSORCODE_Feb152026","active_spikes":328,"total_scans":328,"baselines":198,"last_scan":"2026-04-03 11:46:46","breakdown":[{"asset_class":"STOCK","severity":"ALERT","cnt":"45"},{"asset_class":"STOCK","severity":"URGENT","cnt":"4"},{"asset_class":"STOCK","severity":"WATCH","cnt":"279"}],"asset_classes":["CRYPTO","STOCK","FOREX"],"methodology":"Real-time volume + price spike detection calibrated per-pair using EWMA baselines. Similar to co
-scan	Check Status	2026-04-16T18:34:40.3506114Z Pair Fingerprint Status (torontoevent.net):
-scan	Check Status	2026-04-16T18:34:40.9410451Z {"ok":true,"engine":"Pair Fingerprint Engine","version":"CURSORCODE_Feb152026","fingerprints":37,"active_alerts":0,"last_build":"2026-02-17 09:37:17","last_scan":"never","asset_breakdown":[{"asset_class":"CRYPTO","pairs":"27","avg_wr":0},{"asset_class":"FOREX","pairs":"8","avg_wr":0},{"asset_class":"STOCK","pairs":"2","avg_wr":0}],"methodology":"Per-pair behavioral profiling. Unlike generic indicator strategies, this engine studies each asset's unique patterns: mean-reversion tendency, momentum 
-scan	Complete job	﻿2026-04-16T18:34:40.9495678Z Cleaning up orphan processes
-```
-
-### ALPHA  Verify Predictions — **latest** (- / in_progress) [run 24527951908](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527951908)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527951908 is still in progress; logs will be available when it is complete
-```
-
-### ALPHA ENGINE - Dynamic Runner (Cloud or Local) — **latest** (- / pending) [run 24527800989](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527800989)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527800989 is still in progress; logs will be available when it is complete
-```
-
-### ALPHA ENGINE - Incubator Strategies — **latest** (success / completed) [run 24527696978](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527696978)
-
-Signal lines:
-
-```text
-incubator-scan	Post Checkout repository	2026-04-16T18:45:01.4659334Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-incubator-scan	Post Checkout repository	2026-04-16T18:45:01.4901709Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ALPHA ENGINE - Live Autonomous Scanner — **latest** (- / in_progress) [run 24527372635](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527372635)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527372635 is still in progress; logs will be available when it is complete
-```
-
-### ALPHA ENGINE - Quant Stack (KAMA + ATR + Regime) — **latest** (success / completed) [run 24527460785](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527460785)
-
-Signal lines:
-
-```text
-quant-stack	Commit and push data changes	2026-04-16T18:39:52.2062359Z [36;1m  git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {[0m
-quant-stack	Post Checkout repository	2026-04-16T18:39:52.5205354Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-quant-stack	Post Checkout repository	2026-04-16T18:39:52.5456798Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ALPHA ENGINE - Universe Expander — **latest** (success / completed) [run 24523987327](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523987327)
-
-Signal lines:
-
-```text
-expand-universe	UNKNOWN STEP	2026-04-16T17:21:10.7690391Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-expand-universe	UNKNOWN STEP	2026-04-16T17:21:10.7918737Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds — **latest** (- / in_progress) [run 24527463068](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527463068)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527463068 is still in progress; logs will be available when it is complete
-```
-
-### ALPHA ENGINE Gainer Capture (15min) — **latest** (success / completed) [run 24527542667](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527542667)
-
-Signal lines:
-
-```text
-gainer-capture	Post Checkout repository	2026-04-16T18:40:54.5172243Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-gainer-capture	Post Checkout repository	2026-04-16T18:40:54.5394760Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Analyst Tracker  Top 20 Crypto Analysts — **latest** (skipped / completed) [run 24526967300](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526967300)
+### DNA Mutation Cycle — **prior** (failure / completed) [run 26435963792](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26435963792)
 
 *No signal regex hits; last 25 log lines:*
 
@@ -321,853 +113,289 @@ gainer-capture	Post Checkout repository	2026-04-16T18:40:54.5394760Z fatal: No u
 
 ```
 
-### ANTIGRAVITY ML  Hourly Discord Status + Picks — **latest** (success / completed) [run 24526977785](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526977785)
+### Meta-Strategy Permutation Engine — **latest** (success / completed) [run 26494801409](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494801409)
 
 Signal lines:
 
 ```text
-post-status	Post Run actions/checkout@v4	2026-04-16T18:27:46.6620956Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-post-status	Post Run actions/checkout@v4	2026-04-16T18:27:46.6873486Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+meta-strategy	Commit results	2026-05-27T06:30:06.4712417Z [36;1m  git pull --no-rebase --no-recurse-submodules -X ours --no-edit origin main || {[0m
+meta-strategy	Post Checkout	2026-05-27T06:30:11.0066514Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+meta-strategy	Post Checkout	2026-05-27T06:30:11.0364343Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+meta-strategy	Post Checkout	2026-05-27T06:30:11.0949057Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### ANTIGRAVITY-CLAUDEOPUS  Live Picks & Discord — **latest** (success / completed) [run 24527287815](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527287815)
+### Deploy Competition to Live Site — **latest** (failure / completed) [run 26494670457](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494670457)
 
 Signal lines:
 
 ```text
-live-picks	Post Checkout repository	2026-04-16T18:38:13.6455740Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-live-picks	Post Checkout repository	2026-04-16T18:38:13.6691175Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+deploy	Deploy competition files to live site via FTP	2026-05-27T06:25:54.4948561Z ##[error]Process completed with exit code 1.
 ```
 
-### AsterDEX Paper Trading — **latest** (success / completed) [run 24527498779](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527498779)
+### Deploy Competition to Live Site — **prior** (failure / completed) [run 26494657812](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657812)
 
 Signal lines:
 
 ```text
-trade	Post Checkout repository	2026-04-16T18:40:20.6876355Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-trade	Post Checkout repository	2026-04-16T18:40:20.7104075Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+deploy	Deploy competition files to live site via FTP	2026-05-27T06:25:38.8974071Z ##[error]Process completed with exit code 1.
 ```
 
-### Audit Drift Telemetry — **latest** (success / completed) [run 24527552041](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527552041)
+### Conflict Marker Check — **latest** (success / completed) [run 26494657810](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657810)
 
 Signal lines:
 
 ```text
-drift	Post Checkout	2026-04-16T18:41:10.8189456Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-drift	Post Checkout	2026-04-16T18:41:10.8416846Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+scan	Run actions/checkout@v6	2026-05-27T06:25:08.7473646Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5448423ec666e1d4b531380237307ffe93ccc12e:refs/remotes/origin/main
+scan	Scan tracked files for conflict markers	2026-05-27T06:25:17.4883030Z [36;1m  echo "::error::Unresolved merge conflict markers found in tracked files:"[0m
+scan	Post Run actions/checkout@v6	2026-05-27T06:25:17.9980519Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+scan	Post Run actions/checkout@v6	2026-05-27T06:25:18.0262462Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+scan	Post Run actions/checkout@v6	2026-05-27T06:25:18.0806157Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Audit Impact Tracker — **latest** (success / completed) [run 24526787959](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526787959)
+### Audit Drift Telemetry — **latest** (success / completed) [run 26494657811](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657811)
 
 Signal lines:
 
 ```text
-audit-impact	Post Checkout repository	2026-04-16T18:24:43.9242203Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-audit-impact	Post Checkout repository	2026-04-16T18:24:43.9479615Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+drift	Data source health check (C-008)	2026-05-27T06:25:28.3026722Z [data-source-health] binance_primary: FAIL HTTP Error 451:
+drift	Data source health check (C-008)	2026-05-27T06:25:28.3135188Z ##[error]Process completed with exit code 1.
+drift	Post Checkout	2026-05-27T06:25:29.7645055Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+drift	Post Checkout	2026-05-27T06:25:29.7929264Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+drift	Post Checkout	2026-05-27T06:25:29.8476351Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Baby Strat Real Forward Monitor — **latest** (- / in_progress) [run 24527689670](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527689670)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527689670 is still in progress; logs will be available when it is complete
-```
-
-### Backfill Missing Audit Trail Sources — **latest** (success / completed) [run 24527246630](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527246630)
+### No stale DB passwords — **latest** (success / completed) [run 26494657771](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657771)
 
 Signal lines:
 
 ```text
-backfill	Post Checkout repository	2026-04-16T18:36:11.8224833Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-backfill	Post Checkout repository	2026-04-16T18:36:11.8539802Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+Grep for stale hardcoded DB passwords	Run actions/checkout@v4	2026-05-27T06:25:08.8471054Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Grep for stale hardcoded DB passwords	Run actions/checkout@v4	2026-05-27T06:25:08.8862906Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Grep for stale hardcoded DB passwords	Run actions/checkout@v4	2026-05-27T06:25:08.9113726Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Grep for stale hardcoded DB passwords	Run actions/checkout@v4	2026-05-27T06:25:08.9373162Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5448423ec666e1d4b531380237307ffe93ccc12e:refs/remotes/origin/main
+Grep for stale hardcoded DB passwords	Post Run actions/checkout@v4	2026-05-27T06:25:17.8467950Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Grep for stale hardcoded DB passwords	Post Run actions/checkout@v4	2026-05-27T06:25:17.8772309Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Grep for stale hardcoded DB passwords	Post Run actions/checkout@v4	2026-05-27T06:25:17.9033096Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Breakout Arena  3 Approaches — **latest** (success / completed) [run 24527521448](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527521448)
+### CI Tests — **latest** (failure / completed) [run 26494657798](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657798)
 
 Signal lines:
 
 ```text
-scan-all	Post Run actions/checkout@v4	2026-04-16T18:42:28.4983751Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan-all	Post Run actions/checkout@v4	2026-04-16T18:42:28.5217377Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+test (3.11)	Run all tests	2026-05-27T06:28:54.2501207Z E    +  where 1 = CompletedProcess(args=['git', 'ls-files', '--error-unmatch', 'alpha_engine/data/strategy_performance.json'], returncode=1, stdout='', stderr="error: pathspec 'alpha_engine/data/strategy_performance.json' did not match any file(s) known to git\nDid you forget to 'git add'?\n").returncode
+test (3.11)	Run all tests	2026-05-27T06:28:54.2610059Z  +  where 1 = CompletedProcess(args=['git', 'ls-files', '--error-unmatch', 'alpha_engine/data/strategy_performance.json'], returncode=1, stdout='', stderr="error: pathspec 'alpha_engine/data/strategy_performance.json' did not match any file(s) known to git\nDid you forget to 'git add'?\n").returncode
+test (3.11)	Run all tests	2026-05-27T06:28:56.9112661Z ##[error]Process completed with exit code 1.
 ```
 
-### Buy Now Analysis & Tracking — **latest** (success / completed) [run 24527126348](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527126348)
+### CI Tests — **prior** (failure / completed) [run 26494484762](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494484762)
 
 Signal lines:
 
 ```text
-analyze-and-track	Post Checkout repository	2026-04-16T18:39:40.3156705Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-analyze-and-track	Post Checkout repository	2026-04-16T18:39:40.3395241Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+test (3.11)	Run all tests	2026-05-27T06:24:17.1378500Z E    +  where 1 = CompletedProcess(args=['git', 'ls-files', '--error-unmatch', 'alpha_engine/data/strategy_performance.json'], returncode=1, stdout='', stderr="error: pathspec 'alpha_engine/data/strategy_performance.json' did not match any file(s) known to git\nDid you forget to 'git add'?\n").returncode
+test (3.11)	Run all tests	2026-05-27T06:24:17.1482805Z  +  where 1 = CompletedProcess(args=['git', 'ls-files', '--error-unmatch', 'alpha_engine/data/strategy_performance.json'], returncode=1, stdout='', stderr="error: pathspec 'alpha_engine/data/strategy_performance.json' did not match any file(s) known to git\nDid you forget to 'git add'?\n").returncode
+test (3.11)	Run all tests	2026-05-27T06:24:19.7897672Z ##[error]Process completed with exit code 1.
 ```
 
-### Check Streamer Live Status — **latest** (success / completed) [run 24526900107](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526900107)
+### [torontoevent.net] Deploy Rise of the Claw — **latest** (success / completed) [run 26494657829](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494657829)
 
 Signal lines:
 
 ```text
-check-streamers	Post Checkout repository	2026-04-16T18:27:56.0234699Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-check-streamers	Post Checkout repository	2026-04-16T18:27:56.0484632Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+deploy	Post Checkout repository	2026-05-27T06:29:11.6665570Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Post Checkout repository	2026-05-27T06:29:11.6950938Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Post Checkout repository	2026-05-27T06:29:11.7489164Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### CI Tests — **latest** (- / in_progress) [run 24527927111](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527927111)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527927111 is still in progress; logs will be available when it is complete
-```
-
-### Claude Gainer ML  Live Scanner — **latest** (success / completed) [run 24527626441](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527626441)
+### Conviction Picks Ultra-Selective Discord Alert — **latest** (success / completed) [run 26494611769](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494611769)
 
 Signal lines:
 
 ```text
-scan	Commit results	2026-04-16T18:47:36.1818121Z CONFLICT (content): Merge conflict in claude_gainer_ml/tracker/claude_live_picks.json
-scan	Post Run actions/checkout@v4	2026-04-16T18:47:49.3867057Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:47:49.4100200Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+conviction-picks	Run Conviction Picks scanner	2026-05-27T06:24:16.6238751Z   [WARN] Binance klines failed (https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:
+conviction-picks	Run Conviction Picks scanner	2026-05-27T06:24:17.1798886Z   [WARN] Binance klines failed (https://api1.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:
+conviction-picks	Post Run actions/checkout@v6	2026-05-27T06:24:23.0025458Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+conviction-picks	Post Run actions/checkout@v6	2026-05-27T06:24:23.0290887Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+conviction-picks	Post Run actions/checkout@v6	2026-05-27T06:24:23.0796056Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Claude Gainer Short-Term Predictor — **latest** (- / in_progress) [run 24527505847](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527505847)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527505847 is still in progress; logs will be available when it is complete
-```
-
-### Coinglass DNA Scanner — **latest** (success / completed) [run 24527491854](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527491854)
+### ALPHA ENGINE - Universe Expander — **latest** (success / completed) [run 26494552503](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494552503)
 
 Signal lines:
 
 ```text
-scan	Post Run actions/checkout@v4	2026-04-16T18:42:32.8701859Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:42:32.8941231Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+expand-universe	Post Checkout repository	2026-05-27T06:23:16.9014095Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+expand-universe	Post Checkout repository	2026-05-27T06:23:16.9285293Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+expand-universe	Post Checkout repository	2026-05-27T06:23:16.9826391Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Conflict Marker Check — **latest** (- / in_progress) [run 24527927089](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527927089)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527927089 is still in progress; logs will be available when it is complete
-```
-
-### Consensus Outcome Tracker — **latest** (cancelled / completed) [run 24527045714](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527045714)
+### Money-Ready Registry Gate — **latest** (success / completed) [run 26494484723](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494484723)
 
 Signal lines:
 
 ```text
-track-outcomes	Commit outcome updates	2026-04-16T18:30:49.1845039Z [36;1m  git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {[0m
-track-outcomes	Commit outcome updates	2026-04-16T18:37:52.4748482Z ##[error]The operation was canceled.
-track-outcomes	Post Run actions/checkout@v4	2026-04-16T18:37:52.7202736Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track-outcomes	Post Run actions/checkout@v4	2026-04-16T18:37:52.7667057Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+gate	Post Checkout	2026-05-27T06:21:00.3176165Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gate	Post Checkout	2026-05-27T06:21:00.3465236Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gate	Post Checkout	2026-05-27T06:21:00.8271125Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Consensus Outcome Tracker — **prior** (cancelled / completed) [run 24524564588](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24524564588)
-
-Signal lines:
-
-```text
-track-outcomes	UNKNOWN STEP	2026-04-16T17:34:14.9606270Z [36;1m  git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {[0m
-track-outcomes	UNKNOWN STEP	2026-04-16T17:41:39.5531032Z ##[error]The operation was canceled.
-track-outcomes	UNKNOWN STEP	2026-04-16T17:41:39.7842680Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track-outcomes	UNKNOWN STEP	2026-04-16T17:41:39.8154805Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Contested Pick Checker (Claude vs Antigravity) — **latest** (success / completed) [run 24527315850](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527315850)
-
-Signal lines:
-
-```text
-check-contested	Fix broken submodule entry	﻿2026-04-16T18:35:46.8506093Z ##[group]Run git rm --cached tmp/fte_clone 2>/dev/null || true
-check-contested	Fix broken submodule entry	2026-04-16T18:35:46.8506626Z [36;1mgit rm --cached tmp/fte_clone 2>/dev/null || true[0m
-check-contested	Fix broken submodule entry	2026-04-16T18:35:46.8507069Z [36;1mgit config --global --add safe.directory "$GITHUB_WORKSPACE"[0m
-check-contested	Fix broken submodule entry	2026-04-16T18:35:46.8531616Z shell: /usr/bin/bash -e {0}
-check-contested	Fix broken submodule entry	2026-04-16T18:35:46.8531893Z ##[endgroup]
-check-contested	Post Checkout repository	2026-04-16T18:35:48.5978183Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-check-contested	Post Checkout repository	2026-04-16T18:35:48.6203680Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Conviction Picks Ultra-Selective Discord Alert — **latest** (success / completed) [run 24526619131](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526619131)
-
-Signal lines:
-
-```text
-conviction-picks	Run Conviction Picks scanner	2026-04-16T18:20:27.7344141Z   [WARN] Binance klines failed (https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:
-conviction-picks	Run Conviction Picks scanner	2026-04-16T18:20:28.2631298Z   [WARN] Binance klines failed (https://api1.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:
-conviction-picks	Post Run actions/checkout@v4	2026-04-16T18:20:48.6738249Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-conviction-picks	Post Run actions/checkout@v4	2026-04-16T18:20:48.6915672Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Copy Trader Forward Test — **latest** (- / in_progress) [run 24527772251](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527772251)
+### Copy Trader Intelligence  Scrape + Analyze + Track — **latest** (- / in_progress) [run 26494445746](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494445746)
 
 *No signal regex hits; last 25 log lines:*
 
 ```text
-run 24527772251 is still in progress; logs will be available when it is complete
+run 26494445746 is still in progress; logs will be available when it is complete
 ```
 
-### Copy Trader Intelligence  Scrape + Analyze + Track — **latest** (success / completed) [run 24526551492](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526551492)
-
-Signal lines:
-
-```text
-copy-trader-scan	Commit all data changes	2026-04-16T18:42:19.1401968Z CONFLICT (content): Merge conflict in copy_trader_intel/data/polymarket_trader_profiles.json
-copy-trader-scan	Post Checkout	2026-04-16T18:42:20.9989338Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-copy-trader-scan	Post Checkout	2026-04-16T18:42:21.0296578Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Copy Trader Portfolio Tracker — **latest** (success / completed) [run 24523526046](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523526046)
+### Pine Script Generator — **latest** (success / completed) [run 26494436071](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494436071)
 
 Signal lines:
 
 ```text
-track-copytrader	UNKNOWN STEP	2026-04-16T17:10:18.5641073Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track-copytrader	UNKNOWN STEP	2026-04-16T17:10:18.5861807Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+generate-pine	Post Checkout repository	2026-05-27T06:19:24.2889424Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+generate-pine	Post Checkout repository	2026-05-27T06:19:24.3181452Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+generate-pine	Post Checkout repository	2026-05-27T06:19:24.3756511Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Cross-Asset Correlation Monitor — **latest** (success / completed) [run 24527696167](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527696167)
-
-Signal lines:
-
-```text
-correlation-monitor	Post Checkout repository	2026-04-16T18:45:14.0550702Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-correlation-monitor	Post Checkout repository	2026-04-16T18:45:14.0803069Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Cross-System Signal Aggregator — **latest** (success / completed) [run 24527526278](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527526278)
+### Signal Recorder — **latest** (success / completed) [run 26494332603](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494332603)
 
 Signal lines:
 
 ```text
-aggregate	Post Checkout repository	2026-04-16T18:44:01.0014724Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-aggregate	Post Checkout repository	2026-04-16T18:44:01.0268749Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+record-signals	Fetch TradingView technicals	2026-05-27T06:16:53.3834340Z   MATICUSDT/1h: Exchange or symbol not found.
+record-signals	Fetch TradingView technicals	2026-05-27T06:16:53.3834823Z   MATICUSDT/4h: Exchange or symbol not found.
+record-signals	Fetch TradingView technicals	2026-05-27T06:16:53.3835271Z   MATICUSDT/1d: Exchange or symbol not found.
+record-signals	Fetch TradingView technicals	2026-05-27T06:16:53.3835719Z   MATICUSDT/1w: Exchange or symbol not found.
+record-signals	Post Run actions/checkout@v6	2026-05-27T06:16:58.5186322Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+record-signals	Post Run actions/checkout@v6	2026-05-27T06:16:58.5452129Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+record-signals	Post Run actions/checkout@v6	2026-05-27T06:16:58.5971064Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Crypto Gainer ML Live Tracker — **latest** (success / completed) [run 24526727097](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526727097)
+### ML Battleground System F (Claws of Doom) — **latest** (success / completed) [run 26494248384](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494248384)
 
 Signal lines:
 
 ```text
-predict-and-track	Post Checkout repository	2026-04-16T18:21:45.1970412Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-predict-and-track	Post Checkout repository	2026-04-16T18:21:45.2201435Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+sync	Post Run actions/checkout@v6	2026-05-27T06:14:47.2267242Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sync	Post Run actions/checkout@v6	2026-05-27T06:14:47.2564087Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sync	Post Run actions/checkout@v6	2026-05-27T06:14:47.3153299Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Crypto ML Edge GSD Scanner — **latest** (success / completed) [run 24527152125](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527152125)
+### CRYPTO SMART PICKS - Portfolio A/B/C/D Scanner — **latest** (success / completed) [run 26494223852](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494223852)
 
 Signal lines:
 
 ```text
-scan	Post Run actions/checkout@v4	2026-04-16T18:33:44.0033213Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:33:44.0219323Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+crypto-smart-picks	Post Checkout repository	2026-05-27T06:13:51.6659452Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+crypto-smart-picks	Post Checkout repository	2026-05-27T06:13:51.6907879Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+crypto-smart-picks	Post Checkout repository	2026-05-27T06:13:51.7489794Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Crypto Signal Engine — **latest** (success / completed) [run 24527327900](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527327900)
+### Prediction Quality Tracker — **latest** (success / completed) [run 26494169429](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494169429)
 
 Signal lines:
 
 ```text
-signal-engine	Post Run actions/checkout@v4	2026-04-16T18:37:41.3782454Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-signal-engine	Post Run actions/checkout@v4	2026-04-16T18:37:41.4042931Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+track-quality	Post Checkout repository	2026-05-27T06:12:13.9176768Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+track-quality	Post Checkout repository	2026-05-27T06:12:13.9466953Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+track-quality	Post Checkout repository	2026-05-27T06:12:14.0032385Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### CRYPTO SMART PICKS - Portfolio A/B/C/D Scanner — **latest** (success / completed) [run 24523804396](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523804396)
+### Dashboard Pick Trader — **latest** (success / completed) [run 26494135334](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494135334)
 
 Signal lines:
 
 ```text
-crypto-smart-picks	UNKNOWN STEP	2026-04-16T17:16:39.3860754Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-crypto-smart-picks	UNKNOWN STEP	2026-04-16T17:16:39.4089140Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+trade-dashboard-picks	Post Checkout repository	2026-05-27T06:11:12.2002825Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+trade-dashboard-picks	Post Checkout repository	2026-05-27T06:11:12.2301342Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+trade-dashboard-picks	Post Checkout repository	2026-05-27T06:11:12.2977447Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Crypto Winner Scanner  Auto Scan — **latest** (success / completed) [run 24527163971](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527163971)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6343438Z [36;1mecho "=== Scanner Performance Leaderboard ==="[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6344656Z [36;1mRESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/crypto_winners.php?action=stats") || true[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6345881Z [36;1mecho "$RESULT" | python3 -c "[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6346416Z [36;1mimport sys, json[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6346861Z [36;1mtry:[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6347261Z [36;1m    d = json.load(sys.stdin)[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6347768Z [36;1m    if d.get('ok'):[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6348257Z [36;1m        s = d.get('stats', {})[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6348910Z [36;1m        print(f'Total signals: {s.get(\"total_signals\",0)}')[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6349747Z [36;1m        print(f'Win rate: {s.get(\"overall_win_rate\",\"--\")}%')[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6350518Z [36;1m        print(f'Avg PnL: {s.get(\"avg_pnl\",\"--\")}%')[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6351431Z [36;1m        print(f'Best: +{s.get(\"best_trade\",0)}% | Worst: {s.get(\"worst_trade\",0)}%')[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6352818Z [36;1m        print(f'Resolved: {s.get(\"resolved\",0)} | Pending: {s.get(\"pending\",0)}')[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6353634Z [36;1mexcept:[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6354064Z [36;1m    print('Parse error')[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6354597Z [36;1m" || echo "Stats: $RESULT"[0m
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6383200Z shell: /usr/bin/bash -e {0}
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6383509Z ##[endgroup]
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.6423375Z === Scanner Performance Leaderboard ===
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.8723704Z Total signals: 317
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.8724224Z Win rate: 41.5%
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.8724694Z Avg PnL: -0.38%
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.8725134Z Best: +18% | Worst: -11.8211%
-scan-and-track	Print leaderboard	2026-04-16T18:30:39.8725614Z Resolved: 316 | Pending: 1
-scan-and-track	Complete job	﻿2026-04-16T18:30:39.8808460Z Cleaning up orphan processes
-```
-
-### Daily Feed Summary — **latest** (success / completed) [run 24526697150](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526697150)
+### Mega Mutation Live Tracker — **latest** (success / completed) [run 26494106314](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494106314)
 
 Signal lines:
 
 ```text
-generate-summary	Post Run actions/checkout@v4	2026-04-16T18:19:54.5328349Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-generate-summary	Post Run actions/checkout@v4	2026-04-16T18:19:54.5549906Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+track	Post Checkout	2026-05-27T06:10:26.5529137Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+track	Post Checkout	2026-05-27T06:10:26.5798466Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+track	Post Checkout	2026-05-27T06:10:26.6310804Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### DARWIN ENGINE - DNA Evolution Pipeline — **latest** (success / completed) [run 24526950663](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526950663)
+### Live Trading Monitor  Auto Refresh — **latest** (success / completed) [run 26494080670](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26494080670)
 
 Signal lines:
 
 ```text
-evolve	Post Checkout	2026-04-16T18:35:28.0247754Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-evolve	Post Checkout	2026-04-16T18:35:28.0436961Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+live-refresh	Check circuit breakers	﻿2026-05-27T06:09:19.2159213Z ##[group]Run echo "=== Checking circuit breakers ==="
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2160735Z [36;1mecho "=== Checking circuit breakers ==="[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2163674Z [36;1mRESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/breaker_live.php?action=check&key=livetrader2026") || true[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2166407Z [36;1mecho "$RESULT" | python3 -c "[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2167483Z [36;1mimport sys, json[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2168405Z [36;1md = json.load(sys.stdin)[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2169424Z [36;1mif d.get('ok'):[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2170441Z [36;1m    active = d.get('active_breakers', [])[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2171621Z [36;1m    if active:[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2172671Z [36;1m        print(f'ACTIVE BREAKERS: {len(active)}')[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2174192Z [36;1m        for b in active:[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2176008Z [36;1m            print(f'  {b.get(\"rule\",\"?\")}: {b.get(\"reason\",\"?\")} (cooldown: {b.get(\"remaining_minutes\",0)}m)')[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2177921Z [36;1m    else:[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2179051Z [36;1m        print('No active circuit breakers - trading allowed')[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2180475Z [36;1m" || echo "Breakers: $RESULT"[0m
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2216555Z shell: /usr/bin/bash -e {0}
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2217508Z ##[endgroup]
+live-refresh	Check circuit breakers	2026-05-27T06:09:19.2280980Z === Checking circuit breakers ===
 ```
 
-### Dashboard Pick Trader — **latest** (success / completed) [run 24526187035](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526187035)
+### Copy Trader Portfolio Tracker — **latest** (success / completed) [run 26493958380](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493958380)
 
 Signal lines:
 
 ```text
-trade-dashboard-picks	Run Dashboard Pick Trader	2026-04-16T18:10:32.9924643Z   [API] binance failed: HTTP Error 451:
-trade-dashboard-picks	Run Dashboard Pick Trader	2026-04-16T18:10:32.9925013Z   [API] binance_mirror1 failed: HTTP Error 451:
-trade-dashboard-picks	Run Dashboard Pick Trader	2026-04-16T18:10:32.9925453Z   [API] binance_mirror2 failed: HTTP Error 451:
-trade-dashboard-picks	Post Checkout repository	2026-04-16T18:10:50.4769617Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-trade-dashboard-picks	Post Checkout repository	2026-04-16T18:10:50.4993977Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+track-copytrader	Post Checkout repository	2026-05-27T06:06:04.9408586Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+track-copytrader	Post Checkout repository	2026-05-27T06:06:04.9654617Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+track-copytrader	Post Checkout repository	2026-05-27T06:06:05.0126425Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Data Pipeline Reliability Test — **latest** (success / completed) [run 24527288845](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527288845)
+### Continuous Improvement Monitor — **latest** (success / completed) [run 26493875627](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493875627)
 
 Signal lines:
 
 ```text
-test-data-sources	Post Checkout repository	2026-04-16T18:41:50.8230776Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-test-data-sources	Post Checkout repository	2026-04-16T18:41:50.8484611Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+monitor	Post Checkout repository	2026-05-27T06:03:41.8683170Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+monitor	Post Checkout repository	2026-05-27T06:03:41.8966046Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+monitor	Post Checkout repository	2026-05-27T06:03:41.9554916Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Deploy Battleground to FTP — **latest** (success / completed) [run 24523671674](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523671674)
+### Dynamic Universe Scanner — **latest** (success / completed) [run 26493874176](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493874176)
 
 Signal lines:
 
 ```text
-deploy	UNKNOWN STEP	2026-04-16T17:13:25.7970357Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-deploy	UNKNOWN STEP	2026-04-16T17:13:25.8197441Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+update-universe	Post Checkout repository	2026-05-27T06:03:46.6628402Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+update-universe	Post Checkout repository	2026-05-27T06:03:46.6915643Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+update-universe	Post Checkout repository	2026-05-27T06:03:46.7457940Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Deploy Competition to Live Site — **latest** (success / completed) [run 24527780727](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527780727)
+### MOMENTUM TRACKER - Real-Time Gainer Scanner — **latest** (success / completed) [run 26493853580](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493853580)
 
 Signal lines:
 
 ```text
-deploy	Post Checkout	2026-04-16T18:46:47.0204666Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-deploy	Post Checkout	2026-04-16T18:46:47.0430964Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+momentum-scan	Post Checkout repository	2026-05-27T06:02:57.0448179Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+momentum-scan	Post Checkout repository	2026-05-27T06:02:57.0745015Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+momentum-scan	Post Checkout repository	2026-05-27T06:02:57.1346746Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Deploy FindCryptoPairs to FTP — **latest** (success / completed) [run 24527691177](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527691177)
+### Mercury 2  Signal Scanner — **latest** (failure / completed) [run 26493849748](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493849748)
 
 Signal lines:
 
 ```text
-deploy	Post Checkout	2026-04-16T18:44:25.1643907Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-deploy	Post Checkout	2026-04-16T18:44:25.1877854Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+scan	Run Mercury 2 scanner	2026-05-27T06:03:19.3606245Z ##[error]Process completed with exit code 1.
 ```
 
-### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains) — **latest** (success / completed) [run 24527552693](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527552693)
-
-Signal lines:
-
-```text
-deploy	Post Run actions/checkout@v4	2026-04-16T18:41:45.0810067Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-deploy	Post Run actions/checkout@v4	2026-04-16T18:41:45.0997844Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Deploy Rise of the Claw Dashboard — **latest** (success / completed) [run 24527014074](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527014074)
-
-Signal lines:
-
-```text
-deploy	Post Checkout repository	2026-04-16T18:33:27.5035985Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-deploy	Post Checkout repository	2026-04-16T18:33:27.5276459Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Discord Bot  Persistent — **latest** (- / in_progress) [run 24527446176](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527446176)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527446176 is still in progress; logs will be available when it is complete
-```
-
-### Discord ML Status Report — **latest** (success / completed) [run 24527051216](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527051216)
-
-Signal lines:
-
-```text
-send-status	Post Run actions/checkout@v4	2026-04-16T18:29:47.5207143Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-send-status	Post Run actions/checkout@v4	2026-04-16T18:29:47.5427482Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### DNA Genome Daily Pipeline — **latest** (- / in_progress) [run 24526740896](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526740896)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24526740896 is still in progress; logs will be available when it is complete
-```
-
-### EMA Retracement Mean Reversion Scanner — **latest** (success / completed) [run 24527619278](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527619278)
-
-Signal lines:
-
-```text
-ema-retracement	Post Checkout repository	2026-04-16T18:43:05.0614640Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-ema-retracement	Post Checkout repository	2026-04-16T18:43:05.0879876Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Enhanced ML Crypto Train & Predict — **latest** (- / in_progress) [run 24527730704](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527730704)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527730704 is still in progress; logs will be available when it is complete
-```
-
-### FC-CRYPTO PRO Top Actionable Picks — **latest** (success / completed) [run 24527459655](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527459655)
-
-Signal lines:
-
-```text
-fc-crypto-pro	Post Run actions/checkout@v4	2026-04-16T18:39:33.7713188Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-fc-crypto-pro	Post Run actions/checkout@v4	2026-04-16T18:39:33.7953268Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Feed Health Check — **latest** (- / in_progress) [run 24527931095](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527931095)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527931095 is still in progress; logs will be available when it is complete
-```
-
-### Fix Battleground Deployment — **latest** (success / completed) [run 24523671656](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24523671656)
-
-Signal lines:
-
-```text
-deploy-battleground	UNKNOWN STEP	2026-04-16T17:20:34.6190077Z  * [new branch]            fix/js-typeerror-picks-guard -> origin/fix/js-typeerror-picks-guard
-deploy-battleground	UNKNOWN STEP	2026-04-16T17:20:36.9640352Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-deploy-battleground	UNKNOWN STEP	2026-04-16T17:20:36.9939895Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-deploy-battleground	UNKNOWN STEP	2026-04-16T17:20:37.0199589Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-```
-
-### Forex Agent — **latest** (success / completed) [run 24524371833](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24524371833)
-
-Signal lines:
-
-```text
-Forex Scanner	UNKNOWN STEP	2026-04-16T17:29:23.3083774Z HTTP Error 404: Not Found{"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: DX=F"}}}
-Forex Scanner	UNKNOWN STEP	2026-04-16T17:29:35.6882605Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-Forex Scanner	UNKNOWN STEP	2026-04-16T17:29:35.7054258Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Forex Smart Picks Scanner — **latest** (success / completed) [run 24526742659](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526742659)
-
-Signal lines:
-
-```text
-forex-smart-picks	Post Checkout repository	2026-04-16T18:23:15.3377655Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-forex-smart-picks	Post Checkout repository	2026-04-16T18:23:15.3615581Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Forward Signal Scanner — **latest** (success / completed) [run 24526870556](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526870556)
-
-Signal lines:
-
-```text
-scan	Post Run actions/checkout@v4	2026-04-16T18:27:59.4668633Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:27:59.4914590Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Forward Trade Tracking v2 — **latest** (success / completed) [run 24526921107](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526921107)
-
-Signal lines:
-
-```text
-track-signals	Post Checkout repository	2026-04-16T18:29:16.9932678Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track-signals	Post Checkout repository	2026-04-16T18:29:17.0152626Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Forward-Test New Strategies Tracker — **latest** (success / completed) [run 24526710872](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526710872)
-
-Signal lines:
-
-```text
-forward-test	Post Checkout repository	2026-04-16T18:22:26.0177640Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-forward-test	Post Checkout repository	2026-04-16T18:22:26.0418313Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Gainer Predictor Scanner — **latest** (success / completed) [run 24527339871](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527339871)
-
-Signal lines:
-
-```text
-scan	Post Run actions/checkout@v4	2026-04-16T18:42:43.5605372Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:42:43.5840267Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Goldmine Tracker - Archive & Maintain — **latest** (success / completed) [run 24527198769](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527198769)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5747908Z [36;1mALERTS=$(curl -sf --max-time 10 \[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5748807Z [36;1m  "https://findtorontoevents.ca/live-monitor/api/goldmine_tracker.php?action=alerts" \[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5749665Z [36;1m  2>&1 || echo '{"ok":false}')[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5750813Z [36;1mALERT_COUNT=$(echo "$ALERTS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('active_count','?'))" 2>/dev/null || echo "?")[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5751924Z [36;1mecho "Active alerts: $ALERT_COUNT"[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5752530Z [36;1m[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5753015Z [36;1mecho ""[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.5753516Z [36;1mecho " Goldmine tracker maintenance complete"[0m
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.6162615Z shell: /usr/bin/bash -e {0}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.6163626Z ##[endgroup]
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:03.6367636Z  Triggering goldmine tracker archive + outcomes...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:04.3744862Z Archive response: {"ok":false,"error":"Unauthorized"}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:04.9467146Z Health check response: {"ok":true,"action":"check_health","result":{"health_snapshots":8,"alerts_created":14}}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:04.9468287Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:04.9468462Z  Running maintenance tasks...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.2016262Z Maintenance response: {"status":{"stale_sports_picks":0,"stale_meme_picks":0,"stale_penny_picks":0,"consolidated_missing_price":0,"active_alerts":14,"duplicate_alerts":0},"expire":{"sports_expired":0,"meme_expired":0,"other_expired":0,"consolidated_missing_prices":[]},"prices":{"fixed":0,"failed":[],"details":[]},"alerts":{"duplicates_resolved":0,"remaining_active":[{"source_system":"consolidated","alert_type":"negative_roi","severity":"warning","title":"consolidated: Average return negative (-4%)","alert_date":"2026-04-16"},{"source_system":"consolidated","alert_type":"zero_picks","severity":"warning","title":"consolidated: No picks generated in 7 days","alert_date":"2026-04-16"},{"source_system":"live_signal","alert_type":"zero_picks","severity":"warning","title":"live_signal: No picks generated in 7 days","alert_date":"2026-04-16"},{"source_system":"edge","alert_type":"zero_picks","severity":"warning","title":"edge: No picks generated in 7 days","alert_date":"2026-04-16"},{"source_system":"meme","alert_type":"zero_picks","severity":"warning","title":"meme: No picks generated in 7 days","alert_date":"2026-04-16"},{"source_system":"sports","alert_type":"zero_picks","severity":"warning","title":"sports: No picks generated in 7 days","alert_date":"2026-04-16"},{"source_system":"penny","alert_type":"zero_picks","severity":"warning","title":"penny: No picks generated in 7 days","alert_date":"2026-04-16"},{"source_system":"sports","alert_type":"accuracy_drop","severity":"warning","title":"Sports: Overall win rate low (30% across 10 bets)","alert_date":"2026-04-16"},{"source_system":"consolidated","alert_type":"stale_data","severity":"critical","title":"consolidated: No new picks for 61 days","alert_date":"2026-04-16"},{"source_system":"live_signal","alert_type":"stale_data","severity":"critical","title":"live_signal: No new picks for 59 days","alert_date":"2026-04-16"},{"source_system":"edge","alert_type":"stale_data","severity":"critical","title":"edge: No new picks for 65 days","alert_date":"2026-04-16"},{"source_system":"meme","alert_type":"stale_data","severity":"critical","title":"meme: No new picks for 63 days","alert_date":"2026-04-16"},{"source_system":"sports","alert_type":"stale_data","severity":"critical","title":"sports: No new picks for 63 days","alert_date":"2026-04-16"},{"source_system":"penny","alert_type":"stale_data","severity":"critical","title":"penny: No new picks for 59 days","alert_date":"2026-04-16"}],"remaining_count":14},"ok":true,"action":"run","dry_run":false,"timestamp":"2026-04-16 18:31:05"}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.2025694Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.2026754Z  Final status check...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.3078757Z Status: {"status":{"stale_sports_picks":0,"stale_meme_picks":0,"stale_penny_picks":0,"consolidated_missing_price":0,"active_alerts":14,"duplicate_alerts":0},"ok":true,"action":"status","dry_run":false,"timestamp":"2026-04-16 18:31:05"}
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.3080843Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.3081235Z  Current alerts...
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.5590920Z Active alerts: 14
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.5591502Z 
-track-and-maintain	Archive new picks & check outcomes	2026-04-16T18:31:05.5591800Z  Goldmine tracker maintenance complete
-track-and-maintain	Complete job	﻿2026-04-16T18:31:05.5771168Z Cleaning up orphan processes
-```
-
-### Hindsight Learner  Hourly Winner Analysis — **latest** (success / completed) [run 24527494185](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527494185)
-
-Signal lines:
-
-```text
-analyze	Post Run actions/checkout@v4	2026-04-16T18:40:30.6757701Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-analyze	Post Run actions/checkout@v4	2026-04-16T18:40:30.6977448Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Hoffman IRB Strategy Tracker — **latest** (success / completed) [run 24527076059](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527076059)
-
-Signal lines:
-
-```text
-track	Post Checkout	2026-04-16T18:30:24.1078726Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track	Post Checkout	2026-04-16T18:30:24.1300754Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Hourly Master Picks to Discord — **latest** (success / completed) [run 24527489476](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527489476)
-
-Signal lines:
-
-```text
-send-master-picks	Post Checkout repository	2026-04-16T18:40:21.8581948Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-send-master-picks	Post Checkout repository	2026-04-16T18:40:21.8810771Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Hub Data Sync — **latest** (success / completed) [run 24527849217](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527849217)
-
-Signal lines:
-
-```text
-sync	Collect system data for hub	2026-04-16T18:47:59.7017879Z Traceback (most recent call last):
-sync	Post Run actions/checkout@v4	2026-04-16T18:48:00.7316668Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-sync	Post Run actions/checkout@v4	2026-04-16T18:48:00.7541913Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### KIMI Goldmine Data Collection — **latest** (success / completed) [run 24527099221](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527099221)
-
-Signal lines:
-
-```text
-collect-and-update	Post Checkout repository	2026-04-16T18:40:18.8663155Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-collect-and-update	Post Checkout repository	2026-04-16T18:40:18.8928574Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### KIMI_FEB172026 - Live Trading System — **latest** (success / completed) [run 24526946515](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526946515)
-
-Signal lines:
-
-```text
-kimi-trading	Post Checkout repository	2026-04-16T18:29:54.1666609Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-kimi-trading	Post Checkout repository	2026-04-16T18:29:54.1939173Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Live Picks Tracker — **latest** (- / in_progress) [run 24527879218](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527879218)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527879218 is still in progress; logs will be available when it is complete
-```
-
-### Live Trading Monitor  Auto Refresh — **latest** (success / completed) [run 24525966757](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525966757)
-
-Signal lines:
-
-```text
-live-refresh	Check circuit breakers	﻿2026-04-16T18:03:43.1143141Z ##[group]Run echo "=== Checking circuit breakers ==="
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1143561Z [36;1mecho "=== Checking circuit breakers ==="[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1144224Z [36;1mRESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/breaker_live.php?action=check&key=livetrader2026") || true[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1144852Z [36;1mecho "$RESULT" | python3 -c "[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1145110Z [36;1mimport sys, json[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1145335Z [36;1md = json.load(sys.stdin)[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1145579Z [36;1mif d.get('ok'):[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1145819Z [36;1m    active = d.get('active_breakers', [])[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1146101Z [36;1m    if active:[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1146348Z [36;1m        print(f'ACTIVE BREAKERS: {len(active)}')[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1146644Z [36;1m        for b in active:[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1147079Z [36;1m            print(f'  {b.get(\"rule\",\"?\")}: {b.get(\"reason\",\"?\")} (cooldown: {b.get(\"remaining_minutes\",0)}m)')[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1147554Z [36;1m    else:[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1147828Z [36;1m        print('No active circuit breakers - trading allowed')[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1148162Z [36;1m" || echo "Breakers: $RESULT"[0m
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1169505Z shell: /usr/bin/bash -e {0}
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1169748Z ##[endgroup]
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.1209916Z === Checking circuit breakers ===
-live-refresh	Check circuit breakers	2026-04-16T18:03:43.4666111Z No active circuit breakers - trading allowed
-```
-
-### Low-Score Winner Tracker — **latest** (success / completed) [run 24527496439](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527496439)
-
-Signal lines:
-
-```text
-track	Post Checkout	2026-04-16T18:39:55.0129727Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track	Post Checkout	2026-04-16T18:39:55.0352668Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### LuxAlgo Signal Generator — **latest** (- / in_progress) [run 24527905682](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527905682)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527905682 is still in progress; logs will be available when it is complete
-```
-
-### Market Beating System - Crypto & Forex Priority — **latest** (success / completed) [run 24527199994](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527199994)
-
-Signal lines:
-
-```text
-market-beating	Post Checkout code	2026-04-16T18:43:29.7457411Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-market-beating	Post Checkout code	2026-04-16T18:43:29.8466534Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Master Automation Scheduler — **latest** (success / completed) [run 24526825943](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526825943)
-
-Signal lines:
-
-```text
-hourly-tasks	Poll all systems with ML enhancement	2026-04-16T18:25:52.9288779Z Traceback (most recent call last):
-hourly-tasks	Post Run actions/checkout@v4	2026-04-16T18:25:54.3457533Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-hourly-tasks	Post Run actions/checkout@v4	2026-04-16T18:25:54.3685281Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Mega Mutation Live Tracker — **latest** (success / completed) [run 24526292713](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526292713)
-
-Signal lines:
-
-```text
-track	Post Checkout	2026-04-16T18:13:32.6220512Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track	Post Checkout	2026-04-16T18:13:32.6444277Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Meme Coin Scanner Auto Scan & Resolve — **latest** (success / completed) [run 24526954553](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526954553)
-
-Signal lines:
-
-```text
-meme-scan	Post Run actions/checkout@v4	2026-04-16T18:28:03.0189917Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-meme-scan	Post Run actions/checkout@v4	2026-04-16T18:28:03.0416640Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Meme Coin Scanner v2  Fixed & Monitored — **latest** (success / completed) [run 24527538051](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527538051)
-
-Signal lines:
-
-```text
-meme-scan	Post Checkout code	2026-04-16T18:40:57.1347349Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-meme-scan	Post Checkout code	2026-04-16T18:40:57.1568569Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Mercury 2  Signal Scanner — **latest** (success / completed) [run 24525743796](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525743796)
-
-Signal lines:
-
-```text
-scan	Post Run actions/checkout@v4	2026-04-16T18:02:06.0566409Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:02:06.0827768Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Meta-Strategy Permutation Engine — **latest** (success / completed) [run 24527797288](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527797288)
-
-Signal lines:
-
-```text
-meta-strategy	Post Checkout	2026-04-16T18:48:22.5062371Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-meta-strategy	Post Checkout	2026-04-16T18:48:22.5320010Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Mirror: findtorontoevents.ca  torontoevent.net — **latest** (- / in_progress) [run 24526892351](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526892351)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24526892351 is still in progress; logs will be available when it is complete
-```
-
-### Missed Opportunity Analyzer Hourly Self-Improvement — **latest** (success / completed) [run 24527812901](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527812901)
-
-Signal lines:
-
-```text
-missed-opportunity-scan	Post Checkout	2026-04-16T18:47:28.6663456Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-missed-opportunity-scan	Post Checkout	2026-04-16T18:47:28.6884993Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ML Battleground System F (Claws of Doom) — **latest** (success / completed) [run 24526350305](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526350305)
-
-Signal lines:
-
-```text
-sync	Post Run actions/checkout@v4	2026-04-16T18:16:16.4220381Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-sync	Post Run actions/checkout@v4	2026-04-16T18:16:16.4409048Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ML Crypto  Discord Hourly Status — **latest** (success / completed) [run 24527084524](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527084524)
-
-Signal lines:
-
-```text
-send-status	Post Checkout repository	2026-04-16T18:30:35.6338787Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-send-status	Post Checkout repository	2026-04-16T18:30:35.6577748Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ML Feedback Loop — **latest** (success / completed) [run 24527077157](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527077157)
-
-Signal lines:
-
-```text
-feedback-check	Check for retrain trigger	2026-04-16T18:30:40.6182674Z   "reason": "Circuit breaker: 53 consecutive losses",
-feedback-check	Post Run actions/checkout@v4	2026-04-16T18:31:00.2048185Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-feedback-check	Post Run actions/checkout@v4	2026-04-16T18:31:00.2298393Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ML Model Auto-Training — **latest** (success / completed) [run 24527353891](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527353891)
-
-Signal lines:
-
-```text
-check-and-train	Post Checkout repository	2026-04-16T18:45:51.5089858Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-check-and-train	Post Checkout repository	2026-04-16T18:45:51.5411131Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### ML Strategy Reviver Bridge & Standalone — **latest** (- / in_progress) [run 24527926226](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527926226)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527926226 is still in progress; logs will be available when it is complete
-```
-
-### ML System Health Monitor — **latest** (success / completed) [run 24527078580](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527078580)
-
-Signal lines:
-
-```text
-health-check	Post Run actions/checkout@v4	2026-04-16T18:30:37.9190703Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-health-check	Post Run actions/checkout@v4	2026-04-16T18:30:37.9412829Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### MOMENTUM CATCHER - Real-time Pump Detector — **latest** (success / completed) [run 24527271439](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527271439)
-
-Signal lines:
-
-```text
-momentum-scan	Merge momentum picks into active_picks.json	2026-04-16T18:35:19.6664082Z [36;1m    except (json.JSONDecodeError, ValueError):[0m
-momentum-scan	Post Checkout repository	2026-04-16T18:35:38.2182877Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-momentum-scan	Post Checkout repository	2026-04-16T18:35:38.2424529Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### MOMENTUM TRACKER - Real-Time Gainer Scanner — **latest** (success / completed) [run 24525805221](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525805221)
-
-Signal lines:
-
-```text
-momentum-scan	Post Checkout repository	2026-04-16T18:02:10.0257257Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-momentum-scan	Post Checkout repository	2026-04-16T18:02:10.0499717Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities — **latest** (success / completed) [run 24527319847](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527319847)
-
-Signal lines:
-
-```text
-multi-asset-scan	Post Checkout	2026-04-16T18:37:27.3822618Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-multi-asset-scan	Post Checkout	2026-04-16T18:37:27.4050894Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Mutation Lab  Strategy Evolution Pipeline — **latest** (success / completed) [run 24526805282](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526805282)
-
-Signal lines:
-
-```text
-promote	Post Run actions/checkout@v4	2026-04-16T18:23:49.2847173Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-promote	Post Run actions/checkout@v4	2026-04-16T18:23:49.3078722Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### MySQL Trading Picks Sync — **latest** (- / in_progress) [run 24528090792](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24528090792)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24528090792 is still in progress; logs will be available when it is complete
-```
-
-### OBI Hourly Snapshot — **latest** (success / completed) [run 24525620571](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525620571)
-
-Signal lines:
-
-```text
-snapshot	Post Run actions/checkout@v4	2026-04-16T17:58:00.5373904Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-snapshot	Post Run actions/checkout@v4	2026-04-16T17:58:00.5596729Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Outcome Resolver  Validate Unresolved Picks — **latest** (success / completed) [run 24527582125](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527582125)
-
-Signal lines:
-
-```text
-resolve-outcomes	Post Checkout repository	2026-04-16T18:44:31.0592215Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-resolve-outcomes	Post Checkout repository	2026-04-16T18:44:31.0831082Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Pick Monitor & Price Validator (30min) — **latest** (success / completed) [run 24526698444](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526698444)
-
-Signal lines:
-
-```text
-monitor-and-validate	Post Checkout repository	2026-04-16T18:22:44.0461846Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-monitor-and-validate	Post Checkout repository	2026-04-16T18:22:44.0686294Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Pine Script Generator — **latest** (skipped / completed) [run 24527226891](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527226891)
+### Mercury 2  Signal Scanner — **prior** (failure / completed) [run 26489776815](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26489776815)
 
 *No signal regex hits; last 25 log lines:*
 
@@ -1175,444 +403,585 @@ monitor-and-validate	Post Checkout repository	2026-04-16T18:22:44.0686294Z fatal
 
 ```
 
-### Polymarket Prediction Market Signals — **latest** (success / completed) [run 24527625955](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527625955)
+### Skyrocket Detector  Live Scanner — **latest** (success / completed) [run 26493806374](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493806374)
 
 Signal lines:
 
 ```text
-polymarket-scan	Post Checkout repository	2026-04-16T18:48:59.2902165Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-polymarket-scan	Post Checkout repository	2026-04-16T18:48:59.3101229Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+scan	Post Run actions/checkout@v6	2026-05-27T06:03:06.6951333Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+scan	Post Run actions/checkout@v6	2026-05-27T06:03:06.7246778Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+scan	Post Run actions/checkout@v6	2026-05-27T06:03:06.7817508Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Portfolio Trackers (Real Money + Theory) — **latest** (success / completed) [run 24527659606](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527659606)
+### OBI Hourly Snapshot — **latest** (success / completed) [run 26493748802](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493748802)
 
 Signal lines:
 
 ```text
-track	Post Run actions/checkout@v4	2026-04-16T18:46:03.8412810Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track	Post Run actions/checkout@v4	2026-04-16T18:46:03.8640839Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+snapshot	Post Run actions/checkout@v6	2026-05-27T06:00:24.5477869Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+snapshot	Post Run actions/checkout@v6	2026-05-27T06:00:24.5750108Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+snapshot	Post Run actions/checkout@v6	2026-05-27T06:00:24.6274648Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Prediction Market Agents — **latest** (success / completed) [run 24527696055](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527696055)
+### MySQL Trading Picks Sync — **latest** (success / completed) [run 26493744957](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493744957)
 
 Signal lines:
 
 ```text
-prediction-market-scan	Post Checkout repository	2026-04-16T18:45:20.7104780Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-prediction-market-scan	Post Checkout repository	2026-04-16T18:45:20.7368691Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+sync	Post Checkout repository	2026-05-27T06:00:31.5552174Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sync	Post Checkout repository	2026-05-27T06:00:31.5842126Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sync	Post Checkout repository	2026-05-27T06:00:31.6392955Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Prediction Quality Tracker — **latest** (success / completed) [run 24526207107](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526207107)
+### Incidents + Enhancements — Nightly Page Render — **latest** (success / completed) [run 26493708528](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493708528)
 
 Signal lines:
 
 ```text
-track-quality	Post Checkout repository	2026-04-16T18:11:24.3666897Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track-quality	Post Checkout repository	2026-04-16T18:11:24.3855131Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+render	Post Run actions/checkout@v4	2026-05-27T05:59:05.6454287Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+render	Post Run actions/checkout@v4	2026-05-27T05:59:05.6792012Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+render	Post Run actions/checkout@v4	2026-05-27T05:59:05.7088954Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Proven Strategies Scanner — **latest** (success / completed) [run 24526878799](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526878799)
+### ML Forward Test 1745 Models — **latest** (success / completed) [run 26493674120](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493674120)
 
 Signal lines:
 
 ```text
-scan	Post Run actions/checkout@v4	2026-04-16T18:28:56.1791358Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:28:56.2014261Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+forward-test	Post Checkout repository	2026-05-27T05:58:28.2289571Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+forward-test	Post Checkout repository	2026-05-27T05:58:28.2560614Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+forward-test	Post Checkout repository	2026-05-27T05:58:28.3087723Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### QUAN ENGINE - Live Autonomous Scanner — **latest** (success / completed) [run 24527429546](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527429546)
+### Social Media Prediction Tracker — **latest** (success / completed) [run 26493661488](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493661488)
 
 Signal lines:
 
 ```text
-quan-engine	Commit results	2026-04-16T18:39:50.8487524Z fatal: pathspec 'data/audit_trail.db' did not match any files
-quan-engine	Post Checkout repository	2026-04-16T18:40:19.3030564Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-quan-engine	Post Checkout repository	2026-04-16T18:40:19.3278072Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+track-predictions	Post Run actions/checkout@v6	2026-05-27T06:16:10.7677746Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+track-predictions	Post Run actions/checkout@v6	2026-05-27T06:16:10.7976158Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+track-predictions	Post Run actions/checkout@v6	2026-05-27T06:16:10.8544765Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### QuantumFusion Crypto Engine — **latest** (success / completed) [run 24527176355](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527176355)
+### Master-Picks Health Score — **latest** (success / completed) [run 26493656648](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493656648)
 
 Signal lines:
 
 ```text
-quantum-fusion	Post Checkout repository	2026-04-16T18:33:13.0488850Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-quantum-fusion	Post Checkout repository	2026-04-16T18:33:13.0713889Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+send-health-score	Post Checkout repository	2026-05-27T05:57:26.2758450Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+send-health-score	Post Checkout repository	2026-05-27T05:57:26.3059835Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+send-health-score	Post Checkout repository	2026-05-27T05:57:26.3575180Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Quick Guess ML Agent — **latest** (cancelled / completed) [run 24527537305](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527537305)
+### Recommended Portfolio Generator — **latest** (success / completed) [run 26493656600](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493656600)
 
 Signal lines:
 
 ```text
-quick-guess	Commit results	2026-04-16T18:42:24.6125216Z [36;1m  git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {[0m
-quick-guess	Commit results	2026-04-16T18:47:14.5974886Z ##[error]The operation was canceled.
-quick-guess	Post Run actions/checkout@v4	2026-04-16T18:47:14.7816310Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-quick-guess	Post Run actions/checkout@v4	2026-04-16T18:47:14.8148694Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+generate-portfolio	Post Checkout repository	2026-05-27T05:57:27.9311830Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+generate-portfolio	Post Checkout repository	2026-05-27T05:57:27.9590003Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+generate-portfolio	Post Checkout repository	2026-05-27T05:57:28.0110867Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Quick Guess ML Agent — **prior** (cancelled / completed) [run 24525009553](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525009553)
+### ALPHA  Verify Predictions — **latest** (success / completed) [run 26493641697](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493641697)
 
 Signal lines:
 
 ```text
-quick-guess	Commit results	2026-04-16T17:45:02.8002663Z [36;1m  git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {[0m
-quick-guess	Commit results	2026-04-16T17:50:12.9258803Z ##[error]The operation was canceled.
-quick-guess	Post Run actions/checkout@v4	2026-04-16T17:50:13.2203690Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-quick-guess	Post Run actions/checkout@v4	2026-04-16T17:50:13.2617451Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+verify	Post Checkout repository	2026-05-27T05:57:05.3879921Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+verify	Post Checkout repository	2026-05-27T05:57:05.4203527Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+verify	Post Checkout repository	2026-05-27T05:57:05.4812673Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Rapid Fire - NOW Scanner — **latest** (success / completed) [run 24527655948](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527655948)
+### LIVE SPIKE TRADING - Autonomous Crypto Monitor — **latest** (success / completed) [run 26493631288](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493631288)
 
 Signal lines:
 
 ```text
-scan	Commit results	2026-04-16T18:44:51.8473546Z CONFLICT (content): Merge conflict in data/freshpicks_gate_state.json
-scan	Post Checkout	2026-04-16T18:45:09.7418758Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Checkout	2026-04-16T18:45:09.7682774Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+spike-trading	Commit results	2026-05-27T06:10:48.0305433Z fatal: pathspec 'spike_trading_results.json' did not match any files
+spike-trading	Post Checkout code	2026-05-27T06:10:53.0308170Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+spike-trading	Post Checkout code	2026-05-27T06:10:53.0537788Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+spike-trading	Post Checkout code	2026-05-27T06:10:53.0983060Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Real-Time Battle Test - Eliminate Losers, Optimize Winners — **latest** (success / completed) [run 24527197115](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527197115)
+### LuxAlgo Signal Generator — **latest** (success / completed) [run 26493601416](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493601416)
 
 Signal lines:
 
 ```text
-battle-test	Post Checkout code	2026-04-16T18:40:50.9912039Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-battle-test	Post Checkout code	2026-04-16T18:40:51.0158685Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+generate-signals	Post Checkout	2026-05-27T05:56:42.3264737Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+generate-signals	Post Checkout	2026-05-27T05:56:42.3562856Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+generate-signals	Post Checkout	2026-05-27T05:56:42.4074289Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Recommended Portfolio Generator — **latest** (- / in_progress) [run 24528072515](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24528072515)
+### Feed Health Check — **latest** (success / completed) [run 26493583335](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493583335)
+
+Signal lines:
+
+```text
+health	Post Run actions/checkout@v6	2026-05-27T05:55:20.9840846Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+health	Post Run actions/checkout@v6	2026-05-27T05:55:21.0112717Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+health	Post Run actions/checkout@v6	2026-05-27T05:55:21.0655835Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### ML Strategy Reviver Bridge & Standalone — **latest** (success / completed) [run 26493517200](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493517200)
+
+Signal lines:
+
+```text
+revive	Post Checkout repository	2026-05-27T05:54:37.0648847Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+revive	Post Checkout repository	2026-05-27T05:54:37.0925197Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+revive	Post Checkout repository	2026-05-27T05:54:37.1498864Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Live Picks Tracker — **latest** (success / completed) [run 26493509970](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493509970)
+
+Signal lines:
+
+```text
+update-dashboard	Post Checkout repository	2026-05-27T05:53:21.2615600Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+update-dashboard	Post Checkout repository	2026-05-27T05:53:21.2906709Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+update-dashboard	Post Checkout repository	2026-05-27T05:53:21.3457529Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Hub Data Sync — **latest** (success / completed) [run 26493446105](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493446105)
+
+Signal lines:
+
+```text
+sync	Post Run actions/checkout@v6	2026-05-27T05:51:19.0074525Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sync	Post Run actions/checkout@v6	2026-05-27T05:51:19.0359707Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sync	Post Run actions/checkout@v6	2026-05-27T05:51:19.2068228Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Test Portfolios  Hourly Strategy Validation — **latest** (success / completed) [run 26493435463](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493435463)
+
+Signal lines:
+
+```text
+run	Post Run actions/checkout@v6	2026-05-27T05:50:49.6849990Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run	Post Run actions/checkout@v6	2026-05-27T05:50:49.7124212Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run	Post Run actions/checkout@v6	2026-05-27T05:50:49.7641750Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Deploy FindCryptoPairs to FTP — **latest** (success / completed) [run 26493396183](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493396183)
+
+Signal lines:
+
+```text
+deploy	Post Checkout	2026-05-27T05:49:56.8176262Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Post Checkout	2026-05-27T05:49:56.8449640Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Post Checkout	2026-05-27T05:49:56.8965096Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Missed Opportunity Analyzer Hourly Self-Improvement — **latest** (success / completed) [run 26493353356](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493353356)
+
+Signal lines:
+
+```text
+missed-opportunity-scan	Run missed opportunity analysis	2026-05-27T05:48:21.9576290Z   [WARN] All Binance endpoints failed, trying CoinGecko fallback...
+missed-opportunity-scan	Post Checkout	2026-05-27T05:48:25.0947022Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+missed-opportunity-scan	Post Checkout	2026-05-27T05:48:25.1249199Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+missed-opportunity-scan	Post Checkout	2026-05-27T05:48:25.1880397Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### [torontoevent.net] Rapid Validation Engine — **latest** (success / completed) [run 26493349265](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493349265)
+
+Signal lines:
+
+```text
+rapid-validation	Post Checkout repository	2026-05-27T05:48:14.4617208Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+rapid-validation	Post Checkout repository	2026-05-27T05:48:14.4903217Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+rapid-validation	Post Checkout repository	2026-05-27T05:48:14.5462440Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Claude Gainer ML  Live Scanner — **latest** (failure / completed) [run 26493348067](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493348067)
+
+Signal lines:
+
+```text
+scan	Run live scanner	2026-05-27T05:48:31.7036963Z ##[error]Process completed with exit code 1.
+```
+
+### Claude Gainer ML  Live Scanner — **prior** (failure / completed) [run 26490326666](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26490326666)
 
 *No signal regex hits; last 25 log lines:*
 
 ```text
-run 24528072515 is still in progress; logs will be available when it is complete
+
 ```
 
-### Refresh Top Movies Data — **latest** (success / completed) [run 24527428933](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527428933)
+### Rapid Fire - NOW Scanner — **latest** (success / completed) [run 26493338115](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493338115)
 
 Signal lines:
 
 ```text
-refresh	Fix broken submodule entry	﻿2026-04-16T18:38:29.2888268Z ##[group]Run if [ -f .gitmodules ]; then
-refresh	Fix broken submodule entry	2026-04-16T18:38:29.2888638Z [36;1mif [ -f .gitmodules ]; then[0m
-refresh	Fix broken submodule entry	2026-04-16T18:38:29.2889119Z [36;1m  git config -f .gitmodules --remove-section submodule.tmp/fte_clone 2>/dev/null || true[0m
-refresh	Fix broken submodule entry	2026-04-16T18:38:29.2889771Z [36;1m  git config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true[0m
-refresh	Fix broken submodule entry	2026-04-16T18:38:29.2890216Z [36;1mfi[0m
-refresh	Fix broken submodule entry	2026-04-16T18:38:29.2915255Z shell: /usr/bin/bash -e {0}
-refresh	Fix broken submodule entry	2026-04-16T18:38:29.2915514Z ##[endgroup]
-refresh	Restore workspace (prevent post-checkout submodule error)	﻿2026-04-16T18:39:02.3575927Z ##[group]Run git config -f .gitmodules --remove-section submodule.tmp/fte_clone 2>/dev/null || true
-refresh	Restore workspace (prevent post-checkout submodule error)	2026-04-16T18:39:02.3576649Z [36;1mgit config -f .gitmodules --remove-section submodule.tmp/fte_clone 2>/dev/null || true[0m
-refresh	Restore workspace (prevent post-checkout submodule error)	2026-04-16T18:39:02.3577278Z [36;1mgit config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true[0m
-refresh	Restore workspace (prevent post-checkout submodule error)	2026-04-16T18:39:02.3577765Z [36;1mgit rm --cached tmp/fte_clone 2>/dev/null || true[0m
-refresh	Restore workspace (prevent post-checkout submodule error)	2026-04-16T18:39:02.3598126Z shell: /usr/bin/bash -e {0}
-refresh	Restore workspace (prevent post-checkout submodule error)	2026-04-16T18:39:02.3598372Z ##[endgroup]
-refresh	Post Run actions/checkout@v4	2026-04-16T18:39:02.6569064Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-refresh	Post Run actions/checkout@v4	2026-04-16T18:39:02.6805305Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+scan	Post Checkout	2026-05-27T05:49:17.1159781Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+scan	Post Checkout	2026-05-27T05:49:17.1450320Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+scan	Post Checkout	2026-05-27T05:49:17.2035837Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Regime Terminal  HMM Live Scanner — **latest** (- / in_progress) [run 24528055782](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24528055782)
+### [torontoevent.net] Deploy Competition to Live Site — **latest** (skipped / completed) [run 26493325410](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493325410)
 
 *No signal regex hits; last 25 log lines:*
 
 ```text
-run 24528055782 is still in progress; logs will be available when it is complete
+
 ```
 
-### Run Backtests & Deploy Dashboards — **latest** (success / completed) [run 24526988058](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526988058)
+### Audit Hourly Update — **latest** (failure / completed) [run 26493315264](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493315264)
 
 Signal lines:
 
 ```text
-backtest	Post Checkout repository	2026-04-16T18:32:22.8223999Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-backtest	Post Checkout repository	2026-04-16T18:32:22.8467539Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+update	Run generate_hourly_update.py	2026-05-27T05:47:03.5932972Z ##[error]Process completed with exit code 1.
 ```
 
-### Send Accountability Reminders — **latest** (success / completed) [run 24526874460](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526874460)
+### Audit Hourly Update — **prior** (failure / completed) [run 26489018169](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26489018169)
 
 *No signal regex hits; last 25 log lines:*
 
 ```text
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7957299Z [36;1mimport sys, json[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7957989Z [36;1mdata = json.load(sys.stdin)[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7958668Z [36;1mprint(f\"Discord DMs sent: {data.get('sent_discord', 0)}\")[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7959530Z [36;1mprint(f\"Dashboard notifs sent: {data.get('sent_dashboard', 0)}\")[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7960417Z [36;1mprint(f\"Skipped (wrong hour): {data.get('skipped', 0)}\")[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7961109Z [36;1mif data.get('dry_run'):[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7961672Z [36;1m    previews = data.get('previews', [])[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7962339Z [36;1m    print(f\"Preview count: {len(previews)}\")[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7962971Z [36;1m    for p in previews[:10]:[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7963613Z [36;1m        print(f\"  -> {p.get('channel')}: {p.get('task')}\")[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7964269Z [36;1mif data.get('errors'):[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7964794Z [36;1m    for e in data['errors']:[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7965625Z [36;1m        print(f\"Error: {e}\")[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7966166Z [36;1m"[0m
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7987875Z shell: /usr/bin/bash -e {0}
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7988391Z env:
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7989077Z   EVENT_NOTIFY_API_KEY: ***
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.7989568Z ##[endgroup]
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:45.8038595Z Sending accountability reminders...
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:46.3426383Z HTTP Status: 200
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:46.3428140Z Response: {"success":true,"sent_discord":0,"sent_dashboard":0,"message":"No data yet"}
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:46.3623108Z Discord DMs sent: 0
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:46.3624320Z Dashboard notifs sent: 0
-send-reminders	Send Accountability Coach Reminders	2026-04-16T18:23:46.3625398Z Skipped (wrong hour): 0
-send-reminders	Complete job	﻿2026-04-16T18:23:46.3724979Z Cleaning up orphan processes
+
 ```
 
-### Signal Integrator - Isolated Source Aggregator — **latest** (- / in_progress) [run 24527655699](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527655699)
+### Copy Trader Forward Test — **latest** (success / completed) [run 26493300628](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493300628)
+
+Signal lines:
+
+```text
+forward-test	Post Checkout repository	2026-05-27T05:53:57.3143254Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+forward-test	Post Checkout repository	2026-05-27T05:53:57.3373975Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+forward-test	Post Checkout repository	2026-05-27T05:53:57.3804385Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Enhanced ML Crypto Train & Predict — **latest** (success / completed) [run 26493290164](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493290164)
+
+Signal lines:
+
+```text
+enhanced-ml	Post Checkout repository	2026-05-27T05:50:04.2252147Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+enhanced-ml	Post Checkout repository	2026-05-27T05:50:04.2537502Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+enhanced-ml	Post Checkout repository	2026-05-27T05:50:04.3115862Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Sustained Gainer Confluence Scanner — **latest** (success / completed) [run 26493247647](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493247647)
+
+Signal lines:
+
+```text
+sustained-gainer	Post Checkout repository	2026-05-27T05:45:12.7272575Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sustained-gainer	Post Checkout repository	2026-05-27T05:45:12.7558665Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sustained-gainer	Post Checkout repository	2026-05-27T05:45:12.8173771Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Claude Code Gainer ML Tracker — **latest** (failure / completed) [run 26493245187](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493245187)
+
+Signal lines:
+
+```text
+predict-and-track	Step 2: Run live predictions (threshold=adaptive)	2026-05-27T05:45:20.7469385Z ##[error]Process completed with exit code 1.
+```
+
+### Claude Code Gainer ML Tracker — **prior** (failure / completed) [run 26484971958](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26484971958)
 
 *No signal regex hits; last 25 log lines:*
 
 ```text
-run 24527655699 is still in progress; logs will be available when it is complete
+
 ```
 
-### Signal Quality Monitor — **latest** (success / completed) [run 24527633915](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527633915)
+### UEPS Pick Runner — **latest** (success / completed) [run 26493245040](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493245040)
 
 Signal lines:
 
 ```text
-monitor-quality	Post Checkout repository	2026-04-16T18:43:22.9091430Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-monitor-quality	Post Checkout repository	2026-04-16T18:43:22.9299260Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+run-ueps-pickers	Post Checkout	2026-05-27T05:48:02.4867349Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run-ueps-pickers	Post Checkout	2026-05-27T05:48:02.5147564Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run-ueps-pickers	Post Checkout	2026-05-27T05:48:02.5706820Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Signal Recorder — **latest** (success / completed) [run 24526337700](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526337700)
+### Baby Strat Real Forward Monitor — **latest** (success / completed) [run 26493245039](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493245039)
 
 Signal lines:
 
 ```text
-record-signals	Fetch TradingView technicals	2026-04-16T18:14:30.3649350Z   MATICUSDT/1h: Exchange or symbol not found.
-record-signals	Fetch TradingView technicals	2026-04-16T18:14:30.3649839Z   MATICUSDT/4h: Exchange or symbol not found.
-record-signals	Fetch TradingView technicals	2026-04-16T18:14:30.3650293Z   MATICUSDT/1d: Exchange or symbol not found.
-record-signals	Fetch TradingView technicals	2026-04-16T18:14:30.3650796Z   MATICUSDT/1w: Exchange or symbol not found.
-record-signals	Post Run actions/checkout@v4	2026-04-16T18:15:12.7728150Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-record-signals	Post Run actions/checkout@v4	2026-04-16T18:15:12.7964888Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+forward-monitor	Auto-commit changed forward artifacts	2026-05-27T06:13:42.7006249Z fatal: pathspec 'battleground/data/incubator_signals.json' did not match any files
+forward-monitor	Post Checkout	2026-05-27T06:13:42.9877392Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+forward-monitor	Post Checkout	2026-05-27T06:13:43.0189547Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+forward-monitor	Post Checkout	2026-05-27T06:13:43.0842801Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Signal Tracking & Validation - Beat the Market — **latest** (success / completed) [run 24526852966](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526852966)
+### Quick Guess ML Agent — **latest** (success / completed) [run 26493237594](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493237594)
 
 Signal lines:
 
 ```text
-track-and-validate	Post Checkout code	2026-04-16T18:35:49.0843412Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track-and-validate	Post Checkout code	2026-04-16T18:35:49.1085543Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+quick-guess	Post Run actions/checkout@v6	2026-05-27T05:47:04.5524346Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+quick-guess	Post Run actions/checkout@v6	2026-05-27T05:47:04.5795682Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+quick-guess	Post Run actions/checkout@v6	2026-05-27T05:47:04.6369523Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Skyrocket Detector  Live Scanner — **latest** (success / completed) [run 24525773385](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24525773385)
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local) — **latest** (success / completed) [run 26493231726](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493231726)
 
 Signal lines:
 
 ```text
-scan	Post Run actions/checkout@v4	2026-04-16T18:03:12.9433463Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Run actions/checkout@v4	2026-04-16T18:03:12.9671121Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+alpha-engine	Commit results	2026-05-27T06:18:52.3263246Z [36;1m  git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {[0m
+alpha-engine	Commit results	2026-05-27T06:18:52.3270837Z [36;1m  # Non-fatal: data was generated and committed locally. The next[0m
+alpha-engine	Post Checkout repository	2026-05-27T06:29:58.0533586Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+alpha-engine	Post Checkout repository	2026-05-27T06:29:58.0832229Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+alpha-engine	Post Checkout repository	2026-05-27T06:29:58.1434365Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Smart Picks Tracker — **latest** (success / completed) [run 24526607370](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526607370)
+### Claude Gainer Short-Term Predictor — **latest** (success / completed) [run 26493230701](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493230701)
 
 Signal lines:
 
 ```text
-track	Post Run actions/checkout@v4	2026-04-16T18:20:38.9998397Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-track	Post Run actions/checkout@v4	2026-04-16T18:20:39.0224510Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+scan	Post Checkout	2026-05-27T05:45:01.6813753Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+scan	Post Checkout	2026-05-27T05:45:01.7066212Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+scan	Post Checkout	2026-05-27T05:45:01.8469789Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Specialized Scanners - Rocket, Short Engine, TSMOM — **latest** (success / completed) [run 24524677383](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24524677383)
+### Cross-System Signal Aggregator — **latest** (success / completed) [run 26493230676](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493230676)
 
 Signal lines:
 
 ```text
-run-scanners	UNKNOWN STEP	2026-04-16T17:38:44.8096366Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-run-scanners	UNKNOWN STEP	2026-04-16T17:38:44.8316880Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+aggregate	Post Checkout repository	2026-05-27T05:49:29.4520718Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+aggregate	Post Checkout repository	2026-05-27T05:49:29.4820490Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+aggregate	Post Checkout repository	2026-05-27T05:49:29.5485820Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Spike Scanner — **latest** (success / completed) [run 24526896060](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526896060)
+### Signal Integrator - Isolated Source Aggregator — **latest** (success / completed) [run 26493228357](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493228357)
+
+Signal lines:
+
+```text
+integrate	Post Checkout	2026-05-27T05:44:40.9652635Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+integrate	Post Checkout	2026-05-27T05:44:40.9951290Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+integrate	Post Checkout	2026-05-27T05:44:41.0559235Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Outcome Resolver  Validate Unresolved Picks — **latest** (success / completed) [run 26493222328](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493222328)
+
+Signal lines:
+
+```text
+resolve-outcomes	Post Checkout repository	2026-05-27T05:47:35.1051535Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+resolve-outcomes	Post Checkout repository	2026-05-27T05:47:35.1282191Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+resolve-outcomes	Post Checkout repository	2026-05-27T05:47:35.1718378Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Rapid Validation Engine — **latest** (success / completed) [run 26493215563](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493215563)
+
+Signal lines:
+
+```text
+rapid-validation	Post Checkout repository	2026-05-27T05:43:53.3944696Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+rapid-validation	Post Checkout repository	2026-05-27T05:43:53.4216638Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+rapid-validation	Post Checkout repository	2026-05-27T05:43:53.4741222Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### ALPHA ENGINE - Incubator Strategies — **latest** (success / completed) [run 26493215579](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493215579)
+
+Signal lines:
+
+```text
+incubator-scan	Post Checkout repository	2026-05-27T05:44:13.2551219Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+incubator-scan	Post Checkout repository	2026-05-27T05:44:13.2831970Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+incubator-scan	Post Checkout repository	2026-05-27T05:44:13.3403886Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Winner Pattern Precursor Scanner — **latest** (success / completed) [run 26493207534](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493207534)
+
+Signal lines:
+
+```text
+winner-pattern-scan	Post Checkout repository	2026-05-27T05:44:27.9026717Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+winner-pattern-scan	Post Checkout repository	2026-05-27T05:44:27.9299192Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+winner-pattern-scan	Post Checkout repository	2026-05-27T05:44:27.9816296Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Sports endpoint smoke + Playwright — **latest** (failure / completed) [run 26493202620](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493202620)
+
+Signal lines:
+
+```text
+smoke	Run pytest smoke suite (live production endpoints)	2026-05-27T05:43:31.3106010Z ##[error]Process completed with exit code 1.
+```
+
+### Sports endpoint smoke + Playwright — **prior** (failure / completed) [run 26488877603](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26488877603)
 
 *No signal regex hits; last 25 log lines:*
 
 ```text
-scan	Trigger Spike Scan	2026-04-16T18:24:16.4932909Z ##[endgroup]
-scan	Trigger Spike Scan	2026-04-16T18:24:20.0206995Z {"ok":true,"action":"scan_all","crypto":{"count":0,"spikes":[],"scanned":0,"errors":["No crypto data source available"]},"stocks":{"count":0,"spikes":[],"scanned":30,"errors":[]},"forex":{"count":0,"spikes":[],"scanned":17,"errors":[]},"total_spikes":0,"elapsed":"2.27s","tag":"CURSORCODE_Feb152026"}Spike scan triggered
-scan	Trigger Pattern Build	﻿2026-04-16T18:24:20.0369008Z ##[group]Run curl -s "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=build&key=livetrader2026" || true
-scan	Trigger Pattern Build	2026-04-16T18:24:20.0370174Z [36;1mcurl -s "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=build&key=livetrader2026" || true[0m
-scan	Trigger Pattern Build	2026-04-16T18:24:20.0370828Z [36;1mecho "Pattern build triggered"[0m
-scan	Trigger Pattern Build	2026-04-16T18:24:20.0392693Z shell: /usr/bin/bash -e {0}
-scan	Trigger Pattern Build	2026-04-16T18:24:20.0393000Z ##[endgroup]
-scan	Trigger Pattern Build	2026-04-16T18:24:46.3286736Z {"ok":true,"action":"build","built":47,"pairs_analyzed":47,"errors":[],"elapsed":"25.14s","tag":"CURSORCODE_Feb152026"}Pattern build triggered
-scan	Wait for processing	﻿2026-04-16T18:24:46.3322807Z ##[group]Run sleep 30
-scan	Wait for processing	2026-04-16T18:24:46.3323118Z [36;1msleep 30[0m
-scan	Wait for processing	2026-04-16T18:24:46.3344833Z shell: /usr/bin/bash -e {0}
-scan	Wait for processing	2026-04-16T18:24:46.3345144Z ##[endgroup]
-scan	Check Status	﻿2026-04-16T18:25:16.3431976Z ##[group]Run echo "Spike Scanner Status:"
-scan	Check Status	2026-04-16T18:25:16.3432342Z [36;1mecho "Spike Scanner Status:"[0m
-scan	Check Status	2026-04-16T18:25:16.3432849Z [36;1mcurl -s "https://findtorontoevents.ca/live-monitor/api/spike_scanner.php?action=status" | head -c 500[0m
-scan	Check Status	2026-04-16T18:25:16.3433350Z [36;1mecho ""[0m
-scan	Check Status	2026-04-16T18:25:16.3433576Z [36;1mecho "Pair Fingerprint Status:"[0m
-scan	Check Status	2026-04-16T18:25:16.3434427Z [36;1mcurl -s "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=status" | head -c 500[0m
-scan	Check Status	2026-04-16T18:25:16.3455849Z shell: /usr/bin/bash -e {0}
-scan	Check Status	2026-04-16T18:25:16.3456105Z ##[endgroup]
-scan	Check Status	2026-04-16T18:25:16.3495212Z Spike Scanner Status:
-scan	Check Status	2026-04-16T18:25:16.6686589Z {"ok":true,"engine":"Multi-Asset Spike Scanner","version":"CURSORCODE_Feb152026","active_spikes":0,"total_scans":0,"baselines":82,"last_scan":"never","breakdown":[],"asset_classes":["CRYPTO","STOCK","FOREX"],"methodology":"Real-time volume + price spike detection calibrated per-pair using EWMA baselines. Similar to commercial services like Elxes and MEFAI but integrated with our Pair Fingerprint Engine for asset-specific context. Covers crypto (top 100), stocks\/penny stocks, and forex majors."}
-scan	Check Status	2026-04-16T18:25:16.6690249Z Pair Fingerprint Status:
-scan	Check Status	2026-04-16T18:25:17.1012195Z {"ok":true,"engine":"Pair Fingerprint Engine","version":"CURSORCODE_Feb152026","fingerprints":47,"active_alerts":0,"last_build":"2026-04-16 18:24:20","last_scan":"never","asset_breakdown":[{"asset_class":"CRYPTO","pairs":"27","avg_wr":0},{"asset_class":"FOREX","pairs":"8","avg_wr":0},{"asset_class":"STOCK","pairs":"12","avg_wr":0}],"methodology":"Per-pair behavioral profiling. Unlike generic indicator strategies, this engine studies each asset's unique patterns: mean-reversion tendency, momentum
-scan	Complete job	﻿2026-04-16T18:25:17.1060600Z Cleaning up orphan processes
+
 ```
 
-### Sports Betting  Odds Refresh & Auto-Settle — **latest** (success / completed) [run 24526714447](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24526714447)
+### Deploy Vetted Master-Picks — **latest** (success / completed) [run 26493202603](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493202603)
+
+Signal lines:
+
+```text
+deploy-vetted-picks	Commit tracker updates	2026-05-27T05:44:12.8311127Z fatal: pathspec 'signal_aggregator/data/master_picks_history.json' did not match any files
+deploy-vetted-picks	Post Checkout repository	2026-05-27T05:44:13.0862374Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy-vetted-picks	Post Checkout repository	2026-05-27T05:44:13.1133275Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy-vetted-picks	Post Checkout repository	2026-05-27T05:44:13.1662490Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Portfolio Trackers (Real Money + Theory) — **latest** (success / completed) [run 26493202080](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493202080)
+
+Signal lines:
+
+```text
+track	Post Run actions/checkout@v6	2026-05-27T05:47:26.6932305Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+track	Post Run actions/checkout@v6	2026-05-27T05:47:26.7222733Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+track	Post Run actions/checkout@v6	2026-05-27T05:47:26.7801761Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Strategy Forward Tester — **latest** (success / completed) [run 26493197591](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493197591)
+
+Signal lines:
+
+```text
+forward-test	Post Run actions/checkout@v6	2026-05-27T05:43:45.8882333Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+forward-test	Post Run actions/checkout@v6	2026-05-27T05:43:45.9124729Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+forward-test	Post Run actions/checkout@v6	2026-05-27T05:43:45.9614196Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Analyst Tracker  Top 20 Crypto Analysts — **latest** (success / completed) [run 26493197213](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493197213)
+
+Signal lines:
+
+```text
+scrape-analysts	Run analyst scraper + validation	2026-05-27T05:48:19.8950907Z   Reddit JSON API error for r/options: 403 Client Error: Blocked for url: https://www.reddit.com/r/options/new/.json?limit=50
+scrape-analysts	Run analyst scraper + validation	2026-05-27T05:48:19.8952744Z   Reddit JSON API error for r/investing: 403 Client Error: Blocked for url: https://www.reddit.com/r/investing/new/.json?limit=50
+scrape-analysts	Run analyst scraper + validation	2026-05-27T05:48:19.8954707Z   Reddit JSON API error for r/SecurityAnalysis: 403 Client Error: Blocked for url: https://www.reddit.com/r/SecurityAnalysis/new/.json?limit=50
+scrape-analysts	Run analyst scraper + validation	2026-05-27T05:48:19.8956791Z   Reddit JSON API error for r/CryptoIndia: 403 Client Error: Blocked for url: https://www.reddit.com/r/CryptoIndia/new/.json?limit=50
+scrape-analysts	Run analyst scraper + validation	2026-05-27T05:48:19.8958848Z   Reddit JSON API error for r/CryptoUK: 403 Client Error: Blocked for url: https://www.reddit.com/r/CryptoUK/new/.json?limit=50
+scrape-analysts	Run analyst scraper + validation	2026-05-27T05:48:19.8960520Z   Reddit JSON API error for r/CryptoAus: 403 Client Error: Blocked for url: https://www.reddit.com/r/CryptoAus/new/.json?limit=50
+scrape-analysts	Run analyst scraper + validation	2026-05-27T05:48:19.8962200Z   Reddit JSON API error for r/CryptoCanada: 403 Client Error: Blocked for url: https://www.reddit.com/r/CryptoCanada/new/.json?limit=50
+scrape-analysts	Post Run actions/checkout@v6	2026-05-27T05:48:20.7093968Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+scrape-analysts	Post Run actions/checkout@v6	2026-05-27T05:48:20.7381061Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+scrape-analysts	Post Run actions/checkout@v6	2026-05-27T05:48:20.7933448Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Signal Quality Monitor — **latest** (success / completed) [run 26493196344](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493196344)
+
+Signal lines:
+
+```text
+monitor-quality	Post Checkout repository	2026-05-27T05:43:28.9999190Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+monitor-quality	Post Checkout repository	2026-05-27T05:43:29.0292490Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+monitor-quality	Post Checkout repository	2026-05-27T05:43:29.0870904Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Deploy Battleground to FTP — **latest** (success / completed) [run 26493195310](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493195310)
+
+Signal lines:
+
+```text
+deploy	Post Checkout	2026-05-27T05:43:33.7528316Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+deploy	Post Checkout	2026-05-27T05:43:33.7794749Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+deploy	Post Checkout	2026-05-27T05:43:33.8301110Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Prediction Market Agents — **latest** (success / completed) [run 26493195059](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493195059)
+
+Signal lines:
+
+```text
+prediction-market-scan	Post Checkout repository	2026-05-27T05:45:07.4151761Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+prediction-market-scan	Post Checkout repository	2026-05-27T05:45:07.4439572Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+prediction-market-scan	Post Checkout repository	2026-05-27T05:45:07.4986137Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### EMA Retracement Mean Reversion Scanner — **latest** (success / completed) [run 26493174065](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493174065)
+
+Signal lines:
+
+```text
+ema-retracement	Post Checkout repository	2026-05-27T05:42:41.0453336Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ema-retracement	Post Checkout repository	2026-05-27T05:42:41.0725945Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ema-retracement	Post Checkout repository	2026-05-27T05:42:41.1251013Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Crypto Test Portfolios — **latest** (success / completed) [run 26493174037](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493174037)
+
+Signal lines:
+
+```text
+portfolio-tracker	Post Checkout repository	2026-05-27T05:49:38.7205356Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+portfolio-tracker	Post Checkout repository	2026-05-27T05:49:38.7497281Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+portfolio-tracker	Post Checkout repository	2026-05-27T05:49:38.8057320Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Polymarket Prediction Market Signals (Multi-Asset) — **latest** (success / completed) [run 26493154080](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493154080)
+
+Signal lines:
+
+```text
+polymarket-scan	Post Checkout repository	2026-05-27T05:46:54.1447420Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+polymarket-scan	Post Checkout repository	2026-05-27T05:46:54.1712353Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+polymarket-scan	Post Checkout repository	2026-05-27T05:46:54.2238788Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### Unified Audit Dashboard — **latest** (success / completed) [run 26493150403](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493150403)
+
+Signal lines:
+
+```text
+generate-and-deploy	Post Checkout	2026-05-27T06:25:21.1356903Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+generate-and-deploy	Post Checkout	2026-05-27T06:25:21.1567636Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+generate-and-deploy	Post Checkout	2026-05-27T06:25:21.1967052Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+```
+
+### DNA Strategy Pipeline — **latest** (- / in_progress) [run 26493149255](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493149255)
 
 *No signal regex hits; last 25 log lines:*
 
 ```text
-odds-refresh	Dashboard summary	2026-04-16T18:20:10.0677024Z ROI: 46.61%
-odds-refresh	Dashboard summary	2026-04-16T18:20:10.0677254Z Total PnL: $45.28
-odds-refresh	Dashboard summary	2026-04-16T18:20:10.0677511Z Active Bets: 10
-odds-refresh	Credit usage check	﻿2026-04-16T18:20:10.0794712Z ##[group]Run echo "=== API Credit Usage ==="
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0795116Z [36;1mecho "=== API Credit Usage ==="[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0795771Z [36;1mRESULT=$(curl -s --max-time 10 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=credit_usage") || true[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0796393Z [36;1mecho "$RESULT" | python3 -c "[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0796652Z [36;1mimport sys, json[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0796865Z [36;1mtry:[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0797058Z [36;1m    d = json.load(sys.stdin)[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0797306Z [36;1m    if d.get('ok'):[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0797684Z [36;1m        print(f'Monthly used: {d.get(\"monthly_used\",0)}/{d.get(\"monthly_limit\",500)}')[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0798182Z [36;1m        print(f'Remaining: {d.get(\"monthly_remaining\",\"?\")}')[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0798562Z [36;1m        print(f'Used: {d.get(\"pct_used\",0)}%')[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0798834Z [36;1m    else:[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0799085Z [36;1m        print(f'Error: {d.get(\"error\",\"unknown\")}')[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0799442Z [36;1mexcept: print('Parse error')[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0799701Z [36;1m" || echo "Credits: $RESULT"[0m
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0821716Z shell: /usr/bin/bash -e {0}
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0822007Z ##[endgroup]
-odds-refresh	Credit usage check	2026-04-16T18:20:10.0863064Z === API Credit Usage ===
-odds-refresh	Credit usage check	2026-04-16T18:20:10.2986760Z Monthly used: 42/500
-odds-refresh	Credit usage check	2026-04-16T18:20:10.2987197Z Remaining: 458
-odds-refresh	Credit usage check	2026-04-16T18:20:10.2987521Z Used: 8.4%
-odds-refresh	Complete job	﻿2026-04-16T18:20:10.3076577Z Cleaning up orphan processes
+run 26493149255 is still in progress; logs will be available when it is complete
 ```
 
-### Strategy Forward Tester — **latest** (- / in_progress) [run 24527624992](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527624992)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527624992 is still in progress; logs will be available when it is complete
-```
-
-### Strategy Genome Evolution — **latest** (- / in_progress) [run 24527654815](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527654815)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527654815 is still in progress; logs will be available when it is complete
-```
-
-### SUPERPOWERS - Bootstrap All 3 ML Systems — **latest** (- / in_progress) [run 24527185464](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527185464)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527185464 is still in progress; logs will be available when it is complete
-```
-
-### Sustained Gainer Confluence Scanner — **latest** (success / completed) [run 24527618414](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527618414)
+### ALPHA ENGINE Gainer Capture (15min) — **latest** (success / completed) [run 26493145424](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493145424)
 
 Signal lines:
 
 ```text
-sustained-gainer	Post Checkout repository	2026-04-16T18:41:50.4742511Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-sustained-gainer	Post Checkout repository	2026-04-16T18:41:50.4968407Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+gainer-capture	Post Checkout repository	2026-05-27T05:42:22.6989145Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gainer-capture	Post Checkout repository	2026-05-27T05:42:22.7255848Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gainer-capture	Post Checkout repository	2026-05-27T05:42:22.7774342Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### System Health Check — **latest** (success / completed) [run 24527286198](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527286198)
+### ML Picks  Hourly Discord Alert — **latest** (success / completed) [run 26493144404](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493144404)
 
 Signal lines:
 
 ```text
-health-check	Post Checkout repository	2026-04-16T18:36:29.5540736Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-health-check	Post Checkout repository	2026-04-16T18:36:29.5765713Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+send-picks	Post Run actions/checkout@v6	2026-05-27T05:41:37.9954992Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+send-picks	Post Run actions/checkout@v6	2026-05-27T05:41:38.0218885Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+send-picks	Post Run actions/checkout@v6	2026-05-27T05:41:38.0722523Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Test Portfolios  Hourly Strategy Validation — **latest** (success / completed) [run 24527852846](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527852846)
+### Breakout Arena  3 Approaches — **latest** (success / completed) [run 26493144217](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493144217)
 
 Signal lines:
 
 ```text
-run	Post Run actions/checkout@v4	2026-04-16T18:47:57.9273342Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-run	Post Run actions/checkout@v4	2026-04-16T18:47:57.9497994Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+scan-all	Post Run actions/checkout@v6	2026-05-27T05:42:09.0461281Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+scan-all	Post Run actions/checkout@v6	2026-05-27T05:42:09.0746712Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+scan-all	Post Run actions/checkout@v6	2026-05-27T05:42:09.1296704Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
 
-### Top Gainers Spike Scanner — **latest** (success / completed) [run 24527432809](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527432809)
+### Meme Coin Scanner v2  Fixed & Monitored — **latest** (success / completed) [run 26493143643](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/26493143643)
 
 Signal lines:
 
 ```text
-scan	Run top gainers scanner	2026-04-16T18:38:47.3401039Z 18:38:47 [ERROR] HTTP Error 404: Not Found{"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MULN"}}}
-scan	Post Checkout	2026-04-16T18:39:43.3320830Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-scan	Post Checkout	2026-04-16T18:39:43.3567075Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### TV Paper TP/SL Watchdog — **latest** (success / completed) [run 24527735597](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527735597)
-
-Signal lines:
-
-```text
-audit	Post Checkout	2026-04-16T18:45:22.0526607Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-audit	Post Checkout	2026-04-16T18:45:22.0775506Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Unified Audit Dashboard — **latest** (- / pending) [run 24527927103](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527927103)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-run 24527927103 is still in progress; logs will be available when it is complete
-```
-
-### Update Creator News — **latest** (success / completed) [run 24527280242](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527280242)
-
-*No signal regex hits; last 25 log lines:*
-
-```text
-update-news	Check Result	2026-04-16T18:34:26.3762216Z         {
-update-news	Check Result	2026-04-16T18:34:26.3762415Z             "name": "WTFPreston",
-update-news	Check Result	2026-04-16T18:34:26.3762679Z             "items_found": 0
-update-news	Check Result	2026-04-16T18:34:26.3763034Z         },
-update-news	Check Result	2026-04-16T18:34:26.3763218Z         {
-update-news	Check Result	2026-04-16T18:34:26.3763416Z             "name": "Xqc",
-update-news	Check Result	2026-04-16T18:34:26.3763652Z             "items_found": 0
-update-news	Check Result	2026-04-16T18:34:26.3763883Z         },
-update-news	Check Result	2026-04-16T18:34:26.3764065Z         {
-update-news	Check Result	2026-04-16T18:34:26.3764266Z             "name": "Zarthestar",
-update-news	Check Result	2026-04-16T18:34:26.3764516Z             "items_found": 0
-update-news	Check Result	2026-04-16T18:34:26.3764746Z         },
-update-news	Check Result	2026-04-16T18:34:26.3764928Z         {
-update-news	Check Result	2026-04-16T18:34:26.3765128Z             "name": "Zherka",
-update-news	Check Result	2026-04-16T18:34:26.3765374Z             "items_found": 0
-update-news	Check Result	2026-04-16T18:34:26.3765605Z         },
-update-news	Check Result	2026-04-16T18:34:26.3765793Z         {
-update-news	Check Result	2026-04-16T18:34:26.3765985Z             "name": "Zople",
-update-news	Check Result	2026-04-16T18:34:26.3766223Z             "items_found": 0
-update-news	Check Result	2026-04-16T18:34:26.3766446Z         }
-update-news	Check Result	2026-04-16T18:34:26.3766635Z     ],
-update-news	Check Result	2026-04-16T18:34:26.3766876Z     "message": "Aggregated content for 121 creators",
-update-news	Check Result	2026-04-16T18:34:26.3767197Z     "timestamp": "2026-04-16 18:34:26"
-update-news	Check Result	2026-04-16T18:34:26.3767458Z }
-update-news	Complete job	﻿2026-04-16T18:34:26.3827449Z Cleaning up orphan processes
-```
-
-### VOLATILE ALT SCANNER Hyperliquid High-Vol Alts — **latest** (success / completed) [run 24527462857](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527462857)
-
-Signal lines:
-
-```text
-volatile-alt-scan	Post Checkout repository	2026-04-16T18:38:01.6071512Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-volatile-alt-scan	Post Checkout repository	2026-04-16T18:38:01.6293920Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
-```
-
-### Winner Pattern Precursor Scanner — **latest** (success / completed) [run 24527856166](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/24527856166)
-
-Signal lines:
-
-```text
-winner-pattern-scan	Post Checkout repository	2026-04-16T18:48:52.2302710Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-winner-pattern-scan	Post Checkout repository	2026-04-16T18:48:52.2524689Z fatal: No url found for submodule path '.pr41-review' in .gitmodules
+meme-scan	Post Checkout code	2026-05-27T05:41:35.6565246Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+meme-scan	Post Checkout code	2026-05-27T05:41:35.6923116Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+meme-scan	Post Checkout code	2026-05-27T05:41:35.8100809Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
 ```
