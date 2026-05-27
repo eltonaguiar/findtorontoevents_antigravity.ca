@@ -67,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-05-27 05:59 UTC · <strong>37 open incidents</strong> (18 P0 · 11 P1) · <strong>38 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-05-27 06:35 UTC · <strong>44 open incidents</strong> (21 P0 · 15 P1) · <strong>47 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -82,27 +82,27 @@
     <tbody>
       <tr>
         <td class="cls">OVERALL</td>
-        <td>18</td>
-        <td class="p0">13</td>
-        <td class="top-issue">Cherry-picked SUPREME EDGE stats (82% WR / PF 13+) surfaced without &#39;post-hoc segment sear…</td>
-        <td>28</td>
-        <td class="top-issue">Runtime _assert_no_lookahead leakage guard in walk-forward harness</td>
+        <td>21</td>
+        <td class="p0">15</td>
+        <td class="top-issue">Profitable-but-filtered picks are not surfaced anywhere</td>
+        <td>32</td>
+        <td class="top-issue">Verify the 648-for-0 un-gated-picks claim (DeepSeek session)</td>
       </tr>
       <tr>
         <td class="cls">STOCKS</td>
-        <td>3</td>
+        <td>4</td>
         <td class="p0">1</td>
         <td class="top-issue">PEAD equity strategy stuck in shadow mode</td>
-        <td>1</td>
-        <td class="top-issue">Promote pead_equity from shadow to probation</td>
+        <td>2</td>
+        <td class="top-issue">Split LARGE_CAP_EQUITY from PENNY research-only names</td>
       </tr>
       <tr>
         <td class="cls">ETFS</td>
         <td>1</td>
         <td class="p0">—</td>
         <td class="top-issue">All 5 ETF strategies on probation with ZERO verified forward trades</td>
-        <td>1</td>
-        <td class="top-issue">Add real GEX + 0DTE flow data for gamma_raid persona</td>
+        <td>3</td>
+        <td class="top-issue">Make VIX-gated sector rotation the primary ETF sleeve</td>
       </tr>
       <tr>
         <td class="cls">CRYPTO</td>
@@ -114,7 +114,7 @@
       </tr>
       <tr>
         <td class="cls">FOREX</td>
-        <td>3</td>
+        <td>4</td>
         <td class="p0">1</td>
         <td class="top-issue">All FOREX strategies losers except cta_cross_asset_tsmom SHORT (93% USDJPY concentration)</td>
         <td>1</td>
@@ -122,11 +122,11 @@
       </tr>
       <tr>
         <td class="cls">COMMODITIES</td>
+        <td>4</td>
+        <td class="p0">3</td>
+        <td class="top-issue">COMMODITY headline PF/WR still contaminated by pre-clean COT aggregation</td>
         <td>3</td>
-        <td class="p0">2</td>
-        <td class="top-issue">Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534</td>
-        <td>2</td>
-        <td class="top-issue">Wire CFTC COT weekly feed for non-cot strategies</td>
+        <td class="top-issue">Recompute class health from deduped independent COT cycles only</td>
       </tr>
       <tr>
         <td class="cls">BONDS</td>
@@ -138,11 +138,11 @@
       </tr>
       <tr>
         <td class="cls">FUTURES</td>
-        <td>1</td>
+        <td>2</td>
         <td class="p0">—</td>
-        <td class="top-issue">futures_mean_reversion and ema_stack_momentum BANNED at 0% WR</td>
-        <td>1</td>
-        <td class="top-issue">Add commodity term-structure roll-yield strategy</td>
+        <td class="top-issue">FUTURES is a zombie tile with real futures hidden under COMMODITY</td>
+        <td>2</td>
+        <td class="top-issue">Replace empty FUTURES tile with unified futures taxonomy</td>
       </tr>
       <tr>
         <td class="cls">PENNY</td>
@@ -156,6 +156,14 @@
   </table>
 
 <h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>Profitable-but-filtered picks are not surfaced anywhere</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/quality_gates.py + dashboard_generator.py audit surfaces</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>HC JS/Python parity drift can change eligibility by surface</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
   <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>Cherry-picked SUPREME EDGE stats (82% WR / PF 13+) surfaced without &#39;post-hoc segment search&#39; caveat</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/template.html SUPREME EDGE block</code> · reporter: opencode/ring-2.6-1t + 3-engine swarm · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
@@ -188,15 +196,11 @@
     <span class="ie-class">OVERALL</span> <strong>trust_score NULL on 99.99% of closed picks</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.trust_score / audit_dashboard/hc_filter.js</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>5 FOREX rows have pnl_pct &lt; -100% (one at -106,700%)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct (FOREX category)</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>signal_outcomes table 82 days stale</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes / outcome resolver pipeline</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
 <h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Verify the 648-for-0 un-gated-picks claim (DeepSeek session)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category  · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
   <div class="enhancement-card ie-card">
     <span class="ie-class">OVERALL</span> <strong>Runtime _assert_no_lookahead leakage guard in walk-forward harness</strong>
     <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category METHODOLOGY · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
@@ -210,12 +214,8 @@
     <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category GATE · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>
   <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Adopt multi-model-consensus 0-100 algorithm quality score (DeepSeek+Kimi+8 CF models)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort M · status BACKLOG · category SCORING · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Stress-test 2020-March COVID scenario as mandatory pre-deploy gate</strong>
-    <div class="ie-card-meta">Impact HIGH · effort M · status BACKLOG · category METHODOLOGY · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>Add bounded hot-streak exemption with explicit audit trail</strong>
+    <div class="ie-card-meta">Impact HIGH · effort M · status BACKLOG · category GATE · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>
 <p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
 </div>
