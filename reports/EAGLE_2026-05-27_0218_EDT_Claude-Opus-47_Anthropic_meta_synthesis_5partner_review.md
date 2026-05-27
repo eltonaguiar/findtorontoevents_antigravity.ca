@@ -16,6 +16,7 @@
 | 4 | `updates/EAGLE_2026-05-27_0615EST_qwen-coder_alpha_engine_review.md` | qwen-coder | 299 | Alpha-engine drill-down |
 | 5 | `EAGLE_2026-05-27T06-10-51_EST.md` | (no model signed) | 68 | Skeleton stub |
 | 6 | (pasted by user 02:50 EDT, not file-committed) | **Mercury 2 (Inception Labs)** | ~120 (paste) | Template + tooling-focused — explicit "cannot read files locally", produces empty strategic-review TABLE for user to fill |
+| 7 | (pasted by user 02:55 EDT, not file-committed) | **MiMo-V2.5 (Xiaomi LLM Core Team)** | ~600 (paste, 5 deliverables) | Full deliverable set: dedup skill + strategy review + quick wins + remaining items + DB schema. Explicit "GitHub + local 90-day plan files inaccessible — review built FROM INCIDENTS DASHBOARD ONLY" |
 
 ### Mercury 2 (partner #6) — what it added
 
@@ -29,6 +30,45 @@ Mercury 2 explicitly stated it has no file-system access ("I cannot directly rea
    - **Recommendation:** start with Mercury 2's flatter schema for v1 (faster to ship), migrate to my history+reviews schema in v2 when reviewer-attribution becomes load-bearing.
 
 **Mercury 2 net contribution:** the column-shape of the strategic-review table is the missing piece across the prior 5 partners. None of #1–#5 explicitly named "exemption-after-hot-streak" as a separate column — they treated it as part of the gate critique. Mercury 2's framing surfaces this as a first-class question.
+
+### MiMo-V2.5 (partner #7) — what it added
+
+MiMo also disclosed no file-system / GitHub access — its review was built **only from the incidents dashboard JSON** (the same source all 7 partners share). What it added beyond #1–#6:
+
+1. **Formalized conviction-override / hot-streak exemption** — the only partner to answer the user's literal question *"exemption after going on a hot streak consistently?"* with concrete thresholds:
+   - ≥ 10 consecutive wins OR ≥ 70% WR rolling 20-pick window
+   - Earned: reduced Sharpe gate (0.3 vs 0.5), extended max DD (25% vs 20%)
+   - Forced: trailing stop tightening to 1.5× ATR (vs default 2× ATR)
+   - **Hard floors that never relax even on hot streak**: leakage guards, WON/PnL sign coherence, Monte-Carlo permutation p-value
+2. **Asset-class-specific gate profiles** — recognizes that one-size-fits-all gates fail on edge classes:
+   - PENNY/MEME: 40% DD tolerance, 1% max position size
+   - CRYPTO: higher vol tolerance + mandatory 24/7 stop monitoring
+   - BONDS: relaxed Sharpe gate (structural carry advantage)
+   - FOREX: relaxed n≥30 (vs n≥50) due to 24h liquidity
+3. **DB schema upgrade over Mercury 2's flat design** — adds CHECK constraints + GIN indexes + a separate `roadmap_items` table linking enhancements↔incidents by ID arrays:
+   - `enhancements` (status enum, asset_class array, impact CHECK, sprint VARCHAR)
+   - `incidents` (severity P0/P1/P2/P3, category CHECK, FK to enhancements)
+   - `roadmap_items` (quarter, theme, enhancement_ids[], incident_ids[], target_date)
+   - Plus an `update_enhancement_timestamp()` trigger for auto-`updated_at` + auto-`shipped_at`
+   - **Recommendation:** this is the strongest DB schema across all 7 partners. Adopt the 3-table layout with CHECK constraints as canonical v1. Migrate from Mercury 2's flat schema if any portion got prototyped earlier.
+4. **10 NEW REM items not in any prior partner's list** (REM-015 through REM-024):
+   - REM-015: Mean-reversion strategy template (overlaps my ENH-OSC-01 but more general)
+   - REM-016: Hot-streak exemption mechanism (formalized)
+   - REM-017: Asset-class-specific safety gate profiles
+   - REM-018: Funding rate data feed for crypto
+   - REM-019: Yield curve data feed (2s10s)
+   - REM-020: Ornstein-Uhlenbeck half-life estimator
+   - REM-021: Roll yield calculator for futures term structure
+   - REM-022: On-chain data integration (exchange flows)
+   - REM-023: Regime-exempt promotion path
+   - REM-024: Worktree cleanup (already covered by my `/dedup-md-files` skill)
+5. **Per-asset-class top strategies** — most detailed prescriptions across all 7 partners (universe, signal, entry, risk caps, gate, edge rationale). Worth treating as REFERENCE ARCHITECTURE, but **not derived from your specific historical data** (MiMo couldn't read the plans), so treat the parameters as starting points to backtest, not as facts.
+
+### Caveats specific to MiMo
+
+- Per-class strategy prescriptions are **generic best-practice**, not data-grounded. The "EUR/USD 1.05–1.12 range mean-revert" and "USD/JPY 145–155 BOJ intervention band" claims are real-world levels but not back-tested against your `trading_picks` history. Need empirical validation before sizing.
+- "30% of picks fire in wrong regime" + "2,531 WON rows" + "CRYPTO 5 edges fail Bonferroni" — these claims match the incidents dashboard exactly (good — MiMo read the canonical incident JSON, not hallucinated like the unsigned partner #5).
+- MiMo's "Quick Win PR list" (PR-001 through PR-008) substantially overlaps the open PRs already on GitHub (#9–#16). The hot-streak exemption (REM-016) and asset-class gate profiles (REM-017) are the genuinely new contributions worth opening fresh PRs for.
 
 ### TODO surfaced by Mercury 2 that none of #1–#5 answered
 

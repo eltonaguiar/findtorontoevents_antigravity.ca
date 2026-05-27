@@ -2,68 +2,73 @@
   "schema_version": "incidents_enhancements_partial/v1",
   "generated_at_utc": "2026-05-27T06:20:00Z",
   "generated_at_local": "2026-05-27 02:20 EDT",
-  "source": "5-partner EAGLE consolidation (Grok 4.3 xAI, Claude Sonnet 4.6 Copilot ×2, qwen-coder, anonymous stub) + Claude Opus 4.7 Anthropic meta-synthesis",
+  "source": "5-partner EAGLE consolidation (Grok 4.3 xAI, Claude Sonnet 4.6 Copilot \u00d72, qwen-coder, anonymous stub) + Claude Opus 4.7 Anthropic meta-synthesis",
   "synthesis_doc": "reports/EAGLE_2026-05-27_0218_EDT_Claude-Opus-47_Anthropic_meta_synthesis_5partner_review.md",
   "merge_target": "audit_dashboard/data/incidents_enhancements_feed.json (merge by max incident_id+1)",
-  "note": "12 new entries — 7 quick-win enhancements + 3 user-approval-gated + 2 meta-incidents (cross-validation flags). EST/EDT timeline included per item.",
-
+  "note": "12 new entries \u2014 7 quick-win enhancements + 3 user-approval-gated + 2 meta-incidents (cross-validation flags). EST/EDT timeline included per item.",
   "timeline_local_zone": "America/Toronto (EDT, UTC-4 in May)",
-
   "incidents_new": [
     {
       "incident_id_offset": 1,
       "asset_class": "OVERALL",
       "title": "Partner audits quoting non-canonical per-class numbers (deprecated by_asset_class_raw view)",
-      "description": "All 5 EAGLE partner audits on 2026-05-27 quote CRYPTO PF 1.30 / EQUITY PF 1.55 / COMMODITY PF 2.36 / FOREX PF 0.87 — these come from by_asset_class_raw (the pre-M-067 deprecated view) and do not match canonical by_asset_class_policy_clean_net which shows CRYPTO PF 0.96 / EQUITY n=1 / COMMODITY absent / FOREX n=12. Strategic recommendations downstream of these numbers carry a framing error.",
+      "description": "All 5 EAGLE partner audits on 2026-05-27 quote CRYPTO PF 1.30 / EQUITY PF 1.55 / COMMODITY PF 2.36 / FOREX PF 0.87 \u2014 these come from by_asset_class_raw (the pre-M-067 deprecated view) and do not match canonical by_asset_class_policy_clean_net which shows CRYPTO PF 0.96 / EQUITY n=1 / COMMODITY absent / FOREX n=12. Strategic recommendations downstream of these numbers carry a framing error.",
       "severity": "P1",
       "status": "OPEN",
       "reported_by": "Claude Opus 4.7 (Anthropic) meta-synthesis",
       "recommended_fix": "Add a CI guard rejecting any markdown report citing CRYPTO n>500 (the canonical n is 210). Auto-redirect external AI prompts to pf_registry.by_asset_class_policy_clean_net.",
       "evidence": "audit_dashboard/data/pf_registry.json::by_asset_class_policy_clean_net (CRYPTO n=210/PF 0.96, vs partner-quoted n=8122/PF 1.30)",
-      "timeline_local": "2026-05-27 02:18 EDT — surfaced in meta-synthesis"
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 surfaced in meta-synthesis"
     },
     {
       "incident_id_offset": 2,
       "asset_class": "OVERALL",
       "title": "Unsigned EAGLE response with fabricated CRYPTO PF 6.8 + FOREX PF 0.27",
-      "description": "File EAGLE_2026-05-27T06-10-51_EST.md (root, untracked) contains 'INC-002 CRYPTO Stable T2 (PF 6.8)' and 'INC-003 FOREX (PF 0.27)' — neither appears in any view of pf_registry.json. Author/model not signed. Pattern matches CLAUDE.md banner warning about Cloudflare-hosted models hallucinating per-class figures.",
+      "description": "File EAGLE_2026-05-27T06-10-51_EST.md (root, untracked) contains 'INC-002 CRYPTO Stable T2 (PF 6.8)' and 'INC-003 FOREX (PF 0.27)' \u2014 neither appears in any view of pf_registry.json. Author/model not signed. Pattern matches CLAUDE.md banner warning about Cloudflare-hosted models hallucinating per-class figures.",
       "severity": "P2",
       "status": "OPEN",
       "reported_by": "Claude Opus 4.7 (Anthropic) meta-synthesis",
       "recommended_fix": "Require all EAGLE responses to include a 'Model / Provider' frontmatter field. Auto-reject unsigned responses from peer-review consideration.",
-      "timeline_local": "2026-05-27 02:18 EDT — surfaced in meta-synthesis"
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 surfaced in meta-synthesis"
     }
   ],
-
   "enhancements_new": [
     {
       "enh_id": "QW-1",
       "asset_class": "STOCKS",
-      "title": "EQUITY VIX<22 hard regime gate — merge existing branch",
+      "title": "EQUITY VIX<22 hard regime gate \u2014 merge existing branch",
       "description": "Branch feat/equity-vix-regime-gate-sidecar-2026-05-13 already exists with backtest evidence: 30-LC universe + VIX<22 yields PF 5.37 / WR 75% / Sharpe 2.19 / MDD 7.3% vs baseline PF 2.82. Branch needs verification + one production caller wire-up (~30 LOC) in equity_strategies.py + non_crypto_quality_gate.passes_active_gate. Cited by all 5 partners as #1 highest-leverage idle item.",
       "severity": "P0",
       "status": "OPEN",
       "effort": "S",
       "expected_pf_lift": 1.55,
       "reported_by": "Grok 4.3 (xAI), Claude Sonnet 4.6 (Copilot), qwen-coder, Claude Opus 4.7 (meta)",
-      "files": ["alpha_engine/equity_strategies.py", "alpha_engine/non_crypto_quality_gate.py"],
+      "files": [
+        "alpha_engine/equity_strategies.py",
+        "alpha_engine/non_crypto_quality_gate.py"
+      ],
       "evidence_ref": "reports/equity_vix_regime_breakthrough_20260513.md",
-      "depends_on": ["forward_validator_restart"],
-      "timeline_local": "2026-05-27 02:18 EDT — consensus pick across 4 named partners"
+      "depends_on": [
+        "forward_validator_restart"
+      ],
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 consensus pick across 4 named partners"
     },
     {
       "enh_id": "QW-2",
       "asset_class": "ETFS",
-      "title": "ETF VIX<25 overlay — wire into etf_sector_emitter",
-      "description": "vix_regime_gate.py exists with correct thresholds but etf_sector_emitter.py never calls it. Backtest shows PF 2.05 baseline → PF 3.22 with VIX overlay (+57% lift, Sharpe 1.63). Single-line wire: import vix_regime_gate.is_safe_regime() and early-return picks when False.",
+      "title": "ETF VIX<25 overlay \u2014 wire into etf_sector_emitter",
+      "description": "vix_regime_gate.py exists with correct thresholds but etf_sector_emitter.py never calls it. Backtest shows PF 2.05 baseline \u2192 PF 3.22 with VIX overlay (+57% lift, Sharpe 1.63). Single-line wire: import vix_regime_gate.is_safe_regime() and early-return picks when False.",
       "severity": "P1",
       "status": "OPEN",
       "effort": "S",
       "expected_pf_lift": 1.17,
       "reported_by": "all 5 partners",
-      "files": ["alpha_engine/etf_sector_emitter.py", "alpha_engine/vix_regime_gate.py"],
+      "files": [
+        "alpha_engine/etf_sector_emitter.py",
+        "alpha_engine/vix_regime_gate.py"
+      ],
       "depends_on": [],
-      "timeline_local": "2026-05-27 02:18 EDT — consensus pick"
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 consensus pick"
     },
     {
       "enh_id": "QW-3",
@@ -75,9 +80,11 @@
       "effort": "S",
       "expected_pf_lift": null,
       "reported_by": "Grok, Sonnet, qwen-coder",
-      "files": ["alpha_engine/score_booster.py"],
+      "files": [
+        "alpha_engine/score_booster.py"
+      ],
       "depends_on": [],
-      "timeline_local": "2026-05-27 02:18 EDT — consensus pick"
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 consensus pick"
     },
     {
       "enh_id": "QW-4",
@@ -88,9 +95,11 @@
       "status": "OPEN",
       "effort": "XS",
       "reported_by": "Grok, qwen-coder, Sonnet RI",
-      "files": [".github/workflows/*.yml (env block)"],
+      "files": [
+        ".github/workflows/*.yml (env block)"
+      ],
       "depends_on": [],
-      "timeline_local": "2026-05-27 02:18 EDT — single-line YAML change"
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 single-line YAML change"
     },
     {
       "enh_id": "QW-5",
@@ -101,9 +110,12 @@
       "status": "OPEN",
       "effort": "S",
       "reported_by": "all 5 partners + earlier gap analysis",
-      "files": ["audit_dashboard/data/dashboard_data.json", "tools/redrive_commodity_post_dedup.py (new)"],
+      "files": [
+        "audit_dashboard/data/dashboard_data.json",
+        "tools/redrive_commodity_post_dedup.py (new)"
+      ],
       "depends_on": [],
-      "timeline_local": "2026-05-27 02:18 EDT — audit precursor; no real-money sizing on COMMODITY until done"
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 audit precursor; no real-money sizing on COMMODITY until done"
     },
     {
       "enh_id": "QW-6",
@@ -114,51 +126,67 @@
       "status": "OPEN",
       "effort": "M",
       "reported_by": "all 5 partners",
-      "files": ["alpha_engine/forward_validator.py", "ops runbook"],
+      "files": [
+        "alpha_engine/forward_validator.py",
+        "ops runbook"
+      ],
       "depends_on": [],
-      "blocks": ["QW-1", "QW-2", "QW-3", "QW-7"],
-      "timeline_local": "2026-05-27 02:18 EDT — gates everything downstream"
+      "blocks": [
+        "QW-1",
+        "QW-2",
+        "QW-3",
+        "QW-7"
+      ],
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 gates everything downstream"
     },
     {
       "enh_id": "QW-7",
       "asset_class": "OVERALL",
-      "title": "Apply WON→LOST relabel for 2,531 contradictory rows",
+      "title": "Apply WON\u2192LOST relabel for 2,531 contradictory rows",
       "description": "2,531 rows with status=WON and pnl_pct<0 (avg -41.1%). Already drafted in open PR #15 (needs_changes verdict on backup-table + flag-separation). After PR #15 merges: run mysql_dedup_fix.py --apply --fix-status (post-fix) against production MySQL.",
       "severity": "P0",
       "status": "OPEN",
       "effort": "M",
       "reported_by": "Grok, Sonnet RI, Sonnet QW, qwen-coder",
-      "files": ["tools/mysql_dedup_fix.py"],
+      "files": [
+        "tools/mysql_dedup_fix.py"
+      ],
       "pr_ref": 15,
       "depends_on": [],
-      "blocks": ["any-forward-WR-claim"],
-      "timeline_local": "2026-05-27 02:18 EDT — PR #15 already open"
+      "blocks": [
+        "any-forward-WR-claim"
+      ],
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 PR #15 already open"
     },
     {
       "enh_id": "QA-1",
       "asset_class": "PENNY",
       "title": "PENNY_STOCK class-wide gate (USER APPROVAL REQUIRED)",
-      "description": "Add ('PENNY_STOCK','*') to quality_gates.BLOCKED_ASSET_STRATEGY_PAIRS. Current state: n=148, PF=0.19, WR=6.76% — biggest single drag on EQUITY headline. Per CLAUDE.md: BLOCKED_* edits require explicit user approval.",
+      "description": "Add ('PENNY_STOCK','*') to quality_gates.BLOCKED_ASSET_STRATEGY_PAIRS. Current state: n=148, PF=0.19, WR=6.76% \u2014 biggest single drag on EQUITY headline. Per CLAUDE.md: BLOCKED_* edits require explicit user approval.",
       "severity": "P1",
       "status": "OPEN",
       "effort": "S",
       "needs_user_approval": true,
       "reported_by": "all 5 partners",
-      "files": ["alpha_engine/quality_gates.py"],
-      "timeline_local": "2026-05-27 02:18 EDT — awaiting user grant"
+      "files": [
+        "alpha_engine/quality_gates.py"
+      ],
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 awaiting user grant"
     },
     {
       "enh_id": "QA-2",
       "asset_class": "CRYPTO",
       "title": "9 baby_strats overfit blocks (USER APPROVAL REQUIRED)",
-      "description": "crypto_soc_orderflow_absorption variants + adx_pullback + choppiness_regime. Overfit severity 4.15–4.87 per baby_strats audit. Per CLAUDE.md: BLOCKED_* edits require explicit user approval.",
+      "description": "crypto_soc_orderflow_absorption variants + adx_pullback + choppiness_regime. Overfit severity 4.15\u20134.87 per baby_strats audit. Per CLAUDE.md: BLOCKED_* edits require explicit user approval.",
       "severity": "P2",
       "status": "OPEN",
       "effort": "S",
       "needs_user_approval": true,
       "reported_by": "Grok, qwen-coder",
-      "files": ["alpha_engine/quality_gates.py"],
-      "timeline_local": "2026-05-27 02:18 EDT — awaiting user grant"
+      "files": [
+        "alpha_engine/quality_gates.py"
+      ],
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 awaiting user grant"
     },
     {
       "enh_id": "QA-3",
@@ -170,33 +198,161 @@
       "effort": "S",
       "needs_user_approval": true,
       "reported_by": "all 5 partners",
-      "files": ["alpha_engine/config.py", "alpha_engine/quality_gates.py"],
-      "timeline_local": "2026-05-27 02:18 EDT — awaiting user grant"
+      "files": [
+        "alpha_engine/config.py",
+        "alpha_engine/quality_gates.py"
+      ],
+      "timeline_local": "2026-05-27 02:18 EDT \u2014 awaiting user grant"
+    },
+    {
+      "enh_id": "QW-8-conviction-override",
+      "asset_class": "OVERALL",
+      "title": "Conviction-override / hot-streak exemption (\u226510 consec wins OR \u226570% WR rolling-20)",
+      "description": "Per MiMo-V2.5: relax Sharpe gate to 0.3 (from 0.5), extend max DD to 25% (from 20%), BUT force trailing stop to 1.5\u00d7 ATR (from 2\u00d7). Hard floors stay: leakage, WON/PnL coherence, Monte-Carlo p-value.",
+      "severity": "P2",
+      "status": "OPEN",
+      "effort": "M",
+      "needs_user_approval": true,
+      "reported_by": "MiMo-V2.5 (Xiaomi)",
+      "files": [
+        "alpha_engine/quality_gates.py",
+        "alpha_engine/strategy_state.py (new field consecutive_wins + rolling_20_wr)"
+      ],
+      "timeline_local": "2026-05-27 02:55 EDT - new from MiMo (#7)"
+    },
+    {
+      "enh_id": "QW-9-class-gate-profiles",
+      "asset_class": "OVERALL",
+      "title": "Asset-class-specific safety gate profiles",
+      "description": "Per MiMo-V2.5: PENNY/MEME 40% DD tolerance + 1% max position, CRYPTO higher-vol + 24/7 stops, BONDS relaxed Sharpe, FOREX relaxed n\u226530. Replaces one-size-fits-all gates.",
+      "severity": "P2",
+      "status": "OPEN",
+      "effort": "M",
+      "needs_user_approval": true,
+      "reported_by": "MiMo-V2.5 (Xiaomi)",
+      "files": [
+        "alpha_engine/quality_gates.py",
+        "alpha_engine/config.py (per_class_gate_profile)"
+      ],
+      "timeline_local": "2026-05-27 02:55 EDT - new from MiMo (#7)"
+    },
+    {
+      "enh_id": "QW-10-mean-reversion-template",
+      "asset_class": "OVERALL",
+      "title": "Mean-reversion strategy template (OU half-life + Bollinger z-score)",
+      "description": "Per MiMo-V2.5: fills missing alpha category. Z-score from 20d BB mean, OU half-life fit, entry z<-2, exit z>-0.5. Targets FOREX/BONDS/COMMODITIES first. Subsumes earlier ENH-OSC-01 (oscillating-pair scanner) - extend that into a real strategy.",
+      "severity": "P1",
+      "status": "OPEN",
+      "effort": "M",
+      "reported_by": "MiMo-V2.5 (Xiaomi) + claude-opus-47 (ENH-OSC-01)",
+      "files": [
+        "alpha_engine/mean_reversion_template.py (new)"
+      ],
+      "timeline_local": "2026-05-27 02:55 EDT - new from MiMo (#7), merged with ENH-OSC-01"
     }
   ],
-
   "timeline_full": [
-    {"ts_utc": "2026-05-15T02:06:00Z", "ts_local": "2026-05-14 22:06 EDT", "event": "8 per-class 90-day plans + gap analysis written"},
-    {"ts_utc": "2026-05-15T22:00:00Z", "ts_local": "2026-05-15 18:00 EDT", "event": "FOREX sizing_allowed=True bug fixed (commit aebc51bb16)"},
-    {"ts_utc": "2026-05-24T07:30:00Z", "ts_local": "2026-05-24 03:30 EDT", "event": "Institutional-Readiness 4-AI consult appendix added to plans"},
-    {"ts_utc": "2026-05-27T03:00:00Z", "ts_local": "2026-05-26 23:00 EDT", "event": "Foundation PRs #9-#15 opened by Claude Opus 4.7"},
-    {"ts_utc": "2026-05-27T04:32:00Z", "ts_local": "2026-05-27 00:32 EDT", "event": "RooCode dedup applied (49,622→45,283 rows; trading_picks_duplicates_backup created)"},
-    {"ts_utc": "2026-05-27T05:00:00Z", "ts_local": "2026-05-27 01:00 EDT", "event": "Multi-AI 4-subagent PR review; PR #12 closed (fabricated PEAD 62.2% claim)"},
-    {"ts_utc": "2026-05-27T05:30:00Z", "ts_local": "2026-05-27 01:30 EDT", "event": "PR #8 merged (nightly ML gatekeeper A/B matrix)"},
-    {"ts_utc": "2026-05-27T06:12:00Z", "ts_local": "2026-05-27 02:12 EDT", "event": "Grok 4.3 (xAI) EAGLE audit committed"},
-    {"ts_utc": "2026-05-27T06:15:00Z", "ts_local": "2026-05-27 02:15 EDT", "event": "qwen-coder EAGLE alpha-engine review written (updates/)"},
-    {"ts_utc": "2026-05-27T06:18:00Z", "ts_local": "2026-05-27 02:18 EDT", "event": "Claude Opus 4.7 meta-synthesis of 5 partner files (this doc)"},
-    {"ts_utc": "2026-05-27T06:20:00Z", "ts_local": "2026-05-27 02:20 EDT", "event": "12 new incidents/enhancements drafted (this JSON)"},
-    {"ts_utc": "2026-05-27T19:12:00Z", "ts_local": "2026-05-27 15:12 EDT", "event": "(planned) PR #8's first nightly cron fires; gatekeeper_new.joblib trained"},
-    {"ts_utc": "2026-05-28T00:00:00Z", "ts_local": "2026-05-27 20:00 EDT", "event": "(target) PR #10 unblocked once NEW bundle confirmed on main"}
+    {
+      "ts_utc": "2026-05-15T02:06:00Z",
+      "ts_local": "2026-05-14 22:06 EDT",
+      "event": "8 per-class 90-day plans + gap analysis written"
+    },
+    {
+      "ts_utc": "2026-05-15T22:00:00Z",
+      "ts_local": "2026-05-15 18:00 EDT",
+      "event": "FOREX sizing_allowed=True bug fixed (commit aebc51bb16)"
+    },
+    {
+      "ts_utc": "2026-05-24T07:30:00Z",
+      "ts_local": "2026-05-24 03:30 EDT",
+      "event": "Institutional-Readiness 4-AI consult appendix added to plans"
+    },
+    {
+      "ts_utc": "2026-05-27T03:00:00Z",
+      "ts_local": "2026-05-26 23:00 EDT",
+      "event": "Foundation PRs #9-#15 opened by Claude Opus 4.7"
+    },
+    {
+      "ts_utc": "2026-05-27T04:32:00Z",
+      "ts_local": "2026-05-27 00:32 EDT",
+      "event": "RooCode dedup applied (49,622\u219245,283 rows; trading_picks_duplicates_backup created)"
+    },
+    {
+      "ts_utc": "2026-05-27T05:00:00Z",
+      "ts_local": "2026-05-27 01:00 EDT",
+      "event": "Multi-AI 4-subagent PR review; PR #12 closed (fabricated PEAD 62.2% claim)"
+    },
+    {
+      "ts_utc": "2026-05-27T05:30:00Z",
+      "ts_local": "2026-05-27 01:30 EDT",
+      "event": "PR #8 merged (nightly ML gatekeeper A/B matrix)"
+    },
+    {
+      "ts_utc": "2026-05-27T06:12:00Z",
+      "ts_local": "2026-05-27 02:12 EDT",
+      "event": "Grok 4.3 (xAI) EAGLE audit committed"
+    },
+    {
+      "ts_utc": "2026-05-27T06:15:00Z",
+      "ts_local": "2026-05-27 02:15 EDT",
+      "event": "qwen-coder EAGLE alpha-engine review written (updates/)"
+    },
+    {
+      "ts_utc": "2026-05-27T06:18:00Z",
+      "ts_local": "2026-05-27 02:18 EDT",
+      "event": "Claude Opus 4.7 meta-synthesis of 5 partner files (this doc)"
+    },
+    {
+      "ts_utc": "2026-05-27T06:20:00Z",
+      "ts_local": "2026-05-27 02:20 EDT",
+      "event": "12 new incidents/enhancements drafted (this JSON)"
+    },
+    {
+      "ts_utc": "2026-05-27T19:12:00Z",
+      "ts_local": "2026-05-27 15:12 EDT",
+      "event": "(planned) PR #8's first nightly cron fires; gatekeeper_new.joblib trained"
+    },
+    {
+      "ts_utc": "2026-05-28T00:00:00Z",
+      "ts_local": "2026-05-27 20:00 EDT",
+      "event": "(target) PR #10 unblocked once NEW bundle confirmed on main"
+    },
+    {
+      "ts_utc": "2026-05-27T06:55:00Z",
+      "ts_local": "2026-05-27 02:55 EDT",
+      "event": "MiMo-V2.5 (partner #7) review absorbed; +3 new enhancements (conviction-override, class-gate-profiles, mean-reversion template merged with ENH-OSC-01)"
+    }
   ],
-
   "fastest_path_to_proven_picks_per_class": {
     "principle": "Foundation closes first or nothing else is measurable. Then strategy layer in parallel.",
-    "lane_1_foundation_days_0_to_2": ["QW-6 forward_validator restart", "QW-7 WON relabel via PR #15", "PR #9 calibration merge"],
-    "lane_2_strategy_days_2_to_7": ["QW-1 EQUITY VIX gate", "QW-2 ETF VIX wire", "QW-3 BTC hour filter", "QW-5 COMMODITY post-dedup audit"],
-    "lane_3_pruning_days_3_to_10": ["QA-1 PENNY gate (needs approval)", "QA-2 9 baby_strats blocks (needs approval)", "QA-3 FOREX hard-disable (needs approval)"],
-    "lane_4_validation_days_7_to_37": ["Collect 30d clean forward data on QW-1..QW-3 picks", "Re-run pf_registry on post-validator-restart cohort", "Stage-1 institutional gate evaluation"],
-    "lane_5_real_money_days_37_plus": ["Per Stage-2 institutional gate (PF>1.5/WR>50/Sharpe>1.5/MDD<20 + 6mo clean)", "EQUITY clean-LC universe with VIX gate is the most likely first class to clear"]
+    "lane_1_foundation_days_0_to_2": [
+      "QW-6 forward_validator restart",
+      "QW-7 WON relabel via PR #15",
+      "PR #9 calibration merge"
+    ],
+    "lane_2_strategy_days_2_to_7": [
+      "QW-1 EQUITY VIX gate",
+      "QW-2 ETF VIX wire",
+      "QW-3 BTC hour filter",
+      "QW-5 COMMODITY post-dedup audit"
+    ],
+    "lane_3_pruning_days_3_to_10": [
+      "QA-1 PENNY gate (needs approval)",
+      "QA-2 9 baby_strats blocks (needs approval)",
+      "QA-3 FOREX hard-disable (needs approval)"
+    ],
+    "lane_4_validation_days_7_to_37": [
+      "Collect 30d clean forward data on QW-1..QW-3 picks",
+      "Re-run pf_registry on post-validator-restart cohort",
+      "Stage-1 institutional gate evaluation"
+    ],
+    "lane_5_real_money_days_37_plus": [
+      "Per Stage-2 institutional gate (PF>1.5/WR>50/Sharpe>1.5/MDD<20 + 6mo clean)",
+      "EQUITY clean-LC universe with VIX gate is the most likely first class to clear"
+    ]
+  },
+  "totals_after_mimo": {
+    "enhancements_new_total": 13,
+    "partners_consulted": 7
   }
 }
