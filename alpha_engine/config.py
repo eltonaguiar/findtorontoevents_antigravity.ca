@@ -743,7 +743,20 @@ LARGE_CAP_EQUITY_SYMBOLS: frozenset[str] = frozenset({
 GAP_RISK_EQUITY_SYMBOLS: frozenset[str] = frozenset({
     "NIO", "LCID", "RIVN", "GME", "AMC", "BBBY", "SPCE", "CLOV", "WISH",
     "PLTR",  # high volatility / low float
+    "SOFI", "SNDL",  # EAGLE 2026-05-27: penny drag on EQUITY class metrics
 })
+
+# Production EQUITY scanner must not emit these (research/paper only).
+# Union of gap-risk + explicit penny/meme names still listed in EQUITY_SYMBOLS
+# for backward-compatible classification in legacy JSON.
+RESEARCH_ONLY_SPECULATIVE_SYMBOLS: frozenset[str] = frozenset(
+    GAP_RISK_EQUITY_SYMBOLS | {"SOFI", "SNDL"}
+)
+
+
+def is_research_only_speculative(symbol: str) -> bool:
+    """True if symbol is quarantined from production EQUITY emissions."""
+    return symbol.upper() in RESEARCH_ONLY_SPECULATIVE_SYMBOLS
 
 
 def is_liquid_equity(symbol: str) -> bool:

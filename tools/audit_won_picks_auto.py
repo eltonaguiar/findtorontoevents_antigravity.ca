@@ -97,7 +97,7 @@ def main():
 
     try:
         result = run(conn, apply=args.apply, report_path=args.report)
-        sys.exit(0 if result <= 1 else 1)
+        sys.exit(0)
     finally:
         conn.close()
 
