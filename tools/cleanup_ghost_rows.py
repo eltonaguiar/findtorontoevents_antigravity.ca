@@ -159,7 +159,7 @@ def discover_ghost_cohorts(
                     "strategy": row[0],
                     "symbol": row[1],
                     "direction": row[2],
-                    "entry_price": str(row[3]),
+                    "entry_price": row[3],
                     "count": int(row[4]),
                     "min_id": int(row[5]),
                     "max_id": int(row[6]),
