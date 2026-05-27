@@ -19,6 +19,23 @@ from collections import Counter
 # default-off pending follow-up PR).
 from alpha_engine.risk.vol_target import apply_to_pick as _vol_target_apply
 
+
+def _effective_confidence_for_ranking(pick: dict, conf: float) -> float:
+    """Map raw confidence to ranking input; optionally invert per asset class.
+
+    CRYPTO high-confidence picks historically underperform low-confidence
+    (incident #17, confidence_calibrator.py). Default-off via env flag so
+    production behavior is unchanged until operator enables after A/B check.
+    Kill-switch: CONFIDENCE_INVERT_CRYPTO=0 (default).
+    """
+    conf = max(0.0, min(1.0, float(conf or 0.0)))
+    if os.environ.get("CONFIDENCE_INVERT_CRYPTO", "0") == "1":
+        ac = str(pick.get("asset_class") or pick.get("category") or "").upper()
+        if ac == "CRYPTO":
+            return 1.0 - conf
+    return conf
+
+
 # Per-class confidence calibration. Default-off via
 # CONFIDENCE_CALIBRATION_ENABLED env flag. CRYPTO/ETF confidence is
 # miscalibrated (high-conf WR < low-conf WR for CRYPTO on n=1514, see
@@ -83,7 +100,9 @@ def _compute_ml_composite(pick: dict) -> tuple[float, str]:
     # No-op otherwise — preserves current production behavior.
     _calibrate_confidence(pick)
     ml = pick.get("ml_score")
-    conf = float(pick.get("confidence", 0) or 0)
+    conf = _effective_confidence_for_ranking(
+        pick, float(pick.get("confidence", 0) or 0)
+    )
     fwd_wr = float(_trusted_forward_wr(pick) or 0)
     # Normalise forward_wr from percentage (0-100) to 0-1 if needed
     if fwd_wr > 1.0:
