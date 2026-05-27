@@ -33,9 +33,24 @@ DRAWDOWN_LOOKBACK = 30  # days
 # to be backed by overall positive equity AND a non-disastrous win rate.
 # Symmetric gates apply for REPEAT_LOSER so a 60%-WR portfolio with a 3-day
 # cool-down doesn't get mislabeled as a loser (e.g. Beaten Majors Long-Only).
-WINNER_MIN_EQUITY_PCT = 0.0        # must be above water
+#
+# 2026-05-27 swarm-review hardening (DeepSeek tweak to b9dfbdefb):
+#
+# Equity deadband: the original +0 / -0 cutoff flapped portfolios sitting on
+# the break-even line (e.g. -0.1% vs +0.1%) between buckets day-to-day. We
+# now require a ±0.5% move off zero before a streak can promote/demote a
+# portfolio. Anything in the (-0.5%, +0.5%) band defaults to MIXED regardless
+# of streak length — the noise floor on simulated equity dwarfs sub-0.5%
+# moves, so a 3-day green streak that nets +0.2% is not a real winner.
+#
+# WR thresholds intentionally asymmetric: winner >= 45% allows a streak-aided
+# improving portfolio to be flagged for scale-up; loser < 50% requires the
+# portfolio to be losing on the WR axis before tagging it for invert/mutate.
+# Symmetric 50/50 would push break-even-WR streak-positive portfolios into
+# MIXED, losing the early-improvement signal we want to catch.
+WINNER_MIN_EQUITY_PCT = 0.5        # must be > +0.5% above water (deadband)
 WINNER_MIN_WR_PCT = 45.0           # below this, the streak is noise
-LOSER_MAX_EQUITY_PCT = 0.0         # must be below water
+LOSER_MAX_EQUITY_PCT = -0.5        # must be < -0.5% below water (deadband)
 LOSER_MAX_WR_PCT = 50.0            # break-even+ WR portfolios are not losers
 
 
