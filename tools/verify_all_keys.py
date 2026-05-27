@@ -34,11 +34,13 @@ LABELS: list[tuple[str, str]] = [
     ("GROQ_API_KEY",            "GROQ FREE KEY:"),
     ("GEMINI_API_KEY",          "GOOGLE GEMINI API KEY:"),
     ("GEMINI_API_KEY_ALT",      "GOOGLE GEMIINI API KEY ALT:"),
+    ("GEMINI_API_KEY_ALT2",     "GOOGLE GEMINI API KEY ALT2:"),
     ("GITHUB_MODELS_KEY",       "GITHUB MODELS API KEY:"),
     ("GITHUB_MODELS_KEY2",      "GITHUB MODELS API KEY2:"),
     ("TOGETHER_API_KEY",        "TOGETHER AI API KEY:"),
     ("TOGETHER_API_KEY_ALT",    "TOGETHER AI API KEY ALT:"),
     ("CEREBRAS_API_KEY",        "CEREBRAS_FREE_API_KEY:"),
+    ("COHERE_API_KEY",          "COHERE_TRIAL_API_KEY"),
     ("HF_API_TOKEN_ALT",        "HUGGING_FACE_TOKEN ALT(TRIED FINE GRAIN AND SETTING BUNCH OF CHECKBOXES):"),
     ("HF_API_TOKEN_READ",       "HUGGINF_FACE TOKEN ALT2(READ):"),
     ("FIREWORKS_API_KEY",       "FIREWORKS FREE API KEY:"),
@@ -64,11 +66,14 @@ LABELS: list[tuple[str, str]] = [
     ("ANTHROPIC_API_KEY_ALT",   "ANTR_MAY2026"),
     ("DEEPSEEK_API_KEY",        "DEEPSEEK_API"),
     ("MOONSHOT_API_KEY",        "KIMI_MOONSHOT_APIKEY"),
+    ("MOONSHOT_API_KEY_ALT",    "KIMI_MOONSHOT_APIKEY2"),
     ("OPENAI_API_KEY",          "OPENAI_KEY"),
     ("QWEN_API_KEY",            "QWEN_API_KEY_PRO"),
+    ("QWEN_API_KEY_FREE",       "QWEN_API_KEY_FREE"),
     ("CHUTES_API_KEY",          "CHUTES"),
     ("LLM7_API_KEY",            "LLM7_API_KEY_FREE"),
     ("INCEPTION_API_KEY",       "INCEPTION_AI_KEY"),
+    ("NOVITA_API_KEY",          "NOVITA API KEY:"),
     ("CURSOR_API_KEY",          "CURSOR_API_KEY"),
     ("KILOCODE_API_KEY",        "KILOCODE_API_KEY"),
     ("OPENCODE_API_KEY",        "OPENCODE_API_KEY"),
@@ -89,7 +94,7 @@ def load_keys() -> dict[str, str]:
                 break
         if found_idx < 0:
             continue
-        for j in range(found_idx + 1, min(found_idx + 8, len(lines))):
+        for j in range(found_idx + 1, len(lines)):
             cand = lines[j].strip()
             if not cand:
                 continue
@@ -103,6 +108,24 @@ def load_keys() -> dict[str, str]:
                 continue
             keys[env_name] = cand
             break
+
+    # Prefer Qwen Pro credentials from ~/.qwen/settings.json when available,
+    # mirroring runtime launcher behavior.
+    settings = Path(os.path.expanduser("~/.qwen/settings.json"))
+    if settings.exists():
+        try:
+            cfg = json.loads(settings.read_text(encoding="utf-8", errors="replace"))
+            env = cfg.get("env", {}) if isinstance(cfg, dict) else {}
+            qwen_key = (
+                env.get("BAILIAN_CODING_PLAN_API_KEY")
+                or env.get("DASHSCOPE_API_KEY")
+                or env.get("BAILIAN_TOKEN_PLAN_API_KEY")
+            )
+            if qwen_key:
+                keys["QWEN_API_KEY"] = str(qwen_key).strip()
+        except Exception:
+            pass
+
     return keys
 
 
@@ -188,7 +211,7 @@ def t_groq(key: str) -> tuple[str, str]:
 def t_gemini(key: str) -> tuple[str, str]:
     # Gemini native uses ?key= query param
     s, b = _post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={key}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}",
         {},
         {"contents": [{"parts": [{"text": PROMPT}]}], "generationConfig": {"maxOutputTokens": 50}},
     )
@@ -212,6 +235,34 @@ def t_together(key: str) -> tuple[str, str]:
 
 def t_cerebras(key: str) -> tuple[str, str]:
     return t_openai_compat("https://api.cerebras.ai/v1/chat/completions", key, "llama3.1-8b")
+
+
+def t_cohere(key: str) -> tuple[str, str]:
+    s, b = _post(
+        "https://api.cohere.com/v2/chat",
+        {"Authorization": f"Bearer {key}"},
+        {
+            "model": "command-r7b-12-2024",
+            "messages": [{"role": "user", "content": PROMPT}],
+            "max_tokens": 50,
+        },
+    )
+    cls = _classify(s, b)
+    reply = ""
+    try:
+        d = json.loads(b)
+        content = (d.get("message") or {}).get("content")
+        if isinstance(content, list) and content:
+            first = content[0]
+            if isinstance(first, dict):
+                reply = str(first.get("text", ""))[:50]
+        elif isinstance(content, str):
+            reply = content[:50]
+        if not reply:
+            reply = _extract_reply(b)
+    except Exception:
+        reply = b[:60]
+    return cls, reply
 
 
 def t_hf(key: str) -> tuple[str, str]:
@@ -272,6 +323,8 @@ def t_xai(key: str) -> tuple[str, str]:
 
 def t_ollama_cloud(key: str) -> tuple[str, str]:
     # Ollama cloud uses ssh-ed25519 keys via signed JWT — REST chat at /api/chat
+    if key.strip().startswith("ssh-ed25519"):
+        return ("UNSUPPORTED", "ssh key requires JWT signing flow (not bearer)")
     s, b = _post(
         "https://ollama.com/api/chat",
         {"Authorization": f"Bearer {key}"},
@@ -312,6 +365,11 @@ def t_qwen(key: str) -> tuple[str, str]:
     return t_openai_compat("https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions", key, "qwen-turbo")
 
 
+def t_qwen_free(key: str) -> tuple[str, str]:
+    # Free key routed to the same intl compatible endpoint.
+    return t_openai_compat("https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions", key, "qwen-turbo")
+
+
 def t_chutes(key: str) -> tuple[str, str]:
     return t_openai_compat("https://llm.chutes.ai/v1/chat/completions", key, "deepseek-ai/DeepSeek-V3.2-TEE")
 
@@ -321,7 +379,11 @@ def t_llm7(key: str) -> tuple[str, str]:
 
 
 def t_inception(key: str) -> tuple[str, str]:
-    return t_openai_compat("https://api.inceptionlabs.ai/v1/chat/completions", key, "mercury")
+    return t_openai_compat("https://api.inceptionlabs.ai/v1/chat/completions", key, "mercury-2")
+
+
+def t_novita(key: str) -> tuple[str, str]:
+    return t_openai_compat("https://api.novita.ai/openai/v1/chat/completions", key, "deepseek/deepseek-v4-pro")
 
 
 # ---------- test plan ----------
@@ -332,11 +394,13 @@ TESTS: list[tuple[str, str, Any]] = [
     ("groq",              "GROQ_API_KEY",            t_groq),
     ("gemini",            "GEMINI_API_KEY",          t_gemini),
     ("gemini (alt)",      "GEMINI_API_KEY_ALT",      t_gemini),
+    ("gemini (alt2)",     "GEMINI_API_KEY_ALT2",     t_gemini),
     ("github_models",     "GITHUB_MODELS_KEY",       t_github_models),
     ("github_models (2)", "GITHUB_MODELS_KEY2",      t_github_models),
     ("together",          "TOGETHER_API_KEY",        t_together),
     ("together (alt)",    "TOGETHER_API_KEY_ALT",    t_together),
     ("cerebras",          "CEREBRAS_API_KEY",        t_cerebras),
+    ("cohere (trial)",    "COHERE_API_KEY",          t_cohere),
     ("hf (alt)",          "HF_API_TOKEN_ALT",        t_hf),
     ("hf (read)",         "HF_API_TOKEN_READ",       t_hf),
     ("fireworks",         "FIREWORKS_API_KEY",       t_fireworks),
@@ -348,7 +412,6 @@ TESTS: list[tuple[str, str, Any]] = [
     ("mistral",           "MISTRAL_API_KEY",         t_mistral),
     ("mistral (alt)",     "MISTRAL_API_KEY_ALT",     t_mistral),
     ("mistral (alt2)",    "MISTRAL_API_KEY_ALT2",    t_mistral),
-    ("aimlapi (free)",    "AIMLAPI_FREE_KEY",        t_aimlapi),
     ("aimlapi (paid)",    "AIMLAPI_PAID_KEY",        t_aimlapi),
     ("hypereal",          "HYPEREAL_API_KEY",        t_hypereal),
     ("hypereal (alt)",    "HYPEREAL_API_KEY_ALT",    t_hypereal),
@@ -361,11 +424,14 @@ TESTS: list[tuple[str, str, Any]] = [
     ("anthropic (alt)",   "ANTHROPIC_API_KEY_ALT",   t_anthropic),
     ("deepseek",          "DEEPSEEK_API_KEY",        t_deepseek),
     ("moonshot (kimi)",   "MOONSHOT_API_KEY",        t_moonshot),
+    ("moonshot (kimi 2)", "MOONSHOT_API_KEY_ALT",    t_moonshot),
     ("openai",            "OPENAI_API_KEY",          t_openai),
-    ("qwen",              "QWEN_API_KEY",            t_qwen),
+    ("qwen (pro)",        "QWEN_API_KEY",            t_qwen),
+    ("qwen (free)",       "QWEN_API_KEY_FREE",       t_qwen_free),
     ("chutes",            "CHUTES_API_KEY",          t_chutes),
     ("llm7",              "LLM7_API_KEY",            t_llm7),
     ("inception",         "INCEPTION_API_KEY",       t_inception),
+    ("novita",            "NOVITA_API_KEY",          t_novita),
 ]
 
 

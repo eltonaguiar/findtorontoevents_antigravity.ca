@@ -16,6 +16,7 @@
 #   bash tools/start_litellm_proxy.sh                      # foreground
 #   bash tools/start_litellm_proxy.sh --background         # nohup + log
 #   bash tools/start_litellm_proxy.sh --port 5000          # alt port
+#   ALLOW_PAID_SPILLOVER=0 bash tools/start_litellm_proxy.sh -b
 #   PROXY_LOG=/tmp/litellm.log bash tools/start_litellm_proxy.sh -b
 #
 # Stop a backgrounded proxy: kill the PID printed at launch, or:
@@ -27,6 +28,7 @@ cd "$(dirname "$0")/.."
 
 KEYS_FILE="${KEYS_FILE:-$HOME/dbpasses.txt}"
 CONFIG="${CONFIG:-litellm_config.yaml}"
+ALLOW_PAID_SPILLOVER="${ALLOW_PAID_SPILLOVER:-1}"
 PORT="${PORT:-4000}"
 BG=0
 LOG="${PROXY_LOG:-/tmp/litellm_proxy.log}"
@@ -52,10 +54,104 @@ if [[ ! -f "$CONFIG" ]]; then
   echo "ERROR: config not found: $CONFIG" >&2
   exit 1
 fi
-if [[ ! -x .venv/bin/litellm ]]; then
-  echo "ERROR: .venv/bin/litellm not found; install with:" >&2
-  echo "  .venv/bin/python -m pip install 'litellm[proxy]'" >&2
-  exit 1
+if [[ "$ALLOW_PAID_SPILLOVER" != "0" && "$ALLOW_PAID_SPILLOVER" != "1" ]]; then
+  echo "ERROR: ALLOW_PAID_SPILLOVER must be 0 or 1 (got: $ALLOW_PAID_SPILLOVER)" >&2
+  exit 2
+fi
+
+proxy_healthy() {
+  python3 - "$PORT" << 'PY' >/dev/null 2>&1
+import sys
+import urllib.request
+
+port = sys.argv[1]
+url = f"http://127.0.0.1:{port}/health"
+try:
+    with urllib.request.urlopen(url, timeout=1.5) as resp:
+        ok = (resp.getcode() == 200)
+except Exception:
+    ok = False
+raise SystemExit(0 if ok else 1)
+PY
+}
+
+if proxy_healthy; then
+  echo "[litellm-proxy] already running on port ${PORT}; skipping restart."
+  exit 0
+fi
+
+if pgrep -f "litellm --config" >/dev/null 2>&1; then
+  echo "[litellm-proxy] litellm process already running; skipping restart."
+  exit 0
+fi
+
+ensure_litellm_runtime() {
+  if [[ -x .venv/bin/litellm ]]; then
+    return 0
+  fi
+
+  echo "[litellm-proxy] runtime missing (.venv/bin/litellm). Bootstrapping..."
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "ERROR: python3 not found in PATH; cannot bootstrap LiteLLM runtime." >&2
+    return 1
+  fi
+
+  if [[ ! -d .venv ]]; then
+    echo "[litellm-proxy] creating virtualenv: .venv"
+    python3 -m venv .venv
+  fi
+
+  echo "[litellm-proxy] installing litellm[proxy] into .venv (first run may take ~1-2 min)"
+  .venv/bin/python -m pip install --upgrade pip >/dev/null
+  .venv/bin/python -m pip install "litellm[proxy]"
+
+  if [[ ! -x .venv/bin/litellm ]]; then
+    echo "ERROR: bootstrap finished but .venv/bin/litellm still missing." >&2
+    return 1
+  fi
+
+  echo "[litellm-proxy] runtime bootstrap complete."
+}
+
+ensure_litellm_runtime
+
+# ---------------------------------------------------------------------------
+# Runtime spillover policy switch
+#   ALLOW_PAID_SPILLOVER=1 (default): free groups can fall back to paid groups.
+#   ALLOW_PAID_SPILLOVER=0: free groups stay free-only; when free pools exhaust,
+#                           requests can fail/wait instead of spending paid keys.
+# ---------------------------------------------------------------------------
+ACTIVE_CONFIG="$CONFIG"
+if [[ "$ALLOW_PAID_SPILLOVER" == "0" ]]; then
+  ACTIVE_CONFIG="/tmp/litellm_config.nospillover.${PORT}.$$.yaml"
+  cp "$CONFIG" "$ACTIVE_CONFIG"
+
+  python3 - "$ACTIVE_CONFIG" << 'PY'
+import re
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+
+replacements = [
+    (r'^(\s*-\s*hybrid-model:\s*)\[[^\]]*\]', r'\1["free-mode-large", "free-mode"]'),
+    (r'^(\s*-\s*free-mode:\s*)\[[^\]]*\]', r'\1["free-mode-large"]'),
+    (r'^(\s*-\s*free-mode-large:\s*)\[[^\]]*\]', r'\1["free-mode"]'),
+    (r'^(\s*-\s*free-mode-fast:\s*)\[[^\]]*\]', r'\1["free-mode", "free-mode-large"]'),
+    (r'^(\s*-\s*free-mode-tools:\s*)\[[^\]]*\]', r'\1["free-mode-fast", "free-mode", "free-mode-large"]'),
+]
+
+for pattern, repl in replacements:
+    text = re.sub(pattern, repl, text, flags=re.MULTILINE)
+
+path.write_text(text, encoding="utf-8")
+PY
+
+  echo "[litellm-proxy] paid spillover: DISABLED (ALLOW_PAID_SPILLOVER=0)"
+else
+  echo "[litellm-proxy] paid spillover: ENABLED (ALLOW_PAID_SPILLOVER=1)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -100,9 +196,11 @@ parse_key "NVIDIA ALT KEY:"                                                     
 parse_key "GROQ FREE KEY:"                                                           GROQ_API_KEY
 parse_key "GOOGLE GEMINI API KEY:"                                                   GEMINI_API_KEY
 parse_key "GOOGLE GEMIINI API KEY ALT:"                                              GEMINI_API_KEY_ALT
+parse_key "GOOGLE GEMINI API KEY ALT2:"                                              GEMINI_API_KEY_ALT2
 parse_key "GITHUB MODELS API KEY:"                                                   GITHUB_MODELS_KEY
 parse_key "TOGETHER AI API KEY:"                                                     TOGETHER_API_KEY
 parse_key "CEREBRAS_FREE_API_KEY:"                                                   CEREBRAS_API_KEY
+parse_key "COHERE_TRIAL_API_KEY"                                                    COHERE_API_KEY
 parse_key "HUGGING_FACE_TOKEN"                                                       HF_API_TOKEN
 parse_key "FIREWORKS FREE API KEY:"                                                  FIREWORKS_API_KEY
 parse_key "DEEPINFRA API KEY:"                                                       DEEPINFRA_API_KEY
@@ -137,11 +235,14 @@ parse_key "ANTROPHIC"                                                           
 parse_key "ANTR_MAY2026"                                                             ANTHROPIC_API_KEY_ALT
 parse_key "DEEPSEEK_API"                                                             DEEPSEEK_API_KEY
 parse_key "KIMI_MOONSHOT_APIKEY"                                                     MOONSHOT_API_KEY
+parse_key "KIMI_MOONSHOT_APIKEY2"                                                    MOONSHOT_API_KEY_ALT
+parse_key "SAMBANOVA_API_KEY:"                                                       SAMBANOVA_API_KEY
 parse_key "OPENAI_KEY"                                                               OPENAI_API_KEY
 parse_key "QWEN_API_KEY_PRO"                                                         QWEN_API_KEY
 parse_key "CHUTES"                                                                   CHUTES_API_KEY
 parse_key "LLM7_API_KEY_FREE"                                                        LLM7_API_KEY
 parse_key "INCEPTION_AI_KEY"                                                         INCEPTION_API_KEY
+parse_key "NOVITA API KEY:"                                                         NOVITA_API_KEY
 parse_key "CURSOR_API_KEY"                                                           CURSOR_API_KEY
 parse_key "KILOCODE_API_KEY"                                                         KILOCODE_API_KEY
 parse_key "OPENCODE_API_KEY"                                                         OPENCODE_API_KEY
@@ -156,22 +257,22 @@ fi
 
 # Pre-flight: which keys did we successfully load?
 loaded=0; total=0
-for v in NVIDIA_API_KEY NVIDIA_API_KEY_ALT GROQ_API_KEY GEMINI_API_KEY GEMINI_API_KEY_ALT \
+for v in NVIDIA_API_KEY NVIDIA_API_KEY_ALT GROQ_API_KEY GEMINI_API_KEY GEMINI_API_KEY_ALT GEMINI_API_KEY_ALT2 \
          GITHUB_MODELS_KEY GITHUB_MODELS_KEY2 TOGETHER_API_KEY TOGETHER_API_KEY_ALT \
-         CEREBRAS_API_KEY HF_API_TOKEN HF_API_TOKEN_ALT HF_API_TOKEN_READ \
+         CEREBRAS_API_KEY COHERE_API_KEY HF_API_TOKEN HF_API_TOKEN_ALT HF_API_TOKEN_READ \
          FIREWORKS_API_KEY FIREWORKS_API_KEY_ALT DEEPINFRA_API_KEY DEEPINFRA_API_KEY_ALT \
          NOUS_API_KEY NOUS_API_KEY_ALT MISTRAL_API_KEY MISTRAL_API_KEY_ALT MISTRAL_API_KEY_ALT2 \
          AIMLAPI_FREE_KEY AIMLAPI_PAID_KEY HYPEREAL_API_KEY HYPEREAL_API_KEY_ALT \
          CF_ACCOUNT_ID CF_API_TOKEN OPENROUTER_API_KEY OFOX_AI_KEY XAI_API_KEY \
          OLLAMA_CLOUD_KEY ANTHROPIC_API_KEY ANTHROPIC_API_KEY_ALT DEEPSEEK_API_KEY \
-         MOONSHOT_API_KEY OPENAI_API_KEY QWEN_API_KEY CHUTES_API_KEY LLM7_API_KEY \
-         INCEPTION_API_KEY CURSOR_API_KEY KILOCODE_API_KEY OPENCODE_API_KEY \
+         MOONSHOT_API_KEY MOONSHOT_API_KEY_ALT OPENAI_API_KEY QWEN_API_KEY CHUTES_API_KEY LLM7_API_KEY \
+         INCEPTION_API_KEY NOVITA_API_KEY CURSOR_API_KEY KILOCODE_API_KEY OPENCODE_API_KEY \
          BLUESMIND_API_KEY XAI_API_KEY_ALT GROQ_API_KEY_ALT; do
   total=$((total+1))
   if [[ -n "${!v:-}" ]]; then loaded=$((loaded+1)); fi
 done
 echo "[litellm-proxy] keys loaded: $loaded / $total"
-echo "[litellm-proxy] config: $CONFIG"
+echo "[litellm-proxy] config: $ACTIVE_CONFIG"
 echo "[litellm-proxy] port:   $PORT"
 
 # Record this restart in a history file so the monitor can correctly classify
@@ -184,7 +285,7 @@ with open('$RESTART_HISTORY', 'a') as fh:
     fh.write(json.dumps({
         'utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
         'pid': $1,
-        'config': '$CONFIG',
+        'config': '$ACTIVE_CONFIG',
         'port': '$PORT',
     }) + '\n')
 "
@@ -192,7 +293,7 @@ with open('$RESTART_HISTORY', 'a') as fh:
 
 if [[ $BG -eq 1 ]]; then
   echo "[litellm-proxy] starting in background, log → $LOG"
-  nohup .venv/bin/litellm --config "$CONFIG" --port "$PORT" --num_workers 1 \
+  nohup .venv/bin/litellm --config "$ACTIVE_CONFIG" --port "$PORT" --num_workers 1 \
     > "$LOG" 2>&1 &
   PID=$!
   record_restart "$PID"
@@ -200,5 +301,5 @@ if [[ $BG -eq 1 ]]; then
   echo "[litellm-proxy] tail -f $LOG  to watch"
 else
   record_restart "$$"
-  exec .venv/bin/litellm --config "$CONFIG" --port "$PORT" --num_workers 1
+  exec .venv/bin/litellm --config "$ACTIVE_CONFIG" --port "$PORT" --num_workers 1
 fi
