@@ -136,14 +136,14 @@ def _earnings_days_ago(symbol: str, cache: dict[str, Any]) -> int | None:
 def equity_pead_signals(symbols: list[str] | None = None) -> list[dict]:
     """Generate PEAD BUY signals for recent positive earnings surprises.
 
-    OPT-IN ONLY — gate: EQUITY_PEAD_ENABLED (default 0=OFF).
+    OPT-IN ONLY — gate: EQUITY_PEAD_ENABLED (default 1=ON per PR4 2026-05-27).
     Returns empty list when gate is off or on any error (fail-open).
 
     Entry: 1-3 days after positive earnings surprise (≥5% beat).
     Hold: 30 trading days (PEAD drift window).
     TP: +6%, SL: -3%.
     """
-    if os.environ.get("EQUITY_PEAD_ENABLED", "0").strip().lower() not in ("1", "true", "yes", "on"):
+    if os.environ.get("EQUITY_PEAD_ENABLED", "1").strip().lower() not in ("1", "true", "yes", "on"):
         return []
 
     universe = symbols or _PEAD_UNIVERSE
