@@ -11,14 +11,23 @@ name: ML Gatekeeper Train A/B (Phase D)
 # Trigger:
 #   gh workflow run ml-gatekeeper-train-ab.yml -f drop_leakage=false
 #   gh workflow run ml-gatekeeper-train-ab.yml -f drop_leakage=true
+#
+# PR2 (2026-05-27): Default changed to drop_leakage=true (NEW bundle).
+# Weekly schedule added so the leakage-purged model retrains automatically.
+# Rationale: 4 target-leakage features (forward_wr, strat_fwd_wr,
+# eb_forward_wr, age_hours) inflate CV metrics by +9.21pp but are
+# proxies for the outcome being predicted.
 
 on:
+  schedule:
+    # Weekly retrain of the leakage-purged gatekeeper — Sunday 02:00 UTC
+    - cron: "0 2 * * 0"
   workflow_dispatch:
     inputs:
       drop_leakage:
         description: "Mask leakage feature indices (false=OLD bundle, true=NEW bundle)"
         required: true
-        default: "false"
+        default: "true"
         type: choice
         options:
           - "false"
