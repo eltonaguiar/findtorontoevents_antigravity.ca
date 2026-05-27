@@ -129,6 +129,13 @@
   </div>
 </div>
 
+<div id="pipeline-freshness-banner" style="max-width:1180px;margin:8px auto;padding:10px 16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;font-size:12px;color:#cbd5e1;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
+  <span><strong style="color:#fbbf24">📡 Pipeline:</strong> <span id="pf-latest-picks">…</span></span>
+  <span><strong style="color:#fbbf24">Models active today:</strong> <span id="pf-models-active">…</span></span>
+  <span><strong style="color:#fbbf24">Next scheduled run:</strong> <span id="pf-next-run">…</span></span>
+  <span style="color:#94a3b8;font-size:11px">Source: `data/ai_tournament_picks_latest.json` + cron `0 12 * * *` UTC. Stale &gt;24h → red.</span>
+</div>
+
 <!-- NAV -->
 <nav class="nav">
   <a href="/audit/">← Main Audit</a>
@@ -417,6 +424,26 @@
 </div>
 
 <script>
+// ── Pipeline freshness banner (self-contained IIFE) ──
+(function(){
+  function fmt(d){return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+  function setSpan(id,text,color){var el=document.getElementById(id);if(el){el.textContent=text;if(color)el.style.color=color;}}
+  fetch('./data/ai_tournament_picks_latest.json?'+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(data){
+    if(!Array.isArray(data)||!data.length){setSpan('pf-latest-picks','no data','#ef4444');setSpan('pf-models-active','—','#ef4444');return;}
+    var latestMs=0,now=Date.now(),models48={};
+    for(var i=0;i<data.length;i++){var ts=Date.parse(data[i].submitted_at||'');if(!isNaN(ts)){if(ts>latestMs)latestMs=ts;if((now-ts)<=48*3600000&&data[i].model_id)models48[data[i].model_id]=1;}}
+    var hoursSinceLatest=(now-latestMs)/3600000;
+    var ageColor=hoursSinceLatest<30?'#22c55e':(hoursSinceLatest<=48?'#fbbf24':'#ef4444');
+    var ageStr=hoursSinceLatest<24?Math.round(hoursSinceLatest)+'h ago':Math.round(hoursSinceLatest/24)+'d ago';
+    setSpan('pf-latest-picks',fmt(new Date(latestMs))+' ('+ageStr+')',ageColor);
+    var nModels=0;for(var k in models48)nModels++;
+    setSpan('pf-models-active',nModels+' distinct',nModels<5?'#ef4444':'#22c55e');
+    var next=new Date();next.setUTCHours(12,0,0,0);if(next.getTime()<=now)next.setUTCDate(next.getUTCDate()+1);
+    var diffMin=Math.round((next.getTime()-now)/60000),h=Math.floor(diffMin/60),m=diffMin%60;
+    setSpan('pf-next-run','in '+h+'h '+m+'m ('+fmt(next)+' 12:00 UTC)','#cbd5e1');
+  }).catch(function(){setSpan('pf-latest-picks','fetch error','#ef4444');});
+})();
+
 // ── State ──
 let allPicks = [];        // Merged from all pick files + leaderboard fallback
 let currentWindow = 'all'; // Active time window filter
