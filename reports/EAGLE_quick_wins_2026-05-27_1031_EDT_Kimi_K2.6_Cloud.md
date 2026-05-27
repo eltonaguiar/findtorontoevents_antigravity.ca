@@ -104,7 +104,11 @@ A -106,700% PnL on a "TP_HIT_RESOLVED" trade is **impossible** — this is raw d
 
 **Proposed `oscillation_detector.py`:**
 ```python
+<<<<<<< HEAD
 For each symbol with n≥30 closed picks:
+=======
+For each symbol with n>=30 closed picks:
+>>>>>>> 290b98531 (EAGLE v2 enhanced review + updates entry (Kimi K2.6 Cloud, 12-engine consensus))
   1. Hurst exponent H<0.5 = mean-reverting
   2. 30d rolling PF of ConnorsRSI2 signals
   3. 30d range <5% of price = oscillation candidate
