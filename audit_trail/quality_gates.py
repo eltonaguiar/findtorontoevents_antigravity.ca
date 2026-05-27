@@ -1686,9 +1686,9 @@ COMMODITY_BLACKLIST = frozenset({
 # bug. Per docs/MUTATION_THREE_AXIS_PROTOCOL.md the symbol-axis kill is
 # the right axis when DIRECTION + STRATEGY axes don't isolate the bleed
 # — and they don't here (50%+ WR across both directions).
-#
-# NOTE (2026-05-17 audit): WIN_RATE_TRAP_BLACKLIST is NEVER CHECKED in passes_active_gate.
-# It is dead code — the symbols listed here are already handled by score/trust gates:
+#    # NOTE (2026-05-17 audit): WIN_RATE_TRAP_BLACKLIST is NOW CHECKED in passes_active_gate
+    # (wired 2026-05-27 EAGLE P2-02). Default-off via WIN_RATE_TRAP_GATE_ENABLED=1 — symbols
+    # may already be caught by score/trust gates; this is belt-and-suspenders.
 #   - ETHUSDT quan_engine (143 picks, WR=33.6%): blocked via score gates (passes_active_gate=False)
 #   - INJUSDT, FETUSDT: appear OK in current data (PF>1 with very small PnL values)
 #   - STRKUSDT: still shows trap pattern but blocked by score gates
@@ -6603,6 +6603,21 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
                 return False
     except Exception:
         pass  # fail-open
+
+    # ── WIN_RATE_TRAP_BLACKLIST gate (2026-05-27 EAGLE P2-02) ──
+    # Symbols where WR>=50% but sum_pnl<0 — the classic "small wins,
+    # catastrophic losses" asymmetry. Default-off (opt-in); symbols may
+    # already be caught by score/trust gates. Enable: WIN_RATE_TRAP_GATE_ENABLED=1
+    try:
+        if os.environ.get("WIN_RATE_TRAP_GATE_ENABLED", "0") == "1":
+            _wrt_sym = str(pick.get("symbol") or "").strip().upper()
+            if _wrt_sym and _wrt_sym in WIN_RATE_TRAP_BLACKLIST:
+                logger.debug(
+                    "Pick rejected: WIN_RATE_TRAP_BLACKLIST symbol=%s",
+                    _wrt_sym)
+                return False
+    except Exception:
+        pass  # fail-open: never block picks on gate error
 
     # Direction-triple gate (2026-05-15). BLOCKED_DIRECTION_TRIPLES
     # historically only scrubbed aggregation rows (_is_historical_blocked_pick)
