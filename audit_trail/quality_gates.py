@@ -6194,7 +6194,62 @@ def passes_penny_meme_class_gate(pick: Dict[str, Any]) -> bool:
     return ac not in _PENNY_MEME_CLASSES
 
 
-# ── A1 scaffold (2026-05-16): meta-labeler SHADOW gate ──────────────────────
+def passes_speculative_equity_gate(pick: Dict[str, Any]) -> bool:
+    """Block production EQUITY picks on penny/meme/gap-risk symbols.
+
+    EAGLE 2026-05-27: PENNY_STOCK/MEMECOIN classes are gated separately;
+    this catches mis-tagged EQUITY rows on speculative tickers (GME, NIO, …).
+
+    Kill-switch: ``EQUITY_SPECULATIVE_GATE_ENABLED=0``.
+    """
+    import os as _os_seg
+
+    if (_os_seg.environ.get("EQUITY_SPECULATIVE_GATE_ENABLED", "1") or "1") in (
+        "0", "false", "FALSE", "False"
+    ):
+        return True
+    ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
+    if ac != "EQUITY":
+        return True
+    sym = str(pick.get("symbol") or pick.get("ticker") or "").strip().upper()
+    if not sym:
+        return True
+    try:
+        from alpha_engine.config import is_research_only_speculative
+        if is_research_only_speculative(sym):
+            return False
+    except ImportError:
+        pass
+    return True
+
+
+def passes_vix_regime_active_gate(pick: Dict[str, Any]) -> bool:
+    """VIX regime gate on active admission (EQUITY + ETF).
+
+    Mirrors ``passes_smart_gate`` VIX sidecar so high-VIX picks never reach
+    Active Picks. Default ON via ``VIX_REGIME_ACTIVE_GATE_ENABLED=1``.
+
+    Kill-switch: ``VIX_REGIME_ACTIVE_GATE_ENABLED=0``.
+    """
+    import os as _os_vag
+
+    if (_os_vag.environ.get("VIX_REGIME_ACTIVE_GATE_ENABLED", "1") or "1") in (
+        "0", "false", "FALSE", "False"
+    ):
+        return True
+    try:
+        from audit_trail.vix_regime_gate import (
+            should_reject_combined as _vix_combined,
+            should_reject_equity_pick as _vix_reject,
+        )
+        if _vix_combined(pick) or _vix_reject(pick):
+            pick["_hf_quality_gate_reason"] = pick.get("_hf_quality_gate_reason") or "vix_regime_active"
+            return False
+    except ImportError:
+        pass
+    except Exception:
+        pass  # fail-open
+    return True
 # Wires alpha_engine/meta_labeler.py into the production admission gate in
 # SHADOW-LOG mode. This NEVER rejects a pick — it only computes P(win) via the
 # meta-labeler heuristic/ML model, stamps the pick, and appends one line to a
@@ -6503,6 +6558,29 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
             return False
     except Exception:
         pass  # fail-open: never break admission on this gate
+
+    # Speculative EQUITY quarantine (EAGLE 2026-05-27). Blocks GME/AMC/NIO/etc.
+    # mis-tagged as EQUITY. Kill-switch: EQUITY_SPECULATIVE_GATE_ENABLED=0.
+    try:
+        if not passes_speculative_equity_gate(pick):
+            logger.debug(
+                "Pick rejected: speculative equity gate (symbol=%s)",
+                pick.get("symbol"),
+            )
+            return False
+    except Exception:
+        pass
+
+    # VIX regime on active admission (EQUITY/ETF). Kill-switch: VIX_REGIME_ACTIVE_GATE_ENABLED=0.
+    try:
+        if not passes_vix_regime_active_gate(pick):
+            logger.debug(
+                "Pick rejected: vix regime active gate (symbol=%s class=%s)",
+                pick.get("symbol"), pick.get("asset_class"),
+            )
+            return False
+    except Exception:
+        pass
 
     # Source-system × symbol gate (2026-05-17). BLOCKED_SOURCE_SYMBOL_PAIRS
     # covers cta_replicator COMMODITY losers: CL=F (n=47, WR=19.1%, PF=0.39),

@@ -45,6 +45,22 @@ jobs:
         env:
           PIP_BREAK_SYSTEM_PACKAGES: "1"
 
+      - name: WON/PnL sign-coherence (dry-run; apply when WON_PNL_AUTO_APPLY=1)
+        if: ${{ inputs.dry_run != 'true' }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PORT: '3306'
+        run: |
+          if [ "${{ vars.WON_PNL_AUTO_APPLY || '0' }}" = "1" ]; then
+            python tools/audit_won_picks_auto.py --apply || true
+          else
+            python tools/audit_won_picks_auto.py || true
+          fi
+
       - name: Active Picks Sync — bridge ACTIVE → CLOSED for signal_outcomes
         # PR #2 live-writer: reads at_raw_picks OPEN/ACTIVE rows from MySQL,
         # detects TP/SL/time-exit against live prices, and writes terminal entries
@@ -76,6 +92,18 @@ jobs:
             --asset-class FOREX \
             --max-rows 5000 \
             --apply
+          python alpha_engine/active_picks_sync.py \
+            --asset-class COMMODITY \
+            --max-rows 3000 \
+            --apply
+          python alpha_engine/active_picks_sync.py \
+            --asset-class ETF \
+            --max-rows 2000 \
+            --apply
+          python alpha_engine/active_picks_sync.py \
+            --asset-class BOND \
+            --max-rows 1000 \
+            --apply || true
 
       - name: Prune expired picks from active_picks.json
         env:
