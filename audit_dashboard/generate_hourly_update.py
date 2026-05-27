@@ -45,6 +45,20 @@ def load_state():
     on malformed content — callers should log and fail loudly rather than
     silently patch an HTML update with empty/corrupt data.
     """
+    if not os.path.exists(STATE_FILE):
+        try:
+            import subprocess
+            import sys as _sys
+            _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            _bootstrap = os.path.join(_repo_root, "tools", "bootstrap_claudes_test_state.py")
+            subprocess.run(
+                [_sys.executable, _bootstrap],
+                cwd=_repo_root,
+                check=False,
+                timeout=30,
+            )
+        except Exception as e:
+            log.warning("bootstrap claudes_test_state failed: %s", e)
     try:
         with open(STATE_FILE, encoding="utf-8") as f:
             return json.load(f)

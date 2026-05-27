@@ -29,6 +29,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Bootstrap portfolio state (CI seed)
+        run: python tools/bootstrap_claudes_test_state.py
+
       - name: Deploy competition files to live site via FTP
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}

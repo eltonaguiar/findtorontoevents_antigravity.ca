@@ -6224,11 +6224,14 @@ def passes_speculative_equity_gate(pick: Dict[str, Any]) -> bool:
 
 
 def passes_vix_regime_active_gate(pick: Dict[str, Any]) -> bool:
-    """VIX regime gate on active admission (EQUITY + ETF).
+    """VIX regime gate on active admission (EQUITY only).
 
-    Mirrors ``passes_smart_gate`` VIX sidecar so high-VIX picks never reach
-    Active Picks. Default ON via ``VIX_REGIME_ACTIVE_GATE_ENABLED=1``.
+    Mirrors ``passes_smart_gate`` VIX sidecar so high-VIX equity picks never
+    reach Active Picks. ETF VIX is handled later by M-098 (``ETF_VIX_GATE``)
+    so shadow/enforce modes can stamp ``_etf_vix_regime_block`` without this
+    gate pre-empting them.
 
+    Default ON via ``VIX_REGIME_ACTIVE_GATE_ENABLED=1``.
     Kill-switch: ``VIX_REGIME_ACTIVE_GATE_ENABLED=0``.
     """
     import os as _os_vag
@@ -6237,12 +6240,15 @@ def passes_vix_regime_active_gate(pick: Dict[str, Any]) -> bool:
         "0", "false", "FALSE", "False"
     ):
         return True
+    ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
+    if ac != "EQUITY":
+        return True
     try:
         from audit_trail.vix_regime_gate import (
-            should_reject_combined as _vix_combined,
-            should_reject_equity_pick as _vix_reject,
+            should_reject_combined as _vix_combined_active,
+            should_reject_equity_pick as _vix_equity_active,
         )
-        if _vix_combined(pick) or _vix_reject(pick):
+        if _vix_combined_active(pick) or _vix_equity_active(pick):
             pick["_hf_quality_gate_reason"] = pick.get("_hf_quality_gate_reason") or "vix_regime_active"
             return False
     except ImportError:
