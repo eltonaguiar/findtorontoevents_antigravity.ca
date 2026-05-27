@@ -18,6 +18,25 @@
 | 6 | (pasted by user 02:50 EDT, not file-committed) | **Mercury 2 (Inception Labs)** | ~120 (paste) | Template + tooling-focused — explicit "cannot read files locally", produces empty strategic-review TABLE for user to fill |
 | 7 | (pasted by user 02:55 EDT, not file-committed) | **MiMo-V2.5 (Xiaomi LLM Core Team)** | ~600 (paste, 5 deliverables) | Full deliverable set: dedup skill + strategy review + quick wins + remaining items + DB schema. Explicit "GitHub + local 90-day plan files inaccessible — review built FROM INCIDENTS DASHBOARD ONLY" |
 | 8 | (pasted by user 03:05 EDT, not file-committed) | **MiniMax Agent (researcher)** | ~500 (paste, 3 deliverables) | Quick wins + remaining items + 5-table DB schema with **audit-log tables** (incident_resolution_log + enhancement_progress_log). Explicit GitHub/local file fetch failed — built from web audit only. Adds 5-phase 12-week roadmap + prioritization matrix + Python query API examples. |
+| 9 | `updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_opencode-deepseek-v4-flash-free.md` (+ remaining-items + PR #16 = 795 LOC) | **opencode / deepseek-v4-flash-free** | ~400 + 795 LOC PR | First partner to ALSO ship working code (PR #16): audit_roadmap_seed.py, audit_won_picks_auto.py, clamp_forex_pnl_extremes.py, sync_summary_picks_json.py, equity speculative-gate test, audit_roadmap_items.sql, workflow YAML updates. Material implementation, not just docs. |
+| 10 | `updates/2026-05-27_02-16-57_EST_EAGLE_gpt-5-openai_strategy-audit-quick-wins.md` (+ remaining-items) | **GPT-5 / OpenAI Codex** | ~300 (2 deliverables) | Scope: audit dashboard + incidents + updates roadmap + DAILY_IDEAS.MD + 90-day plans + safety gates + symbol universe + strategy health artifacts. Most comprehensive scope statement across all 12. |
+| 11 | `updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md` (+ remaining-items) | **GPT-5.4 / OpenAI** | ~250 (2 deliverables) | Different OpenAI variant from #10 (5.4 vs 5 / Codex). Notes "Toronto local review window" — implies real-time context awareness. Worked from deduplicated canonical report set. |
+| 12 | `reports/EAGLE_remaining_items_2026-05-27_0231_EDT_Kimi_K2.6_Cloud.md` (+ quick-wins) | **Kimi K2.6 (via Cloud)** | ~200 (2 deliverables) | Direct-answers-to-user-questions framing. Branch: `eagle-quickwins-2026-05-27`. |
+
+### Partners #9–#12 net contribution
+
+All 4 new partners (especially #9 opencode-deepseek-v4) **independently converged on the same foundation order**: WON-pnl relabel → forward_validator restart → calibration inversion → forex_carry decision → bond kill — same as partners #1–#8. **Cross-partner consensus is now 12-deep on the foundation items.**
+
+The unique add from #9 is the **only working-code contribution** (PR #16, 795 LOC). The unique add from #10/#11 is the explicit scope statement (audit dashboard + incidents + DAILY_IDEAS.MD + 90-day plans + safety gates + symbol universe simultaneously). Kimi K2.6 adds nothing structurally new but cross-validates the rest.
+
+### Also surfaced: 2026-05-27 02:46 EDT Grok 4.3 commit `bfad4be0b`
+
+Grok 4.3 (partner #1) shipped a continuation: per-strategy prototype-backtest results + wiring PRs + incident entries for: EQUITY VIX+Autocorr-MR + PEAD-Probation; CRYPTO Funding-Osc-MR; COMMODITY COT-MR / RY-REGIME. **The PEAD-Probation re-promotion attempt should be rejected per closure of PR #12** (h010 harness REJECT verdict remains canonical).
+
+### Real code already landed on main since prior synthesis tick
+
+- `3d1b237aa` — fix(P0): restart forward_validator with EXPIRED_BACKLOG, batching, circuit breaker (EAGLE P0-01). **This means QW-6 forward_validator restart is now CODE-LEVEL done** (still needs the actual process restart on the server).
+- `7e8ad9f21` — fix(P2): WON PnL contradiction TP_HIT tolerance in 3 files (EAGLE P2-01). **This is a parallel code fix to PR #15's mysql_dedup_fix WON relabel.** May overlap or conflict — needs reconciliation before either lands.
 
 ### Mercury 2 (partner #6) — what it added
 
