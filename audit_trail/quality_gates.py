@@ -1507,6 +1507,8 @@ PERMANENTLY_KILLED_STRATEGIES = {
     "bond_mean_reversion",       # n=5, 0% WR, all losses
     "bond_yield_momentum",       # n=3, 0% WR, all losses
     "bond_yield_curve_slope",    # n=1, 0% WR
+    # PR5 (2026-05-27): Kill antigravity_bond — 0% WR on n=9, PF 0.00.
+    "antigravity_bond",          # n=9, 0% WR, Sharpe -2.465
 }
 
 # FIX: Case-insensitive kill check. Picks arrive as lowercase but kill list has mixed case.

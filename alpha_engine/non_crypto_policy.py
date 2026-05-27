@@ -367,6 +367,36 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.55,  # Aligns with Connors 73% claim, 18pt margin
         "allow_without_forward": True,
     },
+    # PR5 (2026-05-27): Wire remaining viable bond strategies from bond_scanner.py.
+    # bond_mean_reversion, bond_yield_momentum, bond_yield_curve_slope are KILLED
+    # (0% WR). These three have theoretical edge but need forward validation.
+    "bond_duration_rotation": {
+        "categories": {"bond"},
+        "min_confidence": 0.55,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.45,
+        "allow_without_forward": True,  # Probation: TLT regime-based allocation
+    },
+    "bond_ust_tsmom": {
+        "categories": {"bond"},
+        "min_confidence": 0.55,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.50,
+        "allow_without_forward": True,  # Probation: FRED DGS10 time-series momentum
+    },
+    "bond_credit_spread_mean_reversion": {
+        "categories": {"bond"},
+        "min_confidence": 0.55,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.45,
+        "allow_without_forward": True,  # Probation: credit spread mean reversion
+    },
     # ── Commodity TSMOM (Moskowitz, Ooi & Pedersen 2012) ────────────────────
     # 12-month time-series momentum on commodity futures with vol-targeted
     # sizing.  Conservative forward-WR floor (0.45) sits below the published
