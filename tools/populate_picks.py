@@ -763,6 +763,16 @@ def write_submissions(all_picks: list[dict]) -> None:
                 "status": p.get("status", "OPEN"),
                 "submitted_at": p.get("submitted_at", submitted_at),
                 "model_id": model_id,
+                # 2026-05-27 fix: persona_id was assigned at pick generation
+                # (line ~491) but stripped on submission write. Result: 0/N of
+                # submissions/*.json had persona_id populated → backfill step
+                # in ai-tournament-pipeline.yml had nothing to backfill from →
+                # model.html drill-down "Performance by persona/strategy"
+                # rendered empty and the leaderboard couldn't break out per
+                # persona. Add it here so the submission envelope carries the
+                # persona attribution all the way to merge_submissions_to_latest.
+                "persona_id": p.get("persona_id", ""),
+                "strategy_name": p.get("strategy_name", ""),
             }
             pick_bodies.append(body)
 
