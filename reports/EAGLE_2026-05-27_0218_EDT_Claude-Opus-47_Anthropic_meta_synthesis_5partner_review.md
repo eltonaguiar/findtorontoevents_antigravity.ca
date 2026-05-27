@@ -17,6 +17,7 @@
 | 5 | `EAGLE_2026-05-27T06-10-51_EST.md` | (no model signed) | 68 | Skeleton stub |
 | 6 | (pasted by user 02:50 EDT, not file-committed) | **Mercury 2 (Inception Labs)** | ~120 (paste) | Template + tooling-focused — explicit "cannot read files locally", produces empty strategic-review TABLE for user to fill |
 | 7 | (pasted by user 02:55 EDT, not file-committed) | **MiMo-V2.5 (Xiaomi LLM Core Team)** | ~600 (paste, 5 deliverables) | Full deliverable set: dedup skill + strategy review + quick wins + remaining items + DB schema. Explicit "GitHub + local 90-day plan files inaccessible — review built FROM INCIDENTS DASHBOARD ONLY" |
+| 8 | (pasted by user 03:05 EDT, not file-committed) | **MiniMax Agent (researcher)** | ~500 (paste, 3 deliverables) | Quick wins + remaining items + 5-table DB schema with **audit-log tables** (incident_resolution_log + enhancement_progress_log). Explicit GitHub/local file fetch failed — built from web audit only. Adds 5-phase 12-week roadmap + prioritization matrix + Python query API examples. |
 
 ### Mercury 2 (partner #6) — what it added
 
@@ -63,6 +64,35 @@ MiMo also disclosed no file-system / GitHub access — its review was built **on
    - REM-023: Regime-exempt promotion path
    - REM-024: Worktree cleanup (already covered by my `/dedup-md-files` skill)
 5. **Per-asset-class top strategies** — most detailed prescriptions across all 7 partners (universe, signal, entry, risk caps, gate, edge rationale). Worth treating as REFERENCE ARCHITECTURE, but **not derived from your specific historical data** (MiMo couldn't read the plans), so treat the parameters as starting points to backtest, not as facts.
+
+### MiniMax Agent (partner #8) — what it added
+
+Same access constraint (web audit only, no file/GitHub). Added on top of MiMo:
+
+1. **5-table DB schema with audit-log tables** — adds `incident_resolution_log` + `enhancement_progress_log` to MiMo's 3-table design (incidents/enhancements/roadmap_items). The audit-log tables capture every status transition (CLAIMED/IN_PROGRESS/RESOLVED/REOPENED) with actor + notes + timestamp. **Useful upgrade for multi-AI peer-review provenance** (each partner's contribution can be a row). **Final canonical schema = MiniMax's 5-table layout**, not MiMo's 3-table.
+2. **5-phase 12-week roadmap** with concrete week-by-week scheduling: Phase 1 data integrity (W1-2) → Phase 2 scoring parity (W3-4) → Phase 3 asset cleanup (W5-6) → Phase 4 strategy rebuild (W7-8) → Phase 5 advanced methods (W9-12). Concrete deadlines absent in prior partners.
+3. **Effort summary matrix** — exact counts: **18 S, 26 M, 7 L, 1 XL** across the full backlog. First partner to quantify total effort.
+4. **Prioritization matrix** (CRITICAL/HIGH/MEDIUM/LOW × impact × effort) — explicit decision rubric: CRITICAL = HIGH-impact + S-effort (do first); LOW = ANY-impact + L/XL-effort (defer).
+5. **Python query API examples** — concrete `get_p0_incidents_by_class()`, `get_enhancement_effort_summary()`, `link_enhancement_to_roadmap()` functions. Bridges the schema to actual usage.
+6. **Dedup skill design** uses content SIGNATURE (first 200 + last 200 chars, MD5) instead of full SHA-256:
+   - **Pro:** ~50× faster on large files
+   - **Con:** false-match risk on files with identical headers/footers but different middles (e.g., two 90-day plans that share the same intro + signature line)
+   - **Recommendation:** keep my full-SHA256 `tools/dedup_md_files.py` as the canonical (correctness > speed for 117-file batches). Adopt MiniMax's signature approach only as a `--fast` flag for >10k-file scenarios.
+
+### Final canonical decisions across 8 partners
+
+After 8 partner reviews, here's what becomes load-bearing:
+
+| Decision | Canonical source | Why |
+|---|---|---|
+| DB schema | **MiniMax (5-table with audit logs)** | Most complete; supports multi-AI provenance |
+| Dedup tool | **Claude Opus 4.7 `tools/dedup_md_files.py` (full SHA-256)** | Correctness > speed at this scale |
+| Conviction-override rules | **MiMo-V2.5** | Only partner with concrete thresholds (≥10 consec / ≥70% rolling-20) |
+| Per-class gate profiles | **MiMo-V2.5** | Only partner with class-specific tolerance numbers |
+| 5-phase roadmap | **MiniMax** | Only partner with week-by-week deadlines |
+| Effort matrix | **MiniMax (18 S / 26 M / 7 L / 1 XL)** | Only partner to quantify total backlog |
+| Foundation order (PRs #9/#14/#15 → validator restart → strategy PRs) | **Claude Opus 4.7 meta** | Cross-partner consensus + canonical-JSON grounding |
+| Mean-reversion template | **MiMo + Opus** | MiMo's OU half-life math + Opus's ENH-OSC-01 oscillating-pair scan |
 
 ### Caveats specific to MiMo
 
