@@ -34,6 +34,55 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+<!-- 2026-05-27 — EAGLE: End-to-End Strategy Review (All 9 Asset Classes) by Claude Opus 4.7 -->
+<div class="update-entry">
+  <div class="date">May 27, 2026</div>
+  <h3>🦅 EAGLE: Full End-to-End Strategy Review — All 9 Asset Classes</h3>
+  <p><strong>Model:</strong> Claude Opus 4.7 (via CommandCode) | <strong>Branch:</strong> <code>feat/EAGLE-2026-05-27-end-to-end-review</code></p>
+  <p>Complete end-to-end audit of all 9 asset classes from symbol universe → scanners → strategies → scoring → quality gates → safety gates → resolver → dashboard. Reviewed ~10,500 lines of safety gate logic, all 8 asset-class 90-day plans, institutional readiness plan, and DAILY_IDEAS.</p>
+
+  <h4>Key Findings</h4>
+  <ul>
+    <li><strong>No class is institutional-ready today.</strong> EQUITY is closest (T2-candidate PF 1.57, VIX&lt;22 backtest PF 5.37 awaiting wire-up)</li>
+    <li><strong>COMMODITY PF 2.49 is FALSIFIED</strong> — COT over-emission. Real post-dedup: n≈5, WR 40%, PF 0.17</li>
+    <li><strong>FOREX correctly disabled.</strong> SHORT-only PF 8.11 on n=29 survives; LONG 80% volume at 29.4% WR is anti-edge</li>
+    <li><strong>PENNY/MEME permanently quarantined.</strong> MEMECOIN PF 0.50/WR 15.7% n=1,869; PENNY PF 0.19/WR 6.8% n=148</li>
+    <li><strong>Safety gates are calibrated correctly.</strong> Confidence &gt;0.90 band WR=14% (correctly blocked); 0.85-0.90 band WR=82% (correctly allowed)</li>
+    <li><strong>9 quick wins identified</strong> — highest leverage: wire VIX&lt;25 into ETF sector emitter (S effort, +0.5-1.0 PF lift, backtest PF 3.22)</li>
+    <li><strong>3 range-bound "sure thing" patterns:</strong> AUDUSD carry-driven oscillation, BTC/ETH VWAP + funding exhaustion, TLT/IEF yield-curve oscillation</li>
+  </ul>
+
+  <h4>Per-Class Top Strategy</h4>
+  <table style="width:100%; border-collapse: collapse; margin: 8px 0;">
+    <tr style="background:rgba(245,158,11,0.1);"><th style="text-align:left;padding:4px 8px;">Class</th><th style="text-align:left;padding:4px 8px;">Strategy</th><th style="text-align:left;padding:4px 8px;">PF Target</th><th style="text-align:left;padding:4px 8px;">Effort</th></tr>
+    <tr><td style="padding:3px 8px;">EQUITY</td><td style="padding:3px 8px;">VIX&lt;22 12-1 Momentum on 20-25 LC</td><td style="padding:3px 8px;">1.87-2.37</td><td style="padding:3px 8px;">S-M</td></tr>
+    <tr style="background:rgba(148,163,184,0.05);"><td style="padding:3px 8px;">ETF</td><td style="padding:3px 8px;">11-Sector Rotation + VIX&lt;25</td><td style="padding:3px 8px;">1.98-2.48</td><td style="padding:3px 8px;">S</td></tr>
+    <tr><td style="padding:3px 8px;">CRYPTO</td><td style="padding:3px 8px;">Liquid Core (25 syms) + On-Chain + Source Whitelist</td><td style="padding:3px 8px;">1.50-1.66</td><td style="padding:3px 8px;">M</td></tr>
+    <tr style="background:rgba(148,163,184,0.05);"><td style="padding:3px 8px;">COMMODITY</td><td style="padding:3px 8px;">Carry-Momo Double-Sort 18 futures (Miffre 2010)</td><td style="padding:3px 8px;">1.50-1.80</td><td style="padding:3px 8px;">M</td></tr>
+    <tr><td style="padding:3px 8px;">FOREX</td><td style="padding:3px 8px;">DISABLED — SHORT-only 4 majors + DXY (if revived)</td><td style="padding:3px 8px;">1.30-1.50</td><td style="padding:3px 8px;">M</td></tr>
+    <tr style="background:rgba(148,163,184,0.05);"><td style="padding:3px 8px;">FUTURES</td><td style="padding:3px 8px;">Merge + Overnight Drift MES + Asia MR MGC</td><td style="padding:3px 8px;">Unknown</td><td style="padding:3px 8px;">M</td></tr>
+    <tr><td style="padding:3px 8px;">BOND</td><td style="padding:3px 8px;">Research-only — Curve-Carry TLT/IEF/SHY</td><td style="padding:3px 8px;">Unknown</td><td style="padding:3px 8px;">S</td></tr>
+    <tr style="background:rgba(148,163,184,0.05);"><td style="padding:3px 8px;">PENNY/MEME</td><td style="padding:3px 8px;">PERMANENTLY QUARANTINED</td><td style="padding:3px 8px;">—</td><td style="padding:3px 8px;">—</td></tr>
+  </table>
+
+  <h4>Quick Wins (9 PRs)</h4>
+  <ol>
+    <li><strong>P0:</strong> Re-derive COMMODITY PF/WR post-COT dedup (data integrity)</li>
+    <li><strong>P0:</strong> Wire VIX&lt;25 gate into ETF sector emitter (S effort, +0.5-1.0 PF)</li>
+    <li><strong>P0:</strong> EQUITY universe split — 20-25 LC vs penny/meme drag</li>
+    <li><strong>P1:</strong> ADV minimum gate (>$1M daily vol) in production_scanner</li>
+    <li><strong>P1:</strong> CRYPTO source whitelist — restrict to 5-6 high-PF sources</li>
+    <li><strong>P1:</strong> Enable CRYPTO_ONCHAIN_MOMENTUM_ENABLED=1 (free Glassnode)</li>
+    <li><strong>P2:</strong> Set FRED_API_KEY in GitHub secrets (economic data)</li>
+    <li><strong>P2:</strong> Fix 4 stale resolved incidents showing OPEN</li>
+    <li><strong>P3:</strong> MD dedup skill (<code>/md-dedup</code>) — identify unique vs duplicate .md files</li>
+  </ol>
+
+  <p><strong>Remaining items:</strong> 40+ workstream items (Honesty A-G, Edge Quality B, Portfolio C, Structural D, Swarm E, Governance G, Coverage F) + per-class enhancements documented in <code>reports/EAGLE_remaining_items_2026-05-27_claude_opus_4_7.md</code></p>
+  <p><strong>New roadmap DB table:</strong> <code>ejaguiar1_stocks.roadmap_items</code> schema proposed to unify incidents, enhancements, quick wins, and workstream items into one canonical ledger (see <code>reports/2026-05-27_enhancements_roadmap_db_schema.md</code>)</p>
+  <p><strong>Related reports:</strong> <a href="../reports/EAGLE_end_to_end_review_2026-05-27_claude_opus_4_7.md">Full EAGLE Review</a> | <a href="../reports/EAGLE_quick_wins_2026-05-27_claude_opus_4_7.md">Quick Wins</a> | <a href="../reports/EAGLE_remaining_items_2026-05-27_claude_opus_4_7.md">Remaining Items</a> | <a href="../reports/EAGLE_per_class_top_strategy_2026-05-27_claude_opus_4_7.md">Top Strategies</a> | <a href="../reports/EAGLE_safety_gate_exemptions_2026-05-27_claude_opus_4_7.md">Safety Gate Exemptions</a> | <a href="../reports/EAGLE_range_bound_2026-05-27_claude_opus_4_7.md">Range-Bound Analysis</a></p>
+</div>
+
 <!-- 2026-05-25 — Audit Deep-Dive Session: CI status, incident review, peer consultations, dashboard analysis -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
