@@ -10,6 +10,20 @@ from __future__ import annotations
 import json, os
 import pymysql
 
+# Data rows use a few historical singular asset-class labels, while the
+# dashboard migration standardized the table names to plural suffixes.
+TABLE_SUFFIX_ALIASES = {
+    "ETF": "ETFS",
+    "STOCK": "STOCKS",
+    "COMMODITY": "COMMODITIES",
+    "BOND": "BONDS",
+}
+
+
+def table_suffix(label: str) -> str:
+    return TABLE_SUFFIX_ALIASES.get(label, label)
+
+
 # (table_suffix, title, description, severity, status, affected, fix, link_md_path, link_url, link_github_ref, reporter)
 INCIDENTS = [
     # ---- OVERALL (cross-cutting) ----
@@ -219,6 +233,43 @@ INCIDENTS = [
      "P1", "OPEN", "tools/swarm/api_consult.py + consult-nvidia-models / consult-cloudflare-models skills",
      "Mandate inclusion of reports/hypothesis_registry.json rejected-hypothesis entries that intersect the prompt's asset class. Update consult-nvidia-models/SKILL.md + consult-cloudflare-models/SKILL.md to require a leakage-context block in every prompt template. Add a sentence: 'Be skeptical; if data suggests one symbol/source dominates, flag concentration risk.'",
      "reports/2026-05-25_multi_ai_panel_meta_review.md", None, None, "claude-opus-4-7+roo-deepseek-session"),
+
+    # ---- Added from EAGLE review 2026-05-27 ----
+    ("OVERALL", "Profitable-but-filtered picks are not surfaced anywhere",
+     "The current audit pipeline shows rejects in aggregate but provides no durable lane for picks that failed gates and later would have won materially. That hides false negatives and prevents learning whether concentration, thin-sample, or quarantine rules are discarding real edge.",
+     "P0", "OPEN", "audit_trail/quality_gates.py + dashboard_generator.py audit surfaces",
+     "Add a profitable-but-filtered / profitable-but-quarantined audit lane with per-pick first-failed gate, later outcome, and asset-class rollups. Keep it observational first — do not weaken live gates in the first batch.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None, "gpt-5.4/openai"),
+
+    ("OVERALL", "HC JS/Python parity drift can change eligibility by surface",
+     "The High Conviction decision path is split across audit_dashboard/hc_filter.js and tools/dashboard_hc_rules.py. EAGLE review found likely drift around confidence handling and small-sample relaxations, so the same pick can qualify differently depending on which surface evaluates it.",
+     "P0", "OPEN", "audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py",
+     "Create one canonical HC parameter contract and parity test corpus. Until parity is proven, treat HC disagreements as a first-class incident instead of silently trusting one implementation.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None, "gpt-5.4/openai"),
+
+    ("COMMODITIES", "COMMODITY headline PF/WR still contaminated by pre-clean COT aggregation",
+     "EAGLE review converged with the existing COT forensic concern: the class story remains unsafe while pre-clean or over-emitted COT history can still dominate class-level PF/WR claims. The page should not treat COMMODITY as trustable until independent-cycle-only stats are canonical.",
+     "P0", "OPEN", "COMMODITY class-health aggregation / COT-derived history",
+     "Recompute class health from deduped independent COT cycles only, then re-derive the honest class verdict. Block promotional Tier claims until the cleaned aggregation is the live source of truth.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None, "gpt-5.4/openai"),
+
+    ("FOREX", "FOREX class still aggregates losers around a small winner subset",
+     "EAGLE review found the class story is dominated by a few stronger sleeves while the aggregate is dragged down by broad losers. The dashboard does not expose that isolate-the-winner vs kill-the-drag distinction cleanly enough.",
+     "P1", "OPEN", "FOREX class aggregation / per-sleeve visibility",
+     "Add per-sleeve isolation reporting and treat FOREX as a basket of sleeves, not one monolith. Promote only the proven sleeve(s) in audit visibility and keep the rest explicitly quarantined or paper-only.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None, "gpt-5.4/openai"),
+
+    ("STOCKS", "Penny/meme names still pollute the main EQUITY sleeve",
+     "Research and backtest evidence is concentrated in cleaner large-cap equity universes, but live EQUITY still carries penny/meme contamination. This distorts both edge claims and gate calibration for the parent class.",
+     "P1", "OPEN", "alpha_engine/config.py EQUITY universe / live EQUITY routing",
+     "Split LARGE_CAP_EQUITY from PENNY research-only names and report them separately. Do not let speculative names share the same production quality story as the large-cap sleeve.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None, "gpt-5.4/openai"),
+
+    ("FUTURES", "FUTURES is a zombie tile with real futures hidden under COMMODITY",
+     "The standalone FUTURES class has near-zero useful activity while real futures exposure is represented under COMMODITY. This makes the /audit taxonomy misleading and blocks honest per-class review.",
+     "P1", "OPEN", "asset-class taxonomy / FUTURES vs COMMODITY reporting",
+     "Replace the empty FUTURES story with a unified futures taxonomy or clearly scope FUTURES as research-only financial futures. The page should stop presenting a zombie tile as if it were a live class.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None, "gpt-5.4/openai"),
 ]
 
 ENHANCEMENTS = [
@@ -355,6 +406,43 @@ ENHANCEMENTS = [
      "UI", "MEDIUM", "M", "BACKLOG", "claude-opus-4-7", None,
      "Each asset class shows funnel: scanned -> passed score -> passed trust -> passed regime -> opened. Visible from main /audit page.",
      "audit_dashboard/pick_funnel.html", "https://findtorontoevents.ca/audit/pick_funnel.html", None),
+
+    # ---- Added from EAGLE review 2026-05-27 ----
+    ("OVERALL", "Add profitable-but-filtered / profitable-but-quarantined audit lane",
+     "Create a non-admission-changing observability lane that records picks rejected by gates or quarantine rules but later resolved positively. This turns hidden false negatives into measurable backlog without weakening live safety gates on day one.",
+     "GATE", "HIGH", "M", "BACKLOG", "gpt-5.4/openai", None,
+     "Dashboard exposes per-asset-class counts and PF/WR for profitable filtered picks; every row includes first-failed gate + later outcome.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None),
+
+    ("OVERALL", "Add bounded hot-streak exemption with explicit audit trail",
+     "Current streak logic influences scoring but does not create a controlled exemption path. Add a time-boxed, per-sleeve exemption contract so repeated clean winners can earn temporary gate relief without silently changing the system.",
+     "GATE", "HIGH", "M", "BACKLOG", "gpt-5.4/openai", None,
+     "Every hot-streak exemption has a minimum clean sample, expiry timestamp, explicit reason, and automatic rollback on deterioration.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None),
+
+    ("ETFS", "Make VIX-gated sector rotation the primary ETF sleeve",
+     "EAGLE review identified ETF sector rotation plus VIX gating as the cleanest underused edge in the current repo. Existing mixed ETF sources dilute that cleaner regime-aware strategy story.",
+     "METHODOLOGY", "HIGH", "M", "BACKLOG", "gpt-5.4/openai", None,
+     "ETF rotation becomes a first-class tracked sleeve with rolling PF/WR/MDD and contributes the majority of ETF class quality picks.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None),
+
+    ("STOCKS", "Split LARGE_CAP_EQUITY from PENNY research-only names",
+     "The main EQUITY sleeve should reflect the clean large-cap / regime-controlled strategy set, while penny/meme names live in a separate research-only bucket. This improves both reporting honesty and future gate calibration.",
+     "METHODOLOGY", "HIGH", "S", "BACKLOG", "gpt-5.4/openai", None,
+     "Main EQUITY class no longer contains penny/meme symbols; parent-class PF/WR and gate calibration are recomputed on the clean universe.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None),
+
+    ("COMMODITIES", "Recompute class health from deduped independent COT cycles only",
+     "The class should only advertise edge using independent-cycle-aware COT accounting. This enhancement formalizes the honest source-of-truth rule and blocks stale, over-emitted history from defining the class story.",
+     "METHODOLOGY", "HIGH", "M", "BACKLOG", "gpt-5.4/openai", None,
+     "COMMODITY dashboard tile and supporting rollups use independent-cycle-only metrics; Tier verdict matches the recomputed clean history.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None),
+
+    ("FUTURES", "Replace empty FUTURES tile with unified futures taxonomy",
+     "A unified futures taxonomy would stop the page from showing a nearly empty standalone FUTURES class while real futures exposure is discussed elsewhere. This is primarily a reporting/trust fix before it is a strategy expansion.",
+     "UI", "MEDIUM", "M", "BACKLOG", "gpt-5.4/openai", None,
+     "The dashboard no longer presents FUTURES as a zombie class; futures exposure is represented under one honest taxonomy with clear sub-sleeves.",
+     "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None),
 ]
 
 
@@ -367,7 +455,7 @@ def main():
     enh_inserted = enh_updated = 0
     with conn.cursor() as cur:
         for (cls, title, desc, sev, st, comp, fix, md, url, gh, reporter) in INCIDENTS:
-            tbl = f"INCIDENT_{cls}"
+            tbl = f"INCIDENT_{table_suffix(cls)}"
             # Check existence by title
             cur.execute(f"SELECT incident_id FROM {tbl} WHERE title=%s LIMIT 1", (title,))
             existing = cur.fetchone()
@@ -386,7 +474,7 @@ def main():
                     (title, desc, sev, st, comp, fix, md, url, gh, reporter))
                 inc_inserted += 1
         for (cls, title, desc, cat, imp, eff, st, prop, persona, metric, md, url, gh) in ENHANCEMENTS:
-            tbl = f"ENHANCEMENT_{cls}"
+            tbl = f"ENHANCEMENT_{table_suffix(cls)}"
             cur.execute(f"SELECT enhancement_id FROM {tbl} WHERE title=%s LIMIT 1", (title,))
             existing = cur.fetchone()
             if existing:

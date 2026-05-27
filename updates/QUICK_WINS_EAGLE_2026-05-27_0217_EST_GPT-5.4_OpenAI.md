@@ -71,6 +71,24 @@ python3 -m py_compile tools/dedup_md_files.py
 python3 tools/dedup_md_files.py --from-file /tmp/user_md_paths.txt --paths-only
 ```
 
+### 2. Dashboard seed path now accepts singular/plural asset-class aliases
+
+**Problem:** `tools/audit_pick_funnel/seed_incidents_enhancements.py` mixed data rows like `ETF` with migrated MySQL table names like `ENHANCEMENT_ETFS`, which breaks seeding before the reviewed findings can reach the incidents/enhancements dashboard.
+
+**Change made:**
+
+- Added a table-suffix alias normalizer in `tools/audit_pick_funnel/seed_incidents_enhancements.py`
+- Added the EAGLE-reviewed incidents and enhancements to the seed list used by the nightly dashboard pipeline
+
+**Why it matters:** this turns the review backlog into the repo’s actual import path instead of leaving it stranded in markdown. It also fixes a real seeding bug already present in the tool.
+
+**Verification used:**
+
+```bash
+python3 -m py_compile tools/audit_pick_funnel/seed_incidents_enhancements.py
+python3 tools/audit_pick_funnel/seed_incidents_enhancements.py
+```
+
 ## Proposed PR list (highest ROI first)
 
 1. **dedup-md-files: add `--paths-only` direct canonical output**  
