@@ -1481,6 +1481,9 @@ def score_pick(pick, live_price, regime_data, now, fear_greed=0):
         "elite_score": elite, "entry": entry, "live": live_price,
         "tp": tp, "sl": sl, "pnl_pct": round(pnl_pct, 2),
         "tp_remaining_pct": round(tp_rem, 1), "age_hours": round(age_h, 1),
+        # P1 FIX (2026-05-27): Populate signal_time from pick's actual timestamp
+        # so the dashboard shows per-pick age instead of "1.4h ago" for all rows.
+        "signal_time": str(pick.get("open_time") or pick.get("timestamp") or pick.get("entry_date") or ""),
         "strategy": str(pick.get("strategy") or pick.get("source_system") or "unknown"),
         "source": str(pick.get("source") or pick.get("source_system") or "unknown"),
         "source_system": str(pick.get("source_system") or "unknown"),
