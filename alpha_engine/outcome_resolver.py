@@ -233,7 +233,7 @@ RESOLVER_VERSION = "v2.1"
 # to preserve backwards-compat with downstream pinning (see
 # tests/test_outcome_resolver_v21_bugfixes.py).  Use RESOLVER_SUBVERSION when
 # you need to identify the time-exit-replay path specifically.
-RESOLVER_SUBVERSION = "v2.2"
+RESOLVER_SUBVERSION = "v2.3"
 
 # v2.2 (2026-05-09) — Per-asset-class TIME_EXIT window for non-crypto picks.
 # Mirrors audit_trail/universal_pick_resolver.MAX_HOLD_HOURS_BY_CLASS so a pick
@@ -1011,6 +1011,16 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
     # land as FLAT and are filtered from WR aggregations downstream.
     outcome = classify_outcome(pnl_pct, asset_class=asset_class or None)
 
+    # v2.3 (2026-05-27): EXPIRED/TIME_EXIT/MAX_HOLD picks must be labeled
+    # as EXPIRED regardless of PnL sign — intraday drift should not convert
+    # an expired pick into a WON. See reports/2026-05-25_crypto_78pct_wr_verification.md
+    if exit_reason and any(
+        str(exit_reason).upper().startswith(prefix)
+        for prefix in ("EXPIRED", "TIME_EXIT", "MAX_HOLD")
+    ):
+        outcome = "EXPIRED"
+        pick["_resolver_subversion"] = "v2.3"
+
     # v2: preserve legacy values BEFORE overwriting, so audit trail remains
     # reproducible. Only stamp on the FIRST v2 pass (don't churn legacy fields
     # if a pick is re-resolved twice).
@@ -1659,7 +1669,13 @@ def _resolve_claude_gainer_ml_pick(pick: dict, live_price: Optional[float]) -> b
         pnl_pct = round((exit_price - entry) / entry * 100, 2)
 
     # Update the original pick in-place
-    original["status"] = "RESOLVED"
+    # v2.3 (2026-05-27): EXPIRED/TIME_EXIT/MAX_HOLD exits must stay
+    # as EXPIRED, not RESOLVED. See reports/2026-05-25_crypto_78pct_wr_verification.md
+    _is_expired_exit = exit_reason and any(
+        str(exit_reason).upper().startswith(prefix)
+        for prefix in ("EXPIRED", "TIME_EXIT", "MAX_HOLD")
+    )
+    original["status"] = "EXPIRED" if _is_expired_exit else "RESOLVED"
     original["exit_price"] = exit_price
     original["exit_time"] = now.isoformat()
     original["exit_reason"] = exit_reason

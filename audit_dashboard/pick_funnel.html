@@ -35,6 +35,10 @@
   .b-fail { background:#7c2d12; color:#fca5a5; border:1px solid #ef4444; }
   .b-meh  { background:#3a3a44; color:#a0a0b0; border:1px solid #6b7280; }
   .b-hc   { background:#1e3a5f; color:#93c5fd; border:1px solid #3b82f6; }
+  .b-disp { background:#78350f; color:#fcd34d; border:2px solid #f59e0b; font-size:11px; letter-spacing:0.5px; }
+  /* DISPUTED row highlight in nav matrix */
+  tr.disputed td { background: rgba(245,158,11,0.08); }
+  tr.disputed td:first-child { border-left: 3px solid #f59e0b; }
   /* Funnel bar */
   .funnel-row { display:grid; grid-template-columns: 90px 1fr; gap:10px; margin:8px 0; align-items:center; }
   .funnel-row .ac-name { font-size:12px; color:#c0c0d0; font-weight:700; }
@@ -505,15 +509,16 @@ function renderNavSurfaceMatrix(mx){
       ? `<span class="badge b-pass">EDGE in ${s.edge_classes.join(', ')||'—'}</span>`
       : `<span class="badge b-fail">NO EDGE</span>`;
     const rows = s.rows.filter(r=>r.n>0).map(r=>{
-      const passBoth = r.pass_holdout && r.pass_bonferroni;
+      const isDisputed = r.why_no_edge && r.why_no_edge.toUpperCase().includes('DISPUTED');
+      const rowClass = isDisputed ? 'disputed' : '';
       const wrCls = r.wr_pct >= 55 ? 'pnl-pos' : (r.wr_pct < 45 ? 'pnl-neg' : 'pnl-neu');
-      const pfCls = (r.pf !== null && r.pf !== '—' && r.pf !== 'inf' && r.pf < 1.0) ? 'pnl-neg' : (r.pf === 'inf' || (r.pf !== null && r.pf >= 1.5) ? 'pnl-pos' : 'pnl-neu');
-      const hoCls = r.pass_holdout ? 'pnl-pos' : 'pnl-neg';
-      const bf  = r.pass_bonferroni ? '<span class="badge b-pass">SIG</span>' : '<span class="badge b-meh">NS</span>';
-      const ho  = r.pass_holdout ? '<span class="badge b-pass">PASS</span>' : '<span class="badge b-fail">FAIL</span>';
+      const pfCls = isDisputed ? 'pnl-neu' : ((r.pf !== null && r.pf !== '—' && r.pf !== 'inf' && r.pf < 1.0) ? 'pnl-neg' : (r.pf === 'inf' || (r.pf !== null && r.pf >= 1.5) ? 'pnl-pos' : 'pnl-neu'));
+      const hoCls = isDisputed ? 'pnl-neu' : (r.pass_holdout ? 'pnl-pos' : 'pnl-neg');
+      const bf  = isDisputed ? '<span class="badge b-disp">DISP</span>' : (r.pass_bonferroni ? '<span class="badge b-pass">SIG</span>' : '<span class="badge b-meh">NS</span>');
+      const ho  = isDisputed ? '<span class="badge b-disp">DISP</span>' : (r.pass_holdout ? '<span class="badge b-pass">PASS</span>' : '<span class="badge b-fail">FAIL</span>');
       const acLabel = r.asset_class === '_overall' ? '<b>ALL</b>' : r.asset_class;
       const eli5Why = r.why_no_edge ? `<tr class="eli5-row"><td colspan="9">why_no_edge: ${r.why_no_edge}</td></tr>` : '';
-      return `<tr>
+      return `<tr class="${rowClass}">
         <td>${acLabel}</td>
         <td class="num">${r.n}</td>
         <td class="num ${wrCls}">${r.wr_pct!=null?r.wr_pct+'%':'—'}</td>
