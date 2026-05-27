@@ -88,11 +88,19 @@ jobs:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY || '' }}
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY || secrets.GEMINI_FREE_KEY || '' }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || '' }}
-          # Additional providers — config/model_persona_mapping.json or future
-          # personas can read these directly (Inception is the publisher of mercury;
-          # Together hosts a wide model catalog).
+          # Additional providers — wired 2026-05-27 from local key vault.
+          # Each one unlocks one or more model_id slots in config/model_persona_mapping.json.
           INCEPTION_API_KEY: ${{ secrets.INCEPTION_API_KEY || '' }}
           TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY || '' }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY || '' }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || '' }}
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY || '' }}
+          GH_MODELS_API_KEY: ${{ secrets.GH_MODELS_API_KEY || '' }}
+          NOVITA_API_KEY: ${{ secrets.NOVITA_API_KEY || '' }}
+          NOUS_API_KEY: ${{ secrets.NOUS_API_KEY || '' }}
+          AIMLAPI_API_KEY: ${{ secrets.AIMLAPI_API_KEY || '' }}
+          HYPERBOLIC_API_KEY: ${{ secrets.HYPERBOLIC_API_KEY || '' }}
+          FEATHER_API_KEY: ${{ secrets.FEATHER_API_KEY || '' }}
         run: |
           echo "=== Generating tournament picks ==="
           python tools/populate_picks.py || echo "::warning title=populate_picks::picks generation failed (see above)"
