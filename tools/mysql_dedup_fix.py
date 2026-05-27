@@ -1,6 +1,6 @@
 """
-tools/mysql_dedup_fix.py — Deduplicate trading_picks, fix confidence scale, add UNIQUE index.
-================================================================================================
+tools/mysql_dedup_fix.py — Deduplicate trading_picks, fix confidence scale, fix WON labels, add UNIQUE index.
+================================================================================
 
 Problem: multiple aggregator runs generate fresh UUIDs for identical picks
 (same symbol + direction + strategy + entry_price), bloating the table and
@@ -11,11 +11,14 @@ Operations (in order):
   2. Delete newer duplicate rows — keeps the oldest (smallest created_at) for
      each (symbol, direction, strategy, entry_price) group.
   3. Fix confidence > 1.0 (scale artefact):
-       confidence > 1 AND <= 10  → divide by 10
-       confidence > 10            → divide by 100
-  4. Add UNIQUE INDEX on (symbol, direction, strategy, entry_price, created_at)
+        confidence > 1 AND <= 10  → divide by 10
+        confidence > 10            → divide by 100
+  4. PR7: Fix WON/LOST status labels contradicted by pnl_pct sign:
+        status='WON' AND pnl_pct <= 0 → status='LOST'
+        status='LOST' AND pnl_pct > 0 → status='WON'
+  5. Add UNIQUE INDEX on (symbol, direction, strategy, entry_price, created_at)
      to prevent future dupes (skipped if index already exists).
-  5. Report COUNT(*) after changes.
+  6. Report COUNT(*) after changes.
 
 Usage:
   python tools/mysql_dedup_fix.py            # dry-run (no changes)
@@ -276,6 +279,51 @@ def step_fix_confidence(cur, dry_run: bool) -> dict:
     return results
 
 
+def step_fix_won_labels(cur, dry_run: bool) -> dict:
+    """PR7: Fix WON/LOST status labels contradicted by pnl_pct sign.
+
+    Issue: 2,531 rows tagged status='WON' have avg pnl_pct = -41.13%.
+    Also some status='LOST' rows have positive pnl_pct.
+    Fix: re-label based on pnl_pct sign.
+
+    Returns dict with counts of fixed rows.
+    """
+    # Count contradictions
+    cur.execute("SELECT COUNT(*) FROM trading_picks WHERE status = 'WON' AND pnl_pct <= 0")
+    won_bad = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM trading_picks WHERE status = 'LOST' AND pnl_pct > 0")
+    lost_bad = cur.fetchone()[0]
+
+    if won_bad == 0 and lost_bad == 0:
+        log.info("WON/LOST labels: all consistent with pnl_pct sign — no fix needed.")
+        return {"won_to_lost": 0, "lost_to_won": 0}
+
+    log.info("WON/LOST contradictions: %d WON with pnl<=0, %d LOST with pnl>0", won_bad, lost_bad)
+
+    if dry_run:
+        log.info("[DRY-RUN] Would re-label %d WON->LOST, %d LOST->WON.", won_bad, lost_bad)
+        return {"won_to_lost": won_bad, "lost_to_won": lost_bad}
+
+    results = {}
+    try:
+        cur.execute("UPDATE trading_picks SET status = 'LOST' WHERE status = 'WON' AND pnl_pct <= 0")
+        results["won_to_lost"] = cur.rowcount
+        log.info("WON->LOST: %d rows re-labeled.", results["won_to_lost"])
+    except Exception as exc:
+        log.error("WON->LOST fix failed: %s", exc)
+        results["won_to_lost"] = 0
+
+    try:
+        cur.execute("UPDATE trading_picks SET status = 'WON' WHERE status = 'LOST' AND pnl_pct > 0")
+        results["lost_to_won"] = cur.rowcount
+        log.info("LOST->WON: %d rows re-labeled.", results["lost_to_won"])
+    except Exception as exc:
+        log.error("LOST->WON fix failed: %s", exc)
+        results["lost_to_won"] = 0
+
+    return results
+
+
 def step_add_unique_index(cur, dry_run: bool) -> bool:
     """
     Add UNIQUE INDEX on (symbol, direction, strategy, entry_price, created_at)
@@ -356,7 +404,10 @@ def main():
         # ── Step 2: fix confidence scale ──────────────────────────────────────
         conf_results = step_fix_confidence(cur, dry_run)
 
-        # ── Step 3: commit data changes before DDL ────────────────────────────
+        # ── Step 3: PR7 fix WON/LOST labels ─────────────────────────────────
+        won_results = step_fix_won_labels(cur, dry_run)
+
+        # ── Step 4: commit data changes before DDL ────────────────────────────
         if not dry_run:
             conn.commit()
             log.info("Data changes committed.")
@@ -375,6 +426,8 @@ def main():
         log.info("  Rows after             : %d", count_after)
         log.info("  Confidence / 10 fixed  : %d rows", conf_results.get("div10", 0))
         log.info("  Confidence / 100 fixed : %d rows", conf_results.get("div100", 0))
+        log.info("  WON->LOST re-labeled   : %d rows", won_results.get("won_to_lost", 0))
+        log.info("  LOST->WON re-labeled   : %d rows", won_results.get("lost_to_won", 0))
         if dry_run:
             log.info("  (No changes applied — re-run with --apply to execute)")
 
