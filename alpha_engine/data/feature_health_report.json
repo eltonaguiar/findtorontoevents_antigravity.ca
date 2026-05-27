@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T01:58:55.627512+00:00",
+  "generated_at": "2026-05-27T03:53:44.277377+00:00",
   "total_features": 32,
   "alive_features": 0,
   "dead_features": 32,
@@ -12,8 +12,8 @@
     "min_health_score": 0.3,
     "correlation_threshold": 0.85
   },
-  "total_picks_analyzed": 0,
-  "picks_with_features": 0,
+  "total_picks_analyzed": 3,
+  "picks_with_features": 3,
   "features": {
     "strategy_encoded": {
       "status": "no_data",
@@ -86,11 +86,13 @@
       "activation_class": "dead"
     },
     "regime_encoded": {
-      "status": "no_data",
-      "n_samples": 0,
+      "status": "dead_constant",
+      "n_samples": 3,
+      "mean": 0.0,
       "variance": 0.0,
       "pct_zero": 1.0,
       "pct_constant": 1.0,
+      "is_stale": false,
       "critical": true,
       "activation_rate": 0.0,
       "activation_class": "dead"
@@ -343,15 +345,35 @@
   },
   "correlation_audit": {
     "correlated_pairs": [],
-    "correlation_health": "clean",
+    "correlation_health": "insufficient_data",
     "n_features_checked": 0,
     "drop_candidates": []
   },
   "data_quality": {
     "quality_score": 1.0,
     "issues": [],
-    "details": {},
-    "total_picks": 0
+    "details": {
+      "missing_rate": {
+        "alerts": [],
+        "features_checked": 2,
+        "threshold": "1%"
+      },
+      "stale_data": {
+        "alerts": [],
+        "threshold": "10 consecutive identical values"
+      },
+      "price_jumps": {
+        "alerts": [],
+        "total": 0,
+        "threshold": "5%"
+      },
+      "volume_anomalies": {
+        "alerts": [],
+        "note": "insufficient volume data"
+      }
+    },
+    "total_picks": 3,
+    "picks_with_features": 3
   },
   "recommendations": [
     "CRITICAL: 'strategy_encoded' has no data -- check extraction pipeline",
@@ -361,7 +383,7 @@
     "CRITICAL: 'volume_ratio' has no data -- check extraction pipeline",
     "CRITICAL: 'risk_reward' has no data -- check extraction pipeline",
     "'atr_at_entry' has no data -- may need extraction or removal",
-    "CRITICAL: 'regime_encoded' has no data -- check extraction pipeline",
+    "CRITICAL: 'regime_encoded' is constant (var=0.00e+00) -- check data source 'regime_map'",
     "CRITICAL: 'direction_encoded' has no data -- check extraction pipeline",
     "CRITICAL: 'strategy_win_rate' has no data -- check extraction pipeline",
     "CRITICAL: 'strategy_sharpe' has no data -- check extraction pipeline",
