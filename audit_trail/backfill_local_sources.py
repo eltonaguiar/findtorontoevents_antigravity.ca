@@ -176,18 +176,24 @@ def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
 
 
 def load_json_picks(cur, filepath, source_system, is_closed=False):
-    """Load picks from a JSON file (active_picks.json or closed_picks.json)."""
+    """Load picks from a JSON file (active_picks.json or closed_picks.json).
+
+    Returns (picks_count, outcomes_count). For closed picks, also inserts
+    into at_signal_outcomes so the signal_outcomes table gets populated
+    from JSON sources (not just SQLite). Fixes the 82-day staleness gap.
+    """
     path = REPO / filepath
     if not path.exists():
-        return 0
+        return 0, 0
     try:
         data = json.loads(path.read_text())
     except Exception:
-        return 0
+        return 0, 0
     if not isinstance(data, list):
-        return 0
+        return 0, 0
 
-    cnt = 0
+    picks_cnt = 0
+    outcomes_cnt = 0
     for p in data:
         symbol = p.get("symbol", p.get("ticker", ""))
         if not symbol:
@@ -201,11 +207,14 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
                 direction = "SHORT"
 
         status = "OPEN"
+        raw_exit_reason = None
         exit_price = None
         exit_reason = None
         pnl = None
         if is_closed:
-            status = p.get("status", p.get("exit_reason", "CLOSED")).upper()
+            raw_status = p.get("status", p.get("exit_reason", "CLOSED"))
+            raw_exit_reason = p.get("exit_reason", p.get("close_reason"))
+            status = str(raw_status).upper()
             if status in ("WON", "WIN", "CLOSED_TP", "TP_HIT"):
                 status = "WON"
             elif status in ("LOST", "LOSS", "CLOSED_SL", "SL_HIT"):
@@ -215,7 +224,7 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
             else:
                 status = "CLOSED"
             exit_price = p.get("exit_price", p.get("close_price"))
-            exit_reason = p.get("exit_reason", p.get("close_reason"))
+            exit_reason = raw_exit_reason
             pnl = p.get("pnl_pct", p.get("net_pnl_pct", p.get("return_pct")))
 
             # Sign-coherence guard (mirrors mysql_client.py mysql_close_trade):
@@ -240,16 +249,45 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
              p.get("created_at", p.get("generated_at", p.get("pick_date"))))))
 
         strategy = p.get("strategy", p.get("strategy_name", p.get("algorithm")))
+        entry = p.get("entry_price", p.get("entry", p.get("price")))
+        tp = p.get("take_profit", p.get("tp_price", p.get("tp", p.get("target_price"))))
+        sl = p.get("stop_loss", p.get("sl_price", p.get("sl", p.get("stop_price"))))
 
-        cnt += insert_pick(
-            cur, symbol, direction,
-            p.get("entry_price", p.get("entry", p.get("price"))),
-            p.get("take_profit", p.get("tp_price", p.get("tp", p.get("target_price")))),
-            p.get("stop_loss", p.get("sl_price", p.get("sl", p.get("stop_price")))),
+        picks_cnt += insert_pick(
+            cur, symbol, direction, entry, tp, sl,
             p.get("confidence"), strategy, source_system, filepath,
             status, exit_price, exit_reason, pnl, ts,
         )
-    return cnt
+
+        # ── Also insert into at_signal_outcomes for closed picks ──
+        # This was MISSING before 2026-05-27 — only SQLite sources
+        # populated at_signal_outcomes. JSON closed picks (46K+ rows
+        # across 12+ systems) were silently skipped, leaving the table
+        # 82 days stale.
+        if is_closed and status not in ("OPEN",):
+            # Map status to outcome enum: TP_HIT / SL_HIT / EXPIRED
+            if exit_reason:
+                reason_upper = str(exit_reason).upper()
+                if reason_upper in ("TP", "TP_HIT", "TP_HIT_RESOLVED", "TP2_HIT", "TP1_HIT"):
+                    outcome = "TP_HIT"
+                elif reason_upper in ("SL", "SL_HIT", "SL_HIT_RESOLVED", "TRAILING_STOP"):
+                    outcome = "SL_HIT"
+                elif reason_upper in ("EXPIRED", "TIME_EXPIRY", "EXPIRED_BACKLOG"):
+                    outcome = "EXPIRED"
+                else:
+                    outcome = "WON" if status == "WON" else ("LOST" if status == "LOST" else "EXPIRED" if status == "EXPIRED" else None)
+            else:
+                outcome = "WON" if status == "WON" else ("LOST" if status == "LOST" else "EXPIRED" if status == "EXPIRED" else None)
+
+            if outcome:
+                closed_at = p.get("closed_at", p.get("exit_timestamp", p.get("resolved_at",
+                             p.get("close_date", p.get("timestamp")))))
+                outcomes_cnt += insert_outcome(
+                    cur, symbol, direction, entry, tp, sl, exit_price,
+                    outcome, pnl, source_system, strategy, ts, closed_at,
+                )
+
+    return picks_cnt, outcomes_cnt
 
 
 def load_sqlite_table(cur, db_path, table, source_system):
@@ -395,10 +433,11 @@ def main():
             json_sources.append((fpath, f"breakout_{approach}", closed))
 
     for filepath, system, is_closed in json_sources:
-        cnt = load_json_picks(cur, filepath, system, is_closed)
-        if cnt:
-            total_picks += cnt
-            print(f"  [{system}] {'closed' if is_closed else 'active'}: {cnt} picks")
+        p_cnt, o_cnt = load_json_picks(cur, filepath, system, is_closed)
+        if p_cnt or o_cnt:
+            total_picks += p_cnt
+            total_outcomes += o_cnt
+            print(f"  [{system}] {'closed' if is_closed else 'active'}: {p_cnt} picks, {o_cnt} outcomes")
 
     # ── Summary ──
     cur.execute("SELECT COUNT(*) FROM at_local_picks")
