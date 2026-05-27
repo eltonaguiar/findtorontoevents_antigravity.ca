@@ -1,7 +1,27 @@
 # EAGLE Remaining Items — Strategy Review 2026-05-27
 **Model**: Claude Sonnet 4.6 (GitHub Copilot)  
-**Date/Time**: 2026-05-27 EST  
+**Date/Time**: 2026-05-27 EST (v2 enhanced — post-fix delta as of ~14:50 EST)  
 **Purpose**: Items NOT in the quick-wins PR list — medium/large effort, research, or blocked items  
+
+---
+
+## ✅ RESOLVED SINCE V1 (commits confirmed)
+
+| Item | Commit | What Was Done |
+|---|---|---|
+| P2-02 (WIN_RATE_TRAP_BLACKLIST dead code) | `9618bc8d7` | Gate wired into `passes_active_gate` at line 6612; default-off via `WIN_RATE_TRAP_GATE_ENABLED` |
+| P1-02 (signal_outcomes 82d stale) | `e3ed33ef3` | `signal_outcomes` mirror refresh triggered |
+| P1-03 (Swarm Picks 13d stale) | `e3ed33ef3` | Swarm Picks revived with tournament promotion |
+| EQUITY speculative quarantine | `884a1a014` | GME/AMC/NIO blocked |
+| WON/PnL coherence step | `884a1a014` | Coherence validation added to resolver |
+
+## ⚠️ HALF-DONE (coded, env flag missing)
+
+| Item | Code Location | Missing |
+|---|---|---|
+| WIN_RATE_TRAP_GATE_ENABLED | `quality_gates.py:6612` | Not set in any GHA → see **NEW-QW-04** in quick-wins file |
+| PEAD_EQUITY_ENABLED | `production_scanner.py:3970` | Not set in any GHA → see **NEW-QW-02** in quick-wins file |
+| ETF spike → MySQL | `active_picks_etf.json` (17 picks) | Picks JSON-only, not in `trading_picks` → see **NEW-QW-03** in quick-wins file |
 
 ---
 
@@ -54,7 +74,7 @@ WHERE outcome_status = 'WON' AND pnl_pct < 0;
 
 ## P1 OPEN — High Priority, Medium Effort
 
-### REMAINING-P1-01: Rebuild US Equity Screener (UEPS)
+### REMAINING-P1-01: Rebuild US Equity Screener (UEPS) — ❌ STILL OPEN
 **What**: UEPS composite (US Equity Pick System) is documented but has no live writer. Zero EQUITY picks from dedicated equity screener in production.  
 **Tasks**:
 1. Verify if `production_scanner.py` has `_run_equity_scanner()` or equivalent in main loop
@@ -62,23 +82,13 @@ WHERE outcome_status = 'WON' AND pnl_pct < 0;
 3. Wire into main pick flush with `category='EQUITY'`
 **Effort**: M (2-4 hrs to verify + wire)  
 
-### REMAINING-P1-02: Refresh `signal_outcomes` Table (82 Days Stale)
-**What**: `signal_outcomes` last updated 2026-03-04 (82 days ago). All forward WR claims from backtesting are unverifiable against live outcomes.  
-**Tasks**:
-1. Identify the writer for `signal_outcomes` (likely `alpha_engine/outcome_resolver.py` or `audit_trail/universal_pick_resolver.py`)
-2. Trigger a full refresh pass
-3. Add GH Actions schedule: `signal_outcomes_refresh.yml` nightly
-**Effort**: M (identify writer + trigger + schedule, 4-6 hrs)  
+### REMAINING-P1-02: Refresh `signal_outcomes` Table — ✅ TRIGGERED (verify freshness)
+**Status**: `e3ed33ef3` triggered a refresh. Confirm `signal_outcomes` is now current before using for OOS WR claims.
 
-### REMAINING-P1-03: Revive Swarm Picks (13+ Days Stale)
-**What**: `data/swarm_picks.json` not updated in 13+ days. Swarm workflow no longer emitting picks. The ensemble approach (multiple model consensus) was one of the better pick sources.  
-**Tasks**:
-1. Check `.github/workflows/` for swarm workflow
-2. Identify why emissions stopped (rate limit? authentication? logic gate?)
-3. Re-enable or redesign with explicit `swarm_picks_writer.py`
-**Effort**: M (debugging + re-enable, 2-6 hrs)  
+### REMAINING-P1-03: Revive Swarm Picks — ✅ TRIGGERED (monitor for continuity)
+**Status**: `e3ed33ef3` revived with tournament promotion. Confirm `data/swarm_picks.json` is being updated on schedule.
 
-### REMAINING-P1-04: COT Historical Re-Derive (Remove Over-Emission)
+### REMAINING-P1-04: COT Historical Re-Derive — ❌ STILL OPEN
 **What**: COT over-emission (same weekly CFTC release counted as ~100 trades) inflated COMMODITY headlines. The go-forward dedup ledger (PR #961) fixes new emissions, but historical data is still corrupted.  
 **Tasks**:
 1. Run `python tools/cot_retroactive_dedup.py` (or create if missing) 
@@ -86,10 +96,17 @@ WHERE outcome_status = 'WON' AND pnl_pct < 0;
 3. Exclude flagged rows from PF/WR calculations in `asset_class_health`
 **Effort**: M (SQL + retroactive script, 4-8 hrs)  
 
-### REMAINING-P1-05: sync_active_mysql_picks_to_json Missing
+### REMAINING-P1-05: sync_active_mysql_picks_to_json Missing — ❌ STILL OPEN
 **What**: Upstream writer for `closed_picks.json` doesn't exist in the codebase. The file is referenced by the dashboard but nobody writes to it from MySQL.  
 **Tasks**: Create `tools/sync_closed_picks_json.py` that queries `trading_picks WHERE outcome_status != 'ACTIVE'` and writes to `audit_dashboard/data/closed_picks.json`.  
-**Effort**: S-M (new script, 2-4 hrs)  
+**Effort**: S-M (new script, 2-4 hrs)
+
+### REMAINING-P1-06 (NEW v2): Grok Agent Looping — 18+ Cycles, Zero P0 Progress
+**What**: Grok 4.3 xAI agent has run 18+ scheduled continuation cycles (commits `da4688714` through `328c8bc82`) with **identical diagnosis** each cycle: "VIX+clean30LC still only Tier-1 edge; data rot P0s unchanged; begin QW-1 opt-in wiring implementation now." Same line in every commit message for 4+ hours. No P0 fixes have shipped from these cycles.  
+**Impact**: Agent compute wasted. P0s (frozen validator, WON mislabeling, ghost rows) remain unresolved despite 18 cycles claiming they're the blocker.  
+**Root Cause**: The agent's goal loop lacks a "prove you did something different" gate — it re-diagnoses the same state without actually committing code changes.  
+**Fix**: Add a `min_changed_files_per_cycle=1` assertion to the goal loop. If no files changed since last cycle, escalate to human instead of re-running the same diagnosis.  
+**Effort**: S (30 min to add assertion to goal/skill SKILL.md)  
 
 ---
 
@@ -199,12 +216,16 @@ Or if intentionally disabled, add a comment explaining why and remove the list.
 
 | ID | Type | Priority | Title | Status |
 |---|---|---|---|---|
-| NEW-I-01 | INCIDENT | P1 | WIN_RATE_TRAP_BLACKLIST is dead code — never checked in passes_active_gate | OPEN |
+| NEW-I-01 | INCIDENT | P1 | WIN_RATE_TRAP_BLACKLIST is dead code — never checked in passes_active_gate | ✅ Wired (default-off) — enable `WIN_RATE_TRAP_GATE_ENABLED=1` in GHA |
 | NEW-I-02 | INCIDENT | P1 | EQUITY production scanner routing missing — strategies may never be called | OPEN |
 | NEW-I-03 | INCIDENT | P0 | 2,531 WON rows have negative PnL (avg -41.1%) — outcome mislabeling | OPEN |
-| NEW-I-04 | INCIDENT | P1 | Swarm Picks abandoned — swarm_picks.json 13+ days stale | OPEN |
+| NEW-I-04 | INCIDENT | P1 | Swarm Picks abandoned — swarm_picks.json 13+ days stale | ✅ Revived (e3ed33ef3) — monitor |
 | NEW-I-05 | INCIDENT | P2 | IPO tile advertised on /audit but zero picks ever emitted | OPEN |
-| NEW-I-06 | INCIDENT | P1 | signal_outcomes table 82 days stale — all forward WR claims unverifiable | OPEN |
+| NEW-I-06 | INCIDENT | P1 | signal_outcomes table 82 days stale — all forward WR claims unverifiable | ✅ Refresh triggered (e3ed33ef3) — verify |
+| NEW-I-07 | INCIDENT | P1 | `CONFIDENCE_INVERT_CRYPTO=1` missing from `alpha-engine-live.yml` (set in smart-picks-tracker only) | OPEN |
+| NEW-I-08 | INCIDENT | P1 | `PEAD_EQUITY_ENABLED=0` in production — 62.2% WR strategy emitting zero picks | OPEN |
+| NEW-I-09 | INCIDENT | P1 | ETF emitter spike mode — 17 picks in JSON, NOT in MySQL | OPEN |
+| NEW-I-10 | INCIDENT | P1 | Grok agent looping 18+ cycles with zero code changes — goal loop lacks change-gate | OPEN |
 
 ### New Enhancements (Add to findtorontoevents.ca/audit/incidents.html)
 
@@ -214,12 +235,13 @@ Or if intentionally disabled, add a comment explaining why and remove the list.
 | NEW-E-02 | ENHANCEMENT | P2 | Range-bound oscillating asset detection (USDJPY/GC=F/BTCUSDT/NG=F patterns) | OPEN |
 | NEW-E-03 | ENHANCEMENT | P1 | BTC UTC 08-09Z death-zone filter (M-001) — n>1000 memory-backed edge | OPEN |
 | NEW-E-04 | ENHANCEMENT | P2 | FOREX DXY regime awareness — only emit MR signals when DXY range-bound | OPEN |
-| NEW-E-05 | ENHANCEMENT | P1 | PEAD equity full promotion pipeline — 62.2% OOS WR strategy in shadow mode | OPEN |
+| NEW-E-05 | ENHANCEMENT | P1 | PEAD equity full promotion pipeline — enable `PEAD_EQUITY_ENABLED=1` in GHA | OPEN |
 | NEW-E-06 | ENHANCEMENT | P2 | Polymarket/Kalshi signals for EQUITY (merger arb, earnings outcomes) | OPEN |
 | NEW-E-07 | ENHANCEMENT | P2 | Options flow integration for EQUITY (unusual call/put activity) | OPEN |
 | NEW-E-08 | ENHANCEMENT | P3 | CVaR portfolio constructor — bounded daily drawdown allocation | OPEN |
 | NEW-E-09 | ENHANCEMENT | P2 | FRED live rates updater for FOREX carry (replaces static values in config.py) | OPEN |
 | NEW-E-10 | ENHANCEMENT | P3 | Walk-forward validation in CI/CD — weekly automated OOS report | OPEN |
+| NEW-E-11 | ENHANCEMENT | P1 | Goal loop change-gate — assert min_changed_files=1 per cycle; escalate to human if zero | OPEN |
 
 ---
 

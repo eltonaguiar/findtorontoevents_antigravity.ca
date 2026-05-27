@@ -1,6 +1,6 @@
 # EAGLE Quick Wins — Strategy Review 2026-05-27
 **Model**: Claude Sonnet 4.6 (GitHub Copilot)  
-**Date/Time**: 2026-05-27 EST  
+**Date/Time**: 2026-05-27 EST (v2 enhanced — post-fix delta as of ~14:50 EST)  
 **Scope**: End-to-end review of all asset classes + safety gates + quick-executable PRs  
 **Canonical source files reviewed** (9 unique, 90+ paths deduplicated via `/dedup-md-review` skill):
 - `reports/90day_gap_analysis_2026-05-15.md`
@@ -8,40 +8,62 @@
 
 ---
 
-## TL;DR — What's Broken, What's the Fast Fix
+## ✅ RESOLVED SINCE V1 (commits confirmed)
 
-The pipeline has **3 structural crises** plus **5 quick wiring gaps** that together explain sub-T2 performance across every class:
-
-| Crisis | Impact | Fast Fix |
+| Item | Commit | What Was Done |
 |---|---|---|
-| ML confidence inverted: conf≥0.9 → WR 14%, conf 0.5-0.6 → WR 60% | Top-ranked smart picks are worst picks | Invert confidence contribution in `smart_picks_engine.py` |
-| forward_validator frozen 270h+ / 29M open positions backlogged | No closed outcomes in 11+ days — ALL forward WR claims are stale | Restart validator + EXPIRED-stamp the stale backlog |
-| ETF sector rotation emitter fires 0 picks despite PF 2.05-3.22 backtest | Proven edge sitting on the shelf unused | Set `ETF_SECTOR_EMITTER_ENABLED=1` in env |
+| QW-01 (CRYPTO conf inversion — ranker) | `919b962f9` | Confidence zeroed in `_compute_ml_composite`; `CONFIDENCE_INVERT_CRYPTO=1` added to `smart-picks-tracker.yml` |
+| QW-05 (signal_time) | `b8b2cd29b` | `signal_time` populated from pick's actual timestamp |
+| QW-06 (VIX<22 EQUITY gate) | `884a1a014` | Hard gate wired and live in `passes_active_gate` |
+| QW-08 (EQUITY speculative quarantine) | `884a1a014` | GME/AMC/NIO speculative EQUITY names blocked |
+| WON/PnL coherence step | `884a1a014` | Coherence validation added to resolver |
+| summary_picks sync | `884a1a014` | `summary_picks` refresh added |
+| signal_outcomes + Swarm Picks refresh | `e3ed33ef3` | `signal_outcomes` mirror refreshed; Swarm Picks revived with tournament promotion |
+
+## ⚠️ HALF-DONE — Coded but env flag NOT in `alpha-engine-live.yml`
+
+| Code Path | Where Code Exists | Gap |
+|---|---|---|
+| `CONFIDENCE_INVERT_CRYPTO=1` | `smart-picks-tracker.yml:32` ONLY | Missing from `alpha-engine-live.yml` → production emission still uses broken confidence |
+| `PEAD_EQUITY_ENABLED=1` | `production_scanner.py:3970` | Not set in any GHA → zero PEAD emissions |
+| `WIN_RATE_TRAP_GATE_ENABLED=1` | `quality_gates.py:6612-6616` (default-off, `9618bc8d7`) | Not set in any GHA → gate is dead code |
+| ETF spike → MySQL | `alpha_engine/data/active_picks_etf.json` (17 picks, `etf_emitter_spike_v1`) | Picks are in JSON only; never INSERTed to `trading_picks` |
 
 ---
 
-## Safety Gate Analysis — Picks That Deserved to Win But Were Filtered
+## TL;DR — What's Still Broken, What's the Fast Fix (v2)
 
-### 1. VIX Regime False Negatives (EQUITY) — ⭐ Biggest Missed Edge
-**Evidence**: Backtest on 30 clean LC with VIX<20: **PF 5.37 / WR 75% / MDD 7.3%** vs live PF 1.57 with no VIX gate.  
-**What the gate does**: Currently only soft `vix_confidence_adj` — no hard block on high-VIX momentum entries.  
-**What it misses**: ~30% of EQUITY picks fire during VIX>25 regimes where momentum historically dies. These are **allowed through** when they should be blocked, and **good low-VIX momentum picks** get diluted by the high-VIX failures.  
-**Recommendation**: Wire `VIX<22` hard block into `passes_active_gate` for EQUITY momentum strats. Branch `feat/equity-vix-regime-gate-sidecar-2026-05-13` exists — just needs verification + merge.
+| Issue | Status | Fast Fix |
+|---|---|---|
+| ML confidence inverted: conf≥0.9 → WR 14% | ⚠️ HALF-FIXED — ranker fixed, but `CONFIDENCE_INVERT_CRYPTO=1` missing from `alpha-engine-live.yml` | Add to GHA env (NEW-QW-01, **5 min**) |
+| forward_validator frozen 270h+ / 29M open positions | ❌ STILL OPEN | Restart validator + EXPIRED-stamp stale backlog |
+| ETF emitter fires 0 MySQL picks despite PF 2.05-3.22 backtest | ❌ NEW — `etf_emitter_spike_v1` writes JSON only, not MySQL | Wire JSON picks to MySQL INSERT (NEW-QW-03, **30 min**) |
+| PEAD equity 62.2% WR stuck in shadow | ⚠️ HALF-DONE — code ready, no GHA env var | Add `PEAD_EQUITY_ENABLED: "1"` to GHA (NEW-QW-02, **5 min**) |
+| WIN_RATE_TRAP_BLACKLIST dead code | ⚠️ HALF-DONE — gate wired (`9618bc8d7`), env flag not set | Add `WIN_RATE_TRAP_GATE_ENABLED: "1"` to GHA (NEW-QW-04, **5 min**) |
+| FOREX LONG direction: PF 0.80 vs SHORT PF 8.11 | ❌ Soft -15 score penalty only; no hard env block | Add `FOREX_LONG_BLOCK: "1"` to GHA (QW-09, **1 hr**) |
 
-### 2. PEAD Equity Strategy Stuck in Shadow — ⭐ 62.2% OOS WR
-**Evidence**: `pead_equity` has **62.2% OOS WR on 2-day PEAD window** (ring-2.6-1t verdict). Zero production emissions.  
-**What blocks it**: Stuck in shadow mode. No one promoted it.  
-**Recommendation**: Promote `pead_equity` shadow → probation immediately. Wire into `production_scanner.py` main equity loop. ETA: 1 PR, 1-2 hours.
+---
 
-### 3. SHORT FOREX Direction Bias — ⭐ PF 8.11 on SHORT, 0.80 on LONG
-**Evidence**: FOREX mutation autopsy 2026-05-15: 80% LONG volume at 29.4% WR / PF 0.80. SHORT side: PF **8.11** on n=29.  
-**What happens**: LONG picks pass all gates. SHORT picks from `ig_contrarian` + `MeanReversionBB` were partially blocked historically.  
-**Recommendation**: Add `FOREX_DIRECTION_HARD_BLOCK_LONG=1` env flag. Block LONG direction system-wide for FOREX until LONG PF>1.0 in 30d rolling.
+## Safety Gate Analysis — v2 Status
 
-### 4. Confidence Inversion — Top Picks Are Worst Picks
-**Evidence**: Confirmed P0 on incidents dashboard. `conf≥0.9 → WR 14.4%`, `conf 0.5-0.6 → WR 60.3%`.  
-**What happens**: `smart_picks_engine.py` weights `quality/elite_score` at 35%, derived from confidence — so the ranker consistently promotes its worst picks to the top.  
-**Recommendation**: Invert confidence contribution for CRYPTO in `_single_signal_score`. Use `1.0 - norm_confidence` as the confidence term, or replace with `trust_score`.
+### 1. VIX Regime Gate (EQUITY) — ✅ LIVE as of `884a1a014`
+**Status**: Hard block wired. `VIX>22` picks blocked in `passes_active_gate`.  
+**Remaining**: Monitor for 14d to confirm volume drop + WR lift. No action needed now.
+
+### 2. PEAD Equity — ⚠️ CODE READY, ENV FLAG MISSING
+**Evidence**: `pead_equity` has **62.2% OOS WR**. Code guard at `production_scanner.py:3970`.  
+**What blocks it**: `PEAD_EQUITY_ENABLED` not set in `alpha-engine-live.yml`. Picks are silently skipped.  
+**Fix**: `NEW-QW-02` — add `PEAD_EQUITY_ENABLED: "1"` to `alpha-engine-live.yml` env block. **5 minutes.**
+
+### 3. SHORT FOREX Direction Bias — ⚠️ SOFT PENALTY ONLY
+**Evidence**: FOREX mutation autopsy: 80% LONG volume at 29.4% WR / PF 0.80. SHORT side: PF **8.11** on n=29.  
+**Current state**: Soft `-15` score penalty in `quality_gates.py:4153-4156` but no hard block env flag.  
+**Fix**: `QW-09` — add `FOREX_LONG_BLOCK: "1"` env gate. **1 hour.**
+
+### 4. Confidence Inversion — ⚠️ PARTIALLY FIXED
+**Status**: `919b962f9` fixed confidence in `_compute_ml_composite` and `smart-picks-tracker.yml`.  
+**Remaining gap**: `CONFIDENCE_INVERT_CRYPTO=1` is NOT in `alpha-engine-live.yml` — production emission still uses broken confidence during pick scoring.  
+**Fix**: `NEW-QW-01` — add to `alpha-engine-live.yml`. **5 minutes.**
 
 ### 5. Oscillating "Sure Thing" Patterns Identified
 These pairs oscillate between 2 price levels repeatedly and offer near-certain edge when gated correctly:
@@ -58,51 +80,47 @@ These pairs oscillate between 2 price levels repeatedly and offer near-certain e
 
 ---
 
-## Quick Win PRs — Execute Now
+## Quick Win PRs — v2 Status
 
-### PR-QW-01: Invert Confidence in Smart Picks Ranker
-**File**: `alpha_engine/smart_picks_engine.py`  
-**Change**: In `_single_signal_score`, replace `quality_score = pick.confidence * 0.35` with `quality_score = (1.0 - pick.confidence) * 0.35` for CRYPTO, or use `pick.trust_score if pick.trust_score is not None else (1.0 - pick.confidence)`  
-**Expected lift**: Smart Picks CRYPTO WR improves toward 60%+ (conf 0.5-0.6 bucket).  
-**Risk**: Low — change is in ranking/display, not in gate logic. Reversible.  
-**Effort**: 30 min  
+### ✅ RESOLVED PRs
 
-### PR-QW-02: Promote `pead_equity` Shadow → Probation
-**Files**: `alpha_engine/production_scanner.py`, `audit_trail/shadow_probation.json`  
-**Change**: Add `pead_equity` to equity scanner main loop; set probation_start_date in shadow_probation.json.  
-**Expected lift**: First 30 equity picks from a WF-verified strategy (62.2% OOS WR).  
-**Risk**: Low — probation means small sizing, monitored.  
-**Effort**: 1 hour  
+| PR | Commit | Status |
+|---|---|---|
+| QW-01 (confidence inversion — ranker/tracker) | `919b962f9` | Done in smart-picks-tracker. See NEW-QW-01 for production GHA gap. |
+| QW-05 (signal_time) | `b8b2cd29b` | Done |
+| QW-06 (VIX<22 EQUITY gate) | `884a1a014` | Live |
+| QW-08 (EQUITY speculative quarantine) | `884a1a014` | GME/AMC/NIO blocked |
 
-### PR-QW-03: Enable ETF Sector Rotation Emitter
-**File**: `tools/etf_sector_emitter.py`, `alpha_engine/config.py` or env  
-**Change**: Set `ETF_SECTOR_EMITTER_ENABLED=1` in `.github/workflows/alpha-engine-etf.yml` env block.  
-**Expected lift**: ETF picks from proven rotation system (backtest PF 2.05-3.22).  
-**Risk**: Low — emitter already coded, just needs env switch.  
-**Effort**: 15 min  
+---
 
-### PR-QW-04: Fix `summary_picks.json` Fixture Bug
-**File**: `audit_trail/dashboard_generator.py` (summary_picks writer)  
-**Change**: Replace static timestamp with `SELECT MAX(created_at) as last_pick_at FROM trading_picks WHERE category=%s GROUP BY category`.  
-**Expected lift**: Removes P1 incident from dashboard; correct timestamps visible.  
-**Risk**: None — pure data fix.  
-**Effort**: 30 min  
+### 🔴 NEW-QW-01: Add `CONFIDENCE_INVERT_CRYPTO: "1"` to `alpha-engine-live.yml`
+**File**: `.github/workflows/alpha-engine-live.yml` — add to `env:` block  
+**Why**: `919b962f9` fixed the smart-picks-tracker only. The production alpha engine workflow (`alpha-engine-live.yml`) runs WITHOUT this env var — CRYPTO live pick emission still uses inverted confidence.  
+**Expected lift**: CRYPTO Smart Picks WR improves toward 60%+ (conf 0.5-0.6 is the winning bucket).  
+**Effort**: **5 min**
 
-### PR-QW-05: Add `signal_time` to Smart Picks Feed
-**File**: `audit_trail/dashboard_generator.py` (smart_picks_feed builder)  
-**Change**: One-line add: `"signal_time": pick.get("created_at", "")` in the smart_picks_feed dict construction.  
-**Expected lift**: Resolves P1 "all picks show 1.4h ago" display bug.  
-**Risk**: None.  
-**Effort**: 15 min  
+### 🔴 NEW-QW-02: Add `PEAD_EQUITY_ENABLED: "1"` to `alpha-engine-live.yml`
+**File**: `.github/workflows/alpha-engine-live.yml` — add to `env:` block  
+**Code ready at**: `production_scanner.py:3970` — `if os.getenv("PEAD_EQUITY_ENABLED") == "1":`  
+**Expected lift**: First 30+ EQUITY picks from a WF-verified strategy (62.2% OOS WR).  
+**Effort**: **5 min**
 
-### PR-QW-06: Wire `VIX<22` Hard Gate for EQUITY Momentum
-**Files**: `audit_trail/quality_gates.py` (`passes_active_gate`), `audit_trail/vix_regime_gate.py`  
-**Change**: In `passes_active_gate`, for EQUITY momentum strategies: `if vix_regime_gate.get_vix() > 22: return False, "vix_block"`.  
-**Expected lift**: Removes ~30% of failing EQUITY picks; lifts WR toward backtest 75%.  
-**Risk**: Medium — may reduce emission volume short-term. Monitor for 14d.  
-**Effort**: 2 hours  
+### 🔴 NEW-QW-03: Wire ETF Spike Picks to MySQL
+**Files**: `alpha_engine/etf_sector_emitter.py`, `alpha_engine/data/active_picks_etf.json`  
+**Change**: After JSON write, INSERT each pick to `trading_picks` with `category='ETF'`. Dedup on `(symbol, source_system, signal_timestamp)`.  
+**Evidence**: 17 picks exist in `active_picks_etf.json` (version `etf_emitter_spike_v1`) but audit dashboard shows zero ETF picks.  
+**Expected lift**: ETF picks appear on dashboard; proven backtest edge (PF 2.05-3.22) becomes trackable.  
+**Effort**: **30 min**
 
-### PR-QW-07: Clamp 5 Extreme FOREX pnl_pct Rows
+### 🔴 NEW-QW-04: Add `WIN_RATE_TRAP_GATE_ENABLED: "1"` to `alpha-engine-live.yml`
+**File**: `.github/workflows/alpha-engine-live.yml` — add to `env:` block  
+**Code ready at**: `quality_gates.py:6612-6616` — gate wired but defaults OFF (commit `9618bc8d7`).  
+**Expected lift**: Eliminates "win rate trap" symbol/source pairs. Estimated +2-5 PF on affected pairs.  
+**Effort**: **5 min**
+
+---
+
+### PR-QW-07: Clamp 5 Extreme FOREX pnl_pct Rows — ❌ STILL OPEN — ❌ STILL OPEN
 **File**: SQL migration (run once)  
 ```sql
 UPDATE trading_picks 
@@ -110,17 +128,12 @@ SET pnl_pct = -100
 WHERE pnl_pct < -100 AND category = 'FOREX';
 ```
 **Expected lift**: Removes P0 distortion (one -106,700% row makes FOREX avg look catastrophic). FOREX avg_loss reverts to realistic ~-0.8%.  
-**Risk**: Data fix, recoverable (keep audit trail).  
-**Effort**: 5 min  
+**Effort**: **5 min**
 
-### PR-QW-08: Block ALL PENNY/MEME from Production EQUITY Path
-**File**: `alpha_engine/config.py` (EQUITY_SYMBOLS), `alpha_engine/scanner.py`  
-**Change**: Move 8 speculative names (NIO/LCID/RIVN/SNDL/GME/AMC/PLTR spec tier/SOFI) to `EQUITY_RESEARCH_ONLY` dict. Production `scanner.py` EQUITY routing only reads `EQUITY_SYMBOLS_PRODUCTION` (20-30 LC names).  
-**Expected lift**: EQUITY PF likely improves 0.1-0.3 as penny/meme drag removed (PENNY_STOCK WR 6.76% PF 0.19).  
-**Risk**: Reduces EQUITY pick volume 30-40%. Monitor 14d.  
-**Effort**: 1 hour  
+### PR-QW-08: Block ALL PENNY/MEME from Production EQUITY Path — ✅ DONE (`884a1a014`)
+GME/AMC/NIO speculative names blocked. Monitor for additional names (LCID/RIVN/SNDL) if they appear.
 
-### PR-QW-09: Add FOREX LONG Direction Hard Block
+### PR-QW-09: Add FOREX LONG Direction Hard Block — ❌ STILL OPEN (soft penalty only)
 **File**: `audit_trail/quality_gates.py` (BLOCKED_DIRECTION_TRIPLES or new `FOREX_DIRECTION_GATE`)  
 **Change**: Add env-gated block: `if category == "FOREX" and direction == "LONG" and os.getenv("FOREX_LONG_BLOCK", "0") == "1": return False`. Set `FOREX_LONG_BLOCK=1` in GH Actions env.  
 **Expected lift**: FOREX volume drops to SHORT-only. FOREX SHORT PF 8.11 vs LONG 0.80.  
@@ -153,11 +166,11 @@ Target:    PF>1.5 / WR>50% (T2)
 ```
 Universe:  30 liquid LC: AAPL/MSFT/NVDA/TSLA/AMZN/GOOGL/META/AMD/AVGO/ORCL/
            JPM/GS/UNH/LLY/WMT/COST/XOM/PG/PEP + 11 more by ADV>$5M
-           QUARANTINE: GME/AMC/NIO/LCID/RIVN/SNDL to RESEARCH_ONLY
+           QUARANTINE: GME/AMC/NIO/LCID/RIVN/SNDL — ✅ DONE (884a1a014)
 Strategy:  1. 12-1 momentum top-5 (Jegadeesh-Titman)
-           2. PEAD on earnings beats (promote pead_equity NOW)
+           2. PEAD on earnings beats — ⚠️ enable PEAD_EQUITY_ENABLED=1 (NEW-QW-02, 5 min)
            3. ConnorsRSI2 on SPY/QQQ
-Gate:      VIX<22 hard block + SPY>200SMA + factor score (PE/ROE/momentum)
+Gate:      VIX<22 hard block ✅ LIVE (884a1a014) + SPY>200SMA + factor score
 Target:    PF>2.5 / WR>60% (T2+ based on backtest evidence)
 ```
 
@@ -167,7 +180,7 @@ Universe:  11 SPDR sectors (XLK/XLE/XLF/XLV/XLI/XLY/XLP/XLU/XLB/XLRE/XLC) + IWM
 Strategy:  Faber TAA 10mo SMA + Antonacci 12-1 momentum top-3 long-only
            Monthly rebalance; skip month when VIX>25
 Gate:      VIX<25 regime gate (skip, don't invert), friction model 2.5bp
-Enable:    ETF_SECTOR_EMITTER_ENABLED=1 (QUICK WIN PR-QW-03)
+Status:    etf_emitter_spike_v1 running — 17 picks in JSON but NOT in MySQL (NEW-QW-03)
 Target:    PF 2.05-3.22 (proven backtest; Tier-1 with VIX gate)
 ```
 
@@ -187,7 +200,8 @@ Target:    PF>1.5 / WR>50% on n>=20 clean post-dedup cycles (realistic)
 Universe:  EURUSD + GBPUSD + AUDUSD + USDJPY (4 majors only; block all 16 others)
 Strategy:  SHORT direction only (PF 8.11) via ig_contrarian + MeanReversionBB + cta_fx
            Carry: positive carry SHORT confirmation (USDJPY +4.5 carry → SHORT aligns)
-Gate:      FOREX_LONG_BLOCK=1 env; DXY regime awareness (add)
+Gate:      FOREX_LONG_BLOCK soft -15 penalty active (❌ hard block still needed — QW-09)
+           DXY regime awareness (❌ not yet built — REMAINING-P2-05)
 Timeline:  30d paper on SHORT-only → if PF>1.3 / WR>50 / n>30, remove HARD_DISABLE
 Target:    PF>1.3 (paper phase); abandon class if not met by day 60
 ```
@@ -235,22 +249,20 @@ Target:    n>=30 clean picks before any sizing claim
 
 ---
 
-## PR Priority Stack (Execute in Order)
+## PR Priority Stack (v2 — Execute in Order)
 
-| # | PR | Files | Effort | Impact |
+| # | PR | Files | Effort | Status |
 |---|---|---|---|---|
-| 1 | QW-07: Clamp FOREX extreme pnl | SQL | 5 min | Fixes P0 metric distortion |
-| 2 | QW-05: signal_time one-liner | dashboard_generator.py | 15 min | Fixes P1 display |
-| 3 | QW-03: ETF emitter enabled | alpha-engine-etf.yml | 15 min | Unlocks PF 2+ ETF edge |
-| 4 | QW-09: FOREX LONG block | quality_gates.py | 1 hr | Removes -EV direction |
-| 5 | QW-01: Invert confidence | smart_picks_engine.py | 30 min | Fixes inverted ranker |
-| 6 | QW-08: Quarantine penny/meme | config.py + scanner.py | 1 hr | Cleans EQUITY/CRYPTO |
-| 7 | QW-02: Promote pead_equity | production_scanner.py | 1 hr | Deploys 62% WR strategy |
-| 8 | QW-04: Fix summary_picks.json | dashboard_generator.py | 30 min | Fixes P1 fixture bug |
-| 9 | QW-06: VIX<22 EQUITY gate | quality_gates.py | 2 hrs | Lifts EQUITY WR toward 75% |
-| 10 | QW-10: IPO tab caveat | template.html | 15 min | Removes false advertising |
+| 1 | NEW-QW-01: `CONFIDENCE_INVERT_CRYPTO: "1"` in `alpha-engine-live.yml` | GHA workflow | **5 min** | ❌ OPEN |
+| 2 | NEW-QW-02: `PEAD_EQUITY_ENABLED: "1"` in `alpha-engine-live.yml` | GHA workflow | **5 min** | ❌ OPEN |
+| 3 | NEW-QW-04: `WIN_RATE_TRAP_GATE_ENABLED: "1"` in `alpha-engine-live.yml` | GHA workflow | **5 min** | ❌ OPEN |
+| 4 | QW-07: Clamp FOREX extreme `pnl_pct < -100` | SQL one-shot | **5 min** | ❌ OPEN |
+| 5 | NEW-QW-03: Wire ETF spike picks to MySQL | `etf_sector_emitter.py` | **30 min** | ❌ OPEN |
+| 6 | QW-09: FOREX LONG hard block env gate | `quality_gates.py` + GHA | **1 hr** | ⚠️ Soft only |
+| 7 | QW-10: Label IPO tab honestly | `template.html` | **15 min** | ❌ OPEN |
+| 8 | QW-04: Fix `summary_picks.json` timestamp | `dashboard_generator.py` | **30 min** | ⚠️ Verify |
 
-**Total estimated effort: ~7 hours for all 10 PRs**
+**Items 1-4 are all 5-min env-var additions or a SQL one-liner. Total ~20 min for the highest-impact fixes.**
 
 ---
 
@@ -272,4 +284,5 @@ The `/dedup-md-review` skill has been created at `.claude/skills/dedup-md-review
 ---
 
 *Generated by Claude Sonnet 4.6 via GitHub Copilot — 2026-05-27 EST*  
-*Source review: 9 canonical 90day plan reports + live incidents dashboard + DAILY_IDEAS.MD*
+*v1: 2026-05-27 ~07:00 EST | v2 enhanced: 2026-05-27 ~14:50 EST*  
+*Source review: 9 canonical 90day plan reports + live incidents dashboard + DAILY_IDEAS.MD + git log since v1*
