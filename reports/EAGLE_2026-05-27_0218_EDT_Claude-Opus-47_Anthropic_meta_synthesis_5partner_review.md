@@ -262,3 +262,20 @@ If anything falls off this path, the partner files are still on disk for future 
 ---
 
 *Signed: Claude Opus 4.7 (Anthropic) — claude-opus-4-7 — 2026-05-27T06:18:00Z / 02:18 EDT*
+
+
+### EAGLE v2 tick @ 2026-05-27 15:05Z (11:05 EDT) — Partner #14 + Phase 2 work
+
+**Partner #14: Cursor Composer** — two deliverables (full strategy audit + PR/GHA audit), cross-validates 13-partner consensus, no new structural insights.
+
+**Phase 2 implementation (Grok 4.3 continuation):**
+- `reports/EAGLE_phase2_tournament_gates_2026-05-27.md` — VIX-regime gate being wired into AI Tournament production filter for EQUITY/ETF (QW-1/QW-2 lift path)
+
+**4 partner-shipped code fixes verified done on main since 08:36Z:**
+- `3d1b237aa` forward_validator restart
+- `2610ec030` + `cb5173e68` signal_outcomes JSON→MySQL mirror writer
+- `35c13e424` + `0a3bf8264` Swarm Picks revival with tournament consensus
+- `fa726320a` WIN_RATE_TRAP_BLACKLIST wired
+- Plus `7e8ad9f21` WON PnL TP_HIT tolerance
+
+**Partner total: 14.** Consensus has fully converged on foundation order. EAGLE v2 banner LIVE on findtorontoevents.ca/audit/incidents.html.
