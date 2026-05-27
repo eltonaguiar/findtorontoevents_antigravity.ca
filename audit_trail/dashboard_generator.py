@@ -4961,7 +4961,26 @@ def _compound_per_day_geomean_annualized(
             equity = 1e-9  # bankrupt; floor so CAGR clamps to -99.9
             break
 
-    return _annualize_cagr(equity, 1.0, days_elapsed)
+    result = _annualize_cagr(equity, 1.0, days_elapsed)
+
+    # Honesty guard: if the result saturated to the ceiling sentinel, return
+    # None instead of emitting a misleading clamped headline. Short windows
+    # (<60 days) silently fall back to n/a; longer windows still return None
+    # but log a structured warning so the producer-side anomaly is visible.
+    if result is not None and result >= _ANNUALIZED_CEIL_PCT:
+        try:
+            unclamped = (equity ** (365.25 / days_elapsed) - 1.0) * 100.0
+        except (OverflowError, ValueError, ZeroDivisionError):
+            unclamped = float("inf")
+        if days_elapsed >= 60:
+            sys.stderr.write(
+                "[dashboard_generator] WARN: _compound_per_day_geomean_annualized "
+                f"unclamped={unclamped!r} days_elapsed={days_elapsed:.2f} "
+                f"n_trades={len(dated)} ceiling={_ANNUALIZED_CEIL_PCT} -> returning None\n"
+            )
+        return None
+
+    return result
 
 
 def _per_trade_sharpe(
