@@ -8996,13 +8996,13 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     _cfg = ASSET_CLASS_SMART_THRESHOLDS.get(
         _ac, ASSET_CLASS_SMART_THRESHOLDS["CRYPTO"]
     )
-    # COMMODITY trusted sources (multi_asset_cot, multi_asset_copytrader,
-    # commodity_cot_contrarian) are exempt from forward_validated requirement:
-    # these sources carry institutional-grade COT/commercial signals with
-    # externally validated edge (PF 3.5–20.54 per closed-pick audit).
+    # COMMODITY forward_validated exemption — NARROW LIST ONLY (2026-05-28).
+    # multi_asset_cot + multi_asset_copytrader REMOVED: falsified 6.33x over-emission
+    # (46 raw signals / 6 unique CFTC weeks; see cot_paper_pilot autopsy + lines 7665-7667).
+    # commodity_cot_contrarian kept: CFTC-backed commercial signal, post-dedup review.
     _fv_source = str(pick.get("source_system") or "").lower()
     _COMMODITY_FV_EXEMPT = frozenset({
-        "multi_asset_cot", "multi_asset_copytrader", "commodity_cot_contrarian",
+        "commodity_cot_contrarian",
     })
     # ETF/EQUITY new-source cold-start exemption (2026-05-16):
     # etf_sector_rotation + leveraged_etf_decay: zero closed picks, permanent cold-start.
