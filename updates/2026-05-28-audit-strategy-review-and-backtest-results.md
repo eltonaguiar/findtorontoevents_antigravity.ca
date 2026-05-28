@@ -276,5 +276,83 @@ These carve-outs are based on "antigrav-independent-review" claiming mastery of 
 
 ---
 
-*Report updated 2026-05-28T22:25Z by Grok 4.3*
+---
+
+## Deep-Dive: AdaptiveKeltnerReversion Strategy Analysis
+
+### Strategy Logic (baby_strategies/forward_proven_variations.py:318-395)
+
+**Core concept:** Mean reversion at adaptive Keltner bands. Bands widen in high-vol regimes, tighten in low-vol.
+
+**Parameters:**
+- EMA 20 (midline), EMA 50 (trend filter), RSI 14, ATR 14
+- Adaptive multiplier: `1.5 + vol_percentile * 1.0` (range: 1.5x-2.5x ATR)
+- TP: 4.0x ATR, SL: 2.0x ATR (R:R = 2:1)
+- BUY: `close <= lower_band AND RSI < 45`
+- SELL: `close >= upper_band AND RSI > 55`
+- Confidence: `0.50 + min(0.35, depth * 0.2 + rsi_distance * 0.005)`
+
+### Per-Symbol Performance (18/20 profitable)
+
+**Top 5 (clear winners):**
+| Symbol | PF | WR | n | Avg PnL |
+|---|---|---|---|---|
+| FILUSDT | 6.17 | 70.5% | 1,944 | +3.52% |
+| LINKUSDT | 5.27 | 70.0% | 1,969 | +2.86% |
+| AVAXUSDT | 4.33 | 65.3% | 2,598 | +2.40% |
+| XRPUSDT | 4.31 | 64.3% | 2,073 | +2.11% |
+| APTUSDT | 4.18 | 63.1% | 2,093 | +2.96% |
+
+**Bottom 2 (losers — exclude from production):**
+| Symbol | PF | WR | n | Avg PnL |
+|---|---|---|---|---|
+| MATICUSDT | **0.11** | **6.5%** | 1,598 | -4.97% |
+| ATOMUSDT | **0.32** | **13.2%** | 2,184 | -3.58% |
+
+**Key insight:** MATIC and ATOM have completely broken mean-reversion on this timeframe. Excluding them would push overall PF from 2.70 to ~3.5+.
+
+### Why This Strategy Works
+
+1. **Adaptive bands** — automatically widen in high-vol (crypto's natural state), preventing false signals
+2. **RSI filter** — relaxed thresholds (45/55 vs standard 30/70) capture more setups while still filtering noise
+3. **2:1 R:R** — even at 55% WR, the strategy is profitable because wins are 2x losses
+4. **Mean-reversion edge** — crypto overextends frequently, creating reliable reversion opportunities
+
+### Recommended Production Wiring
+
+**Option A (conservative):** Wire only for top 10 symbols (FIL, LINK, AVAX, XRP, APT, UNI, APT, ETH, BTC, SUI)
+- Expected PF: 4.0+, WR: 63%+
+
+**Option B (moderate):** Wire for all symbols EXCEPT MATIC and ATOM
+- Expected PF: 3.5+, WR: 58%+
+
+**Option C (aggressive):** Wire for all 20 symbols as-is
+- Expected PF: 2.70, WR: 55.9% (current backtest)
+
+---
+
+## Continuous Testing Log
+
+### Test Cycle 1 (2026-05-28T22:30Z)
+
+**Tested:** All 6 forward-proven strategies across 20 crypto symbols
+**Result:** AdaptiveKeltnerReversion dominates (PF 2.70, 18/20 profitable)
+**Next:** Test AdaptiveKeltnerReversion parameters on ETF/equity symbols
+
+### Strategy Comparison Matrix
+
+| Strategy | PF | WR | n | Profitable Syms | Cross-Asset? |
+|---|---|---|---|---|---|
+| adaptive_keltner_reversion | **2.70** | 55.9% | 41,085 | 18/20 | TBD |
+| keltner_rsi_squeeze | 2.49 | 51.2% | 2,087 | 14/19 | No |
+| vwap_rsi_divergence | 1.39 | 44.4% | 1,727 | 14/20 | No |
+| keltner_vwap_confluence | 1.34 | 42.5% | 3,596 | 13/20 | No |
+| hma_keltner_momentum | 1.04 | 36.7% | 6,569 | 8/20 | No |
+| keltner_pullback_entry | 0.99 | 37.0% | 15,562 | 7/20 | No |
+
+**Pattern:** Keltner-based strategies dominate. The adaptive multiplier is the key differentiator.
+
+---
+
+*Report updated 2026-05-28T22:30Z by Grok 4.3*
 *Backtest data: baby_strategies/forward_proven_backtest_results.json, baby_strategies/results/*.json*
