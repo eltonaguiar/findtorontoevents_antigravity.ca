@@ -189,7 +189,12 @@ for attempt in $(seq 1 $MAX_RETRIES); do
     if [ -n "$REMOTE_URL" ]; then
         push_output=$(timeout "${GIT_NET_TIMEOUT}" git push "$REMOTE_URL" HEAD:main 2>&1) || push_rc=$?
     else
-        push_output=$(timeout "${GIT_NET_TIMEOUT}" git push origin main 2>&1) || push_rc=$?
+        # HEAD:main (not bare "main") so this also works when the runner checked
+        # out a feature branch via workflow_dispatch. A bare "main" refspec fails
+        # with "src refspec main does not match any" when no local main ref exists
+        # — that silently stranded the 2026-05-28 tournament branch run's commit
+        # (data reached the DB + FTP but never main, so the page reverted to 3 models).
+        push_output=$(timeout "${GIT_NET_TIMEOUT}" git push origin HEAD:main 2>&1) || push_rc=$?
     fi
 
     echo "$push_output" | _sanitize
