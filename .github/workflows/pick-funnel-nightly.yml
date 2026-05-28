@@ -59,6 +59,17 @@ jobs:
           python tools/audit_pick_funnel/run_swarm_verdict.py \
             || echo "::warning::swarm verdict step failed (soft-fail)"
 
+      - name: Fetch dashboard_data.json from production
+        run: |
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json \
+            || echo "::warning::dashboard_data.json fetch failed — nav matrix step may degrade"
+
+      - name: Build nav surface edge matrix
+        run: |
+          python tools/audit_pick_funnel/build_nav_surface_matrix.py \
+            || echo "::warning::build_nav_surface_matrix.py failed (soft-fail)"
+
       - name: Commit JSON outputs
         run: |
           git config user.name  "github-actions[bot]"
@@ -67,6 +78,7 @@ jobs:
                   audit_dashboard/data/pick_funnel_90d.json \
                   audit_dashboard/data/pick_funnel_rejected_universe.json \
                   audit_dashboard/data/top_edges_per_class.json \
+                  audit_dashboard/data/nav_surface_edge_matrix.json \
                   audit_dashboard/data/pick_summary_stats_2w.json \
                   audit_dashboard/data/pick_summary_stats_48h.json \
                   reports/2026-*_pick_funnel_swarm_verdict.md 2>/dev/null || true
