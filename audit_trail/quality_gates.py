@@ -6245,6 +6245,14 @@ def passes_vix_regime_active_gate(pick: Dict[str, Any]) -> bool:
     #   ETF_VIX_GATE_ENABLED    — default ON, rejects ETF picks when VIX > 25.
     # Fail-open on missing VIX (is_vix_above_threshold returns False when fetch
     # fails). Reject reason "equity_vix_gate_high_vix" surfaces in pick rationale.
+    #
+    # FREEZE-EXEMPTION DECLARATION (per swarm review 2026-05-28):
+    # The thresholds 22.0 (EQUITY) and 25.0 (ETF) are *regime-gate parameters*, NOT
+    # Smart Picks score floors. They are NOT members of the THRESHOLD_FREEZE set
+    # (SMART_PICKS_MIN_SCORE / SMART_PICKS_MAX_CONFIDENCE / etc. — see the freeze
+    # block at the top of this file, frozen through 2026-08-18). Adding/tuning
+    # *regime* gates does not violate the freeze; the freeze constrains pick-score
+    # admission thresholds only.
     try:
         from audit_trail.vix_regime_gate import is_vix_above_threshold as _vix_gt
         _ac_pcg = str(pick.get("asset_class", "") or "").strip().upper()

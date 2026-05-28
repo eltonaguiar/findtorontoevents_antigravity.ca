@@ -13,8 +13,17 @@ Two production gates for CRYPTO picks:
    windows around US pre-market open and London/Asia handoff.
 
 Both gates env-kill-switchable (default ON):
-    CRYPTO_LIQUID_CORE_ENABLED=0     → disable whitelist gate
-    CRYPTO_BTC_HOUR_GATE_ENABLED=0   → disable death-zone gate
+    CRYPTO_LIQUID_CORE_ENABLED=0       → disable whitelist gate
+    CRYPTO_BTC_HOUR_GATE_ENABLED=0     → disable death-zone gate
+    CRYPTO_BTC_DEATH_ZONE_HOURS=h,h,h  → override the 9,10,18,21 default
+                                         (comma-separated UTC integers 0-23).
+
+Refresh cadence (per swarm review 2026-05-28 feedback):
+    LIQUID_CORE_TOP_25 and BTC_UTC_DEATH_ZONE_HOURS are stable enough that
+    quarterly review off resolved-pick aggregates is sufficient. Track in
+    incidents/enhancements feed as ENH-LIQUID-CORE-REFRESH (quarterly cron).
+    The CRYPTO_BTC_DEATH_ZONE_HOURS env override exists for emergency
+    regime-shift / DST-anomaly response without a code deploy.
 
 Wired into: audit_trail/quality_gates.py::passes_active_gate().
 Addresses: CRYPTO 47% raw skew + 29% WR quan_engine drag — only 1/229 picks
@@ -44,7 +53,28 @@ LIQUID_CORE_TOP_25 = frozenset({
 
 # UTC hours with empirically low BTC continuation WR
 # (peer-agent verified — refresh quarterly off resolved picks).
-BTC_UTC_DEATH_ZONE_HOURS = (9, 10, 18, 21)
+# Override via env CRYPTO_BTC_DEATH_ZONE_HOURS="9,10,18,21" for regime-shift response.
+BTC_UTC_DEATH_ZONE_HOURS_DEFAULT = (9, 10, 18, 21)
+
+
+def _get_death_zone_hours() -> tuple:
+    """Read env override or fall back to the default tuple. Invalid envs fail-open
+    to the default (never throws). Returned as a tuple of ints (0-23)."""
+    env_val = os.environ.get("CRYPTO_BTC_DEATH_ZONE_HOURS", "")
+    if not env_val.strip():
+        return BTC_UTC_DEATH_ZONE_HOURS_DEFAULT
+    try:
+        hours = tuple(sorted({
+            int(x.strip()) for x in env_val.split(",")
+            if x.strip() and 0 <= int(x.strip()) <= 23
+        }))
+        return hours if hours else BTC_UTC_DEATH_ZONE_HOURS_DEFAULT
+    except (ValueError, TypeError):
+        return BTC_UTC_DEATH_ZONE_HOURS_DEFAULT
+
+
+# Backwards-compat alias: existing call sites read BTC_UTC_DEATH_ZONE_HOURS directly.
+BTC_UTC_DEATH_ZONE_HOURS = BTC_UTC_DEATH_ZONE_HOURS_DEFAULT
 
 
 def _extract_base_symbol(symbol: str) -> Optional[str]:
@@ -114,6 +144,6 @@ def is_in_btc_death_zone(submitted_at_iso: str) -> bool:
                 dt = datetime.fromisoformat(s[:19])
             except Exception:
                 return False  # fail-open
-        return dt.hour in BTC_UTC_DEATH_ZONE_HOURS
+        return dt.hour in _get_death_zone_hours()
     except Exception:
         return False  # fail-open
