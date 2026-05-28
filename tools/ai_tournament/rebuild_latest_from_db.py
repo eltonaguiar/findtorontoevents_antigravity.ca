@@ -135,12 +135,20 @@ def main() -> None:
             n_provider_set += 1
 
         # Display normalisations (no DB write):
-        #  - OPEN picks shouldn't carry exit_price 0.0 (reads as "exited at $0");
-        #    pnl_pct on OPEN is intentional *unrealized* PnL, left as-is.
+        #  - OPEN picks shouldn't carry exit_price/pnl_pct 0.0 placeholders
+        #    (read as "exited at $0" / "flat 0.00%"). Every OPEN row's pnl_pct
+        #    is 0 or null in the DB (no live unrealized PnL is computed), so the
+        #    0.0 is an uncomputed placeholder, not a real mark-to-market — null
+        #    renders as "—" which is honest. Resolved-pick stats are unaffected
+        #    (builders aggregate WIN/LOSS only).
         #  - canonical direction/asset-class vocab.
-        if p.get("status") == "OPEN" and p.get("exit_price") == 0:
-            p["exit_price"] = None
-            n_norm += 1
+        if p.get("status") == "OPEN":
+            if p.get("exit_price") == 0:
+                p["exit_price"] = None
+                n_norm += 1
+            if p.get("pnl_pct") == 0:
+                p["pnl_pct"] = None
+                n_norm += 1
         if p.get("direction") == "SELL":
             p["direction"] = "SHORT"
             n_norm += 1
