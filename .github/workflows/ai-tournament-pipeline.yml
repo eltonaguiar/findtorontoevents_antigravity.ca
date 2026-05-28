@@ -80,7 +80,11 @@ jobs:
           # repo (e.g. GEMINI_FREE_KEY for GOOGLE_AI_API_KEY) so models don't
           # silently skip when the primary name is unset.
           # See reports/2026-05-27_ai_tournament_model_gap_diagnosis.md.
+          # TODO(operator): no fallback secret exists for OPENAI_API_KEY yet.
+          # Run `gh secret set OPENAI_API_KEY` to wake up model_id=gpt4o_mini.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
+          # TODO(operator): no fallback secret exists for ANTHROPIC_API_KEY yet.
+          # Run `gh secret set ANTHROPIC_API_KEY` to wake up cursor_agent + claude_opus.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || '' }}
           CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY || secrets.CEREBRAS_API_KEY_FREE || '' }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || '' }}
@@ -89,12 +93,16 @@ jobs:
           GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY || secrets.GEMINI_FREE_KEY || '' }}
           GEMINI_FREE_KEY: ${{ secrets.GEMINI_FREE_KEY || secrets.GOOGLE_AI_API_KEY || '' }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || '' }}
-          # Additional providers — wired 2026-05-27 from local key vault.
-          # Each one unlocks one or more model_id slots in config/model_persona_mapping.json.
-          INCEPTION_API_KEY: ${{ secrets.INCEPTION_API_KEY || '' }}
+          # Additional providers — wired 2026-05-27 (broadened 2026-05-28) from
+          # existing repo secrets. Each one unlocks one or more model_id slots
+          # in config/model_persona_mapping.json. See reports/2026-05-28_ai_tournament_model_coverage_fix.md.
+          # INCEPTION_API_KEY drives mercury; falls back to TOGETHER since
+          # config.model_persona_mapping.mercury actually routes via Together.
+          INCEPTION_API_KEY: ${{ secrets.INCEPTION_API_KEY || secrets.TOGETHER_API_KEY || '' }}
           TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY || '' }}
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY || '' }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || '' }}
+          # GROQ_KEY is the legacy secret name still present in the vault.
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || secrets.GROQ_KEY || '' }}
           FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY || '' }}
           GH_MODELS_API_KEY: ${{ secrets.GH_MODELS_API_KEY || '' }}
           NOVITA_API_KEY: ${{ secrets.NOVITA_API_KEY || '' }}
