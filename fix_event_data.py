@@ -58,8 +58,19 @@ def fix_event_data(input_file='events.json', output_file='events_fixed.json'):
                 event['address'] = location
             fixed_count['missing_addresses'] += 1
 
-        # Fix 4: Filter out cancelled events
-        if event.get('status') == 'CANCELLED':
+        # Fix 4: Filter out cancelled events.
+        # Most cancelled events carry the marker only in the title prefix
+        # ("CANCELLED:" or "**CANCELLED**") while status stays "upcoming",
+        # so a status-only check missed 21 of 22 live leaks.
+        status = (event.get('status') or '').strip().upper()
+        title_upper = (event.get('title') or '').upper()
+        is_cancelled = (
+            status == 'CANCELLED'
+            or title_upper.lstrip('*').lstrip().startswith('CANCELLED')
+            or '**CANCELLED**' in title_upper
+        )
+        if is_cancelled:
+            event['status'] = 'cancelled'
             event['_archived'] = True
             fixed_count['cancelled_events'] += 1
 
