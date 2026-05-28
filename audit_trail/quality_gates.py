@@ -6237,6 +6237,46 @@ def passes_vix_regime_active_gate(pick: Dict[str, Any]) -> bool:
         "0", "false", "FALSE", "False"
     ):
         return True
+    # ── 2026-05-28: per-class hard VIX gates (highest-evidence single filter per
+    # TMX validation report — backtest PF 2.82→5.37 / MDD 24%→7.3% on 30 LC universe
+    # 2015-2026 when EQUITY VIX<22 is enforced). ETF overlay uses VIX<25 (QW-2 in
+    # the same report). Independent kill-switches:
+    #   EQUITY_VIX_GATE_ENABLED — default ON, rejects EQUITY picks when VIX > 22.
+    #   ETF_VIX_GATE_ENABLED    — default ON, rejects ETF picks when VIX > 25.
+    # Fail-open on missing VIX (is_vix_above_threshold returns False when fetch
+    # fails). Reject reason "equity_vix_gate_high_vix" surfaces in pick rationale.
+    try:
+        from audit_trail.vix_regime_gate import is_vix_above_threshold as _vix_gt
+        _ac_pcg = str(pick.get("asset_class", "") or "").strip().upper()
+        _truthy_pcg = ("1", "true", "yes", "on", "t", "y")
+        if _ac_pcg == "EQUITY":
+            _eq_flag = (_os_vag.environ.get("EQUITY_VIX_GATE_ENABLED", "1") or "1").strip().lower()
+            if _eq_flag in _truthy_pcg and _vix_gt(22.0):
+                pick["_hf_quality_gate_reason"] = (
+                    pick.get("_hf_quality_gate_reason") or "equity_vix_gate_high_vix"
+                )
+                logger.info(
+                    "Pick rejected: equity_vix_gate_high_vix (symbol=%s VIX>22.0)",
+                    pick.get("symbol", "?"),
+                )
+                return False
+        elif _ac_pcg == "ETF":
+            _etf_flag = (_os_vag.environ.get("ETF_VIX_GATE_ENABLED", "1") or "1").strip().lower()
+            if _etf_flag in _truthy_pcg and _vix_gt(25.0):
+                pick["_hf_quality_gate_reason"] = (
+                    pick.get("_hf_quality_gate_reason") or "equity_vix_gate_high_vix"
+                )
+                logger.info(
+                    "Pick rejected: equity_vix_gate_high_vix [ETF] (symbol=%s VIX>25.0)",
+                    pick.get("symbol", "?"),
+                )
+                return False
+    except ImportError:
+        pass  # vix_regime_gate module unavailable — fail-open
+    except Exception:
+        pass  # fail-open on any unexpected error
+    # Existing combined VIX+YC + legacy single-threshold equity gate (preserved
+    # for backward compatibility — uses VIX_REGIME_GATE_ENABLED / YC_REGIME_GATE_ENABLED).
     try:
         from audit_trail.vix_regime_gate import (
             should_reject_combined as _vix_combined,
