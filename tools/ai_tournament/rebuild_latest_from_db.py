@@ -123,7 +123,7 @@ def main() -> None:
     #    (overwrite, so a merged group reads one consistent provider),
     #  - models we don't know keep whatever the DB stored (rich variants).
     pmap = _provider_map()
-    n_merged = n_provider_set = 0
+    n_merged = n_provider_set = n_norm = 0
     for p in picks:
         mid = p.get("model_id")
         if mid in CANONICAL_ID:
@@ -134,6 +134,20 @@ def main() -> None:
             p["provider"] = canon_prov
             n_provider_set += 1
 
+        # Display normalisations (no DB write):
+        #  - OPEN picks shouldn't carry exit_price 0.0 (reads as "exited at $0");
+        #    pnl_pct on OPEN is intentional *unrealized* PnL, left as-is.
+        #  - canonical direction/asset-class vocab.
+        if p.get("status") == "OPEN" and p.get("exit_price") == 0:
+            p["exit_price"] = None
+            n_norm += 1
+        if p.get("direction") == "SELL":
+            p["direction"] = "SHORT"
+            n_norm += 1
+        if p.get("asset_class") == "STOCKS":
+            p["asset_class"] = "EQUITY"
+            n_norm += 1
+
     LATEST.write_text(json.dumps(picks, indent=2))
     n_models = len({p.get("model_id") for p in picks})
     n_open = sum(1 for p in picks if p.get("status") == "OPEN")
@@ -142,7 +156,7 @@ def main() -> None:
         f"[rebuild_latest] wrote {LATEST.relative_to(REPO)} — "
         f"{len(picks)} picks, {n_models} models, {n_open} open; "
         f"alias rows remapped {n_merged}, provider normalised {n_provider_set}, "
-        f"blank-provider {n_null_prov}"
+        f"field normalisations {n_norm}, blank-provider {n_null_prov}"
     )
 
 
