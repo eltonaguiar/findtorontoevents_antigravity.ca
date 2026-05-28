@@ -162,6 +162,23 @@ MAX_SYMBOL_CONCENTRATION_BY_CLASS: dict[str, float] = {
     "COMMODITY": 0.85,
 }
 
+# 2026-05-28 Tier-0 fix: also cap source_system concentration. The CRYPTO
+# Smart-Picks 78.9% WR cell was driven by a single source (claude_gainer_st
+# 91.7% of cohort) which then EXPIRED→WON mislabeled. CT=F COT pilot DSR=1.0
+# was driven by `multi_asset_cot_positioning` over-emitting one CFTC release
+# ~6× (falsified 2026-05-13). When a single source dominates the resolved
+# sample, the DSR/SPA result reflects that source's idiosyncrasies, not a
+# class-level edge — cap at WATCH to require source diversification before
+# any MONEY_READY verdict.
+# Ref: reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #3.
+MAX_SOURCE_CONCENTRATION = 0.40
+MAX_SOURCE_CONCENTRATION_BY_CLASS: dict[str, float] = {
+    # COMMODITY 0.60: CT=F edge is genuinely concentrated in one
+    # source-system (cftc_socrata) by design; raise the ceiling here to
+    # match the symbol-level COMMODITY exception. Still strict vs 1.0.
+    "COMMODITY": 0.60,
+}
+
 # Per-class post-cost slippage estimates (bps, basis points)
 SLIPPAGE_BPS: dict[str, float] = {
     "CRYPTO": 15.0,   # ~10-20bps taker
@@ -486,6 +503,14 @@ def _class_stats(picks: list[dict]) -> dict[str, dict]:
         if sym_counts:
             top_symbol, top_count = max(sym_counts.items(), key=lambda kv: kv[1])
         top_symbol_share = (top_count / n) if n else 0.0
+        # 2026-05-28 Tier-0: single-source concentration of the resolved sample.
+        src_counts: dict[str, int] = defaultdict(int)
+        for p in ps:
+            src_counts[str(p.get("source_system") or "UNKNOWN")] += 1
+        top_source, top_src_count = ("", 0)
+        if src_counts:
+            top_source, top_src_count = max(src_counts.items(), key=lambda kv: kv[1])
+        top_source_share = (top_src_count / n) if n else 0.0
         win_vals = [v for v in nets if v > 0]
         loss_vals = [abs(v) for v in nets if v < 0]
         avg_win = sum(win_vals) / len(win_vals) if win_vals else 0.0
@@ -498,6 +523,8 @@ def _class_stats(picks: list[dict]) -> dict[str, dict]:
             "picks": ps,
             "top_symbol": top_symbol,
             "top_symbol_share": round(top_symbol_share, 4),
+            "top_source": top_source,
+            "top_source_share": round(top_source_share, 4),
             "avg_win": avg_win,
             "avg_loss": avg_loss,
             "_ml_enhanced_quarantine_n": _ml_enhanced_quarantine_n_by_class.get(ac, 0),
@@ -641,6 +668,7 @@ def _spa_gate(picks: list[dict]) -> dict[str, Any]:
 
 def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
              asset_class: str = "", top_symbol_share: float = 0.0,
+             top_source_share: float = 0.0,
              avg_win: float = 0.0, avg_loss: float = 0.0,
              mdd_cvar_gate_ok: bool | None = None) -> str:
     n_ok = n >= MIN_N_CLASS
@@ -662,6 +690,12 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
             asset_class.upper(), MAX_SYMBOL_CONCENTRATION
         )
         if top_symbol_share > _conc_cap:
+            return "WATCH"
+        # 2026-05-28 Tier-0: source-concentration cap (mirrors symbol cap).
+        _src_conc_cap = MAX_SOURCE_CONCENTRATION_BY_CLASS.get(
+            asset_class.upper(), MAX_SOURCE_CONCENTRATION
+        )
+        if top_source_share > _src_conc_cap:
             return "WATCH"
         # P1/#7: Net-of-cost slippage promotion gate.
         # When enabled, block MONEY_READY if post-slippage expectancy is negative.
@@ -859,6 +893,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         spa = _spa_gate(ac_picks)
         top_symbol = stats.get("top_symbol", "")
         top_symbol_share = stats.get("top_symbol_share", 0.0)
+        top_source = stats.get("top_source", "")
+        top_source_share = stats.get("top_source_share", 0.0)
         avg_win = stats.get("avg_win", 0.0)
         avg_loss = stats.get("avg_loss", 0.0)
         # Q2 (2026-05-19): prefer the persisted class-level MDD from
@@ -868,6 +904,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                                   registry_mdd=_registry_mdd)
         verdict = _verdict(n, wr, pf, dsr, pbo, spa, asset_class=ac,
                            top_symbol_share=top_symbol_share,
+                           top_source_share=top_source_share,
                            avg_win=avg_win, avg_loss=avg_loss,
                            mdd_cvar_gate_ok=mdd_cvar.get("gate_ok"))
         wr_floor = MIN_WR_BY_CLASS.get(ac.upper(), MIN_WR)
@@ -930,6 +967,13 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
             "concentration_capped": (
                 top_symbol_share > MAX_SYMBOL_CONCENTRATION_BY_CLASS.get(
                     ac.upper(), MAX_SYMBOL_CONCENTRATION
+                )
+            ),
+            "top_source": top_source,
+            "top_source_share": round(top_source_share, 4),
+            "source_concentration_capped": (
+                top_source_share > MAX_SOURCE_CONCENTRATION_BY_CLASS.get(
+                    ac.upper(), MAX_SOURCE_CONCENTRATION
                 )
             ),
             "details": {"dsr": dsr, "pbo": pbo, "spa": spa, "expectancy": exp_gate,

@@ -873,6 +873,10 @@ def test_smart_gate_forex_uses_forward_wr_alias_fields(monkeypatch) -> None:
     # M-108 magnitude sanity gate rejects FOREX picks using _base_pick's CRYPTO-scale
     # TP/SL (entry=100, TP=110 = 10%) as implausible for FOREX (cap=6%). Disable.
     monkeypatch.setenv("MAGNITUDE_SANITY_GATE_ENABLED", "0")
+    # 2026-05-28 Tier-0: FOREX added to BLOCKED_ASSET_CLASSES (class-freeze pending
+    # MyFXBook external replication). This test isolates the forward_wr alias-field
+    # plumbing, so patch the freeze set to empty for the duration of the test.
+    monkeypatch.setattr(qg, "BLOCKED_ASSET_CLASSES", set())
     pick = _base_pick(
         source_system="copy_trader_myfxbook",
         asset_class="FOREX",
