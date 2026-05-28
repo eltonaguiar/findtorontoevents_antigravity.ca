@@ -215,35 +215,89 @@ def check_ghost_rows() -> dict:
 
 
 def check_open_bloat() -> dict:
-    """Freebuff 1.3 + my F1. OPEN row % + last terminal write age."""
+    """Freebuff 1.3 + my F1. OPEN row % + last terminal write age.
+
+    Checks BOTH bt_backtest_trades AND trading_picks independently.
+    Cross-validates COUNT(*) against info_schema TABLE_ROWS to detect
+    counting anomalies (e.g. the 2026-05-25 29.2M overcount that occurred
+    because bt_backtest_trades has millions of rows while the incident was
+    incorrectly attributed to trading_picks).
+
+    Backward compat: top-level `open_count`, `info_schema_estimate` point
+    to trading_picks (the canonical audit table) so existing consumers
+    (OpenBloatCheck, seed_incidents_enhancements) don't break.
+    """
     out = {}
+
+    # ── Single connection: bt_backtest_trades COUNT + info_schema ──────
     c, cur = _conn()
-    # OPEN count
     cur.execute("SELECT COUNT(*) FROM bt_backtest_trades WHERE status='OPEN'")
-    out["open_count"] = int(cur.fetchone()[0])
-    c.close()
-    c, cur = _conn()
-    # Total via info_schema (approximation; under-counts by ~22x but we know that)
+    bbt_open = int(cur.fetchone()[0])
     cur.execute("""
         SELECT TABLE_ROWS FROM information_schema.TABLES
         WHERE TABLE_SCHEMA='ejaguiar1_stocks' AND TABLE_NAME='bt_backtest_trades'
     """)
-    out["info_schema_estimate"] = int(cur.fetchone()[0] or 0)
+    bbt_info = int(cur.fetchone()[0] or 0)
     c.close()
+
+    bbt_suspect_count = (
+        bbt_open > 0 and bbt_info > 0
+        and (bbt_open > bbt_info * 10 or bbt_info > bbt_open * 10)
+    )
+
+    # ── Single connection: trading_picks all queries + info_schema ─────
     c, cur = _conn()
+    cur.execute("SELECT COUNT(*) FROM trading_picks WHERE status='OPEN'")
+    tp_open = int(cur.fetchone()[0])
+    cur.execute("SELECT COUNT(*) FROM trading_picks WHERE status='ACTIVE'")
+    tp_active = int(cur.fetchone()[0])
+    cur.execute("SELECT COUNT(*) FROM trading_picks")
+    tp_total = int(cur.fetchone()[0])
+    cur.execute("""
+        SELECT TABLE_ROWS FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA='ejaguiar1_stocks' AND TABLE_NAME='trading_picks'
+    """)
+    tp_info = int(cur.fetchone()[0] or 0)
     # Last terminal write age
     cur.execute("""
-        SELECT MAX(imported_at), TIMESTAMPDIFF(HOUR, MAX(imported_at), NOW())
-        FROM bt_backtest_trades
-        WHERE status IN ('WON','LOST','WIN','LOSS','TP_HIT','SL_HIT','CLOSED_TP','CLOSED_SL')
+        SELECT MAX(closed_at), TIMESTAMPDIFF(HOUR, MAX(closed_at), NOW())
+        FROM trading_picks
+        WHERE status IN ('WON','LOST','WIN','LOSS','TP_HIT','SL_HIT',
+                         'CLOSED_TP','CLOSED_SL','EXPIRED','TIME_EXIT')
     """)
     last_ts, hours_ago = cur.fetchone()
     c.close()
+
+    tp_suspect_count = (
+        tp_open > 0 and tp_info > 0
+        and (tp_open > tp_info * 10 or tp_info > tp_open * 10)
+    )
+
+    # ── Assemble output ────────────────────────────────────────────────
+    # Backward-compat: top-level open_count/info_schema_estimate from
+    # trading_picks (the canonical audit table that OpenBloatCheck cares about)
+    out["open_count"] = tp_open
+    out["info_schema_estimate"] = tp_info
+    out["bt_backtest_trades"] = {
+        "open_count": bbt_open,
+        "info_schema_estimate": bbt_info,
+        "count_suspect": bbt_suspect_count,
+    }
+    out["trading_picks"] = {
+        "open_count": tp_open,
+        "active_count": tp_active,
+        "total_count": tp_total,
+        "info_schema_estimate": tp_info,
+        "count_suspect": tp_suspect_count,
+    }
     out["last_terminal_write"] = str(last_ts) if last_ts else None
     out["hours_since_last_close"] = int(hours_ago) if hours_ago is not None else None
     out["validator_frozen"] = bool(hours_ago and hours_ago > 26)
-    out["tier"] = "red" if out["validator_frozen"] else "green"
-    out["threshold_pass"] = not out["validator_frozen"]
+
+    # Tier: red if either table has suspect counts or validator is frozen
+    any_suspect = bbt_suspect_count or tp_suspect_count
+    out["tier"] = "red" if (out["validator_frozen"] or any_suspect) else "green"
+    out["threshold_pass"] = not out["validator_frozen"] and not any_suspect
     return out
 
 
