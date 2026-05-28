@@ -151,11 +151,12 @@ This is the standout finding. `adaptive_keltner_reversion` in `baby_strategies/f
 ## Proposed PRs (Updated)
 
 ### PR 1: Wire AdaptiveKeltnerReversion to Production (HIGHEST PRIORITY)
-- **Files:** `paper_trading/strategies/__init__.py`, `alpha_engine/scanner.py`
-- **Change:** Import and register AdaptiveKeltnerReversion from `baby_strategies/forward_proven_variations.py` into paper_trading strategies list
+- **Branch:** `feat/wire-adaptive-keltner-reversion-to-production` (commit `27ce0eb08`)
+- **Files:** `paper_trading/strategies/__init__.py`
+- **Change:** Import and register AdaptiveKeltnerReversionPT, KeltnerRSISqueezePT, KeltnerVWAPConfluencePT from `paper_trading.strategies.forward_proven_pt` into ALL_STRATEGIES + system name mapping
 - **Risk:** Low — 41,085 trade sample, PF 2.70, all 17 symbols profitable
-- **Expected impact:** Massive — best overall strategy by PF × n product
-- **Status:** Code exists at `baby_strategies/forward_proven_variations.py:318`
+- **Expected impact:** Massive — best overall strategy by PF x n product. Previously orphaned in baby_strategies/.
+- **Status:** Code committed, syntax verified
 
 ### PR 2: Wire ETF Dual Momentum Rotation to Production
 - **Files:** `paper_trading/strategies/__init__.py`, `alpha_engine/etf_strategy_harness.py`
@@ -165,11 +166,12 @@ This is the standout finding. `adaptive_keltner_reversion` in `baby_strategies/f
 - **Status:** Results in `baby_strategies/results/etf_dual_momentum_rotation_*.json`
 
 ### PR 3: Remove `claude_gainer_st` Per-Symbol Carve-Outs
-- **Files:** `audit_trail/quality_gates.py` (lines 4077-4087)
-- **Change:** Remove the per-symbol allowlist for `claude_gainer_st` (ARB/DOT/SOL/BNB/SUI/DOGE/ADA)
-- **Context:** `claude_gainer_st` is already in `PERMANENTLY_KILLED_STRATEGIES` (line 1372) with 778/790 PROVEN picks at 26.5% WR, -355% PnL. But per-symbol carve-outs still let it through to Smart Picks.
+- **Branch:** `fix/remove-claude-gainer-st-carveouts` (commit `1916f62ed`)
+- **Files:** `audit_trail/quality_gates.py` (lines ~4173-4187)
+- **Change:** Remove the 7 `claude_gainer_st` entries from `_mastered_pairs` set in the pick quality scoring function. Keep `quan_engine+ETCUSDT` and `kimi_riseoftheclaw+AVAXUSDT` as those have independent validation.
+- **Context:** `claude_gainer_st` is already in `PERMANENTLY_KILLED_STRATEGIES` (line 1372) with 778/790 PROVEN picks at 26.5% WR, -355% PnL. But per-symbol "mastered pair" carve-outs were still giving +10 score boosts for ARB/DOT/SOL/BNB/SUI/DOGE/ADA based on a claim of "100% WR" from only 3 closed rows.
 - **Risk:** Low — the source has documented negative edge
-- **Expected impact:** Eliminates 78.9% WR inflation on Smart Picks
+- **Expected impact:** Eliminates score inflation for killed source in quality scoring
 
 ### PR 4: Fix Equity Signal Generation Errors
 - **Files:** `baby_strategies/equity_rsi_momentum_drift.py`
@@ -177,11 +179,10 @@ This is the standout finding. `adaptive_keltner_reversion` in `baby_strategies/f
 - **Risk:** Low
 - **Expected impact:** Unlocks equity strategy testing
 
-### PR 5: Fix EXPIRED→WON Resolver Mislabeling
-- **Files:** `alpha_engine/outcome_resolver.py`
-- **Change:** Ensure EXPIRED picks are never counted as WON; add explicit EXPIRED handling
-- **Risk:** Medium — affects all asset classes
-- **Expected impact:** Fixes FOREX WR 83.5%→real WR, fixes CRYPTO inflation
+### PR 5: Fix EXPIRED→WON Resolver Mislabeling (ALREADY DONE)
+- **Files:** `alpha_engine/outcome_resolver.py` (lines 1014-1022, 1672-1678)
+- **Change:** Already implemented in v2.3 (2026-05-27) — EXPIRED/TIME_EXIT/MAX_HOLD picks are now labeled as EXPIRED regardless of PnL sign.
+- **Status:** DONE — no action needed. See `reports/2026-05-25_crypto_78pct_wr_verification.md`
 
 ---
 
@@ -354,5 +355,25 @@ These carve-outs are based on "antigrav-independent-review" claiming mastery of 
 
 ---
 
-*Report updated 2026-05-28T22:30Z by Grok 4.3*
+---
+
+## PR Status Summary (2026-05-28)
+
+| PR | Branch | Commit | Status | Impact |
+|---|---|---|---|---|
+| PR 1: Wire AdaptiveKeltnerReversion | `feat/wire-adaptive-keltner-reversion-to-production` | `27ce0eb08` | READY | Wires PF 2.70 strategy (n=41,085) to production |
+| PR 2: Remove claude_gainer_st carve-outs | `fix/remove-claude-gainer-st-carveouts` | `1916f62ed` | READY | Removes +10 score boost for killed source |
+| PR 3: Wire ETF Dual Momentum | — | — | PENDING | Needs longer backtest data (yfinance 60-bar limit) |
+| PR 4: Fix equity signal generation | — | — | PENDING | Needs debugging of 11 generation_errors |
+| PR 5: Fix EXPIRED→WON resolver | — | — | DONE (v2.3) | Already merged 2026-05-27 |
+
+**To merge PRs 1 and 2:**
+```bash
+git checkout feat/wire-adaptive-keltner-reversion-to-production && git push origin feat/wire-adaptive-keltner-reversion-to-production
+git checkout fix/remove-claude-gainer-st-carveouts && git push origin fix/remove-claude-gainer-st-carveouts
+```
+
+---
+
+*Report updated 2026-05-28T23:45Z by Grok 4.3*
 *Backtest data: baby_strategies/forward_proven_backtest_results.json, baby_strategies/results/*.json*
