@@ -454,21 +454,20 @@ Sub-strategies:
 
 ---
 
-## PR Status Summary (2026-05-28)
+## PR Status Summary (Updated 2026-05-29)
 
-| PR | Branch | Commit | Status | Impact |
+| PR | Branch | GitHub | Status | Impact |
 |---|---|---|---|---|
-| PR 1: Wire AdaptiveKeltnerReversion | `feat/wire-adaptive-keltner-reversion-to-production` | `27ce0eb08` | READY | Wires PF 2.70 strategy (n=41,085) to production |
-| PR 2: Remove claude_gainer_st carve-outs | `fix/remove-claude-gainer-st-carveouts` | `1916f62ed` | READY | Removes +10 score boost for killed source |
-| PR 3: Wire ETF Dual Momentum | — | — | PENDING | Needs longer backtest data (yfinance 60-bar limit) |
+| PR 1: Wire AdaptiveKeltnerReversion | `feat/wire-adaptive-keltner-reversion-to-production` | [#35](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/35) | **OPEN** | Wires PF 2.70 strategy (n=41,085) to production |
+| PR 2: Remove claude_gainer_st carve-outs | `fix/remove-claude-gainer-st-carveouts` | [#36](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/36) | **OPEN** | Removes +10 score boost for killed source |
+| PR 3: Wire cross-asset strategies | `feat/wire-cross-asset-strategies` | [#37](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/37) | **OPEN** | Wires FibonacciRsi/VWMedianZ/VPCR across 5 asset classes |
 | PR 4: Fix equity signal generation | — | — | PENDING | Needs debugging of 11 generation_errors |
 | PR 5: Fix EXPIRED→WON resolver | — | — | DONE (v2.3) | Already merged 2026-05-27 |
 
-**To merge PRs 1 and 2:**
-```bash
-git checkout feat/wire-adaptive-keltner-reversion-to-production && git push origin feat/wire-adaptive-keltner-reversion-to-production
-git checkout fix/remove-claude-gainer-st-carveouts && git push origin fix/remove-claude-gainer-st-carveouts
-```
+**All 3 PRs are live on GitHub.** Review and merge at:
+- https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/35
+- https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/36
+- https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/37
 
 ---
 
