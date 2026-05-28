@@ -131,9 +131,9 @@ Carry, Asian Range Breakout, ORB, Connors RSI-2, Cross-Sectional Momentum, COT-a
 | 5 | STOBVSupportDivergence | CRYPTO | 68.3% | 4.75 | 101 | Wired in paper_trading (walk-forward) |
 | 6 | STFearGreedContrarian | CRYPTO | 58.1% | 2.50 | 344 | Wired in paper_trading (walk-forward) |
 | 7 | STMultiDayMomentum | CRYPTO | 62.7% | 3.84 | 75 | Wired in paper_trading (walk-forward) |
-| 8 | Bollinger MR (equity) | EQUITY | 51.2% | 1.35 | 82 | LIVE (stocks_competition) |
-| 9 | Connors RSI-2 | EQUITY | 62.9% | ~1.5 | 70 | Partially wired |
-| 10 | Breakout Momentum (equity) | EQUITY | 52.6% | 1.35 | 76 | LIVE (stocks_competition) |
+| 8 | **VolumeWeightedMedianZScore** | **ALL 4** | 53-65% | **1.73** | **532** | ORPHANED — first cross-asset strategy |
+| 9 | VolumePriceConfirmationReversal | ETF+EQ+CR | 56-67% | **1.81** | 175 | ORPHANED — NVDA PF 12.05 |
+| 10 | Bollinger MR (equity) | EQUITY | 51.2% | 1.35 | 82 | LIVE (stocks_competition) |
 
 ### AdaptiveKeltnerReversion — The #1 Strategy
 
@@ -333,6 +333,32 @@ These carve-outs are based on "antigrav-independent-review" claiming mastery of 
 ---
 
 ## Continuous Testing Log
+
+### Test Cycle 3 (2026-05-29T00:00Z) — Cross-Asset Strategy Discovery
+
+**Tested:** 15 untested baby strategies on daily data across crypto/ETF/forex/equity
+**Result:** Found 2 strong CROSS-ASSET strategies — the first that work across all 4 classes
+
+#### VolumePriceConfirmationReversalStrategy — PF 1.81, n=175 (3 asset classes)
+
+| Class | n | WR | PF | Best Symbol |
+|---|---|---|---|---|
+| ETF | 42 | 66.7% | **3.58** | XLK (PF 6.46), DIA (4.71), IWM (5.42) |
+| Equity | 38 | 57.9% | **2.21** | NVDA (PF 12.05), MSFT (3.37) |
+| Crypto | 95 | 55.8% | 1.65 | SOL (PF 7.13), ADA (3.07), AVAX (2.63) |
+
+**Key insight:** This is the first strategy with strong ETF AND equity performance. NVDA PF 12.05 and XLK PF 6.46 are exceptional.
+
+#### VolumeWeightedMedianZScoreStrategy — PF 1.73, n=532 (ALL 4 asset classes)
+
+| Class | n | WR | PF | Best Symbol |
+|---|---|---|---|---|
+| Forex | 60 | 65.0% | **2.74** | USDJPY (PF 6.01), EURUSD (2.83) |
+| Crypto | 275 | 53.5% | 1.76 | LINK (PF 3.13), XRP (2.75), GOOGL (2.69) |
+| ETF | 107 | 52.3% | 1.56 | DIA (PF 2.37), XLK (2.05), IWM (1.97) |
+| Equity | 90 | 47.8% | 1.46 | GOOGL (PF 2.69) |
+
+**Key insight:** This is the ONLY strategy that works across ALL 4 asset classes with n>50 per class. Forex performance (65% WR, PF 2.74) is especially notable given forex was previously HARD DISABLED.
 
 ### Test Cycle 2 (2026-05-28T23:50Z) — Live System Analysis
 
