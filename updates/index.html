@@ -35,24 +35,6 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
 <!-- 2026-05-28 — Data Quality: Events stale-filter + /audit banner honesty fix -->
-<div class="update-entry" style="border-left:4px solid #ef4444;padding:14px 18px;margin:18px 0;background:rgba(239,68,68,0.06);border-radius:0 8px 8px 0">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-    <span style="font-weight:700;font-size:14px;color:#fca5a5">Data Quality Audit — Events + /audit Stocks</span>
-    <span style="font-size:11px;color:#94a3b8">2026-05-28</span>
-  </div>
-  <p style="font-size:12.5px;color:#cbd5e1;line-height:1.55;margin:0 0 8px">
-    <strong>Events (Goal #3):</strong> <code>scrape-events.yml</code> was failing every run since 2026-05-26 — the "Validate JSON" step asserted <code>metadata.totalEvents == len(events.json)</code>, but <code>add_missing_events.py</code> and the date-cull step mutate <code>events.json</code> after the scraper finalizes <code>metadata.json</code>, so the assertion always failed → no commit → deploy got no fresh file → live page frozen with <strong>5,255 stale events (36.9% of catalog)</strong>.
-    <strong>Fix:</strong> dropped the premature equality assert (derived data) + added a "Resync metadata totalEvents" step after the cull that authors totalEvents from the final <code>events.json</code> across all 4 metadata files. <code>fix_event_data.py</code> also patched to catch title-prefix <code>CANCELLED:</code> / <code>**CANCELLED**</code> events (21 of 22 missed by the old status-only filter). <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/commit/0eab0b31f" style="color:#93c5fd;text-decoration:underline">0eab0b31f</a>.
-  </p>
-  <p style="font-size:12.5px;color:#cbd5e1;line-height:1.55;margin:0 0 8px">
-    <strong>/audit Stocks (Goal #1):</strong> The live <code>/audit</code> page was rendering a stale MAJOR GOAL banner showing <strong>"EQUITY — T2 candidate PF 1.55 WR 51.4% n=426 — Scale"</strong> — numbers from a pre-2026-05-05 <code>dashboard_data.json</code> build. Canonical <code>pf_registry.by_asset_class_policy_clean_net</code> says EQUITY is actually <strong>n=9 / WR 22.2% / PF 0.021 (FAIL)</strong>. The <code>DISPUTED</code> banner from Tier-0 P0 commit <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/commit/f6333ce64" style="color:#93c5fd;text-decoration:underline">f6333ce64</a> also wasn't reaching the live page. <strong>Fix:</strong> synced the 7-line MAJOR GOAL banner from <code>template.html</code> → deployable <code>index.html</code> + FTP-deployed both files. All 6 classes now show FAIL/INSUFF-N/DISPUTED text on the live page.
-  </p>
-  <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.45">
-    <strong>Key files:</strong> <code>.github/workflows/scrape-events.yml</code> (metadata resync), <code>fix_event_data.py</code> (cancelled-prefix detection), <code>audit_dashboard/index.html</code> (banner sync). <strong>Root cause:</strong> 4 divergent EQUITY narratives (verdict n=3, registry n=9, raw-DB 2w n=8,249, live HTML n=426) — only <code>pf_registry.by_asset_class_policy_clean_net</code> is canonical.
-  </p>
-</div>
-
-<!-- 2026-05-27 — EAGLE v2 Enhanced Review (12-Engine Consensus) by Kimi K2.6 Cloud -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -85,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-05-28 05:59 UTC · <strong>44 open incidents</strong> (21 P0 · 15 P1) · <strong>47 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-05-28 21:06 UTC · <strong>44 open incidents</strong> (21 P0 · 15 P1) · <strong>47 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -239,7 +221,25 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-  <div class="update-entry" style="--dot-color: #a855f7; background: #1a0a2e; border: 2px solid #a855f7; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="eagle,audit,meta-synthesis,12-engine,consensus,data-integrity,oscillation,quick-wins,remaining-items,goal-1" data-category="trading" data-types="documentation,improvement,research">
+  <div class="update-entry" style="border-left:4px solid #ef4444;padding:14px 18px;margin:18px 0;background:rgba(239,68,68,0.06);border-radius:0 8px 8px 0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <span style="font-weight:700;font-size:14px;color:#fca5a5">Data Quality Audit — Events + /audit Stocks</span>
+    <span style="font-size:11px;color:#94a3b8">2026-05-28</span>
+  </div>
+  <p style="font-size:12.5px;color:#cbd5e1;line-height:1.55;margin:0 0 8px">
+    <strong>Events (Goal #3):</strong> <code>scrape-events.yml</code> was failing every run since 2026-05-26 — the "Validate JSON" step asserted <code>metadata.totalEvents == len(events.json)</code>, but <code>add_missing_events.py</code> and the date-cull step mutate <code>events.json</code> after the scraper finalizes <code>metadata.json</code>, so the assertion always failed → no commit → deploy got no fresh file → live page frozen with <strong>5,255 stale events (36.9% of catalog)</strong>.
+    <strong>Fix:</strong> dropped the premature equality assert (derived data) + added a "Resync metadata totalEvents" step after the cull that authors totalEvents from the final <code>events.json</code> across all 4 metadata files. <code>fix_event_data.py</code> also patched to catch title-prefix <code>CANCELLED:</code> / <code>**CANCELLED**</code> events (21 of 22 missed by the old status-only filter). <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/commit/0eab0b31f" style="color:#93c5fd;text-decoration:underline">0eab0b31f</a>.
+  </p>
+  <p style="font-size:12.5px;color:#cbd5e1;line-height:1.55;margin:0 0 8px">
+    <strong>/audit Stocks (Goal #1):</strong> The live <code>/audit</code> page was rendering a stale MAJOR GOAL banner showing <strong>"EQUITY — T2 candidate PF 1.55 WR 51.4% n=426 — Scale"</strong> — numbers from a pre-2026-05-05 <code>dashboard_data.json</code> build. Canonical <code>pf_registry.by_asset_class_policy_clean_net</code> says EQUITY is actually <strong>n=9 / WR 22.2% / PF 0.021 (FAIL)</strong>. The <code>DISPUTED</code> banner from Tier-0 P0 commit <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/commit/f6333ce64" style="color:#93c5fd;text-decoration:underline">f6333ce64</a> also wasn't reaching the live page. <strong>Fix:</strong> synced the 7-line MAJOR GOAL banner from <code>template.html</code> → deployable <code>index.html</code> + FTP-deployed both files. All 6 classes now show FAIL/INSUFF-N/DISPUTED text on the live page.
+  </p>
+  <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.45">
+    <strong>Key files:</strong> <code>.github/workflows/scrape-events.yml</code> (metadata resync), <code>fix_event_data.py</code> (cancelled-prefix detection), <code>audit_dashboard/index.html</code> (banner sync). <strong>Root cause:</strong> 4 divergent EQUITY narratives (verdict n=3, registry n=9, raw-DB 2w n=8,249, live HTML n=426) — only <code>pf_registry.by_asset_class_policy_clean_net</code> is canonical.
+  </p>
+</div>
+
+<!-- 2026-05-27 — EAGLE v2 Enhanced Review (12-Engine Consensus) by Kimi K2.6 Cloud -->
+<div class="update-entry" style="--dot-color: #a855f7; background: #1a0a2e; border: 2px solid #a855f7; margin: 10px 20px; border-radius: 12px; padding: 18px 22px; max-width: 820px; margin-left: auto; margin-right: auto;" data-tags="eagle,audit,meta-synthesis,12-engine,consensus,data-integrity,oscillation,quick-wins,remaining-items,goal-1" data-category="trading" data-types="documentation,improvement,research">
   <div class="update-date" style="line-height:1.5">May 27, 2026 — <strong style="color:#a855f7;">🦅 EAGLE v2: Enhanced Cross-Partner Review — 12-Engine Consensus + Data-Rot P0s</strong></div>
   <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
     <p><strong>Model:</strong> Kimi K2.6 (via Cloud) | <strong>Time:</strong> 10:31 EDT | <strong>Branch:</strong> <code>eagle-quickwins-2026-05-27</code></p>
