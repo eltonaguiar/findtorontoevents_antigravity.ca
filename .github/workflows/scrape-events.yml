@@ -109,9 +109,14 @@ jobs:
           if last_update.is_file():
               json.loads(last_update.read_text(encoding="utf-8"))
 
+          # totalEvents is derived data — it is authored from the final
+          # events.json by the "Resync metadata totalEvents" step below (which
+          # runs after add_missing_events.py and the date-outlier cull both
+          # mutate events.json). Asserting equality here races those mutations,
+          # which is what broke this workflow from 2026-05-26 onward. Only check
+          # that metadata is well-formed and stamped.
           for meta_path in ("metadata.json", "next/metadata.json"):
               meta = json.loads(Path(meta_path).read_text(encoding="utf-8"))
-              assert meta.get("totalEvents") == len(root_events), meta_path
               assert meta.get("lastUpdated"), meta_path
 
           print(f"Validated scrape outputs: {len(root_events)} events mirrored to next/events.json")
@@ -160,6 +165,32 @@ jobs:
                   print(f"  {path}: {before} -> {len(kept)} events ({len(culled)} date outliers removed)")
               else:
                   print(f"  {path}: {before} events, no date outliers")
+          PY
+
+      - name: Resync metadata totalEvents from final events.json
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          events = json.loads(Path("events.json").read_text(encoding="utf-8"))
+          n = len(events if isinstance(events, list) else events.get("events", []))
+
+          for meta_path in (
+              "metadata.json",
+              "next/metadata.json",
+              "data/metadata.json",
+              "TORONTOEVENTS_ANTIGRAVITY/metadata.json",
+          ):
+              p = Path(meta_path)
+              if not p.is_file():
+                  continue
+              meta = json.loads(p.read_text(encoding="utf-8"))
+              if meta.get("totalEvents") != n:
+                  print(f"  {meta_path}: totalEvents {meta.get('totalEvents')} -> {n}")
+                  meta["totalEvents"] = n
+                  p.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+          print(f"Metadata totalEvents resynced to {n}")
           PY
 
       - name: Commit and push if changed
