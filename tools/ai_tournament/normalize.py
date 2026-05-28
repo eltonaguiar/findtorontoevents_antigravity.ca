@@ -46,6 +46,7 @@ SYMBOL_CLASS_OVERRIDES = {
     "TLT": "BOND", "BND": "BOND", "IEF": "BOND", "SHY": "BOND",
     "CL=F": "COMMODITY", "NG=F": "COMMODITY", "GC=F": "COMMODITY",
     "SI=F": "COMMODITY", "HG=F": "COMMODITY", "ZS=F": "COMMODITY",
+    "ZC=F": "COMMODITY",
 }
 
 PERSONA_FALLBACK = "unspecified"
