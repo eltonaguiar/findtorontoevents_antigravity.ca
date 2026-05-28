@@ -2242,9 +2242,34 @@ a:hover { text-decoration: underline; }
         if (grid.children.length > 0) card.appendChild(grid);
         if (pick.entry_price !== undefined || pick.intrinsic_value !== undefined) {
           const px = el('div', { style: 'margin-top:8px;font-size:11px;color:#94a3b8;' });
-          if (pick.entry_price !== undefined) px.appendChild(el('span', null, 'Entry: ' + fmtNum(pick.entry_price, 2) + '  '));
-          if (pick.intrinsic_value !== undefined) px.appendChild(el('span', null, 'IV: ' + fmtNum(pick.intrinsic_value, 2)));
+          if (pick.entry_price !== undefined) {
+            const e = el('span', { title: 'Entry price = the share price at the time this pick was opened. UEPS picks are equal-weighted longs entered at the close of the day the snapshot was generated.' }, 'Entry: ' + fmtNum(pick.entry_price, 2));
+            px.appendChild(e); px.appendChild(document.createTextNode('  '));
+          }
+          if (pick.intrinsic_value !== undefined) {
+            const iv = el('span', { title: 'Intrinsic Value (IV) = the per-share value implied by the fundamental model (DCF / Earning Power Value / Acquirer’s Multiple, depending on the strategy). If IV > Entry, the pick is treated as undervalued; the margin-of-safety = (IV - Entry) / IV.' }, 'Intrinsic Value: ' + fmtNum(pick.intrinsic_value, 2));
+            if (pick.entry_price && pick.intrinsic_value) {
+              const mos = ((pick.intrinsic_value - pick.entry_price) / pick.intrinsic_value) * 100;
+              iv.appendChild(el('span', { style: 'margin-left:6px;color:' + (mos >= 0 ? '#22c55e' : '#ef4444') + ';font-size:10px;', title: 'Margin of Safety = (IV - Entry) / IV. Positive = undervalued relative to fundamental model.' }, '(' + (mos >= 0 ? '+' : '') + mos.toFixed(1) + '% MoS)'));
+            }
+            px.appendChild(iv);
+          }
           card.appendChild(px);
+        }
+        // 2026-05-27 add per-card "as of" timestamp in EST. Source: payload-level
+        // `generated_at` (UEPS picks share one snapshot date; per-pick first_seen
+        // tracking is a separate upstream enhancement).
+        if (typeof window._uepsGeneratedAt === 'string' && window._uepsGeneratedAt) {
+          try {
+            const d = new Date(window._uepsGeneratedAt);
+            if (!isNaN(d)) {
+              const est = d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+              card.appendChild(el('div', {
+                style: 'margin-top:6px;font-size:10px;color:#64748b;',
+                title: 'When this pick first appeared in the UEPS snapshot (payload generated_at, EST). For per-pick first-seen history use the closed-picks ledger.'
+              }, 'Added: ' + est + ' EST'));
+            }
+          } catch (e) {}
         }
         return card;
       }
@@ -2265,6 +2290,10 @@ a:hover { text-decoration: underline; }
 
         const counter = document.getElementById('ueps-n-count');
         if (counter) counter.textContent = 'n=' + total;
+
+        // Expose payload generated_at so renderCard() can stamp each card with
+        // an "Added: <EST>" footer. Must be set BEFORE the forEach calls below.
+        window._uepsGeneratedAt = (payload && payload.generated_at) || '';
 
         mount.innerHTML = '';
         if (total === 0) {
@@ -2469,7 +2498,7 @@ function showStrategyPopup(iconElem, strategyName) {
   popup.style.top = (rect.bottom + window.scrollY) + 'px';
   popup.style.left = (rect.left + window.scrollX) + 'px';
 }
-// Data too large to embed (12MB). Loading from data/dashboard_data.json instead.
+// Data too large to embed (11MB). Loading from data/dashboard_data.json instead.
 // External data/dashboard_data.json is loaded in init() via async fetch only.
 // Sync XHR was removed: it blocked the main thread for seconds on large JSON (mobile "page unresponsive").
 let D = window.DASHBOARD_DATA || {};
@@ -5172,17 +5201,27 @@ function renderSummary() {
   // 500% cap was producing absurd numbers (e.g. +1,122,354%) because it allowed
   // single-trade outliers to balloon the geometric compound across thousands of trades.
   const displayCompoundEw = statsFiltered ? (closedPicks.length ? Math.min(9999, Math.max(-99, compoundEwCappedPct(closedPicks, 2))) : null) : serverCompoundEw;
+  // 2026-05-27 PnL honesty fix: headline is the compounded EW return (what an
+  // actual account would have earned), additive sum-of-pct is demoted to a
+  // labelled sub-line. The additive figure is mathematically a sum of independent
+  // per-trade percent returns \u2014 NOT a portfolio return \u2014 and was producing
+  // ~+888% headlines when expectancy \u00d7 n compounded to ~+219%.
+  const COMPOUND_MIN_N = 20;
+  const _purgedCompound = usingInstitutionalPnl && typeof cm.purged_pnl_compounded_ew === 'number'
+    ? cm.purged_pnl_compounded_ew : null;
+  const _headlineCompound = usingInstitutionalPnl ? _purgedCompound : displayCompoundEw;
+  const _compoundN = statsFiltered ? closedPicks.length : (s.total_closed_picks || 0);
+  const _compoundNumericOk = _headlineCompound != null && !Number.isNaN(_headlineCompound);
+  const _compoundSampleOk = _compoundN >= COMPOUND_MIN_N;
+  const _hasHeadlineCompound = _compoundNumericOk && _compoundSampleOk;
   const totalPnlSubParts = [];
+  // Always surface the additive sum honestly so analysts can still cross-check
+  // expectancy \u00d7 n. Greyed so it's clearly secondary.
+  totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px" title="Sum of per-trade PnL%. Informational only \u2014 not a portfolio compound return.">\u03a3 per-trade %: <span style="color:${displayPnl >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(displayPnl)}</span></span>`);
   if (usingInstitutionalPnl) {
-    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">Raw incl. toxic: <span style="color:var(--red);font-weight:600">${fmtPct(rawTotalPnl)}</span></span>`);
+    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">Raw incl. toxic (\u03a3): <span style="color:var(--red);font-weight:600">${fmtPct(rawTotalPnl)}</span></span>`);
   } else if (cappedPnl != null) {
-    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">excl. outliers: <span style="color:${cappedPnl >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(cappedPnl)}</span> (${outlierCount} capped)</span>`);
-  }
-  if (usingInstitutionalPnl && typeof cm.purged_pnl_compounded_ew === 'number') {
-    const _pew = cm.purged_pnl_compounded_ew;
-    totalPnlSubParts.push(`<span style="font-size:10px;color:var(--text-dim)">Purged EW compound (raw, chrono): <span style="color:${_pew >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(_pew)}</span></span>`);
-  } else if (displayCompoundEw != null && !usingInstitutionalPnl) {
-    totalPnlSubParts.push(`<span style="font-size:10px;color:var(--text-dim)">EW compound (\u00b12 cap, chrono): <span style="color:${displayCompoundEw >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(displayCompoundEw)}</span></span>`);
+    totalPnlSubParts.push(`<span style="color:var(--text-dim);font-size:10px">excl. outliers (\u03a3, capped): <span style="color:${cappedPnl >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${fmtPct(cappedPnl)}</span> (${outlierCount} capped)</span>`);
   }
   const totalPnlSubHtml = totalPnlSubParts.join('<br>');
 
@@ -5307,8 +5346,38 @@ function renderSummary() {
       tip: cardTips.verifiedRealized,
       sub: `<span style="font-size:9px;color:var(--text-dim)">${verifiedAlpha?.realized?.trades || 0} trades - ${fmtPct(verifiedAlpha?.realized?.total_pnl_pct || 0)} total</span>`
     },
-    { label: usingInstitutionalPnl ? 'Institutional PnL' : 'Total PnL', value: fmtPct(displayPnl), cls: displayPnl >= 0 ? 'positive' : 'negative', tip: (usingInstitutionalPnl ? `Institutional PnL: excludes known toxic/broken assets (TRXUSDT, KATUSDT, Mercury2 — ${purgedCount} purged picks).\n\nRaw total (incl. toxic): ${fmtPct(rawTotalPnl)}\nTop toxic: TRXUSDT alone = 93% of raw total.\n\n` : '') + cardTips.totalPnl + '\n\nClick for concentration & top trades drill-down.', clickable: true, clickFn: 'showPnlDrillDown',
-      sub: totalPnlSubHtml },
+    (function() {
+      const _baseLabel = usingInstitutionalPnl ? 'Institutional PnL (compound)' : 'Total PnL (compound)';
+      let _label, _value, _cls, _naReason = null;
+      if (_hasHeadlineCompound) {
+        _label = _baseLabel;
+        _value = fmtPct(_headlineCompound);
+        _cls = _headlineCompound >= 0 ? 'positive' : 'negative';
+      } else {
+        _label = _baseLabel + ' (n/a)';
+        _cls = '';
+        if (!_compoundSampleOk) {
+          _value = 'N/A';
+          _naReason = `Insufficient sample (n=${_compoundN}, threshold n>=${COMPOUND_MIN_N}). Compound figure suppressed until enough closed picks accumulate to make the geometric chain meaningful.`;
+        } else {
+          _value = 'N/A';
+          _naReason = `Compound figure unavailable — n<${COMPOUND_MIN_N} closed picks or outlier-cap suppressed compounding. Showing N/A rather than mislead.`;
+        }
+      }
+      const _tipHead = _hasHeadlineCompound
+        ? `Equal-weight geometric compound of capped per-trade PnL%, chronological. This is what an actual account starting at 1.0 would have earned. Σ-per-trade and raw additive sums shown below for cross-checking expectancy × n.\n\n`
+        : `${_naReason}\n\nThe Σ per-trade % sub-line below shows the additive sum for cross-checking expectancy × n — it is NOT a portfolio return.\n\n`;
+      return {
+        label: _label,
+        value: _value,
+        cls: _cls,
+        tip: _tipHead
+          + (usingInstitutionalPnl ? `Institutional: excludes known toxic/broken assets (TRXUSDT, KATUSDT, Mercury2 — ${purgedCount} purged picks).\nRaw total (incl. toxic, Σ): ${fmtPct(rawTotalPnl)}\nTop toxic: TRXUSDT alone = 93% of raw total.\n\n` : '')
+          + cardTips.totalPnl + '\n\nClick for concentration & top trades drill-down.',
+        clickable: true, clickFn: 'showPnlDrillDown',
+        sub: totalPnlSubHtml
+      };
+    })(),
     // ── loop3 49759d10 new compound metrics (rendered alongside Total PnL) ──
     (function() {
       var v = s.total_pnl_pct_compounded_rolling_100;
@@ -18303,7 +18372,7 @@ document.addEventListener('DOMContentLoaded', function() {
      the fixed footer so it doesn't break page layout if upstream sections fail. -->
 <div id="swarm-pick-tracking-section" style="max-width:1180px;margin:8px auto 60px;padding:14px 20px;background:linear-gradient(135deg,rgba(236,72,153,0.10),rgba(99,102,241,0.06));border:1px solid rgba(236,72,153,0.4);border-radius:12px;color:#e0e7ff">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-    <span style="font-size:1.05em;font-weight:700;color:#f472b6;letter-spacing:0.4px">&#x1F41D; SWARM PICK TRACKING</span>
+    <span style="font-size:1.05em;font-weight:700;color:#f472b6;letter-spacing:0.4px">&#x1F41D; SWARM PICK TRACKING — TRADINGVIEW</span>
     <span id="swarm-panel-headline" style="color:#cbd5e1;font-size:0.92em;font-weight:500">Loading&hellip;</span>
     <button id="swarm-panel-toggle" onclick="(function(){var b=document.getElementById('swarm-panel-body');var t=document.getElementById('swarm-panel-toggle');if(!b)return;if(b.style.display==='none'){b.style.display='';t.textContent='Collapse';}else{b.style.display='none';t.textContent='Expand';}})()" style="margin-left:auto;background:rgba(244,114,182,0.18);border:1px solid rgba(244,114,182,0.45);color:#fbcfe8;padding:4px 10px;border-radius:6px;font-size:0.78em;cursor:pointer">Collapse</button>
   </div>
@@ -18436,6 +18505,18 @@ document.addEventListener('DOMContentLoaded', function() {
   function populateSelect(id, values){
     var sel = document.getElementById(id);
     if (!sel) return;
+    // 2026-05-27 fix duplicate-options bug: previous impl only deduped within
+    // a single call. Every re-render re-appended every value, so accounts
+    // appeared 2-3x in the dropdown after data refresh + filter interactions.
+    // Preserve the currently selected value AND any static placeholder
+    // (value="") option, drop everything else, then repopulate uniquely.
+    var prevValue = sel.value;
+    var keepNodes = [];
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === '') keepNodes.push(sel.options[i].cloneNode(true));
+    }
+    sel.innerHTML = '';
+    keepNodes.forEach(function(n){ sel.appendChild(n); });
     var seen = {};
     values.forEach(function(v){
       if (v === undefined || v === null || v === '') return;
@@ -18446,6 +18527,12 @@ document.addEventListener('DOMContentLoaded', function() {
       o.value = sv; o.textContent = sv;
       sel.appendChild(o);
     });
+    // Restore prior selection if it still exists in the new options list.
+    if (prevValue) {
+      for (var j = 0; j < sel.options.length; j++) {
+        if (sel.options[j].value === prevValue) { sel.value = prevValue; break; }
+      }
+    }
   }
   function pickOutcome(p){
     var o = p && p.outcome;
