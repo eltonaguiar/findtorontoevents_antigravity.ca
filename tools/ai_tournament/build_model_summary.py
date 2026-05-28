@@ -40,15 +40,22 @@ def _pnl(p: dict) -> float | None:
 
 
 def build() -> dict:
-    picks = json.loads(PICKS.read_text())
+    picks = json.loads(PICKS.read_text()) if PICKS.exists() else []
     by_model: dict[str, dict] = {}
-    for p in picks:
-        mid = p.get("model_id") or "unknown"
-        m = by_model.setdefault(
-            mid,
-            {
+
+    # Seed every declared model from the canonical mapping so the page
+    # always shows the full set of 23 (instead of only the 3 that happened
+    # to produce picks). This directly addresses the "only 3 models" symptom
+    # visible on /audit/ai-tournament.html.
+    try:
+        mapping = json.loads((REPO / "config" / "model_persona_mapping.json").read_text())
+        for mid, mcfg in mapping.get("models", {}).items():
+            by_model[mid] = {
                 "model_id": mid,
+                "provider": mcfg.get("provider", ""),
                 "total_picks": 0,
+                "scored_picks": 0,
+                "coverage_fallback_picks": 0,
                 "resolved": 0,
                 "wins": 0,
                 "losses": 0,
@@ -56,9 +63,40 @@ def build() -> dict:
                 "_personas": set(),
                 "_classes": set(),
                 "last_pick": None,
+                "_declared": True,
+            }
+    except Exception:
+        pass  # if mapping is missing we fall back to data-driven only
+
+    for p in picks:
+        mid = p.get("model_id") or "unknown"
+        m = by_model.setdefault(
+            mid,
+            {
+                "model_id": mid,
+                "provider": p.get("provider", ""),
+                "total_picks": 0,
+                "scored_picks": 0,
+                "coverage_fallback_picks": 0,
+                "resolved": 0,
+                "wins": 0,
+                "losses": 0,
+                "_pnls": [],
+                "_personas": set(),
+                "_classes": set(),
+                "last_pick": None,
+                "_declared": False,
             },
         )
         m["total_picks"] += 1
+        rank_excluded = (
+            p.get("rank_eligible", True) is False
+            or p.get("generation_source") == "coverage_fallback"
+        )
+        if rank_excluded:
+            m["coverage_fallback_picks"] += 1
+        else:
+            m["scored_picks"] += 1
         if p.get("persona_id"):
             m["_personas"].add(p["persona_id"])
         if p.get("asset_class"):
@@ -67,7 +105,7 @@ def build() -> dict:
         if ts and (m["last_pick"] is None or ts > m["last_pick"]):
             m["last_pick"] = ts
         status = p.get("status")
-        if status in ("WIN", "LOSS", "EXPIRED"):
+        if not rank_excluded and status in ("WIN", "LOSS", "EXPIRED"):
             m["resolved"] += 1
             pnl = _pnl(p)
             if pnl is not None:
@@ -85,7 +123,10 @@ def build() -> dict:
         out_models.append(
             {
                 "model_id": m["model_id"],
+                "provider": m.get("provider", ""),
                 "total_picks": m["total_picks"],
+                "scored_picks": m["scored_picks"],
+                "coverage_fallback_picks": m["coverage_fallback_picks"],
                 "resolved": resolved,
                 "wins": wins,
                 "losses": m["losses"],
@@ -94,9 +135,10 @@ def build() -> dict:
                 "last_pick": m["last_pick"],
                 "personas": len(m["_personas"]),
                 "asset_classes": len(m["_classes"]),
+                "has_data": m.get("_declared", True) or m["total_picks"] > 0,
             }
         )
-    out_models.sort(key=lambda x: x["total_picks"], reverse=True)
+    out_models.sort(key=lambda x: (x["total_picks"], x["model_id"]), reverse=True)
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
