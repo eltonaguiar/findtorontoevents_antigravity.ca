@@ -381,11 +381,13 @@ Before sending any response, you MUST check for these patterns:
 
 ## Audit Dashboard Push Trigger — Path Registry
 
-The `audit-dashboard.yml` workflow has a **push trigger on main** that auto-deploys the dashboard when relevant source code changes. It uses **narrow path filtering** (not broad globs) to avoid infinite trigger loops — the workflow itself commits generated data files with `[skip ci]`, and broad globs like `audit_dashboard/**` would match those, risking loops if `[skip ci]` is ever lost.
+> **⚠️ 2026-05-19: The `push:` trigger was REMOVED from `audit-dashboard.yml`** (4-AI consensus — Grok + swarm deepseek/xai/kilo). Push-triggered runs queued faster than the ~35-min job could drain, causing infinite cancel-cascade waste. The hourly cron at `:10` guarantees a full refresh within the hour; use `workflow_dispatch` for immediate redeploys.
+>
+> **This registry is now documentation-only** — it records which files the audit-dashboard pipeline depends on, but changes to these files no longer auto-trigger a workflow run via push. The hourly cron picks up all changes.
 
-**When adding a new pipeline script** that the audit-dashboard workflow invokes, you MUST add it to the `paths:` list in `.github/workflows/audit-dashboard.yml` so pushes to main auto-deploy. Otherwise, the hourly cron is the only way the change propagates.
+**When adding a new pipeline dependency** (a script invoked by audit-dashboard, or a downstream workflow that consumes its outputs like `dashboard_data.json`), add its path to this table so future maintainers understand the dependency graph.
 
-### Current push-trigger paths (last audited 2026-04-17)
+### Current pipeline dependency paths (last audited 2026-05-27)
 
 | Path | What it is |
 |------|------------|
@@ -435,15 +437,16 @@ The `audit-dashboard.yml` workflow has a **push trigger on main** that auto-depl
 | `.github/workflows/db-freshness-guardian.yml` | Hourly DB freshness CI gate |
 | `.github/workflows/cross-db-audit.yml` | Daily cross-DB consistency audit |
 | `.github/workflows/audit-dashboard.yml` | The workflow file itself |
+| .github/workflows/pick-funnel-nightly.yml | Downstream consumer: fetches dashboard_data.json from live site → build_nav_surface_matrix.py (added 2026-05-27) |
 
-> **Note:** All workflow-invoked scripts are now listed above. Previously some were covered only by the hourly cron; as of 2026-04-17 all pipeline scripts are in `push.paths` so changes auto-deploy on push to main.
+> **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the hourly cron.
 
 ### Safety rules for updating paths
 
-1. **NEVER use broad globs** like `audit_trail/**` or `audit_dashboard/**` — they match generated data files (`.json`, `index.html`) that the workflow commits, risking infinite loops.
+1. **NEVER use broad globs** like `audit_trail/**` or `audit_dashboard/**` — they match generated data files (`.json`, `index.html`) that the workflow commits, risking infinite loops (if the push trigger is ever re-enabled).
 2. **NEVER remove the `[skip ci]`** from the workflow's own commit message — it's the primary infinite-loop protection.
-3. **NEVER remove the defensive `if` condition** on the job (`github.event_name != 'push' || !contains(...)`) — it's belt-and-suspenders protection beyond `[skip ci]`.
-4. **When adding a new pipeline script**, add its path in the same PR that adds the script, so push-trigger coverage stays in sync.
+3. **NEVER re-add the `push:` trigger** without re-reading the 2026-05-19 removal rationale above — the cancel-cascade problem was real and costly.
+4. **When adding a new pipeline dependency**, add its path to the table above in the same PR, so the dependency graph stays documented.
 
 ## Make It Yours
 
