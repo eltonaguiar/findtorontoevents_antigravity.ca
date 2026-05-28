@@ -28,8 +28,6 @@ TOOLS=(
   "blackbox|blackbox|Blackbox AI CLI"
   "freebuff|freebuff|Freebuff agent CLI"
   "kimi|kimi|Kimi CLI"
-  "ccr|ccr|Claude Code Router"
-  "routa|routa|Routa router"
   "agent|agent|Generic agent CLI"
   "freellm|FreeLLM|FreeLLM CLI"
   "browseruse|browser-use|Browser-Use automation agent"
