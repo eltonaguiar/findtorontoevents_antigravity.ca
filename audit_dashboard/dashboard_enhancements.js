@@ -663,16 +663,14 @@
     }
     html += '</div>';
     if (payload.overall && payload.overall.any_red) {
-      html += '<div style="margin-top:10px;padding:10px;background:#1a2a1a;border-left:3px solid #f39c12;border-radius:4px;font-size:12px;line-height:1.6;">';
-      html += '<strong style="color:#f39c12;">Remediation in progress</strong> &mdash; this panel reflects metrics generated 2026-05-08; fixes shipped since:<br>';
-      html += '<span style="color:#86efac;">&check;</span> <strong>Forward Validator Freshness</strong>: Wave 1 unfreeze (commit <code>81bd0b86</code>) removed stale circuit_breaker_state.json. <br>';
-      html += '<span style="color:#86efac;">&check;</span> <strong>Phantom EXPIRED rows</strong>: PR #891 (<code>486f7bf2</code>) repairs 87% NULL closed_at via entry_time/exit_time fallback. <br>';
-      html += '<span style="color:#86efac;">&check;</span> <strong>PnL Integrity</strong>: PR #876 (<code>818ff966</code>) clamps pnl_pct [-100, 200]% killing FOREX unit corruption + SUPREME EDGE P0 #7 (<code>1c535a19</code>) clamps pnl_series before max_dd. <br>';
-      html += '<span style="color:#fbbf24;">&deg;</span> <strong>WON-vs-PnL contradiction</strong>: confidence normalizer migrated across 9/9 callsites (commit <code>613c65cb</code>); writer bug audit pending. <br>';
-      html += '<span style="color:#fbbf24;">&deg;</span> <strong>Raw-Pick Outcome Coverage (0.09%)</strong>: outcome_resolver running hourly but resolving 0 picks &mdash; <em>resolver still effectively dead, needs independent fix per kilo swarm carveout</em>. <br>';
       var _ghostLive = (ghosts && ghosts.total_ghost_rows != null) ? Number(ghosts.total_ghost_rows).toLocaleString() : 'n/a';
-      html += '<span style="color:#f87171;">&times;</span> <strong>Ghost Rows (' + htmlEscape(_ghostLive) + ' detected this scan)</strong>: partially quarantined &mdash; 4 of ~5 corrupt cohorts blocked from performance aggregates; the large <code>meta_strategy</code> template cohort is still open (P1 #1 sweep). Live count is sampled per scan and is lower than the historical ~655k census in <code>reports/wave0_census_final_2026-05-08.md</code>. <br>';
-      html += '<span style="color:#888;font-size:11px;">Status detail: <a href="/updates/2026-05-11-money-maker-master-plan.html#db-health-remediation" style="color:#06b6d4">money-maker master plan &rarr; DB Health remediation</a> &middot; Original evidence: <code>reports/db_evidence_graded_final_2026-05-08.md</code> &middot; Next refresh of this panel will reflect post-fix state.</span>';
+      html += '<div style="margin-top:10px;padding:12px;background:#3b0d0d;border-left:4px solid #ef4444;border-radius:4px;font-size:13px;line-height:1.6;">';
+      html += '<strong style="color:#fca5a5;font-size:14px;">&#x26A0; DATA INTEGRITY FAILURE &mdash; DO NOT TRADE ON THESE NUMBERS</strong><br>';
+      html += '<span style="color:#fecaca;">The DB Health checks above are RED on metrics generated <code>' + htmlEscape(payload.generated_at || 'unknown') + '</code> (live, not stale). ' +
+              'PnL integrity, ghost rows (' + htmlEscape(_ghostLive) + '), and forward-validator freshness are all failing. ' +
+              'Downstream panels (Top-N backtest, asset-class WR/PF, smart-picks scoring) read from the same DB and inherit this corruption.</span><br>';
+      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> in DRY_RUN; <code>tools/db_health_check.py</code> emitting hourly; resolver coverage still low. ' +
+              'See <a href="/updates/2026-05-11-money-maker-master-plan.html#db-health-remediation" style="color:#fde68a;text-decoration:underline">money-maker master plan</a> for the live fix queue.</span>';
       html += '</div>';
     }
     html += '</div>';
