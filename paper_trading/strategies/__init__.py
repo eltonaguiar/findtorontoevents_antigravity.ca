@@ -190,6 +190,11 @@ from paper_trading.strategies.walkforward_elite_strategies import (
     STOBVSupportDivergence, STFearGreedContrarian, STMultiDayMomentum,
 )
 
+# Forward-Proven Strategies (3) — 500-bar per-symbol backtests across 20 crypto pairs
+from paper_trading.strategies.forward_proven_pt import (
+    KeltnerRSISqueezePT, KeltnerVWAPConfluencePT, AdaptiveKeltnerReversionPT,
+)
+
 # H-037 VIX Term Structure Carry — harness-admissible ETF strategy
 from paper_trading.strategies.h037_vix_carry import H037VIXCarry
 
@@ -338,6 +343,10 @@ ALL_STRATEGIES = [
     STOBVSupportDivergence(),     # 68.3% WR, PF 4.75, n=101, Sharpe 9.85
     STFearGreedContrarian(),      # 58.1% WR, PF 2.50, n=344, Sharpe 5.51
     STMultiDayMomentum(),         # 62.7% WR, PF 3.84, n=75, Sharpe 8.32
+    # Forward-Proven Strategies (3) — 500-bar per-symbol backtests, statistically dominant
+    AdaptiveKeltnerReversionPT(), # PF 2.70, 55.9% WR, n=41,085, 18/20 symbols profitable
+    KeltnerRSISqueezePT(),        # PF 2.49, 51.2% WR, n=2,087
+    KeltnerVWAPConfluencePT(),    # PF 1.34, 42.5% WR, n=3,596
     # H-037 VIX Term Structure Carry — harness-admissible ETF strategy
     H037VIXCarry(),               # 58.9% WR, PF 1.295, n=1185, eff=0.75
 ] + _CATERED_STRATS + _HOFFMAN_WINNING + _CHAMPIONSHIP + _PROP_CLASSICS  # Symbol-Catered + Winning combos + Championship + Prop Firm Classics
@@ -392,6 +401,8 @@ def _get_system_name(strategy) -> str:
         return "Prop Firm Classics (Battle-Tested)"
     if name in ("st_obv_support_divergence", "st_fear_greed_contrarian", "st_multi_day_momentum"):
         return "Walk-Forward Elite (CI-Validated)"
+    if name in ("adaptive_keltner_reversion", "keltner_rsi_squeeze", "keltner_vwap_confluence"):
+        return "Forward-Proven (500-Bar Validated)"
     if name == "h037_vix_carry":
         return "H-037 VIX Term Structure Carry (Harness-Admissible)"
     if "hoffman" in name or "irb" in name:
