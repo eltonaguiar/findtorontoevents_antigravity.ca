@@ -548,7 +548,11 @@ function renderLeaderboard(models, opts) {
 
   tbody.innerHTML = '';
 
-  if (opts.approximate) {
+  if (opts.fallbackAllTab) {
+    tbody.innerHTML += `<tr><td colspan="11" style="padding:10px;background:rgba(239,68,68,0.12);font-size:11px;color:#fca5a5">
+      <strong>Leaderboard JSON unavailable.</strong> Showing approximate WR×PF from picks only — scores will NOT match CI-adjusted pipeline ranks. Retry after <code>ai_tournament_leaderboard.json</code> deploys.
+    </td></tr>`;
+  } else if (opts.approximate) {
     tbody.innerHTML += `<tr><td colspan="11" style="padding:10px;background:rgba(245,158,11,0.08);font-size:11px;color:#fcd34d">
       <strong>Window snapshot (approximate):</strong> WR×PF without CI shrinkage. Use the <strong>ALL</strong> tab for authoritative CI-adjusted ranks from <code>ai_tournament_leaderboard.json</code>.
     </td></tr>`;
@@ -741,7 +745,7 @@ async function loadPicksAndLeaderboard() {
     renderLeaderboard(serverLeaderboard, { approximate: false });
   } else {
     const models = calcModelStats(allPicks);
-    renderLeaderboard(models, { approximate: true });
+    renderLeaderboard(models, { approximate: true, fallbackAllTab: true });
   }
   updateTabCounts();
 }
@@ -749,6 +753,15 @@ async function loadPicksAndLeaderboard() {
 // ── Load model summary from DB ──
 async function loadModelSummary() {
   try {
+    if (!serverLeaderboard || !serverLeaderboard.length) {
+      try {
+        const lbResp = await fetch('./data/ai_tournament_leaderboard.json?' + Date.now());
+        if (lbResp.ok) {
+          const lbData = await lbResp.json();
+          if (lbData.models && lbData.models.length) serverLeaderboard = lbData.models;
+        }
+      } catch { /* registry still works without providers */ }
+    }
     const resp = await fetch('./data/ai_tournament_model_summary.json?' + Date.now());
     if (!resp.ok) return;
     const data = await resp.json();
@@ -795,15 +808,23 @@ async function loadModelSummary() {
     const regBody = document.getElementById('registry-tbody');
     const regSum = document.getElementById('registry-summary');
     if (regBody && data.models) {
+      const providerByModel = {};
+      if (serverLeaderboard) {
+        serverLeaderboard.forEach(lb => { if (lb.model_id) providerByModel[lb.model_id] = lb.provider || ''; });
+      }
+      for (const p of allPicks) {
+        if (p.model_id && p.provider && !providerByModel[p.model_id]) providerByModel[p.model_id] = p.provider;
+      }
       let regHtml = '';
       const sorted = data.models.slice().sort((a, b) => (b.total_picks || 0) - (a.total_picks || 0));
       sorted.forEach(m => {
+        const prov = providerByModel[m.model_id] || m.provider || '—';
         const st = (m.resolved || 0) >= 30 ? '<span class="badge b-t2">RANKED</span>'
                  : (m.resolved || 0) > 0 ? '<span class="badge b-pending">BUILDING</span>'
                  : '<span class="badge b-pending">NO RESOLVED</span>';
         regHtml += `<tr>
           <td class="model-name"><a href="./model.html?id=${encodeURIComponent(m.model_id)}">${esc(m.model_id)}</a></td>
-          <td>${esc(m.provider || '—')}</td>
+          <td>${esc(prov)}</td>
           <td class="num">${m.total_picks}</td>
           <td class="num">${m.resolved}</td>
           <td>${st}</td>
