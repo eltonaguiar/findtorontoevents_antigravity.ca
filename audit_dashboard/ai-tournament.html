@@ -229,22 +229,13 @@
 
 <!-- PENDING MODELS TABLE -->
 <details open>
-  <summary>Pending model submissions (Phase 1B in progress)</summary>
+  <summary>Model fleet status (configured vs active vs blocked)</summary>
   <div style="margin-top:10px;">
+  <div id="model-diagnostics-summary" class="small" style="margin-bottom:8px;color:#a0a0b0">Loading fleet diagnostics...</div>
   <table class="lb">
     <thead><tr><th>Model</th><th>Provider</th><th>API key env var</th><th>Asset classes</th><th>Status</th></tr></thead>
-    <tbody>
-      <tr><td class="model-name">DeepSeek V4</td><td>DeepSeek</td><td><code>DEEPSEEK_API_KEY</code></td><td>✅ 7 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
-      <tr><td class="model-name">GPT-4o-mini</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>✅ 4 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Llama-4-Scout</td><td>Cerebras</td><td><code>CEREBRAS_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Grok-3</td><td>xAI</td><td><code>XAI_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Cursor Agent</td><td>Antrhopic</td><td><code>ANTHROPIC_API_KEY</code></td><td>✅ 6 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Ring-2.6-1T</td><td>Inclusion AI</td><td><code>OPENROUTER_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Mercury V2</td><td>Inception Labs</td><td><code>OPENROUTER_API_KEY</code></td><td>✅ 8 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Gemini 2.5 Pro</td><td>Google</td><td><code>GEMINI_FREE_KEY</code></td><td>✅ 4 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Mistral Large</td><td>Mistral</td><td><code>MISTRAL_API_KEY</code></td><td>⏳ PENDING</td><td><span class="badge b-pending">PENDING</span></td></tr>
-      <tr><td class="model-name">Claude Opus</td><td>Anthropic</td><td><code>ANTHROPIC_API_KEY</code></td><td>⏳ PENDING KEY</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
-      <tr><td class="model-name">GPT-5</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>⏳ PENDING KEY</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
+    <tbody id="model-status-tbody">
+      <tr><td colspan="5" style="text-align:center;color:#4b5563;padding:12px">Loading model fleet status...</td></tr>
     </tbody>
 
 <!-- PERSONAS -->
@@ -616,6 +607,14 @@ function esc(v) {
   return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+function modelStatusBadge(status) {
+  if (status === 'active_today') return '<span class="badge b-t1">ACTIVE TODAY</span>';
+  if (status === 'configured_no_picks') return '<span class="badge b-t3">NO PICKS</span>';
+  if (status === 'configured_no_submission') return '<span class="badge b-t2">KEY SET · NO SUBMISSION</span>';
+  if (status === 'historical_only') return '<span class="badge b-pending">HISTORICAL ONLY</span>';
+  return '<span class="badge b-pending">BLOCKED</span>';
+}
+
 // ── Load picks from multiple sources ──
 function mergePicksFromSources(sources) {
   const seen = new Set();
@@ -746,6 +745,37 @@ async function loadModelSummary() {
   } catch(e) { /* keep placeholder */ }
 }
 
+async function loadModelDiagnostics() {
+  try {
+    const resp = await fetch('./data/ai_tournament_model_diagnostics.json?' + Date.now());
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const tbody = document.getElementById('model-status-tbody');
+    const summary = document.getElementById('model-diagnostics-summary');
+    if (!tbody || !summary || !Array.isArray(data.models)) return;
+
+    summary.innerHTML =
+      data.counts.active_today + ' active today · ' +
+      data.counts.configured_with_key + ' with keys on runner · ' +
+      data.counts.blocked_missing_key + ' blocked by missing key · ' +
+      '<span class="small">refreshed ' + toEST(data.generated_at) + ' EST</span>';
+
+    tbody.innerHTML = data.models.map(function(model) {
+      const classCount = Array.isArray(model.asset_classes) ? model.asset_classes.length : 0;
+      const extra = model.submission_picks_today > 0
+        ? ' · ' + model.submission_picks_today + ' picks today'
+        : '';
+      return '<tr>' +
+        '<td class="model-name">' + esc(model.model_id) + '<div class="small">' + esc(model.reason || '') + extra + '</div></td>' +
+        '<td>' + esc(model.provider || '') + '</td>' +
+        '<td><code>' + esc(model.api_key_env || '—') + '</code></td>' +
+        '<td>' + classCount + ' classes / ' + Number(model.assignment_count || 0) + ' assignments</td>' +
+        '<td>' + modelStatusBadge(model.status) + '</td>' +
+      '</tr>';
+    }).join('');
+  } catch (e) { /* keep placeholder */ }
+}
+
 // ── EST time helper ──
 function toEST(utcStr) {
   if (!utcStr) return '\u2014';
@@ -845,6 +875,7 @@ function msEli5Content() { return '<div><b>What do these numbers mean?</b><br><b
 // ── Init ──
 loadPicksAndLeaderboard().then(() => { loadPicks(); }).catch(() => {});
 loadModelSummary();
+loadModelDiagnostics();
 </script>
 <!-- AI POSTMORTEM HELPER (per-pick prompt + localStorage save, shared w/ /audit) -->
 <script src="ai_postmortem_helper.js"></script>

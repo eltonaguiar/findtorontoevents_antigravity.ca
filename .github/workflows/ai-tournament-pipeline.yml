@@ -75,6 +75,8 @@ jobs:
       - name: Generate picks fleet
         env:
           FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate || 'false' }}
+          AI_TOURNAMENT_MAX_WORKERS: '8'
+          AI_TOURNAMENT_MAX_WORKERS_PER_KEY: '2'
           # API keys — only set ones where you have a secret configured.
           # Fallbacks let the workflow use alternate secret names already in the
           # repo (e.g. GEMINI_FREE_KEY for GOOGLE_AI_API_KEY) so models don't
@@ -149,6 +151,8 @@ jobs:
           python tools/ai_tournament/update_leaderboard.py || echo "::warning title=leaderboard::Leaderboard update failed"
           echo "=== Rebuilding model summary (drives the table on /audit/ai-tournament.html) ==="
           python tools/ai_tournament/build_model_summary.py || echo "::warning title=model_summary::Model summary build failed"
+          echo "=== Rebuilding model diagnostics (configured vs active vs blocked) ==="
+          python tools/ai_tournament/build_model_diagnostics.py || echo "::warning title=model_diagnostics::Model diagnostics build failed"
           echo "=== Leaderboard output ==="
           if [ -f 'audit_dashboard/data/ai_tournament_leaderboard.json' ]; then
             python3 -c "
@@ -250,6 +254,7 @@ jobs:
           git add audit_dashboard/data/ai_tournament_picks_latest.json
           git add audit_dashboard/data/ai_tournament_leaderboard.json
           git add audit_dashboard/data/ai_tournament_model_summary.json || true
+          git add audit_dashboard/data/ai_tournament_model_diagnostics.json || true
           git add audit_dashboard/data/research/ai_leaderboard_data.json
           git add audit_dashboard/data/research/research_index_data.json
 
