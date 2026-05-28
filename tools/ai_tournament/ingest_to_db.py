@@ -23,6 +23,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from normalize import normalize_pick
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 PICKS_DIR = REPO_ROOT / "data" / "ai_tournament"
 LATEST_PICKS = REPO_ROOT / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
@@ -112,6 +114,7 @@ def build_upsert_sql(picks: list[dict]) -> tuple[list[tuple], str, str]:
 
     rows = []
     for p in picks:
+        normalize_pick(p)
         model_id = safe_str(p.get("model_id", "unknown"), 100)
         persona_id = safe_str(p.get("persona_id", ""), 100)
         symbol = safe_str(p.get("symbol", ""), 50)

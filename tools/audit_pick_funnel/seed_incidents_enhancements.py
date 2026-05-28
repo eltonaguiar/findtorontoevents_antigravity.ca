@@ -179,11 +179,11 @@ INCIDENTS = [
      "DEDUP via (asset_class, strategy, symbol, direction, pnl_pct, created_at) where distinct_entries=1 and n>50. Investigate the writer that's emitting the duplicates. quan_engine + meta_strategy are the top offenders.",
      "audit_dashboard/data/db_health.json", None, None, "qwen-code"),
 
-    ("OVERALL", "29.2M open positions in trading_picks; validator frozen 270h",
-     "open_bloat check: 29,254,204 open status rows. info_schema estimates 1,271,867 — actual count 23x the estimate. Last terminal write was 2026-05-12 23:42 (270 hours ago). The forward_validator is frozen — no picks have been closed in 11+ days.",
-     "P0", "OPEN", "alpha_engine/forward_validator + trading_picks open queue",
-     "Restart forward_validator. Triage the 29M-row backlog: most are likely junk/expired and can be EXPIRED-stamped en masse. Check if validator process died vs is silently failing.",
-     "audit_dashboard/data/db_health.json", None, None, "qwen-code"),
+    ("OVERALL", "29.2M open positions in bt_backtest_trades (NOT trading_picks); monitoring script miscounted",
+     "open_bloat check on 2026-05-25: db_health_check.py queried bt_backtest_trades (millions of backtest rows) and reported 29,254,204 OPEN rows. The incident was incorrectly attributed to trading_picks (which had ~46K rows at the time). info_schema estimate for bt_backtest_trades was 1,271,867 — the 23x divergence was itself a monitoring bug (COUNT(*) vs TABLE_ROWS sampling). The forward_validator was never frozen (alpha-engine-live ran green every ~2h); the actual freeze was the Outcome Resolver workflow (git-add on gitignored file). Fixed 2026-05-28: db_health_check.py now queries both tables independently + cross-validates against info_schema with >10x divergence detection.",
+     "P0", "RESOLVED", "tools/db_health_check.py check_open_bloat() + outcome-resolver.yml",
+     "Fixed: db_health_check.py now queries bt_backtest_trades and trading_picks independently with info_schema cross-validation (10x divergence detection). The 29.2M was a monitoring bug (COUNT(*) on backtest table, not trading_picks). Forward validator was never frozen — the actual freeze was the Outcome Resolver workflow. No further remediation needed for this incident.",
+     "updates/2026-05-28-forward-validator-outcome-resolver-remediation.md", None, None, "qwen-code+buffy"),
 
     ("OVERALL", "UNKNOWN asset_class on 951 active + 54 closed picks",
      "Category is NULL/UNKNOWN for 951 active picks (~10% of active set) and 54 closed (35.2% WR). UI can't apply per-class gates to UNKNOWN rows. Cross-class stats undercount these.",

@@ -279,6 +279,53 @@ def check_signal_outcomes(conn: Any) -> Dict[str, Any]:
     return result
 
 
+# Canonical statuses — keep in sync with tools/standardize_statuses.py and
+# tools/db_health_check.py check_status_standardization().
+CANONICAL_STATUSES = {"TP_HIT", "SL_HIT", "LOST", "EXPIRED", "TIME_EXIT", "ACTIVE", "OPEN"}
+
+
+def check_status_standardization(conn: Any) -> Dict[str, Any]:
+    """Check for non-canonical statuses in trading_picks.
+
+    Non-canonical statuses (WIN, WON, LOSS, closed, CLOSED_SL, CLOSED_TP,
+    SIGNAL, FLAT, STALE) should have been standardized to canonical values
+    via tools/standardize_statuses.py.  Any remaining rows indicate either
+    a regression (sync script writing non-canonical statuses) or incomplete
+    standardization.
+
+    Severity: RED if any non-canonical statuses found (they corrupt WR/PF stats).
+    NOTE: keep in sync with tools/db_health_check.py check_status_standardization().
+    """
+    result: Dict[str, Any] = {
+        "check": "status_standardization",
+        "table": "trading_picks",
+        "status": "GREEN",
+        "non_canonical": {},
+        "n_non_canonical": 0,
+    }
+    try:
+        with conn.cursor() as cur:
+            placeholders = ",".join(["%s"] * len(CANONICAL_STATUSES))
+            # NULL-safe: NOT IN skips NULL status rows, so add explicit NULL check.
+            # Use status_label alias so GROUP BY unambiguously refers to COALESCE expr.
+            cur.execute(
+                f"SELECT COALESCE(status, 'NULL') AS status_label, COUNT(*) FROM trading_picks "
+                f"WHERE status IS NULL OR status NOT IN ({placeholders}) "
+                f"GROUP BY status_label",
+                tuple(CANONICAL_STATUSES),
+            )
+            rows = cur.fetchall()
+            if rows:
+                result["non_canonical"] = {row[0]: int(row[1]) for row in rows}
+                result["n_non_canonical"] = sum(result["non_canonical"].values())
+                result["status"] = "RED"
+    except Exception as exc:
+        log.warning("status_standardization check error: %s", exc)
+        result["error"] = str(exc)
+        result["status"] = "RED"
+    return result
+
+
 def check_backtests(conn: Any) -> Dict[str, Any]:
     """Check freshness of most recent backtest trade insertion."""
     result: Dict[str, Any] = {
@@ -366,6 +413,7 @@ def run_freshness_check(output_path: Optional[str] = None) -> Dict[str, Any]:
         checks.append(check_live_picks(stocks_conn))
         checks.append(check_resolver_outputs(stocks_conn))
         checks.append(check_signal_outcomes(stocks_conn))
+        checks.append(check_status_standardization(stocks_conn))
     except RuntimeError as exc:
         log.error("Stocks DB connect failed: %s", exc)
         checks.append({"check": "live_picks", "status": "RED", "error": str(exc)})

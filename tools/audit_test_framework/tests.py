@@ -104,7 +104,7 @@ class GhostRowCount(AuditTest):
 
 
 class OpenBloatCheck(AuditTest):
-    """Fails if open_count > 1,000,000."""
+    """Fails if open_count > 500 (now measures trading_picks, not bt_backtest_trades)."""
 
     name = "OpenBloatCheck"
     severity = "high"
@@ -117,7 +117,7 @@ class OpenBloatCheck(AuditTest):
 
         bloat_data = data.get("checks", {}).get("open_bloat", {}).get("data", {})
         open_count = bloat_data.get("open_count", 0)
-        threshold = 1_000_000
+        threshold = 500
 
         if open_count > threshold:
             return {

@@ -20,6 +20,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from normalize import normalize_pick
+
 REPO = Path(__file__).resolve().parents[2]
 SUBMISSIONS = REPO / "data" / "ai_tournament" / "submissions"
 LATEST = REPO / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
@@ -65,6 +67,7 @@ def main() -> None:
             if isinstance(data, dict):
                 raw_pick.setdefault("model_id", data.get("model_id", ""))
                 raw_pick.setdefault("provider", data.get("provider", ""))
+            normalize_pick(raw_pick)
             k = _key(raw_pick)
             if k in index:
                 latest[index[k]] = raw_pick
