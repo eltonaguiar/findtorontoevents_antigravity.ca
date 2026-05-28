@@ -6,34 +6,42 @@ from alpha_engine.money_ready_verdict import _rolling_mdd, _mdd_cvar_gate
 
 
 def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
-                symbols=None, sources=None, win_pnl=0.05, loss_pnl=-0.02):
+                symbols=None, win_pnl=0.05, loss_pnl=-0.02, source_system=None):
     """Build synthetic picks. `symbols` round-robins so the default sample is
     diversified (no single-symbol concentration); pass a 1-element list to
-    build a concentrated sample for the M-070 guard tests. `sources` likewise
-    round-robins source_system (default = 5 sources) so the default sample
-    does not trip the 2026-05-28 Tier-0 source-concentration cap; pass a
-    1-element list to build a concentrated sample for source-concentration
-    guard tests.
+    build a concentrated sample for the M-070 guard tests. `source_system`
+    round-robins when provided as a list (default = strategy name) so the
+    default sample does not trip the 2026-05-28 Tier-0 source-concentration
+    cap; pass a single string to build a concentrated sample for
+    source-concentration guard tests.
 
     Picks are shuffled with a fixed seed so the equity curve resembles a
     realistic interspersed win/loss sequence — avoids an artificial 88% MDD
     that arises when all wins precede all losses in a sequential list.
     """
     syms = symbols or ["AAA", "BBB", "CCC", "DDD", "EEE"]
-    srcs = sources or ["src_a", "src_b", "src_c", "src_d", "src_e"]
     picks = []
     for i in range(n_won):
+        src = source_system or strategy
+        if isinstance(src, list):
+            src = src[i % len(src)]
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "WON", "pnl_pct": win_pnl, "symbol": syms[i % len(syms)],
-            "source_system": srcs[i % len(srcs)],
+            "source_system": src,
         })
     for i in range(n_lost):
+        src = source_system or strategy
+        if isinstance(src, list):
+            src = src[i % len(src)]
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "LOST", "pnl_pct": loss_pnl, "symbol": syms[i % len(syms)],
-            "source_system": srcs[i % len(srcs)],
+            "source_system": src,
         })
+    rng = random.Random(42)
+    rng.shuffle(picks)
+    return picks
     rng = random.Random(42)
     rng.shuffle(picks)
     return picks
@@ -104,7 +112,8 @@ class TestMoneyReadyVerdict:
         r = results["ETF"]
         for key in ("n_resolved", "wr", "pf", "n_ok", "wr_ok", "pf_ok", "dsr_ok",
                     "pbo_ok", "spa_ok", "verdict", "top_symbol", "top_symbol_share",
-                    "concentration_capped"):
+                    "concentration_capped", "top_source", "top_source_share",
+                    "source_concentration_capped"):
             assert key in r, f"Missing key: {key}"
         assert r["verdict"] in ("MONEY_READY", "WATCH", "NOT_READY", "INSUFFICIENT_DATA")
 
@@ -138,6 +147,79 @@ class TestMoneyReadyVerdict:
         assert r["top_symbol_share"] <= 0.60
         assert r["concentration_capped"] is False
         assert r["verdict"] in ("MONEY_READY", "WATCH")
+
+    def test_m070_single_source_concentration_caps_to_watch(self):
+        # Tier-0 source-concentration: a class whose resolved picks are all
+        # from ONE source system is not a class-level edge — capped at WATCH.
+        from alpha_engine.money_ready_verdict import money_ready_verdict
+        picks = _make_picks(400, 100, asset_class="CRYPTO",
+                            strategy="cot_positioning", source_system="single_source")
+        with patch("alpha_engine.money_ready_verdict._load_picks", return_value=picks):
+            with patch("alpha_engine.money_ready_verdict._load_blocked", return_value=set()):
+                results = money_ready_verdict()
+        r = results["CRYPTO"]
+        assert r["top_source"] == "single_source"
+        assert r["top_source_share"] == pytest.approx(1.0, abs=0.01)
+        assert r["source_concentration_capped"] is True
+        assert r["verdict"] == "WATCH"  # NOT MONEY_READY despite strong edge
+
+    def test_m070_diversified_sources_allow_money_ready(self):
+        # Same strong edge spread across 3 source systems — source concentration
+        # guard does not trip, so the class can reach MONEY_READY.
+        from alpha_engine.money_ready_verdict import money_ready_verdict
+        picks = _make_picks(400, 100, asset_class="COMMODITY",
+                            strategy="cot_positioning",
+                            source_system=["src_a", "src_b", "src_c"])
+        with patch("alpha_engine.money_ready_verdict._load_picks", return_value=picks):
+            with patch("alpha_engine.money_ready_verdict._load_blocked", return_value=set()):
+                with patch("alpha_engine.money_ready_verdict._load_dashboard_health", return_value={}):
+                    results = money_ready_verdict()
+        r = results["COMMODITY"]
+        assert r["top_source_share"] <= 0.40
+        assert r["source_concentration_capped"] is False
+        assert r["verdict"] in ("MONEY_READY", "WATCH")
+
+    def test_commodity_source_concentration_cap_override_at_60pct(self):
+        # MAX_SOURCE_CONCENTRATION_BY_CLASS: COMMODITY cap is 0.60, not 0.40.
+        # CT=F edge at 55% source concentration should NOT cap at WATCH.
+        from alpha_engine.money_ready_verdict import money_ready_verdict
+        n_src1 = 55
+        n_src2 = 45
+        picks_src1 = _make_picks(n_src1, 0, asset_class="COMMODITY",
+                                 strategy="cot_positioning", source_system="cftc_socrata",
+                                 win_pnl=0.05)
+        picks_src2 = _make_picks(n_src2, 0, asset_class="COMMODITY",
+                                 strategy="cot_positioning", source_system="other_source",
+                                 win_pnl=0.05)
+        picks = picks_src1 + picks_src2
+        with patch("alpha_engine.money_ready_verdict._load_picks", return_value=picks):
+            with patch("alpha_engine.money_ready_verdict._load_blocked", return_value=set()):
+                results = money_ready_verdict()
+        r = results["COMMODITY"]
+        assert r["top_source"] == "cftc_socrata"
+        assert r["top_source_share"] == pytest.approx(0.55, abs=0.02)
+        # 55% < COMMODITY source cap of 60% — must NOT be capped
+        assert r["source_concentration_capped"] is False
+
+    def test_commodity_source_concentration_fails_above_60pct(self):
+        # COMMODITY source at 65% > 0.60 cap → must be capped at WATCH.
+        from alpha_engine.money_ready_verdict import money_ready_verdict
+        n_src1 = 65
+        n_src2 = 35
+        picks_src1 = _make_picks(n_src1, 0, asset_class="COMMODITY",
+                                 strategy="cot_positioning", source_system="cftc_socrata",
+                                 win_pnl=0.05)
+        picks_src2 = _make_picks(n_src2, 0, asset_class="COMMODITY",
+                                 strategy="cot_positioning", source_system="other_source",
+                                 win_pnl=0.05)
+        picks = picks_src1 + picks_src2
+        with patch("alpha_engine.money_ready_verdict._load_picks", return_value=picks):
+            with patch("alpha_engine.money_ready_verdict._load_blocked", return_value=set()):
+                results = money_ready_verdict()
+        r = results["COMMODITY"]
+        assert r["top_source_share"] == pytest.approx(0.65, abs=0.02)
+        assert r["source_concentration_capped"] is True
+        assert r["verdict"] == "WATCH"
 
     def test_expectancy_computed_in_verdict(self):
         # M-expectancy: post-cost expectancy fields must be present in every verdict.
@@ -223,11 +305,13 @@ class TestM105MlEnhancedQuarantine:
 
     def _ml_crypto_picks(self, n_won, n_lost, strategy="ml_enhanced_BTCUSDT_1d_B_lightgbm"):
         return _make_picks(n_won, n_lost, asset_class="CRYPTO", strategy=strategy,
-                           win_pnl=0.05, loss_pnl=-0.02)
+                           win_pnl=0.05, loss_pnl=-0.02,
+                           source_system=["ml_src_a", "ml_src_b", "ml_src_c"])
 
     def _non_ml_crypto_picks(self, n_won, n_lost):
         return _make_picks(n_won, n_lost, asset_class="CRYPTO", strategy="macd_crossover",
-                           win_pnl=0.05, loss_pnl=-0.02)
+                           win_pnl=0.05, loss_pnl=-0.02,
+                           source_system=["non_ml_src_a", "non_ml_src_b", "non_ml_src_c"])
 
     def test_shadow_mode_stamps_quarantine_fields(self):
         # Shadow mode (default): verdict stays MONEY_READY but quarantine fields present.
