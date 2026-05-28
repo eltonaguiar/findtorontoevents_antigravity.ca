@@ -17,6 +17,7 @@ new picks without waiting for the next price-tracker pass.
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -45,7 +46,11 @@ def main() -> None:
     index = {_key(p): i for i, p in enumerate(latest)}
     added = updated = scanned = 0
 
-    for path in sorted(SUBMISSIONS.glob("*.json")):
+    # Include today's picks file in the merge process
+    today_picks_path = REPO / "data" / "ai_tournament" / f"picks_{datetime.now(timezone.utc).strftime("%Y%m%d")}.json"
+    all_submission_paths = sorted(list(SUBMISSIONS.glob("*.json")) + ([today_picks_path] if today_picks_path.exists() else []))
+
+    for path in all_submission_paths:
         try:
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
