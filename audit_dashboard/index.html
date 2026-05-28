@@ -934,21 +934,36 @@ a:hover { text-decoration: underline; }
     var conc = (window.DASHBOARD_DATA && window.DASHBOARD_DATA.performance &&
                 window.DASHBOARD_DATA.performance.asset_class_concentration) || null;
     if (!d || Object.keys(d).length === 0) {
-      // 2026-05-28: asset_class_health empty in live JSON. Do NOT silently
-      // fall back to the hardcoded static text below — it presents
-      // pre-2026-05-05 figures as if live. Replace every per-class span
-      // with a DISPUTED banner so a trader can't be misled.
-      ['EQUITY','CRYPTO','ETF','COMMODITY','FOREX','BOND'].forEach(function(key){
-        var span = document.querySelector('[data-mg-class="' + key + '"]');
-        if (!span) return;
-        span.innerHTML = '<strong style="color:#fca5a5">' + key + '</strong> &mdash; ' +
-          '<span style="color:#fca5a5;font-weight:700">DISPUTED</span> ' +
-          '<span style="color:#fde68a;font-size:0.88em">(asset_class_health is empty in dashboard_data.json; figures previously shown here were static placeholders, not live data). ' +
-          'See <a href="/audit/pick_funnel.html" style="color:#06b6d4">pick_funnel.html</a> for source-by-source breakdown.</span>';
-      });
-      var asof0 = document.getElementById('major-goal-asof');
-      var ts0 = window.DASHBOARD_DATA && (window.DASHBOARD_DATA.generated_at || (window.DASHBOARD_DATA.meta && window.DASHBOARD_DATA.meta.generated_at));
-      if (asof0) asof0.innerHTML = '<span style="color:#fca5a5">live JSON has empty asset_class_health</span>' + (ts0 ? ' <span style="color:#94a3b8">(file regen ' + String(ts0).slice(0,19).replace('T',' ') + 'Z)</span>' : '');
+      // 2026-05-28 (v2): asset_class_health is empty in dashboard_data.json.
+      // Rather than clobber every tile with a bare DISPUTED placeholder, pull
+      // the authoritative, freshly-regenerated policy-clean verdict
+      // (money_ready_verdict.json — fetched live every page load) and render
+      // real per-class PF/WR/n/verdict. On fetch failure the dated static
+      // spans above are left intact (they cite the same sources).
+      fetch('./data/money_ready_verdict.json?' + Date.now())
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(mv){
+          if (!mv || !mv.classes) return;  // keep dated static spans
+          var COLOR = { EQUITY:'#ef4444', CRYPTO:'#ef4444', ETF:'#94a3b8', COMMODITY:'#ef4444', FOREX:'#ef4444', BOND:'#94a3b8' };
+          ['EQUITY','CRYPTO','ETF','COMMODITY','FOREX','BOND'].forEach(function(key){
+            var span = document.querySelector('[data-mg-class="' + key + '"]');
+            var c = mv.classes[key];
+            if (!span || !c) return;
+            var wr = (c.wr != null && !isNaN(c.wr)) ? (Number(c.wr) * 100).toFixed(1) + '%' : 'n/a';
+            var pf = (c.pf != null && !isNaN(c.pf)) ? Number(c.pf).toFixed(2) : 'n/a';
+            var n  = (c.n_resolved != null) ? c.n_resolved : '?';
+            var raw = c.verdict || 'INSUFFICIENT_DATA';
+            var ready = /(^|_)READY$|PASS/.test(raw) && !/NOT_READY|INSUFFICIENT/.test(raw);
+            span.innerHTML = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
+              '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span> ' +
+              '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' policy-clean resolved)</span>';
+          });
+          var asof = document.getElementById('major-goal-asof');
+          if (asof) asof.innerHTML = 'Live &mdash; <code>money_ready_verdict.json</code> policy-clean closed-pick cohort, generated ' +
+            (mv.generated_date || (mv.generated_at ? String(mv.generated_at).slice(0, 10) : '?')) +
+            '. Small n = strict post-resolver-v2 clean cohort (open-validator backlog starves it); see <a href="/audit/pick_funnel.html" style="color:#06b6d4">pick_funnel.html</a> for the full source-by-source breakdown.';
+        })
+        .catch(function(){ /* leave dated static spans intact */ });
       return;
     }
     Object.keys(d).forEach(function(cls){
