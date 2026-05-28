@@ -1709,7 +1709,12 @@ WIN_RATE_TRAP_BLACKLIST = frozenset({
 #   - Active visibility still uses passes_active_gate (e.g. GC=F entry sanity was blocking gold)
 # ETF: same -60 penalty plus **hard ban** in passes_active_gate (PLAN_FIX_LOWPICKSCOUNT Phase 1:
 #   thin closed book, systemic drain — no new ETF actives until forward validation justifies).
-BLOCKED_ASSET_CLASSES: set = set()  # Was {"FUTURES"} — removed 2026-04-16; -60 penalty created data starvation catch-22
+BLOCKED_ASSET_CLASSES: set = {"FOREX"}  # 2026-05-28 Tier-0 freeze: FOREX 90d policy-clean PF 0.39 / WR 15.4% / n=13;
+# 15,720 picks scanned → 0 high-conviction. Bypass route: external MyFXBook replication gate (see Tier 5 fix plan).
+# Mechanism: -60 score penalty + SMART_PICKS_MIN_SCORE_FOREX=40 floor → smart_picks fails. passes_active_gate does
+# NOT read this set, so active book stays visible for audit. Re-evaluate after MyFXBook replication wired.
+# Historical: was {"FUTURES"} until 2026-04-16; -60 penalty caused data starvation, removed. FOREX starvation is
+# the intent of this freeze (per reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #5).
 
 # Non-crypto raw-score floor bypass: audited *backtest* history is not enough; require
 # a minimum **forward** lane sample so low dashboard scores cannot ride history alone.
@@ -2486,6 +2491,13 @@ PNL_SANITY_MIN = -50.0  # No active pick should be beyond -50% without SL firing
 # non-crypto books. Keep this narrow so verified PM/pro-trader sources still flow.
 BLOCKED_ASSET_SOURCE_PAIRS = {
     ("FOREX", "signal_validation"),
+    # 2026-05-28 Tier-0 fix: forex_rsi2_mean_reversion is in BLOCKED_SOURCE_SYSTEMS (WR 7.1% / PF 0.09
+    # trailing-14d) but leaks into opened FOREX picks via these aggregator/copy emitters (90d sample:
+    # multi_asset_copytrader=104, forex_copy_trader=13). Block at the (class,source) pair level so the
+    # leak is closed even after the BLOCKED_ASSET_CLASSES freeze is eventually lifted.
+    # Ref: reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #6 (FOREX agent audit).
+    ("FOREX", "multi_asset_copytrader"),
+    ("FOREX", "forex_copy_trader"),
     # ("EQUITY", "stocks_competition"),  # UNBLOCKED 2026-04-04: stocks WR 48.3%, block was overkill
 }
 

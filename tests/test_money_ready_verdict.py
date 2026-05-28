@@ -6,26 +6,33 @@ from alpha_engine.money_ready_verdict import _rolling_mdd, _mdd_cvar_gate
 
 
 def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
-                symbols=None, win_pnl=0.05, loss_pnl=-0.02):
+                symbols=None, sources=None, win_pnl=0.05, loss_pnl=-0.02):
     """Build synthetic picks. `symbols` round-robins so the default sample is
     diversified (no single-symbol concentration); pass a 1-element list to
-    build a concentrated sample for the M-070 guard tests.
+    build a concentrated sample for the M-070 guard tests. `sources` likewise
+    round-robins source_system (default = 5 sources) so the default sample
+    does not trip the 2026-05-28 Tier-0 source-concentration cap; pass a
+    1-element list to build a concentrated sample for source-concentration
+    guard tests.
 
     Picks are shuffled with a fixed seed so the equity curve resembles a
     realistic interspersed win/loss sequence — avoids an artificial 88% MDD
     that arises when all wins precede all losses in a sequential list.
     """
     syms = symbols or ["AAA", "BBB", "CCC", "DDD", "EEE"]
+    srcs = sources or ["src_a", "src_b", "src_c", "src_d", "src_e"]
     picks = []
     for i in range(n_won):
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "WON", "pnl_pct": win_pnl, "symbol": syms[i % len(syms)],
+            "source_system": srcs[i % len(srcs)],
         })
     for i in range(n_lost):
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "LOST", "pnl_pct": loss_pnl, "symbol": syms[i % len(syms)],
+            "source_system": srcs[i % len(srcs)],
         })
     rng = random.Random(42)
     rng.shuffle(picks)

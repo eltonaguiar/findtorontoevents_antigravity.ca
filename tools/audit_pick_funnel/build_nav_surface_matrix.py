@@ -254,6 +254,21 @@ def _find_dashboard_data() -> Path:
     return max(cands, key=lambda p: p.stat().st_size)
 
 
+def _load_blocked_source_systems() -> set:
+    """Import BLOCKED_SOURCE_SYSTEMS from audit_trail.quality_gates so historical
+    picks whose source is now banned in production don't inflate Smart/VA/HC/ELITE
+    cohorts on /audit. Fall back to an empty set if import fails (degrades to
+    pre-2026-05-28 behaviour rather than crashing the build)."""
+    try:
+        import sys
+        sys.path.insert(0, str(REPO))
+        from audit_trail.quality_gates import BLOCKED_SOURCE_SYSTEMS  # noqa: E402
+        return {s.lower() for s in BLOCKED_SOURCE_SYSTEMS}
+    except Exception as e:
+        print(f"[build_nav_surface_matrix] WARN: BLOCKED_SOURCE_SYSTEMS import failed ({e!r}); no source filter applied")
+        return set()
+
+
 def build():
     src = _find_dashboard_data()
     print(f"[build_nav_surface_matrix] reading {src} ({src.stat().st_size:,} bytes)")
@@ -261,6 +276,19 @@ def build():
         data = json.load(f)
     rc = data.get("picks", {}).get("recent_closed", [])
     print(f"[build_nav_surface_matrix] recent_closed n={len(rc)}")
+
+    # 2026-05-28 Tier-0 fix: filter out picks whose source_system is now in
+    # BLOCKED_SOURCE_SYSTEMS. These are historical entries that production no
+    # longer emits; counting them inflates Smart/VA/HC/ELITE cohorts (e.g. the
+    # disputed CRYPTO Smart Picks WR 78.9% with 91.7% claude_gainer_st share).
+    # Ref: reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #2.
+    _blocked = _load_blocked_source_systems()
+    if _blocked:
+        n_before = len(rc)
+        rc = [p for p in rc if str(p.get("source_system") or "").lower() not in _blocked]
+        n_dropped = n_before - len(rc)
+        print(f"[build_nav_surface_matrix] BLOCKED_SOURCE_SYSTEMS filter: dropped {n_dropped} of {n_before} picks "
+              f"({len(_blocked)} banned sources)")
 
     classes = sorted({p.get("asset_class") for p in rc if p.get("asset_class")})
     n_surfaces = len(SURFACES)

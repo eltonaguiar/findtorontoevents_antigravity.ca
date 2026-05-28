@@ -851,7 +851,7 @@ a:hover { text-decoration: underline; }
     <span style="color:#94a3b8">RAW at_raw_picks across 55,510 closed picks (Kimi audit + 2026-05-12 user audit): <strong style="color:#fca5a5">11.13% WR / &minus;3.56% avg / Sharpe &minus;2.34 / PF 0.46</strong>.</span>
   </div>
   <div style="margin-top:6px;color:#94a3b8;font-size:0.92em">
-    <strong style="color:#fde68a">No asset class</strong> currently passes industry-standard real-money thresholds (DSR&gt;0.95, PBO&lt;0.05, WFE&gt;60%, live-Sharpe&gt;0.5, n&ge;100). The one DSR=1.0 candidate (<code>cot_positioning + CT=F</code>) is in 4-week paper-pilot SHADOW per <a href="/audit/paper_pilot.html" style="color:#06b6d4">paper_pilot.html</a>; see also <a href="/audit/real_money.html" style="color:#06b6d4">real_money.html</a> for the 10-step Lopez de Prado readiness gate. <strong>NFA</strong> &mdash; no real-money sizing without explicit greenlight + all gates clear.
+    <strong style="color:#fde68a">No asset class</strong> currently passes industry-standard real-money thresholds (DSR&gt;0.95, PBO&lt;0.05, WFE&gt;60%, live-Sharpe&gt;0.5, n&ge;100). <strong style="color:#fca5a5">The earlier DSR=1.0 candidate (<code>cot_positioning + CT=F</code>) was FALSIFIED on 2026-05-13</strong> after dedup audit found 6.33&times; over-emission (38 raw signals from only 6 unique CFTC release weeks); pilot status is now <code>SHADOW_INSUFFICIENT_N</code> with <code>dsr=null</code>. See <a href="/audit/paper_pilot.html" style="color:#06b6d4">paper_pilot.html</a> for live pilot JSON and <code>reports/cot_paper_pilot_overemission_falsified_20260513.md</code> for the autopsy. <a href="/audit/real_money.html" style="color:#06b6d4">real_money.html</a> still gates the 10-step Lopez de Prado readiness; <strong>NFA</strong> &mdash; no real-money sizing without explicit greenlight + all gates clear.
   </div>
   <div style="margin-top:5px;color:#94a3b8;font-size:0.88em">
     <strong style="color:#fca5a5">&#x26A0; COMMODITY filter-survival gap (2026-05-17):</strong>
@@ -894,13 +894,22 @@ a:hover { text-decoration: underline; }
   </div>
   <div style="color:#94a3b8;font-size:0.78em;margin:4px 0 6px;font-style:italic">Sports betting tracked at <a href="/live-monitor/sports-betting.html" style="color:#a5b4fc;text-decoration:underline">/live-monitor/sports-betting.html</a> (separate KPIs).</div>
   <div id="major-goal-classes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px 14px;font-size:0.82em;line-height:1.5;color:#bae6fd;margin-top:4px">
-    <span data-mg-class="EQUITY"><strong style="color:#22c55e">EQUITY</strong> &mdash; T2 candidate (PF 1.55, WR 51.4%, n=426). Scale.<span class="metric-tip" tabindex="0" role="img" aria-label="EQUITY capped vs raw PnL caveat" data-metric-tooltip="EQUITY system_clean_metrics shows raw PnL 363.32 vs capped (10% per-pick) PnL 35.71 — a 10x gap that means 1-2 outlier wins drive most of the headline edge. The numbers above use the capped basis. For sizing decisions, weigh the capped figure; do not assume raw PnL persists out-of-sample. Source: dashboard_data.json::system_clean_metrics.alpha_engine.">&#9432;</span></span>
-    <span data-mg-class="CRYPTO"><strong style="color:#f59e0b">CRYPTO</strong> &mdash; PF 1.30, WR 46.3%, n=8115. Sub-T2; <code>quan_engine</code>/<code>luxalgo_filters</code> drag; 12 crypto_soc baby_strats quarantined (4-6&sigma; WR decay).</span>
-    <span data-mg-class="ETF"><strong style="color:#06b6d4">ETF</strong> &mdash; PF 1.33, WR 57.4%, n=108. Charter floor met (n&ge;100); lift PF to 1.5 for T2.</span>
-    <span data-mg-class="COMMODITY"><strong style="color:#f59e0b">COMMODITY</strong> &mdash; <strong style="color:#f59e0b">PF 2.48</strong>, WR 61.2%, n=345 (post-resolver-v2). <span class="metric-tip" tabindex="0" role="img" aria-label="COMMODITY CT=F duplication caveat" data-metric-tooltip="Phase 2-D audit 2026-05-16: 230/354 closed COMMODITY picks are CT=F COT duplicate signals (same SHORT emitted ~14×/day on 16 dates). Excl. duplicates: n=124, WR=12.9%, PF=0.24 — sub-floor. COT-dedup guard (72h window) now active; clean-n accumulating. T2 claim NOT SAFE until 100+ deduplicated picks confirm. Source: reports/commodity_phase2d_reaudit_2026-05-16.md">&#9432;</span> Headline inflated by CT=F COT dedup artifact — COT-dedup guard now active; awaiting 100 clean picks.</span>
-    <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; PF 0.86, WR 55.0%, n=309 (post-resolver-v2). Sub-floor (PF&lt;1.0). Mutation protocol active; LONG-direction blocks pending 2026-05-22 re-eval.</span>
-    <span data-mg-class="BOND"><strong style="color:#ef4444">BOND</strong> &mdash; PF 0.66, WR 54.5%, n=11. Sub-floor (PF&lt;1.0); n&lt;100 charter floor. Scanner active; accumulating picks.</span>
-    <span id="major-goal-asof" style="color:#a5b4fc">Static data updated 2026-05-21 &mdash; source: asset_class_health (resolved_n, post-resolver-v2). JS banner auto-updates on page load.</span>
+    <span data-mg-class="EQUITY"><strong style="color:#ef4444">EQUITY</strong> &mdash; FAIL (PF 0.70, WR 37.4%, n=567 closed_picks; 14d=PF 5.56 WR 66.7% but 61.6% single-source <code>smart_money</code> + 6 dup-groups). Only proven sleeve: <code>stocks_rsi2_pullback</code> n=70 WR 62.9%.</span>
+    <span data-mg-class="CRYPTO"><strong style="color:#ef4444">CRYPTO</strong> &mdash; FAIL (pf_registry policy-clean PF 0.98 WR 39.7% n=229; money_ready PF 0.96 WR 31.3% DSR 0.0073). <strong style="color:#fca5a5">DISPUTED</strong>: Smart/VA/HC/ELITE surfaces show PF 9-18 / WR 78-88% but 91.7% concentrated in <code>claude_gainer_st</code> with EXPIRED&rarr;WON mislabels &mdash; raw DB equivalent is WR 33%.</span>
+    <span data-mg-class="ETF"><strong style="color:#94a3b8">ETF</strong> &mdash; INSUFF-N (pf_registry policy-clean n=1, dashboard n=13 PF 0.34). Backtests PF 2.05&ndash;4.50 (etf_sector_rotation, etf_rotation_vix_regime) are <strong>100% orphan</strong> &mdash; no production wire-up.</span>
+    <span data-mg-class="COMMODITY"><strong style="color:#ef4444">COMMODITY</strong> &mdash; FAIL+INSUFF-N (policy-clean n=3 only; FUTURES proxy n=11 WR 9.09% PF 0.475). <strong style="color:#fca5a5">CT=F DSR=1.0 was FALSIFIED 2026-05-13</strong> (6.33&times; over-emission); pilot now <code>SHADOW_INSUFFICIENT_N</code> dsr=null.</span>
+    <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; FAIL+FROZEN (PF 0.39 WR 15.4% n=13 policy-clean; 15,720 scanned 90d &rarr; 0 high-conviction). 2026-05-28: added to <code>BLOCKED_ASSET_CLASSES</code> until external MyFXBook replication validates.</span>
+    <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; INSUFF-N (pf_registry raw n=2 PF 0.0; pick_funnel decisive n=12 WR 25%). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols.</span>
+    <span id="major-goal-asof" style="color:#a5b4fc">Static data updated 2026-05-28 &mdash; source: <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, swarm audit <code>reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md</code>. JS banner auto-updates on page load.</span>
+  </div>
+  <!-- DISPUTED BANNER (Tier-0 fix 2026-05-28) — propagated from pick_funnel.html so /audit
+       headline cannot be cited without the disclosure. Conditioned on money_ready_verdict
+       CRYPTO verdict via JS at bottom of banner script. -->
+  <div id="crypto-disputed-banner" style="background:#7c2d12;border:2px solid #ef4444;border-radius:10px;padding:12px 16px;margin:10px 0 0;color:#fecaca;font-size:12px;line-height:1.55">
+    <div style="font-weight:800;font-size:13px;color:#fca5a5;letter-spacing:0.5px">&#x26A0; DISPUTED &mdash; CRYPTO Smart Picks / Verified Alpha / High-Conviction / ELITE surfaces</div>
+    <div style="margin-top:6px">
+      All 4 inflated CRYPTO nav surfaces (PF 9-18, WR 78-88%) are dominated by historical <code>claude_gainer_st</code> picks (91.7% concentration) with EXPIRED&rarr;WON resolver mislabels. Independent DB probe shows raw equivalent WR=33%. Honest cells: <code>pf_registry policy-clean-net</code> PF 0.98 / WR 39.7% / n=229; <code>money_ready_verdict</code> PF 0.96 / WR 31.3% / DSR 0.0073. See <a href="/audit/pick_funnel.html" style="color:#fca5a5;text-decoration:underline">pick_funnel.html DISPUTED banner</a> and <code>reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md</code>. <strong>Do not size on the inflated surfaces.</strong>
+    </div>
   </div>
   <script>
   // MAJOR GOAL banner data-driven update (loop2 #11 2026-05-08).
@@ -924,7 +933,24 @@ a:hover { text-decoration: underline; }
     // primarily by one ticker (e.g. COMMODITY PF 3.89 is 75.6% CT=F).
     var conc = (window.DASHBOARD_DATA && window.DASHBOARD_DATA.performance &&
                 window.DASHBOARD_DATA.performance.asset_class_concentration) || null;
-    if (!d) return;  // graceful: keep static text
+    if (!d || Object.keys(d).length === 0) {
+      // 2026-05-28: asset_class_health empty in live JSON. Do NOT silently
+      // fall back to the hardcoded static text below — it presents
+      // pre-2026-05-05 figures as if live. Replace every per-class span
+      // with a DISPUTED banner so a trader can't be misled.
+      ['EQUITY','CRYPTO','ETF','COMMODITY','FOREX','BOND'].forEach(function(key){
+        var span = document.querySelector('[data-mg-class="' + key + '"]');
+        if (!span) return;
+        span.innerHTML = '<strong style="color:#fca5a5">' + key + '</strong> &mdash; ' +
+          '<span style="color:#fca5a5;font-weight:700">DISPUTED</span> ' +
+          '<span style="color:#fde68a;font-size:0.88em">(asset_class_health is empty in dashboard_data.json; figures previously shown here were static placeholders, not live data). ' +
+          'See <a href="/audit/pick_funnel.html" style="color:#06b6d4">pick_funnel.html</a> for source-by-source breakdown.</span>';
+      });
+      var asof0 = document.getElementById('major-goal-asof');
+      var ts0 = window.DASHBOARD_DATA && (window.DASHBOARD_DATA.generated_at || (window.DASHBOARD_DATA.meta && window.DASHBOARD_DATA.meta.generated_at));
+      if (asof0) asof0.innerHTML = '<span style="color:#fca5a5">live JSON has empty asset_class_health</span>' + (ts0 ? ' <span style="color:#94a3b8">(file regen ' + String(ts0).slice(0,19).replace('T',' ') + 'Z)</span>' : '');
+      return;
+    }
     Object.keys(d).forEach(function(cls){
       var key = String(cls).toUpperCase();
       var span = document.querySelector('[data-mg-class="' + key + '"]');
@@ -1138,7 +1164,7 @@ a:hover { text-decoration: underline; }
       <h4 style="color:#22c55e;margin:0 0 8px">&#x1F3C6; SUPREME EDGE 2026-05-12 refresh — DSR-verified real edge per asset class</h4>
       <div style="background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:12px;margin-bottom:18px;font-size:12px;line-height:1.65">
         Latest patterns leading to strong profit and low risk, surfaced via the new <a href="/audit/anti_overfit.html" style="color:#06b6d4">Anti-Overfit Audit (DSR)</a> sidecar (Lopez de Prado AFML eq 14.5; hourly cron). 8 of 42 strategies (n&ge;20 closed) pass DSR &ge; 0.95 floor &mdash; "publishable confidence" per Bailey-Lopez de Prado.<br><br>
-        <strong style="color:#86efac">COMMODITY &mdash; cot_positioning family</strong>: n=104 closed picks, WR 86.5%, Sharpe +1.377, <strong>DSR=1.0000</strong>. Confirmed independently by Antigravity audit (<code>cot_positioning_CT_locked</code> LONG = 89.8% WR, PF 13.1, n=49). <strong>This is the single most statistically validated edge on the system.</strong><br>
+        <strong style="color:#fca5a5">COMMODITY &mdash; cot_positioning DSR=1.0 FALSIFIED 2026-05-13</strong>: the original "n=104 / WR 86.5% / DSR=1.0000" claim was an over-emission artifact &mdash; dedup audit found <code>multi_asset_cot_positioning</code> emitted 38 raw signals from only 6 unique CFTC release weeks (6.33&times; ratio). Pilot status now <code>SHADOW_INSUFFICIENT_N</code> with <code>dsr=null</code>; dedup pilot WR 33.3% on n=6 unique releases. <strong>Do not size on this edge.</strong> Refs: <code>reports/cot_paper_pilot_overemission_falsified_20260513.md</code>, <code>audit_dashboard/data/cot_paper_pilot_status.json</code>.<br>
         <strong style="color:#86efac">CRYPTO &mdash; ML-enhanced 1d/1h sleeves</strong>: 4 strategies survive DSR test &mdash; <code>ml_enhanced_INJUSDT_1d_B_lightgbm</code> (n=27, WR 100%, Sharpe +2.49), <code>ml_enhanced_DYDXUSDT_15m_D_ensemble_stack</code> (n=31, WR 96.8%), <code>ml_enhanced_FETUSDT_1d_B_lightgbm</code> (n=25, WR 100%), <code>ml_enhanced_RENDERUSDT_1h_D_ensemble_stack</code> (n=34, WR 85.3%). All DSR &ge; 0.9995.<br>
         <strong style="color:#86efac">EQUITY &mdash; stocks_rsi2_pullback</strong>: n=70, WR 62.9%, avg +0.78% (P0 #10 verified via direct DB probe 2026-05-11). Real edge sleeve hidden inside the broader EQUITY class which Kimi RAW reads at 1.84% WR / n=814 (the dashboard tagged-EQUITY subset at 54% WR is the honest filter).<br>
         <strong style="color:#fbbf24">15-minute timeframe is overfit-bait</strong>: 33 of 42 audited strategies are OVERFIT_LIKELY (DSR &lt; 0.5). Pattern: <code>ml_enhanced_*_15m_*</code> family fails the multiple-testing correction even when raw Sharpe looks good. <strong>Avoid any 15m-tagged ML strategy as a standalone edge claim.</strong><br>
@@ -1363,7 +1389,7 @@ a:hover { text-decoration: underline; }
   <button class="tab-btn" data-tab="closed">Closed Picks</button>
   <a href="portfolio_history.html" class="tab-btn" style="text-decoration:none;color:#a78bfa;display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(167,139,250,0.08));border:1px solid rgba(167,139,250,0.3);border-radius:6px;" title="Portfolios &amp; Funds - 30 simulated portfolios, strategy funds, forward-test tracking">Portfolios</a>
   <a href="anti_overfit.html" class="tab-btn" style="text-decoration:none;color:#06b6d4;display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(6,182,212,0.15),rgba(6,182,212,0.08));border:1px solid rgba(6,182,212,0.3);border-radius:6px;" title="Anti-Overfit Audit (DSR per strategy via Lopez de Prado AFML eq 14.5). Surfaces statistically-validated edge candidates + overfit_likely rejections. Auto-refreshes hourly. Advisory only — not a production gate yet.">&#x1F9EA; Anti-Overfit (DSR)</a>
-  <a href="paper_pilot.html" class="tab-btn" style="text-decoration:none;color:#facc15;display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(250,204,21,0.15),rgba(167,139,250,0.10));border:1px solid rgba(250,204,21,0.4);border-radius:6px;" title="COT Paper Pilot — SHADOW state tracker for cot_positioning + CT=F (DSR=1.0000 verified). 1-contract paper sizing, 4-week graduation gate. NFA.">&#x1F4B0; Paper Pilot (COT)</a>
+  <a href="paper_pilot.html" class="tab-btn" style="text-decoration:none;color:#facc15;display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(250,204,21,0.15),rgba(167,139,250,0.10));border:1px solid rgba(250,204,21,0.4);border-radius:6px;" title="COT Paper Pilot — SHADOW state tracker for cot_positioning + CT=F. Original DSR=1.0 claim FALSIFIED 2026-05-13 (6.33× over-emission); current status SHADOW_INSUFFICIENT_N, dsr=null. 1-contract paper sizing, 4-week graduation gate. NFA.">&#x1F4B0; Paper Pilot (COT)</a>
   <a href="real_money.html" class="tab-btn" style="text-decoration:none;color:#fbbf24;display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(239,68,68,0.10));border:1px solid rgba(251,191,36,0.5);border-radius:6px;font-weight:600;" title="Real Money — pre-real-money readiness hub. Lists every tool, gate, viewer, and audit ledger that must clear before live capital is sized. 10-step Lopez de Prado AFML readiness gate. NFA.">&#x1F3E6; Real Money</a>
   <button class="tab-btn" data-tab="dashboards">Dashboards</button>
   <!-- Systems tab removed - strategies > systems for analysis. Cross-system matrix refactored to cross-strategy in Permutations tab -->
