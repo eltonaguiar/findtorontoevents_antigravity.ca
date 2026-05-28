@@ -199,8 +199,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add events.json last_update.json metadata.json
-          [ -f next/events.json ] && git add next/events.json
+          # events.json + next/events.json are in .gitignore (added by the
+          # 2026-05-27 repo rewrite 4935b2c60) so the local working copy stays
+          # untracked; CI is the canonical writer and must force-add them, or
+          # deploy-fte-events-json gets "File not found: next/events.json".
+          git add -f events.json
+          git add last_update.json metadata.json
+          [ -f next/events.json ] && git add -f next/events.json
           [ -f next/metadata.json ] && git add next/metadata.json
           [ -f data/metadata.json ] && git add data/metadata.json
           [ -f TORONTOEVENTS_ANTIGRAVITY/metadata.json ] && git add TORONTOEVENTS_ANTIGRAVITY/metadata.json
