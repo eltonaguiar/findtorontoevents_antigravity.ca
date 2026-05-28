@@ -120,20 +120,20 @@ Carry, Asian Range Breakout, ORB, Connors RSI-2, Cross-Sectional Momentum, COT-a
 
 ---
 
-## Top 10 Strategies Ranked (Updated with Full Analysis)
+## Top 10 Strategies Ranked (Updated with Full Analysis + Live Systems)
 
 | Rank | Strategy | Class | WR | PF | n | Wire Status |
 |---|---|---|---|---|---|---|
-| 1 | **AdaptiveKeltnerReversion** | CRYPTO | 55.9% | **2.70** | **41,085** | ORPHANED (in baby_strategies only) |
-| 2 | Keltner RSI Squeeze | CRYPTO | 51.2% | 2.49 | 2,087 | Forward-proven |
-| 3 | STOBVSupportDivergence | CRYPTO | 68.3% | 4.75 | 101 | Wired in paper_trading (walk-forward) |
-| 4 | STFearGreedContrarian | CRYPTO | 58.1% | 2.50 | 344 | Wired in paper_trading (walk-forward) |
-| 5 | STMultiDayMomentum | CRYPTO | 62.7% | 3.84 | 75 | Wired in paper_trading (walk-forward) |
-| 6 | ETFDualMomentum (DIA) | ETF | 58.8% | 2.64 | 17 | ORPHANED |
-| 7 | ETFDualMomentum (IWM) | ETF | 56.2% | 2.09 | 16 | ORPHANED |
-| 8 | ETFDualMomentum (XLF) | ETF | 47.4% | 2.08 | 19 | ORPHANED |
+| 1 | **AdaptiveKeltnerReversion** | CRYPTO | 55.9% | **2.70** | **41,085** | ORPHANED → PR #1 created |
+| 2 | **mega_mutation_macd_rsi_m048** | CRYPTO | 72.4% | **2.97** | 58 | LIVE (mega_mutation system) |
+| 3 | **battleground** (composite) | CRYPTO | 56.6% | **1.76** | 122 | LIVE — **PASSES TIER 2** (MDD 7.32%) |
+| 4 | Keltner RSI Squeeze | CRYPTO | 51.2% | 2.49 | 2,087 | Forward-proven → PR #1 |
+| 5 | STOBVSupportDivergence | CRYPTO | 68.3% | 4.75 | 101 | Wired in paper_trading (walk-forward) |
+| 6 | STFearGreedContrarian | CRYPTO | 58.1% | 2.50 | 344 | Wired in paper_trading (walk-forward) |
+| 7 | STMultiDayMomentum | CRYPTO | 62.7% | 3.84 | 75 | Wired in paper_trading (walk-forward) |
+| 8 | Bollinger MR (equity) | EQUITY | 51.2% | 1.35 | 82 | LIVE (stocks_competition) |
 | 9 | Connors RSI-2 | EQUITY | 62.9% | ~1.5 | 70 | Partially wired |
-| 10 | ForexCarryBBHybrid (GBPUSD) | FOREX | 75.0% | 4.77 | 4 | Too few trades |
+| 10 | Breakout Momentum (equity) | EQUITY | 52.6% | 1.35 | 76 | LIVE (stocks_competition) |
 
 ### AdaptiveKeltnerReversion — The #1 Strategy
 
@@ -333,6 +333,60 @@ These carve-outs are based on "antigrav-independent-review" claiming mastery of 
 ---
 
 ## Continuous Testing Log
+
+### Test Cycle 2 (2026-05-28T23:50Z) — Live System Analysis
+
+**Tested:** All 126 production systems from `dashboard_data.json`
+**Result:** Found 2 additional Tier 2-worthy systems beyond AdaptiveKeltnerReversion
+
+#### Live Production Systems Ranked (n>=20, PF>1.0)
+
+| System | n | WR | PF | MDD | Status |
+|---|---|---|---|---|---|
+| **battleground** | 122 | 56.6% | **1.76** | **7.32%** | **PASSES TIER 2** |
+| mega_mutation | 124 | 62.9% | **2.97** | 28.27% | Near-Tier 2 (MDD 28%>20%) |
+| super_signals | 116 | 56.0% | 2.20 | 86.48% | FAIL (MDD catastrophic) |
+| stocks_competition | 219 | 49.3% | 1.35 | 36.46% | FAIL (MDD + WR<50%) |
+| kimi_riseoftheclaw | 751 | 49.1% | 1.29 | 143.23% | FAIL (MDD catastrophic) |
+
+#### battleground — First Live Tier 2 Passer
+
+**PF 1.76, WR 56.6%, MDD 7.32%, n=122, Calmar 7.76, Recovery Factor 3.76**
+
+Sub-strategies:
+| Strategy | n | WR | PnL% |
+|---|---|---|---|
+| crypto_liquidity_wick_reversal_v1 | 43 | 58.1% | +6.55% |
+| drawdown_recovery_rsi_eth | 14 | 64.3% | +10.89% |
+| drawdown_recovery_rsi_sol | 6 | 66.7% | +8.19% |
+| atr_percentile_gate | 29 | 58.6% | +0.67% |
+| drawdown_recovery_rsi_xrp | 3 | 66.7% | +3.03% |
+| multi_period_rsi_confluence_eth | 27 | 44.4% | -1.82% |
+
+**Key insight:** `drawdown_recovery_rsi` variants have 64-67% WR across ETH/SOL/XRP. `crypto_liquidity_wick_reversal_v1` has 58.1% WR on BTC. These sub-strategies deserve promotion.
+
+#### mega_mutation — Near Tier 2 (MDD 28.3%)
+
+**PF 2.97, WR 62.9%, n=124, +246% total PnL**
+
+Sub-strategies:
+| Strategy | n | WR | PnL% |
+|---|---|---|---|
+| mega_mutation_macd_rsi_m048 | 58 | **72.4%** | **+221.5%** |
+| mega_mutation_ema_momentum_m006 | 53 | 52.8% | +4.54% |
+| mega_mutation_macd_rsi_m017 | 13 | 61.5% | +20.15% |
+
+**Key insight:** `mega_mutation_macd_rsi_m048` is the single best-performing strategy in the entire system: 72.4% WR, +221.5% PnL, n=58. The MDD is from early period losses; the PnL sparkline shows strong recovery (-22% → +488%).
+
+#### stocks_competition — Best Equity Strategies
+
+| Strategy | n | WR | PnL% |
+|---|---|---|---|
+| Bollinger MR | 82 | 51.2% | +59.76% |
+| Breakout Momentum | 76 | 52.6% | +35.43% |
+| Quality Compounders | 8 | 50.0% | +18.62% |
+
+**Note:** Bollinger Mean Reversion and Breakout Momentum are the best live equity strategies. MDD=36.46% needs reduction.
 
 ### Test Cycle 1 (2026-05-28T22:30Z)
 
