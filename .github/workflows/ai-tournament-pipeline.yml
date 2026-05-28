@@ -144,9 +144,22 @@ jobs:
         continue-on-error: true
 
       - name: Update leaderboard
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
         run: |
-          echo "=== Merging submissions/*.json into ai_tournament_picks_latest.json ==="
-          python tools/ai_tournament/merge_submissions_to_latest.py || echo "::warning title=merge::Submission merge failed"
+          echo "=== Rebuilding ai_tournament_picks_latest.json from the DB (authoritative source) ==="
+          # The DB (populated by ingest_to_db.py above) holds every model's picks.
+          # Rebuilding from it avoids the submissions/*.json glob going stale and
+          # stranding the page on a partial model set (see rebuild_latest_from_db.py).
+          if python tools/ai_tournament/rebuild_latest_from_db.py; then
+            echo "rebuilt latest.json from DB"
+          else
+            echo "::warning title=rebuild::DB rebuild failed — falling back to submissions merge"
+            python tools/ai_tournament/merge_submissions_to_latest.py || echo "::warning title=merge::Submission merge failed"
+          fi
           echo "=== Updating leaderboard ==="
           python tools/ai_tournament/update_leaderboard.py || echo "::warning title=leaderboard::Leaderboard update failed"
           echo "=== Rebuilding model summary (drives the table on /audit/ai-tournament.html) ==="
@@ -165,13 +178,11 @@ jobs:
         # Soft-fail: leaderboard may not exist on first run
         continue-on-error: true
 
-      - name: Copy latest picks to audit_dashboard/data
-        run: |
-          LATEST=$(ls -t data/ai_tournament/picks_*.json 2>/dev/null | head -1)
-          if [ -n "$LATEST" ]; then
-            cp "$LATEST" audit_dashboard/data/ai_tournament_picks_latest.json
-            echo "Copied $(basename $LATEST) → audit_dashboard/data/ai_tournament_picks_latest.json"
-          fi
+      # NOTE: the former "Copy latest picks to audit_dashboard/data" step was
+      # removed 2026-05-28. It (a) had a broken shell `if` with no `fi`, and
+      # (b) would have clobbered the DB-sourced ai_tournament_picks_latest.json
+      # (full history, all models) with a single day's aggregate. The
+      # "Update leaderboard" step above now rebuilds latest.json from the DB.
 
       - name: Sync persona registry to database
         env:
