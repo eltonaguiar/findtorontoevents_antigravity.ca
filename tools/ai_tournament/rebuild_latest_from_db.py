@@ -29,6 +29,26 @@ import pymysql
 
 REPO = Path(__file__).resolve().parents[2]
 LATEST = REPO / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
+CONFIG = REPO / "config" / "model_persona_mapping.json"
+
+# Some config-fleet rows were ingested before ingest_to_db.py learned to write
+# provider, so ~20% of DB rows have provider NULL (all 15 such model_ids are in
+# config/model_persona_mapping.json). We backfill provider for DISPLAY from the
+# config — no DB write — so the page's Provider column is never blank.
+_INTERNAL_PROVIDERS = {"alpha_engine": "AlphaEngine (internal)"}
+
+
+def _provider_map() -> dict[str, str]:
+    out = dict(_INTERNAL_PROVIDERS)
+    try:
+        cfg = json.loads(CONFIG.read_text())
+        for mid, c in cfg.get("models", {}).items():
+            prov = c.get("provider")
+            if prov:
+                out[mid] = prov
+    except (OSError, json.JSONDecodeError):
+        pass
+    return out
 
 # Columns the page/builders read; excludes heavy internals like
 # _model_api_response and dedup hashes to keep the snapshot lean.
@@ -79,12 +99,22 @@ def main() -> None:
     finally:
         conn.close()
 
+    # Backfill blank provider from config (display-only, no DB write).
+    pmap = _provider_map()
+    n_backfilled = 0
+    for p in picks:
+        if not p.get("provider") and p.get("model_id") in pmap:
+            p["provider"] = pmap[p["model_id"]]
+            n_backfilled += 1
+
     LATEST.write_text(json.dumps(picks, indent=2))
     n_models = len({p.get("model_id") for p in picks})
     n_open = sum(1 for p in picks if p.get("status") == "OPEN")
+    n_null_prov = sum(1 for p in picks if not p.get("provider"))
     print(
         f"[rebuild_latest] wrote {LATEST.relative_to(REPO)} — "
-        f"{len(picks)} picks, {n_models} models, {n_open} open"
+        f"{len(picks)} picks, {n_models} models, {n_open} open; "
+        f"provider backfilled {n_backfilled}, still-blank {n_null_prov}"
     )
 
 
