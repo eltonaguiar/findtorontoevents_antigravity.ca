@@ -6714,6 +6714,58 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     except Exception:
         pass  # fail-open: never break admission on kill gate error
 
+    # ── M-001: CRYPTO liquid-core whitelist + BTC UTC death-zone (2026-05-28) ──
+    # EAGLE plan M-001. Addresses CRYPTO 47% raw skew + 29% WR quan_engine drag:
+    # of n=229 CRYPTO picks only 1 lands on the canonical edge
+    # (crypto_liquidity_wick_reversal_v1); the rest is illiquid-alt long-tail.
+    # Two gates, both CRYPTO-only, both fail-open, both env-kill-switchable
+    # (CRYPTO_LIQUID_CORE_ENABLED / CRYPTO_BTC_HOUR_GATE_ENABLED, default ON):
+    #   (a) symbol must be in top-25 by 30-day ADV (LIQUID_CORE_TOP_25)
+    #   (b) entry_hour_utc must not be in [9, 10, 18, 21]
+    try:
+        _ac_m001 = str(pick.get("asset_class", "") or "").strip().upper()
+        if _ac_m001 == "CRYPTO":
+            from alpha_engine.crypto_liquid_core import (
+                is_in_liquid_core as _is_in_liquid_core_m001,
+                is_in_btc_death_zone as _is_in_btc_death_zone_m001,
+            )
+            _sym_m001 = pick.get("symbol", "") or ""
+            if not _is_in_liquid_core_m001(_sym_m001):
+                logger.info(
+                    "Pick rejected: crypto_not_liquid_core symbol=%s strategy=%s",
+                    _sym_m001, pick.get("strategy", ""),
+                )
+                pick["_hf_quality_gate_reason"] = "crypto_not_liquid_core"
+                try:
+                    if _pll_tracer_m110 and _pll_pick_id_m110:
+                        _pll_tracer_m110.log_filter(
+                            _pll_pick_id_m110, "crypto_liquid_core",
+                            "crypto_not_liquid_core", rule_id="M-001",
+                            pick_values={"symbol": _sym_m001},
+                        )
+                except Exception:
+                    pass
+                return False
+            _sub_m001 = pick.get("submitted_at") or pick.get("signal_ts") or ""
+            if _is_in_btc_death_zone_m001(_sub_m001):
+                logger.info(
+                    "Pick rejected: crypto_btc_death_zone symbol=%s submitted_at=%s",
+                    _sym_m001, _sub_m001,
+                )
+                pick["_hf_quality_gate_reason"] = "crypto_btc_death_zone"
+                try:
+                    if _pll_tracer_m110 and _pll_pick_id_m110:
+                        _pll_tracer_m110.log_filter(
+                            _pll_pick_id_m110, "crypto_btc_death_zone",
+                            "crypto_btc_death_zone", rule_id="M-001",
+                            pick_values={"symbol": _sym_m001, "submitted_at": _sub_m001},
+                        )
+                except Exception:
+                    pass
+                return False
+    except Exception:
+        pass  # fail-open: never block picks on M-001 import/parse error
+
     # ── CRYPTO dynamic quarantine (2026-05-15) ──
     # Uses module-level cache (_get_crypto_quarantine_strategies) to avoid hot-path
     # file I/O. Cache invalidated on file mtime change. Kill-switch: CRYPTO_QUARANTINE=0
