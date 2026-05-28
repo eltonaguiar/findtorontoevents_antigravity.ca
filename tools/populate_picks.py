@@ -1253,14 +1253,28 @@ def main() -> None:
     # ── Model attempt log: machine-readable coverage report for every configured model
     emit_model_attempt_log(models, model_status_counts, all_picks)
 
+    # ── Visible model participation summary (human-readable dashboard)
     api_generated_count = sum(1 for p in all_picks if p.get("generation_source") != "coverage_fallback" and p.get("model_id") not in ("alpha_engine", "tournament_synthetic"))
     local_fallback_count = sum(1 for p in all_picks if p.get("model_id") in ("alpha_engine", "tournament_synthetic"))
+
+    from collections import Counter as _Counter
+    _model_pick_counts = _Counter(p.get("model_id") for p in all_picks)
+    _models_with_picks = len([m for m, c in _model_pick_counts.items() if c > 0])
+    _total_configured = len(models)
+
     print(f"[populate] Assignment statuses: {model_status_counts}")
     print(
-        f"[populate] Done. API-generated: {api_generated_count}, "
-        f"Coverage fallback: {coverage_fallback_count}, Local fallback: {local_fallback_count}, "
-        f"Total: {len(all_picks)}"
+        f"[populate] DONE. Models configured={_total_configured} | "
+        f"Active API models={_models_with_picks} | "
+        f"API picks={api_generated_count} | "
+        f"Coverage fallback={coverage_fallback_count} | "
+        f"Local fallback={local_fallback_count} | "
+        f"Total picks={len(all_picks)}"
     )
+    if _models_with_picks < _total_configured:
+        missing = [mid for mid in models if mid not in _model_pick_counts or _model_pick_counts[mid] == 0]
+        print(f"[populate] ⚠️ {_total_configured - _models_with_picks} model(s) produced zero picks: {', '.join(sorted(missing))}")
+    print(f"[populate] Per-model breakdown: {', '.join(f'{k}={v}' for k, v in _model_pick_counts.most_common())}")
 
 
 def emit_model_attempt_log(
