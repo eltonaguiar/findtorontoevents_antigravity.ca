@@ -82,6 +82,29 @@ python tools/swarm/swarm_run.py --pr <number> --preset consensus-3 --json-strict
 **Cons**: Lives in a separate repo (`E:\FREELLM\` per user); higher setup cost; output format different.
 **Best for**: Truly high-stakes decisions where you want adversarial pressure-testing, not consensus.
 
+### 11. LiteLLM rotating proxy (`http://localhost:4000/v1`)
+**What**: Local LiteLLM proxy (the FREELLM/REELLM setup) fronting 25+ upstreams behind one OpenAI-compatible endpoint with auto rate-limit rotation. Virtual model groups: `free-mode`, `free-mode-fast`, `free-mode-large`, `paid-mode`, `paid-mode-fast`, `hybrid-model`.
+**Pros**: One stable base URL, no per-provider key juggling (keys live in `~/dbpasses.txt`), transparent failover when an upstream 429s/cools down. Works with any `openai` SDK client. Great when the swarm CLIs hit env/CLI friction (WSL-only grok, missing modules) — the proxy is always reachable if running.
+**Cons**: Need the proxy running (`bash tools/start_litellm_proxy.sh -b`); you don't control which specific upstream answers (rotation picks); not a consensus tool by itself (single response per call — fan out yourself by calling N times or N groups).
+**Best for**: A quick free second opinion with zero key setup, or as the transport behind a hand-rolled fan-out when the dedicated swarm CLIs are jammed. Manage with `/litellm-proxy` (start/stop/status/test), `/statusvllmp`, `/modevllmp`.
+**Invocation**:
+```bash
+# Health + one-shot opinion (free group)
+curl -s http://localhost:4000/health/readiness
+curl -s http://localhost:4000/v1/chat/completions \
+  -H "Authorization: Bearer anything" -H "Content-Type: application/json" \
+  -d '{"model":"free-mode-fast","messages":[{"role":"user","content":"Review: <claim>"}],"max_tokens":600}'
+
+# Hand-rolled fan-out across groups (poor-man's consensus when swarm CLIs are down):
+for g in free-mode-fast paid-mode-fast free-mode-large; do
+  curl -s http://localhost:4000/v1/chat/completions -H "Authorization: Bearer x" \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"$g\",\"messages\":[{\"role\":\"user\",\"content\":\"<prompt>\"}],\"max_tokens\":600}" \
+    | python3 -c "import json,sys;d=json.load(sys.stdin);print('==',d.get('model'),'==');print(d['choices'][0]['message']['content'])"
+done
+```
+**When to prefer over the others**: the dedicated swarm CLIs (`swarm_run.py`, ruflo, swarm_v2) failed on env/CLI issues (observed 2026-05-28: WSL-only grok, `No module named 'swarms'`, 300s timeouts). The proxy sidesteps all of that — if `/v1/models` returns, you have a working second opinion in one curl.
+
 ## Single-provider variants (lighter weight)
 
 When 1 AI is enough but you want a different perspective from Claude:
@@ -126,7 +149,7 @@ Need a second opinion on a single answer?
 
 | Tier | Examples | Cost |
 |---|---|---|
-| Free | ofox, gemini, kilo, cloudflare, nvidia (free tier), groq, cerebras, together | $0 |
+| Free | ofox, gemini, kilo, cloudflare, nvidia (free tier), groq, cerebras, together, **LiteLLM proxy `free-mode*`** | $0 |
 | Near-free | deepseek, xai | $0.001–0.005 |
 | Paid | swarmv2 (multiple engines × tokens) | $0.005–0.05 |
 | Expensive | ring261T (extended thinking) | $0.01–0.10 |
@@ -173,6 +196,12 @@ echo "Your question" | python3 tools/swarm/api_consult.py --provider ofox -
 
 # NVIDIA DeepSeek v4 Pro (free, high-quality, JSON-locked):
 echo "Your question" | python3 tools/swarm/api_consult.py --provider nvidia_deepseek -
+
+# LiteLLM rotating proxy (free, always-on, zero key setup — fallback when swarm CLIs jam):
+curl -s http://localhost:4000/v1/chat/completions -H "Authorization: Bearer x" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"free-mode-fast","messages":[{"role":"user","content":"Your question"}],"max_tokens":600}' \
+  | python3 -c "import json,sys;print(json.load(sys.stdin)['choices'][0]['message']['content'])"
 ```
 
 ## Related skills
