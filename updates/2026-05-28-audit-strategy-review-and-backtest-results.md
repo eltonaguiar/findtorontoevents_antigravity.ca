@@ -126,14 +126,14 @@ Carry, Asian Range Breakout, ORB, Connors RSI-2, Cross-Sectional Momentum, COT-a
 |---|---|---|---|---|---|---|
 | 1 | **AdaptiveKeltnerReversion** | CRYPTO | 55.9% | **2.70** | **41,085** | ORPHANED → PR #1 created |
 | 2 | **mega_mutation_macd_rsi_m048** | CRYPTO | 72.4% | **2.97** | 58 | LIVE (mega_mutation system) |
-| 3 | **battleground** (composite) | CRYPTO | 56.6% | **1.76** | 122 | LIVE — **PASSES TIER 2** (MDD 7.32%) |
-| 4 | Keltner RSI Squeeze | CRYPTO | 51.2% | 2.49 | 2,087 | Forward-proven → PR #1 |
-| 5 | STOBVSupportDivergence | CRYPTO | 68.3% | 4.75 | 101 | Wired in paper_trading (walk-forward) |
-| 6 | STFearGreedContrarian | CRYPTO | 58.1% | 2.50 | 344 | Wired in paper_trading (walk-forward) |
-| 7 | STMultiDayMomentum | CRYPTO | 62.7% | 3.84 | 75 | Wired in paper_trading (walk-forward) |
-| 8 | **VolumeWeightedMedianZScore** | **ALL 4** | 53-65% | **1.73** | **532** | ORPHANED — first cross-asset strategy |
-| 9 | VolumePriceConfirmationReversal | ETF+EQ+CR | 56-67% | **1.81** | 175 | ORPHANED — NVDA PF 12.05 |
-| 10 | Bollinger MR (equity) | EQUITY | 51.2% | 1.35 | 82 | LIVE (stocks_competition) |
+| 3 | **FibonacciRsiMeanReversion** | **ALL 5** | 43-87% | **2.70** | **133** | ORPHANED — commodity PF 6.12, equity PF 4.85 |
+| 4 | **battleground** (composite) | CRYPTO | 56.6% | **1.76** | 122 | LIVE — **PASSES TIER 2** (MDD 7.32%) |
+| 5 | Keltner RSI Squeeze | CRYPTO | 51.2% | 2.49 | 2,087 | Forward-proven → PR #1 |
+| 6 | STOBVSupportDivergence | CRYPTO | 68.3% | 4.75 | 101 | Wired in paper_trading |
+| 7 | STFearGreedContrarian | CRYPTO | 58.1% | 2.50 | 344 | Wired in paper_trading |
+| 8 | VolumeWeightedMedianZScore | ALL 4 | 53-65% | 1.73 | 532 | ORPHANED |
+| 9 | VolumePriceConfirmationReversal | ETF+EQ+CR | 56-67% | 1.81 | 175 | ORPHANED |
+| 10 | Bollinger MR (equity) | EQUITY | 51.2% | 1.35 | 82 | LIVE |
 
 ### AdaptiveKeltnerReversion — The #1 Strategy
 
@@ -333,6 +333,23 @@ These carve-outs are based on "antigrav-independent-review" claiming mastery of 
 ---
 
 ## Continuous Testing Log
+
+### Test Cycle 4 (2026-05-29T00:10Z) — Multi-Asset Strategy Discovery
+
+**Tested:** 15 more untested strategies across crypto/ETF/forex/equity/commodity
+**Result:** Found **FibonacciRsiMeanReversionStrategy** — strong across ALL 5 asset classes
+
+#### FibonacciRsiMeanReversionStrategy — PF 2.70, n=133 (ALL 5 ASSET CLASSES)
+
+| Class | n | WR | PF | Best Symbols |
+|---|---|---|---|---|
+| Commodity | 15 | 86.7% | **6.12** | GC=F (PF 13.88), CL=F (4.22), SI=F (999) |
+| Equity | 36 | 69.4% | **4.85** | AAPL (5.49), AMZN (999), TSLA (999), JPM (4.22) |
+| ETF | 26 | 65.4% | **4.05** | QQQ (6.37), DIA (5.37), XLE (999), XLF (4.58) |
+| Crypto | 49 | 59.2% | 2.05 | ADA (4.88), LTC (4.64), LINK (3.51), DOGE (3.05) |
+| Forex | 7 | 42.9% | 1.31 | GBPUSD (2.30) |
+
+**Key insight:** This is the most diversified winning strategy found. Commodity performance (86.7% WR, PF 6.12) is exceptional — gold (GC=F) alone has PF 13.88. Equity performance (69.4% WR, PF 4.85) beats all existing equity strategies. Combined with VolumeWeightedMedianZScore (Cycle 3), we now have 2 strategies that work across 4+ asset classes.
 
 ### Test Cycle 3 (2026-05-29T00:00Z) — Cross-Asset Strategy Discovery
 
