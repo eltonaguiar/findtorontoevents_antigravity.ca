@@ -837,9 +837,39 @@ function toggleMsEli5() { _msEli5 = !_msEli5; var d = document.getElementById('m
 function lbEli5Content() { return '<div><b>How to read the leaderboard</b><br><br>Think of a video game high-score list. Each AI model is a player trying to make good stock picks.<br><br><b>WR</b> = Win Rate — what percentage of their bets win? 55% means they win 55 out of 100 bets.<br><b>PF</b> = Profit Factor — how much do they make per dollar lost? 2.0 means they make $2 for every $1 lost.<br><b>Score</b> = WR x PF, adjusted for luck (statistical confidence). Higher is better.<br><br>Models need at least <b>30 resolved picks</b> to appear on the leaderboard. Until then they\'re in "BUILDING" mode — still gathering data. The system automatically penalizes models with too few picks so a lucky 3-for-3 start doesn\'t fool anyone.<br><br><b>Min n=30:</b> You need at least 30 finished bets before we take your score seriously. This prevents luck from looking like skill.</div>'; }
 function msEli5Content() { return '<div><b>What do these numbers mean?</b><br><br>Every row is one AI model or trading strategy that has submitted picks to the tournament.<br><br><b>Picks</b> = Total bets made (open + resolved combined).<br><b>WR</b> = Win Rate — how often the pick won when resolved (%).<br><b>Resolved</b> = Bets that have finished — either hit TP (win), SL (loss), or expired.<br><b>W/L</b> = Wins vs Losses count.<br><b>Avg PnL</b> = Average profit or loss per resolved pick.<br><b>Last Pick</b> = When the model last submitted a pick (in EST).<br><b>Personas</b> = How many different strategies/personalities this model uses.<br><b>Classes</b> = How many asset classes this model covers (crypto, stocks, forex, etc.).<br><br><span style="color:#22c55e">Green</span> WR = doing well. <span style="color:#ef4444">Red</span> = needs improvement. Grey = not enough data yet.</div>'; }
 
+// ── Load tier-rating algorithms (manual capture; graceful when absent) ──
+async function loadTierRatings() {
+  const container = document.getElementById('tier-rating-container');
+  if (!container) return;
+  let data = null;
+  try {
+    const resp = await fetch('./data/tier_rating_algorithms.json?' + Date.now());
+    if (resp.ok) data = await resp.json();
+  } catch (e) { /* fall through to pending state */ }
+
+  const entries = Array.isArray(data) ? data : (data && Array.isArray(data.entries) ? data.entries : null);
+  if (!entries || entries.length === 0) {
+    container.innerHTML = '<div class="small" style="padding:18px;text-align:center;color:#6b7280;border:1px dashed rgba(255,255,255,0.08);border-radius:8px">'
+      + 'Tier-rating algorithms not yet published. This is a manual capture &mdash; sourced answers (claude_opus_4_7, deepseek_v4, gemini_2_5_pro) and the auto-population roadmap are in '
+      + '<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/DAILY_IDEAS.MD">DAILY_IDEAS.MD</a> (2026-05-25).</div>';
+    return;
+  }
+
+  let html = '<div class="models-grid">';
+  entries.forEach(e => {
+    html += `<div class="model-card"><h3>${esc(e.model_id || e.model || '?')} <span class="provider-tag">${esc(e.asset_class || '')}</span></h3>`
+      + (e.algorithm ? `<div class="strategy-box">${esc(String(e.algorithm).slice(0, 400))}</div>` : '')
+      + (e.features ? `<div class="small">Features: ${esc(Array.isArray(e.features) ? e.features.join(', ') : String(e.features))}</div>` : '')
+      + '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
 // ── Init ──
 loadPicksAndLeaderboard().then(() => { loadPicks(); }).catch(() => {});
 loadModelSummary();
+loadTierRatings();
 </script>
 <!-- AI POSTMORTEM HELPER (per-pick prompt + localStorage save, shared w/ /audit) -->
 <script src="ai_postmortem_helper.js"></script>
