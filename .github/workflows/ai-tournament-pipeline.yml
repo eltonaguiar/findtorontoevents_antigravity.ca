@@ -29,7 +29,12 @@ concurrency:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 2026-05-28: bumped 15→45. With 16 provider secrets now set, the expanded
+    # model fleet's serial "Generate picks fleet" step exceeded the 15-min ceiling
+    # and GitHub auto-cancelled every run (26513551034, 26555312404 both died at
+    # ~15m on that step → 0 fresh picks). 45m gives the full fleet room; pairs with
+    # AI_TOURNAMENT_MAX_WORKERS parallelism (PR #24) to stay well under in practice.
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
