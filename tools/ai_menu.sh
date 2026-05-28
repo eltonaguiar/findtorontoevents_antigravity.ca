@@ -24,7 +24,6 @@ TOOLS=(
   "continue|continue|Continue agent CLI"
   "hermes|hermes|Hermes agent"
   "openclaude|openclaude|OpenClaude wrapper"
-  "freeclaude|free-claude-code|Free Claude Code"
   "blackbox|blackbox|Blackbox AI CLI"
   "freebuff|freebuff|Freebuff agent CLI"
   "kimi|kimi|Kimi CLI"
