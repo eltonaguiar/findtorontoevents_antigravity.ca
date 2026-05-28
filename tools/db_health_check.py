@@ -500,6 +500,44 @@ def check_lm_signals_resolver() -> dict:
     }
 
 
+# Canonical statuses — keep in sync with tools/standardize_statuses.py and
+# tools/db_freshness_check.py check_status_standardization().
+CANONICAL_STATUSES = {"TP_HIT", "SL_HIT", "LOST", "EXPIRED", "TIME_EXIT", "ACTIVE", "OPEN"}
+
+
+def check_status_standardization() -> dict:
+    """P1-gate: non-canonical statuses in trading_picks.
+
+    Non-canonical statuses (WIN, WON, LOSS, closed, CLOSED_SL, CLOSED_TP,
+    SIGNAL, FLAT, STALE) corrupt WR/PF stats.  Any row with one of these
+    statuses escaped tools/standardize_statuses.py or was written by a sync
+    script using the legacy status dialect.
+
+    Tier 1 — RED if any non-canonical rows exist.
+    NOTE: keep in sync with tools/db_freshness_check.py check_status_standardization().
+    """
+    c, cur = _conn()
+    placeholders = ",".join(["%s"] * len(CANONICAL_STATUSES))
+    # NULL-safe: NOT IN skips NULL status rows, so add explicit NULL check.
+    # Use status_label alias so GROUP BY unambiguously refers to COALESCE expr.
+    cur.execute(
+        f"SELECT COALESCE(status, 'NULL') AS status_label, COUNT(*) FROM trading_picks "
+        f"WHERE status IS NULL OR status NOT IN ({placeholders}) "
+        f"GROUP BY status_label",
+        tuple(CANONICAL_STATUSES),
+    )
+    rows = cur.fetchall()
+    c.close()
+    non_canonical = {row[0]: int(row[1]) for row in rows} if rows else {}
+    n_total = sum(non_canonical.values())
+    return {
+        "non_canonical": non_canonical,
+        "n_non_canonical": n_total,
+        "tier": "red" if n_total > 0 else "green",
+        "threshold_pass": n_total == 0,
+    }
+
+
 def check_won_pnl_contradiction() -> dict:
     """My F-Kimi#1. trading_picks WON-with-negative-PnL."""
     c, cur = _conn()
@@ -535,6 +573,7 @@ CHECKS = {
     "pnl_integrity":      ("Tier 1", check_pnl_integrity),
     "ghost_rows":         ("Tier 1", check_ghost_rows),
     "open_bloat":         ("Tier 1", check_open_bloat),
+    "status_standardization": ("Tier 1", check_status_standardization),
     "index_health":       ("Tier 1", check_index_health),
     "phantom_expired":    ("Tier 2", check_phantom_expired),
     "outcome_coverage":   ("Tier 2", check_outcome_coverage),
@@ -544,7 +583,7 @@ CHECKS = {
     "won_pnl_contradiction": ("Tier 3", check_won_pnl_contradiction),
 }
 
-QUICK_CHECKS = {"pnl_integrity", "ghost_rows", "open_bloat", "won_pnl_contradiction"}
+QUICK_CHECKS = {"pnl_integrity", "ghost_rows", "open_bloat", "status_standardization", "won_pnl_contradiction"}
 
 
 def main():
