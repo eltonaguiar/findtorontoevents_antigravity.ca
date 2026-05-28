@@ -518,17 +518,28 @@ STRATEGY_SCORE_OVERRIDES: dict[str, int] = {
     "etf_risk_on_off": 30,
     "etf_trend_following": 35,
     "etf_rsi2_pullback": 30,  # Short-term RSI2 mean-reversion (2-5 day hold)
+    # 2026-05-28 baby-strat ships — lower floor for shadow/monitor accumulation:
+    "etf_dual_momentum_rotation": 28,  # DIA WR 58.8%, PF 2.64
+    "equity_sector_rotation_momentum": 30,  # sector rotation with dual mom
     # BOND — conservative strategies, lower natural scores
     "bond_yield_momentum": 28,
     "bond_duration_rotation": 28,
     "bond_mean_reversion": 30,
     "bond_credit_spread": 30,
+    # 2026-05-28 baby-strat ships:
+    "bond_yield_curve_momentum": 28,  # yield-curve duration momentum
     # COMMODITY — CTA and seasonal
     "cta_golden_cross_200": 35,
     "cot_positioning": 35,
     "commodity_seasonal": 30,
+    # 2026-05-28 baby-strat ships:
+    "copper_platinum_cot_momentum": 35,  # COT-proxy for HG=F, PL=F
     # FUTURES
     "futures_bb_mean_reversion": 35,
+    # 2026-05-28 baby-strat ships:
+    "futures_session_breakout_cot": 35,  # ES=F WR 61.5%, PF 1.39
+    # CRYPTO — 2026-05-28 baby-strat ships:
+    "crypto_atr_ratio_expansion_long": 30,  # ATR compression/expansion breakout
 }
 
 def get_effective_min_score(strategy_name: str, asset_class: str) -> int:
@@ -3114,6 +3125,103 @@ def tag_futures_monitor(pick: dict) -> dict:
     return pick
 
 
+
+# ── BABY_STRATEGY_MONITOR (2026-05-28) ──
+# Shadow/monitor mode for 6 new baby strategies wired into production.
+# Picks from these strategies are tagged _monitor_mode=True so they accumulate
+# stats in MySQL but do NOT surface on the live dashboard or trigger trading signals.
+#
+# Criteria for promotion from SHADOW → LIVE (per strategy):
+#   - n >= 20 resolved picks
+#   - WR >= 50%
+#   - PF >= 1.2
+#   - Manual operator review via review_baby_monitor.py results
+#
+# etf_dual_momentum_rotation:     DIA WR 58.8%, PF 2.64 (backtest) — strongest ETF edge
+# futures_session_breakout_cot:   ES=F WR 61.5%, PF 1.39 (backtest) — strong futures edge
+# copper_platinum_cot_momentum:   COMMODITY spread, COT-aligned — edge TBD
+# bond_yield_curve_momentum:      BOND curve steepener/flattener — edge TBD
+# equity_sector_rotation_momentum:EQUITY sector momentum rotation — edge TBD
+# crypto_atr_ratio_expansion_long:CRYPTO ATR expansion long — edge TBD
+BABY_STRATEGY_MONITOR: dict[str, dict] = {
+    "etf_dual_momentum_rotation": {
+        "asset_class": "ETF",
+        "backtest_wr_pct": 58.8,
+        "backtest_pf": 2.64,
+        "shadow_since": "2026-05-28",
+        "promotion_criteria": "n>=20, WR>=50%, PF>=1.2",
+        "notes": "DIA dual momentum rotation — strongest ETF edge in backtest",
+    },
+    "futures_session_breakout_cot": {
+        "asset_class": "FUTURES",
+        "backtest_wr_pct": 61.5,
+        "backtest_pf": 1.39,
+        "shadow_since": "2026-05-28",
+        "promotion_criteria": "n>=20, WR>=50%, PF>=1.2",
+        "notes": "ES=F session breakout with COT alignment — strong futures edge",
+    },
+    "copper_platinum_cot_momentum": {
+        "asset_class": "COMMODITY",
+        "backtest_wr_pct": None,
+        "backtest_pf": None,
+        "shadow_since": "2026-05-28",
+        "promotion_criteria": "n>=20, WR>=50%, PF>=1.2",
+        "notes": "Copper/platinum spread with COT momentum — edge TBD",
+    },
+    "bond_yield_curve_momentum": {
+        "asset_class": "BOND",
+        "backtest_wr_pct": None,
+        "backtest_pf": None,
+        "shadow_since": "2026-05-28",
+        "promotion_criteria": "n>=20, WR>=50%, PF>=1.2",
+        "notes": "Yield curve steepener/flattener momentum — edge TBD",
+    },
+    "equity_sector_rotation_momentum": {
+        "asset_class": "EQUITY",
+        "backtest_wr_pct": None,
+        "backtest_pf": None,
+        "shadow_since": "2026-05-28",
+        "promotion_criteria": "n>=20, WR>=50%, PF>=1.2",
+        "notes": "Sector rotation momentum — edge TBD",
+    },
+    "crypto_atr_ratio_expansion_long": {
+        "asset_class": "CRYPTO",
+        "backtest_wr_pct": None,
+        "backtest_pf": None,
+        "shadow_since": "2026-05-28",
+        "promotion_criteria": "n>=20, WR>=50%, PF>=1.2",
+        "notes": "ATR ratio expansion long entries — edge TBD",
+    },
+}
+
+_BABY_MONITORED_STRATS_LOWER = {s.lower() for s in BABY_STRATEGY_MONITOR}
+
+
+def is_baby_monitored(pick: dict) -> bool:
+    """Return True if this pick is from a shadow-mode baby strategy."""
+    return (
+        pick.get("origin") in ("baby_strategies", "antigravity_strategies")
+        and str(pick.get("strategy", "")).lower() in _BABY_MONITORED_STRATS_LOWER
+    )
+
+
+def tag_baby_monitor(pick: dict) -> dict:
+    """Add _monitor_mode=True tag to baby strategy shadow picks. Modifies in-place."""
+    if is_baby_monitored(pick):
+        strat = str(pick.get("strategy", "")).lower()
+        meta = None
+        for key, val in BABY_STRATEGY_MONITOR.items():
+            if key.lower() == strat:
+                meta = val
+                break
+        pick["_monitor_mode"] = True
+        pick["_monitor_tag"] = "BABY_SHADOW"
+        pick["_sizing_override"] = "zero"
+        if meta:
+            pick["_baby_backtest_wr"] = meta.get("backtest_wr_pct")
+            pick["_baby_backtest_pf"] = meta.get("backtest_pf")
+    return pick
+
 # Single-axis kill list extension — 2026-04-17 forex bleed forensics.
 # These strategies have a -20 score penalty (`STRATEGY_NEGATIVE_BIAS_SCORES`)
 # but were NOT in PERMANENTLY_KILLED so historical aggregations still
@@ -4062,18 +4170,11 @@ def _apply_score_penalties(pick: Dict[str, Any]) -> None:
         score -= 10
         penalties.append(f"toxic_combo({_strat_low[:20]}/{_dir_up}):-10")
 
-    # 2026-04-05: MASTERED PAIR boosts - strategy+symbol combos with 100% WR.
-    # Per antigrav-independent-review: claude_gainer_st has mastered ARB/DOT/SOL/BNB/SUI/DOGE/ADA.
-    # Also quan_engine+ETCUSDT, kimi+AVAXUSDT.
+    # 2026-04-05: MASTERED PAIR boosts - strategy+symbol combos with verified edge.
+    # 2026-05-28: Removed claude_gainer_st entries (778/790 PROVEN picks, 26.5% WR, -355% PnL).
+    #             Source is in PERMANENTLY_KILLED_STRATEGIES; "mastered" claim was from only 3 closed rows.
     _sym_up = str(pick.get("symbol", "") or "").upper()
     _mastered_pairs = {
-        ("claude_gainer_st", "ARBUSDT"),
-        ("claude_gainer_st", "DOTUSDT"),
-        ("claude_gainer_st", "SOLUSDT"),
-        ("claude_gainer_st", "BNBUSDT"),
-        ("claude_gainer_st", "SUIUSDT"),
-        ("claude_gainer_st", "DOGEUSDT"),
-        ("claude_gainer_st", "ADAUSDT"),
         ("quan_engine", "ETCUSDT"),
         ("kimi_riseoftheclaw", "AVAXUSDT"),
     }
@@ -6404,6 +6505,15 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     # Picks pass gates but are tagged with _monitor_mode=True and _sizing_override=zero.
     # The sizing layer must respect _sizing_override before allocating capital.
     tag_futures_monitor(pick)
+
+    # ── BABY STRATEGY MONITOR (2026-05-28): shadow mode for 6 new baby strategies ──
+    # These strategies are wired into the scanner but run in shadow/monitor mode.
+    # Picks are tagged _monitor_mode=True, _monitor_tag="BABY_SHADOW", and
+    # _sizing_override="zero" so they accumulate MySQL stats without surfacing
+    # on the live dashboard or triggering trading signals.
+    # Promotion criteria: n>=20, WR>=50%, PF>=1.2, per-strategy manual review.
+    tag_baby_monitor(pick)
+
 
     # ── M-110: Pick Lifecycle Logger — entry scan (fail-soft, 2026-05-18) ──
     # Assigns a stable pick_id to every pick entering passes_active_gate().
