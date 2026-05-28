@@ -29,7 +29,7 @@ concurrency:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -102,6 +102,9 @@ jobs:
           AIMLAPI_API_KEY: ${{ secrets.AIMLAPI_API_KEY || '' }}
           HYPERBOLIC_API_KEY: ${{ secrets.HYPERBOLIC_API_KEY || '' }}
           FEATHER_API_KEY: ${{ secrets.FEATHER_API_KEY || '' }}
+          AI_TOURNAMENT_COVERAGE_FALLBACK_ENABLED: "true"
+          AI_TOURNAMENT_API_TIMEOUT_SECONDS: "25"
+          AI_TOURNAMENT_API_SLEEP_SECONDS: "0.2"
         run: |
           echo "=== Generating tournament picks ==="
           python tools/populate_picks.py || echo "::warning title=populate_picks::picks generation failed (see above)"

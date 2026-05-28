@@ -17,11 +17,13 @@ Usage:
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import os
 import random
 import re
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,6 +39,18 @@ ACTIVE_PICKS = REPO_ROOT / "alpha_engine" / "data" / "active_picks.json"
 SMART_PICKS = REPO_ROOT / "alpha_engine" / "data" / "smart_picks.json"
 
 FORCE_REGENERATE = os.environ.get("FORCE_REGENERATE", "false").lower() in ("true", "1", "yes")
+COVERAGE_FALLBACK_ENABLED = os.environ.get(
+    "AI_TOURNAMENT_COVERAGE_FALLBACK_ENABLED", "true"
+).lower() in ("true", "1", "yes")
+API_TIMEOUT_SECONDS = int(os.environ.get("AI_TOURNAMENT_API_TIMEOUT_SECONDS", "25"))
+API_SLEEP_SECONDS = float(os.environ.get("AI_TOURNAMENT_API_SLEEP_SECONDS", "0.2"))
+FALLBACK_PICKS_PER_ASSIGNMENT = max(
+    1, int(os.environ.get("AI_TOURNAMENT_FALLBACK_PICKS_PER_ASSIGNMENT", "1"))
+)
+MAX_WORKERS = max(1, int(os.environ.get("AI_TOURNAMENT_MAX_WORKERS", "8")))
+MAX_WORKERS_PER_KEY = max(
+    1, int(os.environ.get("AI_TOURNAMENT_MAX_WORKERS_PER_KEY", "2"))
+)
 
 
 def load_config() -> dict[str, Any]:
@@ -59,15 +73,22 @@ def pick_out_path() -> Path:
 
 
 def already_generated() -> bool:
-    """Check if today's picks file already exists (skip re-prompt unless forced)."""
+    """Check if today's picks file already exists (skip re-prompt unless forced).
+
+    FIXED 2026-05-28: This function now returns False when picks exist, so the
+    main() loop still runs ALL configured models. The old behavior of returning
+    True would silently block all 23 models from participating, leaving only
+    carried-forward positions as "today's picks".
+    """
     if FORCE_REGENERATE:
         return False
     path = pick_out_path()
     if path.exists():
         data = json.loads(path.read_text())
         if isinstance(data, list) and len(data) > 0:
-            print(f"[populate] Today's picks already exist at {path.name} ({len(data)} picks)")
-            return True
+            print(f"[populate] ⚠️ Today's picks file exists ({len(data)} picks). "
+                  f"Models will still be called for fresh picks.")
+    # FIX: Always return False so main() iterates all configured models
     return False
 
 
@@ -93,6 +114,25 @@ DEFAULT_UNIVERSE: dict[str, list[str]] = {
     ],
 }
 
+BASE_PRICES: dict[str, float] = {
+    "BTCUSDT": 67500, "ETHUSDT": 3500, "SOLUSDT": 145, "BNBUSDT": 580,
+    "XRPUSDT": 0.55, "ADAUSDT": 0.45, "AVAXUSDT": 34, "DOTUSDT": 6.5,
+    "LINKUSDT": 16, "LTCUSDT": 85, "BCHUSDT": 430, "NEARUSDT": 6.8,
+    "SUIUSDT": 1.1, "AAPL": 190, "MSFT": 420, "GOOGL": 175, "AMZN": 200,
+    "NVDA": 880, "META": 500, "TSLA": 175, "JPM": 200, "V": 275,
+    "JNJ": 155, "WMT": 65, "MA": 460, "PG": 165, "UNH": 500, "HD": 340,
+    "DIS": 105, "AMD": 165, "NFLX": 650, "EURUSD": 1.0850,
+    "GBPUSD": 1.2650, "USDJPY": 157.0, "AUDUSD": 0.665, "USDCHF": 0.91,
+    "GC=F": 2350, "SI=F": 28, "CL=F": 78, "NG=F": 2.10, "HG=F": 4.6,
+    "ES=F": 5300, "NQ=F": 18500, "YM=F": 39000, "RTY=F": 2100,
+    "SPY": 530, "QQQ": 450, "IWM": 205, "EEM": 43, "GLD": 220,
+    "^TNX": 4.35, "^TYX": 4.55, "KULR": 0.35, "LODE": 0.28,
+    "CTM": 0.42, "MVST": 1.85, "RGTI": 0.92, "QBTS": 1.15,
+    "IONQ": 3.45, "FFIE": 0.08, "SQQQ": 10.0, "LABD": 9.0,
+    "SOXS": 28.0, "ASTS": 4.20, "GSAT": 1.6, "RKLB": 3.80,
+    "HOLO": 1.25, "WULF": 1.55, "CLSK": 2.10, "MARA": 19.0,
+}
+
 
 def get_universe(config: dict) -> dict[str, list[str]]:
     """Get the pre-registered universe from config or fallback."""
@@ -102,7 +142,7 @@ def get_universe(config: dict) -> dict[str, list[str]]:
 # ── API callers ──
 
 def call_openai_api(
-    api_key: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call an OpenAI-compatible chat completions endpoint."""
     try:
@@ -129,7 +169,7 @@ def call_openai_api(
 
 
 def call_generic_openai_compat(
-    api_key: str, endpoint: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, endpoint: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call any OpenAI-compatible endpoint (OpenRouter, etc.)."""
     try:
@@ -156,7 +196,7 @@ def call_generic_openai_compat(
 
 
 def call_cerebras_sdk(
-    api_key: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call Cerebras via their Python SDK (bypasses REST IP blocks)."""
     try:
@@ -197,7 +237,7 @@ def call_cerebras_sdk(
 
 
 def call_anthropic_api(
-    api_key: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call Anthropic's messages API."""
     try:
@@ -480,6 +520,9 @@ def parse_picks_response(
             "stop_loss": sl,
             "thesis": pick.get("thesis", strategy_name),
             "data_source": pick.get("data_source", "ai_prediction"),
+            "generation_source": "model_api",
+            "api_status": "api_success",
+            "rank_eligible": True,
             "confidence": float(pick.get("confidence", 0.5)),
             "timeframe": pick.get("timeframe", f"{asset_class.lower()}_default"),
             "status": "OPEN",
@@ -491,6 +534,103 @@ def parse_picks_response(
             "persona_id": persona_id,
             "current_price": entry,
             "unrealized_pnl_pct": 0.0,
+        })
+
+    return picks
+
+
+def _fallback_direction(persona_id: str, rng: random.Random) -> str:
+    short_bias_personas = {
+        "gamma_raid",
+        "liquidity_grazer",
+        "forensic_short",
+        "correlation_breaker",
+        "distressed_asset",
+        "retail_momentum",
+    }
+    if persona_id in short_bias_personas and rng.random() < 0.35:
+        return "SHORT"
+    return "LONG"
+
+
+def _fallback_price_box(symbol: str, direction: str, rng: random.Random) -> tuple[float, float, float]:
+    base_price = BASE_PRICES.get(symbol, 10.0)
+    entry = base_price * (1.0 + rng.uniform(-0.01, 0.01))
+    reward_pct = rng.uniform(0.055, 0.12)
+    risk_pct = rng.uniform(0.025, 0.055)
+    if direction == "SHORT":
+        take_profit = entry * (1.0 - reward_pct)
+        stop_loss = entry * (1.0 + risk_pct)
+    else:
+        take_profit = entry * (1.0 + reward_pct)
+        stop_loss = entry * (1.0 - risk_pct)
+    return round(entry, 4), round(take_profit, 4), round(stop_loss, 4)
+
+
+def generate_assignment_fallback_picks(
+    config: dict,
+    model_id: str,
+    model_cfg: dict,
+    asset_class: str,
+    universe: list[str],
+    persona_id: str,
+    fallback_reason: str,
+) -> list[dict]:
+    """Generate explicit coverage picks when a configured model cannot be called.
+
+    These rows keep the tournament surface complete, but they are marked as
+    rank-excluded because they are not direct API outputs from the named model.
+    """
+    if not universe:
+        return []
+
+    seed = f"{today_str()}:{model_id}:{asset_class}:{persona_id}:{fallback_reason}"
+    rng = random.Random(seed)
+    symbols = rng.sample(universe, min(len(universe), FALLBACK_PICKS_PER_ASSIGNMENT))
+    now_iso = datetime.now(timezone.utc).isoformat()
+    strategy_name = PERSONA_STRATEGIES.get(persona_id, persona_id)
+    picks: list[dict] = []
+
+    for sym in symbols:
+        direction = _fallback_direction(persona_id, rng)
+        entry, take_profit, stop_loss = _fallback_price_box(sym, direction, rng)
+        thesis_options = PERSONA_THESIS_MAP.get(
+            persona_id, [f"{persona_id}: setup detected in {sym}"]
+        )
+        thesis = rng.choice(thesis_options)
+        picks.append({
+            "symbol": sym,
+            "asset_class": asset_class,
+            "direction": direction,
+            "entry_price": entry,
+            "take_profit": take_profit,
+            "stop_loss": stop_loss,
+            "thesis": thesis,
+            "data_source": "ai_tournament_coverage_fallback",
+            "generation_source": "coverage_fallback",
+            "api_status": fallback_reason,
+            "confidence": round(rng.uniform(0.52, 0.68), 2),
+            "timeframe": f"{config.get('resolution_windows_days', {}).get(asset_class, 14)}d",
+            "status": "OPEN",
+            "submitted_at": now_iso,
+            "model_id": model_id,
+            "provider": model_cfg.get("provider", "Unknown"),
+            "model_version": model_cfg.get("model_name", model_id),
+            "strategy_name": strategy_name,
+            "persona_id": persona_id,
+            "current_price": entry,
+            "unrealized_pnl_pct": 0.0,
+            "reason": (
+                f"Coverage fallback because {fallback_reason}; not rank-eligible "
+                f"until this model produces direct API submissions. Persona thesis: {thesis}"
+            ),
+            "rank_eligible": False,
+            "rank_exclusion_reason": (
+                "Coverage fallback generated by local tournament engine, not by the model API."
+            ),
+            "data_integrity_flag": "COVERAGE_FALLBACK_NOT_MODEL_API",
+            "market_supported": False,
+            "rating": "WATCH",
         })
 
     return picks
@@ -615,16 +755,7 @@ def generate_fallback_picks(config: dict) -> list[dict]:
                     # Pick 1-2 symbols from this asset class universe
                     symbols = random.sample(ac_universe, min(len(ac_universe), 2))
                     for sym in symbols:
-                        base_price = {
-                            "BTCUSDT": 67500, "ETHUSDT": 3500, "SOLUSDT": 145,
-                            "AAPL": 190, "MSFT": 420, "GOOGL": 175, "AMZN": 200, "NVDA": 880,
-                            "EURUSD": 1.0850, "GBPUSD": 1.2650, "GC=F": 2350, "SI=F": 28,
-                            "CL=F": 78, "NG=F": 2.10, "SPY": 530, "QQQ": 450,
-                            "^TNX": 4.35, "^TYX": 4.55,
-                            "KULR": 0.35, "LODE": 0.28, "CTM": 0.42, "MVST": 1.85,
-                            "RGTI": 0.92, "QBTS": 1.15, "IONQ": 3.45, "FFIE": 0.08,
-                            "ASTS": 4.20, "RKLB": 3.80, "WULF": 1.55, "CLSK": 2.10,
-                        }.get(sym, 10.0)
+                        base_price = BASE_PRICES.get(sym, 10.0)
 
                         # Generate persona-specific thesis
                         theses = PERSONA_THESIS_MAP.get(persona_id, [f"{persona_id}: setup detected in {sym}"])
@@ -668,7 +799,7 @@ def generate_fallback_picks(config: dict) -> list[dict]:
 
 def try_prompt_model(
     model_id: str, model_cfg: dict, asset_class: str, universe: list[str], persona_id: str = ""
-) -> list[dict]:
+) -> tuple[list[dict], str]:
     """Attempt to prompt a model for picks in an asset class."""
     api_key_env = model_cfg.get("api_key_env", "")
     api_key = os.environ.get(api_key_env, "")
@@ -676,34 +807,148 @@ def try_prompt_model(
     model_name = model_cfg.get("model_name", model_id)
     endpoint = model_cfg.get("endpoint", "")
 
+    label = f"{model_id}/{persona_id}/{asset_class}" if persona_id else f"{model_id}/{asset_class}"
+
     if not api_key:
-        return []
+        print(f"  [skip] {label}: missing {api_key_env}")
+        return [], "missing_api_key"
 
     messages = build_prompt(model_cfg, asset_class, universe, persona_id)
-    label = f"{model_id}/{persona_id}/{asset_class}" if persona_id else f"{model_id}/{asset_class}"
     print(f"  [prompt] {label} ({model_name})...")
 
     response = None
     if api_type == "openai":
-        response = call_openai_api(api_key, model_name, messages)
+        response = call_openai_api(
+            api_key, model_name, messages, timeout=API_TIMEOUT_SECONDS
+        )
     elif api_type == "anthropic":
-        response = call_anthropic_api(api_key, model_name, messages)
+        response = call_anthropic_api(
+            api_key, model_name, messages, timeout=API_TIMEOUT_SECONDS
+        )
     elif api_type == "openai_compat":
-        response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
+        response = call_generic_openai_compat(
+            api_key, endpoint, model_name, messages, timeout=API_TIMEOUT_SECONDS
+        )
     elif api_type == "deepseek":
-        response = call_generic_openai_compat(api_key, endpoint, model_name, messages)
+        response = call_generic_openai_compat(
+            api_key, endpoint, model_name, messages, timeout=API_TIMEOUT_SECONDS
+        )
     elif api_type == "cerebras":
-        response = call_cerebras_sdk(api_key, model_name, messages)
+        response = call_cerebras_sdk(
+            api_key, model_name, messages, timeout=API_TIMEOUT_SECONDS
+        )
     else:
         print(f"  [skip] {model_id}: unknown api_type '{api_type}'")
+        return [], "unknown_api_type"
 
     if response:
         picks = parse_picks_response(response, model_cfg, model_id, asset_class, persona_id)
         print(f"  [result] {label}: {len(picks)} picks")
-        return picks
+        if picks:
+            return picks, "api_success"
+        return [], "api_empty_response"
 
     print(f"  [fail] {label}: API call failed")
-    return []
+    return [], "api_failed"
+
+
+def build_prompt_tasks(
+    models: dict[str, dict], universe: dict[str, list[str]]
+) -> list[dict[str, Any]]:
+    """Create deterministic prompt tasks for model × persona × asset class."""
+    tasks: list[dict[str, Any]] = []
+    seq = 0
+    for model_id, model_cfg in models.items():
+        assignments = model_cfg.get("assignments", {})
+        for asset_class, persona_ids in assignments.items():
+            ac_universe = universe.get(asset_class, [])
+            if not ac_universe:
+                continue
+            for persona_id in persona_ids:
+                tasks.append(
+                    {
+                        "seq": seq,
+                        "model_id": model_id,
+                        "model_cfg": model_cfg,
+                        "asset_class": asset_class,
+                        "persona_id": persona_id,
+                        "universe": ac_universe,
+                        "key_bucket": model_cfg.get("api_key_env", "") or model_id,
+                    }
+                )
+                seq += 1
+    return tasks
+
+
+def collect_api_and_coverage_picks(
+    tasks: list[dict[str, Any]], config: dict[str, Any]
+) -> tuple[list[dict], dict[str, int], int]:
+    """Execute model prompt tasks concurrently with per-key throttling."""
+    if not tasks:
+        return [], {}, 0
+
+    semaphores = {
+        bucket: threading.Semaphore(MAX_WORKERS_PER_KEY)
+        for bucket in {task["key_bucket"] for task in tasks}
+    }
+    workers = min(MAX_WORKERS, len(tasks))
+    print(
+        f"[populate] Prompting {len(tasks)} assignments across {workers} workers "
+        f"(max {MAX_WORKERS_PER_KEY} per API key bucket)"
+    )
+
+    def run_task(task: dict[str, Any]) -> tuple[int, list[dict], str]:
+        semaphore = semaphores[task["key_bucket"]]
+        with semaphore:
+            picks, status = try_prompt_model(
+                task["model_id"],
+                task["model_cfg"],
+                task["asset_class"],
+                task["universe"],
+                task["persona_id"],
+            )
+            if not picks and COVERAGE_FALLBACK_ENABLED:
+                picks = generate_assignment_fallback_picks(
+                    config,
+                    task["model_id"],
+                    task["model_cfg"],
+                    task["asset_class"],
+                    task["universe"],
+                    task["persona_id"],
+                    status,
+                )
+                if picks:
+                    print(
+                        f"  [coverage] {task['model_id']}/{task['persona_id']}/{task['asset_class']}: "
+                        f"{len(picks)} fallback picks ({status})"
+                    )
+            if API_SLEEP_SECONDS > 0:
+                time.sleep(API_SLEEP_SECONDS)
+        return task["seq"], picks, status
+
+    ordered_results: list[tuple[int, list[dict], str]] = []
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        future_to_task = {executor.submit(run_task, task): task for task in tasks}
+        for future in as_completed(future_to_task):
+            task = future_to_task[future]
+            label = f"{task['model_id']}/{task['persona_id']}/{task['asset_class']}"
+            try:
+                ordered_results.append(future.result())
+            except Exception as exc:  # pragma: no cover - defensive logging
+                print(f"  [error] {label}: worker crashed: {exc}")
+                ordered_results.append((task["seq"], [], "worker_exception"))
+
+    all_picks: list[dict] = []
+    model_status_counts: dict[str, int] = {}
+    coverage_fallback_count = 0
+    for _seq, picks, status in sorted(ordered_results, key=lambda item: item[0]):
+        model_status_counts[status] = model_status_counts.get(status, 0) + 1
+        if picks:
+            all_picks.extend(picks)
+            coverage_fallback_count += sum(
+                1 for pick in picks if pick.get("generation_source") == "coverage_fallback"
+            )
+    return all_picks, model_status_counts, coverage_fallback_count
 
 
 # ── Submission writer (individual model envelopes for price tracker) ──
@@ -717,19 +962,56 @@ def write_submissions(all_picks: list[dict]) -> None:
     The price tracker reads from `submissions/` directory expecting envelope-format
     files per model: {"model_id": ..., "provider": ..., "submitted_at": ..., 
     "status": "OPEN", "picks": [...], "strategy_rationale": ...}
+
+    2026-05-28 fix: always emit a submission envelope for every model that was
+    *configured* (even if 0 picks succeeded). This makes /audit/ai-tournament.html
+    and the model drill-downs show the real coverage (e.g. "23 configured, only 3
+    produced valid picks today") instead of the page appearing to only know about
+    the 3 that happened to succeed. Previously silent no-op models were invisible.
     """
     SUBMISSIONS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Group by model_id
+    # Group by model_id from actual picks
     by_model: dict[str, list[dict]] = {}
     for p in all_picks:
         mid = p.get("model_id", "unknown")
         by_model.setdefault(mid, []).append(p)
 
+    # 2026-05-28 visibility fix for /audit/ai-tournament.html:
+    # Always emit a submission envelope for *every* model declared in the config,
+    # even if it produced zero valid picks today. This stops the page from looking
+    # like only 3 models exist when the mapping actually declares 23.
+    try:
+        full_config = load_config()
+        declared = set(full_config.get("models", {}).keys())
+        for mid in declared:
+            if mid not in by_model:
+                by_model[mid] = []   # empty → will get a clear "no_picks" envelope
+    except Exception:
+        pass  # non-fatal; we still write whatever we have
+
     for model_id, model_picks in by_model.items():
         # Build submission envelope matching the existing format
         provider = model_picks[0].get("provider", "") if model_picks else ""
-        submitted_at = model_picks[0].get("submitted_at", datetime.now(timezone.utc).isoformat())
+        submitted_at = model_picks[0].get("submitted_at", datetime.now(timezone.utc).isoformat()) if model_picks else datetime.now(timezone.utc).isoformat()
+
+        # 2026-05-28: when a configured model produced zero picks, still emit an
+        # envelope so the tournament page and drill-downs can show "attempted but failed"
+        # instead of the model being completely invisible (the old "only 3 models" symptom).
+        if not model_picks:
+            envelope = {
+                "model_id": model_id,
+                "provider": provider or "unknown",
+                "submitted_at": submitted_at,
+                "status": "no_picks_generated",
+                "reason": "API call failed, key missing, or response could not be parsed into valid picks",
+                "picks": [],
+                "n_attempted_personas": 0,
+            }
+            out_file = SUBMISSIONS_DIR / f"{model_id}_{today_str()}.json"
+            out_file.write_text(json.dumps(envelope, indent=2))
+            print(f"  [submission] {model_id}: 0 picks (recorded as no_picks_generated)")
+            continue
 
         # Extract pick bodies (strip envelope-only fields, keep per-pick fields)
         pick_bodies = []
@@ -773,6 +1055,13 @@ def write_submissions(all_picks: list[dict]) -> None:
                 # persona attribution all the way to merge_submissions_to_latest.
                 "persona_id": p.get("persona_id", ""),
                 "strategy_name": p.get("strategy_name", ""),
+                "generation_source": p.get("generation_source", "model_api"),
+                "api_status": p.get("api_status", "api_success"),
+                "rank_eligible": p.get("rank_eligible", True),
+                "rank_exclusion_reason": p.get("rank_exclusion_reason", ""),
+                "data_integrity_flag": p.get("data_integrity_flag", ""),
+                "current_price": p.get("current_price", p.get("entry_price", 0)),
+                "unrealized_pnl_pct": p.get("unrealized_pnl_pct", 0.0),
             }
             pick_bodies.append(body)
 
@@ -804,28 +1093,15 @@ def main() -> None:
     if already_generated():
         return
 
-    all_picks: list[dict] = []
-    api_success = False
-
     models = config.get("models", {})
+    tasks = build_prompt_tasks(models, universe)
+    all_picks, model_status_counts, coverage_fallback_count = (
+        collect_api_and_coverage_picks(tasks, config)
+    )
 
-    # Try each model for each assigned asset class × persona
-    for model_id, model_cfg in models.items():
-        assignments = model_cfg.get("assignments", {})
-        for asset_class, persona_ids in assignments.items():
-            ac_universe = universe.get(asset_class, [])
-            if not ac_universe:
-                continue
-            for persona_id in persona_ids:
-                picks = try_prompt_model(model_id, model_cfg, asset_class, ac_universe, persona_id)
-                if picks:
-                    api_success = True
-                    all_picks.extend(picks)
-                time.sleep(0.5)  # Rate limit between models
-
-    # If no API calls succeeded, use fallback
-    if not api_success or not all_picks:
-        print("[populate] No API picks generated — using fallback")
+    # If no API calls or coverage rows produced anything, use the legacy local fallback.
+    if not all_picks:
+        print("[populate] No API or coverage picks generated — using fallback")
         fallback = generate_fallback_picks(config)
         all_picks.extend(fallback)
 
@@ -972,11 +1248,105 @@ def main() -> None:
     print(f"[populate] Wrote {len(all_picks)} picks to {LATEST_PICKS.name}")
 
     # Write individual model submission files for the price tracker
-    write_submissions(all_picks)
+    write_submissions(all_picks)  # function now auto-discovers the full configured set
 
-    success_count = sum(1 for p in all_picks if p.get("model_id") != "alpha_engine" and p.get("model_id") != "tournament_synthetic")
-    fallback_count = len(all_picks) - success_count
-    print(f"[populate] Done. API-generated: {success_count}, Fallback: {fallback_count}, Total: {len(all_picks)}")
+    # ── Model attempt log: machine-readable coverage report for every configured model
+    emit_model_attempt_log(models, model_status_counts, all_picks)
+
+    api_generated_count = sum(1 for p in all_picks if p.get("generation_source") != "coverage_fallback" and p.get("model_id") not in ("alpha_engine", "tournament_synthetic"))
+    local_fallback_count = sum(1 for p in all_picks if p.get("model_id") in ("alpha_engine", "tournament_synthetic"))
+    print(f"[populate] Assignment statuses: {model_status_counts}")
+    print(
+        f"[populate] Done. API-generated: {api_generated_count}, "
+        f"Coverage fallback: {coverage_fallback_count}, Local fallback: {local_fallback_count}, "
+        f"Total: {len(all_picks)}"
+    )
+
+
+def emit_model_attempt_log(
+    models: dict,
+    model_status_counts: dict[str, int],
+    all_picks: list[dict],
+) -> None:
+    """Write a machine-readable manifest of every configured model's status.
+
+    This file is committed by ai-tournament-pipeline.yml so operators can
+    see at a glance which models succeeded, failed, or were missing keys —
+    without having to dig through runner logs.
+
+    Output: data/ai_tournament/model_attempt_log.json
+    """
+    picks_by_model: dict[str, int] = {}
+    api_picks_by_model: dict[str, int] = {}
+    coverage_picks_by_model: dict[str, int] = {}
+    for p in all_picks:
+        mid = p.get("model_id", "unknown")
+        picks_by_model[mid] = picks_by_model.get(mid, 0) + 1
+        if p.get("generation_source") == "coverage_fallback":
+            coverage_picks_by_model[mid] = coverage_picks_by_model.get(mid, 0) + 1
+        else:
+            api_picks_by_model[mid] = api_picks_by_model.get(mid, 0) + 1
+
+    model_details = []
+    for model_id, model_cfg in models.items():
+        n_picks = picks_by_model.get(model_id, 0)
+        api_picks = api_picks_by_model.get(model_id, 0)
+        coverage_picks = coverage_picks_by_model.get(model_id, 0)
+        has_api_key = bool(os.environ.get(model_cfg.get("api_key_env", ""), ""))
+
+        if api_picks > 0 and coverage_picks > 0:
+            status = "partial_success_with_coverage_fallback"
+        elif api_picks > 0:
+            status = "success"
+        elif coverage_picks > 0 and has_api_key:
+            status = "api_failed_or_empty_coverage_fallback"
+        elif coverage_picks > 0:
+            status = "missing_api_key_coverage_fallback"
+        elif has_api_key:
+            status = "api_failed_no_picks"
+        else:
+            status = "missing_api_key"
+
+        model_details.append({
+            "model_id": model_id,
+            "provider": model_cfg.get("provider", "Unknown"),
+            "model_name": model_cfg.get("model_name", model_id),
+            "status": status,
+            "picks_generated": n_picks,
+            "api_picks": api_picks,
+            "coverage_fallback_picks": coverage_picks,
+            "has_api_key": has_api_key,
+            "assignment_count": sum(len(v) for v in model_cfg.get("assignments", {}).values()),
+        })
+
+    # Also include the alpha_engine model that shows up in picks but isn't in config
+    for extra_mid in set(picks_by_model.keys()) - set(models.keys()):
+        model_details.append({
+            "model_id": extra_mid,
+            "provider": "fallback",
+            "model_name": extra_mid,
+            "status": "fallback",
+            "picks_generated": picks_by_model[extra_mid],
+            "api_picks": api_picks_by_model.get(extra_mid, 0),
+            "coverage_fallback_picks": coverage_picks_by_model.get(extra_mid, 0),
+            "has_api_key": False,
+            "assignment_count": 0,
+        })
+
+    log_entry = {
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "total_configured": len(models),
+        "assignment_status_counts": model_status_counts,
+        "models_with_keys": sum(1 for d in model_details if d["has_api_key"]),
+        "models_succeeded": sum(1 for d in model_details if d["api_picks"] > 0),
+        "total_picks": len(all_picks),
+        "models": sorted(model_details, key=lambda m: (-m["picks_generated"], m["model_id"])),
+    }
+
+    LOG_PATH = PICKS_DIR / "model_attempt_log.json"
+    LOG_PATH.write_text(json.dumps(log_entry, indent=2))
+    print(f"[attempt_log] Wrote {len(model_details)} model entries → {LOG_PATH.name} (succeeded={log_entry['models_succeeded']}/{log_entry['total_configured']})")
 
 
 def load_existing_picks() -> list[dict]:
