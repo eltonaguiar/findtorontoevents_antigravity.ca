@@ -37,6 +37,12 @@ ACTIVE_PICKS = REPO_ROOT / "alpha_engine" / "data" / "active_picks.json"
 SMART_PICKS = REPO_ROOT / "alpha_engine" / "data" / "smart_picks.json"
 
 FORCE_REGENERATE = os.environ.get("FORCE_REGENERATE", "false").lower() in ("true", "1", "yes")
+COVERAGE_FALLBACK_ENABLED = os.environ.get(
+    "AI_TOURNAMENT_COVERAGE_FALLBACK_ENABLED", "true"
+).lower() in ("true", "1", "yes")
+API_TIMEOUT_SECONDS = int(os.environ.get("AI_TOURNAMENT_API_TIMEOUT_SECONDS", "25"))
+API_SLEEP_SECONDS = float(os.environ.get("AI_TOURNAMENT_API_SLEEP_SECONDS", "0.2"))
+FALLBACK_PICKS_PER_ASSIGNMENT = max(1, int(os.environ.get("AI_TOURNAMENT_FALLBACK_PICKS_PER_ASSIGNMENT", "1")))
 
 
 def load_config() -> dict[str, Any]:
@@ -66,6 +72,14 @@ def already_generated() -> bool:
     if path.exists():
         data = json.loads(path.read_text())
         if isinstance(data, list) and len(data) > 0:
+            configured_count = len((load_config().get("models") or {}))
+            model_count = len({p.get("model_id") for p in data if p.get("model_id")})
+            if configured_count and model_count < configured_count:
+                print(
+                    f"[populate] Today's picks only cover {model_count}/{configured_count} "
+                    "configured models — regenerating for full fleet coverage"
+                )
+                return False
             print(f"[populate] Today's picks already exist at {path.name} ({len(data)} picks)")
             return True
     return False
@@ -93,6 +107,71 @@ DEFAULT_UNIVERSE: dict[str, list[str]] = {
     ],
 }
 
+BASE_PRICES: dict[str, float] = {
+    "BTCUSDT": 67500,
+    "ETHUSDT": 3500,
+    "SOLUSDT": 145,
+    "BNBUSDT": 590,
+    "XRPUSDT": 0.52,
+    "ADAUSDT": 0.45,
+    "AVAXUSDT": 34,
+    "DOTUSDT": 7.2,
+    "LINKUSDT": 18,
+    "LTCUSDT": 85,
+    "AAPL": 190,
+    "MSFT": 420,
+    "GOOGL": 175,
+    "AMZN": 200,
+    "NVDA": 880,
+    "META": 480,
+    "TSLA": 180,
+    "JPM": 200,
+    "V": 275,
+    "JNJ": 150,
+    "WMT": 65,
+    "MA": 450,
+    "PG": 165,
+    "DIS": 105,
+    "NFLX": 620,
+    "EURUSD": 1.0850,
+    "GBPUSD": 1.2650,
+    "USDJPY": 156.0,
+    "AUDUSD": 0.66,
+    "USDCHF": 0.91,
+    "GC=F": 2350,
+    "SI=F": 28,
+    "CL=F": 78,
+    "NG=F": 2.10,
+    "HG=F": 4.6,
+    "SPY": 530,
+    "QQQ": 450,
+    "IWM": 205,
+    "EEM": 42,
+    "GLD": 218,
+    "^TNX": 4.35,
+    "^TYX": 4.55,
+    "KULR": 0.35,
+    "LODE": 0.28,
+    "CTM": 0.42,
+    "MVST": 1.85,
+    "RGTI": 0.92,
+    "QBTS": 1.15,
+    "IONQ": 3.45,
+    "FFIE": 0.08,
+    "SQQQ": 8.5,
+    "LABD": 7.5,
+    "SOXS": 20,
+    "ASTS": 4.20,
+    "GSAT": 1.3,
+    "RKLB": 3.80,
+    "HOLO": 1.2,
+    "CRKN": 0.12,
+    "WULF": 1.55,
+    "CLSK": 2.10,
+    "MARA": 20,
+    "AGBA": 2.1,
+}
+
 
 def get_universe(config: dict) -> dict[str, list[str]]:
     """Get the pre-registered universe from config or fallback."""
@@ -102,7 +181,7 @@ def get_universe(config: dict) -> dict[str, list[str]]:
 # ── API callers ──
 
 def call_openai_api(
-    api_key: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call an OpenAI-compatible chat completions endpoint."""
     try:
@@ -129,7 +208,7 @@ def call_openai_api(
 
 
 def call_generic_openai_compat(
-    api_key: str, endpoint: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, endpoint: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call any OpenAI-compatible endpoint (OpenRouter, etc.)."""
     try:
@@ -156,7 +235,7 @@ def call_generic_openai_compat(
 
 
 def call_cerebras_sdk(
-    api_key: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call Cerebras via their Python SDK (bypasses REST IP blocks)."""
     try:
@@ -197,7 +276,7 @@ def call_cerebras_sdk(
 
 
 def call_anthropic_api(
-    api_key: str, model: str, messages: list[dict], timeout: int = 60
+    api_key: str, model: str, messages: list[dict], timeout: int = API_TIMEOUT_SECONDS
 ) -> dict | None:
     """Call Anthropic's messages API."""
     try:
@@ -491,6 +570,117 @@ def parse_picks_response(
             "persona_id": persona_id,
             "current_price": entry,
             "unrealized_pnl_pct": 0.0,
+            "generation_source": "model_api",
+            "api_status": "api_success",
+            "rank_eligible": True,
+        })
+
+    return picks
+
+
+def _price_precision(price: float) -> int:
+    """Keep low-priced symbols readable without over-rounding."""
+    return 4 if price < 1 else 2
+
+
+def _fallback_direction(persona_id: str, rng: random.Random) -> str:
+    """Pick a deterministic coverage direction with persona-aware short bias."""
+    short_bias_personas = {
+        "forensic_short",
+        "gamma_raid",
+        "liquidity_grazer",
+        "distressed_asset",
+        "deep_value_gambler",
+        "flight_to_safety",
+    }
+    if persona_id in short_bias_personas and rng.random() < 0.45:
+        return "SHORT"
+    return "SHORT" if rng.random() < 0.18 else "LONG"
+
+
+def _fallback_price_box(symbol: str, direction: str, rng: random.Random) -> tuple[float, float, float]:
+    """Generate a plausible entry/TP/SL box for rank-excluded coverage rows."""
+    base_price = BASE_PRICES.get(symbol, 10.0)
+    entry = base_price * (1.0 + rng.uniform(-0.012, 0.012))
+    tp_dist = entry * rng.uniform(0.045, 0.095)
+    sl_dist = entry * rng.uniform(0.0225, 0.05)
+    precision = _price_precision(entry)
+    if direction == "SHORT":
+        take_profit = max(0.0001, entry - tp_dist)
+        stop_loss = entry + sl_dist
+    else:
+        take_profit = entry + tp_dist
+        stop_loss = max(0.0001, entry - sl_dist)
+    return (
+        round(entry, precision),
+        round(take_profit, precision),
+        round(stop_loss, precision),
+    )
+
+
+def generate_assignment_fallback_picks(
+    config: dict,
+    model_id: str,
+    model_cfg: dict,
+    asset_class: str,
+    universe: list[str],
+    persona_id: str,
+    fallback_reason: str,
+) -> list[dict]:
+    """Create explicit unranked coverage rows when one model assignment cannot produce API picks."""
+    if not universe:
+        return []
+
+    seed = f"{today_str()}:{model_id}:{asset_class}:{persona_id}:{fallback_reason}"
+    rng = random.Random(seed)
+    n_symbols = min(len(universe), FALLBACK_PICKS_PER_ASSIGNMENT)
+    symbols = rng.sample(universe, n_symbols)
+    strategy_name = PERSONA_STRATEGIES.get(persona_id, persona_id)
+    timeframe = f"{config.get('resolution_windows_days', {}).get(asset_class, 14)}d"
+    now_iso = datetime.now(timezone.utc).isoformat()
+    picks: list[dict] = []
+
+    for symbol in symbols:
+        direction = _fallback_direction(persona_id, rng)
+        entry, take_profit, stop_loss = _fallback_price_box(symbol, direction, rng)
+        thesis_options = PERSONA_THESIS_MAP.get(
+            persona_id,
+            [f"{persona_id}: rank-excluded coverage setup for {symbol}"],
+        )
+        thesis = rng.choice(thesis_options)
+        reason = (
+            f"Coverage fallback only: {model_id} did not return a usable model API pick "
+            f"for {asset_class}/{persona_id} ({fallback_reason}). This row keeps the "
+            "configured model fleet visible, but it is excluded from leaderboard scoring."
+        )
+        picks.append({
+            "symbol": symbol,
+            "asset_class": asset_class,
+            "direction": direction,
+            "entry_price": entry,
+            "take_profit": take_profit,
+            "stop_loss": stop_loss,
+            "thesis": thesis,
+            "data_source": "ai_tournament_coverage_fallback",
+            "confidence": 0.35,
+            "rating": "WATCH",
+            "market_supported": False,
+            "timeframe": timeframe,
+            "status": "OPEN",
+            "submitted_at": now_iso,
+            "model_id": model_id,
+            "provider": model_cfg.get("provider", "Unknown"),
+            "model_version": model_cfg.get("model_name", model_id),
+            "strategy_name": strategy_name,
+            "persona_id": persona_id,
+            "current_price": entry,
+            "unrealized_pnl_pct": 0.0,
+            "reason": reason,
+            "generation_source": "coverage_fallback",
+            "api_status": fallback_reason,
+            "rank_eligible": False,
+            "rank_exclusion_reason": "Coverage fallback generated by local tournament engine, not by the model API.",
+            "data_integrity_flag": "COVERAGE_FALLBACK_NOT_MODEL_API",
         })
 
     return picks
@@ -555,6 +745,11 @@ def generate_fallback_picks(config: dict) -> list[dict]:
                 "persona_id": "alpha_consensus",
                 "current_price": entry,
                 "unrealized_pnl_pct": 0.0,
+                "generation_source": "local_fallback",
+                "api_status": "fleet_api_failed",
+                "rank_eligible": False,
+                "rank_exclusion_reason": "Local fallback generated after no model API picks were available.",
+                "data_integrity_flag": "LOCAL_FALLBACK_NOT_MODEL_API",
             })
 
     # If still no picks, try active_picks.json
@@ -596,6 +791,11 @@ def generate_fallback_picks(config: dict) -> list[dict]:
                         "persona_id": "alpha_consensus",
                         "current_price": entry,
                         "unrealized_pnl_pct": 0.0,
+                        "generation_source": "local_fallback",
+                        "api_status": "fleet_api_failed",
+                        "rank_eligible": False,
+                        "rank_exclusion_reason": "Local fallback generated after no model API picks were available.",
+                        "data_integrity_flag": "LOCAL_FALLBACK_NOT_MODEL_API",
                     })
         except Exception:
             pass
@@ -615,16 +815,7 @@ def generate_fallback_picks(config: dict) -> list[dict]:
                     # Pick 1-2 symbols from this asset class universe
                     symbols = random.sample(ac_universe, min(len(ac_universe), 2))
                     for sym in symbols:
-                        base_price = {
-                            "BTCUSDT": 67500, "ETHUSDT": 3500, "SOLUSDT": 145,
-                            "AAPL": 190, "MSFT": 420, "GOOGL": 175, "AMZN": 200, "NVDA": 880,
-                            "EURUSD": 1.0850, "GBPUSD": 1.2650, "GC=F": 2350, "SI=F": 28,
-                            "CL=F": 78, "NG=F": 2.10, "SPY": 530, "QQQ": 450,
-                            "^TNX": 4.35, "^TYX": 4.55,
-                            "KULR": 0.35, "LODE": 0.28, "CTM": 0.42, "MVST": 1.85,
-                            "RGTI": 0.92, "QBTS": 1.15, "IONQ": 3.45, "FFIE": 0.08,
-                            "ASTS": 4.20, "RKLB": 3.80, "WULF": 1.55, "CLSK": 2.10,
-                        }.get(sym, 10.0)
+                        base_price = BASE_PRICES.get(sym, 10.0)
 
                         # Generate persona-specific thesis
                         theses = PERSONA_THESIS_MAP.get(persona_id, [f"{persona_id}: setup detected in {sym}"])
@@ -659,6 +850,11 @@ def generate_fallback_picks(config: dict) -> list[dict]:
                             "current_price": round(entry, 2),
                             "unrealized_pnl_pct": 0.0,
                             "reason": thesis,
+                            "generation_source": "local_fallback",
+                            "api_status": "fleet_api_failed",
+                            "rank_eligible": False,
+                            "rank_exclusion_reason": "Local fallback generated after no model API picks were available.",
+                            "data_integrity_flag": "LOCAL_FALLBACK_NOT_MODEL_API",
                         })
 
         print(f"[populate] Generated {len(picks)} persona-differentiated picks across {len(config.get('models', {}))} models")
@@ -668,19 +864,20 @@ def generate_fallback_picks(config: dict) -> list[dict]:
 
 def try_prompt_model(
     model_id: str, model_cfg: dict, asset_class: str, universe: list[str], persona_id: str = ""
-) -> list[dict]:
+) -> tuple[list[dict], str]:
     """Attempt to prompt a model for picks in an asset class."""
-    api_key_env = model_cfg.get("api_key_env", "")
+    api_key_env = model_cfg.get("api_key_env") or ""
     api_key = os.environ.get(api_key_env, "")
     api_type = model_cfg.get("api_type", "")
     model_name = model_cfg.get("model_name", model_id)
     endpoint = model_cfg.get("endpoint", "")
+    label = f"{model_id}/{persona_id}/{asset_class}" if persona_id else f"{model_id}/{asset_class}"
 
     if not api_key:
-        return []
+        print(f"  [skip] {label}: missing API key env {api_key_env or '(unset)'}")
+        return [], "missing_api_key"
 
     messages = build_prompt(model_cfg, asset_class, universe, persona_id)
-    label = f"{model_id}/{persona_id}/{asset_class}" if persona_id else f"{model_id}/{asset_class}"
     print(f"  [prompt] {label} ({model_name})...")
 
     response = None
@@ -696,14 +893,17 @@ def try_prompt_model(
         response = call_cerebras_sdk(api_key, model_name, messages)
     else:
         print(f"  [skip] {model_id}: unknown api_type '{api_type}'")
+        return [], "unknown_api_type"
 
     if response:
         picks = parse_picks_response(response, model_cfg, model_id, asset_class, persona_id)
         print(f"  [result] {label}: {len(picks)} picks")
-        return picks
+        if picks:
+            return picks, "api_success"
+        return [], "api_empty_response"
 
     print(f"  [fail] {label}: API call failed")
-    return []
+    return [], "api_failed"
 
 
 # ── Submission writer (individual model envelopes for price tracker) ──
@@ -763,6 +963,13 @@ def write_submissions(all_picks: list[dict]) -> None:
                 "status": p.get("status", "OPEN"),
                 "submitted_at": p.get("submitted_at", submitted_at),
                 "model_id": model_id,
+                "generation_source": p.get("generation_source", "model_api"),
+                "api_status": p.get("api_status", ""),
+                "rank_eligible": p.get("rank_eligible", True),
+                "rank_exclusion_reason": p.get("rank_exclusion_reason", ""),
+                "data_integrity_flag": p.get("data_integrity_flag", ""),
+                "current_price": p.get("current_price", p.get("entry_price", 0)),
+                "unrealized_pnl_pct": p.get("unrealized_pnl_pct", 0.0),
                 # 2026-05-27 fix: persona_id was assigned at pick generation
                 # (line ~491) but stripped on submission write. Result: 0/N of
                 # submissions/*.json had persona_id populated → backfill step
@@ -791,6 +998,78 @@ def write_submissions(all_picks: list[dict]) -> None:
         print(f"  [submission] Wrote {len(pick_bodies)} picks → {out_file.name}")
 
 
+def emit_model_attempt_log(
+    models: dict[str, dict],
+    assignment_status_counts: dict[str, int],
+    all_picks: list[dict],
+) -> None:
+    """Write model coverage diagnostics for the workflow log and dashboard debugging."""
+    by_model: dict[str, list[dict]] = {}
+    for pick in all_picks:
+        by_model.setdefault(pick.get("model_id", "unknown"), []).append(pick)
+
+    model_rows: list[dict[str, Any]] = []
+    for model_id, model_cfg in models.items():
+        model_picks = by_model.get(model_id, [])
+        assignments = model_cfg.get("assignments") or {}
+        assignment_count = sum(len(persona_ids or []) for persona_ids in assignments.values())
+        api_picks = sum(1 for p in model_picks if p.get("generation_source") == "model_api")
+        coverage_fallback_picks = sum(1 for p in model_picks if p.get("generation_source") == "coverage_fallback")
+        local_fallback_picks = sum(1 for p in model_picks if p.get("generation_source") == "local_fallback")
+        api_key_env = model_cfg.get("api_key_env") or ""
+        api_key_present = bool(os.environ.get(api_key_env, ""))
+
+        if api_picks and coverage_fallback_picks:
+            status = "partial_success_with_coverage_fallback"
+        elif api_picks:
+            status = "success"
+        elif coverage_fallback_picks and api_key_present:
+            status = "api_failed_or_empty_coverage_fallback"
+        elif coverage_fallback_picks:
+            status = "missing_api_key_coverage_fallback"
+        elif api_key_present:
+            status = "api_failed_no_picks"
+        else:
+            status = "missing_api_key"
+
+        model_rows.append({
+            "model_id": model_id,
+            "provider": model_cfg.get("provider", ""),
+            "model_version": model_cfg.get("model_name", model_id),
+            "api_key_env": api_key_env,
+            "api_key_present": api_key_present,
+            "assignment_count": assignment_count,
+            "status": status,
+            "api_picks": api_picks,
+            "coverage_fallback_picks": coverage_fallback_picks,
+            "local_fallback_picks": local_fallback_picks,
+            "total_picks": len(model_picks),
+        })
+
+    out = {
+        "date": today_str(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "total_configured": len(models),
+        "assignment_status_counts": dict(sorted(assignment_status_counts.items())),
+        "models_with_keys": sum(1 for cfg in models.values() if os.environ.get(cfg.get("api_key_env", ""), "")),
+        "models_succeeded": sum(1 for row in model_rows if row["api_picks"] > 0),
+        "total_picks": len(all_picks),
+        "models": sorted(
+            model_rows,
+            key=lambda row: (row["api_picks"], row["coverage_fallback_picks"], row["model_id"]),
+            reverse=True,
+        ),
+    }
+    PICKS_DIR.mkdir(parents=True, exist_ok=True)
+    out_file = PICKS_DIR / "model_attempt_log.json"
+    out_file.write_text(json.dumps(out, indent=2))
+    print(
+        "[populate] Model attempt log: "
+        f"{out['models_succeeded']}/{out['total_configured']} API models succeeded, "
+        f"{sum(row['coverage_fallback_picks'] for row in model_rows)} coverage fallback picks"
+    )
+
+
 # ── Main ──
 
 def main() -> None:
@@ -805,29 +1084,46 @@ def main() -> None:
         return
 
     all_picks: list[dict] = []
-    api_success = False
+    generated_picks: list[dict] = []
+    assignment_status_counts: dict[str, int] = {}
 
     models = config.get("models", {})
 
     # Try each model for each assigned asset class × persona
     for model_id, model_cfg in models.items():
-        assignments = model_cfg.get("assignments", {})
+        assignments = model_cfg.get("assignments") or {}
         for asset_class, persona_ids in assignments.items():
             ac_universe = universe.get(asset_class, [])
             if not ac_universe:
                 continue
-            for persona_id in persona_ids:
-                picks = try_prompt_model(model_id, model_cfg, asset_class, ac_universe, persona_id)
+            for persona_id in persona_ids or []:
+                picks, status = try_prompt_model(model_id, model_cfg, asset_class, ac_universe, persona_id)
+                assignment_status_counts[status] = assignment_status_counts.get(status, 0) + 1
                 if picks:
-                    api_success = True
                     all_picks.extend(picks)
-                time.sleep(0.5)  # Rate limit between models
+                    generated_picks.extend(picks)
+                elif COVERAGE_FALLBACK_ENABLED:
+                    fallback = generate_assignment_fallback_picks(
+                        config,
+                        model_id,
+                        model_cfg,
+                        asset_class,
+                        ac_universe,
+                        persona_id,
+                        status,
+                    )
+                    if fallback:
+                        all_picks.extend(fallback)
+                        generated_picks.extend(fallback)
+                        print(f"  [coverage] {model_id}/{persona_id}/{asset_class}: {len(fallback)} unranked fallback pick")
+                time.sleep(API_SLEEP_SECONDS)  # Rate limit between models
 
-    # If no API calls succeeded, use fallback
-    if not api_success or not all_picks:
+    # If nothing at all was generated, use the historical local-data fallback.
+    if not all_picks:
         print("[populate] No API picks generated — using fallback")
         fallback = generate_fallback_picks(config)
         all_picks.extend(fallback)
+        generated_picks.extend(fallback)
 
     # Add existing picks from previous days (carry forward still-open ones)
     existing_picks = load_existing_picks()
@@ -973,10 +1269,16 @@ def main() -> None:
 
     # Write individual model submission files for the price tracker
     write_submissions(all_picks)
+    emit_model_attempt_log(models, assignment_status_counts, generated_picks)
 
-    success_count = sum(1 for p in all_picks if p.get("model_id") != "alpha_engine" and p.get("model_id") != "tournament_synthetic")
-    fallback_count = len(all_picks) - success_count
-    print(f"[populate] Done. API-generated: {success_count}, Fallback: {fallback_count}, Total: {len(all_picks)}")
+    api_count = sum(1 for p in all_picks if p.get("generation_source") == "model_api")
+    coverage_count = sum(1 for p in all_picks if p.get("generation_source") == "coverage_fallback")
+    local_fallback_count = sum(1 for p in all_picks if p.get("generation_source") == "local_fallback")
+    print(
+        "[populate] Done. "
+        f"API-generated: {api_count}, Coverage fallback: {coverage_count}, "
+        f"Local fallback: {local_fallback_count}, Total: {len(all_picks)}"
+    )
 
 
 def load_existing_picks() -> list[dict]:

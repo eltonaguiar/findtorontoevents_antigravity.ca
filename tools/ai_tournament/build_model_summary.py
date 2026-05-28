@@ -26,6 +26,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 PICKS = REPO / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
 OUT = REPO / "audit_dashboard" / "data" / "ai_tournament_model_summary.json"
+CONFIG = REPO / "config" / "model_persona_mapping.json"
 
 
 def _pnl(p: dict) -> float | None:
@@ -39,25 +40,47 @@ def _pnl(p: dict) -> float | None:
     return None
 
 
+def _rank_excluded(p: dict) -> bool:
+    return p.get("rank_eligible", True) is False or p.get("generation_source") == "coverage_fallback"
+
+
+def _new_model(model_id: str, provider: str = "", declared: bool = False) -> dict:
+    return {
+        "model_id": model_id,
+        "provider": provider,
+        "total_picks": 0,
+        "scored_picks": 0,
+        "coverage_fallback_picks": 0,
+        "resolved": 0,
+        "wins": 0,
+        "losses": 0,
+        "_pnls": [],
+        "_personas": set(),
+        "_classes": set(),
+        "last_pick": None,
+        "has_data": False,
+        "_declared": declared,
+    }
+
+
 def build() -> dict:
-    picks = json.loads(PICKS.read_text())
+    picks = json.loads(PICKS.read_text()) if PICKS.exists() else []
     by_model: dict[str, dict] = {}
+
+    if CONFIG.exists():
+        try:
+            cfg = json.loads(CONFIG.read_text())
+            for mid, model_cfg in (cfg.get("models") or {}).items():
+                by_model[mid] = _new_model(mid, model_cfg.get("provider", ""), declared=True)
+        except Exception:
+            pass
+
     for p in picks:
         mid = p.get("model_id") or "unknown"
-        m = by_model.setdefault(
-            mid,
-            {
-                "model_id": mid,
-                "total_picks": 0,
-                "resolved": 0,
-                "wins": 0,
-                "losses": 0,
-                "_pnls": [],
-                "_personas": set(),
-                "_classes": set(),
-                "last_pick": None,
-            },
-        )
+        m = by_model.setdefault(mid, _new_model(mid, p.get("provider", ""), declared=False))
+        if p.get("provider") and not m.get("provider"):
+            m["provider"] = p.get("provider")
+        m["has_data"] = True
         m["total_picks"] += 1
         if p.get("persona_id"):
             m["_personas"].add(p["persona_id"])
@@ -66,6 +89,10 @@ def build() -> dict:
         ts = p.get("submitted_at") or ""
         if ts and (m["last_pick"] is None or ts > m["last_pick"]):
             m["last_pick"] = ts
+        if _rank_excluded(p):
+            m["coverage_fallback_picks"] += 1
+            continue
+        m["scored_picks"] += 1
         status = p.get("status")
         if status in ("WIN", "LOSS", "EXPIRED"):
             m["resolved"] += 1
@@ -85,7 +112,10 @@ def build() -> dict:
         out_models.append(
             {
                 "model_id": m["model_id"],
+                "provider": m["provider"],
                 "total_picks": m["total_picks"],
+                "scored_picks": m["scored_picks"],
+                "coverage_fallback_picks": m["coverage_fallback_picks"],
                 "resolved": resolved,
                 "wins": wins,
                 "losses": m["losses"],
@@ -94,14 +124,17 @@ def build() -> dict:
                 "last_pick": m["last_pick"],
                 "personas": len(m["_personas"]),
                 "asset_classes": len(m["_classes"]),
+                "has_data": m["has_data"],
             }
         )
-    out_models.sort(key=lambda x: x["total_picks"], reverse=True)
+    out_models.sort(key=lambda x: (x["total_picks"], x["model_id"]), reverse=True)
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "n_models": len(out_models),
         "n_picks_total": sum(m["total_picks"] for m in out_models),
+        "n_scored_picks": sum(m["scored_picks"] for m in out_models),
+        "n_coverage_fallback_picks": sum(m["coverage_fallback_picks"] for m in out_models),
         "n_resolved": sum(m["resolved"] for m in out_models),
         "models": out_models,
     }
@@ -109,8 +142,7 @@ def build() -> dict:
 
 def main() -> None:
     if not PICKS.exists():
-        print(f"[model_summary] no picks file at {PICKS} — skipping")
-        return
+        print(f"[model_summary] no picks file at {PICKS} — writing configured model shell")
     summary = build()
     OUT.write_text(json.dumps(summary, indent=2))
     print(

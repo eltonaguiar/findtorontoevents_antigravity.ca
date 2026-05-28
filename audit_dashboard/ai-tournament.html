@@ -252,7 +252,7 @@
 <div class="method-box">
   <p>Every model is assigned <strong>2–5 personas</strong> per asset class. A persona is a pre-registered strategy lens (entry/exit rules, R:R targets, market-condition fit). The same model can submit different picks under different personas — that's how we measure whether a model is good at, e.g., <em>mean reversion</em> vs <em>breakout trading</em>.</p>
   <p class="small" style="margin-top:6px">Canonical source: <code>tools/ai_tournament/persona_registry.py</code> + per-model assignments in <code>config/model_persona_mapping.json</code>. Drill into any model on the table above (click model name) to see its per-persona win-rate breakdown.</p>
-  <h3 style="margin-top:14px">Personas active in production (23 unique across 7 models, snapshot 2026-05-25)</h3>
+  <h3 style="margin-top:14px">Personas active in production (23 unique across 23 configured models, snapshot 2026-05-28)</h3>
   <div class="universe-grid">
     <div class="universe-class"><strong>Technical / momentum</strong><span>momentum_scalp · trend_follower · breakout_scanner · momentum_momentum · cross_sectional_momentum · systematic_momentum · volatility_breakout · bayesian_breakout</span></div>
     <div class="universe-class"><strong>Mean reversion / value</strong><span>mean_reversion · value_investor · quality_compound · growth_at_reasonable_price · bankruptcy_recovery</span></div>
@@ -477,10 +477,14 @@ function calcModelStats(picks) {
     const mid = p.model_id || 'unknown';
     if (!models[mid]) {
       models[mid] = { model_id: mid, provider: p.provider || '', n_picks: 0, n_resolved: 0, n_wins: 0,
-        sum_gains: 0, sum_losses: 0, tier: 'BUILDING', rank_eligible: false, rank: null };
+        n_rank_excluded: 0, sum_gains: 0, sum_losses: 0, tier: 'BUILDING', rank_eligible: false, rank: null };
     }
     const m = models[mid];
     m.n_picks++;
+    if (p.rank_eligible === false || p.generation_source === 'coverage_fallback') {
+      m.n_rank_excluded++;
+      continue;
+    }
     if (p.status === 'WIN') {
       m.n_resolved++;
       m.n_wins++;
@@ -563,11 +567,12 @@ function renderLeaderboard(models) {
 
   pending.forEach(m => {
     const totalN = models.filter(x => x.rank_eligible).length;
+    const coverageNote = m.n_rank_excluded ? ` · ${m.n_rank_excluded} coverage fallback` : '';
     tbody.innerHTML += `<tr style="opacity:0.5">
       <td class="rank">—</td>
       <td class="model-name">${esc(m.model_id)}</td>
       <td><span class="provider">${esc(m.provider)}</span></td>
-      <td class="num pnl-neu" colspan="6">n=${m.n_resolved} / need 30 to rank</td>
+      <td class="num pnl-neu" colspan="6">n=${m.n_resolved} / need 30 to rank${coverageNote}</td>
       <td><span class="badge b-pending">BUILDING</span></td>
       <td></td>
     </tr>`;

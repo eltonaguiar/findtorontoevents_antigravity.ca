@@ -95,8 +95,15 @@ def main() -> None:
 
     models = []
     for model_id, model_picks in by_model.items():
-        resolved = [p for p in model_picks if p.get("status") not in ("OPEN",)]
+        scored_picks = [
+            p for p in model_picks
+            if p.get("rank_eligible", True) is not False
+            and p.get("generation_source") != "coverage_fallback"
+        ]
+        coverage_fallback_picks = len(model_picks) - len(scored_picks)
+        resolved = [p for p in scored_picks if p.get("status") not in ("OPEN",)]
         n_total = len(model_picks)
+        n_scored = len(scored_picks)
         n_resolved = len(resolved)
 
         pnls = [p["pnl_pct"] for p in resolved if p.get("pnl_pct") is not None]
@@ -120,6 +127,8 @@ def main() -> None:
             "provider": provider,
             "model_version": model_version,
             "n_picks": n_total,
+            "n_scored_picks": n_scored,
+            "n_coverage_fallback_picks": coverage_fallback_picks,
             "n_resolved": n_resolved,
             "n_wins": n_wins,
             "wr": round(wr, 4),
