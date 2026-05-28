@@ -171,6 +171,11 @@ MAX_SYMBOL_CONCENTRATION_BY_CLASS: dict[str, float] = {
 # class-level edge — cap at WATCH to require source diversification before
 # any MONEY_READY verdict.
 # Ref: reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #3.
+# 2026-05-28 Tier-1: the full set of asset classes /audit tracks. Every one
+# must appear in money_ready_verdict.json even at n=0 (as INSUFFICIENT_DATA)
+# so downstream consumers never assume a class is absent. Ref: action #9.
+CANONICAL_ASSET_CLASSES = ("CRYPTO", "EQUITY", "COMMODITY", "ETF", "FOREX", "BOND", "FUTURES")
+
 MAX_SOURCE_CONCENTRATION = 0.40
 MAX_SOURCE_CONCENTRATION_BY_CLASS: dict[str, float] = {
     # COMMODITY 0.60: CT=F edge is genuinely concentrated in one
@@ -861,6 +866,19 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                 "returns": [],
                 "picks": [],
                 "_source": "dashboard_fallback",
+            }
+
+    # 2026-05-28 Tier-1 fix: force every canonical asset class to emit a row.
+    # ETF + BOND were silently DROPPED from money_ready_verdict.json whenever
+    # they had zero resolved picks AND no dashboard_health entry — downstream
+    # consumers then assumed those classes don't exist. Backfill an empty
+    # stats entry so they surface as INSUFFICIENT_DATA instead of vanishing.
+    # Ref: reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #9.
+    for _canon in CANONICAL_ASSET_CLASSES:
+        if _canon not in class_stats:
+            class_stats[_canon] = {
+                "n": 0, "wr": 0.0, "pf": 0.0,
+                "returns": [], "picks": [], "_source": "backfill_no_data",
             }
 
     results: dict[str, dict] = {}

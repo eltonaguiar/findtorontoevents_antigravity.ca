@@ -142,6 +142,21 @@
   </div>
 </div>
 
+<!-- FALSIFIED-EDGE BANNER — COMMODITY / COT (added 2026-05-28, Tier-1 action #13) -->
+<div style="background:#7c2d12;border:2px solid #ef4444;border-radius:10px;padding:14px 18px;margin:18px 0;color:#fecaca">
+  <div style="font-weight:800;font-size:14px;color:#fca5a5;letter-spacing:0.5px">⚠ FALSIFIED — COMMODITY · COT <code>cot_positioning + CT=F</code> "DSR=1.0" claim</div>
+  <div style="font-size:12px;margin-top:8px;line-height:1.55">
+    The "n=104, WR 86.5%, DSR=1.0000, single most statistically validated edge" claim was <b>falsified on 2026-05-13</b>.
+    A dedup audit found <code>multi_asset_cot_positioning</code> emitted <b>38 raw signals from only 6 unique CFTC COT release
+    weeks</b> (over-emission ratio 6.33×) — the same weekly release counted ~6× inflated n and DSR. The paper pilot's own
+    status JSON (<code>data/cot_paper_pilot_status.json</code>) now reports <code>tier=SHADOW_INSUFFICIENT_N</code>,
+    <code>dsr=null</code>, dedup WR 33.3% on n=6 unique releases, cumulative PnL −$85.34. Removing CT=F concentration leaves
+    only 3 policy-clean COMMODITY picks (INSUFF-N). <b>COMMODITY size = 0; do not re-promote CT=F from SHADOW.</b> See
+    <code>reports/cot_paper_pilot_overemission_falsified_20260513.md</code> and
+    <code>reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md</code>.
+  </div>
+</div>
+
 <!-- ===== LAST 48 HOURS — PER ASSET CLASS (added 2026-05-25) ===== -->
 <!-- "Drive the point home" subset. Distinct magenta accent + [48h] chip.
      Sidecar: data/pick_summary_stats_48h.json built by
@@ -214,7 +229,7 @@
 <h2>Rejected from Universe (today)</h2>
 <button class="eli5-btn" onclick="toggle('eli5-rej')">[?] ELI5</button>
 <div class="eli5" id="eli5-rej">
-  These are symbols in our scanned universe that did NOT produce a SMART-grade pick today. <b>Not scanned</b> = no row appeared at all (price feed, blackout, or universe-filter killed it earlier). <b>Gate rejected</b> = scanner emitted a candidate but the per-class score/conf/trust floor killed it before /audit could surface it. Drilling in: most equity rejects are below the SMART_PICKS_MIN_SCORE_EQUITY=60 floor.
+  These are symbols in our scanned universe that did NOT produce a SMART-grade pick today. <b>Not scanned</b> = no row appeared at all (price feed, blackout, or universe-filter killed it earlier). <b>Gate rejected</b> = scanner emitted a candidate but the per-class score/conf/trust floor killed it before /audit could surface it. Drilling in: most equity rejects are below the SMART_PICKS_MIN_SCORE_EQUITY=50 floor (FROZEN 2026-05-20 to 2026-08-18).
 </div>
 <div id="rejected-universe" class="panel"></div>
 <div class="recency-2w">
@@ -571,10 +586,17 @@ function _caveatBadges(cv){
   if (!cv || !cv.length) return '';
   return cv.map(c=>`<span class="badge b-fail" title="${c}" style="margin-left:4px;font-size:9px">${c.split('=')[0]}</span>`).join('');
 }
-// Detect single_source_concentration in caveats — these rows should be visually demoted.
+// Detect edge-distorting caveats — these rows should be visually demoted because
+// their WR/PF does not reflect a real, diversified, correctly-labelled edge.
+// 2026-05-28 Tier-1: extended beyond single_source_concentration to also catch
+// EXPIRED_pos_pnl_share=..._likely_mislabeled_WON (e.g. FOREX 14d shows 76%
+// mislabeled-WON inflating WR to 83% while true PF is 0.10). Ref: action #11.
 function _hasSingleSourceConc(cv){
   if (!cv || !cv.length) return false;
-  return cv.some(c => typeof c === 'string' && c.indexOf('single_source_concentration') === 0);
+  return cv.some(c => typeof c === 'string' && (
+    c.indexOf('single_source_concentration') === 0 ||
+    c.indexOf('EXPIRED_pos_pnl_share') === 0
+  ));
 }
 function _rowDemoteAttr(cv){
   if (!_hasSingleSourceConc(cv)) return '';
