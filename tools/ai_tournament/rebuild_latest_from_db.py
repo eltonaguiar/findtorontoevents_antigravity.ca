@@ -35,7 +35,26 @@ CONFIG = REPO / "config" / "model_persona_mapping.json"
 # provider, so ~20% of DB rows have provider NULL (all 15 such model_ids are in
 # config/model_persona_mapping.json). We backfill provider for DISPLAY from the
 # config — no DB write — so the page's Provider column is never blank.
-_INTERNAL_PROVIDERS = {"alpha_engine": "AlphaEngine (internal)"}
+_INTERNAL_PROVIDERS = {
+    "alpha_engine": "AlphaEngine (internal)",
+    "gpt4o": "OpenAI (GPT-4o)",
+}
+
+# Provider-route alias collapse (DISPLAY only — raw model_id stays untouched in
+# the DB). The same underlying model+version was ingested under two model_ids
+# (one per API route), splitting its leaderboard stats into two rows. We map the
+# alias -> a single canonical model_id so the summary/leaderboard builders (which
+# group by model_id) merge them. Decision triangulated 2026-05-28 via the LiteLLM
+# proxy + the stored provider strings — see TOURNYFIND_CLAUDE_OPUS47.MD.
+#   MERGED:   grok3+grok3_direct (Grok-3), ring_261T+ring26_1t (Ring-2.6-1T),
+#             gh_models_gpt4o+aimlapi_gpt4o (GPT-4o, different aggregators).
+#   NOT merged: minimax_m2 vs m2_5, kimi K2 vs K2.6 — genuinely different versions.
+CANONICAL_ID = {
+    "grok3_direct": "grok3",
+    "ring26_1t": "ring_261T",
+    "gh_models_gpt4o": "gpt4o",
+    "aimlapi_gpt4o": "gpt4o",
+}
 
 
 def _provider_map() -> dict[str, str]:
@@ -99,13 +118,21 @@ def main() -> None:
     finally:
         conn.close()
 
-    # Backfill blank provider from config (display-only, no DB write).
+    # Collapse provider-route aliases (display-only) then normalise provider:
+    #  - config/internal-known model_ids get the canonical provider string
+    #    (overwrite, so a merged group reads one consistent provider),
+    #  - models we don't know keep whatever the DB stored (rich variants).
     pmap = _provider_map()
-    n_backfilled = 0
+    n_merged = n_provider_set = 0
     for p in picks:
-        if not p.get("provider") and p.get("model_id") in pmap:
-            p["provider"] = pmap[p["model_id"]]
-            n_backfilled += 1
+        mid = p.get("model_id")
+        if mid in CANONICAL_ID:
+            p["model_id"] = mid = CANONICAL_ID[mid]
+            n_merged += 1
+        canon_prov = pmap.get(mid)
+        if canon_prov and p.get("provider") != canon_prov:
+            p["provider"] = canon_prov
+            n_provider_set += 1
 
     LATEST.write_text(json.dumps(picks, indent=2))
     n_models = len({p.get("model_id") for p in picks})
@@ -114,7 +141,8 @@ def main() -> None:
     print(
         f"[rebuild_latest] wrote {LATEST.relative_to(REPO)} — "
         f"{len(picks)} picks, {n_models} models, {n_open} open; "
-        f"provider backfilled {n_backfilled}, still-blank {n_null_prov}"
+        f"alias rows remapped {n_merged}, provider normalised {n_provider_set}, "
+        f"blank-provider {n_null_prov}"
     )
 
 
