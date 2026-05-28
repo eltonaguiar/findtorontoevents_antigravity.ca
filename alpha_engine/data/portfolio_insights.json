@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-28T01:46:35.813417+00:00",
+  "generated_at": "2026-05-28T04:10:22.913627+00:00",
   "portfolio_summaries": {
     "1x": {
       "name": "1x",
@@ -79,30 +79,30 @@
       "name": "copytrader",
       "loaded": true,
       "starting_balance": 10000,
-      "current_balance": 9809.693088473992,
-      "total_return_pct": -1.9,
+      "current_balance": 9802.908614051814,
+      "total_return_pct": -1.97,
       "open_positions": 10,
-      "closed_trades": 401,
+      "closed_trades": 402,
       "wins": 152,
-      "losses": 249,
-      "win_rate": 37.9,
-      "realized_pnl_pct": -35.24,
-      "unrealized_pnl_pct": -337.65,
+      "losses": 250,
+      "win_rate": 37.8,
+      "realized_pnl_pct": -37.36,
+      "unrealized_pnl_pct": -348.28,
       "leverage": 5,
       "stats": {
-        "total_trades": 424,
+        "total_trades": 425,
         "wins": 152,
-        "losses": 249,
+        "losses": 250,
         "tp_hits": 17,
-        "sl_hits": 242,
+        "sl_hits": 243,
         "trailing_stops": 71,
         "time_exits": 71,
-        "total_pnl_usdt": 268.12324123611126,
+        "total_pnl_usdt": 261.33876681393326,
         "best_trade_pnl": 499.893644379133,
         "worst_trade_pnl": -89.99999999999997,
         "copytrader_metrics": {
-          "avg_hold_hours": 13.61,
-          "total_hold_hours": 5456.199999999998,
+          "avg_hold_hours": 13.59,
+          "total_hold_hours": 5463.299999999998,
           "hold_duration_buckets": {
             "0-4h": {
               "trades": 150,
@@ -110,9 +110,9 @@
               "pnl": -98.07
             },
             "4-12h": {
-              "trades": 79,
+              "trades": 80,
               "wins": 44,
-              "pnl": -56.84
+              "pnl": -63.62
             },
             "12-24h": {
               "trades": 76,
@@ -187,9 +187,9 @@
               "pnl": 17.88
             },
             "18": {
-              "trades": 27,
+              "trades": 28,
               "wins": 20,
-              "pnl": 31.99
+              "pnl": 25.21
             },
             "7": {
               "trades": 15,
@@ -234,13 +234,39 @@
       }
     },
     {
+      "type": "consecutive_sl",
+      "severity": "HIGH",
+      "message": "copytrader portfolio had 3 consecutive SL hits at 5x leverage -- consider reducing leverage",
+      "details": {
+        "portfolio": "copytrader",
+        "leverage": 5,
+        "recent_trades": [
+          {
+            "symbol": "LINKUSDT",
+            "pnl_pct": -3.043022035676801,
+            "reason": "SL_HIT"
+          },
+          {
+            "symbol": "SUIUSDT",
+            "pnl_pct": -3.2851593625497992,
+            "reason": "SL_HIT"
+          },
+          {
+            "symbol": "SUIUSDT",
+            "pnl_pct": -2.1201482569306225,
+            "reason": "SL_HIT"
+          }
+        ]
+      }
+    },
+    {
       "type": "strategy_discrepancy",
       "severity": "HIGH",
       "message": "Strategy 'clone_hl_copy_PensionFund_24M' has 86% WR in sandbox but 38% in copytrader -- investigate",
       "details": {
         "strategy": "clone_hl_copy_PensionFund_24M",
         "win_rates": {
-          "copytrader": 37.7,
+          "copytrader": 37.5,
           "sandbox": 85.7
         }
       }
@@ -251,7 +277,7 @@
       "message": "copytrader WR (38%) is significantly higher than 1x (26%) -- investigate strategy selection",
       "details": {
         "better": "copytrader",
-        "better_wr": 37.9,
+        "better_wr": 37.8,
         "worse": "1x",
         "worse_wr": 26.3
       }
@@ -264,7 +290,7 @@
         "better": "20x",
         "better_return": 0.28,
         "worse": "copytrader",
-        "worse_return": -1.9
+        "worse_return": -1.97
       }
     },
     {
@@ -275,10 +301,19 @@
         "better": "20x",
         "better_wr": 52.2,
         "worse": "copytrader",
-        "worse_wr": 37.9
+        "worse_wr": 37.8
+      }
+    },
+    {
+      "type": "production_outperformance",
+      "severity": "MEDIUM",
+      "message": "Production WR (39%) is beating sandbox (8%) -- live filtering/sizing is adding value",
+      "details": {
+        "sandbox_wr": 7.6,
+        "production_wr": 39.4
       }
     }
   ],
-  "insight_count": 5,
+  "insight_count": 7,
   "critical_count": 0
 }
