@@ -66,12 +66,12 @@ Pass `--http-base http://192.168.2.32:8788` to the adapter CLI every time.
 ## Pre-flight
 
 ```bash
-curl.exe -s -m 3 http://192.168.2.32:8788/health | python -c "import sys,json;d=json.load(sys.stdin);print('ok' if d.get('ok') else d)"
-# or:
-python tools/protocol_inspect.py health
+python tools/protocol_inspect.py health    # portable, OS-agnostic — PREFER THIS (python3 if unmapped)
 ```
 
-If `/health` fails, gateway is down — start it with `python tools/protocol_gateway.py --host 0.0.0.0 --ws-port 8787 --http-port 8788 --peer-id gateway-a` (see `cross-pc-protocol-debug-first` skill) before retrying.
+⛔ **Never use `curl.exe` on Linux/WSL/SSH peers** — it doesn't exist there and returns silent empty output, causing false "gateway down" calls. On Linux use plain `curl`; on Windows PowerShell `curl.exe` is fine.
+
+If the probe fails, do **NOT** assume the gateway is down. Confirm OS-correct tool + HTTP endpoint (not a local `ss/netstat` port scan) + `ping 192.168.2.32` first — see `/cross-pc-health` checklist. Only start the gateway **from the desktop host** (never a WSL/peer env, which makes a loopback-only duplicate): `python tools/protocol_gateway.py --host 0.0.0.0 --ws-port 8787 --http-port 8788 --peer-id gateway-a`.
 
 ## Send via adapter CLI (preferred — handles identity)
 

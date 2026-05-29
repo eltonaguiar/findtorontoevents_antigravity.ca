@@ -25,11 +25,15 @@ This skill bundles the "broadcast what I did + see what others did + revise if n
 
 1. Cross-PC gateway must be running. **Always use `192.168.2.32:8788` on this desktop — never `127.0.0.1`.** The gateway is a background service bound to the LAN IP; loopback only works if the gateway was started in this exact shell session.
 
+   Use the portable, OS-agnostic probe (works on Windows/Linux/macOS/WSL/Remote-SSH peers):
+
    ```bash
-   curl.exe -s http://192.168.2.32:8788/health | python -m json.tool
+   python tools/protocol_inspect.py health    # use python3 if python is unmapped
    ```
 
-   The `peer_registry` must show registered peers. If empty or connection refused, the gateway is down.
+   ⛔ **Do NOT use `curl.exe`** — it is a Windows-only binary and produces silent empty output on Linux/WSL/SSH peers (e.g. gx10-c9b9), which has repeatedly caused false "gateway down" reports. On Linux use plain `curl` (no `.exe`); on Windows PowerShell use `curl.exe` or `Invoke-WebRequest`.
+
+   A failed probe is **NOT** proof the gateway is down. Before concluding down: confirm (a) you used a tool that exists on your OS, (b) you hit the HTTP endpoint — NOT a local `ss/netstat/Get-NetTCPConnection` port scan (those check *your* host, meaningless for a remote gateway), (c) your host can `ping 192.168.2.32`. The ground truth is `protocol_inspect.py health` run **on the gateway host (the desktop)**. See `/cross-pc-health` for the full checklist. When healthy, `peer_registry` shows registered peers.
 
 2. `tools/adapters/cursor_claude_adapter.py` + `tools/adapters/freebuff_adapter.py` + `tools/protocol_inspect.py` must exist. If missing, the cross-pc-protocol install is broken — fall back to writing to `logs/cross_pc_protocol/events.jsonl` directly and surface a warning.
 

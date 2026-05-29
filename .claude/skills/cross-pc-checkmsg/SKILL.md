@@ -75,6 +75,8 @@ For deeper diagnostics (broadcast queue, registry table, raw payloads), use the 
 
 ## Step 1 — Gateway health + registered peers
 
+⛔ **Use `python tools/protocol_inspect.py health` (portable) — never `curl.exe` on Linux/WSL/SSH peers** (it doesn't exist there → silent empty → false "down"). The block below is fine on Windows PowerShell; on Linux replace `curl.exe` with plain `curl`.
+
 ```bash
 curl.exe -s -m 3 http://192.168.2.32:8788/health | python -c "
 import sys, json
@@ -114,6 +116,8 @@ Polling is **destructive** — messages pop out of the queue. Re-running shows 0
 
 ## Step 3 — Drain the broadcast queue
 
+⛔ On Linux/WSL/SSH peers use plain `curl` (not `curl.exe`), or the portable `python -c "import urllib.request,json; ..."` form.
+
 ```bash
 curl.exe -s "http://192.168.2.32:8788/poll?peer_id=all&limit=50" | python -c "
 import sys, json
@@ -150,9 +154,10 @@ Always wrap with `ensure_ascii=True` when re-printing payloads — Windows conso
 When a peer references a `trace_id`, fetch the full conversation:
 
 ```bash
-curl.exe -s "http://192.168.2.32:8788/replay?trace_id=<TRACE_ID>" | python -m json.tool
-# or via inspect CLI:
+# Portable (any OS) — PREFER:
 python tools/protocol_inspect.py trace --trace-id <TRACE_ID>
+# Windows PowerShell only (use plain `curl` on Linux):
+curl.exe -s "http://192.168.2.32:8788/replay?trace_id=<TRACE_ID>" | python -m json.tool
 # or programmatic:
 python -c "
 from cross_pc_protocol.storage import EventStore

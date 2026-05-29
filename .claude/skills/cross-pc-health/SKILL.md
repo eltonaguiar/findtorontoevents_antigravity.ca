@@ -7,6 +7,13 @@ description: Quick health check of the local cross-PC protocol gateway — confi
 
 One-shot diagnostic. No state mutation. Safe to run before every send.
 
+## ⛔ ANTI-PATTERNS — read first (these caused every false "gateway down" in CHATBIBLE_FAILURE.MD)
+
+1. **NEVER use `curl.exe` on Linux/macOS.** `curl.exe` is a Windows-only binary. On any non-Windows host (incl. WSL and Remote-SSH peers like `gx10-c9b9`) it does not exist → silent empty output → you will wrongly conclude "gateway down." Use the portable probe below (`python tools/protocol_inspect.py health`), or plain `curl` (no `.exe`) only on Linux/macOS.
+2. **NEVER judge a REMOTE gateway with a LOCAL listener check.** `ss -tlnp | grep 8788`, `netstat | findstr 8788`, `Get-NetTCPConnection -LocalPort 8788` all check **the host you are running on**. If the gateway lives on another machine (or you are SSH'd into a peer), a local "no listener" result is meaningless — it does NOT mean the gateway is down. Probe the gateway's **HTTP endpoint** instead.
+3. **Know which host you are on before diagnosing.** Run `uname -s 2>/dev/null || echo Windows` and `hostname`. If you are on a peer (gx10, a laptop, WSL), the gateway is the *desktop* — you must reach it over the LAN, not via loopback or local ports.
+4. **A failed probe is NOT proof the gateway is down.** Before logging a failure or restarting: confirm you used a tool that exists on your OS, that you hit the gateway's HTTP endpoint (not a local port scan), and that your host can route to the gateway IP. Restarting a gateway on a peer/WSL spawns a useless loopback-only duplicate (see CHATBIBLE_FAILURE.MD 2026-05-22/24 corrections).
+
 ## Pre-flight — Core file existence
 
 Before running any commands, verify the core protocol files exist. Missing files mean the protocol tooling isn't installed or you're in the wrong directory.
@@ -27,11 +34,15 @@ fi
 echo "Core files OK"
 ```
 
-## Quick path — inspect CLI
+## Quick path — inspect CLI (CANONICAL, portable, OS-agnostic)
+
+This is the **only** probe you need in 95% of cases. Python exists on every host (Windows/Linux/macOS/WSL); it talks to the gateway over HTTP and prints the full health JSON. Prefer it over raw curl everywhere.
 
 ```bash
-python tools/protocol_inspect.py health
+python tools/protocol_inspect.py health    # use python3 if python is unmapped on Linux
 ```
+
+If `python` is not on PATH, try `python3`. Do NOT fall back to `curl.exe` on a non-Windows host.
 
 ## Gateway address (IMPORTANT)
 
@@ -44,40 +55,35 @@ Always use `192.168.2.32:8788` as the primary address. `127.0.0.1:8788` only wor
 | Laptop / other LAN peer reaching this desktop | `http://192.168.2.32:8788` |
 | Loopback (only if gateway started in same shell) | `http://127.0.0.1:8788` |
 
-## Raw HTTP probe
+## Raw HTTP probe (fallback only — when `protocol_inspect.py` is unavailable)
 
+Pick the line that matches YOUR host. Do NOT use the Windows line on Linux or vice-versa.
+
+**Portable (any OS, no curl):**
 ```bash
-curl.exe -s -m 3 http://192.168.2.32:8788/health | python -c "
-import sys, json
-d = json.load(sys.stdin)
-print('ok           :', d.get('ok'))
-print('ts_utc       :', d.get('ts_utc'))
-print('ws_port      :', d.get('ws_port'))
-print('http_port    :', d.get('http_port'))
-print('redis_bridge :', d.get('redis_bridge_available'))
-print('pending_acks :', d.get('pending_acks'))
-print('offline_queues:', d.get('offline_queues'))
-print('peers:')
-for k, v in (d.get('peer_registry') or {}).items():
-    print(' ', k, '| last_seen', v.get('last_seen_ts_utc'),
-          '| transport', v.get('last_transport'),
-          '| topic', v.get('last_topic'),
-          '| caps', v.get('capabilities') or [])
-print('lan_peers    :')
-for p in (d.get('lan_peers') or []):
-    print(' ', p.get('peer_id'), p.get('ip'), 'port', p.get('gateway_port'))
-"
+python -c "import urllib.request,json,sys; print(json.dumps(json.loads(urllib.request.urlopen('http://192.168.2.32:8788/health',timeout=4).read()),indent=2))"
 ```
 
-PowerShell-safe one-liner (no curl heredoc issues):
+**Linux / macOS / WSL / Remote-SSH peer:** plain `curl`, never `curl.exe`
+```bash
+curl -s -m 4 http://192.168.2.32:8788/health
+```
 
+**Windows (PowerShell):** `curl.exe` or `Invoke-WebRequest`
 ```powershell
-python tools/protocol_inspect.py health
+curl.exe -s -m 4 http://192.168.2.32:8788/health
+# or: (Invoke-WebRequest -Uri http://192.168.2.32:8788/health -TimeoutSec 4 -UseBasicParsing).Content
 ```
 
 ## Interpretation
 
-- `ok=False` or curl fails → first retry with `192.168.2.32:8788` before concluding gateway is down. If both fail, start: `python tools/protocol_gateway.py --host 0.0.0.0 --ws-port 8787 --http-port 8788 --peer-id gateway-a` (see `cross-pc-protocol-debug-first`).
+- `ok=False` or probe fails → **do NOT immediately conclude "gateway down" or restart.** Run this checklist first:
+  1. Are you on the gateway host (the desktop) or a peer? `hostname` + `uname -s 2>/dev/null || echo Windows`.
+  2. Did you use a tool that exists on your OS? (No `curl.exe` on Linux. Use `python tools/protocol_inspect.py health`.)
+  3. Did you probe the HTTP endpoint, not a local port scan? (`ss/netstat/Get-NetTCPConnection` on a peer prove nothing about a remote gateway.)
+  4. Can your host route to the gateway IP? `ping 192.168.2.32`. If on a peer, confirm same subnet / no AP-isolation.
+  5. From the **gateway host itself**, `python tools/protocol_inspect.py health` is the ground truth. Only if THAT fails is the gateway actually down.
+  - Restart (gateway host only): `python tools/protocol_gateway.py --host 0.0.0.0 --ws-port 8787 --http-port 8788 --peer-id gateway-a` (see `cross-pc-protocol-debug-first`). **Never restart from a WSL/peer env** — it spawns a loopback-only duplicate with empty peer_registry whose broadcasts never reach other PCs.
 - `pending_acks > 0` → some `require_ack=true` DM still retrying (backoff 1s,2s,4s,8s,16s, cap 60s, until TTL). Check log for the message_id; ACK or let it expire.
 - `offline_queues.all > 0` → unread broadcasts; `/cross-pc-checkmsg` drains.
 - `offline_queues.<peer> > 0` → DMs queued for an offline peer.
