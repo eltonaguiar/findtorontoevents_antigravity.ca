@@ -173,11 +173,15 @@ jobs:
             const markerEnd = '<!-- ALERTS_END -->';
             const findings = JSON.parse(fs.readFileSync('branch_large_blob_findings.json', 'utf8'));
             const nowIso = new Date().toISOString();
+            // Content signature (timestamp-independent) so we only commit when the
+            // duplicate set actually changes — stops the ~per-run self-commit spam on main.
+            const sig = findings.map(f => `${f.blob}:${f.branch_count}`).sort().join('|');
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const maxBranches = 5;
 
             const entryLines = [];
             entryLines.push(`### Alert @ ${nowIso}`);
+            entryLines.push(`<!-- sig:${sig} -->`);
             entryLines.push('');
             entryLines.push('- Type: duplicate-large-files-across-branches');
             entryLines.push(`- Workflow run: ${runUrl}`);
@@ -253,6 +257,14 @@ jobs:
             const combined = [entryText, ...existingEntries].slice(0, 30);
             const nextInner = combined.length ? combined.join('\n\n') : '_No alerts yet._';
             const updated = `${current.slice(0, start)}\n${nextInner}\n${current.slice(end)}`;
+
+            // Idempotency: if the newest existing alert has the same signature,
+            // the duplicate set is unchanged — skip the commit to avoid history spam.
+            const prevSig = (existingEntries[0] || '').match(/<!-- sig:(.*?) -->/);
+            if (prevSig && prevSig[1] === sig) {
+              core.notice('Duplicate-large-file set unchanged since last alert — skipping commit.');
+              return;
+            }
 
             await github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
