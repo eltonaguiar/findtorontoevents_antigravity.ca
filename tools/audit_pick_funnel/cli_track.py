@@ -36,6 +36,8 @@ ENH_STATUS = ["BACKLOG", "VALIDATED", "ACCEPTED", "IMPLEMENTED", "REJECTED", "SU
 ENH_CATEGORIES = ["SCORING", "GATE", "DATA_FEED", "UI", "METHODOLOGY", "PERSONA", "OTHER"]
 IMPACTS = ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]
 EFFORTS = ["S", "M", "L", "XL"]
+FINDING_STATUS = ["OPEN", "TRIAGED", "ACK", "ARCHIVED", "SUPERSEDED"]
+FINDING_TYPES = ["OBSERVATION", "METRIC", "LEAKAGE", "CORRELATION", "RISK", "DATA_QUALITY", "OTHER"]
 
 
 def _connect():
@@ -160,6 +162,49 @@ def cmd_enhancement(args):
     conn.close()
 
 
+def cmd_finding(args):
+    """Create-or-update a FINDING (single table, upsert keyed on title).
+
+    Findings are dated, agent-logged notes (some standalone 'noteworthy', some
+    linked to an incident/enhancement). created_at is left to the DB default
+    (UTC); EST is derived at render time — never store EST here.
+    """
+    if args.severity not in SEVERITIES:      sys.exit(f"--severity must be {SEVERITIES}")
+    if args.status not in FINDING_STATUS:     sys.exit(f"--status must be {FINDING_STATUS}")
+    if args.type not in FINDING_TYPES:        sys.exit(f"--type must be {FINDING_TYPES}")
+    cls = args.cls.upper() if args.cls else None
+    if cls and cls not in CLASSES:            sys.exit(f"--class must be one of {CLASSES} (or omit for cross-cutting)")
+    conn = _connect()
+    with conn.cursor() as cur:
+        cur.execute("SELECT finding_id FROM FINDINGS WHERE title=%s", (args.title,))
+        existing = cur.fetchone()
+        if existing:
+            cur.execute("""UPDATE FINDINGS SET asset_class=%s, source_agent=%s, finding_type=%s,
+                severity=%s, detail=%s, evidence=%s, status=%s, noteworthy=%s,
+                linked_incident_id=%s, linked_enhancement_id=%s,
+                link_md_path=%s, link_url=%s, link_github_ref=%s
+                WHERE finding_id=%s""",
+                (cls, args.source_agent, args.type, args.severity, args.detail, args.evidence,
+                 args.status, 1 if args.noteworthy else 0,
+                 args.linked_incident, args.linked_enhancement,
+                 args.link_md, args.link_url, args.link_github, existing["finding_id"]))
+            conn.commit()
+            print(f"UPDATED  FINDINGS.finding_id={existing['finding_id']}  title={args.title!r}")
+        else:
+            cur.execute("""INSERT INTO FINDINGS
+                (asset_class, source_agent, finding_type, severity, title, detail, evidence,
+                 status, noteworthy, linked_incident_id, linked_enhancement_id,
+                 link_md_path, link_url, link_github_ref)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                (cls, args.source_agent, args.type, args.severity, args.title, args.detail, args.evidence,
+                 args.status, 1 if args.noteworthy else 0, args.linked_incident, args.linked_enhancement,
+                 args.link_md, args.link_url, args.link_github))
+            new_id = cur.lastrowid
+            conn.commit()
+            print(f"CREATED  FINDINGS.finding_id={new_id}  title={args.title!r}")
+    conn.close()
+
+
 def cmd_list(args):
     """Quick search / triage view."""
     kind = args.kind.upper()
@@ -244,6 +289,23 @@ def main():
     enh.add_argument("--target-release", dest="target_release", default=None, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
     enh.add_argument("--implementation-pr", default=None)
     enh.set_defaults(func=cmd_enhancement)
+
+    fnd = sub.add_parser("finding", help="Log a dated finding (single table; optionally link to an incident/enhancement).")
+    fnd.add_argument("--title", required=True)
+    fnd.add_argument("--class", dest="cls", default=None, help=f"Optional {CLASSES} (omit for cross-cutting)")
+    fnd.add_argument("--type", default="OBSERVATION", help=f"One of {FINDING_TYPES}")
+    fnd.add_argument("--severity", default="INFO", help=f"One of {SEVERITIES}")
+    fnd.add_argument("--status", default="OPEN", help=f"One of {FINDING_STATUS}")
+    fnd.add_argument("--detail", default=None)
+    fnd.add_argument("--evidence", default=None, help="JSON string: {file:line, query, numbers} — claimed, not verified")
+    fnd.add_argument("--source-agent", dest="source_agent", default=None, help="which AI/IDE agent logged this")
+    fnd.add_argument("--noteworthy", action="store_true", help="pin to the top of the findings feed")
+    fnd.add_argument("--linked-incident", dest="linked_incident", type=int, default=None, help="INCIDENT_*.incident_id")
+    fnd.add_argument("--linked-enhancement", dest="linked_enhancement", type=int, default=None, help="ENHANCEMENT_*.enhancement_id")
+    fnd.add_argument("--link-md", default=None)
+    fnd.add_argument("--link-url", default=None)
+    fnd.add_argument("--link-github", default=None)
+    fnd.set_defaults(func=cmd_finding)
 
     ls = sub.add_parser("list", help="List/search rows.")
     ls.add_argument("--kind", required=True, help="incident | enhancement")
