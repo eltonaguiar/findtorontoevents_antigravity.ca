@@ -33,7 +33,9 @@ LEAKAGE_FEATURES = (
 )
 
 TRAFFIC_SPLIT_NEW = float(os.environ.get("ML_GATE_AB_SPLIT", "0.5"))
-AB_ENABLED = os.environ.get("ML_GATE_AB_ENABLED", "0") == "1"
+# PR2 (2026-05-27): Enable A/B routing by default. The NEW (leakage-purged)
+# bundle is now the primary model; OLD bundle remains for comparison.
+AB_ENABLED = os.environ.get("ML_GATE_AB_ENABLED", "1") == "1"
 AB_LOG_PATH = os.environ.get("ML_GATE_AB_LOG", "data/ml_gatekeeper/ab_router_log.jsonl")
 
 
