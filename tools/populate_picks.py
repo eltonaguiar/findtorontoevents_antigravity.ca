@@ -101,58 +101,118 @@ def get_universe(config: dict) -> dict[str, list[str]]:
 
 # ── API callers ──
 
+def _post_openai_compat_with_retry(
+    label: str,
+    endpoint: str,
+    api_key: str,
+    model: str,
+    messages: list[dict],
+    timeout: int = 60,
+    max_retries: int = 3,
+) -> dict | None:
+    """POST to an OpenAI-compatible chat endpoint with retry/backoff + tolerant parsing.
+
+    Hardening (2026-05-28) so > 3 tournament models actually succeed:
+      - Retries on 429 (rate limit) and 5xx with exponential backoff + Retry-After
+        honoring. Free-tier providers (Groq/Together/Fireworks/etc.) flap on 429;
+        a single attempt loses the model for the whole day.
+      - Tolerates reasoning-model responses that put text in `reasoning_content`
+        instead of `content` (DeepSeek-R1 / Qwen-QwQ / Nemotron-thinking variants):
+        if the parsed JSON has empty `content` but a non-empty `reasoning_content`,
+        copies it across so downstream parse_picks_response() can read it.
+      - Classifies failures (rate_limited / auth_error / bad_response / timeout /
+        server_error) in the log line so the diagnostics panel can attribute them.
+    """
+    import time as _time
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    body = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.7,
+        "max_tokens": 4096,
+    }
+    backoff = 2.0
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.post(endpoint, headers=headers, json=body, timeout=timeout)
+            code = resp.status_code
+            if code == 200:
+                try:
+                    data = resp.json()
+                except ValueError:
+                    print(f"  [API] {label}/{model} bad_response: non-JSON 200 body")
+                    return None
+                # Reasoning-model tolerance: hoist reasoning_content → content if empty.
+                try:
+                    ch = (data.get("choices") or [{}])[0]
+                    msg = ch.get("message") or {}
+                    if not (msg.get("content") or "").strip():
+                        rc = msg.get("reasoning_content") or msg.get("reasoning") or ""
+                        if rc.strip():
+                            msg["content"] = rc
+                            ch["message"] = msg
+                            data["choices"][0] = ch
+                except Exception:
+                    pass  # leave data as-is; downstream parser handles malformed
+                return data
+            if code == 429 or 500 <= code < 600:
+                # Honor Retry-After if present, else exponential backoff.
+                ra = resp.headers.get("Retry-After")
+                try:
+                    wait = float(ra) if ra else backoff
+                except (TypeError, ValueError):
+                    wait = backoff
+                kind = "rate_limited" if code == 429 else "server_error"
+                if attempt < max_retries:
+                    print(f"  [API] {label}/{model} {kind} ({code}) — retry {attempt}/{max_retries} in {wait:.1f}s")
+                    _time.sleep(min(wait, 30.0))
+                    backoff *= 2
+                    continue
+                print(f"  [API] {label}/{model} {kind} ({code}) — exhausted {max_retries} retries: {resp.text[:160]}")
+                return None
+            if code in (401, 403):
+                print(f"  [API] {label}/{model} auth_error ({code}): {resp.text[:160]}")
+                return None
+            print(f"  [API] {label}/{model} error {code}: {resp.text[:200]}")
+            return None
+        except requests.Timeout:
+            if attempt < max_retries:
+                print(f"  [API] {label}/{model} timeout — retry {attempt}/{max_retries} in {min(backoff,30.0):.1f}s")
+                _time.sleep(min(backoff, 30.0))
+                backoff *= 2
+                continue
+            print(f"  [API] {label}/{model} timeout — exhausted {max_retries} retries")
+            return None
+        except Exception as e:
+            print(f"  [API] {label}/{model} exception: {e}")
+            return None
+    return None
+
+
 def call_openai_api(
     api_key: str, model: str, messages: list[dict], timeout: int = 60
 ) -> dict | None:
-    """Call an OpenAI-compatible chat completions endpoint."""
-    try:
-        resp = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": model,
-                "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 4096,
-            },
-            timeout=timeout,
-        )
-        if resp.status_code == 200:
-            return resp.json()
-        print(f"  [API] OpenAI error {resp.status_code}: {resp.text[:200]}")
-    except Exception as e:
-        print(f"  [API] OpenAI exception: {e}")
-    return None
+    """Call OpenAI's chat completions endpoint (with retry/backoff + tolerant parse)."""
+    return _post_openai_compat_with_retry(
+        "OpenAI", "https://api.openai.com/v1/chat/completions",
+        api_key, model, messages, timeout,
+    )
 
 
 def call_generic_openai_compat(
     api_key: str, endpoint: str, model: str, messages: list[dict], timeout: int = 60
 ) -> dict | None:
-    """Call any OpenAI-compatible endpoint (OpenRouter, etc.)."""
-    try:
-        resp = requests.post(
-            endpoint,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": model,
-                "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 4096,
-            },
-            timeout=timeout,
-        )
-        if resp.status_code == 200:
-            return resp.json()
-        print(f"  [API] {model} error {resp.status_code}: {resp.text[:200]}")
-    except Exception as e:
-        print(f"  [API] {model} exception: {e}")
-    return None
+    """Call any OpenAI-compatible endpoint (OpenRouter/NVIDIA/Groq/Together/etc.)
+    with retry/backoff + reasoning-model tolerance."""
+    if not endpoint:
+        print(f"  [API] {model} missing_endpoint — config has no endpoint URL")
+        return None
+    return _post_openai_compat_with_retry(
+        model, endpoint, api_key, model, messages, timeout,
+    )
 
 
 def call_cerebras_sdk(
