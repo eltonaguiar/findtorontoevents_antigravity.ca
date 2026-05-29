@@ -92,24 +92,24 @@ def rsi_series(c,p):
 def engine_momentum_breakout(bars):
     o=[b[0] for b in bars]; h=[b[1] for b in bars]; l=[b[2] for b in bars]; c=[b[3] for b in bars]; v=[b[4] for b in bars]
     n=len(c); atr=atr_series(h,l,c,14); adx=adx_series(h,l,c,14); R=[]
-    pos=False; entry=hi=tp=0.0
+    pos=False; entry=hi=tp=0.0; ent=0
     for t in range(21,n-1):
         if pos:
             hi=max(hi,c[t]); ae=atr[t] or 0; stop=hi-2*ae; px=None
             if l[t]<=stop: px=stop
             elif h[t]>=tp: px=tp
-            if px is not None: R.append(px/entry-1-2*FEE_SLIP); pos=False
+            if px is not None: R.append((ent, px/entry-1-2*FEE_SLIP)); pos=False
             continue
         m=sma(c,20,t); sd=std(c,20,t,m) if m else None; vm=sma(v,20,t)
         if None in (m,sd,vm) or atr[t] is None or adx[t] is None: continue
         if c[t]>m and c[t]>m+2*sd and v[t]>1.5*vm and (sma(c,20,t) or 0)>(sma(c,20,t-1) or 1e9) and adx[t]>25:
-            entry=o[t+1]; hi=c[t]; tp=entry+3*atr[t]; pos=True
+            entry=o[t+1]; ent=t+1; hi=c[t]; tp=entry+3*atr[t]; pos=True
     return R
 
 def engine_bb_mean_reversion(bars, use_rsi=False, allow_short=False):
     o=[b[0] for b in bars]; h=[b[1] for b in bars]; l=[b[2] for b in bars]; c=[b[3] for b in bars]
     n=len(c); atr=atr_series(h,l,c,14); rsi=rsi_series(c,14) if use_rsi else [50]*n; R=[]
-    pos=0; entry=0.0  # pos: 0 flat, 1 long, -1 short
+    pos=0; entry=0.0; ent=0  # pos: 0 flat, 1 long, -1 short
     for t in range(21,n-1):
         m=sma(c,20,t); sd=std(c,20,t,m) if m else None; ae=atr[t] or 0
         if None in (m,sd) or ae==0: continue
@@ -118,18 +118,18 @@ def engine_bb_mean_reversion(bars, use_rsi=False, allow_short=False):
             stop=entry-2*ae; px=None
             if l[t]<=stop: px=stop
             elif c[t]>=m: px=c[t]      # revert to mean
-            if px is not None: R.append(px/entry-1-2*FEE_SLIP); pos=0
+            if px is not None: R.append((ent, px/entry-1-2*FEE_SLIP)); pos=0
             continue
         if pos==-1:
             stop=entry+2*ae; px=None
             if h[t]>=stop: px=stop
             elif c[t]<=m: px=c[t]
-            if px is not None: R.append(entry/px-1-2*FEE_SLIP); pos=0
+            if px is not None: R.append((ent, entry/px-1-2*FEE_SLIP)); pos=0
             continue
         long_ok = c[t]<=lower and (rsi[t] is not None and rsi[t]<30 if use_rsi else True)
         short_ok = allow_short and c[t]>=upper and (rsi[t] is not None and rsi[t]>70 if use_rsi else True)
-        if long_ok: entry=o[t+1]; pos=1
-        elif short_ok: entry=o[t+1]; pos=-1
+        if long_ok: entry=o[t+1]; ent=t+1; pos=1
+        elif short_ok: entry=o[t+1]; ent=t+1; pos=-1
     return R
 
 def metrics(R):
@@ -141,36 +141,49 @@ def metrics(R):
     for r in R: eq*=1+r; pk=max(pk,eq); mdd=max(mdd,(pk-eq)/pk)
     return dict(n=n,wr=len(w)/n,pf=pf,avg=sum(R)/n,mdd=mdd,cum=eq-1)
 
+IS_FRAC = 0.70  # first 70% of bars = in-sample, last 30% = out-of-sample (time-split)
+
 def run_class(cls, syms, engine):
+    """Returns (full, in_sample, out_of_sample) metrics. Strategies are NON-parametric
+    (fixed rules, no fitting), so the IS/OOS time-split is a forward-STABILITY test:
+    does the edge measured on the older 70% persist in the unseen recent 30%?"""
     fetch = fetch_crypto if cls=="CRYPTO" else fetch_yf
-    allR=[]; ok=0
+    allR=[]; isR=[]; oosR=[]; ok=0
     for s in syms:
         bars=fetch(s)
         if not bars or len(bars)<60: print(f"    {s}: no data", file=sys.stderr); continue
         ok+=1
-        if engine=="momentum": R=engine_momentum_breakout(bars)
-        elif engine=="mr_rsi": R=engine_bb_mean_reversion(bars,use_rsi=True)
-        else: R=engine_bb_mean_reversion(bars,allow_short=True)
-        m=metrics(R)
-        print(f"    {s:10} n={m['n']:3} WR={m['wr']*100:5.1f}% PF={m['pf']:6.2f} avg={m['avg']*100:+5.2f}% MDD={m['mdd']*100:4.1f}%")
-        allR+=R
-    return metrics(allR), ok
+        if engine=="momentum": T=engine_momentum_breakout(bars)
+        elif engine=="mr_rsi": T=engine_bb_mean_reversion(bars,use_rsi=True)
+        else: T=engine_bb_mean_reversion(bars,allow_short=True)
+        split=int(IS_FRAC*len(bars))
+        rets=[r for _,r in T]; sR=[r for i,r in T if i<split]; oR=[r for i,r in T if i>=split]
+        m=metrics(rets)
+        print(f"    {s:10} n={m['n']:3} WR={m['wr']*100:5.1f}% PF={m['pf']:6.2f} avg={m['avg']*100:+5.2f}% "
+              f"MDD={m['mdd']*100:4.1f}%  (IS {len(sR)} / OOS {len(oR)})")
+        allR+=rets; isR+=sR; oosR+=oR
+    return metrics(allR), metrics(isR), metrics(oosR), ok
 
 def main():
-    print("=== ParallelSwarm Dry Run 2 — multi-class backtest (real data, no-lookahead, 20bp round-trip) ===")
+    print("=== ParallelSwarm Dry Run 2+ — multi-class backtest + IS/OOS walk-forward (real data, no-lookahead, 20bp) ===")
     summary={}
     for cls,(syms,engine) in UNIVERSE.items():
         print(f"\n[{cls}]  engine={engine}  incumbent={INCUMBENT[cls]}")
-        m,ok = run_class(cls,syms,engine)
-        summary[cls]=m
-        t2 = "PASS" if (m['pf']>=1.5 and m['wr']>=0.50 and m['n']>=100) else "FAIL"
-        print(f"  POOLED({ok} syms): n={m['n']} WR={m['wr']*100:.1f}% PF={m['pf']:.2f} "
-              f"avg={m['avg']*100:+.2f}% MDD={m['mdd']*100:.1f}% cum={m['cum']*100:+.1f}%  Tier-2:{t2}")
-    print("\n=== VERDICT ===")
-    for cls,m in summary.items():
-        print(f"  {cls:8} PF={m['pf']:.2f} WR={m['wr']*100:.0f}% n={m['n']}  "
-              f"{'clears Tier-2' if (m['pf']>=1.5 and m['wr']>=0.5 and m['n']>=100) else 'below Tier-2 (paper-only / promising-not-valid)'}")
-    print("  (no fabrication — every figure computed from the fetched OHLCV above)")
+        full,isM,oosM,ok = run_class(cls,syms,engine)
+        summary[cls]=(full,isM,oosM)
+        t2 = "PASS" if (full['pf']>=1.5 and full['wr']>=0.50 and full['n']>=100) else "FAIL"
+        print(f"  POOLED({ok}): n={full['n']} WR={full['wr']*100:.1f}% PF={full['pf']:.2f} MDD={full['mdd']*100:.1f}% Tier-2:{t2}")
+        print(f"    IS (older 70%): n={isM['n']} WR={isM['wr']*100:.1f}% PF={isM['pf']:.2f}")
+        print(f"    OOS(recent 30%): n={oosM['n']} WR={oosM['wr']*100:.1f}% PF={oosM['pf']:.2f}")
+    print("\n=== VERDICT (edge must persist OOS, not just full-sample) ===")
+    for cls,(full,isM,oosM) in summary.items():
+        # overfit/decay flag: OOS PF collapses below 1.0 while IS looked ok, or OOS n too thin
+        if oosM['n']<10: tag="OOS too thin (n<10) — unproven"
+        elif oosM['pf']>=1.5 and oosM['wr']>=0.50: tag="edge PERSISTS OOS"
+        elif oosM['pf']<1.0 and isM['pf']>=1.2: tag="DECAY/overfit — IS edge gone in OOS"
+        else: tag="weak/below-Tier-2 OOS"
+        print(f"  {cls:8} full PF={full['pf']:.2f} | IS PF={isM['pf']:.2f} -> OOS PF={oosM['pf']:.2f} (n={oosM['n']})  => {tag}")
+    print("  (no fabrication — every figure computed from fetched OHLCV; IS/OOS = time-split stability on fixed-rule strategies)")
 
 if __name__ == "__main__":
     main()
