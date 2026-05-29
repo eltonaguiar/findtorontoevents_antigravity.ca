@@ -84,6 +84,8 @@ jobs:
       - name: Generate picks fleet
         env:
           FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate || 'false' }}
+          AI_TOURNAMENT_MAX_WORKERS: '8'
+          AI_TOURNAMENT_MAX_WORKERS_PER_KEY: '2'
           # API keys — only set ones where you have a secret configured.
           # Fallbacks let the workflow use alternate secret names already in the
           # repo (e.g. GEMINI_FREE_KEY for GOOGLE_AI_API_KEY) so models don't
@@ -117,6 +119,9 @@ jobs:
           AIMLAPI_API_KEY: ${{ secrets.AIMLAPI_API_KEY || '' }}
           HYPERBOLIC_API_KEY: ${{ secrets.HYPERBOLIC_API_KEY || '' }}
           FEATHER_API_KEY: ${{ secrets.FEATHER_API_KEY || '' }}
+          AI_TOURNAMENT_COVERAGE_FALLBACK_ENABLED: "true"
+          AI_TOURNAMENT_API_TIMEOUT_SECONDS: "25"
+          AI_TOURNAMENT_API_SLEEP_SECONDS: "0.2"
         run: |
           echo "=== Generating tournament picks ==="
           python tools/populate_picks.py || echo "::warning title=populate_picks::picks generation failed (see above)"
