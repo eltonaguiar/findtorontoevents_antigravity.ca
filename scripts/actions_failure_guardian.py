@@ -483,6 +483,84 @@ def post_discord_stale_alert(webhook: str, stale_files: List[Dict[str, Any]]) ->
                 time.sleep(2 * (_attempt + 1))
 
 
+def detect_masked_failures(
+    repo: str,
+    token: str,
+    runs: List[Dict[str, Any]],
+    *,
+    max_runs: int = 40,
+    masker_workflows: frozenset = frozenset(),
+) -> List[Dict[str, Any]]:
+    """Detect "green but lying" runs: a job with conclusion=success that contains
+    a step which actually failed (masked by continue-on-error: true). The top-level
+    guardian keys only on job conclusion, so these are otherwise invisible.
+
+    Bounded to the most recent *max_runs* completed-success runs to stay within the
+    API quota. If *masker_workflows* is non-empty, only those workflow names are probed.
+    """
+    masked: List[Dict[str, Any]] = []
+    candidates = [
+        r for r in runs
+        if r.get("status") == "completed" and r.get("conclusion") == "success"
+        and (not masker_workflows or r.get("name") in masker_workflows)
+    ][:max_runs]
+    for run in candidates:
+        rid = run.get("id")
+        if rid is None:
+            continue
+        resp = gh_request(
+            "GET", f"/repos/{repo}/actions/runs/{rid}/jobs", token,
+            params={"per_page": 100},
+        )
+        if resp.status_code != 200:
+            continue
+        for job in resp.json().get("jobs", []):
+            if job.get("conclusion") != "success":
+                continue
+            failed = [
+                {"name": st.get("name"), "conclusion": st.get("conclusion"), "number": st.get("number")}
+                for st in (job.get("steps") or [])
+                if st.get("conclusion") in ("failure", "timed_out", "cancelled")
+            ]
+            if failed:
+                masked.append({
+                    "run_id": rid,
+                    "run_number": run.get("run_number"),
+                    "workflow_name": run.get("name"),
+                    "branch": run.get("head_branch"),
+                    "created_at": run.get("created_at"),
+                    "html_url": run.get("html_url"),
+                    "job_name": job.get("name"),
+                    "failed_step_count": len(failed),
+                    "failed_steps": failed,
+                })
+        time.sleep(0.2)
+    masked.sort(key=lambda x: (-x.get("failed_step_count", 0), x.get("workflow_name") or ""))
+    return masked
+
+
+def post_discord_masked_alert(webhook: str, masked: List[Dict[str, Any]]) -> None:
+    """Post an amber Discord embed listing masked failures (green job, failed step)."""
+    if not webhook or not masked:
+        return
+    lines = [f"**{len(masked)}** masked failure(s) detected (green job, failed step):"]
+    for e in masked[:10]:
+        steps = ", ".join((st.get("name") or "?") for st in e.get("failed_steps", [])[:3])
+        lines.append(f"- `{e['workflow_name']}` / `{e['job_name']}` — {e['failed_step_count']} failed: {steps}")
+    if len(masked) > 10:
+        lines.append(f"... and {len(masked) - 10} more")
+    payload = {"embeds": [{
+        "title": "Masked Failures (green but lying)",
+        "description": "\n".join(lines),
+        "color": 16750848,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }]}
+    try:
+        requests.post(webhook, json=payload, timeout=10)
+    except Exception:
+        pass
+
+
 def main() -> int:
     token = os.getenv("GIT_PAT_CLASSIC") or os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY", "eltonaguiar/findtorontoevents_antigravity.ca")
@@ -608,6 +686,22 @@ def main() -> int:
         print("\n[Stale Data Watchdog] All critical data files are fresh.")
 
     report["stale_data"] = stale_files
+
+    # --- Masked Failures (green job, failed step) ---
+    masked_max = int(os.getenv("FAILURE_GUARD_MASKED_MAX_RUNS", "40"))
+    _maskers_env = os.getenv("FAILURE_GUARD_MASKER_WORKFLOWS", "").strip()
+    maskers = frozenset(x.strip() for x in _maskers_env.split(",") if x.strip())
+    masked_failures = detect_masked_failures(repo, token, runs, max_runs=masked_max, masker_workflows=maskers)
+    if masked_failures:
+        print(f"\n[Masked Failures] {len(masked_failures)} green job(s) with failed steps:")
+        for e in masked_failures[:15]:
+            steps = ", ".join((st.get("name") or "?") for st in e.get("failed_steps", [])[:3])
+            print(f"  - {e['workflow_name']} / {e['job_name']} ({e['failed_step_count']} failed: {steps})")
+        post_discord_masked_alert(os.getenv("DISCORD_WEBHOOK_URL", ""), masked_failures)
+    else:
+        print("\n[Masked Failures] No green-but-lying jobs in scanned success runs.")
+    report["masked_failures_count"] = len(masked_failures)
+    report["masked_failures"] = masked_failures
     # Re-write report with stale data included
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
