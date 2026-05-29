@@ -1,7 +1,8 @@
 """Tests for H-002: PEAD equity earnings drift shadow scanner.
 
 All tests use mocks — no yfinance network calls.
-Gate: EQUITY_PEAD_ENABLED (default OFF).
+Gate: EQUITY_PEAD_ENABLED (default ON since the 2026-05-27 shadow→probation
+promotion, commits 67813f197 / e6401f0fa). Set to 0 to disable.
 """
 from __future__ import annotations
 
@@ -19,8 +20,12 @@ from alpha_engine.equity_pead_strategy import equity_pead_signals, _PEAD_UNIVERS
 
 class TestPEADGate:
 
-    def test_gate_off_by_default(self, monkeypatch):
+    def test_gate_on_by_default(self, monkeypatch):
+        # Default is now ON (shadow→probation promotion 2026-05-27). With the
+        # universe patched empty, the on-path returns [] without any network
+        # call; the explicit-off contract is covered below.
         monkeypatch.delenv("EQUITY_PEAD_ENABLED", raising=False)
+        monkeypatch.setattr("alpha_engine.equity_pead_strategy._PEAD_UNIVERSE", [])
         assert equity_pead_signals() == []
 
     def test_gate_off_explicit_zero(self, monkeypatch):

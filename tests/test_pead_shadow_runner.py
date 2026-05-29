@@ -1,7 +1,8 @@
 """Tests for H-002 PEAD shadow runner (tools/pead_shadow_runner.py).
 
 Validates:
-- Gate-off: equity_pead_signals returns [] when EQUITY_PEAD_ENABLED not set
+- Gate: equity_pead_signals returns [] when EQUITY_PEAD_ENABLED=0 (default is
+  now ON since the 2026-05-27 shadow→probation promotion)
 - Runner main() runs without crashing (dry-run, gate-on)
 - _prune_old_entries removes entries older than threshold
 - _prune_old_entries keeps recent entries
@@ -23,12 +24,13 @@ sys.path.insert(0, str(REPO_ROOT / "alpha_engine"))
 
 
 class TestPeadGateOff:
-    def test_pead_signals_empty_when_gate_off(self, monkeypatch):
-        """equity_pead_signals must return [] when EQUITY_PEAD_ENABLED is unset."""
-        monkeypatch.delenv("EQUITY_PEAD_ENABLED", raising=False)
+    def test_pead_signals_default_on_post_promotion(self, monkeypatch):
+        """Default is now ON (shadow→probation 2026-05-27). With the universe
+        patched empty, the on-path returns [] without network; explicit-off below."""
         from alpha_engine.equity_pead_strategy import equity_pead_signals
-        result = equity_pead_signals()
-        assert result == []
+        monkeypatch.delenv("EQUITY_PEAD_ENABLED", raising=False)
+        monkeypatch.setattr("alpha_engine.equity_pead_strategy._PEAD_UNIVERSE", [])
+        assert equity_pead_signals() == []
 
     def test_pead_signals_empty_when_gate_zero(self, monkeypatch):
         monkeypatch.setenv("EQUITY_PEAD_ENABLED", "0")
