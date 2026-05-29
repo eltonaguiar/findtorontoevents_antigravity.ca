@@ -1,0 +1,133 @@
+{
+  "schema": "metric-honesty-tiers/v1",
+  "purpose": "Single source of truth for the honesty/confidence label shown as a tooltip on every WR/PF/Sharpe cell across /audit and the Investment Hub. Answers the user's question for any metric: 'Is it institutional grade? Is it promising but not statistically valid yet? Or is it unverified / no-edge / contaminated?' Thresholds inherit from docs/PERFORMANCE_CHARTER.md (canonical); this file adds the VALIDITY gates that decide whether a number may be trusted at all.",
+  "generated_for_review": "2026-05-29",
+  "canonical_threshold_source": "docs/PERFORMANCE_CHARTER.md §2",
+  "decisive_definition": "A pick is DECISIVE only if it has a hard-resolved outcome: TP hit (WIN) or SL hit (LOSS). Picks resolved by max-hold/expiry-by-pnl-sign are SOFT-resolved and counted separately; >25% soft-resolution caps a cohort at 'promising_not_valid'. OPEN/active picks are never counted in WR/PF.",
+  "tiers": [
+    {
+      "id": "institutional_grade",
+      "label": "Institutional-grade",
+      "emoji": "🟢",
+      "color": "#22c55e",
+      "tooltip_short": "A quant fund would trust this. PF≥2.0, WR≥55%, MaxDD≤10%, n≥200 hard-resolved, OOS-confirmed, no single-source >60%.",
+      "tooltip_full": "Charter Tier 1 (Renaissance-grade). ALL of: Profit Factor ≥ 2.0; Win Rate ≥ 55%; MaxDD ≤ 10%; n ≥ 200 DECISIVE (hard-resolved) picks; out-of-sample holdout PF ≥ 1.5 via WALK-FORWARD (no cherry-picked holdout period); no single source_system or symbol ≥ 60% of decisive picks; ZERO soft-resolution; staleness ≤ 30d (HARD gate); R:R-asymmetry sanity passed (WR is not an artifact of extreme TP/SL payoff skew); deduped; anomaly-excluded; Sharpe ≥ 1.2. Eligible for sized-up live capital.",
+      "gates_required": ["pf>=2.0", "wr>=0.55", "maxdd<=0.10", "n_decisive>=200", "oos_walkforward_pf>=1.5", "single_source_share<0.60", "soft_resolved_share==0.0", "stale_days<=30", "rr_asymmetry_ok", "deduped", "anomaly_excluded", "sharpe>=1.2"],
+      "disqualifiers": ["any gate unmet"],
+      "current_live_examples": []
+    },
+    {
+      "id": "production_viable",
+      "label": "Production-viable",
+      "emoji": "🔵",
+      "color": "#3b82f6",
+      "tooltip_short": "Real, sized-up-able edge. PF≥1.5, WR≥50%, MaxDD≤20%, n≥100 hard-resolved, no fatal concentration.",
+      "tooltip_full": "Charter Tier 2 (sized-up live-capital floor). ALL of: PF ≥ 1.5; WR ≥ 50%; MaxDD ≤ 20%; n ≥ 100 DECISIVE picks; no single source/symbol ≥ 60%; ≤25% soft-resolved; deduped; anomaly-excluded; Sharpe ≥ 0.8. Trustworthy for real capital at conservative size; not yet OOS-proven enough for Tier 1.",
+      "gates_required": ["pf>=1.5", "wr>=0.50", "maxdd<=0.20", "n_decisive>=100", "single_source_share<0.60", "soft_resolved_share<=0.25", "deduped", "anomaly_excluded"],
+      "disqualifiers": ["any gate unmet"],
+      "current_live_examples": []
+    },
+    {
+      "id": "promising_not_valid",
+      "label": "Promising — not statistically valid yet",
+      "emoji": "🟡",
+      "color": "#eab308",
+      "tooltip_short": "Positive measured edge, but fails a validity gate (small n, single-source, stale, no OOS, or soft-resolution). PAPER-ONLY — do not size up.",
+      "tooltip_full": "A POSITIVE, honestly-measured result (PF ≥ 1.2 on hard-resolved decisive picks) that fails ONE OR MORE statistical-validity gates: n < 100 decisive; a single source/symbol ≥ 60% of decisive picks; data is stale (newest pick > 30 days old); out-of-sample not yet confirmed; or > 25% of the 'wins' are soft-resolved (max-hold/expiry-by-sign rather than a TP hit). Genuinely interesting, paper-trade / forward-test only. The honest answer to 'is this real edge?' is 'maybe — not enough evidence yet.'",
+      "gates_required": ["pf>=1.2 on hard-resolved", "at least one validity gate FAILED"],
+      "disqualifiers": ["pf<1.2", "wr<0.45", "zero hard-resolved wins"],
+      "current_live_examples": [
+        {"cohort": "gm_unified_picks / ADX Trend Strength", "n_decisive": 70, "wr": 0.743, "pf": 3.29, "why_not_valid": "n<100, crypto-concentrated, STALE (newest 2026-02-16), ~40% of wins soft-resolved (max-hold). Needs a fresh forward-test before any audit ingestion."}
+      ]
+    },
+    {
+      "id": "unverified_unresolved",
+      "label": "Unverified — no outcome resolution",
+      "emoji": "🟠",
+      "color": "#f97316",
+      "tooltip_short": "Picks exist but were never tracked to a win/loss. WR/PF CANNOT be stated. Any displayed performance is fabricated or synthetic.",
+      "tooltip_full": "The pick table has NO resolved-outcome column (no status/exit_price/pnl/return), OR the only 'performance' available comes from pre-aggregated summary tables that contain synthetic/sentinel values. A win rate or profit factor for this cohort cannot be honestly computed and must NOT be displayed as if real. This is the dominant state of the Investment Hub feeds. Fix = wire an outcome resolver (pattern: alpha_engine/outcome_resolver.py) before any edge claim.",
+      "gates_required": ["picks exist", "zero decisive (hard or soft) outcomes available"],
+      "disqualifiers": [],
+      "current_live_examples": [
+        {"cohort": "alpha_picks (5043) + stock_picks (7239)", "why": "no status/exit/pnl columns — never outcome-resolved"},
+        {"cohort": "cr_pair_picks (1008) + fxp_pair_picks (1248)", "why": "no outcome columns; *_backtest_trades companion tables are empty"},
+        {"cohort": "mf2_fund_picks (600)", "why": "score/rating only, no NAV-based return tracking"}
+      ]
+    },
+    {
+      "id": "no_edge",
+      "label": "No edge / negative",
+      "emoji": "🔴",
+      "color": "#ef4444",
+      "tooltip_short": "Honestly measured and losing. PF<1.2 or WR<45% on hard-resolved decisive picks.",
+      "tooltip_full": "A fully-resolved cohort (n ≥ 30 decisive) that does not make money: PF < 1.2 OR WR < 45% OR MaxDD > 25%. The measurement is trustworthy; the strategy is not. Candidate for the mutation-before-kill protocol (PERFORMANCE_CHARTER.md §8), not for capital.",
+      "gates_required": ["n_decisive>=30", "pf<1.2 OR wr<0.45 OR maxdd>0.25"],
+      "disqualifiers": [],
+      "current_live_examples": [
+        {"cohort": "penny_picks (overall)", "n_decisive": 331, "wr": 0.163, "pf": 0.39, "note": "documented loser, stop-loss-dominated Canadian micro-caps"},
+        {"cohort": "mf2_tracked_picks (pooled)", "n_decisive": 35, "wr": 0.40, "pf": 0.47},
+        {"cohort": "miracle_picks3 / best cohort", "n_decisive": 311, "wr": 0.457, "pf": 1.07}
+      ]
+    },
+    {
+      "id": "disputed_contaminated",
+      "label": "Disputed / contaminated",
+      "emoji": "⛔",
+      "color": "#a855f7",
+      "tooltip_short": "Headline looks great but contradicts the canonical view due to leakage: dup groups, EXPIRED→WON relabels, single-source, outlier PF, or fabricated/sentinel values.",
+      "tooltip_full": "A high headline WR/PF that does NOT reconcile with the policy-clean canonical view (pf_registry.json::by_asset_class_policy_clean_net). Cause is a known leakage pattern: duplicate signal-timestamp groups, EXPIRED→WON mislabels, >60% single-source concentration, a mathematically-absurd PF (>10, usually a few corrupt pnl rows), soft-resolution inflation, or literal fabricated values (decimal-column-max sentinels). Treat the number as FALSE until independently re-derived. Display with a DISPUTED banner.",
+      "gates_required": ["headline metric contradicts canonical policy-clean view", "≥1 leakage pattern present"],
+      "disqualifiers": [],
+      "current_live_examples": [
+        {"cohort": "FUTURES pick_funnel 65.09% WR / PF 4.11", "reality": "48h 0% → 7d 35% → 30d 57%; ~95% single-engine; policy-clean verdict 9.1% WR / PF 0.48", "pattern": "single-source + window-instability + outlier PF"},
+        {"cohort": "fxp_algo_performance / FX Carry Trade avg_return = +999,999.9999%", "reality": "decimal(10,4) column-max sentinel — a backtest stub that overflowed", "pattern": "fabricated/sentinel value"},
+        {"cohort": "miracle_picks2 / Mean Reversion Sniper 62.5% WR PF 2.04", "reality": "0 actual winners; 8 losers + 40 expired scored by raw-pct sign", "pattern": "soft-resolution / EXPIRED-as-WON"},
+        {"cohort": "CRYPTO Smart Picks 78.9% WR (dashboard)", "reality": "raw DB 39.4% WR / PF 0.37", "pattern": "dup-inflation + single-source"}
+      ]
+    }
+  ],
+  "tooltip_render_note": "Pages should render the tooltip_short on hover over any WR/PF/Sharpe cell, color the cell border per `color`, and prefix the metric with `emoji`. The full definition + the decisive_definition belong in a glossary modal linked from each tooltip. NEVER display a WR/PF for an 'unverified_unresolved' cohort — show the label instead.",
+  "anti_gaming_gates": {
+    "note": "Added 2026-05-29 from peer review (the threshold gates above are necessary but not sufficient — these close the loopholes a dishonest reporter could still exploit).",
+    "rr_asymmetry_ok": {
+      "loophole": "Tight TP + wide SL manufactures a high WR via random-walk TP hits; PF>2 is trivial with 10:1 payoff asymmetry on coin-flip signals. A fixed 'R:R<0.5 AND WR>65%' trigger is gameable (sit at R:R=0.6 or WR=64% and slip through).",
+      "gate": "EXPECTANCY GATE (replaces the fixed trigger). For each cohort compute median R:R = |TP-entry|/|SL-entry| and the break-even win rate BE = 1/(1 + R:R). A no-edge random strategy lands AT the break-even line for its own R:R, so: bar from blue/green unless the Wilson lower-bound of observed WR EXCEEDS BE by a statistically significant margin (i.e. expectancy WR*TP - (1-WR)*SL > 0 with the WR CI lower bound, not the point estimate). This is un-gameable — moving TP/SL shifts BE with you. Examples: R:R=0.5 -> BE 66.7%; R:R=0.6 -> BE 62.5%; R:R=1.0 -> BE 50%; R:R=2.0 -> BE 33.3%. Also require conditional WR by holding-period bucket so a 'TP-by-noise' cohort is visible.",
+      "source": "nvidia/kimi-k2.6 (raised loophole) + fireworks/kimi-k2p5 (derived BE=1/(1+R:R) expectancy fix), round-2 peer review"
+    },
+    "loss_tail_check": {
+      "loophole": "Many small soft-resolved wins + a few large hard-resolved losses can show high WR while bleeding money; median R:R misses the fat loss tail.",
+      "gate": "PF (not WR) is the binding metric for blue/green; additionally report the largest single loss and max consecutive loss so an asymmetric loss tail is visible even when WR looks good.",
+      "source": "groq/qwen3-32b round-2 peer review"
+    },
+    "oos_walkforward_not_cherrypicked": {
+      "loophole": "'OOS holdout PF>=1.5' is itself gameable: cherry-pick the holdout period, leak future data, or mislabel in-sample as OOS.",
+      "gate": "OOS must be a fixed walk-forward split declared BEFORE the run (anchored or rolling), not a period chosen after seeing results. No parameter tuning on the holdout. Record the split spec alongside the metric so it is independently reproducible.",
+      "source": "nous/Hermes-4-405B peer review"
+    },
+    "soft_resolution_clustering_watch": {
+      "loophole": "With a 25% soft cap on blue, cohorts can cluster just below 25% to maximize WR inflation.",
+      "gate": "Apply the soft-share to ATTEMPTED resolutions (not just closed). Monitor the soft-share distribution for pile-up at 24-25%; tighten over time as data quality improves.",
+      "source": "nous/Hermes-4-405B + fireworks/kimi peer review"
+    }
+  },
+  "peer_review": {
+    "date": "2026-05-29",
+    "mechanism": "PeerReviewSwarmOptions → tools/consult_multi.py --fanout reasoning4",
+    "reviewers": ["nvidia/moonshotai-kimi-k2.6", "nous/Hermes-4-405B", "fireworks/kimi-k2p5"],
+    "failed": ["aimlapi/gpt-4o-mini (HTTP 403)"],
+    "consensus": {
+      "Q1_n200_floor": "KEEP n>=200 for Tier-1 — a hard count is harder to game than a vague 'stricter OOS' (3/3).",
+      "Q2_soft_cap": "ZERO soft-resolution for green; 25% cap only for blue, applied to attempted resolutions (3/3). Draft updated accordingly.",
+      "Q3_unverified_vs_disputed": "TWO separate tiers — absence-of-evidence (omission) vs evidence-of-tampering (commission) need different audit responses (3/3).",
+      "Q4_staleness": "HARD gate for green; soft warning acceptable for blue (3/3; Hermes wanted hard for both).",
+      "biggest_loophole": "TP/SL placement gaming (manufactured WR via payoff asymmetry) + non-verifiable OOS construction — both now addressed by anti_gaming_gates above."
+    },
+    "round_2": {
+      "mechanism": "consult_multi --fanout diverse5 (different model families)",
+      "reviewers": ["nvidia/kimi-k2.6 (garbled output, discarded)", "groq/qwen3-32b", "fireworks/kimi-k2p5", "together/llama-3-8b"],
+      "failed": ["cerebras/llama3.1-8b (HTTP 404)"],
+      "key_improvement": "fireworks/kimi derived BE=1/(1+R:R): the fixed 'R:R<0.5 AND WR>65%' trigger was replaced with an expectancy gate (require Wilson-lower-bound WR > break-even WR). groq added the loss-tail/PF-binding gate. together flagged staleness cherry-picking (already a hard gate for green)."
+    }
+  }
+}
