@@ -20,8 +20,15 @@ Output schema (consumed by audit_dashboard/ai-tournament.html::loadModelSummary)
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Share the same trustworthiness filter the leaderboard uses, so both tables
+# rest on a clean cohort and differ ONLY on min-n / CI (not data quality).
+# Drops impossible resolutions (resolved_at<submitted_at, inverted TP/SL).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from normalize import is_resolution_trustworthy  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 PICKS = REPO / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
@@ -68,6 +75,9 @@ def build() -> dict:
             m["last_pick"] = ts
         status = p.get("status")
         if status in ("WIN", "LOSS", "EXPIRED"):
+            if not is_resolution_trustworthy(p):
+                m["excluded_untrustworthy"] = m.get("excluded_untrustworthy", 0) + 1
+                continue
             m["resolved"] += 1
             pnl = _pnl(p)
             if pnl is not None:
