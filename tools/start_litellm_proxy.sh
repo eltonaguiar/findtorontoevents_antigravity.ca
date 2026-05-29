@@ -162,10 +162,10 @@ parse_key() {
   # $1=label, $2=env_var_to_set
   local label="$1" env="$2"
   local val
-  # Trim trailing whitespace on both label-from-file and current line so
-  # entries like "NOUS API KEY (USE ONLY FREE MODELS): " (trailing space)
-  # still match the bare label we pass in. Without this, parse_key silently
-  # drops keys whose label line has trailing whitespace.
+  # Trim BOTH leading and trailing whitespace so labels under sections like
+  # "==PAID_APIS==" (which are indented with 2 spaces: "  XIAOMI_MIMO_TOKEN_PLAN",
+  # "  ANTROPHIC") still match the bare labels passed to parse_key.
+  # Also handles trailing spaces on labels like "NOUS API KEY ...: ".
   # Smart-skip sub-label lines after the main label. The file has patterns like
   #   GROK:
   #   GROK_SUPER             ← header, NOT the key
@@ -176,7 +176,7 @@ parse_key() {
   #   - NOT ending in ':' (skips continuation labels)
   #   - NOT a URL (skips https://hypereal.cloud/-style annotation lines)
   val="$(awk -v lbl="$label" '
-    { line=$0; sub(/[[:space:]]+$/, "", line) }
+    { line=$0; gsub(/^[ \t]+|[ \t]+$/, "", line) }
     line == lbl { found=1; next }
     found && NF > 0 {
       if (line ~ /^[A-Z][A-Z0-9_]*$/) next
@@ -234,6 +234,7 @@ parse_key "OLLAMA_CLOUD_KEY"                                                    
 parse_key "ANTROPHIC"                                                                ANTHROPIC_API_KEY
 parse_key "ANTR_MAY2026"                                                             ANTHROPIC_API_KEY_ALT
 parse_key "DEEPSEEK_API"                                                             DEEPSEEK_API_KEY
+parse_key "XIAOMI_MIMO_TOKEN_PLAN"                                                   XIAOMI_MIMO_TOKEN_PLAN
 parse_key "KIMI_MOONSHOT_APIKEY"                                                     MOONSHOT_API_KEY
 parse_key "KIMI_MOONSHOT_APIKEY2"                                                    MOONSHOT_API_KEY_ALT
 parse_key "SAMBANOVA_API_KEY:"                                                       SAMBANOVA_API_KEY

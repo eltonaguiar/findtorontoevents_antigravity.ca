@@ -46,6 +46,7 @@ SYMBOL_CLASS_OVERRIDES = {
     "TLT": "BOND", "BND": "BOND", "IEF": "BOND", "SHY": "BOND",
     "CL=F": "COMMODITY", "NG=F": "COMMODITY", "GC=F": "COMMODITY",
     "SI=F": "COMMODITY", "HG=F": "COMMODITY", "ZS=F": "COMMODITY",
+    "ZC=F": "COMMODITY",
 }
 
 PERSONA_FALLBACK = "unspecified"
@@ -87,3 +88,28 @@ def is_timestamp_anomaly(p: dict) -> bool:
     sub = _parse(p.get("submitted_at"))
     res = _parse(p.get("resolved_at"))
     return bool(sub and res and res < sub)
+
+
+def is_tpsl_violation(p: dict) -> bool:
+    """True when TP/SL sit on the wrong side of entry for the pick's direction.
+    LONG must have TP > entry > SL; SHORT must have TP < entry < SL. Such a pick
+    can never resolve as intended, so its WIN/LOSS is meaningless."""
+    try:
+        e = float(p.get("entry_price"))
+        tp = float(p.get("take_profit"))
+        sl = float(p.get("stop_loss"))
+    except (TypeError, ValueError):
+        return False
+    if not (e > 0 and tp > 0 and sl > 0):
+        return False
+    d = canon_direction(p.get("direction"))
+    if d == "LONG":
+        return not (tp > e > sl)
+    if d == "SHORT":
+        return not (tp < e < sl)
+    return False
+
+
+def is_resolution_trustworthy(p: dict) -> bool:
+    """A resolved pick whose WIN/LOSS can be trusted for leaderboard stats."""
+    return not (is_timestamp_anomaly(p) or is_tpsl_violation(p))

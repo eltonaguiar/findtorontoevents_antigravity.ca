@@ -190,6 +190,11 @@ from paper_trading.strategies.walkforward_elite_strategies import (
     STOBVSupportDivergence, STFearGreedContrarian, STMultiDayMomentum,
 )
 
+# Cross-Asset Strategies (3) — tested across crypto/ETF/equity/forex/commodity
+from paper_trading.strategies.cross_asset_strategies_pt import (
+    FibonacciRsiMeanReversionPT, VolumeWeightedMedianZScorePT, VolumePriceConfirmationReversalPT,
+)
+
 # H-037 VIX Term Structure Carry — harness-admissible ETF strategy
 from paper_trading.strategies.h037_vix_carry import H037VIXCarry
 
@@ -338,6 +343,10 @@ ALL_STRATEGIES = [
     STOBVSupportDivergence(),     # 68.3% WR, PF 4.75, n=101, Sharpe 9.85
     STFearGreedContrarian(),      # 58.1% WR, PF 2.50, n=344, Sharpe 5.51
     STMultiDayMomentum(),         # 62.7% WR, PF 3.84, n=75, Sharpe 8.32
+    # Cross-Asset Strategies (3) — tested on crypto/ETF/equity/forex/commodity
+    FibonacciRsiMeanReversionPT(), # PF 2.70, n=133, commodity PF 6.12, equity PF 4.85
+    VolumeWeightedMedianZScorePT(), # PF 1.73, n=532, forex PF 2.74, all 4 classes
+    VolumePriceConfirmationReversalPT(), # PF 1.81, n=175, ETF PF 3.58, NVDA PF 12.05
     # H-037 VIX Term Structure Carry — harness-admissible ETF strategy
     H037VIXCarry(),               # 58.9% WR, PF 1.295, n=1185, eff=0.75
 ] + _CATERED_STRATS + _HOFFMAN_WINNING + _CHAMPIONSHIP + _PROP_CLASSICS  # Symbol-Catered + Winning combos + Championship + Prop Firm Classics
@@ -392,6 +401,8 @@ def _get_system_name(strategy) -> str:
         return "Prop Firm Classics (Battle-Tested)"
     if name in ("st_obv_support_divergence", "st_fear_greed_contrarian", "st_multi_day_momentum"):
         return "Walk-Forward Elite (CI-Validated)"
+    if name in ("fibonaccirsimeanreversion", "volume_weighted_median_zscore", "volume_price_confirmation_reversal"):
+        return "Cross-Asset (5-Class Validated)"
     if name == "h037_vix_carry":
         return "H-037 VIX Term Structure Carry (Harness-Admissible)"
     if "hoffman" in name or "irb" in name:

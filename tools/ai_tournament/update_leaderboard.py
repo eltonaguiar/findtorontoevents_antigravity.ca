@@ -22,6 +22,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from normalize import is_resolution_trustworthy
+
 REPO_ROOT = Path(__file__).parent.parent.parent
 LATEST_PICKS = REPO_ROOT / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
 LEADERBOARD_OUT = REPO_ROOT / "audit_dashboard" / "data" / "ai_tournament_leaderboard.json"
@@ -95,7 +97,11 @@ def main() -> None:
 
     models = []
     for model_id, model_picks in by_model.items():
-        resolved = [p for p in model_picks if p.get("status") not in ("OPEN",)]
+        all_resolved = [p for p in model_picks if p.get("status") not in ("OPEN",)]
+        # Drop impossible resolutions (resolved_at < submitted_at, or TP/SL on the
+        # wrong side of entry) so WR/PF aren't built on corrupt rows.
+        resolved = [p for p in all_resolved if is_resolution_trustworthy(p)]
+        n_excluded = len(all_resolved) - len(resolved)
         n_total = len(model_picks)
         n_resolved = len(resolved)
 
@@ -121,6 +127,7 @@ def main() -> None:
             "model_version": model_version,
             "n_picks": n_total,
             "n_resolved": n_resolved,
+            "n_excluded_untrustworthy": n_excluded,
             "n_wins": n_wins,
             "wr": round(wr, 4),
             "wr_ci_lo": round(wr_ci_lo, 4),

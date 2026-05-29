@@ -1,30 +1,57 @@
 """Generate summary data from tournament_picks for the summary page."""
-import pymysql, json, os
-from datetime import datetime, timezone
+from __future__ import annotations
 
-conn = pymysql.connect(host='mysql.50webs.com', user='ejaguiar1_stocks', password='stocks1234560', database='ejaguiar1_stocks', port=3306, connect_timeout=15)
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+# Ensure project root is on path for db_env import
+REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
+
+from tools.db_env import get_stocks_creds  # noqa: E402
+import pymysql  # noqa: E402
+
+creds = get_stocks_creds()
+conn = pymysql.connect(**creds, cursorclass=pymysql.cursors.DictCursor)
 cur = conn.cursor()
 
 # Per-asset-class performance (matching fields the summary page expects)
 cur.execute("""
-    SELECT asset_class, COUNT(*),
+    SELECT asset_class, COUNT(*) as total,
            SUM(CASE WHEN status='WIN' THEN 1 ELSE 0 END) as wins,
            SUM(CASE WHEN status='LOSS' THEN 1 ELSE 0 END) as losses,
            ROUND(AVG(CASE WHEN status IN ('WIN','LOSS') THEN pnl_pct ELSE NULL END), 2) as avg_pnl,
-           ROUND(AVG(confidence+0), 4) as avg_conf
-    FROM tournament_picks GROUP BY asset_class ORDER BY COUNT(*) DESC
+           ROUND(AVG(confidence+0), 4) as avg_conf,
+           SUM(CASE WHEN pnl_pct > 0 THEN pnl_pct ELSE 0 END) as sum_win_pnl,
+           SUM(CASE WHEN pnl_pct < 0 THEN pnl_pct ELSE 0 END) as sum_loss_pnl
+    FROM tournament_picks GROUP BY asset_class ORDER BY total DESC
 """)
 
 systems = []
 for r in cur.fetchall():
-    ac = r[0]
-    total = int(r[1])
-    wins = int(r[2] or 0)
-    losses = int(r[3] or 0)
+    ac = r['asset_class']
+    total = int(r['total'] or 0)
+    wins = int(r['wins'] or 0)
+    losses = int(r['losses'] or 0)
     resolved = wins + losses
-    wr = round(wins / resolved * 100, 1) if resolved > 0 else 0
-    avg_pnl = float(r[4]) if r[4] is not None else 0
-    avg_conf = float(r[5]) if r[5] is not None else 0
+    # When resolved=0, wr and win_rate are null (not 0.0 — 0 resolved ≠ 0% WR)
+    wr = round(wins / resolved * 100, 1) if resolved > 0 else None
+    avg_pnl = float(r['avg_pnl']) if r['avg_pnl'] is not None else None
+    avg_conf = float(r['avg_conf']) if r['avg_conf'] is not None else None
+    # Profit Factor = sum(+pnl) / |sum(-pnl)| — NOT wins/losses ratio
+    sum_win_pnl = float(r['sum_win_pnl'] or 0)
+    sum_loss_pnl = float(r['sum_loss_pnl'] or 0)
+    if sum_loss_pnl != 0:
+        pf = round(sum_win_pnl / abs(sum_loss_pnl), 2)
+    elif sum_win_pnl > 0:
+        pf = float('inf')  # no losers, all positive
+    elif resolved > 0:
+        pf = 0.0  # all losers
+    else:
+        pf = None  # no data
     
     systems.append({
         'asset_class': ac,
@@ -35,10 +62,10 @@ for r in cur.fetchall():
         'wins': wins,
         'losses': losses,
         'win_rate_pct': wr,
-        'win_rate': round(wins / resolved, 4) if resolved > 0 else 0,
+        'win_rate': round(wins / resolved, 4) if resolved > 0 else None,
         'avg_pnl_pct': avg_pnl,
         'avg_confidence': avg_conf,
-        'profit_factor': round(wins / max(losses, 1), 2) if losses > 0 else wins,
+        'profit_factor': pf,
     })
 
 # Readiness gates
@@ -51,11 +78,12 @@ cur.execute("""
 """)
 gates = {}
 for r in cur.fetchall():
-    gates[r[0]] = {
-        'n_gate': bool(r[1]),
-        'resolved_gate': bool(r[2]),
-        'profitable_gate': bool(r[3]),
-        'all_passed': bool(r[1]) and bool(r[2]) and bool(r[3])
+    ac = r['asset_class']
+    gates[ac] = {
+        'n_gate': bool(r['passed_n']),
+        'resolved_gate': bool(r['passed_resolved']),
+        'profitable_gate': bool(r['passed_profitable']),
+        'all_passed': bool(r['passed_n']) and bool(r['passed_resolved']) and bool(r['passed_profitable'])
     }
 
 summary = {
@@ -73,9 +101,10 @@ summary = {
     'note': 'Picks from AI Prediction Tournament. Active = OPEN picks. Closed = WIN + LOSS resolved picks.'
 }
 
-out = r'c:\findtorontoevents_antigravity.ca\audit_dashboard\data\summary_tournament_data.json'
-with open(out, 'w') as f:
-    json.dump(summary, f, indent=2)
+out = REPO / 'audit_dashboard' / 'data' / 'summary_tournament_data.json'
+out.parent.mkdir(parents=True, exist_ok=True)
+with out.open('w') as f:
+    json.dump(summary, f, indent=2, default=str)
 
 print(f'Generated tournament summary: {summary["total_picks"]} picks, {summary["system_count"]} asset classes')
 print(f'Active: {summary["active_picks"]}, Closed: {summary["closed_picks"]}, WR: {summary["overall_win_rate"]}%')

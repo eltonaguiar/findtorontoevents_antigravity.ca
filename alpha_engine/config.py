@@ -145,12 +145,26 @@ STRATEGY_WEIGHT_OVERRIDES: dict[str, float] = {
     "etf_faber_tactical":       3.0,  # Faber TAA: same paper, 99% return retention
     "etf_risk_parity_rotation": 2.5,  # Bridgewater/AQR risk-parity, 60d corr edge
     "etf_trend_following":      2.5,  # Kirby & Ostdiek 2012: simple timing beats naive
+    # New improved strategies (2026-05-28) — replacing worst performers
+    "etf_dual_momentum_rotation": 2.0,  # dual-momentum sector rotation, DIA 58.8% WR PF 2.64
+    "equity_rsi_momentum_drift":  1.5,  # RSI pullback + momentum drift, AAPL 66.7% WR PF 3.36
+    "bond_yield_steepener_carry": 1.5,  # yield steepener + carry, IEF 52.9% WR PF 2.13
+    "futures_session_breakout_cot": 2.0,  # session breakout + COT proxy, ES=F 61.5% WR PF 1.39
+    "forex_carry_bb_hybrid":      1.0,  # carry + BB hybrid, experimental (GBPUSD 75% WR, sparse)
+    "penny_volume_gap_reversion":  0.5,  # volume surge + gap reversion, low WR, high vol
     # Carry strategies (high Sharpe, proven edge)
     "funding_rate_carry":       2.5,  # 8.19 Sharpe, deserves bigger allocation
     "funding_carry":            2.5,  # Alias
     "funding_rate_carry_pro":   2.5,  # Cerebrus enhanced variant
     "funding_rate_arbitrage":   2.0,  # Related carry strategy, 19-115% annual
     "cross_exchange_basis_carry": 2.5, # Cross-exchange funding spread, 3:1 R:R
+    # Cycle 13: Volatility Mean Reversion — 30/30 symbols profitable, universal across all classes
+    # XLF PF=5.0/WR=66.7%, SI=F PF=4.08, GC=F PF=3.95, AVAX PF=3.16, USDJPY PF=3.28
+    "volatility_mean_reversion": 3.0,  # Highest confidence new strategy — universal edge
+    # Cycle 13: Cross-Asset Rotation — ALL-CLASSES PF=3.24/WR=62.5%/n=56
+    "cross_asset_rotation":      2.0,  # 21-day rebalance across momentum leaders
+    # Cycle 13: Trend Triple Confirmation — CL=F PF=4.65, AVAX PF=4.10, GLD PF=3.92
+    "trend_triple_confirmation": 2.0,  # 3 EMA alignment + ADX proxy
     # COMMODITY — Tier 1 per asset_class_health 2026-05-08 (PF 4.07 / WR 67.2% / n=750).
     # Charter "size up where edge is best worth the risk". Per-symbol concentration
     # cap added in config/risk_policy.json::commodity to mitigate inverse-momentum
@@ -233,7 +247,23 @@ COMMODITY_LONG_REENABLE_MIN_N: int = 30               # min n trades before re-e
 # ---------------------------------------------------------------------------
 # binance_smart_money: 45.8% WR, -0.21% PnL — net loser
 # hl_funding_fade: 0/11 = 0% WR — consistently wrong on funding rate reversals
-BLACKLISTED_STRATEGIES = ['binance_smart_money', 'hl_funding_fade', 'quan_engine_scalp', 'claude_gainer_st', 'kimi_signal_tracking']  # kimi_signal_tracking: -954% PnL / PF 0.26 (SUPREME EDGE P0 #2, 2026-05-11); claude_gainer_st: 26.5% WR / -355% total PnL / 778/790 PROVEN picks (2026-05-01 fix)
+BLACKLISTED_STRATEGIES = [
+    'binance_smart_money',       # 45.8% WR, -0.21% PnL — net loser
+    'hl_funding_fade',           # 0/11 = 0% WR — consistently wrong on funding rate reversals
+    'quan_engine_scalp',         # PF 0.42 / WR 37% — degraded, dead per edge_decay_heatmap
+    'claude_gainer_st',          # 26.5% WR / -355% total PnL / 778/790 PROVEN picks (2026-05-01 fix)
+    'kimi_signal_tracking',      # -954% PnL / PF 0.26 (SUPREME EDGE P0 #2, 2026-05-11)
+    # 2026-05-28 quant review P0 kills — see reports/QUANT_STRATEGY_REVIEW_2026-05-28.md
+    'rapid_fire',                # 217 trades, PF 0.77, -70% PnL — biggest volume drag
+    'ensemble',                  # 84 CRYPTO trades, PF 0.009, -6066% PnL — worst strategy in system
+    'battleground_luxalgo',      # 32 trades, PF 0.18, -117% PnL — grinding losses
+    'multi_period_rsi_confluence_eth',  # 16 trades, PF 0.43, -248% PnL
+    'ml_breakout',               # 21 trades, 0% WR — ML model completely inverted
+    'genome_mutations',          # 6 trades, 0% WR, -107% PnL — mutation engine not working
+    'stocks_rsi2_pullback',      # 10 EQUITY trades, WR 30%, PF 0.032 — catastrophically bad
+    'multi_asset_scanner',       # FOREX n=11 WR 9.1%, FUTURES n=11 WR 9.1% — universal loser
+    'ctar_replicator',           # FOREX n=5 WR 40% PF 0.62, COMMODITY n=2 WR 0% PF 0.0
+]
 BLACKLISTED_EXCHANGES = ['bitget']
 
 # ---------------------------------------------------------------------------
@@ -2115,6 +2145,34 @@ STRATEGY_FAMILIES: dict[str, str] = {
     # Top-1 edge research candidate 2026-05-12 (USDA planting/harvest cycles)
     # -----------------------------------------------------------------------
     "commodity_seasonal_planting_harvest":   "commodity_seasonal",
+
+    # -----------------------------------------------------------------------
+    # Cycle 6 discoveries (2026-05-29) — synthetic backtest, 10-seed stability
+    # VWAP Bands MR: CRYPTO PF 1.59 / WR 43.9% / n=99 / Sharpe 3.00 / Stab 0.86
+    # ADX Range MR:  CRYPTO PF 1.48 / WR 41.5% / n=28 / EQUITY PF 1.42 / n=31
+    # Best geometry: Aggressive (TP 2%, SL 1%, hold 10 bars)
+    # Ref: reports/CYCLE_6_STRATEGY_HUNT_2026-05-29.md
+    # -----------------------------------------------------------------------
+    "vwap_bands_mean_reversion":           "mean_reversion",
+    "adx_range_mean_reversion":            "mean_reversion",
+
+    # -----------------------------------------------------------------------
+    # Cycle 7 discoveries (2026-05-29) — Kalman filter trend extraction
+    # Kalman_MR: CRYPTO PF 1.57 / WR 43.7% / n=130 / Sharpe 2.55 / Stab 0.84
+    #            EQUITY PF 1.43 / WR 41.4% / n=68  / Sharpe 1.43 / Stab 0.78
+    # Best geometry: Aggressive (TP 2%, SL 1%, hold 10 bars)
+    # Ref: reports/CYCLE_7_STRATEGY_HUNT_2026-05-29.md
+    # -----------------------------------------------------------------------
+    "kalman_mean_reversion":               "mean_reversion",
+
+    # -----------------------------------------------------------------------
+    # Cycle 9 discoveries (2026-05-29) — Real data walk-forward validation
+    # MTF_RSI: ETH PF 2.71 / WR 60.8% / n=33 / 5/5 folds / +24% PnL
+    #          BTC PF 2.16 / WR 51.2% / n=33 / 4/5 folds / USD/JPY PF 2.35
+    # Best strategy across ETH, BTC, EUR/USD, USD/JPY (real Yahoo Finance data)
+    # Ref: reports/CYCLE_9_REAL_DATA_VALIDATION_2026-05-29.md
+    # -----------------------------------------------------------------------
+    "mtf_rsi_mean_reversion":              "mean_reversion",
 }
 
 # ---------------------------------------------------------------------------

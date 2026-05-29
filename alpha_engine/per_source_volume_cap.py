@@ -43,7 +43,7 @@ PER_SOURCE_VOLUME_CAP: dict[str, dict[str, float]] = {
     "regime_terminal":      {"CRYPTO": 0.02, "EQUITY": 0.05, "FOREX": 0.05},  # WR 34.3%
     # 2026-05-16 CRYPTO+FOREX autopsy: rapid_fire filtered by score>=10 but still PF<1.
     # super_signals bypasses smart_picks_engine (see quality_gates.py:3795) — cap on intake.
-    "rapid_fire":           {"CRYPTO": 0.05, "FOREX": 0.05},  # PF 0.81 WR 37.1% n=570
+    "rapid_fire":           {"CRYPTO": 0.0, "FOREX": 0.0},  # 2026-05-28: KILLED — PF 0.77, -70% PnL. BLACKLISTED.
     "super_signals":        {"CRYPTO": 0.05, "EQUITY": 0.05},  # PF 0.86 WR 36.8%; EQUITY WR 36.8%
 }
 

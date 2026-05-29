@@ -83,6 +83,7 @@ _KEY_LABELS = {
     "HYPEREAL_API_KEY_ALT": "HYPEREAL CLOUD API KEY 2:",
     "CF_ACCOUNT_ID":      "Cloudflare account iD:",
     "CF_API_TOKEN":       "Cloudflare API key:",
+    "XIAOMI_MIMO_TOKEN_PLAN": "XIAOMI_MIMO_TOKEN_PLAN",
 }
 _keys_cache: dict[str, str] = {}
 

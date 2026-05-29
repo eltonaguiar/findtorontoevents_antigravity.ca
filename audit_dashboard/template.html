@@ -905,12 +905,37 @@ a:hover { text-decoration: underline; }
   <!-- DISPUTED BANNER (Tier-0 fix 2026-05-28) — propagated from pick_funnel.html so /audit
        headline cannot be cited without the disclosure. Conditioned on money_ready_verdict
        CRYPTO verdict via JS at bottom of banner script. -->
-  <div id="crypto-disputed-banner" style="background:#7c2d12;border:2px solid #ef4444;border-radius:10px;padding:12px 16px;margin:10px 0 0;color:#fecaca;font-size:12px;line-height:1.55">
+  <div id="crypto-disputed-banner" style="display:none;background:#7c2d12;border:2px solid #ef4444;border-radius:10px;padding:12px 16px;margin:10px 0 0;color:#fecaca;font-size:12px;line-height:1.55">
     <div style="font-weight:800;font-size:13px;color:#fca5a5;letter-spacing:0.5px">&#x26A0; DISPUTED &mdash; CRYPTO Smart Picks / Verified Alpha / High-Conviction / ELITE surfaces</div>
     <div style="margin-top:6px">
       All 4 inflated CRYPTO nav surfaces (PF 9-18, WR 78-88%) are dominated by historical <code>claude_gainer_st</code> picks (91.7% concentration) with EXPIRED&rarr;WON resolver mislabels. Independent DB probe shows raw equivalent WR=33%. Honest cells: <code>pf_registry policy-clean-net</code> PF 0.98 / WR 39.7% / n=229; <code>money_ready_verdict</code> PF 0.96 / WR 31.3% / DSR 0.0073. See <a href="/audit/pick_funnel.html" style="color:#fca5a5;text-decoration:underline">pick_funnel.html DISPUTED banner</a> and <code>reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md</code>. <strong>Do not size on the inflated surfaces.</strong>
     </div>
   </div>
+  <script>
+  // DISPUTED banner visibility toggle — shows when CRYPTO is selected on inflated surfaces
+  function updateCryptoDisputedBanner() {
+    var banner = document.getElementById('crypto-disputed-banner');
+    if (!banner) return;
+    var onVerifiedAlpha = window._verifiedAlphaFilter === true;
+    var onHighConviction = window._convictionOnlyFilter === true;
+    // On VA/HC surfaces, use global filter — _spAssetFilter belongs to Smart Picks only
+    // and may be stale if user filtered SP to a different class before switching tabs.
+    var assetFilter;
+    if (onVerifiedAlpha || onHighConviction) {
+      var globalEl = document.getElementById('f-asset');
+      assetFilter = globalEl ? (globalEl.value || '').toUpperCase() : '';
+    } else {
+      assetFilter = (typeof _spAssetFilter !== 'undefined' ? _spAssetFilter : '').toUpperCase();
+      if (!assetFilter) {
+        var gfEl = document.getElementById('f-asset');
+        if (gfEl) assetFilter = (gfEl.value || '').toUpperCase();
+      }
+    }
+    var onSmartPicks = typeof _smartPickState !== 'undefined' && _smartPickState && _smartPickState.active;
+    var show = assetFilter === 'CRYPTO' && (onSmartPicks || onVerifiedAlpha || onHighConviction);
+    banner.style.display = show ? '' : 'none';
+  }
+  </script>
   <script>
   // MAJOR GOAL banner data-driven update (loop2 #11 2026-05-08).
   // Populates each per-class span from window.DASHBOARD_DATA.performance.asset_class_health
@@ -12368,7 +12393,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // ?? Filter events ??
-function onFilterChange() { renderSummary(); renderPicks(); renderVerifiedAlpha(); syncSpAssetBarWithGlobal(); loadSmartPicks(); }
+function onFilterChange() { renderSummary(); renderPicks(); renderVerifiedAlpha(); syncSpAssetBarWithGlobal(); loadSmartPicks(); updateCryptoDisputedBanner(); }
 function syncSpAssetBarWithGlobal() {
   var globalVal = (document.getElementById('f-asset') || {}).value || '';
   _spAssetFilter = globalVal.toUpperCase();
@@ -12494,6 +12519,7 @@ function applySmartPicks() {
   if (hnp) hnp.checked = true;
 
   if (typeof onFilterChange === 'function') onFilterChange();
+  updateCryptoDisputedBanner();
 
   var toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;top:20px;right:20px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:12px 20px;border-radius:8px;font-weight:700;z-index:9999;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
@@ -12809,6 +12835,7 @@ function filterSmartPicksByAsset(assetClass) {
   }
   // Re-render smart picks table with the filter applied
   loadSmartPicks();
+  updateCryptoDisputedBanner();
 }
 
 function smartPickMatchesAssetFilter(pick, wantAsset) {
@@ -12999,6 +13026,7 @@ el('btn-best-fresh').addEventListener('click', () => {
   renderSummary();
   renderPicks();
   renderVerifiedAlpha();
+  updateCryptoDisputedBanner();
 });
 
 // ?? In Profit preset - currently profitable picks ??
@@ -13280,9 +13308,9 @@ window._logFunnelClick = function(buttonId) {
 };
 // Single HIGH CONVICTION button (duplicate removed)
 var _btnConv = el('btn-conviction-picks');
-if (_btnConv) _btnConv.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks'); applyHighConvictionPreset(); });
+if (_btnConv) _btnConv.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks'); applyHighConvictionPreset(); updateCryptoDisputedBanner(); });
 var _btnConvHero = el('btn-conviction-picks-hero');
-if (_btnConvHero) _btnConvHero.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks-hero'); applyHighConvictionPreset(); });
+if (_btnConvHero) _btnConvHero.addEventListener('click', function(){ window._logFunnelClick('btn-conviction-picks-hero'); applyHighConvictionPreset(); updateCryptoDisputedBanner(); });
 // MONEY READY button instrumentation (button uses inline onclick=applyMoneyReady())
 var _btnMoneyReadyTelemetry = el('btn-money-ready');
 if (_btnMoneyReadyTelemetry) _btnMoneyReadyTelemetry.addEventListener('click', function(){ window._logFunnelClick('btn-money-ready'); });

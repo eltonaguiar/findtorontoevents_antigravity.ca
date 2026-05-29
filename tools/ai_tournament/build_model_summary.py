@@ -89,8 +89,11 @@ def build() -> dict:
                 "resolved": resolved,
                 "wins": wins,
                 "losses": m["losses"],
-                "win_rate_pct": round(100.0 * wins / resolved, 1) if resolved else 0.0,
-                "avg_pnl_pct": round(sum(pnls) / len(pnls), 2) if pnls else 0.0,
+                # When resolved=0, win_rate_pct and avg_pnl_pct are null (not 0.0).
+                # 0 resolved ≠ 0% WR — it means "no data yet". The HTML shows
+                # "pending" for null values so users aren't misled.
+                "win_rate_pct": round(100.0 * wins / resolved, 1) if resolved else None,
+                "avg_pnl_pct": round(sum(pnls) / len(pnls), 2) if pnls else None,
                 "last_pick": m["last_pick"],
                 "personas": len(m["_personas"]),
                 "asset_classes": len(m["_classes"]),
