@@ -103,16 +103,15 @@ def test_normal_case_returns_sane_cagr():
     assert 20.0 < out < 80.0
 
 
-def test_explosive_input_is_clamped_not_9999():
+def test_explosive_input_returns_none_not_fake_clamp():
     # 200 trades, capped at +10% each (the function's max_pnl_pct), 31 days.
     # Equity = 1.10**200 = ~1.9e8 ; annualized factor 365.25/31 ≈ 11.78.
-    # Naive computation → ~1e94 % CAGR. Must clamp to ceiling, never 9999.
+    # Naive computation → ~1e94 % CAGR. Per the 2026-05-27 honesty fix
+    # (commit 5a00fe8ff), a result that saturates the +999.9% ceiling now
+    # returns None (honest n/a) instead of rendering a misleading clamp.
     picks = _spread("2026-01-01T00:00:00", n=200, pnl_each=50.0, days_span=31)
     out = _compound_per_day_geomean_annualized(picks)
-    assert out is not None
-    assert out == _ANNUALIZED_CEIL_PCT
-    assert out != 9999.0
-    assert out < 1000.0
+    assert out is None
 
 
 def test_bankrupt_curve_clamps_to_floor():
