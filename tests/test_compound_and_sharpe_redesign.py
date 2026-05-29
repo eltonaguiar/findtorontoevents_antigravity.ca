@@ -113,16 +113,20 @@ def test_geomean_annualized_insufficient_days_returns_none() -> None:
     assert dg._compound_per_day_geomean_annualized(picks) is None
 
 
-def test_geomean_annualized_clamped_at_sanity_cap() -> None:
-    """Huge positive daily mean → result clamped at _ANNUALIZED_CEIL_PCT (999.9)."""
+def test_geomean_annualized_returns_none_on_ceiling_saturation() -> None:
+    """Huge positive daily mean saturates the +999.9% ceiling → returns None.
+
+    Per the 2026-05-27 honesty fix (commit 5a00fe8ff): rather than render the
+    misleading 999.9 sentinel on the /audit headline, a saturated result is
+    reported as an honest n/a (None).
+    """
     picks: list[dict] = []
     for d in range(31):
         day = f"2026-05-{d+1:02d}" if d < 31 else f"2026-06-{d-30:02d}"
-        # 9.5% per trade → equity ≈ 16.67 over 30 days → CAGR explodes → clamped
+        # 9.5% per trade → equity ≈ 16.67 over 30 days → CAGR explodes → saturates ceiling
         picks.append(_mk_pick(9.5, day=day, sym=f"S{d}"))
     result = dg._compound_per_day_geomean_annualized(picks)
-    # Clamped to _ANNUALIZED_CEIL_PCT = 999.9 (not legacy 9999.0)
-    assert result == 999.9
+    assert result is None
 
 
 # ─── _per_trade_sharpe ─────────────────────────────────────────────────────
