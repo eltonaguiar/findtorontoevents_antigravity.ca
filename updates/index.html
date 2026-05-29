@@ -34,6 +34,18 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+<div class="update-entry" data-date="2026-05-29" data-type="improvement" data-category="trading" data-types="feature,fix,research" data-tags="audit,moving-average,out-of-sample,walk-forward,honesty,survivorship,slippage,ai-tournament,incidents,goal-1">
+  <h3 style="margin:0 0 6px">2026-05-29 — Audit honesty pass: MA tracker goes out-of-sample, AI-tournament UX, incidents get EST + timeframes</h3>
+  <div class="small" style="color:#94a3b8;margin-bottom:8px">Goal #1 (phenomenal performance across asset classes). Several agents landed; highlights below.</div>
+  <ul style="margin:0 0 6px;padding-left:18px;line-height:1.55">
+    <li><strong>MA Trend Tracker v2 — now honest.</strong> The 200-day MA strategy table on <a href="/audit/ai_leaderboard.html">/audit/ai_leaderboard.html</a> was rebuilt from an in-sample snapshot into an <strong>out-of-sample, risk-overlaid</strong> tracker: walk-forward (5 folds, median + worst), a 10% never-touched holdout, ATR hard stop + MA trailing exit (no take-profit, 1% risk/trade), net of 5/15bps slippage, a buy-and-hold benchmark, bootstrap 95% CIs, and a quantified survivorship penalty. <strong>The honest result is humbling:</strong> the v1 headline (EMA200 PF 3.16) collapses to ~2.22 OOS net-of-slippage, <strong>0 strategies clear the tightened golden gate</strong>, and on equities the MA rule does <em>not</em> beat buy-and-hold OOS (15.8% vs 35.9% CAGR) — the apparent edge was mostly in-sample luck plus market exposure. Peer-reviewed (deepseek + cerebras/ofox) before build; 10/10 invariant tests (no look-ahead, stop bounds, gap-through). Source: <code>tools/ma_strategy_forward_tracker.py</code>, design <code>reports/design_ma_strategy_forward_tracker_2026-05-29.md</code>.</li>
+    <li><strong>AI Tournament page</strong> (<a href="/audit/ai-tournament.html">/audit/ai-tournament.html</a>): two-table explainer (vetted Leaderboard vs all-time Model Summary, now on the same trustworthy cohort), per-column tooltips, n&lt;30 amber low-sample coloring, and click-to-sort headers on every table.</li>
+    <li><strong>Incidents page</strong> (<a href="/audit/incidents.html">/audit/incidents.html</a>): <code>created_at</code> now renders as an <strong>EST column</strong> on the incidents + enhancements tables, and a <code>--target-release</code> timeframe field was added to the incident/enhancement CLI — the first step toward a dated fixes/enhancements roadmap.</li>
+    <li><strong>TRUTH-LAYER refresh</strong> on <a href="/audit/">/audit</a>: the raw-reality figure was updated to 73,817 closed / 25.28% WR / PF 0.61 (outlier-capped) — conclusion unchanged (raw ledger is net-unprofitable; vetted gates are doing the work).</li>
+  </ul>
+  <div class="small" style="color:#6b7280">NFA. Per-class verdicts remain <strong>0/6 money-ready</strong> on the live policy-clean cohort; numbers above are reproducible from the cited sources.</div>
+</div>
+
 <!-- 2026-05-28 — Data Quality: Events stale-filter + /audit banner honesty fix -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
