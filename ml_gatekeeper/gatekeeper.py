@@ -22,9 +22,10 @@ from pathlib import Path
 from collections import defaultdict
 
 try:
-    from ml_gatekeeper.ab_router import ABRouter
+    from ml_gatekeeper.ab_router import ABRouter, AB_ENABLED
 except Exception:
     ABRouter = None
+    AB_ENABLED = False
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -615,7 +616,7 @@ def score_active_picks(model_bundle, strategy_router):
 
     # Phase B A/B router wire-up (env-flag gated; default OFF = zero behavior change)
     ab_router = None
-    if os.environ.get("ML_GATE_AB_ENABLED", "0") == "1" and ABRouter is not None:
+    if AB_ENABLED and ABRouter is not None:
         old_path = MODEL_DIR / "gatekeeper_old.joblib"
         new_path = MODEL_DIR / "gatekeeper_new.joblib"
         if old_path.exists() and new_path.exists():
