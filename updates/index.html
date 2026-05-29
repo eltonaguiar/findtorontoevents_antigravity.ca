@@ -67,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-05-29 05:56 UTC · <strong>44 open incidents</strong> (21 P0 · 15 P1) · <strong>69 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-05-29 13:11 UTC · <strong>47 open incidents</strong> (20 P0 · 19 P1) · <strong>75 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -82,11 +82,11 @@
     <tbody>
       <tr>
         <td class="cls">OVERALL</td>
-        <td>21</td>
-        <td class="p0">15</td>
-        <td class="top-issue">Profitable-but-filtered picks are not surfaced anywhere</td>
-        <td>46</td>
-        <td class="top-issue">Schema drift watchdog nightly workflow (information_schema snapshot + automated …</td>
+        <td>24</td>
+        <td class="p0">14</td>
+        <td class="top-issue">HC JS/Python parity drift can change eligibility by surface</td>
+        <td>52</td>
+        <td class="top-issue">Update &#39;forward validator frozen 270h&#39; incident title/description to accurate ro…</td>
       </tr>
       <tr>
         <td class="cls">STOCKS</td>
@@ -157,12 +157,12 @@
 
 <h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>Profitable-but-filtered picks are not surfaced anywhere</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/quality_gates.py + dashboard_generator.py audit surfaces</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>HC JS/Python parity drift can change eligibility by surface</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>Profitable-but-filtered picks are not surfaced anywhere</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/quality_gates.py + dashboard_generator.py audit surfaces</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>Cherry-picked SUPREME EDGE stats (82% WR / PF 13+) surfaced without &#39;post-hoc segment search&#39; caveat</strong>
@@ -189,32 +189,32 @@
     <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks ghost-row write path</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>29.2M open positions in trading_picks; validator frozen 270h</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/forward_validator + trading_picks open queue</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>5 FOREX rows have pnl_pct &lt; -100% (one at -106,700%)</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct (FOREX category)</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>trust_score NULL on 99.99% of closed picks</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.trust_score / audit_dashboard/hc_filter.js</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>signal_outcomes table 82 days stale</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes / outcome resolver pipeline</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
 <h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
   <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + automated diff vs version-controlled baseline)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>Update &#39;forward validator frozen 270h&#39; incident title/description to accurate root cause (outcome resolver git add pathspec, not forward_validator)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-01 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Fix outcome-resolver.yml git add step (pathspec closed_picks.json error blocking signal_outcomes)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-02 17:00 EST · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>
   <div class="enhancement-card ie-card">
     <span class="ie-class">OVERALL</span> <strong>MySQL sync workflow silent-fail removal + explicit failure + alert (remove || echo non-fatal swallow)</strong>
     <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-08 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>
   <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + diff vs baseline in schemas/)</strong>
+    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + automated diff vs version-controlled baseline)</strong>
     <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>
   <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Fix duplicate leaderboard entries (source=&quot;&quot; inflation) + reconcile alpha_engine aggregate loss vs sub-strat buried winners</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category UI · target: 2026-06-08 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Fix incidents.html EST timestamps + add enhancement_plan + target_date columns to ENHANCEMENT tables</strong>
+    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + diff vs baseline in schemas/)</strong>
     <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>
 <p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
