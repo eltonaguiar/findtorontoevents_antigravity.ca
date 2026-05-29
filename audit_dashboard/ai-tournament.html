@@ -476,6 +476,59 @@ function filterPicksByWindow(picks, window) {
   });
 }
 
+// ── CI helpers (client-side, deterministic) ──
+// Wilson score interval for a binomial proportion. side: -1 (lower) or +1 (upper).
+function _wilsonBound(wins, n, side, z) {
+  if (!n || n <= 0) return side < 0 ? 0 : 1;
+  z = z || 1.96;
+  const p = wins / n;
+  const z2 = z * z;
+  const denom = 1 + z2 / n;
+  const center = p + z2 / (2 * n);
+  const margin = z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n);
+  const v = (center + side * margin) / denom;
+  return Math.max(0, Math.min(1, v));
+}
+function wilsonLow(wins, n, z) { return _wilsonBound(wins, n, -1, z || 1.96); }
+function wilsonHigh(wins, n, z) { return _wilsonBound(wins, n, +1, z || 1.96); }
+
+// Seeded LCG (Numerical Recipes constants) → uniform [0,1)
+function _seededRng(seed) {
+  let s = (seed >>> 0) || 1;
+  return function() {
+    s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+// Bootstrap lower bound (alpha-quantile) of PF = sum(positives)/|sum(negatives)|.
+// Deterministic via seeded LCG so rank doesn't jitter across renders.
+function bootstrapPfLow(pnls, B, alpha) {
+  B = B || 500;
+  alpha = alpha == null ? 0.05 : alpha;
+  if (!pnls || pnls.length < 2) return null;
+  let pos = 0, neg = 0;
+  for (const x of pnls) { if (x > 0) pos += x; else if (x < 0) neg += -x; }
+  if (neg <= 0) {
+    // No losses in original sample — degenerate; return current PF clamped.
+    return pos > 0 ? 999 : null;
+  }
+  const n = pnls.length;
+  const rng = _seededRng(n * 2654435761);
+  const samples = new Array(B);
+  for (let b = 0; b < B; b++) {
+    let sp = 0, sn = 0;
+    for (let i = 0; i < n; i++) {
+      const x = pnls[(rng() * n) | 0];
+      if (x > 0) sp += x; else if (x < 0) sn += -x;
+    }
+    samples[b] = sn > 0 ? sp / sn : (sp > 0 ? 999 : 0);
+  }
+  samples.sort((a, b) => a - b);
+  const idx = Math.max(0, Math.min(B - 1, Math.floor(alpha * B)));
+  return samples[idx];
+}
+
 // ── Per-window stats calculator ──
 function calcModelStats(picks) {
   const models = {};
@@ -483,7 +536,7 @@ function calcModelStats(picks) {
     const mid = p.model_id || 'unknown';
     if (!models[mid]) {
       models[mid] = { model_id: mid, provider: p.provider || '', n_picks: 0, n_resolved: 0, n_wins: 0,
-        sum_gains: 0, sum_losses: 0, tier: 'BUILDING', rank_eligible: false, rank: null };
+        sum_gains: 0, sum_losses: 0, pnls: [], tier: 'BUILDING', rank_eligible: false, rank: null };
     }
     const m = models[mid];
     m.n_picks++;
@@ -491,15 +544,18 @@ function calcModelStats(picks) {
       m.n_resolved++;
       m.n_wins++;
       const pnl = parseFloat(p.pnl_pct) || 0;
+      m.pnls.push(pnl);
       if (pnl > 0) m.sum_gains += pnl;
       else m.sum_losses += Math.abs(pnl);
     } else if (p.status === 'LOSS') {
       m.n_resolved++;
       const pnl = parseFloat(p.pnl_pct) || 0;
+      m.pnls.push(pnl);
       if (pnl !== 0) m.sum_losses += Math.abs(pnl);
     } else if (p.status !== 'OPEN' && p.pnl_pct != null) {
       m.n_resolved++;
       const pnl = parseFloat(p.pnl_pct) || 0;
+      m.pnls.push(pnl);
       if (pnl > 0) { m.n_wins++; m.sum_gains += pnl; }
       else { m.sum_losses += Math.abs(pnl); }
     }
@@ -510,12 +566,25 @@ function calcModelStats(picks) {
     // 2026-05-28: null when 0 resolved (not 0% WR / 0 PF — no data yet)
     m.wr = m.n_resolved > 0 ? m.n_wins / m.n_resolved : null;
     m.pf = m.sum_losses > 0 ? m.sum_gains / m.sum_losses : (m.sum_gains > 0 ? 999 : (m.n_resolved > 0 ? 0 : null));
-    // Score = WR * PF (simplified CI proxy for client-side; real CI in pipeline)
-    m.score = m.wr * m.pf;
-    m.wr_ci_lo = null;
-    m.wr_ci_hi = null;
-    m.pf_ci_lo = null;
-    m.pf_ci_hi = null;
+    // Score = lower-95%(WR) × lower-95%(PF). WR uses closed-form Wilson; PF uses
+    // 500-iter seeded bootstrap on per-pick pnl_pct. Matches the page header /
+    // explainer / ELI5 copy. n>=30 ranking gate applied below.
+    if (m.n_resolved > 0) {
+      m.wr_ci_lo = wilsonLow(m.n_wins, m.n_resolved);
+      m.wr_ci_hi = wilsonHigh(m.n_wins, m.n_resolved);
+      const pfLo = bootstrapPfLow(m.pnls, 500, 0.05);
+      // Degenerate cases (n<2 or no losses) → fall back to point PF so display
+      // doesn't break; score will still reflect WR CI shrinkage.
+      m.pf_ci_lo = (pfLo == null) ? (m.pf != null ? m.pf : 0) : pfLo;
+      m.pf_ci_hi = null; // not displayed; upper PF CI not needed
+      m.score = m.wr_ci_lo * (isFinite(m.pf_ci_lo) ? m.pf_ci_lo : 0);
+    } else {
+      m.wr_ci_lo = null;
+      m.wr_ci_hi = null;
+      m.pf_ci_lo = null;
+      m.pf_ci_hi = null;
+      m.score = null;
+    }
     m._approximate = true;
     m.rank_eligible = m.n_resolved >= 30;
     if (m.rank_eligible) {
