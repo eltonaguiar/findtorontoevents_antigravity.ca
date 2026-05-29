@@ -1019,7 +1019,11 @@ a:hover { text-decoration: underline; }
     var asof = document.getElementById('major-goal-asof');
     var ts = window.DASHBOARD_DATA && (window.DASHBOARD_DATA.generated_at || (window.DASHBOARD_DATA.meta && window.DASHBOARD_DATA.meta.generated_at));
     if (asof && ts) {
-      asof.innerHTML = 'live: <span style="color:#e2e8f0">' + String(ts).slice(0,19).replace('T',' ') + ' UTC</span>';
+      var _estTs;
+      try {
+        _estTs = new Date(ts).toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) { _estTs = String(ts).slice(0, 19).replace('T', ' '); }
+      asof.innerHTML = 'Last updated: <span style="color:#e2e8f0">' + _estTs + ' EST</span>';
     }
   })();
   </script>
@@ -1075,7 +1079,7 @@ a:hover { text-decoration: underline; }
       if (meta) meta.textContent = '';
       return;
     }
-    if (meta && data.generated_at) meta.textContent = 'updated ' + data.generated_at;
+    if (meta && data.generated_at) meta.textContent = 'Last updated ' + (window._fmtEST ? window._fmtEST(data.generated_at) + ' EST' : data.generated_at);
     var rows = classes.sort().map(function(cls){
       var r = by_class[cls] || {};
       var sharpe = r.oos_sharpe;
@@ -1119,6 +1123,126 @@ a:hover { text-decoration: underline; }
     render();
   }
   // Re-render once DASHBOARD_DATA arrives if it loads asynchronously.
+  document.addEventListener('dashboard-data-loaded', render);
+})();
+</script>
+
+<!-- IC ANALYSIS CARD — Information Coefficient (Spearman rank correlation between
+     elite_score and pnl_pct outcome) for each per-class strategy. Generated daily
+     by tools/audit_pick_funnel/build_ic_analysis.py from dashboard_data.json::recent_closed.
+     Significance gate: Bonferroni-corrected alpha = 0.05 / n_strategies.
+     Negative IC means the scoring model is anti-predictive for that strategy. -->
+<div id="ic-analysis-card" style="max-width:1180px;margin:8px auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(59,130,246,0.10),rgba(139,92,246,0.06));border:1px solid rgba(99,102,241,0.4);border-radius:12px;color:#e0e7ff">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+    <span style="font-size:1.05em;font-weight:700;color:#818cf8;letter-spacing:0.4px">&#x1F4CA; Strategy IC Analysis</span>
+    <span style="color:#cbd5e1;font-size:0.88em">Spearman rank correlation between <code style="color:#a5b4fc">elite_score</code> and PnL outcome — does the scoring model actually rank winners above losers?</span>
+    <span id="ic-analysis-meta" style="margin-left:auto;font-size:0.78em;color:#94a3b8"></span>
+  </div>
+  <div id="ic-analysis-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
+  <div id="ic-analysis-body" style="overflow-x:auto">
+    <div style="font-size:0.85em;color:#94a3b8;font-style:italic">Loading&hellip;</div>
+  </div>
+</div>
+<script>
+(function renderIcAnalysis(){
+  function fmt(v, d){ if (v == null || isNaN(v)) return '&mdash;'; return Number(v).toFixed(d == null ? 1 : d); }
+  function render(){
+    var host = document.getElementById('ic-analysis-body');
+    var meta = document.getElementById('ic-analysis-meta');
+    var summary = document.getElementById('ic-analysis-summary');
+    if (!host) return;
+    fetch('./data/strategy_ic_analysis.json?' + Date.now())
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(data){
+        if (!data) {
+          host.innerHTML = '<div style="font-size:0.85em;color:#94a3b8;font-style:italic">IC analysis data not available (404 or empty response). Will populate after the next <code>build_ic_analysis.py</code> run. Check that <code>audit_dashboard/data/strategy_ic_analysis.json</code> exists on the server.</div>';
+          if (summary) summary.innerHTML = '';
+          if (meta) meta.textContent = '';
+          return;
+        }
+        // Guard: empty by_class (null, missing, or empty object)
+        var bc = data.by_class || {};
+        var bcKeys = Object.keys(bc);
+        if (bcKeys.length === 0) {
+          host.innerHTML = '<div style="font-size:0.85em;color:#94a3b8;font-style:italic">IC analysis has no per-class data yet. Will populate after strategies accumulate enough closed picks (minimum 3 resolved picks per strategy).</div>';
+          if (summary) summary.innerHTML = '';
+          if (meta) meta.textContent = '';
+          return;
+        }
+        if (meta) meta.textContent = 'Last updated ' + (window._fmtEST ? window._fmtEST(data.generated_at) + ' EST' : (data.generated_at || '').replace('T',' ').replace('+00:00',' UTC'));
+
+        // Summary bar
+        var totalBonf = 0;
+        // Bonferroni alpha: not at top level, extract from first by_class entry that has it
+        var bonfAlpha = 0.05;
+        for (var i = 0; i < bcKeys.length; i++) {
+          var ca = bc[bcKeys[i]].bonferroni_corrected_alpha;
+          if (ca != null && !isNaN(ca)) { bonfAlpha = ca; break; }
+        }
+        Object.keys(bc).forEach(function(k){ totalBonf += (bc[k].n_bonferroni_significant || 0); });
+        summary.innerHTML = ''
+          + '<div class="ic-stat" style="display:flex;align-items:center;gap:4px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);padding:6px 14px;border-radius:8px;font-size:12px"><span style="color:#94a3b8">Strategies:</span> <span style="font-weight:700;color:#e0e7ff">' + data.n_strategies + '</span></div>'
+          + '<div class="ic-stat" style="display:flex;align-items:center;gap:4px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);padding:6px 14px;border-radius:8px;font-size:12px"><span style="color:#94a3b8">Positive IC:</span> <span style="font-weight:700;color:#22c55e">' + (data.n_positive_ic || 0) + '</span></div>'
+          + '<div class="ic-stat" style="display:flex;align-items:center;gap:4px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);padding:6px 14px;border-radius:8px;font-size:12px"><span style="color:#94a3b8">Negative IC:</span> <span style="font-weight:700;color:#fca5a5">' + (data.n_negative_ic || 0) + '</span></div>'
+          + '<div class="ic-stat" style="display:flex;align-items:center;gap:4px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);padding:6px 14px;border-radius:8px;font-size:12px"><span style="color:#94a3b8">Bonferroni-sig:</span> <span style="font-weight:700;color:#a78bfa">' + totalBonf + '</span></div>'
+          + '<div class="ic-stat" style="display:flex;align-items:center;gap:4px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);padding:6px 14px;border-radius:8px;font-size:12px"><span style="color:#94a3b8">Decisive picks:</span> <span style="font-weight:700;color:#fde68a">' + (data.n_decisive || 0) + '</span></div>'
+          + '<div class="ic-stat" style="display:flex;align-items:center;gap:4px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);padding:6px 14px;border-radius:8px;font-size:12px"><span style="color:#94a3b8">n&ge;10 classes:</span> <span style="font-weight:700;color:#a78bfa">' + (data.n_ten_plus_classes != null ? data.n_ten_plus_classes : bcKeys.filter(function(k){ return (bc[k].n_resolved || 0) >= 10; }).length) + '</span></div>';
+
+        // Per-class breakdown table
+        var classes = bcKeys.sort();
+        var rows = classes.map(function(cls){
+          var c = bc[cls] || {};
+          var pos = c.n_positive || 0;
+          var neg = c.n_negative || 0;
+          var withIc = c.n_with_ic || 0;
+          var noIc = (c.n_strategies || 0) - withIc;
+          var bonfSig = c.n_bonferroni_significant || 0;
+          var nResolved = c.n_resolved || 0;
+          var relBadge = nResolved < 10 ? ' <span style="display:inline-block;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:3px;padding:0 5px;font-size:10px;font-weight:700;cursor:help;margin-left:3px" title="Only ' + nResolved + ' resolved picks — IC may be unreliable below 10 resolved picks per class">⚠ n=' + nResolved + '</span>' : '';
+          var worstList = (c.worst_strategies || []).slice(0, 2).map(function(s){ return '<code style="font-size:10px;color:#fca5a5">' + s + '</code>'; });
+          return ''
+            + '<tr>'
+            + '<td style="padding:6px 10px;font-weight:600;color:#e0e7ff">' + cls + '</td>'
+            + '<td style="padding:6px 10px;text-align:right">' + (c.n_strategies || 0) + relBadge + '</td>'
+            + '<td style="padding:6px 10px;text-align:right;color:#22c55e;font-weight:600">' + pos + '</td>'
+            + '<td style="padding:6px 10px;text-align:right;color:#fca5a5;font-weight:600">' + neg + '</td>'
+            + '<td style="padding:6px 10px;text-align:right;color:#94a3b8">' + noIc + '</td>'
+            + '<td style="padding:6px 10px;text-align:right;color:#a78bfa;font-weight:600">' + bonfSig + '</td>'
+            + '<td style="padding:6px 10px;font-size:11px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fca5a5">' + (worstList.length ? worstList.join(', ') : '<span style="color:#94a3b8">—</span>') + '</td>'
+            + '</tr>';
+        }).join('');
+        var alphaCell = '<span style="color:#94a3b8;font-size:11px">' + fmt(bonfAlpha, 6) + '</span>';
+        host.innerHTML = ''
+          + '<table style="width:100%;border-collapse:collapse;font-size:0.86em">'
+          +   '<thead><tr style="border-bottom:1px solid rgba(148,163,184,0.3);color:#94a3b8;text-align:left">'
+          +     '<th style="padding:6px 10px">Class</th>'
+          +     '<th style="padding:6px 10px;text-align:right" title="Number of strategies with at least 3 closed picks in recent_closed">Strats</th>'
+          +     '<th style="padding:6px 10px;text-align:right" title="Strategies where elite_score positively correlates with PnL (IC > 0)">Pos IC</th>'
+          +     '<th style="padding:6px 10px;text-align:right" title="Strategies where elite_score is anti-predictive (IC < 0)">Neg IC</th>'
+          +     '<th style="padding:6px 10px;text-align:right" title="Strategies where IC = 0 (all scores equal or no variation)">Flat</th>'
+          +     '<th style="padding:6px 10px;text-align:right" title="Strategies passing Bonferroni-corrected significance at alpha=' + fmt(bonfAlpha, 6) + '">Bonf &#x2713;</th>'
+          +     '<th style="padding:6px 10px" title="Strategies with the most negative IC in this class">Worst</th>'
+          +   '</tr></thead>'
+          +   '<tbody>' + rows + '</tbody>'
+          + '</table>'
+          + '<div style="margin-top:8px;font-size:0.72em;color:#64748b">'
+          +   '<strong>What IC measures:</strong> Spearman rank correlation between <code>elite_score</code> and PnL outcome. ' +
+               'Positive IC = high-scored picks outperform low-scored ones (good). Negative IC = scoring model is anti-predictive ' +
+               '(bad &mdash; consider recalibrating). Bonferroni-corrected alpha = ' + alphaCell + ' per-strategy. ' +
+               '<code>negative_inverse</code> verdict = statistically significant anti-correlation (worst case: inverse the score or retrain).'
+          + '</div>';
+      })
+      .catch(function(){
+        host.innerHTML = '<div style="font-size:0.85em;color:#94a3b8;font-style:italic">Failed to load IC analysis data. The <code>strategy_ic_analysis.json</code> endpoint may be unreachable or the file may be missing. Check that it exists in <code>audit_dashboard/data/</code> and the server is running.</div>';
+        if (summary) summary.innerHTML = '';
+        if (meta) meta.textContent = '';
+      });
+  }
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', render);
+  } else {
+    render();
+  }
   document.addEventListener('dashboard-data-loaded', render);
 })();
 </script>
@@ -1375,7 +1499,7 @@ a:hover { text-decoration: underline; }
   <button id="btn-verified-alpha" style="background:linear-gradient(135deg,#22d3ee,#0ea5e9);color:#04111f;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 0 12px rgba(34,211,238,0.25);margin-left:4px" title="Filter Active Picks down to verified prediction-market and auditable pro-trader rows.">Verified Alpha</button>
   <button id="btn-conviction-picks-hero" type="button" style="background:linear-gradient(135deg,#a855f7,#ec4899);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 0 18px rgba(168,85,247,0.5),0 0 40px rgba(236,72,153,0.2);margin-left:6px;letter-spacing:0.5px;animation:pulse-glow 2s infinite" title="RECOMMENDED (all asset classes): Applies hc_filter.js gates + stamped S/A/B tier path. Does not restrict to crypto — Asset filter stays All. Purple row highlight = legacy elite crypto symbol+strategy overlay.">&#x1F525; HIGH CONVICTION &#x2B50;</button>
   <button id="btn-money-ready" type="button" onclick="applyMoneyReady()" style="background:linear-gradient(135deg,#facc15,#22c55e);color:#04111f;border:none;border-radius:8px;padding:8px 20px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 0 22px rgba(250,204,21,0.55),0 0 50px rgba(34,197,94,0.25);margin-left:6px;letter-spacing:0.5px;animation:pulse-money 2.5s infinite" title="STRICTEST PRESET — only DSR-verified Tier-1 / Renaissance-grade sleeves (Lopez de Prado AFML eq 14.5, DSR&ge;0.95). Single-class deviation accepted: cot_positioning on CT=F (cotton) is the #1 real-money candidate. Each surviving pick gets an auto-justification tooltip explaining the underlying edge basis (DSR, n, WR, academic backing). SUPREME EDGE 2026-05-12.">&#x1F4B0; MONEY READY &#x1F451;</button>
-  <span id="pending-spa-badge" style="display:none;margin-left:6px;background:rgba(251,146,60,0.15);border:1px solid rgba(251,146,60,0.5);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:#fb923c;cursor:help;vertical-align:middle" title="Pre-SPA Early Warnings: strategies with 5 ≤ n &lt; 20 resolved picks showing WR &lt; 25%. Below SPA testability threshold but accumulating loss history. See tools/pending_spa_scan.py for details.">&#x26A0; <span id="pending-spa-alert-count">0</span> Pre-SPA Alert<span id="pending-spa-alert-plural">s</span> &mdash; <span id="pending-spa-count">0</span> pending</span>
+  <span id="pending-spa-badge" style="display:none;margin-left:6px;background:rgba(251,146,60,0.15);border:1px solid rgba(251,146,60,0.5);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:#fb923c;cursor:help;vertical-align:middle" title="Pre-SPA watch-list. SPA (Superior Predictive Ability) is the statistical test that confirms a strategy's edge is real, not data-mined — it needs at least 20 resolved picks to run.&#10;&#10;• 'N pending' = strategies with 5–19 resolved picks: accumulating real trade history but still below the n≥20 SPA-testability threshold (the on-ramp).&#10;• 'N Alerts' = the subset of those pending strategies already showing WR &lt; 35% — an early loss-warning so a losing strategy is flagged now instead of silently reaching n=20.&#10;&#10;Source: tools/pending_spa_scan.py (floor n=5, warn WR=35%).">&#x26A0; <span id="pending-spa-alert-count">0</span> Pre-SPA Alert<span id="pending-spa-alert-plural">s</span> &mdash; <span id="pending-spa-count">0</span> pending</span>
   <script>
   (function(){
     function renderSpaBadge() {
@@ -2382,7 +2506,7 @@ a:hover { text-decoration: underline; }
         if (payload.generated_at) {
           mount.appendChild(el('div', {
             style: 'margin-top:14px;font-size:10px;color:#64748b;text-align:right;'
-          }, 'Updated: ' + payload.generated_at));
+          }, 'Last updated: ' + (window._fmtEST ? window._fmtEST(payload.generated_at) + ' EST' : payload.generated_at)));
         }
       }
       function load() {
@@ -5096,6 +5220,13 @@ function renderSummary() {
   if (window._xiaomiMimoEntryFilter) {
     activePicks = activePicks.filter(passesXiaomiMimoEntryPick);
     closedPicks = closedPicks.filter(passesXiaomiMimoEntryPick);
+  }
+  // MONEY READY preset — when toggled on, narrow to DSR-verified Tier-1 sleeves
+  // (SUPREME_EDGE_REAL). Mirrors the HIGH CONVICTION pattern above; no-op when off
+  // so default behavior is unchanged. filterMoneyReady() lives in money_ready_filter.js.
+  if (window._moneyReadyActive && typeof window.filterMoneyReady === 'function') {
+    activePicks = window.filterMoneyReady(activePicks);
+    closedPicks = window.filterMoneyReady(closedPicks);
   }
 
   let smartRows = (D.picks?.smart_picks || []).slice();

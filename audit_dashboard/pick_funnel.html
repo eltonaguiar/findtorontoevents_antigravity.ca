@@ -140,6 +140,7 @@
     single-source concentration is mitigated. See
     <code>reports/2026-05-25_crypto_78pct_wr_verification.md</code>.
   </div>
+  <div style="font-size:11px;margin-top:8px;color:#fca5a5;opacity:0.85">Last verified: 2026-05-25 EST</div>
 </div>
 
 <!-- ===== SMART PICKS — DB GROUND TRUTH (added 2026-05-28) ===== -->
@@ -153,20 +154,6 @@
   <h2 style="border-bottom:none;margin-top:0;color:#86efac;text-transform:none;letter-spacing:0;font-size:16px">Smart Picks — DB Ground Truth (90d) <span class="chip-all">DB direct</span></h2>
   <p class="small" style="color:#86efac">Direct query against <code>ejaguiar1_stocks.picks</code> with Smart Picks gate (elite_score ≥ per-class floor + confidence ≥ 0.60). Decisive only (WON+LOST). <b>Contrast with the nav surface matrix above</b> — if the matrix shows 78.9% WR for CRYPTO Smart Picks but this table shows 0 picks, the nav surface is fabricated from EXPIRED-mislabeled-WON and single-source concentration.</p>
   <div id="smart-picks-db-stats"><p class="small">Loading smart_picks_db_stats from pick_funnel_90d.json…</p></div>
-</div>
-<!-- FALSIFIED-EDGE BANNER — COMMODITY / COT (added 2026-05-28, Tier-1 action #13) -->
-<div style="background:#7c2d12;border:2px solid #ef4444;border-radius:10px;padding:14px 18px;margin:18px 0;color:#fecaca">
-  <div style="font-weight:800;font-size:14px;color:#fca5a5;letter-spacing:0.5px">⚠ FALSIFIED — COMMODITY · COT <code>cot_positioning + CT=F</code> "DSR=1.0" claim</div>
-  <div style="font-size:12px;margin-top:8px;line-height:1.55">
-    The "n=104, WR 86.5%, DSR=1.0000, single most statistically validated edge" claim was <b>falsified on 2026-05-13</b>.
-    A dedup audit found <code>multi_asset_cot_positioning</code> emitted <b>38 raw signals from only 6 unique CFTC COT release
-    weeks</b> (over-emission ratio 6.33×) — the same weekly release counted ~6× inflated n and DSR. The paper pilot's own
-    status JSON (<code>data/cot_paper_pilot_status.json</code>) now reports <code>tier=SHADOW_INSUFFICIENT_N</code>,
-    <code>dsr=null</code>, dedup WR 33.3% on n=6 unique releases, cumulative PnL −$85.34. Removing CT=F concentration leaves
-    only 3 policy-clean COMMODITY picks (INSUFF-N). <b>COMMODITY size = 0; do not re-promote CT=F from SHADOW.</b> See
-    <code>reports/cot_paper_pilot_overemission_falsified_20260513.md</code> and
-    <code>reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md</code>.
-  </div>
 </div>
 
 <!-- ===== LAST 48 HOURS — PER ASSET CLASS (added 2026-05-25) ===== -->
@@ -241,7 +228,7 @@
 <h2>Rejected from Universe (today)</h2>
 <button class="eli5-btn" onclick="toggle('eli5-rej')">[?] ELI5</button>
 <div class="eli5" id="eli5-rej">
-  These are symbols in our scanned universe that did NOT produce a SMART-grade pick today. <b>Not scanned</b> = no row appeared at all (price feed, blackout, or universe-filter killed it earlier). <b>Gate rejected</b> = scanner emitted a candidate but the per-class score/conf/trust floor killed it before /audit could surface it. Drilling in: most equity rejects are below the SMART_PICKS_MIN_SCORE_EQUITY=50 floor (FROZEN 2026-05-20 to 2026-08-18).
+  These are symbols in our scanned universe that did NOT produce a SMART-grade pick today. <b>Not scanned</b> = no row appeared at all (price feed, blackout, or universe-filter killed it earlier). <b>Gate rejected</b> = scanner emitted a candidate but the per-class score/conf/trust floor killed it before /audit could surface it. Drilling in: most equity rejects are below the SMART_PICKS_MIN_SCORE_EQUITY=60 floor.
 </div>
 <div id="rejected-universe" class="panel"></div>
 <div class="recency-2w">
@@ -326,6 +313,34 @@
   <p class="small" style="color:#fbcfe8">Per-class summary from <code>data/pick_summary_stats_48h.json</code> — picks opened OR closed in the last 48 hours only. Cells with n&lt;10 decisive trades show "INSUFFICIENT n" rather than fabricating a WR.</p>
   <div id="pick-summary-48h"><p class="small">Loading…</p></div>
 </div>
+
+<!-- ===== STRATEGY FUNNEL — Performance by View & Asset Class (added 2026-05-29) ===== -->
+<h2>Strategy Funnel — Performance by View & Asset Class</h2>
+<button class="eli5-btn" onclick="toggle('eli5-stratfunnel')">[?] ELI5</button>
+<div class="eli5" id="eli5-stratfunnel">
+  This section shows the performance of every tracked strategy across all asset classes,
+  with time-window metrics (all-time, 7d, 14d, 30d, 48h). It also compares pick funnel views
+  (e.g. Smart Picks button vs Smart Picks tab) to surface any performance divergence.
+  Sourced from <code>data/strategy_funnel_data.json</code> which is populated from the
+  <code>ejaguiar1_stocks</code> database tables: <code>strategy_summary</code>,
+  <code>pick_funnel_views</code>, <code>edge_discovery</code>, <code>metric_dimensions</code>.
+</div>
+<div class="panel" id="strat-funnel-strategies"><p class="small">Loading strategy_funnel_data.json…</p></div>
+<div class="panel" id="strat-funnel-views"><p class="small">Loading view performance…</p></div>
+<div class="panel" id="strat-funnel-edges"><p class="small">Loading edge discovery…</p></div>
+
+<script>
+// ── EST time helper (copied from ai-tournament.html) ──
+// JSON `generated_at` stays ISO-UTC (machine field); this only converts the DISPLAY to EST.
+function toEST(utcStr) {
+  if (!utcStr) return '—';
+  try {
+    const d = new Date(utcStr);
+    return d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return String(utcStr).slice(0, 10); }
+}
+</script>
+
 <script>
 (async function loadPickSummary(){
   try {
@@ -341,7 +356,7 @@
       return `<tr><td><b>${ac}</b></td><td class="num">${b.n_active||0}</td>${cell(a)}${cell(sp)}${dbCell}</tr>`;
     }).join('');
     el.innerHTML = `
-      <p class="small">Generated ${s.generated_at} · source: ${s.source.dashboard_data_json} + ${s.source.db_table}</p>
+      <p class="small">Generated ${toEST(s.generated_at)} EST · source: ${s.source.dashboard_data_json} + ${s.source.db_table}</p>
       <table class="lb"><thead>
         <tr>
           <th rowspan="2">Class</th>
@@ -366,7 +381,7 @@
 <!-- /ACTIVE + CLOSED PICKS SUMMARY -->
 
 <footer>
-  <span>findtorontoevents.ca/audit — pick funnel · UTC timestamps · read-only on prod tables</span>
+  <span>findtorontoevents.ca/audit — pick funnel · EST timestamps · read-only on prod tables</span>
   <span>Auto-refresh nightly via .github/workflows/pick-funnel-nightly.yml</span>
 </footer>
 
@@ -502,30 +517,49 @@ function renderSmartPicksDbStats(spDb, d90){
     return;
   }
   const entries = Object.entries(spDb).sort((a,b)=>(b[1].decisive||0)-(a[1].decisive||0));
+  const caveatBadge = (cv) => {
+    if (!cv || !cv.length) return '';
+    return cv.map(c => {
+      if (c.startsWith('single_source_concentration=')) {
+        const pct = (c.match(/=(\d+%)/)||[])[1] || '?';
+        return '<span class="badge b-disp" title="'+c+'">SRC:'+pct+'</span>';
+      }
+      if (c.startsWith('symbol_concentration=')) {
+        const pct = (c.match(/=(\d+%)/)||[])[1] || '?';
+        return '<span class="badge b-fail" title="'+c+'">SYM:'+pct+'</span>';
+      }
+      if (c === 'no_smart_picks') return '<span class="badge b-meh">0 picks</span>';
+      if (c === 'wr_below_50pct') return '<span class="badge b-fail">WR<50%</span>';
+      return '<span class="badge b-meh" title="'+c+'">?</span>';
+    }).join(' ');
+  };
   const rows = entries.map(([ac,b])=>{
     const wr = b.wr_pct != null ? b.wr_pct + '%' : (b.decisive > 0 ? '—' : 'no picks');
     const pf = b.pf === 'inf' ? '∞' : (b.pf != null ? b.pf.toFixed(2) : '—');
     const wrCls = b.wr_pct != null ? (b.wr_pct >= 55 ? 'pnl-pos' : (b.wr_pct < 45 ? 'pnl-neg' : 'pnl-neu')) : 'pnl-neu';
     const pfCls = b.pf === 'inf' ? 'pnl-neu' : (b.pf != null ? (b.pf >= 1.5 ? 'pnl-pos' : (b.pf < 1 ? 'pnl-neg' : 'pnl-neu')) : 'pnl-neu');
     const pnl = b.avg_pnl_pct != null ? (b.avg_pnl_pct >= 0 ? '+' : '') + b.avg_pnl_pct.toFixed(4) + '%' : '—';
-    // Flag: compare with nav surface matrix inflated stats
-    const note = (ac === 'CRYPTO' && b.decisive === 0)
-      ? ' <span class="badge b-disp">nav surface inflated — see DISPUTED banner</span>'
-      : (b.decisive === 0 ? ' <span class="badge b-meh">no Smart Picks in DB</span>' : '');
+    const srcPct = Math.round((b.top_source_share||0)*100);
+    const symPct = Math.round((b.top_symbol_share||0)*100);
+    const srcTd = b.top_source ? `${b.top_source} <span class="small">${srcPct}%</span>` : '—';
+    const symTd = b.top_symbol ? `${b.top_symbol} <span class="small">${symPct}%</span>` : '—';
+    const cvs = caveatBadge(b.caveats);
     return `<tr>
-      <td><b>${ac}</b>${note}</td>
+      <td><b>${ac}</b></td>
       <td class="num">${b.decisive}</td>
       <td class="num">${b.wins}</td>
       <td class="num">${b.losses}</td>
       <td class="num ${wrCls}">${wr}</td>
       <td class="num ${pfCls}">${pf}</td>
       <td class="num">${pnl}</td>
-      <td class="num">${b.smart_floor}</td>
+      <td class="small">${srcTd}</td>
+      <td class="small">${symTd}</td>
+      <td>${cvs}</td>
     </tr>`;
   }).join('');
-  const gen = d90 ? d90.generated_at : '—';
+  const gen = d90 ? toEST(d90.generated_at) : '—';
   el.innerHTML = `
-    <p class="small">Generated ${gen} · source: ejaguiar1_stocks.picks (90d, decisive only) · gate: elite_score ≥ per-class floor + confidence ≥ 0.60</p>
+    <p class="small">Generated ${gen} EST · source: ejaguiar1_stocks.picks (90d, decisive only) · gate: elite_score ≥ per-class floor + confidence ≥ 0.60</p>
     <table class="lb"><thead><tr>
       <th>Class</th>
       <th class="num">decisive</th>
@@ -534,10 +568,13 @@ function renderSmartPicksDbStats(spDb, d90){
       <th class="num">WR%</th>
       <th class="num">PF</th>
       <th class="num">avg PnL</th>
-      <th class="num">floor</th>
+      <th>Top source</th>
+      <th>Top sym</th>
+      <th>Caveats</th>
     </tr></thead><tbody>${rows}</tbody></table>
     <div style="margin-top:10px;font-size:11px;color:#a0a0b0">
-      <b>Interpretation:</b> This is the actual DB query result — not a dashboard cohort that could be inflated by single-source concentration or EXPIRED→WON mislabels. Classes with 0 picks (CRYPTO, BOND, ETF, etc.) mean <i>no pick in the DB meets both the elite_score and confidence thresholds</i>. If the nav surface matrix above shows a WR/PF for those classes, that surface is fabricated.
+      <b>Interpretation:</b> Direct DB query — not a dashboard cohort. <b>Top source</b> = source with most picks and its share. <b>Caveats</b>: <span class="badge b-disp">SRC:60+%</span> = single-source concentration &gt;60%, <span class="badge b-fail">WR&lt;50%</span> = win rate below 50%. Classes with 0 picks = <i>no pick meets both the elite_score and confidence thresholds</i>. If the nav surface matrix above shows a WR/PF for those classes, that surface is fabricated.<br>
+      <b>Contrast:</b> The live smart_picks_db_stats replaces the DISPUTED banner — CRYPTO, BOND, ETF, INDEX, MEME, PENNY all show 0 DB picks confirming the nav surface was inflated.
     </div>`;
 }
 
@@ -583,7 +620,7 @@ function renderNavSurfaceMatrix(mx){
   const el = document.getElementById('nav-surface-matrix');
   if (!el) return;
   if (!mx || !mx.surfaces){ el.innerHTML = '<p class="small" style="color:#ef4444">Nav matrix sidecar missing — run tools/audit_pick_funnel/build_nav_surface_matrix.py.</p>'; return; }
-  const header = `<p class="small">Sidecar generated ${mx.generated_at} UTC · n_closed=${mx.n_recent_closed} · Bonferroni α=${mx.bonferroni_alpha.toFixed(4)} (8 surfaces). Verdict = <b>edge</b> only if at least one asset-class row passes <i>holdout</i> (PF≥1.2) AND <i>Bonferroni</i>. Tooltips on column headers (i) reuse the glossary above.</p>`;
+  const header = `<p class="small">Sidecar generated ${toEST(mx.generated_at)} EST · n_closed=${mx.n_recent_closed} · Bonferroni α=${mx.bonferroni_alpha.toFixed(4)} (8 surfaces). Verdict = <b>edge</b> only if at least one asset-class row passes <i>holdout</i> (PF≥1.2) AND <i>Bonferroni</i>. Tooltips on column headers (i) reuse the glossary above.</p>`;
   const sections = mx.surfaces.map(s=>{
     const vBadge = s.verdict === 'edge'
       ? `<span class="badge b-pass">EDGE in ${s.edge_classes.join(', ')||'—'}</span>`
@@ -645,17 +682,10 @@ function _caveatBadges(cv){
   if (!cv || !cv.length) return '';
   return cv.map(c=>`<span class="badge b-fail" title="${c}" style="margin-left:4px;font-size:9px">${c.split('=')[0]}</span>`).join('');
 }
-// Detect edge-distorting caveats — these rows should be visually demoted because
-// their WR/PF does not reflect a real, diversified, correctly-labelled edge.
-// 2026-05-28 Tier-1: extended beyond single_source_concentration to also catch
-// EXPIRED_pos_pnl_share=..._likely_mislabeled_WON (e.g. FOREX 14d shows 76%
-// mislabeled-WON inflating WR to 83% while true PF is 0.10). Ref: action #11.
+// Detect single_source_concentration in caveats — these rows should be visually demoted.
 function _hasSingleSourceConc(cv){
   if (!cv || !cv.length) return false;
-  return cv.some(c => typeof c === 'string' && (
-    c.indexOf('single_source_concentration') === 0 ||
-    c.indexOf('EXPIRED_pos_pnl_share') === 0
-  ));
+  return cv.some(c => typeof c === 'string' && c.indexOf('single_source_concentration') === 0);
 }
 function _rowDemoteAttr(cv){
   if (!_hasSingleSourceConc(cv)) return '';
@@ -728,7 +758,7 @@ function renderRecencyTable(s, mountId, accentClass){
     return `<tr${_rowDemoteAttr(b.caveats)}><td>${_demoteIcon(b.caveats)}<b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td>${wrCell}${wrsCell}${pfCell}<td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${topSym}</td><td class="small">${topSrc}</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
   }).join('');
   const fallback = s.fallback_mode ? `<div class="small" style="color:#fca5a5;margin-bottom:6px">⚠ FALLBACK MODE: ${s.source}</div>` : '';
-  el.innerHTML = `${fallback}<p class="small">Generated ${s.generated_at} · window=${s.window_label} · cutoff=${s.cutoff_utc} · source=${s.source} · prior=${s.shrinkage_prior}</p>
+  el.innerHTML = `${fallback}<p class="small">Generated ${toEST(s.generated_at)} EST · window=${s.window_label} · cutoff=${s.cutoff_utc} · source=${s.source} · prior=${s.shrinkage_prior}</p>
     <table class="lb"><thead><tr>
       <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
       <th class="num">WR<sub>shrunk</sub> (primary)</th><th class="num">WR (raw)</th><th class="num">PF</th><th class="num">Mean PnL</th>
@@ -773,7 +803,7 @@ function renderRecency48hHero(s){
       <table class="lb" style="margin-top:6px"><thead><tr><th>Symbol</th><th>Dir</th><th>Source</th><th>Strategy</th><th>Opened</th><th>Closed</th><th>Status</th><th class="num">PnL%</th><th class="num">Hold (min)</th></tr></thead><tbody>${activeRows}${closedRows}</tbody></table>
     </details>`;
   }).join('');
-  el.innerHTML = `<p class="small" style="color:#fbcfe8">Generated ${s.generated_at} · cutoff=${s.cutoff_utc} · source=${s.source}</p>
+  el.innerHTML = `<p class="small" style="color:#fbcfe8">Generated ${toEST(s.generated_at)} EST · cutoff=${s.cutoff_utc} · source=${s.source}</p>
     <table class="lb"><thead><tr>
       <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
       <th class="num">WR<sub>shrunk</sub> (raw)</th><th class="num">PF</th><th class="num">Mean PnL</th><th>Top source</th><th>Caveats</th>
@@ -822,18 +852,88 @@ async function loadRecencySubsets(){
   }
 }
 
+// ===== STRATEGY FUNNEL RENDER (2026-05-29) =====
+function renderStrategyFunnel(data){
+  const classes = ['CRYPTO','EQUITY','FOREX','ETF','COMMODITY','FUTURES','BOND'];
+  // 1. Strategies per asset class
+  let stratHtml = '<div style="font-size:12px;color:#86efac;margin-bottom:6px">Top strategies per asset class — all-time PF with 7d/14d/30d/48h windows. Sourced from <code>ejaguiar1_stocks.strategy_summary</code>.</div>';
+  for (const ac of classes){
+    const acStrats = (data.strategies||[]).filter(s=>s.asset_class===ac);
+    if (!acStrats.length) continue;
+    const top = acStrats.slice(0,5);
+    let rows = top.map(s=>{
+      const pf = s.pf_all_time||0, wr = s.wr_all_time||0, n = s.pick_count_all_time||0;
+      const sz = s.sizing_status||'shadow';
+      const b7 = s.pf_7d||0, w7 = s.wr_7d||0, b14 = s.pf_14d||0, w14 = s.wr_14d||0;
+      const b30 = s.pf_30d||0, w30 = s.wr_30d||0, b48 = s.pf_48h||0, w48 = s.wr_48h||0;
+      const rc = s.rank_class||'?';
+      const badges = [];
+      if(s.fwd_validated) badges.push('✅Fwd');
+      if(s.viable_pct>0) badges.push(`A:${s.viable_pct.toFixed(0)}%`);
+      if(s.multi_agree) badges.push('🔵Multi');
+      return `<tr><td style="font-size:11px">#${rc}</td><td><b>${esc(s.strategy_name)}</b></td>
+        <td class="num">${pf.toFixed(3)}</td><td class="num">${(wr*100).toFixed(1)}%</td><td class="num">${n}</td>
+        <td style="font-size:10px">${sz}</td>
+        <td class="num" style="font-size:10px">${b7.toFixed(2)}/${(w7*100).toFixed(0)}%</td>
+        <td class="num" style="font-size:10px">${b14.toFixed(2)}/${(w14*100).toFixed(0)}%</td>
+        <td class="num" style="font-size:10px">${b30.toFixed(2)}/${(w30*100).toFixed(0)}%</td>
+        <td class="num" style="font-size:10px">${b48.toFixed(2)}/${(w48*100).toFixed(0)}%</td>
+        <td style="font-size:10px">${badges.join(' ')||'—'}</td></tr>`;
+    }).join('');
+    stratHtml += `<div style="margin-top:8px"><b>${ac}</b> (${acStrats.length} tracked):
+      <table class="lb"><thead><tr><th>#</th><th>Strategy</th><th class="num">PF</th><th class="num">WR</th><th class="num">n</th><th>Status</th>
+        <th class="num">7d</th><th class="num">14d</th><th class="num">30d</th><th class="num">48h</th><th>Badges</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  document.getElementById('strat-funnel-strategies').innerHTML = stratHtml;
+
+  // 2. Funnel views comparison
+  let viewHtml = '<div style="font-size:12px;color:#86efac;margin-bottom:6px">Pick funnel view performance — Smart Picks button vs tab, High Conviction, etc. Divergence = potential filter bug.</div>';
+  const viewGroups = {};
+  (data.funnel_views||[]).forEach(v=>{
+    const key = v.view_group||v.view_key;
+    if(!viewGroups[key]) viewGroups[key]=[];
+    viewGroups[key].push(v);
+  });
+  for(const [grp, views] of Object.entries(viewGroups)){
+    let rows = views.map(v=>{
+      const wr = v.win_rate||0, pf = v.profit_factor||0, nr = v.n_resolved||0;
+      return `<tr><td>${esc(v.display_name)}</td><td>${esc(v.asset_class||'all')}</td>
+        <td class="num">${(wr*100).toFixed(1)}%</td><td class="num">${pf.toFixed(3)}</td><td class="num">${nr}</td></tr>`;
+    }).join('');
+    viewHtml += `<details><summary><b>${esc(grp)}</b></summary><table class="lb"><thead><tr><th>View</th><th>Class</th><th class="num">WR</th><th class="num">PF</th><th class="num">Resolved</th></tr></thead><tbody>${rows}</tbody></table></details>`;
+  }
+  document.getElementById('strat-funnel-views').innerHTML = viewHtml;
+
+  // 3. Edge discovery
+  const edges = data.edge_discovery||[];
+  if(edges.length){
+    let rows = edges.map(e=>{
+      const surv = e.survived_bonferroni?'✅':'❌';
+      return `<tr><td>${esc(e.asset_class)}</td><td style="font-size:10px">${esc(e.edge_key)}</td>
+        <td class="num">${(e.win_rate*100).toFixed(1)}%</td><td class="num">${(e.profit_factor||0).toFixed(3)}</td>
+        <td class="num">${e.n_resolved}</td><td>${e.edge_verdict}</td><td>${surv}</td><td>${esc(e.recommendation)}</td></tr>`;
+    }).join('');
+    document.getElementById('strat-funnel-edges').innerHTML =
+      `<div style="font-size:12px;color:#86efac;margin-bottom:6px">Edge discovery — statistically significant dimension combos (Bonferroni-corrected). Sourced from <code>ejaguiar1_stocks.edge_discovery</code>.</div>
+      <table class="lb"><thead><tr><th>Class</th><th>Combo</th><th class="num">WR</th><th class="num">PF</th><th class="num">n</th><th>Verdict</th><th>Bonferroni</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+  } else {
+    document.getElementById('strat-funnel-edges').innerHTML = '<p class="small">No edge discovery results with n≥30 resolved.</p>';
+  }
+}
+
 async function loadAll(){
   try {
-    const [today, d90, rej, edges, navmx] = await Promise.all([
+    const [today, d90, rej, edges, navmx, stratData] = await Promise.all([
       fetch('data/pick_funnel_today.json').then(r=>r.json()),
       fetch('data/pick_funnel_90d.json').then(r=>r.json()),
       fetch('data/pick_funnel_rejected_universe.json').then(r=>r.json()),
       fetch('data/top_edges_per_class.json').then(r=>r.json()),
       fetch('data/nav_surface_edge_matrix.json').then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch('data/strategy_funnel_data.json').then(r=>r.ok?r.json():null).catch(()=>null),
     ]);
     renderNavSurfaceMatrix(navmx);
     document.getElementById('generated-at').textContent =
-      `Generated ${today.generated_at} UTC · today n=${today.n_picks} · 90d n=${d90.n_picks}`;
+      `Last updated ${toEST(today.generated_at)} EST · today n=${today.n_picks} · 90d n=${d90.n_picks}`;
     renderFunnelBars(today.funnel_by_class||{}, 'funnel-bars-today');
     renderFunnelBars(d90.funnel_by_class||{}, 'funnel-bars-90d');
     renderTodayTable(today.picks||[]);
@@ -842,6 +942,8 @@ async function loadAll(){
     renderTopEdges(edges);
     // Smart Picks DB ground truth (2026-05-28)
     renderSmartPicksDbStats(d90.smart_picks_db_stats||{}, d90);
+    // Strategy Funnel (2026-05-29)
+    if (stratData) renderStrategyFunnel(stratData);
   } catch(e){
     document.body.insertAdjacentHTML('beforeend', `<p style="color:#ef4444;padding:16px">Load error: ${e.message}</p>`);
   }

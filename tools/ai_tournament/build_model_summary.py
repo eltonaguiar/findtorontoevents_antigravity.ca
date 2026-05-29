@@ -92,6 +92,12 @@ def build() -> dict:
         resolved = m["resolved"]
         wins = m["wins"]
         pnls = m["_pnls"]
+        # Profit factor = sum(winning pnl%) / |sum(losing pnl%)|. Null when
+        # undefined (no losing trades yet) — a finite ratio can't be formed, and
+        # 0 losses ≠ PF 0. Matches the leaderboard's pf definition (no CI here).
+        gains = sum(p for p in pnls if p > 0)
+        losses_abs = abs(sum(p for p in pnls if p < 0))
+        pf = round(gains / losses_abs, 2) if losses_abs > 0 else None
         out_models.append(
             {
                 "model_id": m["model_id"],
@@ -103,6 +109,7 @@ def build() -> dict:
                 # 0 resolved ≠ 0% WR — it means "no data yet". The HTML shows
                 # "pending" for null values so users aren't misled.
                 "win_rate_pct": round(100.0 * wins / resolved, 1) if resolved else None,
+                "pf": pf,
                 "avg_pnl_pct": round(sum(pnls) / len(pnls), 2) if pnls else None,
                 "last_pick": m["last_pick"],
                 "personas": len(m["_personas"]),
