@@ -395,6 +395,12 @@ _BOOSTED_NON_CRYPTO_STRATEGIES = {
     "momentum_breakout": 1.3,
     "mean_reversion_atr": 1.2,
     "trend_ensemble": 1.4,
+    # 2026-05-29 Cycle 17: FOREX/BOND breakthrough strategies
+    "stoch_rsi": 1.3,
+    "pivot_reversion": 1.2,
+    "ichimoku": 1.4,
+    "yield_curve_proxy": 1.2,
+    "range_trading": 1.2,
 }
 _COPY_STRATEGY_STATS_CACHE: dict | None = None
 

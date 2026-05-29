@@ -177,6 +177,12 @@ STRATEGY_WEIGHT_OVERRIDES: dict[str, float] = {
     "momentum_breakout": 2.0,
     "mean_reversion_atr": 2.0,
     "trend_ensemble": 2.5,
+    # Cycle 17 strategies: stoch_rsi, pivot_reversion, ichimoku, yield_curve_proxy, range_trading
+    "stoch_rsi": 2.0,
+    "pivot_reversion": 1.8,
+    "ichimoku": 2.5,
+    "yield_curve_proxy": 1.8,
+    "range_trading": 1.8,
 }
 DEFAULT_ALLOCATION = 2000.0  # Base per-pick allocation in dollars
 
