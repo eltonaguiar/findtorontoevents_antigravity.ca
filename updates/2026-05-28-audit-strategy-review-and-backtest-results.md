@@ -334,22 +334,6 @@ These carve-outs are based on "antigrav-independent-review" claiming mastery of 
 
 ## Continuous Testing Log
 
-### Test Cycle 5 (2026-05-29T00:15Z) — Additional Strategy Testing
-
-**Tested:** 13 more strategies (mean reversion, volatility, order flow, momentum)
-**Result:** Most generate 0-3 signals on daily data — designed for shorter timeframes (1h/15m). The strong cross-asset strategies were already found in Cycles 3-4.
-
-**Notable:** RelativeStrengthRotationStrategy showed 77.8% WR on crypto (n=9) but sample too small for production.
-
-**Conclusion:** The top strategies across all testing are:
-1. AdaptiveKeltnerReversion (crypto, PF 2.70, n=41,085)
-2. FibonacciRsiMeanReversion (ALL 5 classes, PF 2.70, n=133)
-3. VolumeWeightedMedianZScore (ALL 4 classes, PF 1.73, n=532)
-4. VolumePriceConfirmationReversal (3 classes, PF 1.81, n=175)
-5. battleground (live, PF 1.76, MDD 7.32%, n=122)
-
-All are wired or being wired via PRs #35, #36, #37.
-
 ### Test Cycle 4 (2026-05-29T00:10Z) — Multi-Asset Strategy Discovery
 
 **Tested:** 15 more untested strategies across crypto/ETF/forex/equity/commodity
