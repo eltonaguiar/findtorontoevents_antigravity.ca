@@ -41,6 +41,26 @@ jobs:
           FORCE_RESOLVE: ${{ github.event.inputs.force_resolve }}
         run: python tools/ai_tournament/price_tracker.py
 
+      - name: Restore full dataset from DB (anti-clobber guard)
+        # price_tracker.py rebuilds ai_tournament_picks_latest.json from the
+        # data/ai_tournament/submissions/*.json glob ONLY (recent picks), which
+        # shrinks the published set to ~11 models / ~200 picks and regresses the
+        # live page. Rebuild from the full tournament_picks DB before summary/
+        # leaderboard regenerate — mirrors ai-tournament-pipeline.yml. Falls back
+        # to the submission merge only if the DB rebuild fails.
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+        run: |
+          if python tools/ai_tournament/rebuild_latest_from_db.py; then
+            echo "rebuilt picks_latest from full DB"
+          else
+            echo "::warning title=rebuild::DB rebuild failed — falling back to submission merge"
+            python tools/ai_tournament/merge_submissions_to_latest.py || echo "::warning title=merge::Submission merge failed"
+          fi
+
       - name: Update leaderboard + model summary
         run: |
           python tools/ai_tournament/update_leaderboard.py
