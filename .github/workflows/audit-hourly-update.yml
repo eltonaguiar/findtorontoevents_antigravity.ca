@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: pip install --quiet requests
 
+      - name: Bootstrap portfolio state (CI seed)
+        run: python tools/bootstrap_claudes_test_state.py
+
       - name: Run generate_hourly_update.py
         env:
           PYTHONPATH: .
