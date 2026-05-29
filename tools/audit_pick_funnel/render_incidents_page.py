@@ -12,9 +12,10 @@ so reruns replace just that section.
 """
 from __future__ import annotations
 import json, os, re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from pathlib import Path
 import pymysql
+import re
 
 REPO = Path(__file__).resolve().parents[2]
 OUT_HTML = REPO / "audit_dashboard" / "incidents.html"
@@ -59,6 +60,34 @@ def sev_badge(s):
     return f'<span style="background:{c};color:#0a0a0f;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700">{esc(s)}</span>'
 
 
+def target_badge(row):
+    """Render target_release with EST timeline badge. Green=on-track, yellow=due-soon, red=overdue.
+    NOTE: date.today() uses system time, not EST. Near midnight UTC the days-left count
+    may be off by 1, which is acceptable for a dashboard badge."""
+    tr = row.get("target_release")
+    if not tr:
+        return '<span style="color:#4b5563;font-size:10px">—</span>'
+    # Parse date from "YYYY-MM-DD HH:MM EST" format
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", str(tr))
+    if not m:
+        return f'<span style="font-size:10px;color:#9ca3af">{esc(str(tr))}</span>'
+    try:
+        target_date = date.fromisoformat(m.group(1))
+        today = date.today()
+        days_left = (target_date - today).days
+        if days_left < 0:
+            color, bg, label = "#ef4444", "rgba(239,68,68,0.15)", f"OVERDUE {abs(days_left)}d"
+        elif days_left <= 3:
+            color, bg, label = "#f59e0b", "rgba(245,158,11,0.15)", f"due in {days_left}d"
+        elif days_left <= 7:
+            color, bg, label = "#fbbf24", "rgba(251,191,36,0.10)", f"in {days_left}d"
+        else:
+            color, bg, label = "#22c55e", "rgba(34,197,94,0.10)", f"in {days_left}d"
+        return f'<span style="background:{bg};color:{color};border:1px solid {color};padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;white-space:nowrap">{esc(str(tr))}</span><div style="font-size:10px;color:{color};margin-top:2px">{label}</div>'
+    except (ValueError, TypeError):
+        return f'<span style="font-size:10px;color:#9ca3af">{esc(str(tr))}</span>'
+
+
 def status_badge(s):
     colors = {"OPEN":"#ef4444","TRIAGED":"#f59e0b","IN_PROGRESS":"#3b82f6","RESOLVED":"#22c55e","WONTFIX":"#6b7280","DUPLICATE":"#6b7280",
               "BACKLOG":"#6b7280","VALIDATED":"#fbbf24","ACCEPTED":"#3b82f6","IMPLEMENTED":"#22c55e","REJECTED":"#6b7280","SUPERSEDED":"#6b7280"}
@@ -95,13 +124,14 @@ def render_table_section(title, rows_by_class, is_incident=True):
         out.append(f'<details {"open" if cls in ("OVERALL","STOCKS","CRYPTO") else ""}><summary><strong>{cls}</strong> <span class="small">({len(rows)})</span></summary>')
         out.append('<table class="lb"><thead><tr>')
         if is_incident:
-            out.append('<th>Sev</th><th>Status</th><th>Title</th><th>Component</th><th>Recommended fix</th><th>Reporter</th><th>Links</th>')
+            out.append('<th>Sev</th><th>Status</th><th>Target</th><th>Title</th><th>Component</th><th>Recommended fix</th><th>Reporter</th><th>Links</th>')
         else:
-            out.append('<th>Impact</th><th>Effort</th><th>Status</th><th>Cat</th><th>Title</th><th>Success metric</th><th>Proposed by</th><th>Links</th>')
+            out.append('<th>Impact</th><th>Effort</th><th>Status</th><th>Target</th><th>Cat</th><th>Title</th><th>Success metric</th><th>Proposed by</th><th>Links</th>')
         out.append('</tr></thead><tbody>')
         for r in rows:
             if is_incident:
                 out.append(f'<tr><td>{sev_badge(r["severity"])}</td><td>{status_badge(r["status"])}</td>'
+                           f'<td style="white-space:nowrap">{target_badge(r)}</td>'
                            f'<td><strong>{esc(r["title"])}</strong><div class="small" style="color:#9ca3af;margin-top:3px">{esc((r.get("description") or "")[:300])}{"…" if r.get("description") and len(r["description"])>300 else ""}</div></td>'
                            f'<td class="small">{esc(r.get("affected_component") or "")}</td>'
                            f'<td class="small">{esc((r.get("recommended_fix") or "")[:200])}</td>'
@@ -110,6 +140,7 @@ def render_table_section(title, rows_by_class, is_incident=True):
             else:
                 out.append(f'<tr><td>{sev_badge(r["expected_impact"])}</td><td><span class="small">{esc(r["effort"])}</span></td>'
                            f'<td>{status_badge(r["status"])}</td>'
+                           f'<td style="white-space:nowrap">{target_badge(r)}</td>'
                            f'<td class="small">{esc(r["category"])}</td>'
                            f'<td><strong>{esc(r["title"])}</strong><div class="small" style="color:#9ca3af;margin-top:3px">{esc((r.get("description") or "")[:300])}{"…" if r.get("description") and len(r["description"])>300 else ""}</div></td>'
                            f'<td class="small">{esc(r.get("success_metric") or "")}</td>'
@@ -261,17 +292,19 @@ def render_updates_injection(incidents, enhancements, generated_at):
         parts.append('<h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>')
         for r in top_inc:
             sev_cls = f"sev-{r['severity']}"
+            tr_info = f' · target: {r["target_release"]}' if r.get("target_release") else ""
             parts.append(f'''  <div class="incident-card ie-card {sev_cls}">
     <span class="ie-class">{esc(r["asset_class"])}</span> <strong>{esc(r["title"])}</strong>
-    <div class="ie-card-meta">{esc(r["severity"])} · {esc(r["status"])} · component: <code>{esc(r.get("affected_component") or "—")}</code> · reporter: {esc(r.get("reported_by") or "")} · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+    <div class="ie-card-meta">{esc(r["severity"])} · {esc(r["status"])} · component: <code>{esc(r.get("affected_component") or "—")}</code> · reporter: {esc(r.get("reported_by") or "")}{tr_info} · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>''')
 
     if top_enh:
         parts.append('<h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>')
         for r in top_enh:
+            tr_info = f' · target: {r["target_release"]}' if r.get("target_release") else ""
             parts.append(f'''  <div class="enhancement-card ie-card">
     <span class="ie-class">{esc(r["asset_class"])}</span> <strong>{esc(r["title"])}</strong>
-    <div class="ie-card-meta">Impact {esc(r["expected_impact"])} · effort {esc(r["effort"])} · status {esc(r["status"])} · category {esc(r["category"])} · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+    <div class="ie-card-meta">Impact {esc(r["expected_impact"])} · effort {esc(r["effort"])} · status {esc(r["status"])} · category {esc(r["category"])}{tr_info} · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>''')
 
     parts.append('<p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>')

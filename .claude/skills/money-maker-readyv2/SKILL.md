@@ -48,8 +48,8 @@ You start with no context. Here is where the real data and credentials are. **Ne
   from tools.db_env import get_stocks_creds, get_backtests_creds
   creds = get_stocks_creds()      # -> {host, user, password, database, port}
   # creds resolve from env vars first, then fall back to verified defaults
-  import mysql.connector
-  conn = mysql.connector.connect(**creds)
+  import pymysql
+  conn = pymysql.connect(**creds)
   ```
   `tools/db_env.py` is the single source of truth. It reads env vars (`DB_PASS_STOCKS`/`DB_NAME_STOCKS`, `DB_PASS_BACKTESTS`/`DB_NAME_BACKTESTS`, plus `AUDIT_DB_*` / `DB_STOCKS_*` aliases) and falls back to the verified host/user. Reference helpers that already work: `tools/db_health_check.py`, `tools/cross_db_consistency.py`.
 
@@ -70,6 +70,28 @@ You start with no context. Here is where the real data and credentials are. **Ne
   - **Portfolio History:** `/audit/portfolio_history.html` — 26 sim portfolios, JS-driven
   - **Anti-Overfit:** `/audit/anti_overfit.html` — DSR/PBO/SPA statistical gate results per strategy
 - Models cannot fetch these reliably — pull the local JSON and reason on it (never let a model claim it "fetched" a URL).
+
+## Current Asset Class Snapshot (VERIFIED against money_ready_verdict.json, 2026-05-28T21:12 UTC)
+
+> **0/8 classes pass Tier-2.** This is the ground truth — do not cite dashboard headline cells that contradict this.
+> Every row below was **re-derived directly from the JSON** on 2026-05-28 (`n`=`n_resolved`), not hand-copied. **Re-derive before reuse — never carry a typed table forward.**
+
+| Class | n_resolved | WR | PF | Verdict | Top Issue |
+|-------|-----------|-----|------|---------|-----------|
+| CRYPTO | 652 | 41.4% | 1.31 | NOT_READY | WR<50%, MDD 100%, CVaR -86% (closest to viable) |
+| UNKNOWN | 36 | 50.0% | 1.54 | INSUFFICIENT_DATA | n<100, source concentration, unclassified |
+| EQUITY | 24 | 25.0% | 0.04 | INSUFFICIENT_DATA | n<100, MDD 97%, CVaR -84% |
+| FUTURES | 11 | 9.1% | 0.48 | INSUFFICIENT_DATA | n<100, ~95% single-engine (alpha_engine family) |
+| COMMODITY | 9 | 44.4% | 1.81 | INSUFFICIENT_DATA | n<100, gold concentration |
+| ETF | 3 | 33.3% | 0.19 | INSUFFICIENT_DATA | n<100 |
+| FOREX | 20 | 30.0% | 0.92 | INSUFFICIENT_DATA | n<100, PF<1, USDJPY concentration |
+| PENNY_STOCK | 1 | 0.0% | 0.00 | INSUFFICIENT_DATA | n<100 |
+
+**Source:** `audit_dashboard/data/money_ready_verdict.json` (generated 2026-05-28T21:12 UTC). Pull this file fresh before any session — don't trust this table if >24h old.
+
+> **Drift warning (do not regress):** an earlier skill revision listed FOREX 53/40%/0.55 (NOT_READY), COMMODITY 5/40%, and a BOND 8/0% row. Those are **stale**. As of 2026-05-28 the policy-clean verdict has **no BOND row** (no decisive bonds in window), FOREX has shrunk to n=20 / INSUFFICIENT_DATA, and FUTURES + PENNY_STOCK are tracked separately. The reproducer: `python3 -c "import json;d=json.load(open('audit_dashboard/data/money_ready_verdict.json'));[print(k,v['n_resolved'],v['wr'],v['pf'],v['verdict']) for k,v in d['classes'].items()]"`.
+
+**What this means for IDE agents:** Every class needs work. CRYPTO is closest (PF 1.31, needs WR>50% + MDD fix). EQUITY/ETF/PENNY/BOND need raw signal volume first. FOREX/COMMODITY/FUTURES need concentration mitigation before any number is trustworthy.
 
 ## Data Sources (read, never invent)
 
@@ -93,24 +115,58 @@ Every incident and enhancement is tracked in MySQL (`INCIDENT_*` / `ENHANCEMENT_
 - **Live HTML:** `https://findtorontoevents.ca/audit/incidents.html` (filterable, per-class drill-downs)
 - **Live JSON feed:** `audit_dashboard/data/incidents_enhancements_feed.json`
 - **Updates page summary:** `https://findtorontoevents.ca/updates/` (top incidents + enhancements per class)
+- **Earlier enhancement plans:** `https://findtorontoevents.ca/updates/index.html` — chronological log of ALL prior enhancement plans, EAGLE reviews, multi-AI consult results, and institutional-readiness 90-day plans. Check here BEFORE writing a new enhancement plan to avoid duplicating work.
 
-### Date/Time Convention
-- All timestamps in incidents.html are **EST/EDT** (Eastern Time). The nightly renderer (`incidents-enhancements-nightly.yml`) stamps each row with the refresh time.
-- `updates/index.html` entries are date-stamped (e.g., "May 28, 2026", "May 27, 2026 — 10:31 EDT").
-- When creating new incidents/enhancements, always assign `date_est` and `time_est` fields.
+### ⚠️ Date/Time Convention — KNOWN GAP (P0)
+- **Current state:** incidents.html timestamps are rendered as **UTC ISO 8601** (`2026-05-28 21:06 UTC`), NOT EST/EDT. The nightly renderer stamps UTC.
+- **Required state:** All incident/enhancement rows MUST carry `date_est` and `time_est` fields rendered in **America/New_York (EST/EDT)**. Enhancements should also have `enhancement_plan` + `target_date` with proper timelines. Many rows currently lack these — tracked as a P0 incident.
+- `updates/index.html` entries ARE date-stamped correctly (e.g., "May 28, 2026", "May 27, 2026 — 10:31 EDT") — this is the convention to follow.
 
 ### How to Add Incidents/Enhancements
+The CLI uses **subcommands** (`incident` / `update-incident` / `enhancement` / `list`), NOT a `--type` flag. `--class` must be one of the per-class table suffixes (OVERALL/CRYPTO/EQUITY/FOREX/COMMODITY/ETF/BOND/FUTURES/PENNY/STOCKS):
 ```bash
-# CLI tool for tracking:
-python tools/audit_pick_funnel/cli_track.py --type incident --severity P0 --title "..." --component "..." --class OVERALL
-python tools/audit_pick_funnel/cli_track.py --type enhancement --impact HIGH --effort S --title "..." --class OVERALL
+# verify args first:  python tools/audit_pick_funnel/cli_track.py incident --help
+python tools/audit_pick_funnel/cli_track.py incident --class OVERALL --severity P0 --title "..." --component "..." --fix "..." --reporter "..."
+python tools/audit_pick_funnel/cli_track.py enhancement --class OVERALL --impact HIGH --effort S --title "..." --success-metric "..."
+python tools/audit_pick_funnel/cli_track.py list --kind enhancement --class OVERALL          # review existing
 ```
+- `created_at`/`updated_at` are auto-stamped (verified populated: 0/22 incidents NULL). They are stored UTC-naive and the renderer prints UTC — **EST conversion is a known gap (see above).**
+- ⚠️ **`enhancement` has NO `--target-release`/`--target-date`/`--plan` argument** — which is why all 32 enhancement rows have `target_release = NULL` (the missing-timeline gap). Until the arg is added, set timelines via a direct `UPDATE ENHANCEMENT_<class> SET target_release='2026-Q3' WHERE enhancement_id=N`. `success_metric` IS settable (and populated).
+
+## HyroTrader — Prop Firm Style Picks (`/audit/hyrotrader/`)
+
+The HyroTrader surface is the **prop-firm-style** arm of the audit pipeline:
+- **Universe:** crypto perps (BTC, ETH, SOL, etc.) on a simulated $5K 2-step challenge (FTMO/Hyro rules).
+- **Engine:** QuanEngine 18-strategy consensus voting → live 1h playbook signals → pick performance validator → ML edge optimizer.
+- **Evaluation criteria:** prop-firm rules (max daily DD, total DD, profit target) — NOT just WR/PF. A pick can have 60% WR but still fail the challenge if the losers are too deep.
+- **Key tables:** `ejaguiar1_stocks` tables with `source_system LIKE '%hyro%'` or `source_system LIKE '%quan_engine%'`.
+- **Trust level:** Evaluate against prop-firm risk rules, not raw performance stats. The Hyro overlay adds drawdown-gated sizing that can veto otherwise good signals.
+
+**⚠️ Current state (2026-05-28):** The HyroTrader trade journal shows **"No journal trades logged yet"** — the prop-firm challenge has not yet accumulated executed trades. The infrastructure (QuanEngine voting, playbook signals, validator, optimizer) is wired but not actively producing closed picks. This is a priority gap for the prop-firm narrative.
+
+**For IDE agents reviewing HyroTrader:** Check the daily DD limit compliance, not just cumulative WR. A strategy with WR 55% but MDD 35% will blow a prop-firm challenge. Focus on getting the first 30+ resolved trades into the journal before evaluating edge.
 
 ## AI Tournament Validation (READ THIS before quoting any model WR)
-- **Phase 1B in progress** as of 2026-05-28. Most models have <30 resolved picks. No leaderboard ranking exists.
-- **DO NOT quote grok3/llmama4_scout/cursor_agent win rates** from the tournament page — those are from the OLD model summary section which aggregates unvalidated backtest-era data, NOT forward-test results.
-- The canonical forward-test data is in `audit_dashboard/data/ai_tournament_picks_latest.json`. Check `status` field: only `WIN`/`LOSS` rows are resolved. Most picks show `status=OPEN`.
-- The rules page states: **min n=30 resolved picks per model per asset class before ranking.** As of 2026-05-28, zero models qualify.
+- **Leaderboard live** as of 2026-05-29. Scoring: `lower_95% WR x lower_95% PF`, min n=30 resolved per model.
+- **T1 tier (4 models)** — these have n>=30 resolved AND PF_CI_lo > 1.0:
+  - `deepseek_v4`: 178 picks, 43 resolved, WR=55.81%, PF=3.715, score=0.7495 (Rank 1)
+  - `cursor_agent`: 113 picks, 59 resolved, WR=66.10%, PF=2.354, score=0.6586 (Rank 2)
+  - `llama4_scout`: 115 picks, 57 resolved, WR=61.40%, PF=2.261, score=0.574 (Rank 3)
+  - `grok3`: 300 picks (merged grok3+grok3_direct), 89 resolved, WR=58.43%, PF=2.016, score=0.5587 (Rank 4)
+- **T2 tier:** ring_261T (60 resolved, PF_CI_lo=0.876), llm7_qwen (55 resolved, PF_CI_lo=0.798)
+- **T3 tier:** 9 models with n>=30 resolved but PF_CI_lo < 1.0 (edge not statistically proven)
+- **BUILDING tier:** 10+ models with <30 resolved — NOT rank-eligible yet
+- **Caveat:** ~47% of all tournament picks are still `status=OPEN`. Institutional-grade requires n>=100 resolved + OOS stability. These are forward-test results, not proven edges.
+- The canonical data is in `audit_dashboard/data/ai_tournament_picks_latest.json`. Check `status` field: only `WIN`/`LOSS` rows are resolved.
+
+### AI Tournament deep validation — what's actually true (2026-05-29)
+The following stats were validated against `tournament_picks` table with anomaly-aware queries:
+- **`grok3` "300 picks / 58.4% WR"** → **true.** 300 is merged `grok3`+`grok3_direct`; 89 resolved, 52 wins. WR=58.43%, PF=2.016, PF_CI_lo=1.163. T1 rank 4.
+- **`llama4_scout` 61.4% WR** → **true.** 115 picks, 57 resolved, 35 wins. WR=61.40%, PF=2.261, PF_CI_lo=1.185. T1 rank 3.
+- **`cursor_agent` 66.1% WR** → **true.** 113 picks, 59 resolved, 39 wins. WR=66.10%, PF=2.354, PF_CI_lo=1.234. T1 rank 2. Highest WR among all ranked models.
+- **`deepseek_v4`** → T1 rank 1 (highest score). 178 picks, 43 resolved, WR=55.81%, PF=3.715.
+- **The catch:** ~47% of all tournament picks are still `status=OPEN`. These WRs are forward-test on 43–89 resolved picks (wide confidence intervals). Institutional-grade requires n>=100 resolved + OOS stability.
+- **11 models show WR above 60%** — unusually many. Possible explanations: (a) these are top AI models making directional calls on volatile assets, (b) selection bias in which models survived to ranking, (c) TP/SL asymmetry favoring hit-rate over net PnL.
 
 ## Pick Funnel Deep-Dive (for data-quality validation)
 The pick_funnel.html contains:
@@ -119,6 +175,17 @@ The pick_funnel.html contains:
 3. **Top edges per class (90d)** — cells with WR≥55% (Bayesian-shrunk) + PF≥1.5 + n≥20
 4. **DISPUTED banners** — flags stats that don't reconcile with raw DB (e.g., CRYPTO Smart Picks WR 78.9% vs raw DB 39.4%)
 5. **Swarm verdict** — 3-engine (deepseek+cerebras+gemini) independent verification of claimed edges
+
+### WR Calculation Inconsistency (P1 data-quality issue)
+Three different WR formulas are in use across the system:
+
+| Surface | Formula | Flat Handling | Source |
+|---|---|---|---|
+| Main dashboard | `wins / (wins + losses + flat)` | Included in denominator | `dashboard_generator.py::_calculate_win_rate_pct` |
+| Pick funnel | `wins / (wins + losses)` | EXCLUDED (only "decisive") | `extract_funnel.py` line 212 |
+| AI tournament | `n_wins / n_resolved` | Flat counts as loss | `ai-tournament.html` line 504 |
+
+This means the same pick can show different WRs depending on which surface you look at. When cross-validating, always check which formula is being used.
 
 **When validating stats from pick_funnel or any source**: always cross-check against `pf_registry.json::by_asset_class_policy_clean_net` — this is the deduped, policy-excluded, net-of-slippage canonical view. Any WR/PF claim that doesn't match the canonical view is either using a different filter pipeline or is contaminated.
 
@@ -219,6 +286,22 @@ git commit -m "feat(edge): weekly real-money filter + Kelly sizing <DATE>"
 > asset-class performance, build new per-class strategies, and not get fooled by
 > inflated dashboard cells. Read this before touching anything.
 
+## Per-Class Performance Snapshot (2026-05-29, pick funnel 90d)
+
+| Class | Scanned | Decisive | WR% | Verdict | Key Issue |
+|---|---|---|---|---|---|
+| CRYPTO | 16,750 | 3,559 | 45.97% | FAIL | Smart Picks DISPUTED (78.9% vs raw 39.4%) |
+| FOREX | 14,987 | 2,345 | 40.72% | FAIL | All strategies losers except concentrated USDJPY |
+| COMMODITY | 8,283 | 900 | 37.11% | FAIL | COT over-emission, headline PF contaminated |
+| EQUITY | 2,122 | 106 | 49.06% | INSUFF-N | Only 106 decisive; stocks_rsi2_pullback sole proven sleeve |
+| FUTURES | 412 | 18 | 11.11% | FAIL | Zombie tile; real futures hidden under COMMODITY |
+| ETF | 89 | 16 | 18.75% | INSUFF-N | All 5 strategies on probation, zero verified forward trades |
+| BOND | 158 | 14 | 21.43% | FAIL | antigravity_bond 0% WR on n=9 — kill emission |
+| MEME | 87 | 47 | 34.04% | FAIL | Small sample, high loss rate |
+| PENNY | 8 | 7 | 28.57% | INSUFF-N | Deep oversold BLOCKED by Gate 0 |
+
+**Nav Surface Edge Matrix: ZERO PROVEN EDGES** on any surface after Bonferroni correction (alpha=0.00625). Closest candidates all failed either Bonferroni or holdout validation.
+
 ## Databases & credentials (NEVER hard-code; read at runtime)
 
 - **Secrets file:** `~/dbpasses.txt` (gitignored, home dir — outside the repo). Holds every DB password + API key. Read it at runtime; never paste a secret into a committed file.
@@ -238,21 +321,23 @@ git commit -m "feat(edge): weekly real-money filter + Kelly sizing <DATE>"
 | URL | What it is | Trust level |
 |-----|-----------|-------------|
 | `findtorontoevents.ca/audit/` | Main dashboard. Per-class MAJOR-GOAL tiles now fetch **live `money_ready_verdict.json`** (policy-clean verdict). TRUTH-LAYER banner discloses the raw-vs-filtered gap. | Headline tiles = policy-clean (trust); raw `at_raw_picks` rollups = relic (distrust without dedup). |
-| `findtorontoevents.ca/audit/pick_funnel.html` | Per-asset-class funnel: raw signal → filters → Smart Picks / High-Conviction / Money-Ready, with leakage flags (`dup_groups`, `single_source_concentration`, `EXPIRED→WON`). | **Read the caveats, not the headline.** A class can show 65–88% WR that is one source + dup-inflated. |
+| `findtorontoevents.ca/audit/pick_funnel.html` | Per-asset-class funnel: raw signal → filters → Smart Picks / High-Conviction / Money-Ready, with leakage flags (`dup_groups`, `single_source_concentration`, `EXPIRED→WON`), DISPUTED banners, nav-surface edge matrix, swarm verdicts. | **Read the caveats, not the headline.** A class can show 65–88% WR that is one source + dup-inflated. See "Pick Funnel Deep-Dive" below. |
 | `findtorontoevents.ca/audit/ai-tournament.html` | 39 cloud AI models forward-tested per class. Leaderboard ranks n≥30 resolved by CI-adjusted score. | Forward-test WRs are **real but small-n** (see validation below). |
-| `findtorontoevents.ca/audit/hyrotrader` | Prop-firm-style picks (FTMO/Hyro overlay — drawdown-gated sizing). | Evaluate against prop-firm rules (max daily DD, total DD) not just WR. |
-| `findtorontoevents.ca/audit/incidents.html` | Auto-generated from `INCIDENT_*`/`ENHANCEMENT_*` tables in `ejaguiar1_stocks`. ~45 incidents / ~47 enhancements. | Source of the open P0 backlog. |
+| `findtorontoevents.ca/audit/hyrotrader` | Prop-firm-style picks (FTMO/Hyro overlay — drawdown-gated sizing). | 0 journal trades logged (2026-05-28). Evaluate against prop-firm rules (max daily DD, total DD) not just WR. |
+| `findtorontoevents.ca/audit/incidents.html` | Auto-generated from `INCIDENT_*`/`ENHANCEMENT_*` tables in `ejaguiar1_stocks`. ~45 incidents / ~47 enhancements. ⚠️ Timestamps currently UTC, needs EST. | Source of the open P0 backlog. |
 | `findtorontoevents.ca/updates/index.html` | Chronological **enhancement-plan + incident-resolution log** (newest-first). Check here FIRST for prior enhancement plans before writing a new one. | Authoritative history of what was tried. |
 
 ## Incidents / Enhancements documentation (action item)
 
-`/audit/incidents.html` is generated from the `INCIDENT_*` / `ENHANCEMENT_*` DB tables.
+`/audit/incidents.html` is generated by `tools/audit_pick_funnel/render_incidents_page.py`
+from the `INCIDENT_*` / `ENHANCEMENT_*` DB tables (nightly via `incidents-enhancements-nightly.yml`).
 **Each incident/enhancement should carry a date/time in EST and (for enhancements) a
-target timeline.** If a row lacks a timestamp or an enhancement lacks a plan/timeline:
-add `created_at`/`updated_at` (render as `America/New_York` EST on the page) and an
-`enhancement_plan` + `target_date` column, and cross-link the matching
-`updates/index.html` card. Prior enhancement plans live in `updates/index.html` —
-reuse/extend them rather than duplicating.
+target timeline.** Two concrete, VERIFIED gaps (2026-05-28) for the next IDE agent to close:
+
+1. **EST rendering missing.** `render_incidents_page.py:317` stamps only `generated_at` in **UTC** and does no per-row timezone conversion. Tables (`INCIDENT_*`/`ENHANCEMENT_*`) DO have `created_at`/`updated_at` datetimes (populated — 0/22 incidents NULL), stored UTC-naive. **Fix:** in the renderer, convert each row's `created_at`/`updated_at` via `zoneinfo.ZoneInfo("America/New_York")` and render the per-row date in EST/EDT, matching the `updates/index.html` convention ("May 28, 2026 — 10:31 EDT").
+2. **Enhancement timelines missing.** All **32/32** `ENHANCEMENT_*` rows have `target_release = NULL`, and `cli_track.py enhancement` exposes no timeline arg. **Fix:** add `--target-release` to `cli_track.py` (write to the existing `target_release` column) and optionally an `enhancement_plan` column; backfill the open enhancements with quarter/target dates; cross-link each to its matching `updates/index.html` card.
+
+Prior enhancement plans live in `updates/index.html` (the institutional-readiness 90-day plan, EAGLE reviews, multi-AI consults) — **read it first and reuse/extend, don't duplicate.**
 
 ## VETTED-STATS DISCIPLINE (mandatory before citing any class WR/PF)
 
@@ -265,32 +350,68 @@ yourself from the DB with ALL of these:
 5. **OOS / window stability** — recompute over 2d/7d/30d; if WR/PF swings wildly the "edge" is noise.
 6. **Anomaly exclusion** — drop rows where `resolved_at < submitted_at` (impossible) or TP/SL sit on the wrong side of entry (`normalize.py::is_resolution_trustworthy`).
 
-### Worked example — FUTURES is NOT a real edge (2026-05-28 validation)
-`pick_funnel` showed FUTURES **65.09% WR / PF 4.111 (48h)**. Direct `at_raw_picks` query:
-**100% single-source (AlphaEngine)**, dup groups present, and window-unstable —
-2d 43.6%/PF2.13, 7d 73.6%/PF4.79, **30d 50.6%/PF 130.47** (a PF of 130 is mathematically
-absurd = outlier/corruption). Peer review (claude-haiku-4.5 via the LiteLLM proxy)
-concurred: artifact, not edge. **Lesson: a high pick_funnel WR with a
-`single_source_concentration` flag is a relic until dedup + outlier-cap + multi-source + OOS.**
+### Worked example — FUTURES is NOT a real edge (RE-VERIFIED 2026-05-28T23:20 UTC vs live DB)
+`pick_funnel` showed FUTURES **65.09% WR / PF 4.111 (48h)**. A fresh `at_raw_picks` query
+(decisive = `WON`/`LOST`, by `signal_timestamp`) destroys it:
+- **Window-unstable:** 48h **0.0% WR** (9 resolved) → 7d **35.3%** (34) → 30d **57.2%** (747). A 0→35→57% swing across windows is textbook noise, not edge.
+- **~95% single-engine concentration:** `alpha_engine_unified` (3575) + `AlphaEngine` (240) + `alpha_engine` (112) — all the same engine family. No multi-source corroboration.
+- **Canonical agreement:** the policy-clean `money_ready_verdict.json` rates FUTURES **9.1% WR / PF 0.48 / INSUFFICIENT_DATA** — nowhere near 65%.
+- Reproducer: `python3 -c "from tools.db_env import get_stocks_creds;import pymysql;c=pymysql.connect(**get_stocks_creds()).cursor();[ (c.execute('SELECT COUNT(*),SUM(status=\"WON\"),SUM(status=\"LOST\") FROM at_raw_picks WHERE asset_class=\"FUTURES\" AND signal_timestamp>=DATE_SUB(UTC_TIMESTAMP(),INTERVAL %s DAY)',(d,)), print(d,'d:',c.fetchone())) for d in (2,7,30)]"`
 
-### Worked example — AI Tournament WRs ARE real but small-n (2026-05-28 validation)
-Validated against `tournament_picks`, anomaly-aware:
-- `grok3` "300 picks / 58.4%" → **true**, but "300" is the **merged** `grok3`+`grok3_direct`; raw `grok3` alone = 187 picks / 67.9% on 28 resolved. Clean (drop 5 TS-anomaly + 1 TP/SL) → 59.0% on 83.
-- `llama4_scout` 61.4% → clean 61.5% on 52 resolved. `cursor_agent` 66.1% → clean 65.5% on 55.
-These survive anomaly filtering, but are **forward-test on 52–89 resolved (wide CIs), ~47% of picks still OPEN** — institutional-grade requires n≥100 + OOS.
+**Lesson: a high pick_funnel WR with a `single_source_concentration` flag is a relic until dedup + outlier-cap + multi-source + OOS. The earlier "30d PF 130.47" figure was itself an outlier-corrupted snapshot — re-derive, don't cite frozen numbers.**
 
-## Smart Picks parity (action item)
+### Worked example — AI Tournament WRs ARE real but small-n (RE-VERIFIED 2026-05-28T23:20 UTC vs `tournament_picks`)
+Direct per-`model_id` query against the live `tournament_picks` table (status ∈ WIN/LOSS = resolved):
+- `grok3` raw = **187 picks / 28 resolved (19W·9L) / 67.9% WR** ✅ exact match to claim.
+- `grok3` "**300 picks / 58.4%**" = the **merged** `grok3`+`grok3_direct` = 187+113 = 300 total, 89 resolved (52W·37L), **58.4% WR** ✅ exact — "300" is two model_ids, disclose that.
+- `llama4_scout` = 115 / 57 resolved (35W·22L) / **61.4%** ✅. `cursor_agent` = 113 / 59 resolved (39W·20L) / **66.1%** ✅.
+All four claims are **REAL, not fabricated**. BUT they are forward-test on **28–89 resolved (wide CIs), ~50% of picks still OPEN** — institutional-grade requires n≥100 + OOS, and the tournament rules page itself gates ranking at n≥30 resolved per model per class.
 
-The dashboard "Smart Picks" tab/button should be reproducible from the DB. To feed the
-pick funnel: pull the Smart-Picks-eligible cohort from `ejaguiar1_stocks` (the rows that
-pass `passes_smart_gate` / `calculate_smart_score`), recompute WR/PF with the vetted
-discipline above, and write the result into the `pick_funnel` data so the funnel's
-"Smart Picks" column reflects DB truth, not a static cell.
+## PeerReviewSwarmOptions — Multi-model data-quality validation
+
+When a dashboard cell or pick-funnel stat looks suspicious, fan the question to multiple
+AI models to cross-validate. Available peer-review options (in order of preference):
+
+1. **LiteLLM proxy fan-out** — `http://localhost:4000/v1` with model `free-mode` or `paid-mode`. Fire the same prompt to N upstreams simultaneously; aggregate responses. Use `tools/consult_multi.py --fanout <N> --provider <provider>` for structured fan-outs.
+2. **NVIDIA NIM multi-model** — `/consult-nvidia-models` skill. 10+ models on one provider; list/fan-out in one call.
+3. **Cloudflare Workers AI** — `/consult-cloudflare` skill. 37+ models; good for budget-constrained cross-checks.
+4. **Direct CLI consults** — `/consult-grok`, `/consult-gemini`, `/consult-codex`, `/consult-opencode`, `/consult-kilo`, `/consult-ring`, `/consult-cursor-agent`. Each is a standalone second opinion.
+5. **Swarm verdict (3-engine)** — deepseek + cerebras + gemini. Already integrated into the pick_funnel `nav_surface_edge_matrix.json` builder. If those 3 agree on "artifact, not edge," trust it.
+
+**When to use:** any time a pick_funnel cell shows WR>55% + PF>2 that isn't in the canonical `pf_registry.json::by_asset_class_policy_clean_net`. The FUTURES 65.09% WR / PF 4.111 was flagged by peer review in 30 seconds.
+
+**The grounding rule:** ALWAYS include the canonical pf_registry numbers + hypothesis_registry.json rejected-hypothesis entries in the peer-review prompt. 5 models converged on a wrong answer (COMMODITY as #1 alpha) because they never saw the leakage evidence. Multi-AI consensus increases signal-to-noise ONLY when the prompt is grounded.
+
+## Smart Picks parity (action item — not yet done)
+
+The dashboard "Smart Picks" tab/button should be reproducible from the DB. Currently the Smart Picks
+cohort stats shown on the dashboard and pick_funnel are **not fully vetted against raw DB data**.
+
+**Current Smart Picks edge matrix state (2026-05-28, from `nav_surface_edge_matrix.json`):**
+| Class | n | WR | PF | Verdict |
+|-------|---|-----|------|---------|
+| CRYPTO | 26 | 69.2% (60.9% shrunk) | 2.565 | **NO-EDGE** — single_source=100% (alpha_engine), n<26 |
+| EQUITY | 14 | 50.0% | 2.105 | **NO-EDGE** — single_source=92% (kimi_riseoftheclaw), n<14 |
+| ETF | 20 | 80.0% (65.0% shrunk) | 3.614 | **NO-EDGE** — overfit (train PF 15.2 vs holdout PF 1.19), single_source=100% |
+| FOREX | 0 | — | — | no_closed_picks |
+| FUTURES | 0 | — | — | no_closed_picks |
+
+**How to feed Smart Picks stats into the pick funnel properly:**
+1. Pull Smart-Picks-eligible cohort from `ejaguiar1_stocks`: rows that pass the canonical gates — `audit_trail/quality_gates.py::passes_smart_gate` (line 8915) + `calculate_smart_score` (line 9879), plus `passes_active_gate` (line 6493). Per-class scanners that emit the cohort live at `alpha_engine/crypto_smart_picks.py` (`scan_all`) and `alpha_engine/forex_smart_picks.py`; live perf is tracked in `alpha_engine/smart_picks_performance.py`. (smart_score ≥ 60, confidence ≥ 0.60).
+2. Recompute WR/PF with the full vetted discipline (dedup, single-source check, outlier cap, min-n, OOS stability, anomaly exclusion).
+3. Write the result into the `pick_funnel` data so the funnel's "Smart Picks" column reflects DB truth, not a static cell.
+4. **Key gap:** Currently the Smart Picks column shows inflated numbers because it doesn't apply the same dedup + concentration checks that the Verified Alpha and nav_surface_edge_matrix do. The CRYPTO Smart Picks WR of 78.9% (PF 9.69) on the dashboard vs raw DB 39.4% (PF 0.371) is the canonical example of this gap.
 
 ## Where IDE agents should hunt edge (the actual job)
 
 1. **Per asset class, review existing performance** in `ejaguiar1_stocks` (live) + `ejaguiar1_backtests` (historical). Find the strategies with clean PF>1.5 / WR>50 at n≥100.
+   - Start with `pf_registry.json::by_asset_class_strategy_policy_clean_net` — this tells you exactly which strategies have real edges vs artifacts.
+   - Cross-check with `pick_summary_stats_90d.json` for the dashboard-vs-raw-DB gap (the `db_raw_picks_90d` vs `dashboard_all_closed` divergence reveals filtering bias).
 2. **Find orphan backtested edges** — strategies strong in `ejaguiar1_backtests` but with no production caller (Wire-Up Rule). Wire the best ones in.
-3. **Build new per-class strategies** where the class is failing (today 0/6 classes pass Tier-2 policy-clean): EQUITY only proven sleeve is `stocks_rsi2_pullback`; CRYPTO/FOREX/COMMODITY need diversified, multi-source, dedup-clean signals.
-4. **Always size with Kelly/Hyro overlay + DD-halt** (`alpha_engine/kelly_position_sizer.py`).
-5. **Document proven edge** as an `updates/index.html` card (insert ABOVE the auto-incidents marker) + FTP-deploy.
+3. **Build new per-class strategies** where the class is failing (today 0/8 classes pass Tier-2 policy-clean): EQUITY only proven sleeve is `stocks_rsi2_pullback`; CRYPTO/FOREX/COMMODITY/FUTURES need diversified, multi-source, dedup-clean signals.
+4. **Validate AI Tournament picks** — the tournament has 39 models submitting picks across 9 asset classes, but ~47% are still OPEN. Focus on getting models to n≥30 resolved so the leaderboard can produce real rankings. Check `ai_tournament_picks_latest.json` for resolution status.
+5. **Get HyroTrader producing trades** — the prop-firm challenge infrastructure is wired but has 0 journal trades. Priority is getting the first 30+ resolved picks through the QuanEngine → validator → pipeline.
+6. **Fix incidents.html EST timestamps** — currently shows UTC, needs EST/EDT. Each incident/enhancement should also have enhancement_plan + target_date fields.
+7. **Wire Smart Picks to raw DB** — currently shows inflated stats; needs dedup + concentration checks applied before displaying.
+8. **Always size with Kelly/Hyro overlay + DD-halt** (`alpha_engine/kelly_position_sizer.py`).
+9. **Document proven edge** as an `updates/index.html` card (insert ABOVE the auto-incidents marker) + FTP-deploy.

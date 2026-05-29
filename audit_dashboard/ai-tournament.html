@@ -200,6 +200,16 @@
 </table>
 <div class="small" style="margin-top:6px">*Score = lower_95%(WR) × lower_95%(PF) — only rewards statistically supported performance. Models need n≥30 resolved picks to earn a rank.</div>
 
+<!-- WHY TWO TABLES — explainer (added 2026-05-29) -->
+<div style="background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.25);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:12px;line-height:1.6;color:#cbd5e1">
+  <strong style="color:#93c5fd">Why two tables — and why a model's WR can differ between them</strong>
+  <ul style="margin:8px 0 0;padding-left:18px">
+    <li><strong>Leaderboard — Forward-Test Only</strong> (above): the <em>vetted ranking</em>. Includes only models with <strong>≥30 trustworthy resolved picks</strong>, <strong>excludes impossible resolutions</strong> (resolved-before-submitted, or TP/SL on the wrong side of entry), and ranks by a <strong>CI-adjusted score</strong> = lower-95% WR × lower-95% PF (small samples are penalized). Answers <em>"which model is statistically best."</em></li>
+    <li><strong>Model Summary — All-Time Performance</strong> (below): the <em>breadth view</em>. Lists <strong>every</strong> model with a <strong>raw</strong> win-rate over all resolved picks (WIN/LOSS/EXPIRED) — <strong>no minimum sample, no anomaly exclusion, no CI shrinkage</strong>. Answers <em>"who is submitting, and how much."</em></li>
+    <li><strong>So the same model can show a higher raw WR in the Summary but rank lower — or not appear — in the Leaderboard</strong>, because the Leaderboard drops anomaly picks and shrinks small-sample win-rates toward their confidence floor. <strong>For "best model" decisions, trust the Leaderboard; treat a Model-Summary WR as activity/breadth, not a proven edge</strong> (especially below n=30 resolved). Note: a model's "n picks" includes still-OPEN picks (~half the field) that don't count toward WR until they resolve.</li>
+  </ul>
+</div>
+
 <!-- MODEL SUMMARY TABLE -->
 <h2>Model Summary — All-Time Performance</h2>
 <div style="margin-bottom:6px">
@@ -501,8 +511,9 @@ function calcModelStats(picks) {
   // Calculate derived metrics
   for (const mid of Object.keys(models)) {
     const m = models[mid];
-    m.wr = m.n_resolved > 0 ? m.n_wins / m.n_resolved : 0;
-    m.pf = m.sum_losses > 0 ? m.sum_gains / m.sum_losses : (m.sum_gains > 0 ? 999 : 0);
+    // 2026-05-28: null when 0 resolved (not 0% WR / 0 PF — no data yet)
+    m.wr = m.n_resolved > 0 ? m.n_wins / m.n_resolved : null;
+    m.pf = m.sum_losses > 0 ? m.sum_gains / m.sum_losses : (m.sum_gains > 0 ? 999 : (m.n_resolved > 0 ? 0 : null));
     // Score = WR * PF (simplified CI proxy for client-side; real CI in pipeline)
     m.score = m.wr * m.pf;
     m.wr_ci_lo = m.wr;
@@ -544,16 +555,20 @@ function renderLeaderboard(models) {
                : m.tier === 'T2' ? '<span class="badge b-t2">T2</span>'
                : m.tier === 'T3' ? '<span class="badge b-t3">T3</span>'
                : '<span class="badge b-below">BELOW</span>';
-    const wrClass = m.wr >= 0.55 ? 'pnl-pos' : m.wr < 0.45 ? 'pnl-neg' : 'pnl-neu';
-    const pfClass = m.pf >= 1.5 ? 'pnl-pos' : m.pf < 1.0 ? 'pnl-neg' : 'pnl-neu';
+    const hasWr = m.wr != null && !isNaN(m.wr);
+    const wrDisplay = hasWr ? (m.wr*100).toFixed(1) + '%' : 'pending';
+    const wrClass = !hasWr ? 'pnl-neu' : (m.wr >= 0.55 ? 'pnl-pos' : m.wr < 0.45 ? 'pnl-neg' : 'pnl-neu');
+    const hasPf = m.pf != null && !isNaN(m.pf) && m.pf !== 999;
+    const pfDisplay = hasPf ? m.pf.toFixed(2) : '—';
+    const pfClass = !hasPf ? 'pnl-neu' : (m.pf >= 1.5 ? 'pnl-pos' : m.pf < 1.0 ? 'pnl-neg' : 'pnl-neu');
     tbody.innerHTML += `<tr>
       <td class="rank">#${i+1}</td>
       <td class="model-name">${esc(m.model_id)}</td>
       <td><span class="provider">${esc(m.provider)}</span></td>
-      <td class="num ${wrClass}">${(m.wr*100).toFixed(1)}%</td>
-      <td class="num small">[${(m.wr_ci_lo*100).toFixed(1)}%, ${(m.wr_ci_hi*100).toFixed(1)}%]</td>
-      <td class="num ${pfClass}">${m.pf.toFixed(2)}</td>
-      <td class="num">${m.score.toFixed(3)}</td>
+      <td class="num ${wrClass}">${wrDisplay}</td>
+      <td class="num small">${hasWr ? `[${(m.wr_ci_lo*100).toFixed(1)}%, ${(m.wr_ci_hi*100).toFixed(1)}%]` : '—'}</td>
+      <td class="num ${pfClass}">${pfDisplay}</td>
+      <td class="num">${hasWr && hasPf ? m.score.toFixed(3) : '—'}</td>
       <td class="num">${m.n_picks}</td>
       <td class="num">${m.n_resolved}</td>
       <td>${tier}</td>
@@ -720,15 +735,20 @@ async function loadModelSummary() {
     if (!tbl) return;
     let html = '';
     data.models.forEach(m => {
-      const wrClass = m.win_rate_pct >= 55 ? 'pnl-pos' : m.win_rate_pct < 45 ? 'pnl-neg' : 'pnl-neu';
+      // 2026-05-28: win_rate_pct is null when resolved=0 (no data yet, not 0% WR)
+      const hasWr = m.win_rate_pct != null && !isNaN(m.win_rate_pct);
+      const wrDisplay = hasWr ? m.win_rate_pct + '%' : 'pending';
+      const wrClass = !hasWr ? 'pnl-neu' : (m.win_rate_pct >= 55 ? 'pnl-pos' : m.win_rate_pct < 45 ? 'pnl-neg' : 'pnl-neu');
+      const hasPnl = m.avg_pnl_pct != null && !isNaN(m.avg_pnl_pct);
+      const pnlDisplay = hasPnl ? ((m.avg_pnl_pct > 0 ? '+' : '') + m.avg_pnl_pct + '%') : '\u2014';
       const drillUrl = './model.html?id=' + encodeURIComponent(m.model_id);
       html += `<tr>
         <td class="model-name"><a href="${drillUrl}">${esc(m.model_id)}</a></td>
         <td class="num">${m.total_picks}</td>
-        <td class="num ${wrClass}">${m.win_rate_pct}%</td>
+        <td class="num ${wrClass}">${wrDisplay}</td>
         <td class="num">${m.resolved}</td>
         <td class="num">${m.wins}/${m.losses}</td>
-        <td class="num">${m.avg_pnl_pct > 0 ? '+' : ''}${m.avg_pnl_pct}%</td>
+        <td class="num">${pnlDisplay}</td>
         <td class="small">${toEST(m.last_pick)}</td>
         <td class="num">${m.personas}</td>
         <td class="num">${m.asset_classes}</td>

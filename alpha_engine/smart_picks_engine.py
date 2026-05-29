@@ -357,7 +357,7 @@ PROVEN_WINNERS = {
     "drawdown_recovery_rsi_sol":               {"boost": 8,  "wr": 55.6},   # 27 trades, PF 3.99, +27% PnL
     "crypto_keltner_compression_expansion_v1": {"boost": 8,  "wr": 57.9},   # 95 trades, PF 2.77, +25% PnL
     "crypto_rsi_whaleconfirmed_v1":            {"boost": 5,  "wr": 57.6},   # 144 trades, PF 1.91, +28% PnL
-    "stocks_rsi2_pullback":                    {"boost": 10, "wr": 88.9},   # 9 trades, +13% PnL — small but 88.9% WR
+    # 2026-05-28: stocks_rsi2_pullback REMOVED — regressed to 30% WR / PF 0.032 on canonical pf_registry
     "rs-breakout-scout":                       {"boost": 8,  "wr": 69.2},   # 13 trades, PF 4.90, +26% PnL
     "Breakout Momentum":                       {"boost": 5,  "wr": 54.5},   # 33 trades, +32% PnL
     "quality-minus-junk":                      {"boost": 8,  "wr": 63.6},   # 22 trades, PF 1.64, +15% PnL
@@ -532,8 +532,8 @@ NON_CRYPTO_POLICY = {
         "allowed_trust": {"PROVEN", "RELIABLE", "DEVELOPING"},
     },
     "etf": {
-        "allowlist": {"stocks_rsi2_pullback", "cta_tsmom_blend", "cot_positioning",
-                      "proven_vwap_mean_reversion", "sector_rotation"},
+        "allowlist": {"cta_tsmom_blend", "cot_positioning",
+                      "proven_vwap_mean_reversion", "sector_rotation"},  # stocks_rsi2_pullback KILLED 2026-05-28 (30% WR / PF 0.032)
         "min_trades": 5,
         "min_wr": 40.0,
         "min_pf": 1.05,

@@ -381,10 +381,13 @@ _PROVEN_COPY_TRADERS = {
 
 # Non-crypto strategies with proven WR — get 1.2x confidence boost
 _BOOSTED_NON_CRYPTO_STRATEGIES = {
-    "stocks_rsi2_pullback": 1.3,  # 100% WR on 3 trades
+    # 2026-05-28: stocks_rsi2_pullback REMOVED — 30% WR / PF 0.032 on canonical pf_registry (was 100% on 3 trades, regressed)
     "cta_golden_cross_200": 1.3,  # 100% WR on 2 trades
     "futures_bb_mean_reversion": 1.2,  # 60% WR on 5 trades
     "cot_positioning": 1.15,  # 50% WR, positive PnL
+    # 2026-05-28 baby-strat ships (shadow/monitor mode):
+    "etf_dual_momentum_rotation": 1.2,  # DIA WR 58.8%, PF 2.64 — strong ETF edge
+    "futures_session_breakout_cot": 1.15,  # ES=F WR 61.5%, PF 1.39 — good futures edge
 }
 _COPY_STRATEGY_STATS_CACHE: dict | None = None
 
