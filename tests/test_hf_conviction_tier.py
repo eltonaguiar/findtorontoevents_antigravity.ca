@@ -60,6 +60,12 @@ def test_tier_b_major():
         "strategy": "quan_engine_scalp",
         "direction": "LONG",
         "trust_tier": "PROVEN",
+        # forward-trades fields required by the min_forward_trades HC gate
+        # (added after this test was first written; cf. test_attach_counts).
+        "strat_fwd_wr": 60,
+        "strat_fwd_trades": 20,
+        "forward_wr": 0.60,
+        "forward_trades": 20,
     }
     tier, rs = classify_hf_conviction_tier(p)
     assert tier == "B"
