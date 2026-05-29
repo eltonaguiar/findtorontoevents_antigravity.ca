@@ -9186,17 +9186,15 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
         or (_bypass_edge_trades >= 30 and _bypass_edge_wr >= 0.55)
     )
 
-    # Source-trust bypass for COMMODITY picks from proven source systems:
-    # multi_asset_cot (PF 20.54), multi_asset_copytrader COMMODITY (n=96, WR=93.8%).
-    # These source systems have institutional-grade track records in closed picks but
-    # NEW picks score low (no forward history) and fail the floor on first emission.
-    # Bypass allows them through while BLOCKED_ASSET_STRATEGY_PAIRS and the FUTURES
-    # block on multi_asset_copytrader still prevent the toxic FUTURES subset.
-    _COMMODITY_TRUSTED_SOURCES = frozenset({
-        "multi_asset_cot",         # PF 20.54 on COMMODITY (cavecrew-investigator AA-6)
-        "multi_asset_copytrader",  # COMMODITY n=96, WR=93.8% (same audit)
-        "commodity_cot_contrarian",  # CFTC COT commercial signal — institutionally validated
-    })
+    # Source-trust bypass for COMMODITY picks — REVOKED 2026-05-29 (completes PR #34).
+    # The three COT sources previously trusted here (multi_asset_cot,
+    # multi_asset_copytrader, commodity_cot_contrarian) were FALSIFIED by M-095:
+    # their headline stats (PF 20.54 / WR 93.8%) are a COT-publication LOOK-AHEAD
+    # LEAKAGE artifact — deduped + ex-CT=F they are n=20 / WR 30% / PF 0.51 (a loser).
+    # PR #34 revoked the FV-exempt carve-out but left these two bypass whitelists
+    # intact; emptying them stops the falsified sources from skipping the score floor.
+    # (Restore a source here only with a clean, dedup-checked, forward-validated record.)
+    _COMMODITY_TRUSTED_SOURCES: frozenset[str] = frozenset()
     # COMMODITY_NON_BLACKLIST: symbols that are NOT in COMMODITY_BLACKLIST.
     # HG=F (n=168 WR=47% KEEP) and PL=F (n=138 WR=44.9% KEEP) — Phase 2-D panel.
     _COMMODITY_NON_BLACKLIST_SYMBOLS = frozenset({"HG=F", "PL=F"})
@@ -9483,9 +9481,10 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     # Trust/high-conviction rework:
     # require minimum realized evidence for non-verified sources and block
     # drifted picks currently underperforming in live window.
-    # COMMODITY COT trusted sources are exempt: institutional CFTC data substitutes
-    # for forward-trade count evidence (source validates strategy, not pick history).
-    _CONV_TRUSTED = frozenset({"multi_asset_cot", "multi_asset_copytrader", "commodity_cot_contrarian"})
+    # COMMODITY COT trusted-source exemption — REVOKED 2026-05-29 (completes PR #34).
+    # These COT sources were FALSIFIED by M-095 (look-ahead leakage: deduped ex-CT=F
+    # n=20 / WR 30% / PF 0.51). They must NOT skip the convergence forward-trade gate.
+    _CONV_TRUSTED: frozenset[str] = frozenset()
     _conv_cot_exempt = (
         _normalize_asset_class(pick.get("asset_class", "")) == "COMMODITY"
         and str(pick.get("source_system") or "").lower() in _CONV_TRUSTED
