@@ -258,23 +258,42 @@ def build_smart_picks_db_stats(conn, days: int) -> Dict[str, Any]:
     cohort which can be inflated by single-source concentration (e.g. CRYPTO
     Smart Picks showing 78.9% WR from claude_gainer_st).
 
-    Returns dict with per-class {n, wins, losses, decisive, wr_pct, pf, avg_pnl_pct}.
+    Returns dict with per-class {n, wins, losses, decisive, wr_pct, pf,
+    avg_pnl_pct, top_source, top_source_share, top_symbol, top_symbol_share,
+    caveats}.
     """
     stats: Dict[str, Any] = {}
     with conn.cursor() as cur:
         for ac, floor in sorted(SMART_FLOOR_BY_CLASS.items()):
+            # ── Create deduped temp table ──────────────────────────────
+            # Dedup by (symbol, strategy, direction, DATE(created_at)),
+            # keeping the row with highest elite_score (latest id as tiebreak).
+            # The picks table has ~80-87% duplicate inflation (2026-05-29 audit).
+            cur.execute("DROP TEMPORARY TABLE IF EXISTS _sp_dedup")
+            cur.execute(
+                "CREATE TEMPORARY TABLE _sp_dedup AS "
+                "WITH ranked AS ("
+                "  SELECT *, ROW_NUMBER() OVER ("
+                "    PARTITION BY symbol, strategy, direction, DATE(created_at) "
+                "    ORDER BY elite_score DESC, id DESC"
+                "  ) as rn "
+                "  FROM picks "
+                "  WHERE created_at >= NOW() - INTERVAL %s DAY "
+                "    AND elite_score >= %s "
+                "    AND confidence >= 0.60 "
+                "    AND status IN ('WON','WIN','LOST','LOSS') "
+                "    AND asset_class = %s"
+                ") SELECT * FROM ranked WHERE rn = 1",
+                (days, floor, ac),
+            )
+
+            # Query 1: n, wins, losses, avg_pnl from deduped table
             cur.execute(
                 "SELECT COUNT(*) as n, "
                 "SUM(CASE WHEN status IN ('WON','WIN') THEN 1 ELSE 0 END) as won, "
                 "SUM(CASE WHEN status IN ('LOST','LOSS') THEN 1 ELSE 0 END) as lost, "
                 "AVG(CASE WHEN pnl_pct IS NOT NULL THEN pnl_pct END) as avg_pnl "
-                "FROM picks "
-                "WHERE created_at >= NOW() - INTERVAL %s DAY "
-                "AND elite_score >= %s "
-                "AND confidence >= 0.60 "
-                "AND status IN ('WON','WIN','LOST','LOSS') "
-                "AND asset_class = %s",
-                (days, floor, ac),
+                "FROM _sp_dedup"
             )
             r = cur.fetchone()
             if not r:
@@ -285,19 +304,24 @@ def build_smart_picks_db_stats(conn, days: int) -> Dict[str, Any]:
             decisive = won + lost
             wr = round(100.0 * won / decisive, 2) if decisive > 0 else None
             avg_pnl = float(r.get("avg_pnl", 0) or 0)
-            # Compute PF from avg_pnl and win/loss split — we don't have
-            # per-pick pnl in aggregate, so estimate: sum of positive pnls
-            # ≈ avg_pnl * n if all positive had same magnitude. Better: re-query.
+
+            # Early exit: if n==0, no Smart Picks — skip remaining queries
+            if n == 0:
+                stats[ac] = {
+                    "n": 0, "wins": 0, "losses": 0, "decisive": 0,
+                    "wr_pct": None, "pf": None, "avg_pnl_pct": None,
+                    "smart_floor": floor,
+                    "top_source": "", "top_source_share": 0.0,
+                    "top_symbol": "", "top_symbol_share": 0.0,
+                    "caveats": ["no_smart_picks"],
+                }
+                continue
+
+            # Query 2: PF sum from deduped table
             cur.execute(
                 "SELECT SUM(CASE WHEN pnl_pct > 0 THEN pnl_pct ELSE 0 END) as pos_sum, "
                 "SUM(CASE WHEN pnl_pct < 0 THEN pnl_pct ELSE 0 END) as neg_sum "
-                "FROM picks "
-                "WHERE created_at >= NOW() - INTERVAL %s DAY "
-                "AND elite_score >= %s "
-                "AND confidence >= 0.60 "
-                "AND status IN ('WON','WIN','LOST','LOSS') "
-                "AND asset_class = %s",
-                (days, floor, ac),
+                "FROM _sp_dedup"
             )
             pf_row = cur.fetchone() or {}
             pos_sum = float(pf_row.get("pos_sum") or 0)
@@ -308,6 +332,40 @@ def build_smart_picks_db_stats(conn, days: int) -> Dict[str, Any]:
                 pf = float("inf")
             else:
                 pf = None
+
+            # Query 3: Source concentration (top source and share) from deduped
+            cur.execute(
+                "SELECT source_system, COUNT(*) as cnt "
+                "FROM _sp_dedup "
+                "WHERE source_system IS NOT NULL AND source_system != '' "
+                "GROUP BY source_system ORDER BY cnt DESC LIMIT 1"
+            )
+            src_row = cur.fetchone()
+            top_source = src_row["source_system"] if src_row and src_row.get("source_system") else ""
+            top_source_share = round(src_row["cnt"] / n, 4) if src_row and n > 0 else 0.0
+
+            # Query 4: Symbol concentration (top symbol and share) from deduped
+            cur.execute(
+                "SELECT symbol, COUNT(*) as cnt "
+                "FROM _sp_dedup "
+                "WHERE symbol IS NOT NULL AND symbol != '' "
+                "GROUP BY symbol ORDER BY cnt DESC LIMIT 1"
+            )
+            sym_row = cur.fetchone()
+            top_symbol = sym_row["symbol"] if sym_row and sym_row.get("symbol") else ""
+            top_symbol_share = round(sym_row["cnt"] / n, 4) if sym_row and n > 0 else 0.0
+
+            # Build caveat flags
+            caveats = []
+            if n == 0:
+                caveats.append("no_smart_picks")
+            if top_source_share > 0.60:
+                caveats.append(f"single_source_concentration={int(top_source_share*100)}%_{top_source}")
+            if top_symbol_share > 0.40:
+                caveats.append(f"symbol_concentration={int(top_symbol_share*100)}%_{top_symbol}")
+            if wr is not None and wr < 50:
+                caveats.append("wr_below_50pct")
+
             stats[ac] = {
                 "n": n,
                 "wins": won,
@@ -317,6 +375,11 @@ def build_smart_picks_db_stats(conn, days: int) -> Dict[str, Any]:
                 "pf": pf if pf != float("inf") else "inf",
                 "avg_pnl_pct": round(avg_pnl, 4) if avg_pnl else None,
                 "smart_floor": floor,
+                "top_source": top_source,
+                "top_source_share": top_source_share,
+                "top_symbol": top_symbol,
+                "top_symbol_share": top_symbol_share,
+                "caveats": caveats,
             }
     return stats
 

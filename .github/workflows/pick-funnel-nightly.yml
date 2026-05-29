@@ -70,6 +70,11 @@ jobs:
           python tools/audit_pick_funnel/build_nav_surface_matrix.py \
             || echo "::warning::build_nav_surface_matrix.py failed (soft-fail)"
 
+      - name: Build strategy IC analysis
+        run: |
+          python tools/audit_pick_funnel/build_ic_analysis.py \
+            || echo "::warning::build_ic_analysis.py failed (soft-fail)"
+
       - name: Commit JSON outputs
         run: |
           git config user.name  "github-actions[bot]"
@@ -79,6 +84,7 @@ jobs:
                   audit_dashboard/data/pick_funnel_rejected_universe.json \
                   audit_dashboard/data/top_edges_per_class.json \
                   audit_dashboard/data/nav_surface_edge_matrix.json \
+                  audit_dashboard/data/strategy_ic_analysis.json \
                   audit_dashboard/data/pick_summary_stats_2w.json \
                   audit_dashboard/data/pick_summary_stats_48h.json \
                   reports/2026-*_pick_funnel_swarm_verdict.md 2>/dev/null || true

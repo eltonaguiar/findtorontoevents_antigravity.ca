@@ -148,19 +148,31 @@ def test_smart_gate_uses_combined_function():
 
 
 def test_combined_precedes_vix_only_in_call_order():
-    """In passes_smart_gate, combined check fires BEFORE single-VIX check."""
+    """In passes_smart_gate, combined check fires BEFORE single-VIX check.
+
+    quality_gates.py has two code paths that import VIX gate functions:
+      1. A helper fn (lines ~6355) that uses `_vix_combined` / `_vix_reject` aliases
+      2. passes_smart_gate (lines ~9012) that uses `_combined_reject` / `_vix_reject`
+
+    We scope the assertion to the passes_smart_gate block so the helper's
+    unrelated call order doesn't cause a false negative.
+    """
     src = (ROOT / "audit_trail" / "quality_gates.py").read_text(encoding="utf-8")
-    idx_combined = src.find("should_reject_combined")
-    idx_vix_only = src.find("should_reject_equity_pick as _vix_reject")
-    # Both refs should exist; combined check appears at/after import but
-    # combined call must fire first
-    assert idx_combined > 0
-    # Find the actual call sites (not just import)
-    idx_combined_call = src.find("_combined_reject(pick)")
-    idx_vix_call = src.find("_vix_reject(pick)")
+    # Locate passes_smart_gate definition to scope the search
+    gate_fn_start = src.find("def passes_smart_gate")
+    assert gate_fn_start > 0, "passes_smart_gate function not found in quality_gates.py"
+    gate_fn_src = src[gate_fn_start:]
+
+    idx_combined_import = gate_fn_src.find("should_reject_combined as _combined_reject")
+    idx_vix_import = gate_fn_src.find("should_reject_equity_pick as _vix_reject")
+    assert idx_combined_import > 0, "combined import not found in passes_smart_gate"
+    assert idx_vix_import > 0, "vix-only import not found in passes_smart_gate"
+
+    idx_combined_call = gate_fn_src.find("_combined_reject(pick)")
+    idx_vix_call = gate_fn_src.find("_vix_reject(pick)")
     assert idx_combined_call > 0 and idx_vix_call > 0
     assert idx_combined_call < idx_vix_call, (
-        "Combined gate must be evaluated before VIX-only fallback"
+        "Combined gate must be evaluated before VIX-only fallback in passes_smart_gate"
     )
 
 

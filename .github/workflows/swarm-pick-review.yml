@@ -34,6 +34,8 @@ jobs:
       # finds picks with >=2-model consensus on same (symbol, direction), and
       # promotes them into the live swarm_picks.json store. Idempotent.
       - name: Promote tournament consensus picks
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "::group::Tournament consensus promotion"
           python tools/swarm/promote_tournament_picks.py

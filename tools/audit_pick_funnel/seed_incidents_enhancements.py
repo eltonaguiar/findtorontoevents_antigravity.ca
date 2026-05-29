@@ -272,8 +272,14 @@ INCIDENTS = [
      "updates/QUICK_WINS_EAGLE_2026-05-27_0217_EST_GPT-5.4_OpenAI.md", None, None, "gpt-5.4/openai"),
 ]
 
+# target_release defaults to None for all existing entries; the backfill
+# script (tools/audit_pick_funnel/backfill_enhancement_targets.py) computes
+# dates based on impact/effort mapping for rows that have NULL target_release.
+#
+# To set an explicit target_release on a new entry, add it as the 14th tuple
+# element (e.g. '2026-07-01 12:00 EST' or '2026-07-01'). Default: None.
 ENHANCEMENTS = [
-    # (table_suffix, title, description, category, expected_impact, effort, status, proposed_by, related_persona, success_metric, link_md_path, link_url, link_github_ref)
+    # (table_suffix, title, description, category, expected_impact, effort, status, proposed_by, related_persona, success_metric, link_md_path, link_url, link_github_ref, target_release)
     ("OVERALL", "Verify the 648-for-0 un-gated-picks claim (DeepSeek session)",
      "Roo's NIM panel session (2026-05-25) reports moderate_confidence (n=455) and low_confidence (n=193) buckets went 0-for-648 over the 6-day window 2026-05-16..21, destroying -825% PnL, while 300 gated picks generated +994%. If real this is the single highest-leverage filter in the system. 0-for-455 is statistically implausible (p~=0.5^455) on honest trades — the bucket may be circularly defined by 'failed all upstream gates.' Verify against audit_dashboard/data/dashboard_data.json::picks.recent_closed filtered to that date range; if buckets are post-gate residuals, 'gate them' is already done.",
      "VALIDATION", "HIGH", "S", "BACKLOG", "claude-opus-4-7", None,
@@ -473,24 +479,29 @@ def main():
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                     (title, desc, sev, st, comp, fix, md, url, gh, reporter))
                 inc_inserted += 1
-        for (cls, title, desc, cat, imp, eff, st, prop, persona, metric, md, url, gh) in ENHANCEMENTS:
+        for enh in ENHANCEMENTS:
+            # Unpack with optional 14th element (target_release)
+            cls, title, desc, cat, imp, eff, st, prop, persona, metric, md, url, gh, *tr_rest = enh
+            target_release = tr_rest[0] if tr_rest else None
             tbl = f"ENHANCEMENT_{table_suffix(cls)}"
             cur.execute(f"SELECT enhancement_id FROM {tbl} WHERE title=%s LIMIT 1", (title,))
             existing = cur.fetchone()
             if existing:
                 cur.execute(f"""UPDATE {tbl} SET description=%s, category=%s, expected_impact=%s,
                     effort=%s, status=%s, proposed_by=%s, related_persona_id=%s,
-                    success_metric=%s, link_md_path=%s, link_url=%s, link_github_ref=%s
+                    success_metric=%s, link_md_path=%s, link_url=%s, link_github_ref=%s,
+                    target_release=COALESCE(%s, target_release)
                     WHERE enhancement_id=%s""",
-                    (desc, cat, imp, eff, st, prop, persona, metric, md, url, gh, existing[0]))
+                    (desc, cat, imp, eff, st, prop, persona, metric, md, url, gh, target_release, existing[0]))
                 enh_updated += 1
             else:
                 cur.execute(f"""INSERT INTO {tbl} (title, description, category, expected_impact,
                     effort, status, proposed_by, related_persona_id, success_metric,
-                    link_md_path, link_url, link_github_ref)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-                    (title, desc, cat, imp, eff, st, prop, persona, metric, md, url, gh))
+                    link_md_path, link_url, link_github_ref, target_release)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                    (title, desc, cat, imp, eff, st, prop, persona, metric, md, url, gh, target_release))
                 enh_inserted += 1
+
     conn.commit()
     print(f"INCIDENTS:   {inc_inserted} inserted, {inc_updated} updated")
     print(f"ENHANCEMENTS: {enh_inserted} inserted, {enh_updated} updated")
