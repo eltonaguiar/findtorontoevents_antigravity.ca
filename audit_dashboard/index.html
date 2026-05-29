@@ -1028,7 +1028,7 @@ a:hover { text-decoration: underline; }
   })();
   </script>
   <div style="font-size:0.74em;color:#94a3b8;margin-top:6px;border-top:1px solid rgba(148,163,184,0.2);padding-top:6px">
-    <strong>Tier definitions:</strong> T1 PF&gt;2/WR&gt;55/MDD&lt;10 (Renaissance). T2 PF&gt;1.5/WR&gt;50/MDD&lt;20 (Institutional). T3 PF&gt;1.2/WR&gt;48/MDD&lt;30 (Retail-OK). Source for the tier <em>thresholds</em>: <code>asset_class_health</code> in <code>audit_dashboard/data/dashboard_data.json</code> (post-resolver-v2 noise filter, generated 2026-05-05T01:37Z — <strong>stale snapshot</strong>; the live per-class cards above are driven by <code>money_ready_verdict.json</code> (2026-05-29 policy-clean), not this file). Resolver v2 shipped 2026-04-28; v2.1 bug bundle 2026-05-02. Historical re-resolve (<code>re_resolve_historical_v2.py</code>) pending — pre-fix labels still in closed_picks for picks closed before 2026-04-28.
+    <strong>Tier definitions:</strong> T1 PF&gt;2/WR&gt;55/MDD&lt;10 (Renaissance). T2 PF&gt;1.5/WR&gt;50/MDD&lt;20 (Institutional). T3 PF&gt;1.2/WR&gt;48/MDD&lt;30 (Retail-OK). Source: <code>asset_class_health</code> in <code>audit_dashboard/data/dashboard_data.json</code> (post-resolver-v2 noise filter, generated 2026-05-05T01:37Z). Resolver v2 shipped 2026-04-28; v2.1 bug bundle 2026-05-02. Historical re-resolve (<code>re_resolve_historical_v2.py</code>) pending — pre-fix labels still in closed_picks for picks closed before 2026-04-28.
   </div>
   <!-- PF contradiction disclosure (Tier-A #2, 2026-05-04) — resolves AHF-05 from
        audit hyperfocus swarm: hf_stats vs asset_class_health show different PF
@@ -2689,7 +2689,7 @@ function showStrategyPopup(iconElem, strategyName) {
   popup.style.top = (rect.bottom + window.scrollY) + 'px';
   popup.style.left = (rect.left + window.scrollX) + 'px';
 }
-// Data too large to embed (11MB). Loading from data/dashboard_data.json instead.
+// Data too large to embed (12MB). Loading from data/dashboard_data.json instead.
 // External data/dashboard_data.json is loaded in init() via async fetch only.
 // Sync XHR was removed: it blocked the main thread for seconds on large JSON (mobile "page unresponsive").
 let D = window.DASHBOARD_DATA || {};
