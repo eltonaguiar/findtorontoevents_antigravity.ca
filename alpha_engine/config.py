@@ -172,6 +172,11 @@ STRATEGY_WEIGHT_OVERRIDES: dict[str, float] = {
     # are already excluded by commodity_kill_switch / hedge_fund_quality_gate.
     "cta_commodity_momentum":   2.0,  # cta_bridge.py — metals/energy/grains TSMOM
     "commodity_momentum_12_1":  2.0,  # 12-1 month classical momentum (Asness)
+    # Cycle 16 strategies: MACD divergence, momentum breakout, mean reversion ATR, trend ensemble
+    "macd_divergence": 2.5,
+    "momentum_breakout": 2.0,
+    "mean_reversion_atr": 2.0,
+    "trend_ensemble": 2.5,
 }
 DEFAULT_ALLOCATION = 2000.0  # Base per-pick allocation in dollars
 

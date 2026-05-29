@@ -390,6 +390,11 @@ _BOOSTED_NON_CRYPTO_STRATEGIES = {
     "futures_session_breakout_cot": 1.15,  # ES=F WR 61.5%, PF 1.39 — good futures edge
     # 2026-05-29 Cycle 13 breakthrough: Vol MR — 30/30 symbols profitable, PF 2-5
     "volatility_mean_reversion": 1.3,  # Universal strategy, all asset classes
+    # 2026-05-28 Cycle 16: new ensemble strategies
+    "macd_divergence": 1.3,
+    "momentum_breakout": 1.3,
+    "mean_reversion_atr": 1.2,
+    "trend_ensemble": 1.4,
 }
 _COPY_STRATEGY_STATS_CACHE: dict | None = None
 
