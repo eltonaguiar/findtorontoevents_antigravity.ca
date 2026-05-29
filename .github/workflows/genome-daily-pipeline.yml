@@ -108,7 +108,7 @@ jobs:
           PYEOF
 
       - name: Upload data artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: market-data
           path: genome/data/market/
@@ -123,7 +123,7 @@ jobs:
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Download market data
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: market-data
           path: genome/data/market/
@@ -157,7 +157,7 @@ jobs:
           python strategy_registry.py --update-performance
 
       - name: Upload results artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: genome-results
           path: |
@@ -174,7 +174,7 @@ jobs:
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Download results artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: genome-results
           path: genome/

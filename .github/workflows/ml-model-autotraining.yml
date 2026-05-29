@@ -335,7 +335,7 @@ jobs:
       - name: Upload SHAP artifact (A8.1)
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: shap-report-${{ github.run_number }}
           path: |
@@ -402,7 +402,7 @@ jobs:
       
       - name: Upload models as artifacts
         if: steps.check.outputs.needs_training == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ml-models-${{ github.run_number }}
           path: |

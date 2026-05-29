@@ -60,14 +60,14 @@ jobs:
 
       - name: Checkout
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.drop_leakage == matrix.arm.drop }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # full clone avoids `git fetch --unshallow` (16+ min on this repo) in commit step
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Set up Python
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.drop_leakage == matrix.arm.drop }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload bundle artifact (fallback if commit oversized)
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.drop_leakage == matrix.arm.drop }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.arm.outputs.bundle }}
           path: ml_gatekeeper/models/${{ steps.arm.outputs.bundle }}
