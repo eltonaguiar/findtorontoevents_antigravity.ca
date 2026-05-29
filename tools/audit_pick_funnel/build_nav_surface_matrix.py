@@ -243,15 +243,40 @@ def _why_no_edge(picks, surface_id, ac, wr_pct, pf, train_pf, holdout_pf, pass_b
 # ---------- main ----------
 
 def _find_dashboard_data() -> Path:
-    candidates = [
-        REPO / "audit_dashboard" / "data" / "dashboard_data.json",
-        REPO / "audit" / "data" / "dashboard_data.json",
-        REPO / "tmp" / "dashboard_data.json",
-    ]
-    cands = [c for c in candidates if c.exists()]
-    if not cands:
-        raise SystemExit("No dashboard_data.json found — checked audit_dashboard/, audit/, tmp/")
-    return max(cands, key=lambda p: p.stat().st_size)
+    """Find the best dashboard_data.json source.
+
+    Priority order (by trustworthiness, NOT file size):
+      1. audit_dashboard/data/dashboard_data.json  (canonical CI output)
+      2. audit/data/dashboard_data.json             (legacy path)
+      3. tmp/dashboard_data.json                    (last resort — local temp)
+
+    Previously this picked the LARGEST file, which caused silent fallback to
+    stale tmp/dashboard_data.json when the canonical path was missing (local
+    dev after CI fetch step didn't persist). Now it follows a strict priority
+    order and logs a WARNING when falling back to tmp/.
+    """
+    primary = REPO / "audit_dashboard" / "data" / "dashboard_data.json"
+    legacy = REPO / "audit" / "data" / "dashboard_data.json"
+    fallback = REPO / "tmp" / "dashboard_data.json"
+
+    for candidate in (primary, legacy):
+        if candidate.exists():
+            return candidate
+
+    if fallback.exists():
+        print("[build_nav_surface_matrix] WARNING: canonical dashboard_data.json missing "
+              f"(checked {primary}, {legacy}) — falling back to {fallback}. "
+              "This file may be stale or contain a subset of asset classes. "
+              "Run 'curl -o audit_dashboard/data/dashboard_data.json "
+              "https://findtorontoevents.ca/audit/data/dashboard_data.json' "
+              "to fetch the production version.")
+        return fallback
+
+    raise SystemExit(
+        f"No dashboard_data.json found — checked {primary}, {legacy}, {fallback}. "
+        "Run: curl -o audit_dashboard/data/dashboard_data.json "
+        "https://findtorontoevents.ca/audit/data/dashboard_data.json"
+    )
 
 
 def _load_blocked_source_systems() -> set:
@@ -291,6 +316,10 @@ def build():
               f"({len(_blocked)} banned sources)")
 
     classes = sorted({p.get("asset_class") for p in rc if p.get("asset_class")})
+    if len(classes) < 5:
+        print(f"[build_nav_surface_matrix] WARNING: only {len(classes)} asset classes found "
+              f"({classes}) — expected >=7 (BOND, COMMODITY, CRYPTO, EQUITY, ETF, FOREX, FUTURES). "
+              f"The source data is severely degraded. Consider re-fetching from production.")
     n_surfaces = len(SURFACES)
 
     out = {

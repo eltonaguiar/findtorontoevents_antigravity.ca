@@ -250,6 +250,77 @@ def serialize_pick(p: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def build_smart_picks_db_stats(conn, days: int) -> Dict[str, Any]:
+    """Query picks table for Smart Picks-gated stats per asset class.
+
+    Smart Picks gate = elite_score >= per-class floor AND confidence >= 0.60.
+    Decisive only (WON+LOST). This is the DB ground truth — not the dashboard
+    cohort which can be inflated by single-source concentration (e.g. CRYPTO
+    Smart Picks showing 78.9% WR from claude_gainer_st).
+
+    Returns dict with per-class {n, wins, losses, decisive, wr_pct, pf, avg_pnl_pct}.
+    """
+    stats: Dict[str, Any] = {}
+    with conn.cursor() as cur:
+        for ac, floor in sorted(SMART_FLOOR_BY_CLASS.items()):
+            cur.execute(
+                "SELECT COUNT(*) as n, "
+                "SUM(CASE WHEN status IN ('WON','WIN') THEN 1 ELSE 0 END) as won, "
+                "SUM(CASE WHEN status IN ('LOST','LOSS') THEN 1 ELSE 0 END) as lost, "
+                "AVG(CASE WHEN pnl_pct IS NOT NULL THEN pnl_pct END) as avg_pnl "
+                "FROM picks "
+                "WHERE created_at >= NOW() - INTERVAL %s DAY "
+                "AND elite_score >= %s "
+                "AND confidence >= 0.60 "
+                "AND status IN ('WON','WIN','LOST','LOSS') "
+                "AND asset_class = %s",
+                (days, floor, ac),
+            )
+            r = cur.fetchone()
+            if not r:
+                continue
+            n = int(r.get("n") or 0)
+            won = int(r.get("won") or 0)
+            lost = int(r.get("lost") or 0)
+            decisive = won + lost
+            wr = round(100.0 * won / decisive, 2) if decisive > 0 else None
+            avg_pnl = float(r.get("avg_pnl", 0) or 0)
+            # Compute PF from avg_pnl and win/loss split — we don't have
+            # per-pick pnl in aggregate, so estimate: sum of positive pnls
+            # ≈ avg_pnl * n if all positive had same magnitude. Better: re-query.
+            cur.execute(
+                "SELECT SUM(CASE WHEN pnl_pct > 0 THEN pnl_pct ELSE 0 END) as pos_sum, "
+                "SUM(CASE WHEN pnl_pct < 0 THEN pnl_pct ELSE 0 END) as neg_sum "
+                "FROM picks "
+                "WHERE created_at >= NOW() - INTERVAL %s DAY "
+                "AND elite_score >= %s "
+                "AND confidence >= 0.60 "
+                "AND status IN ('WON','WIN','LOST','LOSS') "
+                "AND asset_class = %s",
+                (days, floor, ac),
+            )
+            pf_row = cur.fetchone() or {}
+            pos_sum = float(pf_row.get("pos_sum") or 0)
+            neg_sum = float(pf_row.get("neg_sum") or 0)
+            if neg_sum != 0:
+                pf = round(pos_sum / abs(neg_sum), 3)
+            elif pos_sum > 0:
+                pf = float("inf")
+            else:
+                pf = None
+            stats[ac] = {
+                "n": n,
+                "wins": won,
+                "losses": lost,
+                "decisive": decisive,
+                "wr_pct": wr,
+                "pf": pf if pf != float("inf") else "inf",
+                "avg_pnl_pct": round(avg_pnl, 4) if avg_pnl else None,
+                "smart_floor": floor,
+            }
+    return stats
+
+
 def load_universe() -> Dict[str, List[str]]:
     """Load scanned universes for rejection-walk. Soft-fail per source."""
     universe: Dict[str, List[str]] = {}
@@ -339,6 +410,10 @@ def main() -> int:
         print("[funnel] fetching at_signal_outcomes (context)...", flush=True)
         outcomes_90 = fetch_outcomes(conn, 90)
         print(f"[funnel]  -> {len(outcomes_90)} outcomes", flush=True)
+
+        print("[funnel] fetching Smart Picks DB stats (90d)...", flush=True)
+        smart_picks_db = build_smart_picks_db_stats(conn, 90)
+        print(f"[funnel]  -> {len(smart_picks_db)} classes with Smart Picks", flush=True)
     finally:
         conn.close()
 
@@ -348,6 +423,7 @@ def main() -> int:
         "n_picks": len(picks_today),
         "funnel_by_class": build_funnel(picks_today),
         "picks": [serialize_pick(p) for p in picks_today],
+        "smart_picks_db_stats": {},
     }
     out_today = OUT_DIR / "pick_funnel_today.json"
     out_today.write_text(json.dumps(today_payload, indent=2, default=str))
@@ -362,6 +438,7 @@ def main() -> int:
         "funnel_by_class": funnel_90,
         # Sample only — JSON would be huge otherwise (45k+ picks)
         "picks_sample": [serialize_pick(p) for p in picks_90[:1000]],
+        "smart_picks_db_stats": smart_picks_db,
     }
     out_90 = OUT_DIR / "pick_funnel_90d.json"
     out_90.write_text(json.dumps(payload_90, indent=2, default=str))

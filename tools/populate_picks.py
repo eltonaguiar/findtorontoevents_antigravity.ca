@@ -966,11 +966,6 @@ def main() -> None:
     out_path.write_text(json.dumps(all_picks, indent=2))
     print(f"[populate] Wrote {len(all_picks)} picks to {out_path.name}")
 
-    # Also write latest
-    LATEST_PICKS.parent.mkdir(parents=True, exist_ok=True)
-    LATEST_PICKS.write_text(json.dumps(all_picks, indent=2))
-    print(f"[populate] Wrote {len(all_picks)} picks to {LATEST_PICKS.name}")
-
     # Write individual model submission files for the price tracker
     write_submissions(all_picks)
 

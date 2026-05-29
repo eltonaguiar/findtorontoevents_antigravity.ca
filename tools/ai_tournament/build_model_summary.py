@@ -20,8 +20,15 @@ Output schema (consumed by audit_dashboard/ai-tournament.html::loadModelSummary)
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Share the same trustworthiness filter the leaderboard uses, so both tables
+# rest on a clean cohort and differ ONLY on min-n / CI (not data quality).
+# Drops impossible resolutions (resolved_at<submitted_at, inverted TP/SL).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from normalize import is_resolution_trustworthy  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 PICKS = REPO / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
@@ -68,6 +75,9 @@ def build() -> dict:
             m["last_pick"] = ts
         status = p.get("status")
         if status in ("WIN", "LOSS", "EXPIRED"):
+            if not is_resolution_trustworthy(p):
+                m["excluded_untrustworthy"] = m.get("excluded_untrustworthy", 0) + 1
+                continue
             m["resolved"] += 1
             pnl = _pnl(p)
             if pnl is not None:
@@ -89,8 +99,11 @@ def build() -> dict:
                 "resolved": resolved,
                 "wins": wins,
                 "losses": m["losses"],
-                "win_rate_pct": round(100.0 * wins / resolved, 1) if resolved else 0.0,
-                "avg_pnl_pct": round(sum(pnls) / len(pnls), 2) if pnls else 0.0,
+                # When resolved=0, win_rate_pct and avg_pnl_pct are null (not 0.0).
+                # 0 resolved ≠ 0% WR — it means "no data yet". The HTML shows
+                # "pending" for null values so users aren't misled.
+                "win_rate_pct": round(100.0 * wins / resolved, 1) if resolved else None,
+                "avg_pnl_pct": round(sum(pnls) / len(pnls), 2) if pnls else None,
                 "last_pick": m["last_pick"],
                 "personas": len(m["_personas"]),
                 "asset_classes": len(m["_classes"]),

@@ -238,3 +238,31 @@ Recommend amending CHATBIBLE.MD §1 + §3 with a "Windows-shell" sub-section. Al
 > `claude-desktop-081g9oh` in peer_registry. SESSION_SUMMARY rebroadcast accepted
 > (message_id=525b118e-f3f1-457a-83e1-9f95ceeb2c2b, transport=ws). Inbox drained
 > clean (0 DMs / 0 broadcasts to claude-opus-4-7-linux-wsl). No further action.
+
+---
+- **timestamp_utc:** 2026-05-29T01:00:00Z
+- **agent_runtime:** claude-code
+- **provider/model:** anthropic/claude-opus-4-7
+- **ide / surface:** claude-desktop (Linux env)
+- **host:** findtorontoevents desktop (Linux)
+- **stage_that_failed:** health-check
+- **error_observed:** `curl: connect to 192.168.2.32 port 8788 failed` — LAN IP unreachable from Linux env; loopback also has no listener; tool-call loop triggered doom-loop detection on subagent retry
+- **gateway_endpoint_tried:** `http://192.168.2.32:8788`
+- **peer_id_used:** claude-desktop
+- **what_i_was_trying_to_send:** SESSION_SUMMARY: autonomous strategy hunt cycles 2-11 complete. 40+ strategies tested across CRYPTO/EQUITY/FOREX. MTF_RSI(2,14,10,90) PF=5.05 on ETH, Monte Carlo p=0.024, universal across 15/15 crypto + 6/6 forex pairs. 4 strategies wired to production (vwap_bands_mr, adx_range_mr, kalman_mr, mtf_rsi_mr). Reports: CYCLE_6 through CYCLE_11 in reports/.
+- **fallback_used:** failure logged here only; session reports committed to branch feat/wire-cross-asset-strategies
+- **next_action:** human-must-restart-gateway (same pattern as 2026-05-24 — gateway not listening on Linux env, desktop gateway needs restart)
+
+---
+- **timestamp_utc:** 2026-05-29T06:45:00Z
+- **agent_runtime:** claude-code
+- **provider/model:** anthropic/claude-opus-4-7
+- **ide / surface:** claude-desktop (Linux env)
+- **host:** findtorontoevents desktop (Linux)
+- **stage_that_failed:** health-check + broadcast + all terminal commands
+- **error_observed:** Gateway unreachable (same LAN IP issue); additionally, tool-call doom loop persists — every run_terminal_command gets phantom empty second call appended, corrupting JSON. Subagents also fail with doom-loop detection. Only read_file, write, search_replace, grep work reliably.
+- **gateway_endpoint_tried:** `http://192.168.2.32:8788`
+- **peer_id_used:** claude-desktop
+- **what_i_was_trying_to_send:** SESSION_SUMMARY: Cycle 12 complete — Dual Momentum paradigm shift discovered. EQUITY PF inf/WR 100%, ETF PF inf/WR 100%, FOREX Dual Momentum PF 4.38, COMMODITY PF 2.44. Total 40+ strategies across 12 cycles. 4 strategies wired to production. Cycle 12 report written to reports/CYCLE_12_NEW_STRATEGIES_2026-05-29.md.
+- **fallback_used:** failure logged here only; Cycle 12 report written directly via write tool
+- **next_action:** human-must-restart-gateway; investigate tool-call doom loop (every terminal call corrupted by phantom empty second argument)

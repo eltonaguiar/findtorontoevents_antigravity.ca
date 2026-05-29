@@ -733,6 +733,268 @@ def ag_vt_restatement_short(data: dict, context: dict = None) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# 14. ETF Dual Momentum Rotation (2026-05-28 baby-strat ship)
+# DIA WR 58.8%, PF 2.64 — strongest ETF baby-strat edge.
+# ---------------------------------------------------------------------------
+def ag_etf_dual_momentum_rotation(data: dict, context: dict = None) -> list[dict]:
+    """Antigravity: Dual momentum sector rotation with VIX regime + RSI filter.
+
+    Ships 2026-05-28 from baby_strategies/etf_dual_momentum_rotation.
+    Replaces etf_dual_momentum, etf_sector_momentum, etf_faber_tactical.
+    Multi-asset: ranks 50+ ETFs by dual momentum (1M+6M), picks top N.
+    Needs 252 bars minimum for SMA200 + RSI warmup.
+    """
+    try:
+        from baby_strategies.etf_dual_momentum_rotation import (
+            ETFDualMomentumRotation,
+            ALLOWED_SYMBOLS as _ETF_DM_SYMBOLS,
+        )
+    except ImportError:
+        return []
+
+    strategy = ETFDualMomentumRotation()
+    # Build multi-symbol map (ETF dual momentum is a rotation/rank strategy)
+    md: dict = {}
+    sym_set = set(_ETF_DM_SYMBOLS)
+    for sym, df in data.items():
+        if not isinstance(df, pd.DataFrame) or len(df) < 252:
+            continue
+        if sym.upper() not in sym_set:
+            continue
+        md[sym] = df
+    if len(md) < 2:
+        return []
+    results = []
+    try:
+        signals = strategy.generate_signals(md)
+        for sig in signals:
+            d = _signal_to_dict(sig, "ag_etf_dual_momentum_rotation", "etf")
+            if d:
+                d["asset_class"] = "ETF"
+                d["extra"]["source"] = "baby_strategies_20260528"
+                d["extra"]["framing"] = "dual_momentum_rotation"
+                results.append(d)
+    except Exception:
+        pass
+    return results
+
+
+# ---------------------------------------------------------------------------
+# 15. Futures Session Breakout + COT (2026-05-28 baby-strat ship)
+# ES=F WR 61.5%, PF 1.39 — strong FUTURES edge.
+# ---------------------------------------------------------------------------
+def ag_futures_session_breakout_cot(data: dict, context: dict = None) -> list[dict]:
+    """Antigravity: Session breakout + overnight gap + COT-proxy momentum.
+
+    Ships 2026-05-28 from baby_strategies/futures_session_breakout_cot.
+    Replaces commodity_momentum_term (FUTURES WR ~20%, PF ~0.3).
+    Single-asset iteration: scans ES=F, NQ=F, YM=F, RTY=F, ZN=F, etc.
+    Needs 60 bars minimum (futures are fast).
+    """
+    try:
+        from baby_strategies.futures_session_breakout_cot import (
+            FuturesSessionBreakoutCOT,
+            ALLOWED_SYMBOLS as _FUT_SB_SYMBOLS,
+        )
+    except ImportError:
+        return []
+
+    strategy = FuturesSessionBreakoutCOT()
+    results = []
+    futures_symbols = set(_FUT_SB_SYMBOLS)
+    for sym, df in data.items():
+        if not isinstance(df, pd.DataFrame) or len(df) < 60:
+            continue
+        if sym.upper() not in futures_symbols:
+            continue
+        try:
+            signals = strategy.generate_signals(df, symbol=sym)
+            for sig in signals:
+                d = _signal_to_dict(sig, "ag_futures_session_breakout_cot", "commodity")
+                if d:
+                    d["symbol"] = sym
+                    d["asset_class"] = "FUTURES"
+                    d["extra"]["source"] = "baby_strategies_20260528"
+                    d["extra"]["framing"] = "session_breakout_cot"
+                    results.append(d)
+        except Exception:
+            continue
+    return results
+
+
+# ---------------------------------------------------------------------------
+# 16. Copper / Platinum COT-proxy Momentum (2026-05-28 baby-strat ship)
+# ---------------------------------------------------------------------------
+def ag_copper_platinum_cot_momentum(data: dict, context: dict = None) -> list[dict]:
+    """Antigravity: COT-proxy momentum for HG=F and PL=F only.
+
+    Ships 2026-05-28 from baby_strategies/copper_platinum_cot_momentum.
+    Uses EMA crossover + RSI lane as proxy for commercial hedging activity.
+    Needs 60 bars minimum.
+    """
+    try:
+        from baby_strategies.copper_platinum_cot_momentum import (
+            CopperPlatinumCotMomentumStrategy,
+        )
+    except ImportError:
+        return []
+
+    strategy = CopperPlatinumCotMomentumStrategy()
+    results = []
+    metal_symbols = {"HG=F", "PL=F"}
+    for sym, df in data.items():
+        if not isinstance(df, pd.DataFrame) or len(df) < 60:
+            continue
+        if sym.upper() not in metal_symbols:
+            continue
+        try:
+            signals = strategy.generate_signals(df, symbol=sym)
+            for sig in signals:
+                d = _signal_to_dict(sig, "ag_copper_platinum_cot_momentum", "commodity")
+                if d:
+                    d["symbol"] = sym
+                    d["asset_class"] = "COMMODITY"
+                    d["extra"]["source"] = "baby_strategies_20260528"
+                    d["extra"]["framing"] = "cot_proxy_momentum"
+                    results.append(d)
+        except Exception:
+            continue
+    return results
+
+
+# ---------------------------------------------------------------------------
+# 17. Bond Yield-Curve Duration-Momentum (2026-05-28 baby-strat ship)
+# ---------------------------------------------------------------------------
+def ag_bond_yield_curve_momentum(data: dict, context: dict = None) -> list[dict]:
+    """Antigravity: Duration-momentum for bond ETFs (TLT, IEF, SHY, BND).
+
+    Ships 2026-05-28 from baby_strategies/bond_yield_curve_momentum.
+    Multi-asset: uses TLT for regime + SHY/IEF for signals.
+    Needs 210 bars minimum for SMA200 warmup + ratio history.
+    """
+    try:
+        from baby_strategies.bond_yield_curve_momentum import (
+            BondYieldCurveMomentumStrategy,
+            ALLOWED_SYMBOLS as _BOND_YC_SYMBOLS,
+        )
+    except ImportError:
+        return []
+
+    strategy = BondYieldCurveMomentumStrategy()
+    # Build multi-symbol map (bond strategy uses TLT for regime detection)
+    md: dict = {}
+    sym_set = set(_BOND_YC_SYMBOLS)
+    for sym, df in data.items():
+        if not isinstance(df, pd.DataFrame) or len(df) < 210:
+            continue
+        if sym.upper() not in sym_set:
+            continue
+        md[sym] = df
+    if len(md) < 1:
+        return []
+    try:
+        signals = strategy.generate_signals(md)
+        results = []
+        for sig in signals:
+            d = _signal_to_dict(sig, "ag_bond_yield_curve_momentum", "bond")
+            if d:
+                d["asset_class"] = "BOND"
+                d["extra"]["source"] = "baby_strategies_20260528"
+                d["extra"]["framing"] = "yield_curve_momentum"
+                results.append(d)
+    except Exception:
+        return []
+    return results
+
+
+# ---------------------------------------------------------------------------
+# 18. Equity Sector Rotation Momentum (2026-05-28 baby-strat ship)
+# ---------------------------------------------------------------------------
+def ag_equity_sector_rotation_momentum(data: dict, context: dict = None) -> list[dict]:
+    """Antigravity: Monthly sector rotation with dual momentum.
+
+    Ships 2026-05-28 from baby_strategies/equity_sector_rotation_momentum.
+    Multi-asset: ranks 11 sector ETFs by 1M+3M dual momentum.
+    Needs 65 bars minimum + SPY data for regime detection.
+    """
+    try:
+        from baby_strategies.equity_sector_rotation_momentum import (
+            EquitySectorRotationMomentum,
+            SECTOR_ETFS,
+        )
+    except ImportError:
+        return []
+
+    strategy = EquitySectorRotationMomentum()
+    # Build sector ETF map
+    md: dict = {}
+    sector_set = set(SECTOR_ETFS.keys())
+    spy_df = None
+    for sym, df in data.items():
+        if not isinstance(df, pd.DataFrame) or len(df) < 65:
+            continue
+        su = sym.upper()
+        if su == "SPY":
+            spy_df = df
+        elif su in sector_set:
+            md[sym] = df
+    if len(md) < 2:
+        return []
+    try:
+        signals = strategy.generate_signals(md, spy_data=spy_df)
+        results = []
+        for sig in signals:
+            d = _signal_to_dict(sig, "ag_equity_sector_rotation_momentum", "etf")
+            if d:
+                d["asset_class"] = "ETF"
+                d["extra"]["source"] = "baby_strategies_20260528"
+                d["extra"]["framing"] = "sector_rotation_momentum"
+                results.append(d)
+    except Exception:
+        return []
+    return results
+
+
+# ---------------------------------------------------------------------------
+# 19. Crypto ATR Ratio Expansion Long (2026-05-28 baby-strat ship)
+# ---------------------------------------------------------------------------
+def ag_crypto_atr_ratio_expansion_long(data: dict, context: dict = None) -> list[dict]:
+    """Antigravity: ATR compression/expansion breakout on crypto (daily).
+
+    Ships 2026-05-28 from baby_strategies/crypto_atr_ratio_expansion_long.
+    Single-asset: scans BTC-USD, ETH-USD, SOL-USD, BNB-USD.
+    Needs 220 bars minimum for ATR ratio + volatility gate warmup.
+    """
+    try:
+        from baby_strategies.crypto_atr_ratio_expansion_long import (
+            CryptoAtrRatioExpansionLongStrategy,
+        )
+    except ImportError:
+        return []
+
+    strategy = CryptoAtrRatioExpansionLongStrategy()
+    results = []
+    crypto_symbols = {"BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD"}
+    for sym, df in data.items():
+        if not isinstance(df, pd.DataFrame) or len(df) < 220:
+            continue
+        if sym.upper() not in crypto_symbols:
+            continue
+        try:
+            signals = strategy.generate_signals(df, symbol=sym)
+            for sig in signals:
+                d = _signal_to_dict(sig, "ag_crypto_atr_ratio_expansion_long", "crypto")
+                if d:
+                    d["symbol"] = sym
+                    d["extra"]["source"] = "baby_strategies_20260528"
+                    d["extra"]["framing"] = "atr_ratio_expansion"
+                    results.append(d)
+        except Exception:
+            continue
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Export dict for scanner registration
 # ---------------------------------------------------------------------------
 ANTIGRAVITY_STRATEGIES = {
@@ -751,4 +1013,11 @@ ANTIGRAVITY_STRATEGIES = {
     "ag_vt_thematic_etf_momentum": ag_vt_thematic_etf_momentum,
     "ag_vt_stat_arb_gdx_slv": ag_vt_stat_arb_gdx_slv,
     "ag_vt_restatement_short": ag_vt_restatement_short,
+    # 2026-05-28 baby-strat ships (6 new, shadow/monitor mode):
+    "ag_etf_dual_momentum_rotation": ag_etf_dual_momentum_rotation,
+    "ag_futures_session_breakout_cot": ag_futures_session_breakout_cot,
+    "ag_copper_platinum_cot_momentum": ag_copper_platinum_cot_momentum,
+    "ag_bond_yield_curve_momentum": ag_bond_yield_curve_momentum,
+    "ag_equity_sector_rotation_momentum": ag_equity_sector_rotation_momentum,
+    "ag_crypto_atr_ratio_expansion_long": ag_crypto_atr_ratio_expansion_long,
 }

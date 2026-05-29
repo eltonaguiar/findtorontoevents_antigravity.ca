@@ -22,10 +22,18 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pymysql
+
+# Shared canonical normalization (direction/asset_class/persona + symbol-class
+# overrides for dual-class tickers like CL=F/IWM/TLT). Authored by a peer in the
+# 2026-05-28 audit; we reuse it here — the primary rebuild path — so the fixes
+# persist on every regen instead of being reverted from the DB's raw values.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from normalize import normalize_pick  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 LATEST = REPO / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
@@ -125,6 +133,11 @@ def main() -> None:
     pmap = _provider_map()
     n_merged = n_provider_set = n_norm = 0
     for p in picks:
+        # Shared canonical pass first: direction (SELL->SHORT), asset_class
+        # (STOCKS->EQUITY), persona fallback, and symbol-class overrides that
+        # un-split dual-class tickers (CL=F/GC=F/...->COMMODITY, IWM/XLI->ETF,
+        # TLT->BOND) so a symbol never lands in two per-class buckets.
+        normalize_pick(p)
         mid = p.get("model_id")
         if mid in CANONICAL_ID:
             p["model_id"] = mid = CANONICAL_ID[mid]
@@ -134,19 +147,18 @@ def main() -> None:
             p["provider"] = canon_prov
             n_provider_set += 1
 
-        # Display normalisations (no DB write):
-        #  - OPEN picks shouldn't carry exit_price 0.0 (reads as "exited at $0");
-        #    pnl_pct on OPEN is intentional *unrealized* PnL, left as-is.
-        #  - canonical direction/asset-class vocab.
-        if p.get("status") == "OPEN" and p.get("exit_price") == 0:
-            p["exit_price"] = None
-            n_norm += 1
-        if p.get("direction") == "SELL":
-            p["direction"] = "SHORT"
-            n_norm += 1
-        if p.get("asset_class") == "STOCKS":
-            p["asset_class"] = "EQUITY"
-            n_norm += 1
+        # OPEN picks shouldn't carry exit_price/pnl_pct 0.0 placeholders (read
+        # as "exited at $0" / "flat 0.00%"). Every OPEN row's pnl_pct is 0 or
+        # null in the DB (no live unrealized PnL is computed), so the 0.0 is an
+        # uncomputed placeholder, not a real mark-to-market — null renders as
+        # "—". Resolved-pick stats are unaffected (builders aggregate WIN/LOSS).
+        if p.get("status") == "OPEN":
+            if p.get("exit_price") == 0:
+                p["exit_price"] = None
+                n_norm += 1
+            if p.get("pnl_pct") == 0:
+                p["pnl_pct"] = None
+                n_norm += 1
 
     LATEST.write_text(json.dumps(picks, indent=2))
     n_models = len({p.get("model_id") for p in picks})
