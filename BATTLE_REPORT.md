@@ -1,6 +1,6 @@
 ##  Battle Test Report
 
-**Last Run:** 2026-05-29 07:11:54 UTC
+**Last Run:** 2026-05-29 09:02:51 UTC
 
 ### Summary
 - **Prices Fetched:** 7
@@ -12,10 +12,10 @@
 
 | Symbol | Strategy | Signal | Entry | TP | SL | Confidence |
 |--------|----------|--------|-------|-------|-------|------------|
-| ETH | Funding_Rate_Arbitrage | SHORT | $2016.1700 | $1955.6849 | $2056.4934 | 100% |
-| DOGE | Funding_Rate_Arbitrage | SHORT | $0.0994 | $0.0965 | $0.1014 | 100% |
-| AVAX | Funding_Rate_Arbitrage | SHORT | $8.9400 | $8.6718 | $9.1188 | 100% |
-| LINK | Funding_Rate_Arbitrage | LONG | $9.0200 | $9.2906 | $8.8396 | 100% |
+| ETH | Funding_Rate_Arbitrage | SHORT | $2003.3600 | $1943.2592 | $2043.4272 | 100% |
+| DOGE | Funding_Rate_Arbitrage | SHORT | $0.0993 | $0.0964 | $0.1013 | 100% |
+| AVAX | Funding_Rate_Arbitrage | SHORT | $8.9200 | $8.6524 | $9.0984 | 100% |
+| LINK | Funding_Rate_Arbitrage | LONG | $9.0000 | $9.2700 | $8.8200 | 100% |
 
 ###  Survivors (Battle-Tested)
 - **Funding Rate Arbitrage** (Grade: A, Score: 88)
