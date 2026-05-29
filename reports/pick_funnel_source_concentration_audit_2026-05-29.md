@@ -34,3 +34,35 @@ classes are concentrated; only CRYPTO passes** — and even CRYPTO needs the Sma
 separately (CLAUDE.md notes 91.7% single-source on the CRYPTO Smart-Picks cell).
 
 Reproducer: `python3 -c` over `at_raw_picks` GROUP BY asset_class, source_system; collapse `alpha_engine*`→one; HHI = Σ(share²). NFA.
+
+---
+## CORRECTION (2026-05-29, after operator challenge): engine-family share is the WRONG unit
+
+Operator's point: "one engine family doesn't necessarily mean concentrated if the engine runs
+different strategies." **The data confirms this — the engine-family verdict above OVERSTATED concentration.**
+`alpha_engine` is a META-ENGINE running many methodologically-distinct strategies. The correct unit is
+the `strategy` field, not `source_system`. Strategy-level decisive-pick distribution:
+
+| Class | engine-family share | # distinct strategies | top-strategy share | strategy HHI | corrected verdict |
+|-------|--------------------:|----------------------:|-------------------:|-------------:|-------------------|
+| FUTURES | 96% | 19 | 22.1% | 0.14 | DIVERSIFIED (cta_momentum 24 / cot_positioning 19 / futures_momentum 14 / golden_cross / connors_rsi2 / bb_mean_rev) |
+| CRYPTO | 32% | 216 | 21.6% | 0.08 | DIVERSIFIED |
+| ETF | 72% | 30 | 24.7% | 0.12 | DIVERSIFIED (engine label was misleading — NOT a real concentration) |
+| FOREX | 59% | 61 | 32.7% | 0.20 | reasonably diversified |
+| MEMECOIN | 64% | 21 | 25.2% | 0.15 | DIVERSIFIED |
+| PENNY_STOCK | 53% | 10 | 21.1% | 0.14 | diversified (tiny n) |
+| **EQUITY** | 59% | 48 | **59.4% (smart_money_consensus)** | **0.44** | **CONCENTRATED — the only genuine case** |
+
+**Corrected conclusion:** measure concentration at the **strategy** level, not source_system/engine. By that
+(correct) lens, **only EQUITY is strategy-concentrated** (`smart_money_consensus` = 59% of decisive EQUITY
+picks, HHI 0.44). FUTURES/CRYPTO/ETF/FOREX/MEMECOIN are signal-diversified despite a single dominant engine label.
+
+Engine-level concentration is a *secondary* risk (shared code/data/bug-surface, single point of failure) worth
+monitoring, but it is NOT "concentration, not edge" — that label only fits single-STRATEGY dominance.
+
+**Remediation (operator's 2nd point — "if concentrated to 1 strategy, add more"):** for EQUITY, add
+diversified equity strategies (value/quality/PEAD/low-vol/cross-sectional momentum) to dilute
+`smart_money_consensus` below ~40% / push strategy-HHI < 0.25. The other classes need no concentration action.
+
+**Funnel fix (revised):** flag a class concentrated on **strategy-level** top-share > 50% OR strategy-HHI > 0.30
+(NOT engine/source share). Under this correct rule: 1/7 classes (EQUITY) flagged, not 6/7.
