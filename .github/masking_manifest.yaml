@@ -1,0 +1,50 @@
+policy_version: 1
+description: 'Tiered policy for continue-on-error in .github/workflows. approved=intentional (T3, ignored).
+  known_silent=existing baseline grandfathered in; the linter only FAILS on NEW silent maskers (coe>0
+  with zero ::warning, not approved, not baselined). To clear a baseline entry: add a ::warning to the
+  step (T2) or flip coe to false (T1), then remove it here.'
+approved:
+- workflow: db-freshness-guardian.yml
+  reason: documented exit-code semantics (0=GREEN/1=YELLOW/2=RED); report uploaded regardless
+- workflow: audit-dashboard.yml
+  reason: reconcile/non-blocking steps intentionally soft; resolver + mysql-sync already flipped to continue-on-error:false
+    (Kimi 2026-05-20)
+known_silent:
+- ab_analysis.yml
+- analyst-tracker.yml
+- audit-drift-telemetry.yml
+- baby-strat-forward-paper.yml
+- backfill.yml
+- coinglass-scanner.yml
+- copy-trader-intelligence.yml
+- cross-aggregator.yml
+- crypto-ml-edge.yml
+- crypto-winner-scan.yml
+- daily-miracle-scan.yml
+- daily-picks-snapshot.yml
+- data-pipeline-test.yml
+- deals-refresh.yml
+- deploy-alpha-dashboard.yml
+- deploy-battleground-ftp.yml
+- deploy-findcryptopairs-ftp.yml
+- growth-stock-screener-daily.yml
+- hyro-daily.yml
+- live-monitor-refresh.yml
+- live_spike_trading.yml
+- mega-mutation-tracker.yml
+- meme-scanner.yml
+- ml-model-autotraining.yml
+- multi-asset-scanner.yml
+- optimize-score-thresholds.yml
+- quan-engine-live.yml
+- rapid-validation-CLAUDECODE_Feb152026.yml
+- refresh-stocks-portfolio.yml
+- refresh-top-movies.yml
+- sec-edgar-fetch.yml
+- smart-money-tracker.yml
+- social-prediction-tracker.yml
+- torontoevent-rapid-validation.yml
+- walkforward-gate.yml
+- weekly-filter.yml
+- worldclass-intelligence.yml
+- worldclass-pipeline.yml
