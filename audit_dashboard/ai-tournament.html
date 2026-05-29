@@ -891,6 +891,54 @@ loadPicksAndLeaderboard().then(() => { loadPicks(); }).catch(() => {});
 loadModelSummary();
 loadTierRatings();
 </script>
+
+<!-- TABLE SORTING — click any header to sort (numeric-aware, asc/desc toggle). 2026-05-29 -->
+<script>
+(function(){
+  function rowVal(row, idx){
+    var cells = row.children;
+    for (var k = 0; k < cells.length; k++) { if ((cells[k].colSpan || 1) > 1) return null; } // sink colspan rows
+    if (idx >= cells.length) return null;
+    var txt = (cells[idx].innerText || cells[idx].textContent || '').trim();
+    var clean = txt.replace(/[%$,+\s⚠▲▼#]/g, '');           // strip formatting/markers
+    var n = /^-?\d+\.?\d*$/.test(clean) && clean !== '' ? parseFloat(clean) : null;  // numeric ONLY if the whole cell is a number
+    return { n: n, s: txt.toLowerCase() };
+  }
+  function sortBy(table, idx, th){
+    var tbody = table.tBodies[0]; if (!tbody) return;
+    var dir = th.getAttribute('data-sort') === 'asc' ? -1 : 1;
+    Array.prototype.forEach.call(table.tHead.rows[0].cells, function(c){
+      if (c !== th){ c.removeAttribute('data-sort'); var i = c.querySelector('.sort-ind'); if (i) i.remove(); }
+    });
+    th.setAttribute('data-sort', dir === 1 ? 'asc' : 'desc');
+    var sortable = [], sink = [];
+    Array.prototype.slice.call(tbody.rows).forEach(function(r){
+      var v = rowVal(r, idx); if (v === null) sink.push(r); else sortable.push({ r: r, v: v });
+    });
+    var allNum = sortable.length && sortable.every(function(x){ return x.v.n !== null; });
+    sortable.sort(function(a, b){
+      if (allNum) return (a.v.n - b.v.n) * dir;
+      return (a.v.s < b.v.s ? -1 : a.v.s > b.v.s ? 1 : 0) * dir;
+    });
+    sortable.forEach(function(x){ tbody.appendChild(x.r); });
+    sink.forEach(function(r){ tbody.appendChild(r); });
+    var ind = th.querySelector('.sort-ind');
+    if (!ind){ ind = document.createElement('span'); ind.className = 'sort-ind'; ind.style.cssText = 'margin-left:3px;font-size:9px;opacity:0.8'; th.appendChild(ind); }
+    ind.textContent = dir === 1 ? '▲' : '▼';
+  }
+  function wire(table){
+    if (!table.tHead || !table.tHead.rows.length) return;
+    Array.prototype.forEach.call(table.tHead.rows[0].cells, function(th, idx){
+      if (th.dataset.sortWired) return; th.dataset.sortWired = '1';
+      th.style.cursor = 'pointer';
+      th.title = (th.title ? th.title + ' · ' : '') + 'click to sort';
+      th.addEventListener('click', function(){ sortBy(table, idx, th); });
+    });
+  }
+  function init(){ document.querySelectorAll('table.lb').forEach(wire); }
+  if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
 <!-- AI POSTMORTEM HELPER (per-pick prompt + localStorage save, shared w/ /audit) -->
 <script src="ai_postmortem_helper.js"></script>
 </body>
