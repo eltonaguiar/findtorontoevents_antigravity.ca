@@ -265,6 +265,12 @@ def evaluate_hc_gates_1to9(
     sc = float(p.get("score") or 0)
     trust = float(p.get("trust_score") or p.get("trust_score_1") or 0)
     trust_tier = str(p.get("trust_tier") or "").upper()
+    # PR6 parity: mirror hc_filter.js — when trust_score is NULL/0 (99.99% of closed
+    # picks) derive it from trust_tier so the HC overlay doesn't reject everything.
+    if trust == 0 and trust_tier:
+        _tier_map = {"PROVEN": 9, "ELITE": 8, "TRUSTED": 7, "DEVELOPING": 5,
+                     "WATCH": 3, "SANDBOX": 1, "UNPROVEN": 1, "PROBATION": 1, "DEMOTED": 1}
+        trust = float(_tier_map.get(trust_tier, 0))
 
     fwd_wr = float(p.get("strat_fwd_wr") or p.get("forward_wr") or 0)
     if fwd_wr > 1.5:
