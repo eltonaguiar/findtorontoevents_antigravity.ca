@@ -1,0 +1,797 @@
+# Transcript action-item scan
+
+- transcript: `/home/eaguiar2015/.claude/projects/-home-eaguiar2015-findtorontoevents-antigravity-ca/6f8d9a70-dc54-44ed-a566-a86cb7a01a38.jsonl`
+- turns: 421 · chunks: 64 · provider: deepseek
+- deduped action items: 531
+
+## Action items (deduped across chunks)
+
+- [DONE] Check LiteLLM proxy status (verified up)
+- [DONE] Test querying other AIs via proxy (Gemini answered through free-mode)
+- [DONE] Pull tournament data locally for model consumption
+- [DONE] Build fan-out script to query multiple models
+- [DONE] Write TOURNYFIND files for Gemini, Ring1T, DeepSeek (3 succeeded)
+- [OPEN] Write TOURNYFIND file for nvidia (rate-limited, not retried)
+- [OPEN] Write TOURNYFIND file for novita-deepseek-v4-pro-direct (403, not retried)
+- [OPEN] Write TOURNYFIND file for cloudflare-llama (context too small, dropped)
+- [OPEN] Build /consult-PROXY skill (started investigating existing swarm code, not shown complete)
+- [DONE] Verify cloudflare anthropic/claude-opus-4.8 existence (confirmed does not exist)
+- [DONE] Verify xai/grok-4.20-multi-agent-0309 existence (confirmed does not exist)
+- [DONE] Test `xai/grok-4.20-multi-agent-0309` via `env.AI.run` with user's token (returned 400 "No route")
+- [DONE] Test `anthropic/claude-opus-4.8` via `env.AI.run` (returned 400 "No route")
+- [DONE] Test `@cf/meta/llama-3.1-8b-instruct` control via `env.AI.run` (returned 200)
+- [OPEN] Rotate the first plaintext Cloudflare token
+- [DONE] Test `xai/grok-4.20-multi-agent-0309` via `/ai/v1/chat/completions` gateway (returned 400 "Invalid input")
+- [DONE] Test `anthropic/claude-opus-4.8` via `/ai/v1/chat/completions` gateway (returned 400, required `max_tokens`)
+- [DONE] Test `anthropic/claude-opus-4.8` via `/ai/v1/chat/completions` with `max_tokens` (returned 402 "Insufficient balance")
+- [DONE] Test `xai/grok-4.20-multi-agent-0309` via `/ai/v1/responses` (returned 402 "Insufficient balance")
+- [DONE] Test `xai/totally-fake-99999` control via gateway (returned 404)
+- [OPEN] Rotate the second plaintext Cloudflare token
+- [OPEN] Build the `/consult-PROXY` skill (command file created; SKILL.md pending)
+- [DONE] Demonstrate Cloudflare Workers AI models responding (Llama 3.3 70B answered)
+- [DONE] Set up LiteLLM proxy on :4000
+- [DONE] Run TOURNYFIND data-quality audits through 3 AIs and produce verdict files
+- [DONE] Create `/consult-PROXY` skill + slash command files
+- [DONE] Test Cloudflare model availability (native @cf/* models return 200; partner models return 402)
+- [OPEN] Rotate the 3 exposed tokens (`cfut_nQqB…`, `cfut_KIHQ…`, `cfut_20vx…`) and account id
+- [OPEN] Check all free Cloudflare models available
+- [OPEN] Probe each listed Cloudflare model to confirm which actually respond free
+- [DONE] List all free Cloudflare text-gen models (36 of 37 responded, 1 gated)
+- [DONE] Implement P1 UX fixes: clearer banner labels, all-time model count, leaderboard empty-state, deploy and verify.
+- [DONE] Re-run TOURNYFIND on fresh (post-rebuild) data (3 files regenerated)
+- [DONE] Verify Cursor's claims against current data (provider nulls, STOCKS/SELL, dup signatures, RR>2 violations)
+- [DONE] Reconcile contradictory Cursor audits (Grok43 vs Composer) against raw data
+- [OPEN] Read methodology docs (tournament_quality_gates.py / data_quality_gates.yaml) to determine which ratio (reward/risk or risk/reward) is actually capped
+- [UNCLEAR] Settle the C+ vs B+ disagreement definitively (user said "proceed" but excerpt ends before result shown)
+- [DONE] Confirm that Grok43-cited file `tools/ai_tournament/tournament_quality_gates.py` does not exist
+- [DONE] Check what gating actually exists in the pipeline
+- [DONE] Verify diagnostics JSON 404 on live
+- [DONE] Verify client/server score divergence (deepseek_v4: 2.07 vs 0.75)
+- [DONE] Read existing `TOURNYFIND_CLAUDE_OPUS47.MD` before overwriting
+- [OPEN] Write data-quality audit to a distinct non-colliding `TOURNYFIND_<PROVIDER>_<MODEL>.MD` file
+- [DONE] Write data-quality audit to `TOURNYFIND_ANTHROPIC_OPUS47.MD`
+- [DONE] Check whether any `*HOTWEATHER*.MD` files exist
+- [DONE] Create seed `HOTWEATHER_CLAUDE_OPUS47.MD`
+- [OPEN] Review all `*HOTWEATHER*.MD` files hourly
+- [OPEN] Deploy subagents for HOTWEATHER review
+- [OPEN] Follow up every 30 minutes after subagents land until each is fully processed
+- [OPEN] Add action items as a PR or create a set of TODOs from HOTWEATHER processing
+- [OPEN] Consult peers via `/PeerReviewSwarmOptions`, `/consult-*`, or Litellm for more ideas
+- [DONE] Deploy 4 parallel subagents (DB integrity, winner patterns, text-block/alert verification, nav-path/portfolio-history accuracy)
+- [OPEN] Wire up the recurring hourly scan for `*HOTWEATHER*.MD` files
+- [DONE] Subagent B (winner patterns) landed with strong results
+- [DONE] Subagent D (pick_funnel + portfolio_history) landed
+- [OPEN] Fix contradictory CRYPTO banner numbers (3-day-stale vs fresher nav-matrix)
+- [OPEN] Fix portfolio_history hero subtitle hardcoding "26 portfolios" (actual: 36)
+- [OPEN] Address stale rows (~72h, 7 months) in portfolio_history aggregate P&L
+- [OPEN] Wait for Subagent A (DB integrity) to land
+- [OPEN] Wait for Subagent C (text-blocks/alerts) to land
+- [OPEN] Fold all four subagent results into the file and finalize action items
+- [DONE] Verify text blocks and alerts (task completed)
+- [DONE] Update /money-maker-readyv2 skill with DB essentials section (host, 9 databases, db_env.py accessor, creds file location, security guardrails)
+- [DONE] Verify host in db_env.py matches documented host
+- [DONE] Process 7 HOTWEATHER peer files into consolidated review (HOTWEATHER_REVIEW_2026-05-28.MD)
+- [OPEN] User to decide on opening PRs against live dashboard (template.html) while peers are concurrently editing
+- [OPEN] User to decide on standing up unattended hourly loop that deploys subagents (cost concern)
+- [DONE] Update money-maker-readyv2 skill with "Essentials" section (DB host, databases, accessor, creds file, guardrails)
+- [DONE] Process all 7 HOTWEATHER files into HOTWEATHER_REVIEW_2026-05-28.MD
+- [DONE] Run DB-integrity subagent to correct consensus (validator live, db_health.json stale, #7/#12 resolved, 3 new gaps found)
+- [OPEN] Pull repo and wait for churn to settle, then land safe label/provenance PR
+- [OPEN] Regenerate stale db_health.json and correct incident text for #6/#7/#9/#12
+- [OPEN] Verify single-source claims (recent_closed null, empty funnel_by_class)
+- [DONE] Read /home/eaguiar2015/dbpasses.txt and analyze its structure
+- [DONE] Grep for "dbpasses.txt" usage in the project
+- [DONE] Grep for credential-like patterns in dbpasses.txt
+- [DONE] Glob for dashboard_data.json, incidents*.html, HOTWEATHER_*.MD
+- [DONE] Read HOTWEATHER_CURSOR_COMPOSER.MD
+- [DONE] Grep for "shot|audited source|verified realized" and "TIER-2 PROVEN|tier2_proven|tier_2_proven"
+- [DONE] Fetch and inspect money_ready_verdict.json via curl
+- [DONE] Fetch and inspect dashboard_data.json via curl
+- [OPEN] Conduct end-to-end audit of /audit metrics, strategies, DB accuracy, and incidents tracking
+- [DONE] Resolve winner-pattern gap (TRACK edge 44%, no golden decisive closes, Smart Picks tab analysis)
+- [DONE] Resolve single-source "empty funnel" claim (pick_funnel_90d.json populated with honest data)
+- [DONE] Update money-maker-readyv2 skill with DB-essentials section
+- [OPEN] Hold PR work (deferred due to collision risk with peer agents)
+- [OPEN] Regenerate stale db_health.json + correct mis-scoped incident text (option 2 offered, not selected)
+- [UNCLEAR] Stay in review/consolidation lane (option 1 offered, not selected)
+- [UNCLEAR] Pull + wait for safe label/provenance template fix (option 3 offered, not selected)
+- [DONE] Check that .md Session exported to session-ses_18f9.md
+- [OPEN] Review codebase, strategies, database, and pick quality at https://findtorontoevents.ca/audit/
+- [OPEN] Check if issues/enhancements are already tracked at https://findtorontoevents.ca/audit/incidents.html
+- [OPEN] Create HOTWEATHER_<modelname>.MD with date/time stamp, provider/model name for any new findings
+- [OPEN] Verify all metrics end-to-end (Smart snapshot 48.9% WR, audited source 60.4% WR, verified realized 56.6% WR)
+- [OPEN] Check database for accuracy, insights, gaps
+- [OPEN] Identify items safe enough to invest in (profit factor >1) and verify their stats
+- [OPEN] Verify all other metrics
+- [OPEN] Find pattern among winners under active picks (edge track vs golden, Score 66B, C:66, Super, AGC=66)
+- [OPEN] Check Smart Picks tab, US equity picks tab, and all sub-tabs (long-term value, swing plays, closed holds)
+- [OPEN] Verify navigation paths and documentation at https://findtorontoevents.ca/audit/pick_funnel.html
+- [OPEN] Check https://findtorontoevents.ca/audit/portfolio_history.html for accuracy
+- [OPEN] Regenerate `db_health.json` and re-derive the incident text (upstream artifact fix)
+- [DONE] Created HOTWEATHER_GPT5_CODEX.MD with findings
+- [DONE] Read dbpasses.txt (contents shown)
+- [OPEN] Run the forbidden noisy scripts (explicitly stated "did not run")
+- [DONE] Check all HOTWEATHER*.MD files (11 files total, 3 new ones folded into consolidated review)
+- [DONE] Verify whether hardcoded DB passwords in committed repo files are git-tracked (confirmed: 103 files)
+- [OPEN] Rotate compromised credentials (6 GitHub PATs, Cloudflare token, API keys, DB passwords) — user said "will be handled"
+- [OPEN] Scrub committed plaintext passwords from git history (replace with env vars, then git filter-repo/BFG)
+- [OPEN] Draft secret-scrub remediation plan + db_env.py refactor (offered but user deferred)
+- [OPEN] Fix root-cause stale db_health.json that corrupted findings across 5 agents
+- [OPEN] Correct DB-integrity and dashboard label fixes (queued behind repo churn)
+- [UNCLEAR] Deploy subagent to extract net-new findings from new HOTWEATHER files (mentioned but not shown completed)
+- [DONE] Regenerate db_health.json (full read-only check) — command completed but produced errored output; prior version restored.
+- [DONE] Verify ETF 14d hidden edge (R2-2) — confirmed real, not leakage-inflated.
+- [DONE] Verify claude_gainer_st blacklist contradiction (R2-3) — confirmed real, location corrected to line 6402.
+- [OPEN] Fix db_health.json regeneration (access denied error for user 'ejaguiar1_stocks').
+- [OPEN] Restore prior db_health.json version (stated as needed, not shown completed).
+- [OPEN] Address 106-file churn blocking PR work.
+- [OPEN] Canonicalize HOTWEATHER filenames to `HOTWEATHER_<PROVIDER>_<MODEL>.MD`.
+- [OPEN] Investigate R2-4 (kimi_signal_tracking blacklist vs edge registry contradiction).
+- [OPEN] Fix R2-5 (summary_picks.json identical timestamps fixture bug).
+- [OPEN] Investigate FUTURES 14d PF 130 ghost-inflation.
+- [OPEN] Investigate 15m ML overfit (33/42).
+- [OPEN] Investigate COMMODITY 48h WR 9.4%.
+- [OPEN] Investigate portfolio_metrics 91d stale.
+- [OPEN] Investigate 6 unwired baby-strategies.
+- [OPEN] Investigate stale-incident auto-close gap.
+- [DONE] Restore prior `db_health.json` from git after regen corrupted it
+- [DONE] Diagnose root cause of false "29.2M frozen validator" P0 (misread table label + transient DB host-block)
+- [DONE] Verify both DB passwords connect successfully (trading_picks=44,647)
+- [DONE] Confirm `check_open_bloat()` already fixed (checks both tables, docstring warns)
+- [DONE] Fold diagnosis into `HOTWEATHER_REVIEW_2026-05-28.MD`
+- [OPEN] Fix `db_health` regen to use connection-pooling/retry (held until churn settles)
+- [OPEN] Label PRs (held)
+- [OPEN] Fix `summary_picks` fixture (held)
+- [OPEN] Surface ETF cohort (held)
+- [DONE] Review codebase and strategies for issues/enhancements
+- [DONE] Check incidents.html for existing issues
+- [DONE] Create HOTWEATHER_Zoo.MD file to track new findings
+- [DONE] Perform end-to-end verification of metrics (Win-Rate, Profit Factor, etc.)
+- [DONE] Audit database for accuracy, insights, and gaps
+- [DONE] Identify strategies with Profit Factor > 1 across asset classes
+- [DONE] Analyze patterns of winners in active picks (edge tags, specific scores)
+- [DONE] Check smart picks tab, US equity picks tab, and sub-tabs
+- [DONE] Verify navigation paths in pick_funnel.html
+- [DONE] Check portfolio_history.html for accuracy
+- [DONE] Verify large text blocks (TRUTH LAYER, TIER-2 PROVEN) and add last verified timestamps in EST
+- [DONE] Validate WR drops (ensemble, kimi_signal_tracking) and inactivity (fc_crypto_pro, wf_audit_signals)
+- [DONE] Resolve database authentication issues
+- [DONE] Re-run tools/db_health_check.py
+- [OPEN] Identify strategies with Profit Factor > 1 across all asset classes
+- [OPEN] Analyze winner patterns in active picks (edge tags, scores)
+- [OPEN] Complete UI/UX audit of the dashboard tabs and navigation
+- [OPEN] Validate alerts regarding WR drops and system inactivity
+- [OPEN] Add "last verified" timestamps to TRUTH LAYER and TIER-2 PROVEN text blocks
+- [DONE] Write `HOTWEATHER_CORRECTION.md` to stop the 6-agent misread from propagating
+- [OPEN] Signal when churn has settled (peers done, branch pulled) so held write-actions can proceed
+- [OPEN] Perform held write-actions as one coordinated batch (incident-text re-derivation, label/provenance PRs, ETF-edge surfacing)
+- [UNCLEAR] Keep monitoring for new HOTWEATHER files (user did not answer the assistant's question)
+- [OPEN] Document suggested plan in a .MD file after deep dive
+- [OPEN] Ensure plan includes brand-new top-notch strategies that would pass quant panel scrutiny
+- [OPEN] Prompt for an IDE-Agent Review (the entire prompt block is a request to the assistant)
+- [OPEN] Perform comprehensive audit of FindTorontoEvents codebase per the 8-step plan
+- [OPEN] Create HOTWEATHER_<MODELNAME>.MD report file
+- [OPEN] Commit the report file with message "chore(audit): add HOTWEATHER_<MODELNAME>.MD – <timestamp>"
+- [OPEN] Provide concrete example of SQL queries for database consistency verification
+- [OPEN] Provide recommended steps to schedule IDE-agent audit weekly
+- [OPEN] Explain how to integrate HOTWEATHER_<MODELNAME>.MD into CI/CD pipeline
+- [DONE] Write deep-dive plan + strategy proposals to `HOTWEATHER_CLAUDE_OPUS47_STRATEGY_PLAN.MD`
+- [OPEN] Fix resolver throughput + stop phantom TIME_EXIT rows
+- [OPEN] Fix cohort labeling
+- [OPEN] Fix leakage/dedup
+- [OPEN] Kill inverted confidence signal
+- [OPEN] Wire validation gauntlet as CI gate
+- [OPEN] Implement SQL queries against `trading_picks` (status distribution, phantom detection, etc.)
+- [OPEN] Set up `.github/workflows/hotweather-weekly.yml` cron with concurrency guard
+- [OPEN] Implement `validate_hotweather.py` PR check
+- [OPEN] Set up consolidation/dedup job
+- [OPEN] Set up auto-filing net-new findings into incident tables with `--check-resolution` auto-close
+- [OPEN] Fix incident text, label PRs, resolver/phantom-TIME_EXIT fix (held due to churn)
+- [OPEN] Review findtorontoevents.ca/audit dashboard
+- [OPEN] Check all strategies for prediction across asset classes (crypto, stocks/equity, forex)
+- [OPEN] Run backtests to find better winning strategies
+- [OPEN] Review recent .MD files for enhancements/issues not tracked in incidents.html
+- [OPEN] Read the live audit dashboard and incidents.html page
+- [OPEN] Read recent .MD files and check what's not tracked in incidents
+- [OPEN] Look at backtest results and strategy configurations
+- [OPEN] Create HOTWEATHER_<MODELNAME>.MD file with audit findings
+- [OPEN] Clone repository at https://findtorontoevents.ca/audit/
+- [OPEN] Run linting/static-analysis tools
+- [OPEN] Execute full test suite
+- [OPEN] Load all strategy definitions (crypto, stocks, forex, ETFs, commodities, futures, bonds)
+- [OPEN] Compute PF, WR, Sharpe Ratio, DSR, PBO, WFE, n for each strategy
+- [OPEN] Flag strategies with PF ≤ 1 or WR ≤ 50%
+- [OPEN] Cross-check computed values against pick_funnel.html, portfolio_history.html, and other tabs
+- [OPEN] Record discrepancies with exact page URL, reported value, recomputed value
+- [OPEN] Connect to production database
+- [OPEN] Verify every pick record has non-null pnl_pct, valid confidence/score, correct asset_class mapping
+- [OPEN] Run SQL queries and compare results with dashboard statistics
+- [OPEN] Identify missing/corrupt rows, duplicated entries, out-of-range values
+- [OPEN] Scrape incidents list at https://findtorontoevents.ca/audit/incidents.html
+- [OPEN] For each discovered issue/enhancement, check if already in incidents list
+- [OPEN] Add new findings to markdown file under New Findings
+- [OPEN] Extract items with Edge = track from Active Picks and Smart Picks
+- [OPEN] Run workflow w7xsa3ovh (Review + Verify)
+- [OPEN] Write consolidated .MD with confirmed survivors, killed-overfit list, and recent-.MD items not in tracked incidents
+- [DONE] Review per-asset-class strategies (CRYPTO, EQUITY, FOREX) with adversarial backtest verification and recent-.MD mining (completed task w7xsa3ovh)
+- [OPEN] Re-run DYDX+SHIB KIMI on clean, leak-checked OHLC source with anchored walk-forward and DSR before any sizing
+- [OPEN] Source or retract the 62.2% PEAD number and revert EQUITY_PEAD_ENABLED if unsourced
+- [OPEN] Produce a real multi-symbol walk-forward for connors_rsi2_equity_scanner with realistic intrabar fills
+- [OPEN] PEAD needs >=30 clean forward events per M-107 gate
+- [DONE] Run 9-agent adversarial verification workflow (read-only, no DB load)
+- [DONE] Read full workflow results (Verify-phase verdicts, untracked-MD findings)
+- [DONE] Write findings to `HOTWEATHER_WORKFLOW_FINDINGS_2026-05-28.MD`
+- [DONE] Correct PEAD claim in strategy plan (fabricated 62.2% OOS WR)
+- [OPEN] Revert or source live `EQUITY_PEAD_ENABLED` promotion (PR4)
+- [OPEN] Merge fix for Daily Scrape-events workflow (commit `0eab0b31f`)
+- [OPEN] Fix `events.json` quality violations (5,277 of 14,307)
+- [OPEN] Run S1/S2/S4/S5 designs through full gauntlet on leak-checked data
+- [OPEN] Demote S3 PEAD to "test honestly first"
+- [OPEN] Hold all write-actions behind 106-file churn + contended DB
+- [OPEN] Build structured JSON payload from session deliverables (Step 1)
+- [OPEN] Run `git log` and `gh pr list` to gather real session data (Step 1)
+- [OPEN] Send broadcast via adapter to topic SESSION_SUMMARY (Step 2)
+- [OPEN] Verify send by tailing event log with protocol_inspect (Step 2)
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll (Step 3)
+- [OPEN] Drain broadcasts via freebuff_adapter poll with peer-id all (Step 3)
+- [OPEN] Triage each peer message by topic and act on P0 bugs or overlapping work (Step 4)
+- [DONE] Verify gateway health (gateway up at 192.168.2.32:8788)
+- [DONE] Build and broadcast session payload (adapter accepted envelope)
+- [DONE] Drain inbox (empty, steps 4-5 skipped)
+- [DONE] Send closing broadcast
+- [DONE] Verify PEAD 62.2% fabrication claim (overstated; PEAD correctly gated OFF)
+- [OPEN] Correct own files and re-broadcast accurate PEAD finding
+- [UNCLEAR] Proceed autonomously on next step and ask peers (user requested; assistant began verification but did not show peer communication or further steps)
+- [DONE] Correct strategy plan's S3 section and sequencing item (still said "revert")
+- [DONE] Re-broadcast corrected PEAD finding to peers (superseded inaccurate P1)
+- [OPEN] Hold write-actions (incident-text fix, label PRs, resolver fix) — held, not executed
+- [UNCLEAR] User invoked `/swarm-pr-review` — outcome not shown
+- [DONE] List open PRs (gh pr list --state open --json number,title,author,url,headRefName --limit 20)
+- [OPEN] Run PR-review swarm on all 20 open PRs using pr-reviewer agent seeded with session context
+- [OPEN] Synthesize consensus report and merge/fix/close decisions
+- [OPEN] Persist results to swarm_runs/ and SQLite session history
+- [OPEN] Launch PR-review swarm `wk4hvfoiw` (20 agents) — shown launched, completion pending
+- [OPEN] Present consensus table + merge/fix/close recommendations + `gh` commands — not yet shown
+- [OPEN] User approval of `gh merge`/`gh comment` commands before execution — explicitly deferred
+- [DONE] Review all 20 open PRs (task completed with verdicts and decisions)
+- [OPEN] Confirm standing pause-remote-ops memo (2026-05-22) before pushing/merging
+- [OPEN] Merge PR #27 (CI timeout 15→45m)
+- [OPEN] Merge PR #29 (details truncated)
+- [OPEN] User to approve the PR review consensus and decide on next steps (merge batch, block comments, or hold).
+- [OPEN] User to confirm the 2026-05-22 pause-remote-ops freeze is lifted before merging.
+- [OPEN] User to confirm merging into `feat/wire-cross-asset-strategies` (125 uncommitted) won't collide.
+- [OPEN] User to run the suggested `gh` commands for safe quick-merge batch (PRs #27, #29, #26, #15, #14, #34, #13, #30, #32, #33, #19).
+- [OPEN] User to merge PR #24 last and close PR #25 (fold FIELDS fix into #24).
+- [OPEN] User to post block comments on PR #35 (keltner overfit) and PR #11 (LOCKED forex + dead kill-switch).
+- [OPEN] User to fix PR #18 (patch `strategy_performance.json` div-by-zero to `profit_factor:0`).
+- [OPEN] User to fix PR #16 (remove hardcoded `CONFIDENCE_INVERT_CRYPTO=1`, fix `sys.exit(0)`, fix SQL double-count).
+- [OPEN] User to fix PR #17 (correct false claim about PEAD promoted and overfit caveat).
+- [OPEN] User to discuss PR #21 (per-hour WR table for BTC death-zone hours, fix ETF rejection reason label).
+- [OPEN] User to discuss PR #36 (keep shadow baby-strategies zero-size only; pseudo-random paths).
+- [DONE] Read skill definition file for dropchat-multipc
+- [OPEN] Gather session payload (git log, gh pr list, build JSON)
+- [OPEN] Send broadcast via adapter to topic SESSION_SUMMARY
+- [OPEN] Verify send by tailing protocol_inspect
+- [OPEN] Drain inbox (DMs + broadcasts via freebuff_adapter)
+- [OPEN] Triage peer messages from inbox
+- [DONE] Build own session payload (PR-review swarm + PEAD correction) and broadcast via dropchat
+- [DONE] Drain peer inbox (0 DMs, 0 broadcasts)
+- [DONE] Check git state and commit only own files (not peer's 125-file churn)
+- [DONE] Push changes to dedicated branch `docs/hotweather-opus47-audit-2026-05-29` (10 files)
+- [DONE] Run `/swarm-transcript-review` (alias of `/swarm-transcript-scan`) on current session transcript
+- [DONE] Generate transcript scan report (`reports/transcript_scan_opus47_2026-05-29.md`)
+- [OPEN] Ensure progress every 30 minutes (cadence setting promised but not shown completed)
+- [OPEN] Execute safe quick-merge batch (#27/#29/#26/#15/#14/#34/#13/#30/#32/#33/#19) — awaiting user go
+- [OPEN] Merge #24 / close #25 — awaiting user go
+- [OPEN] Post #35/#11 block comments — awaiting user go
+- [OPEN] Fix-first PR edits (#18 PF-99.99 artifact, #16 invert/SQL, #17 doc) — awaiting approval
+- [OPEN] Discuss #21/#36 — awaiting approval
+- [DONE] Broadcast session summary and drain inbox (inbox empty)
+- [DONE] Push 10 authored doc artifacts to dedicated branch `docs/hotweather-opus47-audit-2026-05-29`
+- [DONE] Transcript review — confirmed no silent drops
+- [DONE] Arm 30-min cadence (next check ~05:34Z)
+- [OPEN] User green-light to execute safe-merge batch
+- [OPEN] User green-light for #35/#11 block comments
+- [OPEN] User green-light for fix-first PR edits
+- [OPEN] User confirmation that 2026-05-22 pause-remote freeze is lifted
+- [DONE] Run python3 tools/swarm/transcript_action_scan.py ... (output shown)
+- [OPEN] Send broadcast via adapter with topic=SESSION_SUMMARY (Step 2)
+- [OPEN] Verify send went out using `protocol_inspect tail` (Step 2)
+- [OPEN] Drain DMs inbox via `freebuff_adapter poll` (Step 3)
+- [OPEN] Drain broadcasts inbox via `freebuff_adapter poll` (Step 3)
+- [OPEN] Triage each peer message from inbox (Step 4)
+- [OPEN] Keep 30-minute check-in loop running
+- [OPEN] If nothing to do, check all unique .MD files from past 2 weeks for further action items
+- [OPEN] Investigate new `CHATBIBLE_FAILURE.MD` entry at 00:56
+- [OPEN] Check every 30 minutes for new activity
+- [OPEN] If idle, scan all .MD files from past 2 weeks for action items
+- [OPEN] Run `/swarm pr-review` on all open PRs
+- [OPEN] Merge PR #30 (docs)
+- [OPEN] Merge PR #29 (fabricated-hash removal)
+- [OPEN] Close PR #16 (dangerous revert of hardening)
+- [OPEN] Close PR #27 (superseded/unsafe)
+- [OPEN] Close PR #9 (superseded/unsafe)
+- [OPEN] Check all .MD unique files over past 2 weeks for further action items (requested 3 times, never executed)
+- [OPEN] Check in every 30 minutes (requested 3 times, assistant reset timer but did not actually wait 30 min between cycles)
+- [OPEN] Send broadcast via adapter to `topic=SESSION_SUMMARY`, `to=all` (Step 2)
+- [OPEN] Drain inbox DMs with `freebuff_adapter poll` (Step 3)
+- [OPEN] Drain inbox broadcasts with `freebuff_adapter poll` (Step 3)
+- [OPEN] Execute safe PR merge/close subset
+- [OPEN] Pick up claude-mimo's unowned P1: render_incidents_page.py EST timestamps
+- [OPEN] Pick up claude-mimo's other unowned P1: all 47 enhancements have target_release=NULL
+- [OPEN] Ensure progress every 30 minutes
+- [OPEN] Check all .MD unique files over past 2 weeks for further action items (user requested; assistant was rate-limited and never executed)
+- [OPEN] Run transcript review
+- [DONE] Update the to-do list
+- [DONE] Run /swarm-transcript-review (scan for missed action items)
+- [OPEN] Schedule 30-min progress heartbeat
+- [DONE] Investment Hub Hidden-Edge Audit (4 parallel subagents, live DB queries)
+- [DONE] Create audit_dashboard/data/metric_honesty_tiers.json
+- [DONE] Create docs/METRIC_HONESTY_TIERS.md
+- [DONE] Verify Zoo/blackbox finding that PR #34 is incomplete (two frozensets still whitelist falsified COT sources)
+- [DONE] Broadcast correction reclassifying PR #34 from safe-merge to fix-first
+- [DONE] Check peer inbox (0 DMs, 0 broadcasts, 1 registered peer)
+- [DONE] Re-arm cadence to hourly /dropchat-multipc + peer-message check
+- [OPEN] Pin exact root cause of recurring tournament-data clobber (read-only investigation)
+- [DONE] Diagnose root cause of tournament clobber (price_tracker.py:343 + missing guard in price-tracker workflow)
+- [DONE] Broadcast root-cause fix for tournament clobber
+- [DONE] Verify and harden issue #18 (PF div-by-zero artifacts in strategy_performance.json)
+- [DONE] Diagnose issue #34-incomplete (frozensets whitelisting falsified COT sources)
+- [DONE] Broadcast fix for #34 frozenset removal
+- [OPEN] User confirms blackbox is done — proceed with held fixes
+- [OPEN] Draft and push PR #1: price-tracker clobber guard (guard step inserted into worktree copy)
+- [OPEN] Open PR #1
+- [OPEN] Draft and push PR for #34 frozenset removal
+- [OPEN] Draft and push PR for render_incidents_page.py EST-timestamp gap
+- [UNCLEAR] User pause-remote-freeze confirmation
+- [DONE] Merge PR #40 (price-tracker DB-rebuild guard)
+- [DONE] Merge PR #41 (complete PR #34: remove falsified COT sources from whitelists)
+- [DONE] Post review comments on peer PRs (#18, #16, #33, #25, etc.)
+- [OPEN] Provide safe-merge batch + #35/#11 block comments (awaiting user go-ahead)
+- [DONE] Merge PR #40 (price-tracker DB-rebuild guard) to main
+- [DONE] Merge PR #41 (#34 COT-bypass removal) to main
+- [DONE] Post 7 verified review comments on peer PRs (#34, #35, #11, #18, #16, #33, #25)
+- [DONE] Poll cross-PC gateway for new peer DMs and broadcasts
+- [DONE] Confirm PRs #40 and #41 are on main and not reverted
+- [DONE] Scan for new HOTWEATHER files (none found)
+- [DONE] Broadcast SESSION heartbeat and re-arm 30-min wakeup
+- [DONE] Read and review new peer PR #43 (check_claim_provenance.py)
+- [DONE] Run #43 tool against real fabrication instances for verified review
+- [DONE] Post review comments on PR #43 (with two concrete bugs found)
+- [DONE] Post review comment on PR #42
+- [OPEN] Merge safe-merge batch of peer PRs (#27/#29/#26/#15/#14/#13/#30/#32) — awaiting user explicit go
+- [OPEN] Continue autonomous 30-min loop (poll peers, fold HOTWEATHER, create PRs from verified fixes) — ongoing cadence re-armed
+- [DONE] Review peer PRs #43, #42, #35, #11, #34, #18, #16, #33, #25 with verified comments
+- [DONE] Merge fix #40 (price-tracker guard) onto main
+- [DONE] Merge fix #41 (#34 COT-bypass) onto main
+- [DONE] Run 30-minute progress check (findtorontoevents audit)
+- [DONE] Poll cross-PC gateway for new peer DMs + broadcasts
+- [DONE] Git fetch and confirm #40 and #41 still merged on main
+- [DONE] Scan for new HOTWEATHER.MD files and fold into HOTWEATHER_REVIEW_2026-05-28.MD
+- [DONE] Review newer peer PRs #44, #45, #46 with verified comments
+- [DONE] Run #43 provenance-checker against #45
+- [DONE] Broadcast heartbeat and re-arm 30-minute cadence
+- [OPEN] Merge peer PRs (awaiting user approval)
+- [OPEN] Open own PR for #18 PF-clamp fix (offered, not executed)
+- [OPEN] Fixes PR authors should make on their own branches (commented, not pushed)
+- [DONE] Run transcript scanner on the session (reports/transcript_scan_opus47_2026-05-29b.md)
+- [DONE] Cross-check OPEN items against reality (git log, merged PRs, live TodoWrite)
+- [DONE] Investigate CHATBIBLE_FAILURE.MD lead (determined it's a different agent's env issue, not actionable)
+- [DONE] 30-minute progress check: poll cross-PC gateway for new peer DMs+broadcasts and triage
+- [DONE] 30-minute progress check: git fetch + confirm merged #40 and #41 still on main
+- [DONE] 30-minute progress check: list open PRs, identify any with number > 46 (found #47)
+- [DONE] 30-minute progress check: review #47 with verified findings only (confirmed no regression/conflict)
+- [DONE] 30-minute progress check: broadcast brief heartbeat + re-arm
+- [DONE] 30-min check: poll gateway for new peer DMs/broadcasts and triage
+- [DONE] git fetch + confirm #40 and #41 still merged on main
+- [DONE] List open PRs, find any with number > 47 (NEW), review uncommented ones with VERIFIED findings
+- [DONE] Run /tmp/ccp.py provenance-checker on PR bodies/diffs, cite only human-readable claims
+- [DONE] For PRs touching price-tracker.yml or quality_gates.py, verify #40 guard + #41 empty-frozensets preserved
+- [DONE] If NEW actionable verified code fix appears, do as PR off clean main via git worktree, merge only if MY PR + mergeable
+- [DONE] Do NOT merge peers' PRs without explicit user approval
+- [DONE] Skip HOTWEATHER scans
+- [DONE] Broadcast brief heartbeat + re-arm
+- [DONE] Review PR #48 (tiny CI fix, +12/-0)
+- [DONE] Review PR #49 (honest "swarm CRYPTO strategy NOT deployable" verdict doc)
+- [OPEN] Peer-PR merges (#40, #41) await user go
+- [DONE] Poll cross-PC gateway for new peer DMs+broadcasts and triage (both cycles)
+- [DONE] git fetch + confirm merged #40 and #41 still on main (both cycles)
+- [DONE] List open PRs, find any with number > 49 (cycle 1) or > 50 (cycle 2)
+- [DONE] Review #50 (actions_failure_guardian) — verified-positive review posted
+- [DONE] Review #51 (masking-policy linter) — verified review posted
+- [DONE] Run /tmp/ccp.py provenance-checker (not shown executed; no unsourced claims found in reviewed PRs)
+- [DONE] Broadcast brief heartbeat + re-arm (both cycles)
+- [OPEN] If a NEW genuinely-actionable verified code fix appears, do it as a PR off clean main via git worktree, merge only if MY PR + mergeable (no such fix appeared)
+- [DONE] Do NOT merge peers' PRs without explicit user approval (no merges performed)
+- [DONE] Skip HOTWEATHER scans (both cycles)
+- [OPEN] User's efficiency suggestion: widen interval to hourly or pause (user did not respond to this offer)
+- [DONE] Poll cross-PC gateway for new peer DMs+broadcasts (tick 1)
+- [DONE] Git fetch + confirm #40 and #41 still on main (tick 1)
+- [DONE] List open PRs, find any > 51, review only uncommented (tick 1)
+- [DONE] Run /tmp/ccp.py provenance-checker (tick 1)
+- [DONE] For PRs touching price-tracker.yml or quality_gates.py, verify #40/#41 preserved (tick 1)
+- [DONE] Broadcast heartbeat + re-arm (tick 1)
+- [DONE] Widen cadence from 30 min to 60 min (tick 1)
+- [DONE] Poll cross-PC gateway (tick 2)
+- [DONE] Git fetch + confirm #40/#41 (tick 2)
+- [DONE] List open PRs > 51, review uncommented (tick 2)
+- [DONE] Run /tmp/ccp.py (tick 2)
+- [DONE] Verify #40/#41 preserved in relevant PRs (tick 2)
+- [DONE] Broadcast heartbeat + re-arm hourly (tick 2)
+- [DONE] Run /swarm-transcript-review
+- [DONE] Tidy stale todo list
+- [OPEN] Merge safe peer-PR batch (#27/#29/#26/#15/#14/#13/#30/#32) — gated on user approval
+- [OPEN] Close #25 — gated on user approval
+- [OPEN] Block #35/#11 — gated on user approval
+- [OPEN] Optional #18 PF-clamp PR — gated on user approval
+- [DONE] Poll cross-PC gateway at http://192.168.2.32:8788 for new peer DMs+broadcasts and triage
+- [DONE] git fetch + confirm PR #40 (price-tracker guard) and PR #41 (#34 COT-bypass) still on main
+- [DONE] List open PRs, find any with number > 51 (NEW), review only those not yet commented with VERIFIED findings
+- [DONE] Run /tmp/ccp.py provenance-checker (over-fires on code variable names and when source >300 chars away — cite only genuinely-unsourced human-readable PF/WR/endorsement claims; check whole doc for reproducers first)
+- [DONE] For any PR touching .github/workflows/ai-tournament-price-tracker.yml or audit_trail/quality_gates.py, verify it preserves merged #40 guard + #41 empty-frozensets
+- [OPEN] If a genuinely-actionable verified code fix appears, do it as a PR off clean main via git worktree, merge only if MY PR + mergeable (no such fix appeared)
+- [DONE] Do NOT merge peers' PRs without explicit user approval (complied)
+- [DONE] Broadcast brief heartbeat + re-arm hourly
+- [DONE] Report <120 words (assistant's final report is concise)
+- [DONE] Document what you know about parallel swarm work to a file called PARALLELCHECK3.MD and commit to GitHub
+- [DONE] Merge PR #56 (PARALLELCHECK3.MD) to main
+- [OPEN] Run /swarm-pr-review with args /swarm-gh_actions-log-review and /swarm-actions-audit (user issued command at end; not shown executed)
+- [DONE] Invoke `/swarm pr-review /swarm-gh_actions-log-review /swarm-actions-audit` (user requested chained review)
+- [DONE] Review all open PRs comprehensively (assistant reports this was done earlier in session)
+- [DONE] Pull recent CI state (assistant ran this)
+- [OPEN] Triage "Deploy Competition to Live Site" failure on main (assistant identified as actionable)
+- [DONE] Diagnose root cause of recurring CI failure in "Deploy Competition to Live Site" workflow
+- [DONE] Identify that gitignored files `claudes_test_state.json` and `claudes_test_dashboard.json` are missing on fresh runner, causing FTP put to fail
+- [DONE] Set up clean worktree off main for fix implementation
+- [DONE] Deploy subagent to implement fix in worktree
+- [DONE] Subagent implements and pushes fix (commit `254f231a6`)
+- [OPEN] Verify the committed diff before opening/merging the PR
+- [OPEN] Open and merge the PR (pending verification)
+- [DONE] Verify local LiteLLM proxy works; query other AIs for second opinions → write TOURNYFIND_*.MD files
+- [DONE] Build /consult-PROXY skill + slash command wrapping tools/freellm.py
+- [UNCLEAR] Verify whether anthropic/claude-opus-4.8 and xai/grok-4.20-multi-agent-0309 work on Cloudflare
+- [DONE] Ensure money-maker-readyv2 skill documents DB location + creds file
+- [DONE] Audit codebase/strategies/DB/pick-quality; create HOTWEATHER_*.MD files
+- [DONE] Document deep-dive remediation plan + propose new quant-grade strategies
+- [DONE] Run multi-agent workflows for strategy review and PR review
+- [DONE] Run /dropchat-multipc, /swarm-transcript-review, /swarm-pr-review, GH-actions audit periodically
+- [DONE] Push fixes as PRs; merge own PRs; comment on peers' PRs
+- [DONE] Maintain recurring ~30-min then hourly progress cadence
+- [DONE] Determine who ran ParallelSwarm; document to PARALLELCHECK3.MD and commit
+- [DONE] Run GH-actions audit; use subagents to implement fix for failing deploy workflow
+- [DONE] Create CLAUDE_DOC2_MAY292026_UPDATES.MD (session summary)
+- [DONE] PR #40 (ai-tournament-price-tracker.yml) — merged
+- [DONE] PR #41 (quality_gates.py) — merged
+- [DONE] PR #56 (PARALLELCHECK3.MD) — merged
+- [OPEN] Implement fix for failing deploy-competition-to-site.yml workflow
+- [DONE] Confirm what `origin/main` actually contains (no ensure-step)
+- [DONE] Rebase branch to keep PR conflict-free
+- [DONE] Open PR #61
+- [DONE] Merge PR #61
+- [DONE] Clean up worktree
+- [DONE] Dispatch verification run `26637924955`
+- [DONE] Watch verification run to completion (green)
+- [OPEN] User-gated peer-PR batch (#27/#29/#26/#15/#14/#13/#30/#32, close #25, block #35/#11) — held for user go
+- [OPEN] Run `/dropchat-multipc` to sync with peers
+- [OPEN] Scan transcript for open action items and create todos (via `/swarm-transcript` or `/parallelswarm`)
+- [OPEN] Build structured JSON payload from session deliverables (commits, PRs, files, decisions, open questions, follow-ups)
+- [OPEN] Run canonical health probe (`python tools/protocol_inspect.py health`) against gateway at 192.168.2.32:8788
+- [OPEN] Send broadcast envelope via cross-PC gateway using `tools/adapters/cursor_claude_adapter.py --runtime claude`
+- [OPEN] Drain peer inbox to see what other agents have done in parallel
+- [OPEN] Revise session summary if needed based on peer inbox contents
+- [DONE] Poll cross-PC gateway for new peer DMs+broadcasts and triage
+- [DONE] Git fetch + confirm merged #40 (price-tracker guard) and #41 (#34 COT-bypass) still on main
+- [DONE] List open PRs, find any with number > 52 (NEW) — review only those not yet commented, VERIFIED findings only
+- [DONE] Run /tmp/ccp.py provenance-checker (cite only genuinely-unsourced human-readable PF/WR/endorsement claims; check whole doc for reproducers first)
+- [DONE] If a NEW genuinely-actionable verified code fix appears, do it as a PR off clean main via git worktree, merge only if MY PR + mergeable
+- [DONE] Report <120 words
+- [DONE] Poll cross-PC gateway for new peer DMs+broadcasts (gateway clean, 0 DMs, 0 broadcasts)
+- [DONE] git fetch + confirm merged #40 and #41 still on main (both present, 2 matches each)
+- [DONE] List open PRs, find any NEW since last check (only #65 new)
+- [DONE] Run /tmp/ccp.py provenance-checker on #59 (5 flags, all false positives; 0 unsourced claims)
+- [DONE] Run /tmp/ccp.py provenance-checker on #62 (companion honest banner, sourced)
+- [DONE] Run /tmp/ccp.py provenance-checker on #65 (0 claims, clean)
+- [DONE] For any PR touching protected files, verify #40 guard + #41 empty-frozensets preserved (none touched protected files)
+- [DONE] Broadcast brief heartbeat + re-arm hourly (done at ~14:00Z and ~15:00Z)
+- [DONE] Report <120 words (both hourly reports under 120 words)
+- [OPEN] Review all open PRs (12 PRs) via 3-lens swarm review
+- [OPEN] Run adversarial verification pass on any critical/high findings
+- [OPEN] Build consensus table after swarm review completes
+- [OPEN] Generate merge/fix/close recommendations via smart agent
+- [OPEN] Show action items and commands to run for human review
+- [DONE] Relaunch swarm without structured-output schema (12 PRs, plain-text verdicts)
+- [OPEN] Synthesize consensus table and merge/fix/close recommendations after swarm completes
+- [DONE] Review all 12 open findtorontoevents PRs with plain-text 3-lens verdicts (task completed, results shown for PRs 65, 35, 34)
+- [DONE] Review 12 open PRs with 3-lens + adversarial verify
+- [DONE] Post verified blocking findings on 6 actionable PRs
+- [DONE] Broadcast summary consensus table
+- [OPEN] Merge the 6 clean APPROVE PRs (#65, #34, #33, #29, #19, #13) — user asked to hold, no explicit go given
+- [UNCLEAR] User sent `/dropchat-multipc` command — intent unclear from excerpt
+- [OPEN] Build structured JSON payload from session deliverables (schema "session-summary/v1")
+- [OPEN] Send broadcast envelope via gateway at 192.168.2.32:8788
+- [OPEN] Drain peer inbox so operator can see parallel agent activity
+- [OPEN] Use `python tools/protocol_inspect.py health` (or portable fallback) to verify gateway health before sending
+- [OPEN] Identify as "Claude Code on findtorontoevents desktop" with `--runtime claude` when calling adapter
+- [OPEN] Fall back to writing to `logs/cross_pc_protocol/events.jsonl` if adapter files are missing
+- [DONE] Swarm review of all 12 open PRs
+- [DONE] Broadcast session summary and clear inbox
+- [DONE] Merge 6 clean APPROVE PRs (#65, #34, #33, #29, #19, #13) — peers merged 5, #34 closed as superseded, verified fix on main
+- [DONE] Verify #34's substance (falsified COT sources removed from `_COMMODITY_FV_EXEMPT`) is on main
+- [DONE] Verify protected frozensets remain empty (#41 intact)
+- [OPEN] Post follow-ups on remaining 6 non-clean PRs (#35, #18, #11, #10, #21, #14) — findings posted, authors must act
+- [OPEN] Take ownership and proceed with fix PRs for #10 (A/B no-op), #11 (forex not wired), #14 (irreversible backfill)
+- [OPEN] For #14, create backup table in `ejaguiar1_backups` before backfill
+- [OPEN] Use swarm to analyze/implement + produce implementation/testing plan for #10, #11, #14
+- [OPEN] Implement fixes in isolated worktree at `/tmp/pr_fixes`
+- [OPEN] Run `/swarm-transcript-review` and wrap up
+- [DONE] Switch branch to docs/metric-honesty-tiers-2026-05-29 (already done by another agent)
+- [DONE] Verify SESSION_SUMMARY is on the bus (durable)
+- [DONE] Confirm DM queue is empty
+- [DONE] Confirm all 4 key commits (76d1f2524, 5cf7ed05c, 69400fbde, 0090e08ff) are on origin/main
+- [DONE] Delete old 5-min cron (id fa4498c6) — failed with "no such job"
+- [DONE] Create 30-min progress cron (cd4f7339, fires :07/:37)
+- [OPEN] Run transcript review (swarm-transcript-action-scan) — started in background, not shown complete
+- [DONE] Fix #10: make gatekeeper use shared AB_ENABLED constant (2-edit refactor, default stays OFF)
+- [DONE] Fix #11: register forex_carry_ppp in FOREX_STRATEGIES (policy gate fail-closes)
+- [DONE] Fix #14: add backup-table + fix broken import (snapshot before UPDATE, dry-run default)
+- [DONE] Open PR #69
+- [DONE] Merge PR #69
+- [OPEN] Run transcript review queued by user
+
+## OPEN (255)
+
+- [OPEN] Write TOURNYFIND file for nvidia (rate-limited, not retried)
+- [OPEN] Write TOURNYFIND file for novita-deepseek-v4-pro-direct (403, not retried)
+- [OPEN] Write TOURNYFIND file for cloudflare-llama (context too small, dropped)
+- [OPEN] Build /consult-PROXY skill (started investigating existing swarm code, not shown complete)
+- [OPEN] Rotate the first plaintext Cloudflare token
+- [OPEN] Rotate the second plaintext Cloudflare token
+- [OPEN] Build the `/consult-PROXY` skill (command file created; SKILL.md pending)
+- [OPEN] Rotate the 3 exposed tokens (`cfut_nQqB…`, `cfut_KIHQ…`, `cfut_20vx…`) and account id
+- [OPEN] Check all free Cloudflare models available
+- [OPEN] Probe each listed Cloudflare model to confirm which actually respond free
+- [OPEN] Read methodology docs (tournament_quality_gates.py / data_quality_gates.yaml) to determine which ratio (reward/risk or risk/reward) is actually capped
+- [OPEN] Write data-quality audit to a distinct non-colliding `TOURNYFIND_<PROVIDER>_<MODEL>.MD` file
+- [OPEN] Review all `*HOTWEATHER*.MD` files hourly
+- [OPEN] Deploy subagents for HOTWEATHER review
+- [OPEN] Follow up every 30 minutes after subagents land until each is fully processed
+- [OPEN] Add action items as a PR or create a set of TODOs from HOTWEATHER processing
+- [OPEN] Consult peers via `/PeerReviewSwarmOptions`, `/consult-*`, or Litellm for more ideas
+- [OPEN] Wire up the recurring hourly scan for `*HOTWEATHER*.MD` files
+- [OPEN] Fix contradictory CRYPTO banner numbers (3-day-stale vs fresher nav-matrix)
+- [OPEN] Fix portfolio_history hero subtitle hardcoding "26 portfolios" (actual: 36)
+- [OPEN] Address stale rows (~72h, 7 months) in portfolio_history aggregate P&L
+- [OPEN] Wait for Subagent A (DB integrity) to land
+- [OPEN] Wait for Subagent C (text-blocks/alerts) to land
+- [OPEN] Fold all four subagent results into the file and finalize action items
+- [OPEN] User to decide on opening PRs against live dashboard (template.html) while peers are concurrently editing
+- [OPEN] User to decide on standing up unattended hourly loop that deploys subagents (cost concern)
+- [OPEN] Pull repo and wait for churn to settle, then land safe label/provenance PR
+- [OPEN] Regenerate stale db_health.json and correct incident text for #6/#7/#9/#12
+- [OPEN] Verify single-source claims (recent_closed null, empty funnel_by_class)
+- [OPEN] Conduct end-to-end audit of /audit metrics, strategies, DB accuracy, and incidents tracking
+- [OPEN] Hold PR work (deferred due to collision risk with peer agents)
+- [OPEN] Regenerate stale db_health.json + correct mis-scoped incident text (option 2 offered, not selected)
+- [OPEN] Review codebase, strategies, database, and pick quality at https://findtorontoevents.ca/audit/
+- [OPEN] Check if issues/enhancements are already tracked at https://findtorontoevents.ca/audit/incidents.html
+- [OPEN] Create HOTWEATHER_<modelname>.MD with date/time stamp, provider/model name for any new findings
+- [OPEN] Verify all metrics end-to-end (Smart snapshot 48.9% WR, audited source 60.4% WR, verified realized 56.6% WR)
+- [OPEN] Check database for accuracy, insights, gaps
+- [OPEN] Identify items safe enough to invest in (profit factor >1) and verify their stats
+- [OPEN] Verify all other metrics
+- [OPEN] Find pattern among winners under active picks (edge track vs golden, Score 66B, C:66, Super, AGC=66)
+- [OPEN] Check Smart Picks tab, US equity picks tab, and all sub-tabs (long-term value, swing plays, closed holds)
+- [OPEN] Verify navigation paths and documentation at https://findtorontoevents.ca/audit/pick_funnel.html
+- [OPEN] Check https://findtorontoevents.ca/audit/portfolio_history.html for accuracy
+- [OPEN] Regenerate `db_health.json` and re-derive the incident text (upstream artifact fix)
+- [OPEN] Run the forbidden noisy scripts (explicitly stated "did not run")
+- [OPEN] Rotate compromised credentials (6 GitHub PATs, Cloudflare token, API keys, DB passwords) — user said "will be handled"
+- [OPEN] Scrub committed plaintext passwords from git history (replace with env vars, then git filter-repo/BFG)
+- [OPEN] Draft secret-scrub remediation plan + db_env.py refactor (offered but user deferred)
+- [OPEN] Fix root-cause stale db_health.json that corrupted findings across 5 agents
+- [OPEN] Correct DB-integrity and dashboard label fixes (queued behind repo churn)
+- [OPEN] Fix db_health.json regeneration (access denied error for user 'ejaguiar1_stocks').
+- [OPEN] Restore prior db_health.json version (stated as needed, not shown completed).
+- [OPEN] Address 106-file churn blocking PR work.
+- [OPEN] Canonicalize HOTWEATHER filenames to `HOTWEATHER_<PROVIDER>_<MODEL>.MD`.
+- [OPEN] Investigate R2-4 (kimi_signal_tracking blacklist vs edge registry contradiction).
+- [OPEN] Fix R2-5 (summary_picks.json identical timestamps fixture bug).
+- [OPEN] Investigate FUTURES 14d PF 130 ghost-inflation.
+- [OPEN] Investigate 15m ML overfit (33/42).
+- [OPEN] Investigate COMMODITY 48h WR 9.4%.
+- [OPEN] Investigate portfolio_metrics 91d stale.
+- [OPEN] Investigate 6 unwired baby-strategies.
+- [OPEN] Investigate stale-incident auto-close gap.
+- [OPEN] Fix `db_health` regen to use connection-pooling/retry (held until churn settles)
+- [OPEN] Label PRs (held)
+- [OPEN] Fix `summary_picks` fixture (held)
+- [OPEN] Surface ETF cohort (held)
+- [OPEN] Identify strategies with Profit Factor > 1 across all asset classes
+- [OPEN] Analyze winner patterns in active picks (edge tags, scores)
+- [OPEN] Complete UI/UX audit of the dashboard tabs and navigation
+- [OPEN] Validate alerts regarding WR drops and system inactivity
+- [OPEN] Add "last verified" timestamps to TRUTH LAYER and TIER-2 PROVEN text blocks
+- [OPEN] Signal when churn has settled (peers done, branch pulled) so held write-actions can proceed
+- [OPEN] Perform held write-actions as one coordinated batch (incident-text re-derivation, label/provenance PRs, ETF-edge surfacing)
+- [OPEN] Document suggested plan in a .MD file after deep dive
+- [OPEN] Ensure plan includes brand-new top-notch strategies that would pass quant panel scrutiny
+- [OPEN] Prompt for an IDE-Agent Review (the entire prompt block is a request to the assistant)
+- [OPEN] Perform comprehensive audit of FindTorontoEvents codebase per the 8-step plan
+- [OPEN] Create HOTWEATHER_<MODELNAME>.MD report file
+- [OPEN] Commit the report file with message "chore(audit): add HOTWEATHER_<MODELNAME>.MD – <timestamp>"
+- [OPEN] Provide concrete example of SQL queries for database consistency verification
+- [OPEN] Provide recommended steps to schedule IDE-agent audit weekly
+- [OPEN] Explain how to integrate HOTWEATHER_<MODELNAME>.MD into CI/CD pipeline
+- [OPEN] Fix resolver throughput + stop phantom TIME_EXIT rows
+- [OPEN] Fix cohort labeling
+- [OPEN] Fix leakage/dedup
+- [OPEN] Kill inverted confidence signal
+- [OPEN] Wire validation gauntlet as CI gate
+- [OPEN] Implement SQL queries against `trading_picks` (status distribution, phantom detection, etc.)
+- [OPEN] Set up `.github/workflows/hotweather-weekly.yml` cron with concurrency guard
+- [OPEN] Implement `validate_hotweather.py` PR check
+- [OPEN] Set up consolidation/dedup job
+- [OPEN] Set up auto-filing net-new findings into incident tables with `--check-resolution` auto-close
+- [OPEN] Fix incident text, label PRs, resolver/phantom-TIME_EXIT fix (held due to churn)
+- [OPEN] Review findtorontoevents.ca/audit dashboard
+- [OPEN] Check all strategies for prediction across asset classes (crypto, stocks/equity, forex)
+- [OPEN] Run backtests to find better winning strategies
+- [OPEN] Review recent .MD files for enhancements/issues not tracked in incidents.html
+- [OPEN] Read the live audit dashboard and incidents.html page
+- [OPEN] Read recent .MD files and check what's not tracked in incidents
+- [OPEN] Look at backtest results and strategy configurations
+- [OPEN] Create HOTWEATHER_<MODELNAME>.MD file with audit findings
+- [OPEN] Clone repository at https://findtorontoevents.ca/audit/
+- [OPEN] Run linting/static-analysis tools
+- [OPEN] Execute full test suite
+- [OPEN] Load all strategy definitions (crypto, stocks, forex, ETFs, commodities, futures, bonds)
+- [OPEN] Compute PF, WR, Sharpe Ratio, DSR, PBO, WFE, n for each strategy
+- [OPEN] Flag strategies with PF ≤ 1 or WR ≤ 50%
+- [OPEN] Cross-check computed values against pick_funnel.html, portfolio_history.html, and other tabs
+- [OPEN] Record discrepancies with exact page URL, reported value, recomputed value
+- [OPEN] Connect to production database
+- [OPEN] Verify every pick record has non-null pnl_pct, valid confidence/score, correct asset_class mapping
+- [OPEN] Run SQL queries and compare results with dashboard statistics
+- [OPEN] Identify missing/corrupt rows, duplicated entries, out-of-range values
+- [OPEN] Scrape incidents list at https://findtorontoevents.ca/audit/incidents.html
+- [OPEN] For each discovered issue/enhancement, check if already in incidents list
+- [OPEN] Add new findings to markdown file under New Findings
+- [OPEN] Extract items with Edge = track from Active Picks and Smart Picks
+- [OPEN] Run workflow w7xsa3ovh (Review + Verify)
+- [OPEN] Write consolidated .MD with confirmed survivors, killed-overfit list, and recent-.MD items not in tracked incidents
+- [OPEN] Re-run DYDX+SHIB KIMI on clean, leak-checked OHLC source with anchored walk-forward and DSR before any sizing
+- [OPEN] Source or retract the 62.2% PEAD number and revert EQUITY_PEAD_ENABLED if unsourced
+- [OPEN] Produce a real multi-symbol walk-forward for connors_rsi2_equity_scanner with realistic intrabar fills
+- [OPEN] PEAD needs >=30 clean forward events per M-107 gate
+- [OPEN] Revert or source live `EQUITY_PEAD_ENABLED` promotion (PR4)
+- [OPEN] Merge fix for Daily Scrape-events workflow (commit `0eab0b31f`)
+- [OPEN] Fix `events.json` quality violations (5,277 of 14,307)
+- [OPEN] Run S1/S2/S4/S5 designs through full gauntlet on leak-checked data
+- [OPEN] Demote S3 PEAD to "test honestly first"
+- [OPEN] Hold all write-actions behind 106-file churn + contended DB
+- [OPEN] Build structured JSON payload from session deliverables (Step 1)
+- [OPEN] Run `git log` and `gh pr list` to gather real session data (Step 1)
+- [OPEN] Send broadcast via adapter to topic SESSION_SUMMARY (Step 2)
+- [OPEN] Verify send by tailing event log with protocol_inspect (Step 2)
+- [OPEN] Drain DMs addressed to claude-desktop via freebuff_adapter poll (Step 3)
+- [OPEN] Drain broadcasts via freebuff_adapter poll with peer-id all (Step 3)
+- [OPEN] Triage each peer message by topic and act on P0 bugs or overlapping work (Step 4)
+- [OPEN] Correct own files and re-broadcast accurate PEAD finding
+- [OPEN] Hold write-actions (incident-text fix, label PRs, resolver fix) — held, not executed
+- [OPEN] Run PR-review swarm on all 20 open PRs using pr-reviewer agent seeded with session context
+- [OPEN] Synthesize consensus report and merge/fix/close decisions
+- [OPEN] Persist results to swarm_runs/ and SQLite session history
+- [OPEN] Launch PR-review swarm `wk4hvfoiw` (20 agents) — shown launched, completion pending
+- [OPEN] Present consensus table + merge/fix/close recommendations + `gh` commands — not yet shown
+- [OPEN] User approval of `gh merge`/`gh comment` commands before execution — explicitly deferred
+- [OPEN] Confirm standing pause-remote-ops memo (2026-05-22) before pushing/merging
+- [OPEN] Merge PR #27 (CI timeout 15→45m)
+- [OPEN] Merge PR #29 (details truncated)
+- [OPEN] User to approve the PR review consensus and decide on next steps (merge batch, block comments, or hold).
+- [OPEN] User to confirm the 2026-05-22 pause-remote-ops freeze is lifted before merging.
+- [OPEN] User to confirm merging into `feat/wire-cross-asset-strategies` (125 uncommitted) won't collide.
+- [OPEN] User to run the suggested `gh` commands for safe quick-merge batch (PRs #27, #29, #26, #15, #14, #34, #13, #30, #32, #33, #19).
+- [OPEN] User to merge PR #24 last and close PR #25 (fold FIELDS fix into #24).
+- [OPEN] User to post block comments on PR #35 (keltner overfit) and PR #11 (LOCKED forex + dead kill-switch).
+- [OPEN] User to fix PR #18 (patch `strategy_performance.json` div-by-zero to `profit_factor:0`).
+- [OPEN] User to fix PR #16 (remove hardcoded `CONFIDENCE_INVERT_CRYPTO=1`, fix `sys.exit(0)`, fix SQL double-count).
+- [OPEN] User to fix PR #17 (correct false claim about PEAD promoted and overfit caveat).
+- [OPEN] User to discuss PR #21 (per-hour WR table for BTC death-zone hours, fix ETF rejection reason label).
+- [OPEN] User to discuss PR #36 (keep shadow baby-strategies zero-size only; pseudo-random paths).
+- [OPEN] Gather session payload (git log, gh pr list, build JSON)
+- [OPEN] Send broadcast via adapter to topic SESSION_SUMMARY
+- [OPEN] Verify send by tailing protocol_inspect
+- [OPEN] Drain inbox (DMs + broadcasts via freebuff_adapter)
+- [OPEN] Triage peer messages from inbox
+- [OPEN] Ensure progress every 30 minutes (cadence setting promised but not shown completed)
+- [OPEN] Execute safe quick-merge batch (#27/#29/#26/#15/#14/#34/#13/#30/#32/#33/#19) — awaiting user go
+- [OPEN] Merge #24 / close #25 — awaiting user go
+- [OPEN] Post #35/#11 block comments — awaiting user go
+- [OPEN] Fix-first PR edits (#18 PF-99.99 artifact, #16 invert/SQL, #17 doc) — awaiting approval
+- [OPEN] Discuss #21/#36 — awaiting approval
+- [OPEN] User green-light to execute safe-merge batch
+- [OPEN] User green-light for #35/#11 block comments
+- [OPEN] User green-light for fix-first PR edits
+- [OPEN] User confirmation that 2026-05-22 pause-remote freeze is lifted
+- [OPEN] Send broadcast via adapter with topic=SESSION_SUMMARY (Step 2)
+- [OPEN] Verify send went out using `protocol_inspect tail` (Step 2)
+- [OPEN] Drain DMs inbox via `freebuff_adapter poll` (Step 3)
+- [OPEN] Drain broadcasts inbox via `freebuff_adapter poll` (Step 3)
+- [OPEN] Triage each peer message from inbox (Step 4)
+- [OPEN] Keep 30-minute check-in loop running
+- [OPEN] If nothing to do, check all unique .MD files from past 2 weeks for further action items
+- [OPEN] Investigate new `CHATBIBLE_FAILURE.MD` entry at 00:56
+- [OPEN] Check every 30 minutes for new activity
+- [OPEN] If idle, scan all .MD files from past 2 weeks for action items
+- [OPEN] Run `/swarm pr-review` on all open PRs
+- [OPEN] Merge PR #30 (docs)
+- [OPEN] Merge PR #29 (fabricated-hash removal)
+- [OPEN] Close PR #16 (dangerous revert of hardening)
+- [OPEN] Close PR #27 (superseded/unsafe)
+- [OPEN] Close PR #9 (superseded/unsafe)
+- [OPEN] Check all .MD unique files over past 2 weeks for further action items (requested 3 times, never executed)
+- [OPEN] Check in every 30 minutes (requested 3 times, assistant reset timer but did not actually wait 30 min between cycles)
+- [OPEN] Send broadcast via adapter to `topic=SESSION_SUMMARY`, `to=all` (Step 2)
+- [OPEN] Drain inbox DMs with `freebuff_adapter poll` (Step 3)
+- [OPEN] Drain inbox broadcasts with `freebuff_adapter poll` (Step 3)
+- [OPEN] Execute safe PR merge/close subset
+- [OPEN] Pick up claude-mimo's unowned P1: render_incidents_page.py EST timestamps
+- [OPEN] Pick up claude-mimo's other unowned P1: all 47 enhancements have target_release=NULL
+- [OPEN] Ensure progress every 30 minutes
+- [OPEN] Check all .MD unique files over past 2 weeks for further action items (user requested; assistant was rate-limited and never executed)
+- [OPEN] Run transcript review
+- [OPEN] Schedule 30-min progress heartbeat
+- [OPEN] Pin exact root cause of recurring tournament-data clobber (read-only investigation)
+- [OPEN] User confirms blackbox is done — proceed with held fixes
+- [OPEN] Draft and push PR #1: price-tracker clobber guard (guard step inserted into worktree copy)
+- [OPEN] Open PR #1
+- [OPEN] Draft and push PR for #34 frozenset removal
+- [OPEN] Draft and push PR for render_incidents_page.py EST-timestamp gap
+- [OPEN] Provide safe-merge batch + #35/#11 block comments (awaiting user go-ahead)
+- [OPEN] Merge safe-merge batch of peer PRs (#27/#29/#26/#15/#14/#13/#30/#32) — awaiting user explicit go
+- [OPEN] Continue autonomous 30-min loop (poll peers, fold HOTWEATHER, create PRs from verified fixes) — ongoing cadence re-armed
+- [OPEN] Merge peer PRs (awaiting user approval)
+- [OPEN] Open own PR for #18 PF-clamp fix (offered, not executed)
+- [OPEN] Fixes PR authors should make on their own branches (commented, not pushed)
+- [OPEN] Peer-PR merges (#40, #41) await user go
+- [OPEN] If a NEW genuinely-actionable verified code fix appears, do it as a PR off clean main via git worktree, merge only if MY PR + mergeable (no such fix appeared)
+- [OPEN] User's efficiency suggestion: widen interval to hourly or pause (user did not respond to this offer)
+- [OPEN] Merge safe peer-PR batch (#27/#29/#26/#15/#14/#13/#30/#32) — gated on user approval
+- [OPEN] Close #25 — gated on user approval
+- [OPEN] Block #35/#11 — gated on user approval
+- [OPEN] Optional #18 PF-clamp PR — gated on user approval
+- [OPEN] If a genuinely-actionable verified code fix appears, do it as a PR off clean main via git worktree, merge only if MY PR + mergeable (no such fix appeared)
+- [OPEN] Run /swarm-pr-review with args /swarm-gh_actions-log-review and /swarm-actions-audit (user issued command at end; not shown executed)
+- [OPEN] Triage "Deploy Competition to Live Site" failure on main (assistant identified as actionable)
+- [OPEN] Verify the committed diff before opening/merging the PR
+- [OPEN] Open and merge the PR (pending verification)
+- [OPEN] Implement fix for failing deploy-competition-to-site.yml workflow
+- [OPEN] User-gated peer-PR batch (#27/#29/#26/#15/#14/#13/#30/#32, close #25, block #35/#11) — held for user go
+- [OPEN] Run `/dropchat-multipc` to sync with peers
+- [OPEN] Scan transcript for open action items and create todos (via `/swarm-transcript` or `/parallelswarm`)
+- [OPEN] Build structured JSON payload from session deliverables (commits, PRs, files, decisions, open questions, follow-ups)
+- [OPEN] Run canonical health probe (`python tools/protocol_inspect.py health`) against gateway at 192.168.2.32:8788
+- [OPEN] Send broadcast envelope via cross-PC gateway using `tools/adapters/cursor_claude_adapter.py --runtime claude`
+- [OPEN] Drain peer inbox to see what other agents have done in parallel
+- [OPEN] Revise session summary if needed based on peer inbox contents
+- [OPEN] Review all open PRs (12 PRs) via 3-lens swarm review
+- [OPEN] Run adversarial verification pass on any critical/high findings
+- [OPEN] Build consensus table after swarm review completes
+- [OPEN] Generate merge/fix/close recommendations via smart agent
+- [OPEN] Show action items and commands to run for human review
+- [OPEN] Synthesize consensus table and merge/fix/close recommendations after swarm completes
+- [OPEN] Merge the 6 clean APPROVE PRs (#65, #34, #33, #29, #19, #13) — user asked to hold, no explicit go given
+- [OPEN] Build structured JSON payload from session deliverables (schema "session-summary/v1")
+- [OPEN] Send broadcast envelope via gateway at 192.168.2.32:8788
+- [OPEN] Drain peer inbox so operator can see parallel agent activity
+- [OPEN] Use `python tools/protocol_inspect.py health` (or portable fallback) to verify gateway health before sending
+- [OPEN] Identify as "Claude Code on findtorontoevents desktop" with `--runtime claude` when calling adapter
+- [OPEN] Fall back to writing to `logs/cross_pc_protocol/events.jsonl` if adapter files are missing
+- [OPEN] Post follow-ups on remaining 6 non-clean PRs (#35, #18, #11, #10, #21, #14) — findings posted, authors must act
+- [OPEN] Take ownership and proceed with fix PRs for #10 (A/B no-op), #11 (forex not wired), #14 (irreversible backfill)
+- [OPEN] For #14, create backup table in `ejaguiar1_backups` before backfill
+- [OPEN] Use swarm to analyze/implement + produce implementation/testing plan for #10, #11, #14
+- [OPEN] Implement fixes in isolated worktree at `/tmp/pr_fixes`
+- [OPEN] Run `/swarm-transcript-review` and wrap up
+- [OPEN] Run transcript review (swarm-transcript-action-scan) — started in background, not shown complete
+- [OPEN] Run transcript review queued by user

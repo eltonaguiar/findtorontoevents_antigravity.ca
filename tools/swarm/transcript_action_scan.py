@@ -76,7 +76,8 @@ def extract_turns(jsonl_path: Path) -> list[tuple[str, str]]:
             ev = json.loads(line)
         except json.JSONDecodeError:
             continue
-        role = ev.get("type")
+        # Claude Code JSONL uses "type"; Cursor agent transcripts use "role".
+        role = ev.get("type") or ev.get("role")
         if role not in ("user", "assistant"):
             continue
         msg = ev.get("message") or {}
