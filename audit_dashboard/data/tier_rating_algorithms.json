@@ -1,0 +1,113 @@
+{
+  "schema_version": "tier-rating/v1",
+  "generated_at": "2026-05-29T12:31:31.410552+00:00",
+  "source": "tournament_rating_algorithms (ejaguiar1_stocks)",
+  "n": 8,
+  "entries": [
+    {
+      "model_id": "ring_261T",
+      "asset_class": "BOND",
+      "provider": "InclusionAI (via OpenRouter / opencode)",
+      "algorithm": "Derived from shared commodities/bonds algorithm; feature definitions adapted for fixed income. \u2014 scoring: weighted_composite_1to10",
+      "features": [
+        "MacroTrend (30%)",
+        "SupplyDemand (25%)",
+        "Seasonality (15%)",
+        "CarryYield (15%)",
+        "RelativeValue (15%)"
+      ],
+      "floor_score": 5,
+      "source_ref": "hedge_fund_persona_playbook_v2.md \u00a75 COMMODITIES/BONDS"
+    },
+    {
+      "model_id": "audit_blueprint",
+      "asset_class": "COMMODITY",
+      "provider": "audit_pick_funnel",
+      "algorithm": "conf=C0.60-0.70 & rr=RR1.0-1.5 & fam=cftc | WR_shrunk=67.95% PF=3.283 n=136",
+      "features": [],
+      "floor_score": 60,
+      "source_ref": "tools/audit_pick_funnel/top_edges.py"
+    },
+    {
+      "model_id": "ring_261T",
+      "asset_class": "COMMODITY",
+      "provider": "InclusionAI (via OpenRouter / opencode)",
+      "algorithm": "Shared algorithm for COMMODITY+BOND in the source \u2014 split here so each class has its own row. \u2014 scoring: weighted_composite_1to10",
+      "features": [
+        "MacroTrend (30%)",
+        "SupplyDemand (25%)",
+        "Seasonality (15%)",
+        "CarryYield (15%)",
+        "RelativeValue (15%)"
+      ],
+      "floor_score": 5,
+      "source_ref": "hedge_fund_persona_playbook_v2.md \u00a75 COMMODITIES/BONDS"
+    },
+    {
+      "model_id": "audit_blueprint",
+      "asset_class": "CRYPTO",
+      "provider": "audit_pick_funnel",
+      "algorithm": "source=copy_trader_intel & trust=UNK & dir=LONG | WR_shrunk=65.85% PF=1094.932 n=21",
+      "features": [],
+      "floor_score": 60,
+      "source_ref": "tools/audit_pick_funnel/top_edges.py"
+    },
+    {
+      "model_id": "ring_261T",
+      "asset_class": "CRYPTO",
+      "provider": "InclusionAI (via OpenRouter / opencode)",
+      "algorithm": "On-chain health dominant (30%) \u2014 narrative explicitly weighted (20%). No explicit refusal floor in source. \u2014 scoring: weighted_composite_1to10",
+      "features": [
+        "OnChainHealth (30%)",
+        "NarrativeStrength (20%)",
+        "PriceTrend (20%)",
+        "Liquidity (10%)",
+        "Tokenomics (10%)",
+        "RiskFlags (10%)"
+      ],
+      "floor_score": 5,
+      "source_ref": "hedge_fund_persona_playbook_v2.md \u00a75 CRYPTO"
+    },
+    {
+      "model_id": "ring_261T",
+      "asset_class": "EQUITY",
+      "provider": "InclusionAI (via OpenRouter / opencode)",
+      "algorithm": "Standard 6-factor composite. Notable: quality is HIGHEST weight (25%) not momentum. \u2014 scoring: weighted_composite_1to10",
+      "features": [
+        "Momentum (20%)",
+        "Quality (25%)",
+        "Growth (20%)",
+        "Value (15%)",
+        "Sentiment (10%)",
+        "Risk (10%)"
+      ],
+      "floor_score": 5,
+      "source_ref": "hedge_fund_persona_playbook_v2.md \u00a75 EQUITIES"
+    },
+    {
+      "model_id": "ring_261T",
+      "asset_class": "ETF",
+      "provider": "InclusionAI (via OpenRouter / opencode)",
+      "algorithm": "Macro alignment tied for top weight with trend strength \u2014 unusual for ETF scoring. \u2014 scoring: weighted_composite_1to10",
+      "features": [
+        "TrendStrength (25%)",
+        "RelativeStrength (20%)",
+        "ExpenseRatio (10%)",
+        "Liquidity (10%)",
+        "MacroAlignment (25%)",
+        "RiskMetrics (10%)"
+      ],
+      "floor_score": 5,
+      "source_ref": "hedge_fund_persona_playbook_v2.md \u00a75 ETF"
+    },
+    {
+      "model_id": "audit_blueprint",
+      "asset_class": "FOREX",
+      "provider": "audit_pick_funnel",
+      "algorithm": "score_dec=S40 & conf=C0.75-0.80 & dir=SHORT | WR_shrunk=57.14% PF=24.987 n=50",
+      "features": [],
+      "floor_score": 60,
+      "source_ref": "tools/audit_pick_funnel/top_edges.py"
+    }
+  ]
+}
