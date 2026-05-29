@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "version": "v1",
+    "source": "docs/DESIGN_AI_MODEL_HEDGE_FUND_PORTFOLIOS_2026-05-29.md §4",
+    "note": "v1 review constants. These are STARTING values for review per §4 — the design intent is the structure, not the exact constants. Walk-forward optimization of these knobs is explicitly deferred to v2 (§10). Hot-loadable single source of truth.",
+    "starting_nav_usd": 100000
+  },
+  "conservative": {
+    "vol_target_annual": 0.08,
+    "kelly_fraction": 0.25,
+    "max_single_position_pct": 4.0,
+    "max_class_exposure_pct": 25.0,
+    "gross_exposure_cap_pct": 80.0,
+    "cash_floor_pct": 20.0,
+    "stop_loss": {
+      "atr_mult": 1.0,
+      "pct_floor": -5.0
+    },
+    "take_profit": {
+      "pct": 8.0,
+      "r_multiple": 2.0
+    },
+    "trend_filter_ma_days": 200,
+    "max_open_positions": 12,
+    "drawdown_breaker_pct": -8.0,
+    "asset_class_allowlist": ["BOND", "ETF", "EQUITY", "FOREX"]
+  },
+  "balanced": {
+    "vol_target_annual": 0.15,
+    "kelly_fraction": 0.50,
+    "max_single_position_pct": 8.0,
+    "max_class_exposure_pct": 40.0,
+    "gross_exposure_cap_pct": 110.0,
+    "cash_floor_pct": 10.0,
+    "stop_loss": {
+      "atr_mult": 1.5,
+      "pct_floor": -8.0
+    },
+    "take_profit": {
+      "pct": 15.0,
+      "r_multiple": 3.0
+    },
+    "trend_filter_ma_days": 50,
+    "max_open_positions": 20,
+    "drawdown_breaker_pct": -15.0,
+    "asset_class_allowlist": ["BOND", "ETF", "EQUITY", "FOREX", "COMMODITY"]
+  },
+  "aggressive": {
+    "vol_target_annual": 0.28,
+    "kelly_fraction": 1.00,
+    "max_single_position_pct": 15.0,
+    "max_class_exposure_pct": 65.0,
+    "gross_exposure_cap_pct": 160.0,
+    "cash_floor_pct": 0.0,
+    "stop_loss": {
+      "atr_mult": 2.5,
+      "pct_floor": -15.0
+    },
+    "take_profit": {
+      "pct": null,
+      "r_multiple": "trail"
+    },
+    "trend_filter_ma_days": null,
+    "max_open_positions": 30,
+    "drawdown_breaker_pct": -25.0,
+    "asset_class_allowlist": ["BOND", "ETF", "EQUITY", "FOREX", "COMMODITY", "CRYPTO", "FUTURES", "PENNY"]
+  }
+}

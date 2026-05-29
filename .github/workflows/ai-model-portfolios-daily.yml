@@ -1,0 +1,117 @@
+name: AI-Model Portfolios — Daily EOD
+
+# Risk-managed paper portfolios per AI-tournament model (design §7).
+# Runs after US equity close (22:00 UTC, Mon-Fri). Schedule only — no effect
+# until merged to the default branch.
+on:
+  schedule:
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run run_daily in dry-run (no DB writes)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ai-model-portfolios-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  portfolios-daily:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install pymysql yfinance requests
+
+      # Per-symbol price failures are soft (logged ::warning inside prices.py);
+      # continue-on-error guards against a single dead source aborting the book.
+      - name: Run daily portfolio engine
+        if: ${{ !inputs.dry_run }}
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY || '' }}
+        run: python tools/portfolios/run_daily.py --apply
+
+      - name: Run daily portfolio engine (dry-run)
+        if: ${{ inputs.dry_run }}
+        run: python tools/portfolios/run_daily.py --dry-run
+
+      - name: Export PF JSON snapshots
+        if: ${{ !inputs.dry_run }}
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+        run: python tools/portfolios/export_json.py --write
+
+      # deploy_audit_files.py has no entry for pf_*.json yet, so FTP-upload the
+      # new snapshots directly (the CLAUDE.md pattern for new audit/ files).
+      # 50webs has no shell — git push alone does NOT update the live site.
+      - name: FTP upload PF JSON to findtorontoevents.ca
+        if: ${{ !inputs.dry_run }}
+        continue-on-error: true
+        env:
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER || 'ftps2.50webs.com' }}
+        run: |
+          if [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning title=ftp::FTP_USER/FTP_PASS not set — skipping live deploy. pf_*.json will serve stale until manual upload."
+            exit 0
+          fi
+          python - <<'PY'
+          import glob, os, ssl
+          from ftplib import FTP_TLS
+          host = os.environ.get("FTP_SERVER", "ftps2.50webs.com")
+          user = os.environ["FTP_USER"]
+          pw = os.environ["FTP_PASS"]
+          files = sorted(glob.glob("audit_dashboard/data/pf_portfolios.json")
+                         + glob.glob("audit_dashboard/data/pf_portfolio_*.json"))
+          if not files:
+              print("::warning title=ftp::no pf_*.json files to upload")
+              raise SystemExit(0)
+          ctx = ssl.create_default_context()
+          ftp = FTP_TLS(host, context=ctx)
+          ftp.login(user, pw)
+          ftp.prot_p()
+          for f in files:
+              remote = "/findtorontoevents.ca/audit/data/" + os.path.basename(f)
+              with open(f, "rb") as fh:
+                  ftp.storbinary("STOR " + remote, fh)
+              print("uploaded", remote)
+          ftp.quit()
+          PY
+
+      - name: Commit PF JSON snapshots
+        if: ${{ !inputs.dry_run }}
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/pf_portfolios.json audit_dashboard/data/pf_portfolio_*.json || true
+          if git diff --cached --quiet; then
+            echo "no PF JSON changes to commit"
+          else
+            git commit -m "chore(portfolios): daily PF snapshot [skip ci]"
+            git push
+          fi
