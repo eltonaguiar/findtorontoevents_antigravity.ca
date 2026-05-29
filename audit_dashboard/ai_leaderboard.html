@@ -54,7 +54,9 @@
   <a href="/audit/research_index.html">Research Index</a>
 </nav>
 
+<div id="golden" style="margin-top:16px"></div>
 <div id="board"></div>
+<div id="ma-strategies" style="margin-top:28px"></div>
 <div id="research" style="margin-top:24px"></div>
 <div id="drill" style="margin-top:24px"></div>
 
@@ -143,6 +145,7 @@ fetch('data/ai_leaderboard/ai_leaderboard_index.json?cb=' + Date.now())
       row.addEventListener('click', () => drill(row.dataset.engine));
     });
     renderResearch(idx.research_proposers || {});
+    renderGolden(engines);
   })
   .catch(err => {
     document.getElementById('meta').textContent = 'AI leaderboard unavailable.';
@@ -151,6 +154,80 @@ fetch('data/ai_leaderboard/ai_leaderboard_index.json?cb=' + Date.now())
       'generated. Run <code>python tools/ai_attribution/build_ai_leaderboard.py</code>.</div>';
     console.error('ai_leaderboard fetch failed:', err);
   });
+
+// ── GOLDEN FINDER (Part B) — surface highly-profitable engine×class cells so a
+// "golden" opportunity isn't buried. Thresholds: n>=20, WR>=55%, PF>=1.5.
+function renderGolden(engines) {
+  const el = document.getElementById('golden');
+  if (!el) return;
+  const GN = 20, GWR = 55, GPF = 1.5;
+  const cells = [];
+  (engines || []).forEach(e => {
+    const push = (scope, m) => {
+      if (!m || m.n == null) return;
+      if (m.n >= GN && (m.wr || 0) >= GWR && (m.pf || 0) >= GPF)
+        cells.push({ engine: e.engine, scope, n: m.n, wr: m.wr, pf: m.pf,
+                     score: (m.rank_score != null ? m.rank_score : (m.wr * m.pf)) });
+    };
+    push('overall', e.overall);
+    Object.entries(e.by_asset_class || {}).forEach(([k, m]) => push(k, m));
+  });
+  cells.sort((a, b) => (b.pf * b.wr) - (a.pf * a.wr));
+  if (!cells.length) {
+    el.innerHTML = '<div style="padding:10px 14px;background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.25);border-radius:8px;font-size:12px;color:#94a3b8">' +
+      '🥇 <strong>Golden finder</strong>: no engine×asset-class cell currently clears the bar (n≥' + GN + ', WR≥' + GWR + '%, PF≥' + GPF + '). Nothing being buried yet.</div>';
+    return;
+  }
+  let h = '<div style="padding:12px 16px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.4);border-radius:8px">' +
+    '<div style="font-weight:700;color:#22c55e;font-size:13px">🥇 Golden opportunities — high-profit cells (n≥' + GN + ', WR≥' + GWR + '%, PF≥' + GPF + ')</div>' +
+    '<table class="data" style="margin-top:8px"><thead><tr><th>Engine</th><th>Scope</th><th class="num">n</th><th class="num">WR%</th><th class="num">PF</th><th class="num">Score</th></tr></thead><tbody>';
+  cells.slice(0, 15).forEach(c => {
+    h += '<tr><td><strong>' + esc(c.engine) + '</strong></td><td>' + esc(c.scope) + '</td>' +
+      '<td class="num">' + esc(c.n) + '</td><td class="num pnl-pos">' + fmt(c.wr) + '</td>' +
+      '<td class="num pnl-pos">' + fmt(c.pf, 2) + '</td><td class="num">' + fmt(c.score, 1) + '</td></tr>';
+  });
+  h += '</tbody></table></div>';
+  el.innerHTML = h;
+}
+
+// ── MA TREND STRATEGY TRACKER (Part A) — buy next day after close>MA, flat when
+// close<MA. SMA/EMA/HMA variants, backtested per asset class. Golden-highlighted.
+function loadMAStrategies() {
+  const el = document.getElementById('ma-strategies');
+  if (!el) return;
+  fetch('data/ma_strategy_leaderboard.json?cb=' + Date.now())
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d || !d.strategies) { el.innerHTML = ''; return; }
+      const gold = (o) => (o && (o.pf || 0) >= 2 && (o.sharpe || 0) >= 0.5);
+      const strat = d.strategies.slice().sort((a, b) => (b.overall.pf || 0) - (a.overall.pf || 0));
+      let h = '<h2 style="font-size:15px;margin-bottom:4px">📈 MA Trend Strategies — 200-day & variants <span class="small">(buy next day after close &gt; MA; flat when close &lt; MA; no TP)</span></h2>' +
+        '<div class="small" style="color:#94a3b8;margin-bottom:8px">Backtested ' + esc(d.universe_size) + ' symbols, ' + esc(d.lookback) + ' daily. ' + esc(d.note || '') +
+        ' Rows with <strong style="color:#22c55e">PF≥2 &amp; Sharpe≥0.5</strong> highlighted (golden). NFA.</div>' +
+        '<table class="data"><thead><tr><th>Strategy</th><th>MA</th><th class="num">n trades</th><th class="num">WR%</th><th class="num">PF</th><th class="num">CAGR%</th><th class="num">MaxDD%</th><th class="num">Sharpe</th><th class="num">avg hold (d)</th><th>Best class</th></tr></thead><tbody>';
+      strat.forEach(s => {
+        const o = s.overall;
+        // best asset class by pf
+        let best = '—', bestpf = -1;
+        Object.entries(s.by_asset_class || {}).forEach(([k, m]) => { if ((m.pf || 0) > bestpf) { bestpf = m.pf || 0; best = k + ' (PF ' + fmt(m.pf, 2) + ')'; } });
+        h += '<tr' + (gold(o) ? ' style="background:rgba(34,197,94,0.10)"' : '') + '>' +
+          '<td><strong>' + esc(s.id) + '</strong>' + (gold(o) ? ' 🥇' : '') + '<div class="small" style="color:#6b7280">' + esc(s.tweak) + '</div></td>' +
+          '<td>' + esc(s.ma_type) + esc(s.period) + '</td>' +
+          '<td class="num">' + esc(o.n_trades) + '</td>' +
+          '<td class="num">' + fmt(o.wr) + '</td>' +
+          '<td class="num ' + pnlCls((o.pf || 0) - 1) + '">' + fmt(o.pf, 2) + '</td>' +
+          '<td class="num ' + pnlCls(o.cagr_pct) + '">' + fmt(o.cagr_pct) + '</td>' +
+          '<td class="num pnl-neg">' + fmt(o.max_dd_pct) + '</td>' +
+          '<td class="num">' + fmt(o.sharpe, 2) + '</td>' +
+          '<td class="num">' + fmt(o.avg_hold_days) + '</td>' +
+          '<td class="small">' + esc(best) + '</td></tr>';
+      });
+      h += '</tbody></table>';
+      el.innerHTML = h;
+    })
+    .catch(() => { el.innerHTML = ''; });
+}
+loadMAStrategies();
 
 function renderResearch(proposers) {
   // Research candidates proposed per engine — strategy specs from

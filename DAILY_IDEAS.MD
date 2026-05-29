@@ -3645,3 +3645,33 @@ Full report: [reports/2026-05-25_audit_ui_edge_audit.md](reports/2026-05-25_audi
 
 **Honest profitability verdict (both auditors agree):** real edge is narrow — cot_positioning (DSR=1.0 / n=104 / PF 3.28 = legit) + ML-enhanced crypto LONGs with conf 0.80-0.85 (PF up to 99 but on tiny samples = unreliable). The "82% WR / PF 13" headline cells are post-hoc segment searches, not actionable forward signals. The system should NOT be treated as production-ready in current state. The Smart Picks button's own tooltip is the most accurate sentence on the page: "use it as a live signal overlay, not as a standalone edge filter."
 
+
+---
+
+## 2026-05-29 — 200-day MA trend strategy tracking + ai_leaderboard "golden finder" + /audit filter deep-dive (prompt captured)
+
+> Start a buy when stock Price above 200 day Simple moving average, sell when price goes below it.
+> Start some strategy tracking under https://findtorontoevents.ca/audit/ai_leaderboard.html across each
+> asset class based on this simple strategy. Ensure we have at least a few entries and variations of this
+> using Hull Moving Average, EMA, and simple moving average.
+>
+> Try with the daily closing price. If that day's close is above 200 day MA hold, if below sell. You enter
+> the next trading day after stock closes above 200 day MA.
+>
+> Strategy doesn't need a SL/TP — the 200day MA is both an entry/exit rule, acts as a trailing stop, but
+> with risk control you can say risk no more than 1% to 2% per trade, and stop loss below a certain price etc.
+>
+> For variations ask /PeerReviewSwarmOptions, and create a bunch of variations and track their performance.
+>
+> Under ai_leaderboard.html, we need a way to quickly find out if a particular Model-Persona, or persona
+> (if not unique to the model) is highly profitable, so we don't lose a "GOLDEN" opportunity buried in the stats.
+>
+> We have a TON of filters under /audit — do a deep dive with a bunch of subagents and ask other AIs to also
+> help with the analysis. Delegate with as many peers as possible to double-check various parts. Double-check
+> for hallucination; make sure these other AIs are REALLY able to check the webpage and/or database to verify
+> things (feed them real data extracts — never let a model claim it "fetched" a URL).
+
+**Build notes / acceptance:**
+- MA variants to track per asset class: SMA-200, EMA-200, HMA-200 (+ shorter-period variations from peer consult).
+- Entry: enter next trading day after daily close > MA; Exit: close < MA. No TP; MA = trailing exit. Risk overlay: 1–2%/trade, hard floor stop.
+- Surface results on ai_leaderboard.html; add sortable/highlighted "golden" view (high PF/WR per model-persona).

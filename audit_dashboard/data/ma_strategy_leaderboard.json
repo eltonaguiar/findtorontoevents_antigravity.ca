@@ -1,0 +1,690 @@
+{
+  "schema_version": "ma-strategy/v1",
+  "generated_at": "2026-05-29T03:01:51.548642+00:00",
+  "rule": "Long next day after daily close > MA; flat when close < MA. No TP (MA = trailing exit). Risk overlay 1-2%/trade.",
+  "lookback": "6y",
+  "universe_size": 33,
+  "note": "WR/PF are per-trade (each long episode). Aggregates: WR=trade-weighted mean; PF/return/DD/Sharpe=median across symbols. NFA.",
+  "strategies": [
+    {
+      "id": "Classic200",
+      "ma_type": "SMA",
+      "period": 200,
+      "tweak": "none",
+      "overall": {
+        "n_trades": 817,
+        "n_symbols": 33,
+        "wr": 18.97,
+        "pf": 2.79,
+        "total_return_pct": 32.5,
+        "cagr_pct": 4.8,
+        "max_dd_pct": -27.1,
+        "sharpe": 0.51,
+        "avg_hold_days": 36.78
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 124,
+          "n_symbols": 7,
+          "wr": 29.04,
+          "pf": 4.84,
+          "total_return_pct": 95.2,
+          "cagr_pct": 11.8,
+          "max_dd_pct": -30.5,
+          "sharpe": 0.73,
+          "avg_hold_days": 55.18
+        },
+        "ETF": {
+          "n_trades": 130,
+          "n_symbols": 6,
+          "wr": 24.63,
+          "pf": 4.2,
+          "total_return_pct": 60.5,
+          "cagr_pct": 8.2,
+          "max_dd_pct": -23.2,
+          "sharpe": 0.68,
+          "avg_hold_days": 45.94
+        },
+        "CRYPTO": {
+          "n_trades": 148,
+          "n_symbols": 5,
+          "wr": 19.59,
+          "pf": 8.63,
+          "total_return_pct": 799.3,
+          "cagr_pct": 28.7,
+          "max_dd_pct": -64.1,
+          "sharpe": 0.72,
+          "avg_hold_days": 36.71
+        },
+        "FOREX": {
+          "n_trades": 131,
+          "n_symbols": 5,
+          "wr": 16.79,
+          "pf": 0.67,
+          "total_return_pct": -4.4,
+          "cagr_pct": -0.7,
+          "max_dd_pct": -11.1,
+          "sharpe": -0.12,
+          "avg_hold_days": 30.21
+        },
+        "COMMODITY": {
+          "n_trades": 138,
+          "n_symbols": 5,
+          "wr": 13.75,
+          "pf": 1.28,
+          "total_return_pct": 5.5,
+          "cagr_pct": 0.9,
+          "max_dd_pct": -44.6,
+          "sharpe": 0.18,
+          "avg_hold_days": 29.43
+        },
+        "BOND": {
+          "n_trades": 146,
+          "n_symbols": 5,
+          "wr": 11.64,
+          "pf": 1.05,
+          "total_return_pct": 0.2,
+          "cagr_pct": 0.0,
+          "max_dd_pct": -9.6,
+          "sharpe": 0.03,
+          "avg_hold_days": 25.9
+        }
+      }
+    },
+    {
+      "id": "EMA200",
+      "ma_type": "EMA",
+      "period": 200,
+      "tweak": "none",
+      "overall": {
+        "n_trades": 1059,
+        "n_symbols": 33,
+        "wr": 19.26,
+        "pf": 3.16,
+        "total_return_pct": 91.1,
+        "cagr_pct": 11.3,
+        "max_dd_pct": -29.9,
+        "sharpe": 0.6,
+        "avg_hold_days": 33.47
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 156,
+          "n_symbols": 7,
+          "wr": 28.18,
+          "pf": 5.23,
+          "total_return_pct": 164.1,
+          "cagr_pct": 17.6,
+          "max_dd_pct": -30.5,
+          "sharpe": 0.86,
+          "avg_hold_days": 52.99
+        },
+        "ETF": {
+          "n_trades": 177,
+          "n_symbols": 6,
+          "wr": 20.91,
+          "pf": 3.05,
+          "total_return_pct": 96.6,
+          "cagr_pct": 11.9,
+          "max_dd_pct": -27.7,
+          "sharpe": 0.75,
+          "avg_hold_days": 40.58
+        },
+        "CRYPTO": {
+          "n_trades": 191,
+          "n_symbols": 5,
+          "wr": 19.89,
+          "pf": 9.48,
+          "total_return_pct": 1022.1,
+          "cagr_pct": 32.1,
+          "max_dd_pct": -69.7,
+          "sharpe": 0.81,
+          "avg_hold_days": 33.35
+        },
+        "FOREX": {
+          "n_trades": 165,
+          "n_symbols": 5,
+          "wr": 18.16,
+          "pf": 1.28,
+          "total_return_pct": 3.3,
+          "cagr_pct": 0.5,
+          "max_dd_pct": -11.9,
+          "sharpe": 0.12,
+          "avg_hold_days": 28.27
+        },
+        "COMMODITY": {
+          "n_trades": 169,
+          "n_symbols": 5,
+          "wr": 18.92,
+          "pf": 3.57,
+          "total_return_pct": 91.1,
+          "cagr_pct": 11.4,
+          "max_dd_pct": -41.2,
+          "sharpe": 0.57,
+          "avg_hold_days": 29.18
+        },
+        "BOND": {
+          "n_trades": 201,
+          "n_symbols": 5,
+          "wr": 11.46,
+          "pf": 0.89,
+          "total_return_pct": -2.6,
+          "cagr_pct": -0.4,
+          "max_dd_pct": -12.4,
+          "sharpe": -0.05,
+          "avg_hold_days": 20.07
+        }
+      }
+    },
+    {
+      "id": "HMA200",
+      "ma_type": "HMA",
+      "period": 200,
+      "tweak": "none",
+      "overall": {
+        "n_trades": 1474,
+        "n_symbols": 33,
+        "wr": 26.12,
+        "pf": 1.62,
+        "total_return_pct": 26.9,
+        "cagr_pct": 4.1,
+        "max_dd_pct": -25.1,
+        "sharpe": 0.42,
+        "avg_hold_days": 16.37
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 281,
+          "n_symbols": 7,
+          "wr": 29.53,
+          "pf": 2.14,
+          "total_return_pct": 73.2,
+          "cagr_pct": 9.6,
+          "max_dd_pct": -29.7,
+          "sharpe": 0.55,
+          "avg_hold_days": 17.16
+        },
+        "ETF": {
+          "n_trades": 274,
+          "n_symbols": 6,
+          "wr": 30.29,
+          "pf": 1.71,
+          "total_return_pct": 26.0,
+          "cagr_pct": 3.9,
+          "max_dd_pct": -25.2,
+          "sharpe": 0.46,
+          "avg_hold_days": 15.22
+        },
+        "CRYPTO": {
+          "n_trades": 258,
+          "n_symbols": 5,
+          "wr": 25.58,
+          "pf": 3.33,
+          "total_return_pct": 451.3,
+          "cagr_pct": 21.7,
+          "max_dd_pct": -50.9,
+          "sharpe": 0.74,
+          "avg_hold_days": 20.35
+        },
+        "FOREX": {
+          "n_trades": 226,
+          "n_symbols": 5,
+          "wr": 24.78,
+          "pf": 1.09,
+          "total_return_pct": 1.0,
+          "cagr_pct": 0.2,
+          "max_dd_pct": -12.5,
+          "sharpe": 0.06,
+          "avg_hold_days": 14.76
+        },
+        "COMMODITY": {
+          "n_trades": 247,
+          "n_symbols": 5,
+          "wr": 23.47,
+          "pf": 0.92,
+          "total_return_pct": -14.0,
+          "cagr_pct": -2.5,
+          "max_dd_pct": -50.4,
+          "sharpe": 0.08,
+          "avg_hold_days": 13.99
+        },
+        "BOND": {
+          "n_trades": 188,
+          "n_symbols": 5,
+          "wr": 20.76,
+          "pf": 1.33,
+          "total_return_pct": 4.8,
+          "cagr_pct": 0.8,
+          "max_dd_pct": -9.5,
+          "sharpe": 0.19,
+          "avg_hold_days": 16.48
+        }
+      }
+    },
+    {
+      "id": "RespEMA50",
+      "ma_type": "EMA",
+      "period": 50,
+      "tweak": "none",
+      "overall": {
+        "n_trades": 2123,
+        "n_symbols": 33,
+        "wr": 25.06,
+        "pf": 1.98,
+        "total_return_pct": 58.7,
+        "cagr_pct": 8.0,
+        "max_dd_pct": -27.4,
+        "sharpe": 0.6,
+        "avg_hold_days": 14.88
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 395,
+          "n_symbols": 7,
+          "wr": 30.38,
+          "pf": 2.58,
+          "total_return_pct": 130.6,
+          "cagr_pct": 15.0,
+          "max_dd_pct": -31.5,
+          "sharpe": 0.81,
+          "avg_hold_days": 17.79
+        },
+        "ETF": {
+          "n_trades": 355,
+          "n_symbols": 6,
+          "wr": 29.3,
+          "pf": 2.17,
+          "total_return_pct": 85.5,
+          "cagr_pct": 10.8,
+          "max_dd_pct": -21.9,
+          "sharpe": 0.74,
+          "avg_hold_days": 17.58
+        },
+        "CRYPTO": {
+          "n_trades": 403,
+          "n_symbols": 5,
+          "wr": 20.34,
+          "pf": 4.07,
+          "total_return_pct": 1075.4,
+          "cagr_pct": 32.8,
+          "max_dd_pct": -63.5,
+          "sharpe": 1.0,
+          "avg_hold_days": 14.01
+        },
+        "FOREX": {
+          "n_trades": 300,
+          "n_symbols": 5,
+          "wr": 28.99,
+          "pf": 1.41,
+          "total_return_pct": 7.9,
+          "cagr_pct": 1.2,
+          "max_dd_pct": -9.4,
+          "sharpe": 0.24,
+          "avg_hold_days": 14.29
+        },
+        "COMMODITY": {
+          "n_trades": 333,
+          "n_symbols": 5,
+          "wr": 21.02,
+          "pf": 1.53,
+          "total_return_pct": 49.5,
+          "cagr_pct": 6.9,
+          "max_dd_pct": -53.0,
+          "sharpe": 0.37,
+          "avg_hold_days": 13.21
+        },
+        "BOND": {
+          "n_trades": 337,
+          "n_symbols": 5,
+          "wr": 20.47,
+          "pf": 0.99,
+          "total_return_pct": -0.8,
+          "cagr_pct": -0.1,
+          "max_dd_pct": -9.7,
+          "sharpe": -0.01,
+          "avg_hold_days": 11.84
+        }
+      }
+    },
+    {
+      "id": "LagHull16",
+      "ma_type": "HMA",
+      "period": 16,
+      "tweak": "none",
+      "overall": {
+        "n_trades": 6524,
+        "n_symbols": 33,
+        "wr": 38.37,
+        "pf": 1.25,
+        "total_return_pct": 38.6,
+        "cagr_pct": 5.6,
+        "max_dd_pct": -28.8,
+        "sharpe": 0.46,
+        "avg_hold_days": 4.15
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 1274,
+          "n_symbols": 7,
+          "wr": 41.28,
+          "pf": 1.44,
+          "total_return_pct": 81.6,
+          "cagr_pct": 10.5,
+          "max_dd_pct": -34.1,
+          "sharpe": 0.74,
+          "avg_hold_days": 4.21
+        },
+        "ETF": {
+          "n_trades": 1112,
+          "n_symbols": 6,
+          "wr": 41.92,
+          "pf": 1.38,
+          "total_return_pct": 45.5,
+          "cagr_pct": 6.5,
+          "max_dd_pct": -21.9,
+          "sharpe": 0.65,
+          "avg_hold_days": 4.17
+        },
+        "CRYPTO": {
+          "n_trades": 1242,
+          "n_symbols": 5,
+          "wr": 37.92,
+          "pf": 1.9,
+          "total_return_pct": 2263.5,
+          "cagr_pct": 43.9,
+          "max_dd_pct": -56.1,
+          "sharpe": 0.9,
+          "avg_hold_days": 4.48
+        },
+        "FOREX": {
+          "n_trades": 983,
+          "n_symbols": 5,
+          "wr": 34.6,
+          "pf": 0.9,
+          "total_return_pct": -6.3,
+          "cagr_pct": -1.0,
+          "max_dd_pct": -17.9,
+          "sharpe": -0.17,
+          "avg_hold_days": 3.94
+        },
+        "COMMODITY": {
+          "n_trades": 921,
+          "n_symbols": 5,
+          "wr": 39.85,
+          "pf": 1.31,
+          "total_return_pct": 38.6,
+          "cagr_pct": 5.6,
+          "max_dd_pct": -38.0,
+          "sharpe": 0.47,
+          "avg_hold_days": 4.22
+        },
+        "BOND": {
+          "n_trades": 992,
+          "n_symbols": 5,
+          "wr": 33.56,
+          "pf": 0.76,
+          "total_return_pct": -12.1,
+          "cagr_pct": -2.1,
+          "max_dd_pct": -18.6,
+          "sharpe": -0.48,
+          "avg_hold_days": 3.75
+        }
+      }
+    },
+    {
+      "id": "MedHull50",
+      "ma_type": "HMA",
+      "period": 50,
+      "tweak": "none",
+      "overall": {
+        "n_trades": 3476,
+        "n_symbols": 33,
+        "wr": 32.46,
+        "pf": 1.4,
+        "total_return_pct": 27.5,
+        "cagr_pct": 4.1,
+        "max_dd_pct": -26.8,
+        "sharpe": 0.39,
+        "avg_hold_days": 7.72
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 671,
+          "n_symbols": 7,
+          "wr": 35.18,
+          "pf": 1.71,
+          "total_return_pct": 92.5,
+          "cagr_pct": 11.6,
+          "max_dd_pct": -33.9,
+          "sharpe": 0.69,
+          "avg_hold_days": 8.02
+        },
+        "ETF": {
+          "n_trades": 604,
+          "n_symbols": 6,
+          "wr": 36.75,
+          "pf": 1.54,
+          "total_return_pct": 54.5,
+          "cagr_pct": 7.5,
+          "max_dd_pct": -18.3,
+          "sharpe": 0.64,
+          "avg_hold_days": 7.63
+        },
+        "CRYPTO": {
+          "n_trades": 641,
+          "n_symbols": 5,
+          "wr": 30.1,
+          "pf": 2.62,
+          "total_return_pct": 1568.4,
+          "cagr_pct": 38.2,
+          "max_dd_pct": -63.5,
+          "sharpe": 0.86,
+          "avg_hold_days": 8.57
+        },
+        "FOREX": {
+          "n_trades": 539,
+          "n_symbols": 5,
+          "wr": 30.27,
+          "pf": 0.79,
+          "total_return_pct": -8.5,
+          "cagr_pct": -1.4,
+          "max_dd_pct": -13.0,
+          "sharpe": -0.29,
+          "avg_hold_days": 7.07
+        },
+        "COMMODITY": {
+          "n_trades": 482,
+          "n_symbols": 5,
+          "wr": 30.71,
+          "pf": 1.25,
+          "total_return_pct": 24.1,
+          "cagr_pct": 3.7,
+          "max_dd_pct": -40.4,
+          "sharpe": 0.29,
+          "avg_hold_days": 8.03
+        },
+        "BOND": {
+          "n_trades": 539,
+          "n_symbols": 5,
+          "wr": 30.81,
+          "pf": 1.21,
+          "total_return_pct": 3.1,
+          "cagr_pct": 0.5,
+          "max_dd_pct": -9.9,
+          "sharpe": 0.23,
+          "avg_hold_days": 6.79
+        }
+      }
+    },
+    {
+      "id": "DualCross",
+      "ma_type": "SMA",
+      "period": 200,
+      "tweak": "dual_50_200",
+      "overall": {
+        "n_trades": 1397,
+        "n_symbols": 33,
+        "wr": 22.76,
+        "pf": 1.96,
+        "total_return_pct": 29.6,
+        "cagr_pct": 4.4,
+        "max_dd_pct": -23.2,
+        "sharpe": 0.4,
+        "avg_hold_days": 16.14
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 264,
+          "n_symbols": 7,
+          "wr": 26.89,
+          "pf": 2.02,
+          "total_return_pct": 57.5,
+          "cagr_pct": 7.9,
+          "max_dd_pct": -31.0,
+          "sharpe": 0.58,
+          "avg_hold_days": 19.92
+        },
+        "ETF": {
+          "n_trades": 258,
+          "n_symbols": 6,
+          "wr": 26.36,
+          "pf": 2.5,
+          "total_return_pct": 42.1,
+          "cagr_pct": 5.8,
+          "max_dd_pct": -14.7,
+          "sharpe": 0.69,
+          "avg_hold_days": 17.93
+        },
+        "CRYPTO": {
+          "n_trades": 222,
+          "n_symbols": 5,
+          "wr": 23.44,
+          "pf": 5.45,
+          "total_return_pct": 690.3,
+          "cagr_pct": 26.8,
+          "max_dd_pct": -51.2,
+          "sharpe": 0.97,
+          "avg_hold_days": 17.44
+        },
+        "FOREX": {
+          "n_trades": 230,
+          "n_symbols": 5,
+          "wr": 19.11,
+          "pf": 0.59,
+          "total_return_pct": -9.1,
+          "cagr_pct": -1.5,
+          "max_dd_pct": -10.4,
+          "sharpe": -0.34,
+          "avg_hold_days": 12.96
+        },
+        "COMMODITY": {
+          "n_trades": 200,
+          "n_symbols": 5,
+          "wr": 22.49,
+          "pf": 1.21,
+          "total_return_pct": -1.6,
+          "cagr_pct": -0.3,
+          "max_dd_pct": -47.0,
+          "sharpe": 0.22,
+          "avg_hold_days": 15.1
+        },
+        "BOND": {
+          "n_trades": 223,
+          "n_symbols": 5,
+          "wr": 17.06,
+          "pf": 0.88,
+          "total_return_pct": -2.8,
+          "cagr_pct": -0.5,
+          "max_dd_pct": -9.5,
+          "sharpe": -0.09,
+          "avg_hold_days": 12.51
+        }
+      }
+    },
+    {
+      "id": "Buff200",
+      "ma_type": "SMA",
+      "period": 200,
+      "tweak": "buffer_0.75pct",
+      "overall": {
+        "n_trades": 571,
+        "n_symbols": 33,
+        "wr": 22.07,
+        "pf": 2.58,
+        "total_return_pct": 33.7,
+        "cagr_pct": 5.0,
+        "max_dd_pct": -26.4,
+        "sharpe": 0.49,
+        "avg_hold_days": 51.08
+      },
+      "by_asset_class": {
+        "EQUITY": {
+          "n_trades": 102,
+          "n_symbols": 7,
+          "wr": 30.4,
+          "pf": 4.38,
+          "total_return_pct": 91.7,
+          "cagr_pct": 11.5,
+          "max_dd_pct": -29.3,
+          "sharpe": 0.72,
+          "avg_hold_days": 66.53
+        },
+        "ETF": {
+          "n_trades": 94,
+          "n_symbols": 6,
+          "wr": 30.84,
+          "pf": 3.96,
+          "total_return_pct": 52.1,
+          "cagr_pct": 7.2,
+          "max_dd_pct": -21.9,
+          "sharpe": 0.68,
+          "avg_hold_days": 62.43
+        },
+        "CRYPTO": {
+          "n_trades": 134,
+          "n_symbols": 5,
+          "wr": 19.4,
+          "pf": 9.16,
+          "total_return_pct": 707.5,
+          "cagr_pct": 27.2,
+          "max_dd_pct": -64.3,
+          "sharpe": 0.73,
+          "avg_hold_days": 40.24
+        },
+        "FOREX": {
+          "n_trades": 70,
+          "n_symbols": 5,
+          "wr": 17.16,
+          "pf": 0.47,
+          "total_return_pct": -7.3,
+          "cagr_pct": -1.2,
+          "max_dd_pct": -11.7,
+          "sharpe": -0.24,
+          "avg_hold_days": 52.62
+        },
+        "COMMODITY": {
+          "n_trades": 101,
+          "n_symbols": 5,
+          "wr": 17.83,
+          "pf": 1.81,
+          "total_return_pct": 24.0,
+          "cagr_pct": 3.7,
+          "max_dd_pct": -46.3,
+          "sharpe": 0.27,
+          "avg_hold_days": 39.45
+        },
+        "BOND": {
+          "n_trades": 70,
+          "n_symbols": 5,
+          "wr": 14.28,
+          "pf": 0.71,
+          "total_return_pct": -4.5,
+          "cagr_pct": -0.8,
+          "max_dd_pct": -11.1,
+          "sharpe": -0.13,
+          "avg_hold_days": 49.29
+        }
+      }
+    }
+  ]
+}
