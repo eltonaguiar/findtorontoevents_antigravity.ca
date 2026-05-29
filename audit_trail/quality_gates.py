@@ -6352,6 +6352,54 @@ def passes_vix_regime_active_gate(pick: Dict[str, Any]) -> bool:
         "0", "false", "FALSE", "False"
     ):
         return True
+    # ── 2026-05-28: per-class hard VIX gates (highest-evidence single filter per
+    # TMX validation report — backtest PF 2.82→5.37 / MDD 24%→7.3% on 30 LC universe
+    # 2015-2026 when EQUITY VIX<22 is enforced). ETF overlay uses VIX<25 (QW-2 in
+    # the same report). Independent kill-switches:
+    #   EQUITY_VIX_GATE_ENABLED — default ON, rejects EQUITY picks when VIX > 22.
+    #   ETF_VIX_GATE_ENABLED    — default ON, rejects ETF picks when VIX > 25.
+    # Fail-open on missing VIX (is_vix_above_threshold returns False when fetch
+    # fails). Reject reason "equity_vix_gate_high_vix" surfaces in pick rationale.
+    #
+    # FREEZE-EXEMPTION DECLARATION (per swarm review 2026-05-28):
+    # The thresholds 22.0 (EQUITY) and 25.0 (ETF) are *regime-gate parameters*, NOT
+    # Smart Picks score floors. They are NOT members of the THRESHOLD_FREEZE set
+    # (SMART_PICKS_MIN_SCORE / SMART_PICKS_MAX_CONFIDENCE / etc. — see the freeze
+    # block at the top of this file, frozen through 2026-08-18). Adding/tuning
+    # *regime* gates does not violate the freeze; the freeze constrains pick-score
+    # admission thresholds only.
+    try:
+        from audit_trail.vix_regime_gate import is_vix_above_threshold as _vix_gt
+        _ac_pcg = str(pick.get("asset_class", "") or "").strip().upper()
+        _truthy_pcg = ("1", "true", "yes", "on", "t", "y")
+        if _ac_pcg == "EQUITY":
+            _eq_flag = (_os_vag.environ.get("EQUITY_VIX_GATE_ENABLED", "1") or "1").strip().lower()
+            if _eq_flag in _truthy_pcg and _vix_gt(22.0):
+                pick["_hf_quality_gate_reason"] = (
+                    pick.get("_hf_quality_gate_reason") or "equity_vix_gate_high_vix"
+                )
+                logger.info(
+                    "Pick rejected: equity_vix_gate_high_vix (symbol=%s VIX>22.0)",
+                    pick.get("symbol", "?"),
+                )
+                return False
+        elif _ac_pcg == "ETF":
+            _etf_flag = (_os_vag.environ.get("ETF_VIX_GATE_ENABLED", "1") or "1").strip().lower()
+            if _etf_flag in _truthy_pcg and _vix_gt(25.0):
+                pick["_hf_quality_gate_reason"] = (
+                    pick.get("_hf_quality_gate_reason") or "equity_vix_gate_high_vix"
+                )
+                logger.info(
+                    "Pick rejected: equity_vix_gate_high_vix [ETF] (symbol=%s VIX>25.0)",
+                    pick.get("symbol", "?"),
+                )
+                return False
+    except ImportError:
+        pass  # vix_regime_gate module unavailable — fail-open
+    except Exception:
+        pass  # fail-open on any unexpected error
+    # Existing combined VIX+YC + legacy single-threshold equity gate (preserved
+    # for backward compatibility — uses VIX_REGIME_GATE_ENABLED / YC_REGIME_GATE_ENABLED).
     try:
         from audit_trail.vix_regime_gate import (
             should_reject_combined as _vix_combined,
@@ -6797,6 +6845,58 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
                     return False
     except Exception:
         pass  # fail-open: never break admission on kill gate error
+
+    # ── M-001: CRYPTO liquid-core whitelist + BTC UTC death-zone (2026-05-28) ──
+    # EAGLE plan M-001. Addresses CRYPTO 47% raw skew + 29% WR quan_engine drag:
+    # of n=229 CRYPTO picks only 1 lands on the canonical edge
+    # (crypto_liquidity_wick_reversal_v1); the rest is illiquid-alt long-tail.
+    # Two gates, both CRYPTO-only, both fail-open, both env-kill-switchable
+    # (CRYPTO_LIQUID_CORE_ENABLED / CRYPTO_BTC_HOUR_GATE_ENABLED, default ON):
+    #   (a) symbol must be in top-25 by 30-day ADV (LIQUID_CORE_TOP_25)
+    #   (b) entry_hour_utc must not be in [9, 10, 18, 21]
+    try:
+        _ac_m001 = str(pick.get("asset_class", "") or "").strip().upper()
+        if _ac_m001 == "CRYPTO":
+            from alpha_engine.crypto_liquid_core import (
+                is_in_liquid_core as _is_in_liquid_core_m001,
+                is_in_btc_death_zone as _is_in_btc_death_zone_m001,
+            )
+            _sym_m001 = pick.get("symbol", "") or ""
+            if not _is_in_liquid_core_m001(_sym_m001):
+                logger.info(
+                    "Pick rejected: crypto_not_liquid_core symbol=%s strategy=%s",
+                    _sym_m001, pick.get("strategy", ""),
+                )
+                pick["_hf_quality_gate_reason"] = "crypto_not_liquid_core"
+                try:
+                    if _pll_tracer_m110 and _pll_pick_id_m110:
+                        _pll_tracer_m110.log_filter(
+                            _pll_pick_id_m110, "crypto_liquid_core",
+                            "crypto_not_liquid_core", rule_id="M-001",
+                            pick_values={"symbol": _sym_m001},
+                        )
+                except Exception:
+                    pass
+                return False
+            _sub_m001 = pick.get("submitted_at") or pick.get("signal_ts") or ""
+            if _is_in_btc_death_zone_m001(_sub_m001):
+                logger.info(
+                    "Pick rejected: crypto_btc_death_zone symbol=%s submitted_at=%s",
+                    _sym_m001, _sub_m001,
+                )
+                pick["_hf_quality_gate_reason"] = "crypto_btc_death_zone"
+                try:
+                    if _pll_tracer_m110 and _pll_pick_id_m110:
+                        _pll_tracer_m110.log_filter(
+                            _pll_pick_id_m110, "crypto_btc_death_zone",
+                            "crypto_btc_death_zone", rule_id="M-001",
+                            pick_values={"symbol": _sym_m001, "submitted_at": _sub_m001},
+                        )
+                except Exception:
+                    pass
+                return False
+    except Exception:
+        pass  # fail-open: never block picks on M-001 import/parse error
 
     # ── CRYPTO dynamic quarantine (2026-05-15) ──
     # Uses module-level cache (_get_crypto_quarantine_strategies) to avoid hot-path
