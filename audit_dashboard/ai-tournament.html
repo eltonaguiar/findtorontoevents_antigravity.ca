@@ -181,17 +181,17 @@
 <table class="lb" id="leaderboard">
   <thead>
     <tr>
-      <th>#</th>
-      <th>Model</th>
-      <th>Provider</th>
-      <th class="num">WR</th>
-      <th class="num">WR 95% CI</th>
-      <th class="num">PF</th>
-      <th class="num">Score*</th>
-      <th class="num">n picks</th>
-      <th class="num">n resolved</th>
-      <th>Tier</th>
-      <th>Status</th>
+      <th title="Rank by CI-adjusted score (best first). Only models with n≥30 resolved are ranked.">#</th>
+      <th title="Model ID. Provider-route aliases are merged (e.g. grok3 = grok3 + grok3_direct).">Model</th>
+      <th title="API provider / route the picks came from.">Provider</th>
+      <th class="num" title="Win rate = wins / resolved picks (WIN or LOSS). Excludes still-OPEN picks and impossible resolutions.">WR</th>
+      <th class="num" title="95% Wilson confidence interval for the win rate. Wide interval = small sample, low confidence.">WR 95% CI</th>
+      <th class="num" title="Profit factor = sum of winning pnl% / sum of |losing pnl%|. >1 = net positive; trend strategies often show high PF on low WR.">PF</th>
+      <th class="num" title="Ranking score = lower-95%(WR) × lower-95%(PF). Shrinks small samples toward their confidence floor so a few lucky picks can't top the board.">Score*</th>
+      <th class="num" title="Total picks submitted by this model, INCLUDING still-OPEN picks (~half the field). Open picks do NOT count toward WR/PF until they resolve.">n picks</th>
+      <th class="num" title="Resolved picks (WIN or LOSS). Below 30 (shown amber) = not statistically rankable yet — treat the WR as activity, not a proven edge.">n resolved</th>
+      <th title="T1 PF≥2 & WR≥55 · T2 PF≥1.5 & WR≥50 · T3 PF≥1.2 & WR≥45 · BELOW otherwise. Tier uses absolute PF/WR thresholds; the # column uses the CI-adjusted score.">Tier</th>
+      <th title="LIVE = ranked (n≥30). BUILDING = still accumulating resolved picks toward the n=30 floor.">Status</th>
     </tr>
   </thead>
   <tbody id="lb-body">
@@ -220,16 +220,16 @@
 <div style="overflow-x:auto">
 <table class="lb">
   <thead><tr>
-    <th>Model</th>
-    <th class="num">Picks</th>
-    <th class="num">WR</th>
-    <th class="num">Resolved</th>
-    <th class="num">W/L</th>
-    <th class="num">Avg PnL</th>
-    <th>Last Pick (EST)</th>
-    <th class="num">Personas</th>
-    <th class="num">Classes</th>
-    <th>Drill-down</th>
+    <th title="Model ID (provider-route aliases merged).">Model</th>
+    <th class="num" title="Total picks submitted, INCLUDING still-OPEN picks. Open picks do not count toward WR until they resolve — so a high Picks count with few Resolved means most are still in-flight.">Picks</th>
+    <th class="num" title="Win rate = wins / resolved. Same clean cohort as the Leaderboard (impossible resolutions excluded), but with NO minimum sample and NO CI shrinkage — treat WR below 30 resolved as breadth, not edge.">WR</th>
+    <th class="num" title="Resolved picks (WIN/LOSS). Below 30 (amber) = not statistically rankable; the model is excluded from the Leaderboard ranking.">Resolved</th>
+    <th class="num" title="Wins / Losses split among resolved picks.">W/L</th>
+    <th class="num" title="Average realized pnl% across resolved picks. Sensitive to outliers — a single large win/loss can swing it.">Avg PnL</th>
+    <th title="Timestamp (America/New_York) of this model's most recent submitted pick.">Last Pick (EST)</th>
+    <th class="num" title="Number of distinct strategy personas this model submitted under.">Personas</th>
+    <th class="num" title="Number of distinct asset classes this model covered.">Classes</th>
+    <th title="Open the per-model drill-down: pick-by-pick history and per-class/per-horizon breakdown.">Drill-down</th>
   </tr></thead>
   <tbody id="model-summary-tbody">
     <tr><td colspan="10" style="text-align:center;color:#4b5563;padding:12px">Loading model data...</td></tr>
@@ -570,7 +570,7 @@ function renderLeaderboard(models) {
       <td class="num ${pfClass}">${pfDisplay}</td>
       <td class="num">${hasWr && hasPf ? m.score.toFixed(3) : '—'}</td>
       <td class="num">${m.n_picks}</td>
-      <td class="num">${m.n_resolved}</td>
+      <td class="num" style="${m.n_resolved < 30 ? 'color:#f59e0b;font-weight:700' : ''}" title="${m.n_resolved < 30 ? 'Below n=30 rank threshold — WR not yet statistically reliable' : 'Resolved (WIN/LOSS) picks counted toward WR/PF'}">${m.n_resolved}${m.n_resolved < 30 ? ' ⚠' : ''}</td>
       <td>${tier}</td>
       <td><span class="badge b-t2">LIVE</span></td>
     </tr>`;
@@ -746,7 +746,7 @@ async function loadModelSummary() {
         <td class="model-name"><a href="${drillUrl}">${esc(m.model_id)}</a></td>
         <td class="num">${m.total_picks}</td>
         <td class="num ${wrClass}">${wrDisplay}</td>
-        <td class="num">${m.resolved}</td>
+        <td class="num" style="${m.resolved < 30 ? 'color:#f59e0b;font-weight:700' : ''}" title="${m.resolved < 30 ? 'Below n=30 rank threshold — WR is activity/breadth, not a proven edge; this model is excluded from the Leaderboard ranking' : 'Resolved (WIN/LOSS) picks — at or above the n=30 rank threshold'}">${m.resolved}${m.resolved < 30 ? ' ⚠' : ''}</td>
         <td class="num">${m.wins}/${m.losses}</td>
         <td class="num">${pnlDisplay}</td>
         <td class="small">${toEST(m.last_pick)}</td>
