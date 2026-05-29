@@ -4,6 +4,11 @@ check_claim_provenance.py — flag UNSOURCED evidence claims in PR bodies, diffs
 docs, or code comments, so a change cannot justify itself with fabricated or
 unverifiable evidence.
 
+provenance-checker: ignore-file
+(^ this file describes the patterns, so it opts itself out. Two opt-outs exist:
+a file-level "provenance-checker: ignore-file" marker, and a per-line
+"provenance-allow" directive. Fenced ``` code blocks are skipped automatically.)
+
 Motivated by the 2026-05-29 swarm PR review, which found 5 open PRs asserting
 evidence that does not exist:
   - #30  "3 of 23 models" coverage metric — verifiably false
@@ -93,17 +98,37 @@ def _line_of(text: str, idx: int) -> int:
     return text.count("\n", 0, idx) + 1
 
 
+# Files that describe/quote the patterns (audit reports, this checker itself) are not
+# making claims — they discuss them. Opt out with a file-level marker, blank out fenced
+# code blocks, and honor a per-line directive. This kills the self-referential
+# false-positives (a consensus report quoting "Ring-2.6-1T recommended", the checker's
+# own regex examples) without weakening detection on real PR bodies / code.
+IGNORE_FILE_MARKER = "provenance-checker: ignore-file"
+ALLOW_LINE_MARKER = "provenance-allow"
+_FENCE = re.compile(r"```.*?```", re.S)
+
+
+def _blank_fences(text: str) -> str:
+    # replace fenced code blocks with same-length newline-preserving blanks (keeps line numbers)
+    return _FENCE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+
+
 def scan_text(text: str, source: str) -> list[Finding]:
+    if IGNORE_FILE_MARKER in text:
+        return []
+    lines = text.splitlines()
+    scanned = _blank_fences(text)
     out: list[Finding] = []
     for cls, pat in CLAIM_PATTERNS.items():
-        for m in pat.finditer(text):
+        for m in pat.finditer(scanned):
             s, e = m.start(), m.end()
+            ln = _line_of(text, s)
+            if ALLOW_LINE_MARKER in (lines[ln - 1] if 0 < ln <= len(lines) else ""):
+                continue
             window = text[max(0, s - WINDOW): e + WINDOW]
             sourced = bool(PROVENANCE.search(window))
             snippet = re.sub(r"\s+", " ", m.group(0)).strip()[:120]
-            out.append(
-                Finding(source, _line_of(text, s), cls, SEVERITY[cls], snippet, sourced)
-            )
+            out.append(Finding(source, ln, cls, SEVERITY[cls], snippet, sourced))
     return out
 
 
