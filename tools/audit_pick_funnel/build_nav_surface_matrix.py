@@ -339,16 +339,26 @@ def build():
         edge_classes = []
         for ac in classes + ["_overall"]:
             if ac == "_overall":
-                bucket = _decisive(matched_all)
+                matched_ac = matched_all
             else:
-                bucket = _decisive([p for p in matched_all if p.get("asset_class") == ac])
+                matched_ac = [p for p in matched_all if p.get("asset_class") == ac]
+            bucket = _decisive(matched_ac)
             n = len(bucket)
             if n == 0:
+                # 2026-05-28 Tier-1 fix: distinguish "the surface gate never
+                # admitted any pick for this class" (no_closed_picks) from
+                # "picks passed the gate but none have closed yet"
+                # (awaiting_closure). Counting matched-but-open picks prevents
+                # the misleading no_closed_picks label on in-flight cohorts
+                # (e.g. EQUITY verified_alpha had 2 picks pass the gate that
+                # had not yet resolved). Ref: ASSET_CLASS_EDGE_FIX_PLAN action #8.
+                n_matched_open = len(matched_ac)
                 per_class_rows.append({
-                    "asset_class": ac, "n": 0, "wr_pct": None, "wr_shrunk_pct": None,
+                    "asset_class": ac, "n": 0, "n_matched_open": n_matched_open,
+                    "wr_pct": None, "wr_shrunk_pct": None,
                     "pf": None, "train_pf": None, "holdout_pf": None,
                     "pass_holdout": False, "pass_bonferroni": False,
-                    "why_no_edge": "no_closed_picks",
+                    "why_no_edge": "awaiting_closure" if n_matched_open > 0 else "no_closed_picks",
                 })
                 continue
             wins = _wins(bucket)
