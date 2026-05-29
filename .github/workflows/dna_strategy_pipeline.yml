@@ -76,7 +76,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       
       - name: Cache pip packages
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -99,7 +99,7 @@ jobs:
             --output-dir genome/results
       
       - name: Upload evolution results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: evolution-results
           path: |
@@ -128,7 +128,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       
       - name: Cache pip packages
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -141,7 +141,7 @@ jobs:
           pip install numpy pandas requests
 
       - name: Download evolution results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: evolution-results
           path: genome/results

@@ -40,7 +40,7 @@ jobs:
     name: ETF Scanner
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # Shallow-ish: enough history for the commit-step rebase onto
           # recent origin/main. fetch-depth: 0 (full history) on this
@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 100
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -116,7 +116,7 @@ jobs:
           fi
 
       - name: Upload ETF picks
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: etf-picks-${{ github.run_number }}
           path: alpha_engine/data/scanner_output/active_picks_etf.json
@@ -131,7 +131,7 @@ jobs:
     needs: etf-scan
     if: ${{ always() }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # Shallow-ish: enough history for the commit-step rebase onto
           # recent origin/main. fetch-depth: 0 (full history) on this
@@ -139,7 +139,7 @@ jobs:
           fetch-depth: 100
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -219,7 +219,7 @@ jobs:
           fi
 
       - name: Upload Bond picks
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bond-picks-${{ github.run_number }}
           path: alpha_engine/data/scanner_output/active_picks_bond.json

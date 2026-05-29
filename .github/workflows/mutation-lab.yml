@@ -49,7 +49,7 @@ jobs:
         run: python -m genome.mutation_lab.scout --output mutation_targets.json
 
       - name: Upload targets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: mutation-targets
           path: mutation_targets.json
@@ -84,7 +84,7 @@ jobs:
         run: pip install requests pandas numpy
 
       - name: Download targets
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: mutation-targets
 
@@ -96,7 +96,7 @@ jobs:
             --symbol ${{ matrix.symbol }}
 
       - name: Upload results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: results-a-${{ matrix.symbol }}
           path: mutation_results_a_${{ matrix.symbol }}.json
@@ -131,7 +131,7 @@ jobs:
         run: pip install requests pandas numpy
 
       - name: Download targets
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: mutation-targets
 
@@ -143,7 +143,7 @@ jobs:
             --symbol ${{ matrix.symbol }}
 
       - name: Upload results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: results-b-${{ matrix.symbol }}
           path: mutation_results_b_${{ matrix.symbol }}.json
@@ -178,7 +178,7 @@ jobs:
         run: pip install requests pandas numpy
 
       - name: Download targets
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: mutation-targets
 
@@ -190,7 +190,7 @@ jobs:
             --symbol ${{ matrix.symbol }}
 
       - name: Upload results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: results-c-${{ matrix.symbol }}
           path: mutation_results_c_${{ matrix.symbol }}.json
@@ -222,7 +222,7 @@ jobs:
         run: pip install requests pandas numpy
 
       - name: Download all results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: results-*
           merge-multiple: true

@@ -479,7 +479,7 @@ jobs:
     - name: Upload backtest artifacts
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.generate_backtest_artifacts == 'true'
       continue-on-error: true
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: backtest-artifacts
         path: live-monitor/backfill/backtests/
@@ -661,7 +661,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1
         token: ${{ secrets.TOKEN_FOR_PUSH || secrets.GH_PAT || github.token }}
