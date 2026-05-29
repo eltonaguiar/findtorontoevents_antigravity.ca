@@ -756,6 +756,16 @@ except ImportError:
     generate_prediction_market_picks = None
     PREDICTION_MARKET_WHALE_STRATEGIES = {}
 
+# Volatility Mean Reversion: Cycle 13 breakthrough — enter on vol spike, exit on reversion.
+# 30/30 symbols profitable across ALL asset classes (PF 2-5).
+try:
+    from volatility_mean_reversion import VOL_MR_STRATEGIES
+except ImportError:
+    try:
+        from alpha_engine.volatility_mean_reversion import VOL_MR_STRATEGIES
+    except ImportError:
+        VOL_MR_STRATEGIES = {}
+
 # ---------------------------------------------------------------------------
 # GENERATOR-LEVEL HARD KILL -- strategies that must NEVER generate signals.
 # This is the absolute last line of defense. Checked in run_strategies() loop
@@ -768,7 +778,7 @@ GENERATOR_HARD_KILL: set = {
 }
 
 VERSION = "2.0"
-STRATEGY_COUNT = len(CRYPTO_STRATEGIES) + len(FOREX_STRATEGIES) + len(EQUITY_STRATEGIES) + len(FAST_VARIANT_STRATEGIES) + len(ADVANCED_STRATEGIES) + len(KELTNER_EVOLVED_STRATEGIES) + len(SUPER_STRATEGIES) + len(VPIN_STRATEGIES) + len(LUNARCRUSH_STRATEGIES) + len(QUANT_STRATEGIES) + len(UNTAPPED_STRATEGIES) + len(TVL_MOMENTUM_STRATEGIES) + len(TTM_SQUEEZE_STRATEGIES) + len(SENTIMENT_STRATEGIES) + len(SURVIVOR_STRATEGIES) + len(CRYPTOPANIC_STRATEGIES) + len(DIVERGENCE_STRATEGIES) + len(GARCH_STRATEGIES) + len(COINTEGRATION_STRATEGIES) + len(CANDLESTICK_STRATEGIES) + len(HOFFMAN_STRATEGIES) + len(SESSION_STRATEGIES) + len(RANGE_BREAKOUT_STRATEGIES) + len(CNN_LITE_STRATEGIES) + len(CASCADE_CONTRARIAN_STRATEGIES) + len(HYBRID_STRATEGIES) + len(ANTIGRAVITY_STRATEGIES) + len(VT_BABY_STRATEGIES) + len(TOKEN_UNLOCK_EVENT_STRATEGIES) + len(FLOW_BEHAVIORAL_STRATEGIES) + len(FUNDAMENTAL_VALUATION_STRATEGIES) + len(INSTITUTIONAL_ONCHAIN_STRATEGIES) + len(SIDEWAYS_MARKET_STRATEGIES) + len(MICROSTRUCTURE_MOMENTUM_STRATEGIES) + len(NOVEL_STRATEGIES) + len(SUPPLEMENTAL_DATA_STRATEGIES) + len(WAVE456_STRATEGIES) + len(ONCHAIN_MACRO_STRATEGIES) + len(ALLIGATOR_STRATEGIES) + len(OPTIONS_STRATEGIES) + len(QUANT_RESEARCH_STRATEGIES) + len(CTA_BRIDGE_STRATEGIES) + len(QUANT_ALGORITHM_STRATEGIES) + len(HIGH_ACCURACY_STRATEGIES) + len(VOLUME_MICRO_STRATEGIES) + len(ADVANCED_QUANT_STRATEGIES) + len(CRYPTO_ENHANCEMENT_STRATEGIES) + len(GAINER_CAPTURE_STRATEGIES) + len(SUSTAINED_GAINER_STRATEGIES) + len(CONFLUENCE_STRATEGIES) + len(ADVANCED_STATISTICAL_STRATEGIES) + len(INCUBATOR_STRATEGIES) + len(QUANT_STACK_STRATEGIES) + len(EMA_RETRACEMENT_STRATEGIES) + len(PREDICTION_MARKET_WHALE_STRATEGIES) + len(COMMODITY_STRATEGIES) + len(FUTURES_STRATEGIES) + len(ETF_STRATEGIES) + len(BOND_STRATEGIES)
+STRATEGY_COUNT = len(CRYPTO_STRATEGIES) + len(FOREX_STRATEGIES) + len(EQUITY_STRATEGIES) + len(FAST_VARIANT_STRATEGIES) + len(ADVANCED_STRATEGIES) + len(KELTNER_EVOLVED_STRATEGIES) + len(SUPER_STRATEGIES) + len(VPIN_STRATEGIES) + len(LUNARCRUSH_STRATEGIES) + len(QUANT_STRATEGIES) + len(UNTAPPED_STRATEGIES) + len(TVL_MOMENTUM_STRATEGIES) + len(TTM_SQUEEZE_STRATEGIES) + len(SENTIMENT_STRATEGIES) + len(SURVIVOR_STRATEGIES) + len(CRYPTOPANIC_STRATEGIES) + len(DIVERGENCE_STRATEGIES) + len(GARCH_STRATEGIES) + len(COINTEGRATION_STRATEGIES) + len(CANDLESTICK_STRATEGIES) + len(HOFFMAN_STRATEGIES) + len(SESSION_STRATEGIES) + len(RANGE_BREAKOUT_STRATEGIES) + len(CNN_LITE_STRATEGIES) + len(CASCADE_CONTRARIAN_STRATEGIES) + len(HYBRID_STRATEGIES) + len(ANTIGRAVITY_STRATEGIES) + len(VT_BABY_STRATEGIES) + len(TOKEN_UNLOCK_EVENT_STRATEGIES) + len(FLOW_BEHAVIORAL_STRATEGIES) + len(FUNDAMENTAL_VALUATION_STRATEGIES) + len(INSTITUTIONAL_ONCHAIN_STRATEGIES) + len(SIDEWAYS_MARKET_STRATEGIES) + len(MICROSTRUCTURE_MOMENTUM_STRATEGIES) + len(NOVEL_STRATEGIES) + len(SUPPLEMENTAL_DATA_STRATEGIES) + len(WAVE456_STRATEGIES) + len(ONCHAIN_MACRO_STRATEGIES) + len(ALLIGATOR_STRATEGIES) + len(OPTIONS_STRATEGIES) + len(QUANT_RESEARCH_STRATEGIES) + len(CTA_BRIDGE_STRATEGIES) + len(QUANT_ALGORITHM_STRATEGIES) + len(HIGH_ACCURACY_STRATEGIES) + len(VOLUME_MICRO_STRATEGIES) + len(ADVANCED_QUANT_STRATEGIES) + len(CRYPTO_ENHANCEMENT_STRATEGIES) + len(GAINER_CAPTURE_STRATEGIES) + len(SUSTAINED_GAINER_STRATEGIES) + len(CONFLUENCE_STRATEGIES) + len(ADVANCED_STATISTICAL_STRATEGIES) + len(INCUBATOR_STRATEGIES) + len(QUANT_STACK_STRATEGIES) + len(EMA_RETRACEMENT_STRATEGIES) + len(PREDICTION_MARKET_WHALE_STRATEGIES) + len(COMMODITY_STRATEGIES) + len(FUTURES_STRATEGIES) + len(ETF_STRATEGIES) + len(BOND_STRATEGIES) + len(VOL_MR_STRATEGIES)
 
 
 # ---------------------------------------------------------------------------
@@ -1224,6 +1234,11 @@ STRATEGY_REGIME_MAP: dict[str, list[str]] = {
     "kama_volatility_adaptive":          ["trending", "transitional"],
     "rsi_macd_vol_confluence":           ["ranging", "transitional"],
     "kalman_filter_trend":               ["trending"],
+
+    # =====================================================================
+    # VOLATILITY MEAN REVERSION (Cycle 13 -- universal, all regimes)
+    # =====================================================================
+    "volatility_mean_reversion":         ["trending", "ranging", "transitional"],
 }
 
 # Default for strategies not explicitly mapped: universal (all regimes)
@@ -2203,6 +2218,9 @@ def run_strategies(data: dict[str, pd.DataFrame], context: dict,
     # Confluence V2: fear+keltner, RSI+volume+regime, whale+momentum+trust, multi-source, night+fear+short
     if strategy_filter in ("all", "crypto") and CONFLUENCE_V2_STRATEGIES:
         strategies.update(CONFLUENCE_V2_STRATEGIES)
+    # Volatility Mean Reversion: universal strategy — Cycle 13 breakthrough (30/30 profitable)
+    if strategy_filter == "all" and VOL_MR_STRATEGIES:
+        strategies.update(VOL_MR_STRATEGIES)
 
     # Load disabled strategies and direction restrictions from auto-tuner
     disabled = set()

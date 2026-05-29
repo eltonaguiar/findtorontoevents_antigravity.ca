@@ -388,6 +388,8 @@ _BOOSTED_NON_CRYPTO_STRATEGIES = {
     # 2026-05-28 baby-strat ships (shadow/monitor mode):
     "etf_dual_momentum_rotation": 1.2,  # DIA WR 58.8%, PF 2.64 — strong ETF edge
     "futures_session_breakout_cot": 1.15,  # ES=F WR 61.5%, PF 1.39 — good futures edge
+    # 2026-05-29 Cycle 13 breakthrough: Vol MR — 30/30 symbols profitable, PF 2-5
+    "volatility_mean_reversion": 1.3,  # Universal strategy, all asset classes
 }
 _COPY_STRATEGY_STATS_CACHE: dict | None = None
 
