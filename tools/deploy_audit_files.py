@@ -41,6 +41,9 @@ UPLOADS = [
     ("audit_dashboard/data/tier_rating_algorithms.json",     "/findtorontoevents.ca/audit/data/tier_rating_algorithms.json",      "ai_tournament"),
     ("audit_dashboard/data/money_ready_verdict.json",        "/findtorontoevents.ca/audit/data/money_ready_verdict.json",         "audit_data"),
     ("alpha_engine/data/regime_report.json",                 "/findtorontoevents.ca/audit/data/regime_report.json",              "audit_data"),
+    ("audit_dashboard/data/ai_tournament_model_diagnostics.json", "/findtorontoevents.ca/audit/data/ai_tournament_model_diagnostics.json", "ai_tournament"),
+    ("audit_dashboard/data/pick_summary_stats_2w.json",      "/findtorontoevents.ca/audit/data/pick_summary_stats_2w.json",       "pick_funnel"),
+    ("audit_dashboard/data/pick_summary_stats_48h.json",     "/findtorontoevents.ca/audit/data/pick_summary_stats_48h.json",      "pick_funnel"),
     ("audit_dashboard/portfolio_history.html",               "/findtorontoevents.ca/audit/portfolio_history.html",                "portfolio_history"),
     ("audit_dashboard/data/portfolio_classification.json",   "/findtorontoevents.ca/audit/data/portfolio_classification.json",    "portfolio_history"),
     ("updates/index.html",                                   "/findtorontoevents.ca/updates/index.html",                          "updates"),
@@ -67,19 +70,29 @@ def upload(ftps: FTP_TLS, local: Path, remote: str, dry_run: bool) -> tuple[bool
         return False, f"{type(e).__name__}: {e}"
 
 
-def verify(remote: str) -> tuple[bool, str]:
+def verify(remote: str, check_content: bool = False) -> tuple[bool, str]:
     """50webs Apache returns 412 on default urllib HEAD, so use GET with Range:0-0
     and a real User-Agent. Validates the file exists + is reachable without
     downloading the whole body."""
     url = "https://findtorontoevents.ca" + remote.replace("/findtorontoevents.ca", "")
     try:
-        req = urllib.request.Request(url, headers={
-            "User-Agent": "Mozilla/5.0 audit-deploy-verify",
-            "Range": "bytes=0-0",
-        })
+        headers = {"User-Agent": "Mozilla/5.0 audit-deploy-verify"}
+        if not check_content:
+            headers["Range"] = "bytes=0-0"
+        
+        req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=15) as resp:
+            status = resp.status
+            if check_content and remote.endswith("ai_tournament_picks_latest.json"):
+                import json
+                data = json.loads(resp.read())
+                n_models = len({p.get("model_id") for p in data})
+                if n_models < 30:
+                    return False, f"CONTENT_FAIL: only {n_models} models found (expected >=30)"
+                return True, f"HTTP {status} · {n_models} models verified"
+            
             cl = resp.headers.get("content-range", resp.headers.get("content-length", "?"))
-            return resp.status in (200, 206), f"HTTP {resp.status} · {cl}"
+            return status in (200, 206), f"HTTP {status} · {cl}"
     except Exception as e:
         return False, f"{type(e).__name__}: {e}"
 
@@ -89,6 +102,7 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", help="Only upload files with this tag (incidents/pick_funnel/model/ai_tournament/updates)")
     ap.add_argument("--no-verify", action="store_true", help="Skip post-upload HTTP HEAD")
+    ap.add_argument("--verify-content", action="store_true", help="Download and verify JSON content (e.g. model count)")
     args = ap.parse_args()
 
     user = os.environ.get("FTP_USER")
@@ -118,7 +132,7 @@ def main():
         print(f"{marker}  [{tag:14s}] {remote}  ({msg})")
         ok += int(success); fail += int(not success)
         if success and not args.dry_run and not args.no_verify:
-            ok_v, msg_v = verify(remote)
+            ok_v, msg_v = verify(remote, args.verify_content)
             verify_results.append((remote, ok_v, msg_v))
 
     if ftps:
@@ -126,10 +140,12 @@ def main():
         except Exception: pass
 
     if verify_results:
-        print("\nVerify (HTTP HEAD on live URLs):")
+        print("\nVerify (HTTP GET/HEAD on live URLs):")
         for r, ok_v, msg_v in verify_results:
             marker = "  OK  " if ok_v else "  FAIL"
             print(f"{marker}  https://findtorontoevents.ca{r.replace('/findtorontoevents.ca','')}  ({msg_v})")
+            if not ok_v:
+                fail += 1 # content mismatch counts as failure
 
     print(f"\n{ok} uploaded, {fail} failed")
     sys.exit(0 if fail == 0 else 1)

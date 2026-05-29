@@ -130,10 +130,11 @@
 </div>
 
 <div id="pipeline-freshness-banner" style="max-width:1180px;margin:8px auto;padding:10px 16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;font-size:12px;color:#cbd5e1;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
-  <span><strong style="color:#fbbf24">📡 Pipeline:</strong> <span id="pf-latest-picks">…</span></span>
-  <span><strong style="color:#fbbf24">Models active today:</strong> <span id="pf-models-active">…</span></span>
+  <span><strong style="color:#fbbf24">📡 Latest pick:</strong> <span id="pf-latest-picks">…</span></span>
+  <span><strong style="color:#fbbf24">Models with picks (48h):</strong> <span id="pf-models-active">…</span></span>
+  <span><strong style="color:#fbbf24">All-time in snapshot:</strong> <span id="pf-all-time-models">…</span></span>
   <span><strong style="color:#fbbf24">Next scheduled run:</strong> <span id="pf-next-run">…</span></span>
-  <span style="color:#94a3b8;font-size:11px">Source: `data/ai_tournament_picks_latest.json` + cron `0 12 * * *` UTC. Stale &gt;24h → red.</span>
+  <span style="color:#94a3b8;font-size:11px">48h + latest from <code>ai_tournament_picks_latest.json</code>; all-time from <code>ai_tournament_model_summary.json</code>. Cron <code>0 12 * * *</code> UTC. Stale &gt;24h → red.</span>
 </div>
 
 <!-- NAV -->
@@ -159,8 +160,8 @@
 <h2>Tournament Status</h2>
 <div class="phase-bar">
   <div class="phase-step done"><strong>✓ Phase 1A</strong>Infrastructure &amp; methodology</div>
-  <div class="phase-step active"><strong>⟳ Phase 1B</strong>Prompting all cloud models</div>
-  <div class="phase-step pending"><strong>Phase 1C</strong>Live price tracking (auto)</div>
+  <div class="phase-step done"><strong>✓ Phase 1B</strong>39 models submitting picks</div>
+  <div class="phase-step active"><strong>⟳ Phase 1C</strong>Live price tracking &amp; resolution (auto)</div>
   <div class="phase-step pending"><strong>Phase 2</strong>Local models (future)</div>
 </div>
 
@@ -238,25 +239,18 @@
 </table>
 </div>
 
-<!-- PENDING MODELS TABLE -->
-<details open>
-  <summary>Pending model submissions (Phase 1B in progress)</summary>
+<!-- MODEL REGISTRY (hydrated from model_summary.json) -->
+<details>
+  <summary id="registry-summary">Model registry (loading…)</summary>
   <div style="margin-top:10px;">
   <table class="lb">
-    <thead><tr><th>Model</th><th>Provider</th><th>API key env var</th><th>Asset classes</th><th>Status</th></tr></thead>
-    <tbody>
-      <tr><td class="model-name">DeepSeek V4</td><td>DeepSeek</td><td><code>DEEPSEEK_API_KEY</code></td><td>✅ 7 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
-      <tr><td class="model-name">GPT-4o-mini</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>✅ 4 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Llama-4-Scout</td><td>Cerebras</td><td><code>CEREBRAS_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Grok-3</td><td>xAI</td><td><code>XAI_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Cursor Agent</td><td>Antrhopic</td><td><code>ANTHROPIC_API_KEY</code></td><td>✅ 6 classes</td><td><span class="badge b-t1">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Ring-2.6-1T</td><td>Inclusion AI</td><td><code>OPENROUTER_API_KEY</code></td><td>✅ 5 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Mercury V2</td><td>Inception Labs</td><td><code>OPENROUTER_API_KEY</code></td><td>✅ 8 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Gemini 2.5 Pro</td><td>Google</td><td><code>GEMINI_FREE_KEY</code></td><td>✅ 4 classes</td><td><span class="badge b-t2">ACTIVE</span></td></tr>
-      <tr><td class="model-name">Mistral Large</td><td>Mistral</td><td><code>MISTRAL_API_KEY</code></td><td>⏳ PENDING</td><td><span class="badge b-pending">PENDING</span></td></tr>
-      <tr><td class="model-name">Claude Opus</td><td>Anthropic</td><td><code>ANTHROPIC_API_KEY</code></td><td>⏳ PENDING KEY</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
-      <tr><td class="model-name">GPT-5</td><td>OpenAI</td><td><code>OPENAI_API_KEY</code></td><td>⏳ PENDING KEY</td><td><span class="badge b-pending">PENDING KEY</span></td></tr>
+    <thead><tr><th>Model</th><th>Provider</th><th class="num">Picks</th><th class="num">Resolved</th><th>Status</th></tr></thead>
+    <tbody id="registry-tbody">
+      <tr><td colspan="5" style="text-align:center;color:#4b5563;padding:12px">Loading from <code>ai_tournament_model_summary.json</code>…</td></tr>
     </tbody>
+  </table>
+  </div>
+</details>
 
 <!-- PERSONAS -->
 <h2 id="personas">Personas — how each AI is asked to think</h2>
@@ -408,7 +402,7 @@
       <tr><td>BOND</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>UST TSMOM (B-003)</td><td class="tbd">—</td><td>55.6%</td><td class="tbd">—</td><td>1.72</td></tr>
     </tbody>
   </table>
-  <div class="small" style="margin-top:6px">*Our system stats from audit dashboard as of 2026-05-19 (post-dedup, 41,360 rows). <a href="/audit/">View live stats →</a></div>
+  <div class="small" style="margin-top:6px">*Our system stats from the live <a href="/audit/">audit dashboard</a> (<code>performance.asset_class_health</code> + <code>money_ready_verdicts</code>) — not tournament picks.</div>
 </div>
 
 <!-- CONFLICT DISCLOSURE -->
@@ -426,7 +420,7 @@
 </details>
 
 <footer>
-  <span>findtorontoevents.ca/audit/ai-tournament · Updated by GitHub Actions daily at 23:00 UTC (18:00 EST / 19:00 EDT)</span>
+  <span>findtorontoevents.ca/audit/ai-tournament · Picks fleet <code>0 12 * * *</code> UTC · price tracker <code>0 23 * * *</code> UTC</span>
   <span><a href="/audit/">Main audit</a> · <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca">GitHub</a></span>
 </footer>
 
@@ -448,7 +442,7 @@
     var ageStr=hoursSinceLatest<24?Math.round(hoursSinceLatest)+'h ago':Math.round(hoursSinceLatest/24)+'d ago';
     setSpan('pf-latest-picks',fmt(new Date(latestMs))+' ('+ageStr+')',ageColor);
     var nModels=0;for(var k in models48)nModels++;
-    setSpan('pf-models-active',nModels+' distinct',nModels<5?'#ef4444':'#22c55e');
+    setSpan('pf-models-active',String(nModels),nModels<5?'#fbbf24':'#22c55e');
     var next=new Date();next.setUTCHours(12,0,0,0);if(next.getTime()<=now)next.setUTCDate(next.getUTCDate()+1);
     var diffMin=Math.round((next.getTime()-now)/60000),h=Math.floor(diffMin/60),m=diffMin%60;
     setSpan('pf-next-run','in '+h+'h '+m+'m ('+fmt(next)+' 12:00 UTC)','#cbd5e1');
@@ -457,6 +451,7 @@
 
 // ── State ──
 let allPicks = [];        // Merged from all pick files + leaderboard fallback
+let serverLeaderboard = null; // CI-adjusted all-time ranks from pipeline JSON
 let currentWindow = 'all'; // Active time window filter
 
 // ── Time window cutoffs (UTC) ──
@@ -517,10 +512,11 @@ function calcModelStats(picks) {
     m.pf = m.sum_losses > 0 ? m.sum_gains / m.sum_losses : (m.sum_gains > 0 ? 999 : (m.n_resolved > 0 ? 0 : null));
     // Score = WR * PF (simplified CI proxy for client-side; real CI in pipeline)
     m.score = m.wr * m.pf;
-    m.wr_ci_lo = m.wr;
-    m.wr_ci_hi = 1;
-    m.pf_ci_lo = m.pf;
-    m.pf_ci_hi = m.pf;
+    m.wr_ci_lo = null;
+    m.wr_ci_hi = null;
+    m.pf_ci_lo = null;
+    m.pf_ci_hi = null;
+    m._approximate = true;
     m.rank_eligible = m.n_resolved >= 30;
     if (m.rank_eligible) {
       m.tier = m.pf >= 2.0 && m.wr >= 0.55 ? 'T1'
@@ -535,7 +531,8 @@ function calcModelStats(picks) {
 }
 
 // ── Render leaderboard ──
-function renderLeaderboard(models) {
+function renderLeaderboard(models, opts) {
+  opts = opts || {};
   const tbody = document.getElementById('lb-body');
   if (!models || models.length === 0) {
     tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:#4b5563;padding:20px">
@@ -546,10 +543,30 @@ function renderLeaderboard(models) {
 
   const ranked = models
     .filter(m => m.rank_eligible)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => (b.score || 0) - (a.score || 0));
   const pending = models.filter(m => !m.rank_eligible);
 
   tbody.innerHTML = '';
+
+  if (opts.fallbackAllTab) {
+    tbody.innerHTML += `<tr><td colspan="11" style="padding:10px;background:rgba(239,68,68,0.12);font-size:11px;color:#fca5a5">
+      <strong>Leaderboard JSON unavailable.</strong> Showing approximate WR×PF from picks only — scores will NOT match CI-adjusted pipeline ranks. Retry after <code>ai_tournament_leaderboard.json</code> deploys.
+    </td></tr>`;
+  } else if (opts.approximate) {
+    tbody.innerHTML += `<tr><td colspan="11" style="padding:10px;background:rgba(245,158,11,0.08);font-size:11px;color:#fcd34d">
+      <strong>Window snapshot (approximate):</strong> WR×PF without CI shrinkage. Use the <strong>ALL</strong> tab for authoritative CI-adjusted ranks from <code>ai_tournament_leaderboard.json</code>.
+    </td></tr>`;
+  }
+
+  if (ranked.length === 0 && models.length > 0) {
+    const winLabel = currentWindow === 'all' ? 'ALL' : currentWindow.toUpperCase();
+    const allTimeHint = currentWindow !== 'all'
+      ? ' Switch to <strong>ALL</strong> for rank-eligible models, or scroll to <strong>Model Summary</strong> for the full roster.'
+      : ' Scroll to <strong>Model Summary</strong> below for the full roster.';
+    tbody.innerHTML += `<tr><td colspan="11" style="padding:12px 10px;background:rgba(96,165,250,0.08);border-bottom:1px solid rgba(96,165,250,0.2);font-size:12px;color:#93c5fd">
+      No model has 30+ resolved picks in the <strong>${winLabel}</strong> window (${models.length} model${models.length === 1 ? '' : 's'} still in BUILDING).${allTimeHint}
+    </td></tr>`;
+  }
 
   ranked.forEach((m, i) => {
     const tier = m.tier === 'T1' ? '<span class="badge b-t1">T1</span>'
@@ -563,7 +580,7 @@ function renderLeaderboard(models) {
     const pfDisplay = hasPf ? m.pf.toFixed(2) : '—';
     const pfClass = !hasPf ? 'pnl-neu' : (m.pf >= 1.5 ? 'pnl-pos' : m.pf < 1.0 ? 'pnl-neg' : 'pnl-neu');
     tbody.innerHTML += `<tr>
-      <td class="rank">#${i+1}</td>
+      <td class="rank">#${rankNum}</td>
       <td class="model-name">${esc(m.model_id)}</td>
       <td><span class="provider">${esc(m.provider)}</span></td>
       <td class="num ${wrClass}">${wrDisplay}</td>
@@ -607,9 +624,13 @@ function switchWindow(window) {
   currentWindow = window;
   document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
   document.querySelector('.time-tab[data-window="' + window + '"]')?.classList.add('active');
+  if (window === 'all' && serverLeaderboard && serverLeaderboard.length > 0) {
+    renderLeaderboard(serverLeaderboard, { approximate: false });
+    return;
+  }
   const filtered = filterPicksByWindow(allPicks, window);
   const models = calcModelStats(filtered);
-  renderLeaderboard(models);
+  renderLeaderboard(models, { approximate: true });
 }
 
 // ── Tab click handlers ──
@@ -691,14 +712,13 @@ async function loadPicksAndLeaderboard() {
     }
   }
 
-  // Last resort: try leaderboard JSON for model list (no picks detail)
-  let leaderboardModels = null;
+  // Authoritative all-time leaderboard (CI-adjusted scores)
   try {
-    const resp = await fetch('./data/ai_tournament_leaderboard.json');
+    const resp = await fetch('./data/ai_tournament_leaderboard.json?' + Date.now());
     if (resp.ok) {
       const data = await resp.json();
       if (data.models && data.models.length > 0) {
-        leaderboardModels = data.models;
+        serverLeaderboard = data.models;
       }
     }
   } catch { /* not available */ }
@@ -710,9 +730,9 @@ async function loadPicksAndLeaderboard() {
     // 248 sees window.allPicks=undefined and silently returns — the brain
     // icon looked broken (no modal opened on click).
     window.allPicks = allPicks;
-  } else if (leaderboardModels) {
+  } else if (serverLeaderboard) {
     // No pick-level data — show leaderboard models as all-time only
-    renderLeaderboard(leaderboardModels);
+    renderLeaderboard(serverLeaderboard);
     document.getElementById('lb-body').insertAdjacentHTML('beforeend',
       '<tr><td colspan="11" style="text-align:center;color:#4b5563;padding:8px;font-size:11px">' +
       '⚠ Time-window filters require pick-level data. Showing all-time only until <code>ai_tournament_picks_latest.json</code> is available.' +
@@ -720,18 +740,39 @@ async function loadPicksAndLeaderboard() {
     return;
   }
 
-  // Render default view (all-time)
-  const models = calcModelStats(allPicks);
-  renderLeaderboard(models);
+  // Render default view: ALL tab uses pipeline leaderboard when available
+  if (serverLeaderboard && serverLeaderboard.length > 0) {
+    renderLeaderboard(serverLeaderboard, { approximate: false });
+  } else {
+    const models = calcModelStats(allPicks);
+    renderLeaderboard(models, { approximate: true, fallbackAllTab: true });
+  }
   updateTabCounts();
 }
 
 // ── Load model summary from DB ──
 async function loadModelSummary() {
   try {
+    if (!serverLeaderboard || !serverLeaderboard.length) {
+      try {
+        const lbResp = await fetch('./data/ai_tournament_leaderboard.json?' + Date.now());
+        if (lbResp.ok) {
+          const lbData = await lbResp.json();
+          if (lbData.models && lbData.models.length) serverLeaderboard = lbData.models;
+        }
+      } catch { /* registry still works without providers */ }
+    }
     const resp = await fetch('./data/ai_tournament_model_summary.json?' + Date.now());
     if (!resp.ok) return;
     const data = await resp.json();
+
+    // All-time model count (48h + latest pick stay on the IIFE above)
+    const pfAllTime = document.getElementById('pf-all-time-models');
+    if (pfAllTime && data.n_models != null) {
+      pfAllTime.textContent = String(data.n_models);
+      pfAllTime.style.color = data.n_models < 10 ? '#fbbf24' : '#22c55e';
+    }
+
     const tbl = document.getElementById('model-summary-tbody');
     if (!tbl) return;
     let html = '';
@@ -763,6 +804,35 @@ async function loadModelSummary() {
     tbl.innerHTML = html;
     const genEst = toEST(data.generated_at);
     document.getElementById('model-summary-count').innerHTML = data.n_models + ' models · ' + data.n_picks_total + ' picks · ' + data.n_resolved + ' resolved · <span class="small">refreshed ' + genEst + ' EST</span>';
+
+    const regBody = document.getElementById('registry-tbody');
+    const regSum = document.getElementById('registry-summary');
+    if (regBody && data.models) {
+      const providerByModel = {};
+      if (serverLeaderboard) {
+        serverLeaderboard.forEach(lb => { if (lb.model_id) providerByModel[lb.model_id] = lb.provider || ''; });
+      }
+      for (const p of allPicks) {
+        if (p.model_id && p.provider && !providerByModel[p.model_id]) providerByModel[p.model_id] = p.provider;
+      }
+      let regHtml = '';
+      const sorted = data.models.slice().sort((a, b) => (b.total_picks || 0) - (a.total_picks || 0));
+      sorted.forEach(m => {
+        const prov = providerByModel[m.model_id] || m.provider || '—';
+        const st = (m.resolved || 0) >= 30 ? '<span class="badge b-t2">RANKED</span>'
+                 : (m.resolved || 0) > 0 ? '<span class="badge b-pending">BUILDING</span>'
+                 : '<span class="badge b-pending">NO RESOLVED</span>';
+        regHtml += `<tr>
+          <td class="model-name"><a href="./model.html?id=${encodeURIComponent(m.model_id)}">${esc(m.model_id)}</a></td>
+          <td>${esc(prov)}</td>
+          <td class="num">${m.total_picks}</td>
+          <td class="num">${m.resolved}</td>
+          <td>${st}</td>
+        </tr>`;
+      });
+      regBody.innerHTML = regHtml;
+      if (regSum) regSum.textContent = 'Model registry (' + data.n_models + ' models)';
+    }
   } catch(e) { /* keep placeholder */ }
 }
 
