@@ -68,21 +68,22 @@ def cmd_incident(args):
             cur.execute(f"""UPDATE {tbl} SET description=%s, severity=%s, status=%s,
                 affected_component=%s, recommended_fix=%s, reported_by=%s,
                 link_md_path=%s, link_url=%s, link_github_ref=%s,
+                target_release=COALESCE(%s, target_release),
                 resolution_notes=COALESCE(%s, resolution_notes),
                 resolved_at=CASE WHEN %s IN ('RESOLVED','WONTFIX','DUPLICATE') AND resolved_at IS NULL THEN NOW() ELSE resolved_at END
                 WHERE incident_id=%s""",
                 (args.description, args.severity, args.status, args.component,
                  args.fix, args.reporter, args.link_md, args.link_url, args.link_github,
-                 args.resolution_notes, args.status, existing["incident_id"]))
+                 args.target_release, args.resolution_notes, args.status, existing["incident_id"]))
             conn.commit()
             print(f"UPDATED  {tbl}.incident_id={existing['incident_id']}  title={args.title!r}")
         else:
             cur.execute(f"""INSERT INTO {tbl}
                 (title, description, severity, status, affected_component, recommended_fix,
-                 reported_by, link_md_path, link_url, link_github_ref)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                 reported_by, link_md_path, link_url, link_github_ref, target_release)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (args.title, args.description, args.severity, args.status, args.component,
-                 args.fix, args.reporter, args.link_md, args.link_url, args.link_github))
+                 args.fix, args.reporter, args.link_md, args.link_url, args.link_github, args.target_release))
             new_id = cur.lastrowid
             conn.commit()
             print(f"CREATED  {tbl}.incident_id={new_id}  title={args.title!r}")
@@ -135,23 +136,24 @@ def cmd_enhancement(args):
             cur.execute(f"""UPDATE {tbl} SET description=%s, category=%s, expected_impact=%s,
                 effort=%s, status=%s, proposed_by=%s, related_persona_id=%s, success_metric=%s,
                 link_md_path=%s, link_url=%s, link_github_ref=%s,
+                target_release=COALESCE(%s, target_release),
                 implementation_pr=COALESCE(%s, implementation_pr),
                 implemented_at=CASE WHEN %s='IMPLEMENTED' AND implemented_at IS NULL THEN NOW() ELSE implemented_at END
                 WHERE enhancement_id=%s""",
                 (args.description, args.category, args.impact, args.effort, args.status,
                  args.proposed_by, args.persona, args.success_metric,
-                 args.link_md, args.link_url, args.link_github, args.implementation_pr,
+                 args.link_md, args.link_url, args.link_github, args.target_release, args.implementation_pr,
                  args.status, existing["enhancement_id"]))
             conn.commit()
             print(f"UPDATED  {tbl}.enhancement_id={existing['enhancement_id']}  title={args.title!r}")
         else:
             cur.execute(f"""INSERT INTO {tbl}
                 (title, description, category, expected_impact, effort, status, proposed_by,
-                 related_persona_id, success_metric, link_md_path, link_url, link_github_ref)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                 related_persona_id, success_metric, link_md_path, link_url, link_github_ref, target_release)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (args.title, args.description, args.category, args.impact, args.effort, args.status,
                  args.proposed_by, args.persona, args.success_metric,
-                 args.link_md, args.link_url, args.link_github))
+                 args.link_md, args.link_url, args.link_github, args.target_release))
             new_id = cur.lastrowid
             conn.commit()
             print(f"CREATED  {tbl}.enhancement_id={new_id}  title={args.title!r}")
@@ -211,6 +213,7 @@ def main():
     inc.add_argument("--link-md", default=None, help="repo-relative path to a doc, e.g. reports/foo.md")
     inc.add_argument("--link-url", default=None, help="public URL of affected page")
     inc.add_argument("--link-github", default=None, help="PR #, issue #, or commit SHA (comma-separated)")
+    inc.add_argument("--target-release", dest="target_release", default=None, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
     inc.add_argument("--resolution-notes", default=None)
     inc.set_defaults(func=cmd_incident)
 
@@ -238,6 +241,7 @@ def main():
     enh.add_argument("--link-md", default=None)
     enh.add_argument("--link-url", default=None)
     enh.add_argument("--link-github", default=None)
+    enh.add_argument("--target-release", dest="target_release", default=None, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
     enh.add_argument("--implementation-pr", default=None)
     enh.set_defaults(func=cmd_enhancement)
 
