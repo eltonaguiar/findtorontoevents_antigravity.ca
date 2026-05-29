@@ -29,6 +29,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # claudes_test_state.json and claudes_test_dashboard.json are gitignored
+      # generated artifacts (Portfolio Challenge runtime state). They are ABSENT
+      # on a fresh CI checkout, so the lftp `put` of either one aborts the whole
+      # `set cmd:fail-exit yes` block and fails the job (run 26636314377, 4x on
+      # 2026-05-29). Stub them with valid minimal JSON BEFORE any lftp block so
+      # the deploy never hard-fails on a missing generated file. We only create
+      # them when absent, so a freshly-generated file is never clobbered.
+      - name: Ensure gitignored test-state files exist
+        run: |
+          mkdir -p audit_dashboard/data
+          for f in audit_dashboard/data/claudes_test_state.json \
+                   audit_dashboard/data/claudes_test_dashboard.json; do
+            if [ ! -f "$f" ]; then
+              echo '{}' > "$f"
+              echo "Stubbed missing $f with empty JSON object"
+            else
+              echo "$f already present, leaving as-is"
+            fi
+          done
+
       - name: Deploy competition files to live site via FTP
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
