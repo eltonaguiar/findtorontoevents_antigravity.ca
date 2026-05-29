@@ -1,0 +1,130 @@
+name: "Strategy Funnel Hourly Refresh"
+
+on:
+  schedule:
+    - cron: "45 * * * *" # Every hour at :45 (offset to avoid contention with other hourly jobs)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-commit-main-strategy-funnel-hourly
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install --quiet pymysql
+
+      - name: Rebuild strategy funnel data from DB
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: |
+          echo "Rebuilding strategy_funnel_data.json from ejaguiar1_stocks..."
+          python3 - <<'PYEOF'
+          import pymysql, json, os, sys
+          from datetime import datetime, timezone
+          from decimal import Decimal
+
+          class DecimalEncoder(json.JSONEncoder):
+              def default(self, obj):
+                  if isinstance(obj, Decimal):
+                      return float(obj)
+                  if isinstance(obj, datetime):
+                      return obj.isoformat()
+                  return super().default(obj)
+
+          pw = os.environ.get('DB_PASS_STOCKS', '')
+          if not pw:
+              print("ERROR: DB_PASS_STOCKS not set", file=sys.stderr)
+              sys.exit(1)
+
+          conn = pymysql.connect(
+              host='mysql.50webs.com', port=3306,
+              user='ejaguiar1_stocks', password=pw,
+              database='ejaguiar1_stocks', charset='utf8mb4',
+              cursorclass=pymysql.cursors.DictCursor
+          )
+          cur = conn.cursor()
+
+          # Get strategy data with DSR/PBO
+          cur.execute("""SELECT strategy_name, display_name, asset_class, source_module, sizing_status,
+                 pf_all_time, wr_all_time, pick_count_all_time,
+                 pf_7d, wr_7d, pick_count_7d, pf_14d, wr_14d, pick_count_14d,
+                 pf_30d, wr_30d, pick_count_30d, pf_48h, wr_48h, pick_count_48h,
+                 fwd_validated, viable_pct, probation_pct, kimi_solo, multi_agree,
+                 is_enabled, file_path, job_name, job_schedule, rank_class,
+                 dsr, pbo, costed_sharpe, costed_mdd,
+                 walk_forward_n_splits, walk_forward_avg_os_sharpe, walk_forward_consistency
+          FROM strategy_summary WHERE pick_count_all_time IS NOT NULL AND pick_count_all_time > 0
+          ORDER BY asset_class, dsr DESC""")
+          strategies = cur.fetchall()
+
+          # Get funnel views
+          cur.execute("""SELECT view_key, display_name, view_type, view_group, asset_class, time_window,
+                 win_rate, profit_factor, n_total, n_resolved, n_active, n_wins, n_losses,
+                 filter_json, source_file FROM pick_funnel_views WHERE n_resolved > 0 OR n_active > 0""")
+          funnel_views = cur.fetchall()
+
+          # Get edge discovery
+          cur.execute("""SELECT asset_class, edge_key, edge_label, dimension_detail, win_rate, profit_factor,
+                 avg_pnl_pct, edge_verdict, survived_bonferroni, recommendation, n_resolved
+          FROM edge_discovery WHERE n_resolved >= 30 ORDER BY profit_factor DESC""")
+          edges = cur.fetchall()
+
+          # Get view definitions
+          cur.execute("""SELECT view_key, display_name, view_type, parent_section, description,
+                 filter_rules, data_source, refresh_schedule, is_live
+          FROM view_definition_catalog ORDER BY parent_section, view_key""")
+          view_defs = cur.fetchall()
+
+          conn.close()
+
+          output = {
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "strategies": [dict(s) for s in strategies],
+              "funnel_views": [dict(fv) for fv in funnel_views],
+              "edge_discovery": [dict(e) for e in edges],
+              "view_definitions": [dict(v) for v in view_defs],
+              "summary": {
+                  "total_strategies": len(strategies),
+                  "total_with_dsr": sum(1 for s in strategies if s.get('dsr') is not None),
+                  "total_funnel_views": len(funnel_views),
+                  "edge_combos_tracked": len(edges),
+              }
+          }
+
+          path = 'audit_dashboard/data/strategy_funnel_data.json'
+          with open(path, 'w') as f:
+              json.dump(output, f, indent=2, cls=DecimalEncoder)
+
+          import os
+          size = os.path.getsize(path)
+          print(f"Generated {path} ({size:,} bytes, {len(strategies)} strategies)")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/strategy_funnel_data.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(audit): refresh strategy_funnel_data.json [skip ci]"
+            git push
+          fi

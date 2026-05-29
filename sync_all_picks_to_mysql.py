@@ -132,6 +132,15 @@ def derive_asset_class(symbol, source="", entry_price=0, category=""):
     return "EQUITY"
 
 
+# Known junk strategy values that should not be stored as-is
+_KNOWN_JUNK_STRATEGIES = {'unknown', 'none', 'null', 'n/a', 'undefined', ''}
+
+
+def _is_real_strategy(val):
+    """Return True if val is a non-empty, non-junk strategy name."""
+    return bool(val) and str(val).strip().lower() not in _KNOWN_JUNK_STRATEGIES
+
+
 # ── Helpers ──
 
 def _now():
@@ -207,15 +216,22 @@ def _norm_status(raw, exit_price=None):
     return "CLOSED" if exit_price else "OPEN"
 
 
-def _extract_strategy(pick):
+def _extract_strategy(pick, fallback=""):
+    """Extract a real strategy name from a pick dict.
+
+    Checks known strategy fields in priority order, excluding junk values
+    (unknown/none/null). Falls back to the provided fallback value.
+    """
     for k in ("strategy", "strategy_name", "algorithmName", "algorithm", "algorithm_name"):
         v = pick.get(k)
-        if v:
+        if _is_real_strategy(v):
             return str(v)[:200]
     dna = pick.get("strategy_dna")
     if isinstance(dna, dict):
-        return dna.get("strategy_id", dna.get("name", ""))[:200]
-    return ""
+        v = dna.get("strategy_id", dna.get("name", ""))
+        if _is_real_strategy(v):
+            return str(v)[:200]
+    return fallback[:200] if _is_real_strategy(fallback) else ""
 
 
 def _compute_dedup(symbol, direction, entry_price, timestamp):
@@ -808,8 +824,13 @@ class PickSyncer:
                     direction = _norm_direction(
                         d.get("direction", d.get("signal_type", d.get("signal", "LONG")))
                     )
-                    strategy = str(d.get("strategy", d.get("strategy_name",
-                               d.get("algorithm", d.get("algorithm_name", source_name)))) or "")[:200]
+                    # Extract strategy: check real fields, filter junk values, fall back to source_name
+                    strategy = source_name
+                    for _k in ("strategy", "strategy_name", "algorithm", "algorithmName", "algorithm_name"):
+                        _v = d.get(_k)
+                        if _is_real_strategy(_v):
+                            strategy = str(_v)[:200]
+                            break
                     tp = _safe_float(d.get("take_profit", d.get("target_price",
                                      d.get("tp", d.get("tp_price")))))
                     sl = _safe_float(d.get("stop_loss", d.get("sl", d.get("sl_price",

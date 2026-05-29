@@ -302,7 +302,7 @@ def upsert_health(conn, record: Dict, dry_run: bool = False):
         """, (
             record["source_system"], record["strategy"],
             old_tier, new_tier, record["tier_reason"],
-            json.dumps(snapshot),
+            json.dumps(snapshot, default=float),
         ))
         print(f"  [TIER CHANGE] {record['strategy']}: {old_tier} -> {new_tier} — {record['tier_reason']}")
 

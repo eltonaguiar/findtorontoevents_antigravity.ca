@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Audit Summary — findtorontoevents.ca/audit</title>
+<style>
+  body { background: #0a0a0f; color: #e5e7eb; font-family: 'Inter', 'SF Mono', monospace; font-size: 13px; line-height: 1.6; max-width: 1200px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; color: #86efac; border-bottom: 1px solid rgba(134,239,172,0.2); padding-bottom: 8px; margin-top: 0; }
+  h2 { font-size: 16px; color: #93c5fd; margin-top: 28px; border-bottom: 1px solid rgba(147,197,253,0.15); padding-bottom: 4px; }
+  h3 { font-size: 14px; color: #c4b5fd; margin-top: 20px; }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .chip-green { background: rgba(134,239,172,0.15); color: #86efac; border: 1px solid #86efac; }
+  .chip-red { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid #ef4444; }
+  .chip-yellow { background: rgba(250,204,21,0.15); color: #facc15; border: 1px solid #facc15; }
+  .chip-blue { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid #60a5fa; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  th { background: rgba(255,255,255,0.04); text-align: left; padding: 6px 8px; border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 10px; color: #a0a0b0; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  tr:hover td { background: rgba(96,165,250,0.06); }
+  .num { text-align: right; font-family: 'SF Mono', monospace; }
+  .small { font-size: 11px; color: #9ca3af; }
+  .code { background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+  .panel { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; margin: 16px 0; }
+  .stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+  .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px 16px; min-width: 140px; }
+  .stat-card .label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .stat-card .sub { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+  .positive { color: #34d399; }
+  .negative { color: #f87171; }
+  .neutral { color: #fbbf24; }
+  details { margin: 8px 0; }
+  details summary { cursor: pointer; font-weight: 600; color: #e5e7eb; }
+  details summary:hover { color: #93c5fd; }
+</style>
+</head>
+<body>
+
+<h1>📊 Strategy Audit Summary</h1>
+<p class="small">Generated 2026-05-29 07:00 EDT · <a href="https://findtorontoevents.ca/audit/">/audit</a> · <a href="https://findtorontoevents.ca/audit/pick_funnel.html">Pick Funnel</a> · <a href="https://findtorontoevents.ca/audit/incidents.html">Incidents</a></p>
+
+<!-- KEY METRICS -->
+<div class="stat-row">
+  <div class="stat-card"><div class="label">Strategies Tracked</div><div class="value">88</div><div class="sub">in strategy_summary table</div></div>
+  <div class="stat-card"><div class="label">Total Picks Resolved</div><div class="value">7,753</div><div class="sub">in pick_dimension_snapshot</div></div>
+  <div class="stat-card"><div class="label">Documented Strategies</div><div class="value">410</div><div class="sub">in docs/ALL_STRATEGIES.md</div></div>
+  <div class="stat-card"><div class="label">Unique Strategies (DB)</div><div class="value">702</div><div class="sub">in trading_picks.strategy</div></div>
+  <div class="stat-card"><div class="label">Strategies Sized</div><div class="value">0</div><div class="sub">T1/T2/T3 (all shadow)</div></div>
+  <div class="stat-card"><div class="label">Incidents Open</div><div class="value">41</div><div class="sub">20 P0, 12 P1, 5 P2</div></div>
+</div>
+
+<!-- DATABASE TABLES -->
+<h2>1. Database Tables (6 Dedicated to Strategies)</h2>
+<div class="panel">
+<table>
+<thead><tr><th>Table</th><th class="num">Rows</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code class="code">strategy_summary</code></td><td class="num">88</td><td>Canonical catalog: PF/WR/DSR/PBO/time-windows per strategy</td></tr>
+<tr><td><code class="code">pick_dimension_snapshot</code></td><td class="num">7,753</td><td>ALL resolved picks with Score/Trust/AGV/Regime/Edge sub-tags</td></tr>
+<tr><td><code class="code">pick_funnel_views</code></td><td class="num">7</td><td>Performance by nav-surface (Smart Picks button vs tab, etc.)</td></tr>
+<tr><td><code class="code">edge_discovery</code></td><td class="num">23</td><td>Pre-computed edge significance (Bonferroni-corrected)</td></tr>
+<tr><td><code class="code">metric_dimensions</code></td><td class="num">41</td><td>Dictionary of all Score/Trust/AGV/Regime/Edge dimension values</td></tr>
+<tr><td><code class="code">view_definition_catalog</code></td><td class="num">10</td><td>Documents every dashboard button/filter with its rules</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- WHAT IS "SHADOW" STATUS -->
+<h2>2. What "Shadow" Status Means</h2>
+<div class="panel">
+<p><strong>Every strategy is currently at "shadow" sizing — meaning zero are approved for real-money allocation.</strong></p>
+<p>Shadow means the strategy is tracked and monitored but <strong>not trusted for forward capital allocation</strong>. A strategy must pass ALL of these thresholds to graduate from shadow:</p>
+<table>
+<thead><tr><th>Tier</th><th>Min PF</th><th>Min WR</th><th>Min n</th><th>Min DSR</th><th>Max PBO</th><th>Max MDD</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><span class="chip chip-green">T1</span></td><td class="num">> 2.0</td><td class="num">> 55%</td><td class="num">≥ 30</td><td class="num">> 0.95</td><td class="num">< 0.05</td><td class="num">< 10%</td><td>Renaissance-grade</td></tr>
+<tr><td><span class="chip chip-blue">T2</span></td><td class="num">> 1.5</td><td class="num">> 50%</td><td class="num">≥ 30</td><td class="num">> 0.90</td><td class="num">< 0.10</td><td class="num">< 20%</td><td>Institutional</td></tr>
+<tr><td><span class="chip chip-yellow">T3</span></td><td class="num">> 1.2</td><td class="num">> 48%</td><td class="num">≥ 20</td><td class="num">> 0.80</td><td class="num">< 0.20</td><td class="num">< 30%</td><td>Retail-OK</td></tr>
+<tr><td><span class="chip chip-red">shadow</span></td><td colspan="6">Does not meet T3 thresholds — not approved for sizing</td><td>Monitor only</td></tr>
+</tbody>
+</table>
+<p class="small" style="margin-top:12px">
+<strong>DSR (Deflated Sharpe Ratio):</strong> Adjusts observed Sharpe for the number of trials tested. Negative DSR means the strategy's in-sample performance doesn't survive statistical adjustment for multiple testing.<br>
+<strong>PBO (Probability of Backtest Overfitting):</strong> Fraction of times the best in-sample strategy ranks in the bottom half out-of-sample. > 0.20 = high overfitting risk.<br>
+<strong>Key blocker:</strong> 62% of trading_picks are TIME_EXIT phantom-closes (exit=entry, pnl=0), which dilute WR/PF metrics and prevent any strategy from meeting thresholds.
+</p>
+</div>
+
+<!-- TOP STRATEGIES PER CLASS -->
+<h2>3. Top Strategies Per Asset Class</h2>
+<div class="panel">
+<details open><summary>CRYPTO (4,204 picks)</summary>
+<table>
+<thead><tr><th>Strategy</th><th class="num">PF</th><th class="num">WR</th><th class="num">n</th><th class="num">DSR</th><th class="num">PBO</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>crypto_momentum_high_confidence</td><td class="num">0.759</td><td class="num">42.4%</td><td class="num">2,425</td><td class="num negative">-40.35</td><td class="num">0.505</td><td><span class="chip chip-red">shadow</span></td></tr>
+<tr><td>unknown (unclassified picks)</td><td class="num">1.310</td><td class="num">51.9%</td><td class="num">408</td><td class="num">15.34</td><td class="num">0.416</td><td>—</td></tr>
+<tr><td>prediction_market_consensus</td><td class="num">1.290</td><td class="num">43.6%</td><td class="num">94</td><td class="num">1.99</td><td class="num">0.438</td><td>—</td></tr>
+<tr><td>ml_enhanced_DYDXUSDT_15m_D_ensemble_stack</td><td class="num">1.200</td><td class="num">55.9%</td><td class="num">34</td><td class="num">5.18</td><td class="num">0.987</td><td><span class="chip chip-red">shadow</span></td></tr>
+</tbody>
+</table>
+</details>
+
+<details open><summary>FOREX (2,335 picks)</summary>
+<table>
+<thead><tr><th>Strategy</th><th class="num">PF</th><th class="num">WR</th><th class="num">n</th><th class="num">DSR</th><th class="num">PBO</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>forex_carry_trend</td><td class="num">0.198</td><td class="num">30.1%</td><td class="num">675</td><td class="num negative">-23.23</td><td class="num">0.450</td><td><span class="chip chip-red">shadow</span></td></tr>
+<tr><td>fx_smart_carry_trade_momentum</td><td class="num">6.213</td><td class="num">100%</td><td class="num">53</td><td class="num">6.88</td><td class="num">0.593</td><td>—</td></tr>
+</tbody>
+</table>
+</details>
+
+<details><summary>COMMODITY (929 picks)</summary>
+<table>
+<thead><tr><th>Strategy</th><th class="num">PF</th><th class="num">WR</th><th class="num">n</th><th class="num">DSR</th><th class="num">PBO</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>commodity_term_structure</td><td class="num">1.064</td><td class="num">31.6%</td><td class="num">247</td><td class="num negative">-1.06</td><td class="num">0.300</td><td><span class="chip chip-red">shadow</span></td></tr>
+</tbody>
+</table>
+</details>
+
+<details><summary>EQUITY (88 picks)</summary>
+<table>
+<thead><tr><th>Strategy</th><th class="num">PF</th><th class="num">WR</th><th class="num">n</th><th class="num">DSR</th><th class="num">PBO</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>stocks_rsi2_pullback</td><td class="num">21.508</td><td class="num">100%</td><td class="num">64</td><td class="num">7.69</td><td class="num">0.645</td><td><span class="chip chip-red">shadow</span></td></tr>
+<tr><td>equity_quality_momentum</td><td class="num">0.110</td><td class="num">34.4%</td><td class="num">61</td><td class="num negative">-12.46</td><td class="num">0.274</td><td><span class="chip chip-red">shadow</span></td></tr>
+</tbody>
+</table>
+</details>
+
+<details><summary>FUTURES (18 picks), BOND (13 picks), ETF (16 picks)</summary>
+<p class="small">Insufficient resolved picks (< 20) for statistical validation. These classes need more forward-tested data before DSR/PBO can be meaningfully computed.</p>
+</details>
+</div>
+
+<!-- PICK SOURCES -->
+<h2>4. Pick Sources & Coverage</h2>
+<div class="panel">
+<h3>trading_picks (7,753 resolved)</h3>
+<p>702 unique strategy names. Top sources by pick count:</p>
+<table>
+<thead><tr><th>Source Type</th><th class="num">Picks</th><th>Examples</th></tr></thead>
+<tbody>
+<tr><td>Copy Trader (Polymarket/Bybit)</td><td class="num">3,129+</td><td>non_crypto_consensus, copy_pm_comtruise, copy_hl_whale_*</td></tr>
+<tr><td>Prediction Markets</td><td class="num">2,897+</td><td>prediction_market_consensus, kalshi_mtf_consensus</td></tr>
+<tr><td>AI Tournament Models</td><td class="num">3,615</td><td>42 unique models (claude_opus_4_7, deepseek_v4, grok3, etc.)</td></tr>
+<tr><td>Alpha Engine</td><td class="num">~1,000</td><td>crypto_*, forex_*, equity_* strategies</td></tr>
+<tr><td>Unknown/Unclassified</td><td class="num">2,117</td><td>strategy field is NULL or empty</td></tr>
+</tbody>
+</table>
+
+<h3>Documentation Gaps</h3>
+<ul>
+<li><strong>docs/ALL_STRATEGIES.md</strong> documents 410 strategies — only 14 match what's in the DB</li>
+<li><strong>702 unique strategy names</strong> in trading_picks — most are undocumented</li>
+<li><strong>2,117 picks</strong> have no strategy assigned (UNKNOWN category)</li>
+<li><strong>pick_dimension_snapshot</strong> now covers 100% of resolved picks (7,753/7,753)</li>
+</ul>
+</div>
+
+<!-- AI TOURNAMENT -->
+<h2>5. AI Tournament (findtorontoevents.ca/audit/ai-tournament.html)</h2>
+<div class="panel">
+<p><strong>3,615 picks</strong> from <strong>42 AI models</strong> tracked in <code class="code">tournament_picks</code> table.</p>
+<p>Top models by pick count: deepseek_v4 (89), grok3 (89), cursor_agent (59), llama4_scout (57), llm7_qwen (55), minimax_m2_5 (54).</p>
+<p class="small"><strong>Note:</strong> Tournament picks are tracked in a separate table (<code class="code">tournament_picks</code>) with model_id, provider, persona_id, asset_class fields. They are NOT yet linked to the strategy_summary table. This is a known gap — tournament models should be documented as strategies too.</p>
+</div>
+
+<!-- INCIDENTS TRACKING -->
+<h2>6. Incidents & Enhancements Tracking</h2>
+<div class="panel">
+<p>Incidents are stored in <strong>20 per-asset-class tables</strong> (INCIDENT_* and ENHANCEMENT_*) plus views <code class="code">vw_all_incidents</code> and <code class="code">vw_all_enhancements</code>.</p>
+<table>
+<thead><tr><th>View/Table</th><th class="num">Rows</th><th>Status Breakdown</th></tr></thead>
+<tbody>
+<tr><td><code class="code">vw_all_incidents</code></td><td class="num">45</td><td>37 OPEN, 1 RESOLVED, 7 TRIAGED</td></tr>
+<tr><td><code class="code">vw_all_enhancements</code></td><td class="num">73</td><td>Mostly BACKLOG</td></tr>
+<tr><td><code class="code">INCIDENT_OVERALL</code></td><td class="num">22</td><td>20 P0 OPEN</td></tr>
+<tr><td><code class="code">ENHANCEMENT_OVERALL</code></td><td class="num">50</td><td>System-wide enhancements</td></tr>
+</tbody>
+</table>
+<p class="small">Live page: <a href="https://findtorontoevents.ca/audit/incidents.html">incidents.html</a> — rendered from DB tables, auto-refreshed nightly.</p>
+</div>
+
+<!-- BACKTEST HARNESS -->
+<h2>7. Rigorous Backtest Harness</h2>
+<div class="panel">
+<p><strong>File:</strong> <code class="code">alpha_engine/rigorous_backtest_harness.py</code></p>
+<ul>
+<li>Purged walk-forward (8-fold, 5% purge + 2% embargo)</li>
+<li>Deflated Sharpe Ratio (DSR) — adjusts for multiple testing</li>
+<li>Probability of Backtest Overfitting (PBO) — measures IS/OS divergence</li>
+<li>Cost/slippage modeling per asset class</li>
+<li>69 existing strategies backtested + 7 world-class designs tested</li>
+</ul>
+</div>
+
+<!-- NEXT STEPS -->
+<h2>8. Next Steps to Reach World-Class</h2>
+<div class="panel">
+<ol>
+<li><strong>Fix TIME_EXIT phantom-closes</strong> — 62% of picks are zero-PnL exits diluting metrics</li>
+<li><strong>Fix EXPIRED→WON mislabels</strong> — inflates WR artificially (tracked as P0 incident)</li>
+<li><strong>Classify unknown picks</strong> — 2,117 picks have no strategy assigned</li>
+<li><strong>Link tournament models to strategies</strong> — 42 AI models need strategy documentation</li>
+<li><strong>Document all 702 strategies</strong> — only 14 of 410 documented strategies match DB</li>
+<li><strong>Increase sample sizes</strong> — ETF/FUTURES/BOND have < 20 resolved picks each</li>
+<li><strong>Re-run backtests</strong> — after data fixes, re-test through rigorous harness</li>
+</ol>
+</div>
+
+<!-- FILES -->
+<h2>9. Key Files</h2>
+<div class="panel">
+<table>
+<thead><tr><th>File</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code class="code">docs/ALL_STRATEGIES.md</code></td><td>Central strategy repository (410 strategies documented)</td></tr>
+<tr><td><code class="code">alpha_engine/rigorous_backtest_harness.py</code></td><td>Backtest harness (purged WF + DSR + PBO + costs)</td></tr>
+<tr><td><code class="code">alpha_engine/new_strategies/world_class_strategies.py</code></td><td>7 world-class strategy designs (one per asset class)</td></tr>
+<tr><td><code class="code">tools/build_metric_dimension_tracking.py</code></td><td>Populates all 6 tracking tables from DB</td></tr>
+<tr><td><code class="code">reports/STRATEGY_ROADMAP_COMPREHENSIVE_2026-05-29.md</code></td><td>Path to investable strategies</td></tr>
+<tr><td><code class="code">.github/workflows/strategy-funnel-hourly.yml</code></td><td>Hourly refresh of strategy_funnel_data.json</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="small" style="margin-top:32px; color: #6b7280;">
+Last updated: 2026-05-29 07:00 EDT · Database: ejaguiar1_stocks ·
+<a href="https://findtorontoevents.ca/audit/pick_funnel.html">Pick Funnel Live</a> ·
+<a href="https://findtorontoevents.ca/audit/data/strategy_funnel_data.json">strategy_funnel_data.json</a> ·
+<a href="https://findtorontoevents.ca/audit/incidents.html">Incidents</a>
+</p>
+
+</body>
+</html>

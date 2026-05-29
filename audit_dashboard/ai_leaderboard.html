@@ -200,33 +200,74 @@ function loadMAStrategies() {
     .then(r => r.ok ? r.json() : null)
     .then(d => {
       if (!d || !d.strategies) { el.innerHTML = ''; return; }
-      const gold = (o) => (o && (o.pf || 0) >= 2 && (o.sharpe || 0) >= 0.5);
-      const strat = d.strategies.slice().sort((a, b) => (b.overall.pf || 0) - (a.overall.pf || 0));
-      let h = '<h2 style="font-size:15px;margin-bottom:4px">📈 MA Trend Strategies — 200-day & variants <span class="small">(buy next day after close &gt; MA; flat when close &lt; MA; no TP)</span></h2>' +
-        '<div class="small" style="color:#94a3b8;margin-bottom:8px">Backtested ' + esc(d.universe_size) + ' symbols, ' + esc(d.lookback) + ' daily. ' + esc(d.note || '') +
-        ' Rows with <strong style="color:#22c55e">PF≥2 &amp; Sharpe≥0.5</strong> highlighted (golden). NFA.</div>' +
-        '<table class="data"><thead><tr><th>Strategy</th><th>MA</th><th class="num">n trades</th><th class="num">WR%</th><th class="num">PF</th><th class="num">CAGR%</th><th class="num">MaxDD%</th><th class="num">Sharpe</th><th class="num">avg hold (d)</th><th>Best class</th></tr></thead><tbody>';
-      strat.forEach(s => {
-        const o = s.overall;
-        // best asset class by pf
-        let best = '—', bestpf = -1;
-        Object.entries(s.by_asset_class || {}).forEach(([k, m]) => { if ((m.pf || 0) > bestpf) { bestpf = m.pf || 0; best = k + ' (PF ' + fmt(m.pf, 2) + ')'; } });
-        h += '<tr' + (gold(o) ? ' style="background:rgba(34,197,94,0.10)"' : '') + '>' +
-          '<td><strong>' + esc(s.id) + '</strong>' + (gold(o) ? ' 🥇' : '') + '<div class="small" style="color:#6b7280">' + esc(s.tweak) + '</div></td>' +
-          '<td>' + esc(s.ma_type) + esc(s.period) + '</td>' +
-          '<td class="num">' + esc(o.n_trades) + '</td>' +
+      // v2 schema: by_asset_class[cls] = {is, oos, holdout, oos_cagr_pct, bh_oos_cagr_pct,
+      //   beats_bh, decay_pf_oos_over_is, wf_median_pf, wf_worst_pf, oos_ci, pf_oos_survivorship_adj, golden}
+      if (d.schema_version && String(d.schema_version).indexOf('v2') < 0) {
+        el.innerHTML = '<div class="small" style="color:#f59e0b">MA data is pre-v2; rerun tools/ma_strategy_forward_tracker.py.</div>';
+        return;
+      }
+      const m = d.methodology || {};
+      // pick each strategy's best-OOS-PF class as its headline row
+      const rows = d.strategies.map(s => {
+        let bestCls = null, bestBlk = null;
+        Object.entries(s.by_asset_class || {}).forEach(([k, b]) => {
+          if (b.oos && (b.oos.pf || 0) > ((bestBlk && bestBlk.oos.pf) || -1)) { bestCls = k; bestBlk = b; }
+        });
+        return { s, cls: bestCls, b: bestBlk };
+      }).filter(r => r.b).sort((a, b) => (b.b.oos.pf || 0) - (a.b.oos.pf || 0));
+
+      let h = '<h2 style="font-size:15px;margin-bottom:4px">📈 MA Trend Strategies v2 — out-of-sample, risk-overlaid <span class="small">(long next-open after close &gt; MA; ATR stop; MA trailing exit; no TP; 1% risk/trade)</span></h2>';
+      h += '<div class="small" style="color:#fca5a5;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);padding:6px 9px;border-radius:6px;margin-bottom:8px">' +
+        '<strong>⚠ Honesty banner.</strong> Headline = <strong>OOS</strong> (' + esc(m.headline || 'walk-forward') + '). ' +
+        'Net of slippage (' + esc(m.slippage || '') + '). <strong>Survivorship-biased universe — live results will be lower.</strong> ' +
+        'Golden gate: ' + esc(m.golden_gate || '') + '. <strong>' + esc(d.n_golden) + ' golden cells</strong> this run' +
+        (m.multiple_comparisons ? ' (' + esc(m.multiple_comparisons) + ')' : '') + '. NFA.</div>';
+      h += '<table class="data"><thead><tr><th>Strategy</th><th>Best OOS class</th><th class="num">OOS n</th><th class="num">OOS WR%</th>' +
+        '<th class="num">OOS PF [90% CI]</th><th class="num">OOS Sharpe</th><th class="num">OOS CAGR% vs B&amp;H</th>' +
+        '<th class="num">Holdout PF</th><th class="num">Surv-adj PF</th><th class="num">WF med/worst PF</th></tr></thead><tbody>';
+      rows.forEach(({ s, cls, b }) => {
+        const o = b.oos, ci = b.oos_ci || {};
+        const ciTxt = (ci.pf_lo != null) ? ' <span class="small" style="color:#94a3b8">[' + fmt(ci.pf_lo, 2) + '–' + fmt(ci.pf_hi, 2) + ']</span>' : '';
+        const bhTxt = fmt(b.oos_cagr_pct) + ' vs ' + fmt(b.bh_oos_cagr_pct) +
+          (b.beats_bh ? ' <span style="color:#22c55e">✓</span>' : ' <span style="color:#ef4444" title="does not beat buy-and-hold OOS — likely just market exposure">✗</span>');
+        h += '<tr' + (b.golden ? ' style="background:rgba(34,197,94,0.10)"' : '') + '>' +
+          '<td><strong>' + esc(s.id) + '</strong>' + (b.golden ? ' 🥇' : '') + '<div class="small" style="color:#6b7280">' + esc(s.ma_type) + esc(s.period) + ' · ' + esc(s.tweak) + '</div></td>' +
+          '<td>' + esc(cls) + '</td>' +
+          '<td class="num">' + esc(o.n) + '</td>' +
           '<td class="num">' + fmt(o.wr) + '</td>' +
-          '<td class="num ' + pnlCls((o.pf || 0) - 1) + '">' + fmt(o.pf, 2) + '</td>' +
-          '<td class="num ' + pnlCls(o.cagr_pct) + '">' + fmt(o.cagr_pct) + '</td>' +
-          '<td class="num pnl-neg">' + fmt(o.max_dd_pct) + '</td>' +
+          '<td class="num ' + pnlCls((o.pf || 0) - 1) + '">' + fmt(o.pf, 2) + ciTxt + '</td>' +
           '<td class="num">' + fmt(o.sharpe, 2) + '</td>' +
-          '<td class="num">' + fmt(o.avg_hold_days) + '</td>' +
-          '<td class="small">' + esc(best) + '</td></tr>';
+          '<td class="num small">' + bhTxt + '</td>' +
+          '<td class="num ' + pnlCls((b.holdout && b.holdout.pf || 0) - 1) + '">' + fmt(b.holdout && b.holdout.pf, 2) + '</td>' +
+          '<td class="num">' + fmt(b.pf_oos_survivorship_adj, 2) + '</td>' +
+          '<td class="num small">' + fmt(b.wf_median_pf, 2) + ' / ' + fmt(b.wf_worst_pf, 2) + '</td></tr>';
       });
       h += '</tbody></table>';
+      h += '<div class="small" style="color:#6b7280;margin-top:4px">' + esc(m.out_of_scope || '') + ' Source: tools/ma_strategy_forward_tracker.py · asof ' + esc(d.asof) + '.</div>';
       el.innerHTML = h;
+      loadMASignals();
     })
     .catch(() => { el.innerHTML = ''; });
+}
+function loadMASignals() {
+  fetch('data/ma_strategy_signals.json?cb=' + Date.now())
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d || !d.signals) return;
+      const el = document.getElementById('ma-strategies');
+      if (!el) return;
+      // count current LONG vs FLAT across strategy x symbol, and list a few fresh LONGs
+      let nLong = 0, nTot = 0; const fresh = [];
+      Object.entries(d.signals).forEach(([sid, syms]) => {
+        Object.entries(syms).forEach(([key, st]) => {
+          nTot++; if (st.signal === 'LONG') { nLong++; if (st.days_held != null && st.days_held <= 5) fresh.push(sid + ' ' + key.split(':')[1] + ' (' + st.days_held + 'd)'); }
+        });
+      });
+      let h = '<div style="margin-top:10px"><h3 style="font-size:13px;margin:0 0 4px">📍 Today\'s MA signals <span class="small" style="color:#94a3b8">asof ' + esc(d.asof) + '</span></h3>' +
+        '<div class="small" style="color:#94a3b8">' + esc(nLong) + ' / ' + esc(nTot) + ' strategy×symbol signals currently <strong style="color:#22c55e">LONG</strong>. ' +
+        (fresh.length ? 'Fresh entries (≤5d): ' + esc(fresh.slice(0, 12).join(', ')) + (fresh.length > 12 ? ' …' : '') : '') + '</div></div>';
+      el.insertAdjacentHTML('beforeend', h);
+    }).catch(() => {});
 }
 loadMAStrategies();
 

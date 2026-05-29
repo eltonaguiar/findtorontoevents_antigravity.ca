@@ -21,19 +21,39 @@ This skill bundles the "broadcast what I did + see what others did + revise if n
 - After landing any change that touches code another agent might be working on concurrently (gates, blocklists, dashboard, deploy scripts)
 - Periodic mid-session sync if the session is generating a lot of artifacts (>3 PRs / >5 commits)
 
+## ⛔ ANTI-PATTERNS — read first (these caused every false "gateway down" in CHATBIBLE_FAILURE.MD)
+
+1. **NEVER use `curl.exe` on Linux/macOS.** `curl.exe` is a Windows-only binary. On any non-Windows host (incl. WSL and Remote-SSH peers like `gx10-c9b9`) it does not exist → silent empty output → you will wrongly conclude "gateway down." Use the portable probe below (`python tools/protocol_inspect.py health`), or plain `curl` (no `.exe`) only on Linux/macOS.
+2. **NEVER judge a REMOTE gateway with a LOCAL listener check.** `ss -tlnp | grep 8788`, `netstat | findstr 8788`, `Get-NetTCPConnection -LocalPort 8788` all check **the host you are running on**. If the gateway lives on another machine (or you are SSH'd into a peer), a local "no listener" result is meaningless — it does NOT mean the gateway is down. Probe the gateway's **HTTP endpoint** instead.
+3. **Know which host you are on before diagnosing.** Run `uname -s 2>/dev/null || echo Windows` and `hostname`. If you are on a peer (gx10, a laptop, WSL), the gateway is the *desktop* — you must reach it over the LAN, not via loopback or local ports.
+4. **A failed probe is NOT proof the gateway is down.** Before logging a failure or restarting: confirm you used a tool that exists on your OS, that you hit the gateway's HTTP endpoint (not a local port scan), and that your host can route to the gateway IP. Restarting a gateway on a peer/WSL spawns a useless loopback-only duplicate (see CHATBIBLE_FAILURE.MD 2026-05-22/24 corrections).
+
 ## Prerequisites
 
 1. Cross-PC gateway must be running. **Always use `192.168.2.32:8788` on this desktop — never `127.0.0.1`.** The gateway is a background service bound to the LAN IP; loopback only works if the gateway was started in this exact shell session.
 
-   Use the portable, OS-agnostic probe (works on Windows/Linux/macOS/WSL/Remote-SSH peers):
-
+   **Canonical health probe (OS-agnostic, prefer this over everything else):**
    ```bash
-   python tools/protocol_inspect.py health    # use python3 if python is unmapped
+   python tools/protocol_inspect.py health    # use python3 if python is unmapped on Linux
    ```
 
-   ⛔ **Do NOT use `curl.exe`** — it is a Windows-only binary and produces silent empty output on Linux/WSL/SSH peers (e.g. gx10-c9b9), which has repeatedly caused false "gateway down" reports. On Linux use plain `curl` (no `.exe`); on Windows PowerShell use `curl.exe` or `Invoke-WebRequest`.
+   **Raw HTTP fallback (pick the line that matches YOUR host):**
+   ```bash
+   # Linux / macOS / WSL / Remote-SSH peer — plain curl, NEVER curl.exe
+   curl -s -m 4 http://192.168.2.32:8788/health
 
-   A failed probe is **NOT** proof the gateway is down. Before concluding down: confirm (a) you used a tool that exists on your OS, (b) you hit the HTTP endpoint — NOT a local `ss/netstat/Get-NetTCPConnection` port scan (those check *your* host, meaningless for a remote gateway), (c) your host can `ping 192.168.2.32`. The ground truth is `protocol_inspect.py health` run **on the gateway host (the desktop)**. See `/cross-pc-health` for the full checklist. When healthy, `peer_registry` shows registered peers.
+   # Portable (any OS, no curl needed)
+   python -c "import urllib.request,json,sys; print(json.dumps(json.loads(urllib.request.urlopen('http://192.168.2.32:8788/health',timeout=4).read()),indent=2))"
+   ```
+
+   ```powershell
+   # Windows PowerShell only
+   curl.exe -s -m 4 http://192.168.2.32:8788/health
+   ```
+
+   The `peer_registry` must show registered peers. If empty or connection refused, run the 5-step diagnostic below before concluding the gateway is dead.
+
+   **WSL2 NAT trap:** If running from WSL2 on a DIFFERENT machine than the gateway host, `curl http://192.168.2.32:8788/health` will fail because WSL2 NAT cannot hairpin to the Windows host's LAN IP. This is NOT a gateway-down signal. Use `ping 192.168.2.32` first to verify L3 reachability before concluding the gateway is dead.
 
 2. `tools/adapters/cursor_claude_adapter.py` + `tools/adapters/freebuff_adapter.py` + `tools/protocol_inspect.py` must exist. If missing, the cross-pc-protocol install is broken — fall back to writing to `logs/cross_pc_protocol/events.jsonl` directly and surface a warning.
 
@@ -179,6 +199,18 @@ follow-ups posted: <count>
 
 If at ANY point in Steps 1-6 you cannot get a message onto the protocol bus (gateway unreachable, adapter missing, peer-id refusal, send returns non-accepted, etc.), you MUST append a structured entry to `CHATBIBLE_FAILURE.MD` at repo root and commit + push that file to `main` so the operator can see the gap.
 
+### ⚠️ BEFORE you log a failure — run this checklist (prevents false positives)
+
+Every "gateway down" entry in CHATBIBLE_FAILURE.MD prior to 2026-05-29 was a misdiagnosis. Do NOT append a failure entry until you have passed ALL 5 checks:
+
+1. **Are you on the gateway host or a peer?** Run `hostname` and `uname -s 2>/dev/null || echo Windows`. If you are on a peer (gx10, laptop, WSL), the gateway is the *desktop* — you must reach it over the LAN.
+2. **Did you use a tool that exists on your OS?** No `curl.exe` on Linux/macOS. Use `python tools/protocol_inspect.py health` (canonical) or `curl` (no `.exe`) on Linux.
+3. **Did you probe the HTTP endpoint, not a local port scan?** `ss -tlnp | grep 8788` and `netstat | findstr 8788` check YOUR host, not the remote gateway. Only `curl http://192.168.2.32:8788/health` or `python tools/protocol_inspect.py health` prove the gateway is down.
+4. **Can your host route to the gateway IP?** `ping 192.168.2.32`. If on a peer, confirm same subnet / no AP-isolation / no WSL2 NAT hairpin block.
+5. **From the gateway host itself**, `python tools/protocol_inspect.py health` is the ground truth. Only if THAT fails is the gateway actually down.
+
+If any check fails, fix your probe command first. Do not log a failure for a tooling mistake.
+
 ### Failure entry format
 
 Append (do not overwrite) one block per failure:
@@ -249,6 +281,10 @@ The Bash tool in Claude Code does work with the Bash idioms; this section is for
 | Payload too large | event log truncation at 1MB | Trim `files_written` to deltas + summary, don't paste full diffs |
 | `UnicodeEncodeError` on Windows | console code page | `set PYTHONUTF8=1` or `chcp 65001` |
 | Receiver claims they never got it | possibly retried before the gateway log flushed | Trace via `protocol_inspect trace --trace-id <id>` — if status=accepted there but receiver poll shows nothing, suspect a peer-id mismatch |
+| Health check returns empty/no output on Linux | `curl.exe` (Windows binary) used on Linux — doesn't exist, silent failure | Use `curl` (no `.exe`) or `python tools/protocol_inspect.py health`. NEVER `curl.exe` on non-Windows. |
+| `ss -tlnp \| grep 8788` shows no listener | Running on a peer/WSL, not the gateway host | `ss`/`netstat` check YOUR host only. Probe the HTTP endpoint: `curl -s http://192.168.2.32:8788/health` |
+| curl to 192.168.2.32:8788 fails from WSL2 | WSL2 NAT cannot hairpin to Windows host LAN IP | NOT a gateway-down signal. `ping 192.168.2.32` first. If ping works but curl fails, it's WSL2 NAT. Use `networkingMode=mirrored` in .wslconfig or relay via the desktop agent. |
+| Restarted gateway but peer_registry is empty | Restarted from WSL/peer instead of gateway host | WSL restart spawns a loopback-only duplicate. Only restart from the desktop (gateway host). |
 
 ## Anti-patterns
 
@@ -257,6 +293,10 @@ The Bash tool in Claude Code does work with the Bash idioms; this section is for
 - Do NOT use this for inter-thread coordination within the same Claude session. Use TodoWrite or peer skills for that.
 - Do NOT delete `logs/cross_pc_protocol/events.jsonl` to "clean up". It's the durable replay log.
 - Do NOT amend an existing peer's broadcast envelope. Always send a fresh envelope referencing their `causation_id`.
+- **NEVER use `curl.exe` on Linux/macOS/WSL.** It's a Windows-only binary. Silent empty output → false "gateway down" diagnosis. Use `python tools/protocol_inspect.py health` or `curl` (no `.exe`).
+- **NEVER use `ss -tlnp | grep 8788` or `netstat | findstr 8788` to check a REMOTE gateway.** These check YOUR host's ports, not the gateway host. Always probe the HTTP endpoint.
+- **NEVER conclude "gateway down" from a single failed probe on a peer/WSL.** Run the 5-step checklist in the failure logging section first. Every false CHATBIBLE_FAILURE entry to date was a tooling mistake, not an actual dead gateway.
+- **NEVER restart a gateway from WSL/peer.** It spawns a loopback-only duplicate. Only restart from the desktop (gateway host).
 
 ## Companion skills
 
