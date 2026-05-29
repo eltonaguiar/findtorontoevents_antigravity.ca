@@ -39,6 +39,18 @@ jobs:
 
       # Per-symbol price failures are soft (logged ::warning inside prices.py);
       # continue-on-error guards against a single dead source aborting the book.
+      # Create the PF_* tables if they don't exist yet (idempotent
+      # CREATE TABLE IF NOT EXISTS). Without this the very first cron run
+      # fails — the migration was never applied out-of-band.
+      - name: Initialize PF_* tables (idempotent)
+        if: ${{ !inputs.dry_run }}
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+        run: python tools/portfolios/init_db.py --apply
+
       - name: Run daily portfolio engine
         if: ${{ !inputs.dry_run }}
         continue-on-error: true

@@ -34,7 +34,11 @@ jobs:
     # and GitHub auto-cancelled every run (26513551034, 26555312404 both died at
     # ~15m on that step → 0 fresh picks). 45m gives the full fleet room; pairs with
     # AI_TOURNAMENT_MAX_WORKERS parallelism (PR #24) to stay well under in practice.
-    timeout-minutes: 45
+    # 2026-05-29: bumped 45→120. The de-rostered-model revival took the roster
+    # 23→42; populate_picks.py iterates models SERIALLY (no worker pool), so run
+    # 26638947344 was auto-cancelled at ~46m mid-fleet → 0 fresh picks. 120m gives
+    # the doubled fleet room. TODO: parallelize the fleet loop to cut wall-clock.
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
