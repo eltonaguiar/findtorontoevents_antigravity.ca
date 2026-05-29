@@ -37,6 +37,7 @@ from indicators import (
     sma, rsi, atr, adx, zscore
 )
 from non_crypto_quality_gate import forex_macro_gate, forex_conf_cap as _gate_conf_cap
+from forex_carry_ppp import forex_carry_ppp   # PR #11: wire orphaned PPP-overlay carry strategy
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -1109,4 +1110,5 @@ FOREX_STRATEGIES = {
     "london_session_breakout":     _session_guard(london_session_breakout),
     "forex_mean_reversion_200d":   _session_guard(mean_reversion_200d),
     "ig_contrarian_sentiment":     _session_guard(ig_contrarian_sentiment_forex),
+    "forex_carry_ppp":             _session_guard(forex_carry_ppp),  # PR #11: probationary — gated off-emission by absence from NON_CRYPTO_STRATEGY_POLICY
 }
