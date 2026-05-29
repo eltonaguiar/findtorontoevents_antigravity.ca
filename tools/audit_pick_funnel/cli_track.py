@@ -137,23 +137,27 @@ def cmd_enhancement(args):
                 effort=%s, status=%s, proposed_by=%s, related_persona_id=%s, success_metric=%s,
                 link_md_path=%s, link_url=%s, link_github_ref=%s,
                 target_release=COALESCE(%s, target_release),
+                enhancement_plan=COALESCE(%s, enhancement_plan),
                 implementation_pr=COALESCE(%s, implementation_pr),
                 implemented_at=CASE WHEN %s='IMPLEMENTED' AND implemented_at IS NULL THEN NOW() ELSE implemented_at END
                 WHERE enhancement_id=%s""",
                 (args.description, args.category, args.impact, args.effort, args.status,
                  args.proposed_by, args.persona, args.success_metric,
-                 args.link_md, args.link_url, args.link_github, args.target_release, args.implementation_pr,
+                 args.link_md, args.link_url, args.link_github, args.target_release,
+                 args.enhancement_plan, args.implementation_pr,
                  args.status, existing["enhancement_id"]))
             conn.commit()
             print(f"UPDATED  {tbl}.enhancement_id={existing['enhancement_id']}  title={args.title!r}")
         else:
             cur.execute(f"""INSERT INTO {tbl}
                 (title, description, category, expected_impact, effort, status, proposed_by,
-                 related_persona_id, success_metric, link_md_path, link_url, link_github_ref, target_release)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                 related_persona_id, success_metric, link_md_path, link_url, link_github_ref,
+                 target_release, enhancement_plan)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (args.title, args.description, args.category, args.impact, args.effort, args.status,
                  args.proposed_by, args.persona, args.success_metric,
-                 args.link_md, args.link_url, args.link_github, args.target_release))
+                 args.link_md, args.link_url, args.link_github, args.target_release,
+                 args.enhancement_plan))
             new_id = cur.lastrowid
             conn.commit()
             print(f"CREATED  {tbl}.enhancement_id={new_id}  title={args.title!r}")
@@ -242,6 +246,8 @@ def main():
     enh.add_argument("--link-url", default=None)
     enh.add_argument("--link-github", default=None)
     enh.add_argument("--target-release", dest="target_release", default=None, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
+    enh.add_argument("--enhancement-plan", dest="enhancement_plan", default=None,
+        help="Free-text implementation plan; can be extracted from linked reports")
     enh.add_argument("--implementation-pr", default=None)
     enh.set_defaults(func=cmd_enhancement)
 

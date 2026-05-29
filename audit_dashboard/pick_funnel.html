@@ -140,6 +140,7 @@
     single-source concentration is mitigated. See
     <code>reports/2026-05-25_crypto_78pct_wr_verification.md</code>.
   </div>
+  <div style="font-size:11px;margin-top:8px;color:#fca5a5;opacity:0.85">Last verified: 2026-05-25 EST</div>
 </div>
 
 <!-- ===== SMART PICKS — DB GROUND TRUTH (added 2026-05-28) ===== -->
@@ -329,6 +330,18 @@
 <div class="panel" id="strat-funnel-edges"><p class="small">Loading edge discovery…</p></div>
 
 <script>
+// ── EST time helper (copied from ai-tournament.html) ──
+// JSON `generated_at` stays ISO-UTC (machine field); this only converts the DISPLAY to EST.
+function toEST(utcStr) {
+  if (!utcStr) return '—';
+  try {
+    const d = new Date(utcStr);
+    return d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return String(utcStr).slice(0, 10); }
+}
+</script>
+
+<script>
 (async function loadPickSummary(){
   try {
     const s = await fetch('data/pick_summary_stats.json').then(r=>r.json());
@@ -343,7 +356,7 @@
       return `<tr><td><b>${ac}</b></td><td class="num">${b.n_active||0}</td>${cell(a)}${cell(sp)}${dbCell}</tr>`;
     }).join('');
     el.innerHTML = `
-      <p class="small">Generated ${s.generated_at} · source: ${s.source.dashboard_data_json} + ${s.source.db_table}</p>
+      <p class="small">Generated ${toEST(s.generated_at)} EST · source: ${s.source.dashboard_data_json} + ${s.source.db_table}</p>
       <table class="lb"><thead>
         <tr>
           <th rowspan="2">Class</th>
@@ -368,7 +381,7 @@
 <!-- /ACTIVE + CLOSED PICKS SUMMARY -->
 
 <footer>
-  <span>findtorontoevents.ca/audit — pick funnel · UTC timestamps · read-only on prod tables</span>
+  <span>findtorontoevents.ca/audit — pick funnel · EST timestamps · read-only on prod tables</span>
   <span>Auto-refresh nightly via .github/workflows/pick-funnel-nightly.yml</span>
 </footer>
 
@@ -544,9 +557,9 @@ function renderSmartPicksDbStats(spDb, d90){
       <td>${cvs}</td>
     </tr>`;
   }).join('');
-  const gen = d90 ? d90.generated_at : '—';
+  const gen = d90 ? toEST(d90.generated_at) : '—';
   el.innerHTML = `
-    <p class="small">Generated ${gen} · source: ejaguiar1_stocks.picks (90d, decisive only) · gate: elite_score ≥ per-class floor + confidence ≥ 0.60</p>
+    <p class="small">Generated ${gen} EST · source: ejaguiar1_stocks.picks (90d, decisive only) · gate: elite_score ≥ per-class floor + confidence ≥ 0.60</p>
     <table class="lb"><thead><tr>
       <th>Class</th>
       <th class="num">decisive</th>
@@ -607,7 +620,7 @@ function renderNavSurfaceMatrix(mx){
   const el = document.getElementById('nav-surface-matrix');
   if (!el) return;
   if (!mx || !mx.surfaces){ el.innerHTML = '<p class="small" style="color:#ef4444">Nav matrix sidecar missing — run tools/audit_pick_funnel/build_nav_surface_matrix.py.</p>'; return; }
-  const header = `<p class="small">Sidecar generated ${mx.generated_at} UTC · n_closed=${mx.n_recent_closed} · Bonferroni α=${mx.bonferroni_alpha.toFixed(4)} (8 surfaces). Verdict = <b>edge</b> only if at least one asset-class row passes <i>holdout</i> (PF≥1.2) AND <i>Bonferroni</i>. Tooltips on column headers (i) reuse the glossary above.</p>`;
+  const header = `<p class="small">Sidecar generated ${toEST(mx.generated_at)} EST · n_closed=${mx.n_recent_closed} · Bonferroni α=${mx.bonferroni_alpha.toFixed(4)} (8 surfaces). Verdict = <b>edge</b> only if at least one asset-class row passes <i>holdout</i> (PF≥1.2) AND <i>Bonferroni</i>. Tooltips on column headers (i) reuse the glossary above.</p>`;
   const sections = mx.surfaces.map(s=>{
     const vBadge = s.verdict === 'edge'
       ? `<span class="badge b-pass">EDGE in ${s.edge_classes.join(', ')||'—'}</span>`
@@ -745,7 +758,7 @@ function renderRecencyTable(s, mountId, accentClass){
     return `<tr${_rowDemoteAttr(b.caveats)}><td>${_demoteIcon(b.caveats)}<b>${ac}</b></td><td class="num">${b.n_touched}</td><td class="num">${b.n_active}</td><td class="num">${b.n_closed}</td><td class="num">${b.n_decisive}</td>${wrCell}${wrsCell}${pfCell}<td class="num">${_fmtRec(b.mean_pnl_pct,3)}%</td><td class="small">${topSym}</td><td class="small">${topSrc}</td><td>${_caveatBadges(b.caveats)}</td></tr>`;
   }).join('');
   const fallback = s.fallback_mode ? `<div class="small" style="color:#fca5a5;margin-bottom:6px">⚠ FALLBACK MODE: ${s.source}</div>` : '';
-  el.innerHTML = `${fallback}<p class="small">Generated ${s.generated_at} · window=${s.window_label} · cutoff=${s.cutoff_utc} · source=${s.source} · prior=${s.shrinkage_prior}</p>
+  el.innerHTML = `${fallback}<p class="small">Generated ${toEST(s.generated_at)} EST · window=${s.window_label} · cutoff=${s.cutoff_utc} · source=${s.source} · prior=${s.shrinkage_prior}</p>
     <table class="lb"><thead><tr>
       <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
       <th class="num">WR<sub>shrunk</sub> (primary)</th><th class="num">WR (raw)</th><th class="num">PF</th><th class="num">Mean PnL</th>
@@ -790,7 +803,7 @@ function renderRecency48hHero(s){
       <table class="lb" style="margin-top:6px"><thead><tr><th>Symbol</th><th>Dir</th><th>Source</th><th>Strategy</th><th>Opened</th><th>Closed</th><th>Status</th><th class="num">PnL%</th><th class="num">Hold (min)</th></tr></thead><tbody>${activeRows}${closedRows}</tbody></table>
     </details>`;
   }).join('');
-  el.innerHTML = `<p class="small" style="color:#fbcfe8">Generated ${s.generated_at} · cutoff=${s.cutoff_utc} · source=${s.source}</p>
+  el.innerHTML = `<p class="small" style="color:#fbcfe8">Generated ${toEST(s.generated_at)} EST · cutoff=${s.cutoff_utc} · source=${s.source}</p>
     <table class="lb"><thead><tr>
       <th>Class</th><th class="num">touched</th><th class="num">active</th><th class="num">closed</th><th class="num">decisive</th>
       <th class="num">WR<sub>shrunk</sub> (raw)</th><th class="num">PF</th><th class="num">Mean PnL</th><th>Top source</th><th>Caveats</th>
@@ -920,7 +933,7 @@ async function loadAll(){
     ]);
     renderNavSurfaceMatrix(navmx);
     document.getElementById('generated-at').textContent =
-      `Generated ${today.generated_at} UTC · today n=${today.n_picks} · 90d n=${d90.n_picks}`;
+      `Last updated ${toEST(today.generated_at)} EST · today n=${today.n_picks} · 90d n=${d90.n_picks}`;
     renderFunnelBars(today.funnel_by_class||{}, 'funnel-bars-today');
     renderFunnelBars(d90.funnel_by_class||{}, 'funnel-bars-90d');
     renderTodayTable(today.picks||[]);

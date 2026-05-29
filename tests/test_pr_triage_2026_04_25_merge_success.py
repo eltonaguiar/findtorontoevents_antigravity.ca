@@ -68,17 +68,19 @@ class Test391_CIStashFix:
         assert loop_match is not None, "expected 5-retry loop not found in meta-strategy.yml"
         assert stash_idx < loop_match.start(), "git stash push must precede the retry loop"
 
-    def test_strategy_performance_json_is_tracked(self):
-        """The Copilot Cloud review's primary caveat — ensure the contended file is
-        tracked so `git stash` actually catches its dirty state."""
+    def test_strategy_performance_json_is_gitignored(self):
+        """strategy_performance.json was gitignored (see .gitignore v11) to prevent
+        ~1MB of churn per hour from auto-scan workflows.  The old test that asserted
+        it was *tracked* is now inverted: it must be ignored so git stash -u catches
+        it cleanly, and CI never re-commits it."""
         result = subprocess.run(
-            ["git", "ls-files", "--error-unmatch",
+            ["git", "check-ignore", "-q",
              "alpha_engine/data/strategy_performance.json"],
             cwd=REPO_ROOT, capture_output=True, text=True,
         )
         assert result.returncode == 0, (
-            "alpha_engine/data/strategy_performance.json must be git-tracked "
-            "(stash without -u doesn't catch untracked files)"
+            "alpha_engine/data/strategy_performance.json must be git-ignored "
+            "(added to .gitignore in bloat-fix v11; test updated 2026-05-29)"
         )
 
     def test_multi_asset_scanner_uses_git_add_dash_a(self):

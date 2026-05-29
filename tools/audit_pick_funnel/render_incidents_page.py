@@ -90,16 +90,26 @@ def target_badge(row):
 
 
 def created_est(row):
-    """Render created_at as EST. DB stores naive UTC datetimes; convert for display."""
+    """Render created_at as EST/EDT. Prefer date_est/time_est columns when available;
+    fall back to converting created_at (UTC-naive) to America/New_York."""
+    de = row.get("date_est")
+    te = row.get("time_est")
+    if de and te:
+        # time_est already contains %Z (e.g. "21:06 EST"), so don't append another
+        return f'<span class="small" style="white-space:nowrap">{esc(str(de))} {esc(str(te))}</span>'
     ts = row.get("created_at")
     if not ts:
         return '<span style="color:#4b5563;font-size:10px">—</span>'
     try:
-        dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00")) if isinstance(ts, str) else ts
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
+        if isinstance(ts, str):
+            # MySQL DATETIME strings use space separator, not T
+            dt = datetime.strptime(ts[:19], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        else:
+            dt = ts
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
         est = dt.astimezone(ZoneInfo("America/New_York"))
-        return f'<span class="small" style="white-space:nowrap" title="{esc(str(ts))} UTC">{est.strftime("%Y-%m-%d %H:%M")} EST</span>'
+        return f'<span class="small" style="white-space:nowrap" title="{esc(str(ts))} UTC">{est.strftime("%Y-%m-%d %H:%M %Z")}</span>'
     except (ValueError, TypeError):
         return f'<span class="small">{esc(str(ts))}</span>'
 
@@ -142,7 +152,7 @@ def render_table_section(title, rows_by_class, is_incident=True):
         if is_incident:
             out.append('<th>Sev</th><th>Status</th><th>Target</th><th>Created</th><th>Title</th><th>Component</th><th>Recommended fix</th><th>Reporter</th><th>Links</th>')
         else:
-            out.append('<th>Impact</th><th>Effort</th><th>Status</th><th>Target</th><th>Created</th><th>Cat</th><th>Title</th><th>Success metric</th><th>Proposed by</th><th>Links</th>')
+            out.append('<th>Impact</th><th>Effort</th><th>Status</th><th>Target</th><th>Created</th><th>Cat</th><th>Title</th><th>Success metric</th><th>Plan</th><th>Proposed by</th><th>Links</th>')
         out.append('</tr></thead><tbody>')
         for r in rows:
             if is_incident:
@@ -155,6 +165,8 @@ def render_table_section(title, rows_by_class, is_incident=True):
                            f'<td class="small">{esc(r.get("reported_by") or "")}</td>'
                            f'<td class="small">{render_links(r)}</td></tr>')
             else:
+                ep = r.get("enhancement_plan") or ""
+                ep_display = f'<div class="small" style="color:#9ca3af;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{esc(ep)}">{esc(ep[:120])}</div>' if ep else '<span style="color:#4b5563;font-size:10px">—</span>'
                 out.append(f'<tr><td>{sev_badge(r["expected_impact"])}</td><td><span class="small">{esc(r["effort"])}</span></td>'
                            f'<td>{status_badge(r["status"])}</td>'
                            f'<td style="white-space:nowrap">{target_badge(r)}</td>'
@@ -162,6 +174,7 @@ def render_table_section(title, rows_by_class, is_incident=True):
                            f'<td class="small">{esc(r["category"])}</td>'
                            f'<td><strong>{esc(r["title"])}</strong><div class="small" style="color:#9ca3af;margin-top:3px">{esc((r.get("description") or "")[:300])}{"…" if r.get("description") and len(r["description"])>300 else ""}</div></td>'
                            f'<td class="small">{esc(r.get("success_metric") or "")}</td>'
+                           f'<td class="small">{ep_display}</td>'
                            f'<td class="small">{esc(r.get("proposed_by") or "")}</td>'
                            f'<td class="small">{render_links(r)}</td></tr>')
         out.append('</tbody></table></details>')
@@ -365,7 +378,9 @@ def inject_into_updates(html_block):
 
 def main():
     incidents, enhancements = fetch_all()
-    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now_utc = datetime.now(timezone.utc)
+    est_now = now_utc.astimezone(ZoneInfo("America/New_York"))
+    generated_at = est_now.strftime("%Y-%m-%d %H:%M %Z")
     html = render_html(incidents, enhancements, generated_at)
     OUT_HTML.write_text(html, encoding="utf-8")
     feed = {
