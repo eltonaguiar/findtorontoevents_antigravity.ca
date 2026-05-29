@@ -1,32 +1,13 @@
 {
-  "generated_at": "2026-05-29T21:20:22.923169+00:00",
+  "generated_at": "2026-05-29T22:04:44.741350+00:00",
   "host": "mysql.50webs.com",
   "database": "ejaguiar1_stocks",
   "engine": "MySQL 8.4.7",
   "checks": {
-    "pnl_integrity": {
-      "name": "pnl_integrity",
-      "ok": true,
-      "elapsed_s": 1.2,
-      "attempts": 1,
-      "data": {
-        "sampled": 24158,
-        "id_range": [
-          16262086,
-          16462086
-        ],
-        "gt1pct_mismatch": 8083,
-        "gt001pct_mismatch": 10317,
-        "mismatch_pct": 33.46,
-        "tier": "red",
-        "threshold_pass": false
-      },
-      "tier_label": "Tier 1"
-    },
     "won_pnl_contradiction": {
       "name": "won_pnl_contradiction",
       "ok": true,
-      "elapsed_s": 0.44,
+      "elapsed_s": 0.64,
       "attempts": 1,
       "data": {
         "by_status": [
@@ -61,10 +42,38 @@
       },
       "tier_label": "Tier 3"
     },
+    "open_bloat": {
+      "name": "open_bloat",
+      "ok": true,
+      "elapsed_s": 11.79,
+      "attempts": 1,
+      "data": {
+        "open_count": 3791,
+        "info_schema_estimate": 38039,
+        "bt_backtest_trades": {
+          "open_count": 29247197,
+          "info_schema_estimate": 27212129,
+          "count_suspect": false
+        },
+        "trading_picks": {
+          "open_count": 3791,
+          "active_count": 5389,
+          "total_count": 45539,
+          "info_schema_estimate": 38039,
+          "count_suspect": true
+        },
+        "last_terminal_write": "2026-05-29 21:05:23",
+        "hours_since_last_close": 0,
+        "validator_frozen": false,
+        "tier": "red",
+        "threshold_pass": false
+      },
+      "tier_label": "Tier 1"
+    },
     "status_standardization": {
       "name": "status_standardization",
       "ok": true,
-      "elapsed_s": 0.45,
+      "elapsed_s": 0.63,
       "attempts": 1,
       "data": {
         "non_canonical": {
@@ -78,10 +87,29 @@
       },
       "tier_label": "Tier 1"
     },
+    "pnl_integrity": {
+      "name": "pnl_integrity",
+      "ok": true,
+      "elapsed_s": 1.49,
+      "attempts": 1,
+      "data": {
+        "sampled": 24158,
+        "id_range": [
+          16262086,
+          16462086
+        ],
+        "gt1pct_mismatch": 8083,
+        "gt001pct_mismatch": 10317,
+        "mismatch_pct": 33.46,
+        "tier": "red",
+        "threshold_pass": false
+      },
+      "tier_label": "Tier 1"
+    },
     "ghost_rows": {
       "name": "ghost_rows",
       "ok": true,
-      "elapsed_s": 484.31,
+      "elapsed_s": 479.5,
       "attempts": 1,
       "data": {
         "total_ghost_rows": 22947,
@@ -204,38 +232,10 @@
         "threshold_pass": true
       },
       "tier_label": "Tier 1"
-    },
-    "open_bloat": {
-      "name": "open_bloat",
-      "ok": true,
-      "elapsed_s": 15.19,
-      "attempts": 1,
-      "data": {
-        "open_count": 3791,
-        "info_schema_estimate": 38152,
-        "bt_backtest_trades": {
-          "open_count": 29247197,
-          "info_schema_estimate": 27212129,
-          "count_suspect": false
-        },
-        "trading_picks": {
-          "open_count": 3791,
-          "active_count": 5389,
-          "total_count": 45539,
-          "info_schema_estimate": 38152,
-          "count_suspect": true
-        },
-        "last_terminal_write": "2026-05-29 21:05:23",
-        "hours_since_last_close": 0,
-        "validator_frozen": false,
-        "tier": "red",
-        "threshold_pass": false
-      },
-      "tier_label": "Tier 1"
     }
   },
   "overall": {
-    "elapsed_s": 501.6,
+    "elapsed_s": 494.04,
     "checks_run": 5,
     "checks_passed": 2,
     "checks_failed": 3,
