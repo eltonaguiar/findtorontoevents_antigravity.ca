@@ -1,32 +1,41 @@
 {
-  "generated_at": "2026-05-30T21:54:34.271929+00:00",
+  "generated_at": "2026-05-30T22:53:19.543638+00:00",
   "host": "mysql.50webs.com",
   "database": "ejaguiar1_stocks",
   "engine": "MySQL 8.4.7",
   "checks": {
-    "pnl_integrity": {
-      "name": "pnl_integrity",
+    "open_bloat": {
+      "name": "open_bloat",
       "ok": true,
-      "elapsed_s": 1.14,
+      "elapsed_s": 10.86,
       "attempts": 1,
       "data": {
-        "sampled": 24158,
-        "id_range": [
-          16262086,
-          16462086
-        ],
-        "gt1pct_mismatch": 8083,
-        "gt001pct_mismatch": 10317,
-        "mismatch_pct": 33.46,
-        "tier": "red",
-        "threshold_pass": false
+        "open_count": 5156,
+        "info_schema_estimate": 38100,
+        "bt_backtest_trades": {
+          "open_count": 29247197,
+          "info_schema_estimate": 27212129,
+          "count_suspect": false
+        },
+        "trading_picks": {
+          "open_count": 5156,
+          "active_count": 5515,
+          "total_count": 47154,
+          "info_schema_estimate": 38100,
+          "count_suspect": false
+        },
+        "last_terminal_write": "2026-05-30 22:44:03",
+        "hours_since_last_close": 0,
+        "validator_frozen": false,
+        "tier": "green",
+        "threshold_pass": true
       },
       "tier_label": "Tier 1"
     },
     "won_pnl_contradiction": {
       "name": "won_pnl_contradiction",
       "ok": true,
-      "elapsed_s": 0.51,
+      "elapsed_s": 0.45,
       "attempts": 1,
       "data": {
         "by_status": [
@@ -44,14 +53,14 @@
           },
           {
             "status": "SL_HIT",
-            "n": 1085,
-            "avg_pnl": -2.23976682,
-            "negative_pnl_count": 1085
+            "n": 1086,
+            "avg_pnl": -2.24215193,
+            "negative_pnl_count": 1086
           },
           {
             "status": "TP_HIT",
-            "n": 3009,
-            "avg_pnl": 2.17095866,
+            "n": 3010,
+            "avg_pnl": 2.17056963,
             "negative_pnl_count": 0
           }
         ],
@@ -64,7 +73,7 @@
     "ghost_rows": {
       "name": "ghost_rows",
       "ok": true,
-      "elapsed_s": 452.84,
+      "elapsed_s": 451.82,
       "attempts": 1,
       "data": {
         "total_ghost_rows": 22947,
@@ -188,38 +197,10 @@
       },
       "tier_label": "Tier 1"
     },
-    "open_bloat": {
-      "name": "open_bloat",
-      "ok": true,
-      "elapsed_s": 11.96,
-      "attempts": 1,
-      "data": {
-        "open_count": 5096,
-        "info_schema_estimate": 38039,
-        "bt_backtest_trades": {
-          "open_count": 29247197,
-          "info_schema_estimate": 27212129,
-          "count_suspect": false
-        },
-        "trading_picks": {
-          "open_count": 5096,
-          "active_count": 5516,
-          "total_count": 47093,
-          "info_schema_estimate": 38039,
-          "count_suspect": false
-        },
-        "last_terminal_write": "2026-05-30 21:45:54",
-        "hours_since_last_close": 0,
-        "validator_frozen": false,
-        "tier": "green",
-        "threshold_pass": true
-      },
-      "tier_label": "Tier 1"
-    },
     "status_standardization": {
       "name": "status_standardization",
       "ok": true,
-      "elapsed_s": 0.34,
+      "elapsed_s": 0.3,
       "attempts": 1,
       "data": {
         "non_canonical": {
@@ -232,10 +213,29 @@
         "threshold_pass": false
       },
       "tier_label": "Tier 1"
+    },
+    "pnl_integrity": {
+      "name": "pnl_integrity",
+      "ok": true,
+      "elapsed_s": 0.98,
+      "attempts": 1,
+      "data": {
+        "sampled": 24158,
+        "id_range": [
+          16262086,
+          16462086
+        ],
+        "gt1pct_mismatch": 8083,
+        "gt001pct_mismatch": 10317,
+        "mismatch_pct": 33.46,
+        "tier": "red",
+        "threshold_pass": false
+      },
+      "tier_label": "Tier 1"
     }
   },
   "overall": {
-    "elapsed_s": 466.79,
+    "elapsed_s": 464.41,
     "checks_run": 5,
     "checks_passed": 3,
     "checks_failed": 2,
