@@ -239,6 +239,39 @@
 </table>
 </div>
 
+<!-- MODEL PORTFOLIOS — Risk-Managed Books (Phase 5) -->
+<h2>Model Portfolios — Risk-Managed Books</h2>
+<p class="small" style="margin-bottom:8px">One paper portfolio per (AI-model × risk appetite). Each book runs the model's daily picks through a lifecycle engine (entry/sizing/TP/SL/exit) plus appetite-specific risk caps (gross exposure, per-position weight, drawdown breaker). See <a href="../docs/DESIGN_AI_MODEL_HEDGE_FUND_PORTFOLIOS_2026-05-29.md"><code>docs/DESIGN_AI_MODEL_HEDGE_FUND_PORTFOLIOS_2026-05-29.md</code></a>.</p>
+<div id="pf-updated" class="small" style="margin-bottom:6px;color:#6b7280">Loading portfolios…</div>
+<div class="pf-chips" style="display:flex;gap:6px;margin:8px 0 10px;flex-wrap:wrap">
+  <button class="pf-chip pf-chip-active" data-appetite="ALL" style="background:rgba(96,165,250,0.18);border:1px solid #60a5fa;color:#93c5fd;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">All</button>
+  <button class="pf-chip" data-appetite="conservative" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);color:#86efac;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">Conservative</button>
+  <button class="pf-chip" data-appetite="balanced" style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.3);color:#93c5fd;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">Balanced</button>
+  <button class="pf-chip" data-appetite="aggressive" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">Aggressive</button>
+</div>
+<div style="overflow-x:auto">
+<table class="lb" id="pf-table">
+  <thead><tr>
+    <th>Portfolio</th>
+    <th>Provider</th>
+    <th class="num" title="Latest NAV in USD (paper).">NAV</th>
+    <th class="num" title="(NAV − starting NAV) / starting NAV.">Total Return</th>
+    <th class="num" title="Compound annual growth rate, to-date.">CAGR</th>
+    <th class="num" title="Sharpe ratio over last 30 daily NAV returns.">Sharpe 30d</th>
+    <th class="num" title="Sortino ratio over last 30 daily NAV returns (downside-only denominator).">Sortino 30d</th>
+    <th class="num" title="Max peak-to-trough drawdown. Red when over the appetite's drawdown breaker.">MaxDD</th>
+    <th class="num" title="Profit factor to-date over closed trades.">PF</th>
+    <th class="num" title="Gross exposure as % of NAV (sum of |position notionals|).">Gross Exp</th>
+    <th class="num" title="Number of currently open positions.">#Open</th>
+    <th title="Latest NAV snapshot timestamp (EST).">Last Mark (EST)</th>
+    <th>Drill</th>
+  </tr></thead>
+  <tbody id="pf-tbody">
+    <tr><td colspan="13" style="text-align:center;color:#4b5563;padding:12px">Loading portfolios…</td></tr>
+  </tbody>
+</table>
+</div>
+
 <!-- MODEL REGISTRY (hydrated from model_summary.json) -->
 <details>
   <summary id="registry-summary">Model registry (loading…)</summary>
@@ -1030,10 +1063,141 @@ async function loadTierRatings() {
   container.innerHTML = html;
 }
 
+// ── Phase 5: Load model portfolios (risk-managed books) ──
+var __pfData = null;
+var __pfFilter = 'ALL';
+
+function pfFmtNum(v, dp) {
+  if (v == null || isNaN(v)) return '—';
+  return Number(v).toFixed(dp == null ? 2 : dp);
+}
+function pfFmtPct(v, dp) {
+  if (v == null || isNaN(v)) return '—';
+  var n = Number(v);
+  return (n > 0 ? '+' : '') + n.toFixed(dp == null ? 2 : dp) + '%';
+}
+function pfAppetiteBadge(a) {
+  if (!a) return '<span class="badge b-pending">—</span>';
+  var k = String(a).toLowerCase();
+  if (k === 'conservative') return '<span class="badge" style="background:#14532d;color:#86efac;border:1px solid #22c55e">CONS</span>';
+  if (k === 'balanced') return '<span class="badge" style="background:#1e3a5f;color:#93c5fd;border:1px solid #3b82f6">BAL</span>';
+  if (k === 'aggressive') return '<span class="badge" style="background:#7c2d12;color:#fca5a5;border:1px solid #ef4444">AGG</span>';
+  return '<span class="badge b-pending">' + esc(a) + '</span>';
+}
+// Drawdown breaker thresholds per appetite (matches Phase 1-4 risk config).
+var PF_DD_BREAKER = { conservative: 8, balanced: 15, aggressive: 25 };
+
+function pfRenderRows() {
+  var tbody = document.getElementById('pf-tbody');
+  if (!tbody) return;
+  if (!__pfData || !__pfData.portfolios || !__pfData.portfolios.length) {
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#a0a0b0;padding:14px">Pending — first daily run scheduled 22:00 UTC; the table will populate after the cron writes <code>pf_portfolios.json</code>.</td></tr>';
+    return;
+  }
+  // Build provider lookup from serverLeaderboard (if available).
+  var providerByModel = {};
+  if (typeof serverLeaderboard !== 'undefined' && serverLeaderboard) {
+    serverLeaderboard.forEach(function(lb){ if (lb.model_id) providerByModel[lb.model_id] = lb.provider || ''; });
+  }
+  var rows = __pfData.portfolios.filter(function(p){
+    if (__pfFilter === 'ALL') return true;
+    return String(p.risk_appetite || '').toLowerCase() === __pfFilter;
+  });
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#4b5563;padding:12px">No portfolios match this filter.</td></tr>';
+    return;
+  }
+  var html = '';
+  rows.forEach(function(p){
+    var appetite = String(p.risk_appetite || '').toLowerCase();
+    var ddBreaker = PF_DD_BREAKER[appetite];
+    var tr = p.total_return_pct;
+    var trClass = (tr == null || isNaN(tr)) ? 'pnl-neu' : (tr > 0 ? 'pnl-pos' : tr < 0 ? 'pnl-neg' : 'pnl-neu');
+    var cagrClass = (p.cagr == null || isNaN(p.cagr)) ? 'pnl-neu' : (p.cagr > 0 ? 'pnl-pos' : p.cagr < 0 ? 'pnl-neg' : 'pnl-neu');
+    var sharpe = p.sharpe_30d;
+    var sharpeClass = (sharpe == null || isNaN(sharpe)) ? 'pnl-neu' : (sharpe >= 1 ? 'pnl-pos' : sharpe < 0 ? 'pnl-neg' : 'pnl-neu');
+    var sortino = p.sortino_30d;
+    var sortinoClass = (sortino == null || isNaN(sortino)) ? 'pnl-neu' : (sortino >= 1 ? 'pnl-pos' : sortino < 0 ? 'pnl-neg' : 'pnl-neu');
+    var dd = p.max_dd;
+    var ddNum = (dd == null || isNaN(dd)) ? null : Math.abs(Number(dd));
+    var ddClass = (ddNum == null) ? 'pnl-neu' : (ddBreaker && ddNum > ddBreaker ? 'pnl-neg' : 'pnl-neu');
+    var pf = p.pf_to_date;
+    var pfClass = (pf == null || isNaN(pf)) ? 'pnl-neu' : (pf >= 1.5 ? 'pnl-pos' : pf < 1.0 ? 'pnl-neg' : 'pnl-neu');
+    var provider = providerByModel[p.model_id] || p.provider || '—';
+    var navStr = (p.latest_nav == null) ? '—' : '$' + Number(p.latest_nav).toFixed(2);
+    var drillUrl = './pf.html?key=' + encodeURIComponent(p.portfolio_key);
+    html += '<tr data-appetite="' + esc(appetite) + '">' +
+      '<td class="model-name"><a href="' + drillUrl + '">' + esc(p.portfolio_key) + '</a> ' + pfAppetiteBadge(p.risk_appetite) + '</td>' +
+      '<td>' + esc(provider) + '</td>' +
+      '<td class="num">' + navStr + '</td>' +
+      '<td class="num ' + trClass + '">' + pfFmtPct(tr) + '</td>' +
+      '<td class="num ' + cagrClass + '">' + pfFmtPct(p.cagr) + '</td>' +
+      '<td class="num ' + sharpeClass + '">' + pfFmtNum(sharpe) + '</td>' +
+      '<td class="num ' + sortinoClass + '">' + pfFmtNum(sortino) + '</td>' +
+      '<td class="num ' + ddClass + '" title="' + (ddBreaker ? 'Breaker: ' + ddBreaker + '%' : '') + '">' + (ddNum == null ? '—' : '-' + ddNum.toFixed(2) + '%') + '</td>' +
+      '<td class="num ' + pfClass + '">' + pfFmtNum(pf) + '</td>' +
+      '<td class="num">' + (p.gross_exposure_pct == null ? '—' : Number(p.gross_exposure_pct).toFixed(1) + '%') + '</td>' +
+      '<td class="num">' + (p.n_open == null ? '0' : p.n_open) + '</td>' +
+      '<td class="small">' + toEST(p.latest_asof) + '</td>' +
+      '<td><a href="' + drillUrl + '" style="font-size:11px">View →</a></td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function pfWireChips() {
+  var chips = document.querySelectorAll('.pf-chip');
+  chips.forEach(function(c){
+    c.addEventListener('click', function(){
+      var a = c.getAttribute('data-appetite') || 'ALL';
+      __pfFilter = (a === 'ALL') ? 'ALL' : a.toLowerCase();
+      chips.forEach(function(x){
+        x.classList.remove('pf-chip-active');
+        x.style.background = x.getAttribute('data-appetite') === 'ALL' ? 'rgba(255,255,255,0.04)'
+          : x.getAttribute('data-appetite') === 'conservative' ? 'rgba(34,197,94,0.08)'
+          : x.getAttribute('data-appetite') === 'balanced' ? 'rgba(96,165,250,0.08)'
+          : 'rgba(239,68,68,0.08)';
+      });
+      c.classList.add('pf-chip-active');
+      if (a === 'ALL') c.style.background = 'rgba(96,165,250,0.18)';
+      else if (a === 'conservative') c.style.background = 'rgba(34,197,94,0.22)';
+      else if (a === 'balanced') c.style.background = 'rgba(96,165,250,0.22)';
+      else c.style.background = 'rgba(239,68,68,0.22)';
+      pfRenderRows();
+    });
+  });
+}
+
+async function loadPortfolios() {
+  pfWireChips();
+  var stamp = document.getElementById('pf-updated');
+  try {
+    var resp = await fetch('./data/pf_portfolios.json?' + Date.now());
+    if (!resp.ok) {
+      if (stamp) stamp.innerHTML = 'Pending first daily run — <code>pf_portfolios.json</code> not yet written (scheduled 22:00 UTC).';
+      __pfData = null;
+      pfRenderRows();
+      return;
+    }
+    var data = await resp.json();
+    __pfData = data;
+    if (stamp) {
+      var gen = toEST(data.generated_at);
+      stamp.innerHTML = (data.n_portfolios || (data.portfolios||[]).length) + ' portfolio(s) · <span class="small">refreshed ' + gen + ' EST</span>';
+    }
+    pfRenderRows();
+  } catch (e) {
+    if (stamp) stamp.innerHTML = 'Pending first daily run — <code>pf_portfolios.json</code> not yet available.';
+    __pfData = null;
+    pfRenderRows();
+  }
+}
+
 // ── Init ──
 loadPicksAndLeaderboard().then(() => { loadPicks(); }).catch(() => {});
 loadModelSummary();
 loadTierRatings();
+loadPortfolios();
 </script>
 
 <!-- TABLE SORTING — click any header to sort (numeric-aware, asc/desc toggle). 2026-05-29 -->
