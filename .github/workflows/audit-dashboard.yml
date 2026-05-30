@@ -342,8 +342,16 @@ jobs:
           ACTIVE_PICKS_SYNC_APPLY: '1'
         run: |
           pip install pymysql yfinance -q 2>/dev/null || true
+          # 2026-05-30: added --max-rows 20000 (default is 5000). With 39,706 OPEN
+          # CRYPTO rows the default oldest-5000 cuts off at ~Apr 7, leaving every
+          # newer pick (e.g. all 366 crypto_liquidity_wick_reversal_v1 picks dated
+          # Apr 29-May 12) invisible to the resolver. Affects all newer cohorts —
+          # only ~42 OPEN CRYPTO have resolved since Apr 29 vs 2,403 legacy.
+          # 4× bump is conservative; follow-up: switch the ORDER BY in
+          # alpha_engine/active_picks_sync.py:114 to DESC so newest picks resolve
+          # first. Resolves FINDING_CRYPTO#1.
           for AC in CRYPTO EQUITY FOREX COMMODITY BOND ETF FUTURES; do
-            python -m alpha_engine.active_picks_sync --asset-class "$AC" --max-symbols 200 --apply \
+            python -m alpha_engine.active_picks_sync --asset-class "$AC" --max-symbols 200 --max-rows 20000 --apply \
               || echo "active_picks_sync $AC failed (non-fatal)"
           done
         continue-on-error: true
