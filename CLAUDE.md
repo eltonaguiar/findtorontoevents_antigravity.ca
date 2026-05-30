@@ -77,6 +77,11 @@ Rationale: breadth-over-depth contributions — where peers claim "integration c
 
 If you see a Hermes Agent session leaking GitHub PATs in shell command previews, claiming a 60-agent swarm that's actually one model, or any other bug from the analysis at `updates/2026-05-05-hermes-agent-bug-analysis-claude-opus-4-7.md`: the fix is **local-only — do NOT file PRs against NousResearch/hermes-agent** (user directive 2026-05-05). Run `python3 tools/patch_local_hermes.py` to apply (idempotent, creates `.orig` backups). Re-run after every `hermes update` because `hermes update` does `git pull` and overwrites our patches. Full docs at `tools/HERMES_LOCAL_PATCHES.md`.
 
+## Agent Quickstart (read first)
+New to this repo? `docs/AGENT_QUICKSTART_AUDIT_AND_STRATEGIES.md` is the one-page tour: the 3 audit surfaces (`/audit`, `/audit/ai-tournament.html`, `/audit/hyrotrader.html`), the 2 trading DBs (`ejaguiar1_stocks`, `ejaguiar1_backtests`), strategy registries per asset class, and how to evaluate hedge-fund-tier readiness via `pf_registry.json`. Use the `/db-schema`, `/audit-pick-flow`, and `/money-maker-readyv2` skills before deriving anything from scratch.
+
+For a current per-strategy x asset-class tier table: `python3 tools/strategy_tier_tracker.py` (read-only; emits markdown + writes to `reports/`).
+
 ## Key Commands
 - **Strategy demotion:** Do not expand `BLOCKED_SOURCE_SYSTEMS` without **`docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`** and **`docs/MUTATION_THREE_AXIS_PROTOCOL.md`** (export closed CSV → `python tools/mutation_analysis.py`). See `TESTING_PROTOCOL.MD` §7.
 - **TradingView MCP / paper picks:** `docs/TRADINGVIEW_MCP_GUIDE.md` (tools, CDP, CLI). Mandatory TP/SL and account flows: `.claude/skills/tv-paper-trade/SKILL.md`.
