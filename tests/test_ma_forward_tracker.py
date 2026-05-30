@@ -131,6 +131,40 @@ def test_oos_split_disjoint_and_holdout_reserved():
     assert len(folds) == mt.N_FOLDS
 
 
+def test_holdout_disjoint_from_every_walkforward_fold():
+    """Adversarial: each walk-forward fold must be disjoint from holdout.
+    Folds come from `core` (= non-holdout) so this is true by construction,
+    but a refactor that swaps core/all could silently leak."""
+    trades = [{"entry_date": f"2018-{m:02d}-{d:02d}", "ret_net": 0.01, "ret_R": 0.5, "hold": 3}
+              for m in range(1, 13) for d in (1, 15)]
+    is_t, oos_t, hold_t, folds, span = mt._split_by_date(trades, "2020-01-01")
+    ids = lambda lst: {t["entry_date"] for t in lst}
+    h = ids(hold_t)
+    assert h, "test fixture should produce a non-empty holdout"
+    for i, f in enumerate(folds):
+        assert ids(f).isdisjoint(h), f"fold {i} contains holdout entry-dates"
+
+
+def test_holdout_honeypot_never_appears_in_oos_metrics():
+    """Adversarial honeypot: inject a holdout trade with an impossible-to-miss
+    return (+999%). It must not be present in OOS-block aggregates (n / pf / wr).
+    If holdout ever leaked into _block(oos_t), avg_R or avg_ret_pct would jump."""
+    # 18 monthly entries spanning 3 years; last 10% (most-recent ~3.6 months) = holdout
+    base = [{"entry_date": f"2018-{m:02d}-15", "ret_net": 0.02, "ret_R": 0.4, "hold": 3} for m in range(1, 13)]
+    mid = [{"entry_date": f"2019-{m:02d}-15", "ret_net": 0.02, "ret_R": 0.4, "hold": 3} for m in range(1, 13)]
+    # honeypot: a late-2020 entry guaranteed to fall in the most-recent 10% holdout
+    honeypot = {"entry_date": "2020-12-31", "ret_net": 9.99, "ret_R": 50.0, "hold": 3}
+    trades = base + mid + [honeypot]
+    is_t, oos_t, hold_t, folds, span = mt._split_by_date(trades, "2021-01-01")
+    assert any(t["entry_date"] == "2020-12-31" for t in hold_t), "honeypot must land in holdout"
+    assert all(t["entry_date"] != "2020-12-31" for t in oos_t), "honeypot must NOT be in oos_t"
+    block = mt._block(oos_t, span_years=1)
+    if oos_t:
+        # 9.99 return would dwarf any honest avg; assert no leakage
+        assert block["avg_ret_pct"] is None or abs(block["avg_ret_pct"]) < 50, \
+            "OOS avg_ret_pct shows honeypot leakage"
+
+
 def test_pf_and_wr_basic():
     assert mt._pf([0.1, -0.05, 0.2]) == round(0.3 / 0.05, 2)
     assert mt._wr([0.1, -0.05, 0.2, -0.01]) == 50.0

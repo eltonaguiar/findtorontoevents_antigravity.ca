@@ -182,7 +182,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <div class="page-header">
   <h1>Portfolio Challenge — Full Audit Trail</h1>
-  <div class="subtitle">26 Simulated Portfolios (12 Signal + 4 Deep-Value + 3 HTF/Hoffman + 3 Prop + 4 Non-Crypto) | CRYPTO / EQUITY / FOREX / FUTURES / ETF / PENNY | Real-Time Performance Tracking</div>
+  <div class="subtitle"><span id="portfolio-count-live">--</span> Simulated Portfolios | CRYPTO / EQUITY / FOREX / FUTURES / ETF / PENNY | Real-Time Performance Tracking</div>
   <div style="margin-top:0.5rem;font-size:0.85rem">
     <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/audit_dashboard/BLUEPRINT.md" style="color:var(--cyan);margin-right:1rem">System Blueprint</a>
     <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/audit_dashboard/LEARNINGS.md" style="color:var(--orange);margin-right:1rem">Key Learnings &amp; Mistakes</a>
@@ -2180,6 +2180,11 @@ async function init() {
         high_water_mark: p.high_water_mark || p.equity || 10000,
       };
     });
+
+    // Subtitle live count — replaces the previously-hardcoded "26 Simulated Portfolios"
+    // breakdown that drifted as the portfolio set grew (actual count is ~64).
+    const _phCntEl = document.getElementById('portfolio-count-live');
+    if (_phCntEl) _phCntEl.textContent = allPortfolios.length;
 
     // Collect all symbols for live price fetch
     const allSymbols = new Set();

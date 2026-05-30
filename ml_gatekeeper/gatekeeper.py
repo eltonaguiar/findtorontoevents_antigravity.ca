@@ -779,6 +779,27 @@ def score_active_picks(model_bundle, strategy_router):
               f"{p['symbol']:<12} {p['direction']:<6} "
               f"ml={p['ml_win_probability']:.3f} strat={p['strategy_verdict']}")
 
+    # A/B observability — read-only telemetry. Active only when ab_router ran.
+    # Decides whether the silent prod default (AB_ENABLED=True) routed real picks.
+    if ab_router is not None:
+        from collections import Counter
+        arm_counts = Counter(p.get("_ab_arm") for p in scored_picks)
+        model_v_counts = Counter(p.get("_ab_model_version") for p in scored_picks)
+        obs = {
+            "ts_utc": datetime.now(timezone.utc).isoformat(),
+            "total_scored": len(scored_picks),
+            "arms": {str(k): v for k, v in arm_counts.items()},
+            "model_versions": {str(k): v for k, v in model_v_counts.items()},
+        }
+        print(f"[gatekeeper.ab_obs] {json.dumps(obs)}")
+        try:
+            obs_path = Path("audit_dashboard/data/ab_router_observability.jsonl")
+            obs_path.parent.mkdir(parents=True, exist_ok=True)
+            with obs_path.open("a") as f:
+                f.write(json.dumps(obs) + "\n")
+        except Exception as e:
+            print(f"[gatekeeper.ab_obs] WARN append failed: {e}")
+
     return scored_picks
 
 
