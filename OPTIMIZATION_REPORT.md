@@ -1,6 +1,6 @@
 # 🎛️ Optimization Report
 
-**Generated:** 2026-05-30T18:29:11.834669
+**Generated:** 2026-05-30T20:21:31.990774
 
 ## 📊 Overall Accuracy
 - **Total Signals:** 363
@@ -23,7 +23,7 @@
 
 ## 🔧 Recent Tweaks
 
-**2026-05-30T18:29:10**
+**2026-05-30T20:21:31**
 - SYMBOL_DISABLE: BTC-USD
   - Reason: Accuracy 51.7% below minimum 55.0%
   - Change: enabled → disabled
