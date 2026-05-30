@@ -508,6 +508,34 @@ def load_rows():
             rows.append(r)
             count += 1
         source_meta.append({"file": rel, "present": True, "rows": count})
+    # Additional non-JSON_PICK_SOURCES feeder: hyrotrader emits closed picks
+    # from its real-fills-only journal via tools/hyrotrader_closed_picks_emitter.py.
+    # Wired here (rather than added to JSON_PICK_SOURCES in dashboard_generator)
+    # so this PR doesn't touch the dashboard generator. Empty journal → file
+    # is either absent or has picks=[] → 0 rows contributed.
+    _hyro_rel = "audit_dashboard/data/hyrotrader_closed_picks.json"
+    _hyro_path = os.path.join(REPO_ROOT, _hyro_rel)
+    if os.path.isfile(_hyro_path):
+        try:
+            with open(_hyro_path, "r", encoding="utf-8") as f:
+                _hyro_doc = json.load(f)
+            _hyro_picks = _hyro_doc.get("picks") if isinstance(_hyro_doc, dict) else _hyro_doc
+            _hyro_n = 0
+            if isinstance(_hyro_picks, list):
+                for r in _hyro_picks:
+                    if not isinstance(r, dict):
+                        continue
+                    r = dict(r)
+                    r["_origin_file"] = _hyro_rel
+                    rows.append(r)
+                    _hyro_n += 1
+            source_meta.append({"file": _hyro_rel, "present": True, "rows": _hyro_n})
+        except (OSError, json.JSONDecodeError) as exc:
+            source_meta.append({"file": _hyro_rel, "present": True, "rows": 0,
+                                "error": f"read failed: {type(exc).__name__}"})
+    else:
+        source_meta.append({"file": _hyro_rel, "present": False, "rows": 0,
+                            "note": "run tools/hyrotrader_closed_picks_emitter.py to materialize closed picks from hyrotrader_journal.json"})
     if os.environ.get("PF_REGISTRY_INCLUDE_DB") == "1":
         db_days_raw = os.environ.get("PF_REGISTRY_DB_DAYS") or "90"
         try:
