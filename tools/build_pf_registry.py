@@ -42,7 +42,88 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
+
+# ---------------------------------------------------------------------------
+# Single-source concentration flag (FINDING_OVERALL#8, 2026-05-30)
+# ---------------------------------------------------------------------------
+# The /money-maker-readyv2 audit found `crypto_liquidity_wick_reversal_v1`
+# looked like a unique PF>=1.5/n>=30/WR>=50 edge — but 100% of its 30 picks
+# came from one source (`battleground`). Skill rule #2: if >60% of decisive
+# picks come from one source_system, it is concentration, not edge.
+#
+# Threshold is configurable via env var so audit consumers can experiment.
+# n_min=5 avoids flagging tiny-n rows where one extra pick swings >60%.
+SOURCE_CONCENTRATION_THRESHOLD_DEFAULT = 0.60
+SOURCE_CONCENTRATION_MIN_N = 5
+
+
+def _source_concentration_threshold() -> float:
+    """Read threshold from env var on each call so tests can monkey-patch it."""
+    raw = os.environ.get("PF_REGISTRY_SOURCE_CONCENTRATION_THRESHOLD")
+    if raw is None or raw == "":
+        return SOURCE_CONCENTRATION_THRESHOLD_DEFAULT
+    try:
+        return float(raw)
+    except ValueError:
+        return SOURCE_CONCENTRATION_THRESHOLD_DEFAULT
+
+
+def _row_source(row) -> str:
+    """Canonical source identifier for concentration analysis.
+
+    Uses `source_system` (the engine that emitted the pick, e.g. `battleground`,
+    `alpha_engine`, `mercury2`) which is what the skill rule references. Falls
+    back to `_origin_file` basename when missing (e.g. legacy mercury2 ledger
+    rows) so EVERY kept row contributes a source identifier.
+    """
+    src = row.get("source_system")
+    if src:
+        s = str(src).strip()
+        if s:
+            return s
+    origin = row.get("_origin_file")
+    if origin:
+        base = os.path.basename(str(origin))
+        # closed_picks.json is repeated across folders; prefer parent dir name
+        # when the basename is a generic ledger filename.
+        if base in ("closed_picks.json", "closed_picks_fast.json"):
+            # Path shape: <engine>/data/closed_picks.json — the engine name
+            # lives in the grandparent (parent of `data/`). Fall back to the
+            # immediate parent when there is no `data/` segment.
+            parent_dir = os.path.dirname(str(origin))
+            parent = os.path.basename(parent_dir)
+            if parent == "data":
+                gp = os.path.basename(os.path.dirname(parent_dir))
+                if gp:
+                    return f"file:{gp}"
+            return f"file:{parent or 'unknown'}"
+        return f"file:{base}"
+    return "unknown"
+
+
+def _compute_source_concentration(source_counts: dict) -> dict:
+    """Given {source -> n} return concentration fields.
+
+    Returns dict with keys: single_source_pct, top_source, is_single_source_artifact.
+    n is the sum of source_counts.values().
+    """
+    n_total = sum(source_counts.values())
+    if n_total <= 0:
+        return {
+            "single_source_pct": None,
+            "top_source": None,
+            "is_single_source_artifact": False,
+        }
+    top_source, top_n = max(source_counts.items(), key=lambda kv: (kv[1], kv[0]))
+    pct = top_n / n_total
+    threshold = _source_concentration_threshold()
+    flag = (pct > threshold) and (n_total >= SOURCE_CONCENTRATION_MIN_N)
+    return {
+        "single_source_pct": round(pct, 6),
+        "top_source": top_source,
+        "is_single_source_artifact": bool(flag),
+    }
 
 # ---------------------------------------------------------------------------
 # Paths (resolved relative to repo root so the script is location-independent)
@@ -618,6 +699,12 @@ def aggregate(kept_rows, net: bool = False):
     by_class_strategy_symbol = defaultdict(_blank_stat)
     by_class_strategy = defaultdict(_blank_stat)
     by_class = defaultdict(_blank_stat)
+    # Per-group source-system tallies for the FINDING_OVERALL#8 single-source
+    # artifact flag — { group_key: { source: count } }.
+    src_csd = defaultdict(lambda: defaultdict(int))
+    src_css = defaultdict(lambda: defaultdict(int))
+    src_cs = defaultdict(lambda: defaultdict(int))
+    src_c = defaultdict(lambda: defaultdict(int))
     # (trade_date, pnl) pairs per class — sorted by trade_date for the equity
     # curve so the MDD is self-consistent with the PF/WR built above.
     class_series = defaultdict(list)
@@ -628,29 +715,38 @@ def aggregate(kept_rows, net: bool = False):
         sym = _norm_symbol(r.get("symbol"))
         td = _trade_date(r)
         pnl = _net_pnl(r["_pnl_pct"], ac) if net else r["_pnl_pct"]
+        src = _row_source(r)
 
         _accumulate(by_class_strategy_date[(ac, strat, td)], pnl)
         _accumulate(by_class_strategy_symbol[(ac, strat, sym)], pnl)
         _accumulate(by_class_strategy[(ac, strat)], pnl)
         _accumulate(by_class[ac], pnl)
+        src_csd[(ac, strat, td)][src] += 1
+        src_css[(ac, strat, sym)][src] += 1
+        src_cs[(ac, strat)][src] += 1
+        src_c[ac][src] += 1
         class_series[ac].append((td, pnl))
 
     rows_csd = [
         {"asset_class": ac, "strategy": strat, "trade_date": td,
-         **_finalize(stat)}
+         **_finalize(stat),
+         **_compute_source_concentration(src_csd[(ac, strat, td)])}
         for (ac, strat, td), stat in sorted(by_class_strategy_date.items())
     ]
     rows_css = [
         {"asset_class": ac, "strategy": strat, "symbol": sym,
-         **_finalize(stat)}
+         **_finalize(stat),
+         **_compute_source_concentration(src_css[(ac, strat, sym)])}
         for (ac, strat, sym), stat in sorted(by_class_strategy_symbol.items())
     ]
     rows_cs = [
-        {"asset_class": ac, "strategy": strat, **_finalize(stat)}
+        {"asset_class": ac, "strategy": strat, **_finalize(stat),
+         **_compute_source_concentration(src_cs[(ac, strat)])}
         for (ac, strat), stat in sorted(by_class_strategy.items())
     ]
     rows_c = [
-        {"asset_class": ac, **_finalize(stat)}
+        {"asset_class": ac, **_finalize(stat),
+         **_compute_source_concentration(src_c[ac])}
         for ac, stat in sorted(by_class.items())
     ]
     class_mdd = {}
@@ -665,6 +761,7 @@ def raw_by_class(rows):
     """PF per asset class WITHOUT dedup/flicker filtering — the 'before'
     picture, so the dedup delta is auditable in the registry itself."""
     by_class = defaultdict(_blank_stat)
+    src_c = defaultdict(lambda: defaultdict(int))
     for r in rows:
         status = str(r.get("status", "")).upper()
         if status and status not in CLOSED_STATUSES:
@@ -672,9 +769,12 @@ def raw_by_class(rows):
         pnl = _to_float(r.get("pnl_pct"))
         if pnl is None:
             continue
-        _accumulate(by_class[_asset_class(r)], pnl)
+        ac = _asset_class(r)
+        _accumulate(by_class[ac], pnl)
+        src_c[ac][_row_source(r)] += 1
     return [
-        {"asset_class": ac, **_finalize(stat)}
+        {"asset_class": ac, **_finalize(stat),
+         **_compute_source_concentration(src_c[ac])}
         for ac, stat in sorted(by_class.items())
     ]
 
