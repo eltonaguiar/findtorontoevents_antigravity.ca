@@ -302,9 +302,13 @@ def main() -> None:
     picks = load_all_picks()
     if not picks:
         print("[ai-tournament] no picks found — Phase 1B not yet complete")
-        # Write empty latest
-        LATEST_PICKS.parent.mkdir(parents=True, exist_ok=True)
-        LATEST_PICKS.write_text(json.dumps([], indent=2))
+        # Do NOT overwrite LATEST_PICKS here. The submissions/*.json glob is a
+        # partial cohort; the canonical writer of ai_tournament_picks_latest.json
+        # is tools/ai_tournament/rebuild_latest_from_db.py (the "Restore full
+        # dataset from DB" step that runs immediately after price_tracker.py in
+        # both ai-tournament-pipeline.yml and ai-tournament-price-tracker.yml).
+        # Truncating to [] here on glob-miss was the root cause of
+        # INCIDENT_OVERALL #39 (recurring 3,873 -> 1,037 / 478-pick regressions).
         return
 
     open_picks = [p for p in picks if p.get("status") == "OPEN"]
@@ -334,13 +338,19 @@ def main() -> None:
         print(f"  [{status:4s}] {symbol:12s} ${price:.4f} pnl={pnl}")
         time.sleep(0.2)  # avoid rate limits
 
-    # Write latest picks snapshot
+    # Write per-day snapshot only. LATEST_PICKS is intentionally NOT written
+    # here: this loop loads from the submissions/*.json glob, which is a
+    # partial cohort (missing models whose submission files haven't synced,
+    # excluding rows that only made it to the DB via ingest_to_db.py). The
+    # canonical writer of ai_tournament_picks_latest.json is
+    # rebuild_latest_from_db.py, which runs in the "Restore full dataset from
+    # DB (anti-clobber guard)" step right after this one. Writing here was
+    # the clobber path that caused INCIDENT_OVERALL #39 — when the rebuild
+    # step's DB connection also failed (run 26697651272 on 2026-05-30), the
+    # 1,037-pick partial committed instead of the full 4,419-pick set.
     PICKS_DIR.mkdir(parents=True, exist_ok=True)
     snapshot_file = PICKS_DIR / f"picks_{date_str}.json"
     snapshot_file.write_text(json.dumps(updated, indent=2))
-
-    LATEST_PICKS.parent.mkdir(parents=True, exist_ok=True)
-    LATEST_PICKS.write_text(json.dumps(updated, indent=2))
 
     resolved = [p for p in updated if p.get("status") != "OPEN"]
     wins = [p for p in resolved if p.get("pnl_pct", 0) > 0]
