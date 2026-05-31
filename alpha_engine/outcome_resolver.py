@@ -297,19 +297,53 @@ _EQUITY_SYMBOLS = {
 _NON_CRYPTO_CATEGORIES = {"forex", "equity", "commodity", "bond", "stock", "index"}
 
 
+# Crypto-quote suffixes that unambiguously identify a crypto trading pair
+# (added 2026-05-31 for incident #48 — see _is_non_crypto)
+_CRYPTO_SUFFIXES = ("USDT", "USDC", "BUSD", "TUSD", "FDUSD", "DAI", "-USD")
+
+
 def _is_non_crypto(pick: dict) -> bool:
-    """Determine if pick is forex/equity/commodity (not crypto)."""
+    """Determine if pick is forex/equity/commodity (not crypto).
+
+    Hardened (incident #48, 2026-05-31) to prioritize unambiguous symbol
+    suffixes OVER the upstream ``category`` / ``asset_class`` field. The
+    category field has been observed corrupted in production:
+        SHIBUSDT  labeled COMMODITY  (vwap_rsi_confluence)
+        LINKUSDT  labeled stocks     (regime_terminal)
+        AVAXUSDT  labeled stocks     (regime_terminal)
+        BNBUSDT   labeled stocks     (regime_terminal)
+        BTCUSDT   labeled forex      (alpha_engine)
+    Routing these to yfinance instead of api_failover produces 6-9
+    order-of-magnitude exit-price drift (e.g. SHIBUSDT exit=4100.97 vs
+    entry=5.53e-06), poisoning per-class PF/WR/Sharpe.
+
+    Resolution order:
+      1. Yahoo-suffix symbols (=X, =F) → yfinance, always.
+      2. Crypto-suffix symbols (USDT/USDC/BUSD/-USD/...) → api_failover,
+         regardless of upstream label.
+      3. Otherwise honor the category / asset_class field.
+      4. Last resort: known equity tickers (base-symbol exact match).
+    """
+    sym = str(pick.get("symbol", ""))
+
+    # 1. Yahoo Finance suffixes (forex =X, futures/commodity =F) — yfinance
+    if any(sym.endswith(s) for s in _YAHOO_SUFFIXES):
+        return True
+
+    # 2. Crypto-quote suffixes — api_failover. Beat any corrupted upstream label.
+    if any(sym.endswith(s) for s in _CRYPTO_SUFFIXES):
+        return False
+
+    # 3. Honor explicit non-crypto category/asset_class label
     cat = str(pick.get("category", pick.get("asset_class", ""))).lower()
     if cat in _NON_CRYPTO_CATEGORIES:
         return True
-    sym = str(pick.get("symbol", ""))
-    # Yahoo Finance symbols: EURUSD=X, GC=F, ZN=F, etc.
-    if any(sym.endswith(s) for s in _YAHOO_SUFFIXES):
-        return True
-    # Known equity tickers
+
+    # 4. Known equity tickers (base symbol check)
     base = sym.replace("-USD", "").replace("USDT", "").replace("=X", "").replace("=F", "")
     if base in _EQUITY_SYMBOLS:
         return True
+
     return False
 
 
