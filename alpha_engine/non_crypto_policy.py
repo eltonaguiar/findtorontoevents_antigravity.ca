@@ -237,26 +237,12 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.50,
         "allow_without_forward": False,
     },
-    "forex_rsi2_mean_reversion": {
-        "categories": {"forex"},
-        "min_confidence": 0.60,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.35,
-        "allow_without_forward": True,  # 2026-04-19: Allow on probation to build forward record
-        # ORIGINAL was min_forward_trades=50 (impossible gate — strategy can never
-        # accumulate 50 trades if blocked at every scan). Lowered to 5 + probation
-        # so the strategy can actually build a forward history. Backtest claim:
-        # 57.6% WR on 118 trades (Connors RSI2 mean reversion), so the edge exists.
-        # Also lowered min_confidence 0.74→0.60, min_rr 1.40→1.20, min_elite_score 70→50
-        # to align with other probationary forex strategies.
-    },
-    # Inverse carry contrarian — FOREX Rescue Operation bonus edge (2026-05-08)
-    # Mirrors carry_trade_momentum: short high-yield currencies when carry > 0
-    # but price is below SMA50/SMA200 (carry trade reversal/unwind setup).
-    # Verdelhan (2015) crash risk premium + session-overlap edge (58% WR).
-    "inverse_carry_contrarian": {
+    # PR #6: FOREX Strategy Consolidation (2026-05-31)
+    # All FOREX strategies blocked except cta_cross_asset_tsmom SHORT.
+    # forex_carry added to allowlist with probation thresholds.
+    # NOTE: strategy name is "carry_trade" (matching emission source in
+    # alpha_engine/strategies/new_strategies/forex_carry.py line 155).
+    "carry_trade": {
         "categories": {"forex"},
         "min_confidence": 0.52,
         "min_rr": 1.20,
@@ -264,27 +250,6 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_trades": 5,
         "min_forward_wr": 0.40,
         "allow_without_forward": True,
-    },
-    "carry_trade_momentum": {
-        "categories": {"forex"},
-        "min_confidence": 0.52,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.40,
-        "allow_without_forward": True,  # New strategy, build forward record
-    },
-    # PR3 (2026-05-27): Wire forex_carry_ppp — ECB research-based enhanced carry
-    # Kwas et al. (2024) PPP equilibrium overlay. EURUSD-focused, needs forward record.
-    # Incident: INC P0 (FOREX all losers) + INC P1 (forex_carry not in allowlist).
-    "forex_carry_ppp": {
-        "categories": {"forex"},
-        "min_confidence": 0.52,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.40,
-        "allow_without_forward": True,  # Probation: build forward record
     },
     # ── ETF strategies (new 2026-04-07) ──────────────────────────────────────
     # All start on probation (allow_without_forward=True) to build forward record.
@@ -589,12 +554,13 @@ def evaluate_non_crypto_candidate(candidate: dict[str, Any], *, context: str = "
         candidate.get("asset_class"),
     )
     strategy = _normalize_strategy(candidate.get("strategy"))
+    symbol = str(candidate.get("symbol") or "").upper()
 
     # Fix B + C: emission gates — re-entry cooldown + daily session cap.
     # Applied before strategy policy checks so any non-crypto pick is blocked
     # when the symbol just exited or the daily cap is reached.
     try:
-        gate = check_emission_gates(str(candidate.get("symbol") or ""))
+        gate = check_emission_gates(symbol)
         if gate.get("blocked"):
             return {
                 "allowed": False,
@@ -605,6 +571,29 @@ def evaluate_non_crypto_candidate(candidate: dict[str, Any], *, context: str = "
             }
     except Exception:
         pass
+
+    # PR #6 (2026-05-31): FOREX Strategy Consolidation
+    # Block all FOREX strategies except cta_cross_asset_tsmom SHORT and forex_carry.
+    # Empirical: FOREX class PF 0.29 / WR 46.1% / PnL -1026% (hard disable default ON).
+    # carry_trade is the sole probationary exception — G10 carry-factor (Ring recommendation).
+    # Strategy name "carry_trade" matches emission source (forex_carry.py emits "carry_trade").
+    if category == "forex":
+        if strategy not in ("cta_cross_asset_tsmom", "carry_trade"):
+            return {
+                "allowed": False,
+                "category": category,
+                "strategy": strategy,
+                "reason": "forex_strategy_consolidation_blocked",
+            }
+        if strategy == "cta_cross_asset_tsmom":
+            direction = str(candidate.get("direction", "LONG")).upper()
+            if direction != "SHORT":
+                return {
+                    "allowed": False,
+                    "category": category,
+                    "strategy": strategy,
+                    "reason": "cta_cross_asset_tsmom_short_only",
+                }
 
     if category not in NON_CRYPTO_CATEGORIES:
         return {
