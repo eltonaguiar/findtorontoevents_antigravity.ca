@@ -71,6 +71,36 @@ def connect():
 # ── Repair functions (must be defined BEFORE CHECKS since they're referenced there) ─
 
 
+def _repair_pnl_price_corruption(cur) -> int:
+    """PR #7: NULL out corrupt exit_price on rows with absurd price-based PnL.
+
+    Detects rows where (exit_price - entry_price) / entry_price suggests an
+    impossible move (>500% absolute PnL).  These are data corruption, not real
+    trades — the exit_price was written from a different symbol or timeframe.
+
+    Repair: NULLs exit_price (so backtests skip them) and tags exit_reason.
+    Does NOT touch pnl_pct — the stored value is more trustworthy.
+    Returns number of rows repaired.
+    """
+    cur.execute(
+        "UPDATE trading_picks "
+        "SET exit_price = NULL, "
+        "    exit_reason = CASE "
+        "        WHEN exit_reason IS NULL OR exit_reason = '' "
+        "            THEN 'PRICE_CORRUPT' "
+        "        WHEN exit_reason LIKE '%PRICE_CORRUPT%' "
+        "            THEN exit_reason "
+        "        ELSE CONCAT(exit_reason, ' [PRICE_CORRUPT]') "
+        "    END, "
+        "    updated_at = NOW() "
+        "WHERE exit_price > 0 AND entry_price > 0 "
+        "  AND status IN ('WON','LOST','TP_HIT','SL_HIT','EXPIRED') "
+        "  AND ABS((exit_price - entry_price) / entry_price * 100 "
+        "    * CASE WHEN direction='LONG' THEN 1 ELSE -1 END) > 500"
+    )
+    return cur.rowcount
+
+
 def _repair_signal_outcomes(cur) -> int:
     """PR #4: Rebuild at_signal_outcomes from trading_picks (closed picks only).
 
@@ -354,8 +384,23 @@ CHECKS = [
         "repair_sql": _repair_cot_dedup,
     },
     {
+        "id": "pnl_price_corruption",
+        "title": "PnL price corruption — exit_price produces impossible PnL (>500% absolute)",
+        "sql": (
+            "SELECT COUNT(*) as cnt "
+            "FROM trading_picks "
+            "WHERE exit_price > 0 AND entry_price > 0 "
+            "  AND status IN ('WON','LOST','TP_HIT','SL_HIT','EXPIRED') "
+            "  AND ABS((exit_price - entry_price) / entry_price * 100 "
+            "    * CASE WHEN direction='LONG' THEN 1 ELSE -1 END) > 500"
+        ),
+        "pass": lambda r: r["cnt"] == 0,
+        "fmt": lambda r: f"{r['cnt']} rows with impossible price-based PnL",
+        "repair_sql": _repair_pnl_price_corruption,
+    },
+    {
         "id": "pnl_integrity",
-        "title": "PnL integrity mismatch on 38.97%",
+        "title": "PnL integrity — pnl_pct vs price-based calculation mismatch on clean-price rows",
         "sql": """
             SELECT COUNT(*) as total,
                 SUM(CASE WHEN ABS(pnl_pct - (
@@ -365,9 +410,11 @@ CHECKS = [
             FROM trading_picks
             WHERE status IN ('WON','LOST','TP_HIT','SL_HIT','EXPIRED')
                 AND exit_price > 0 AND entry_price > 0
+                AND ABS((exit_price - entry_price) / entry_price * 100
+                    * CASE WHEN direction='LONG' THEN 1 ELSE -1 END) <= 500
         """,
         "pass": lambda r: r["mismatch"] / max(r["total"], 1) < 0.10,
-        "fmt": lambda r: f"{r['mismatch']}/{r['total']} ({r['mismatch']/max(r['total'],1)*100:.1f}%) mismatch > 1%",
+        "fmt": lambda r: f"{r['mismatch']}/{r['total']} ({r['mismatch']/max(r['total'],1)*100:.1f}%) mismatch > 1% (clean prices only)",
     },
 ]
 
