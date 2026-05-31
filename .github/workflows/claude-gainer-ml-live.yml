@@ -35,6 +35,10 @@ jobs:
       - name: Run live scanner
         run: |
           cd claude_gainer_ml
+          if ! ls models/*.joblib >/dev/null 2>&1; then
+            echo "::warning::No model .joblib files in claude_gainer_ml/models/ — skipping scanner (gitignored artifacts, training run not landed yet)"
+            exit 0
+          fi
           python live_scanner.py --top 200 --max-picks 10 --no-discord
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
