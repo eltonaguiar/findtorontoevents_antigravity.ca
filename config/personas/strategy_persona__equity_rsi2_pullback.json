@@ -1,0 +1,50 @@
+{
+  "persona_id": "strategy_persona__equity_rsi2_pullback",
+  "display_name": "Equity RSI(2) Pullback Promoter",
+  "strategy_family": "technical_mean_reversion",
+  "wraps_strategy": "stocks_rsi2_pullback",
+  "asset_class": "EQUITY",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "philosophy": "Promotes the stocks_rsi2_pullback emitter signal. Larry-Connors 2-day RSI mean-reversion in established uptrends. Buys equities trading above their 200-day SMA when RSI(2) drops below 10, exits on RSI(2) > 70 or 5-day hold cap. Live-confirmed Tier-2-trajectory edge.",
+  "entry_criteria": [
+    "Price above 200-day SMA (long-term uptrend filter)",
+    "RSI(2) < 10 (extreme short-term pullback)",
+    "ADV20 > $50M (liquidity floor — exclude penny names)",
+    "Symbol in S&P 500 universe (covered by stocks_rsi2_pullback emitter)"
+  ],
+  "exit_criteria": [
+    "RSI(2) > 70 OR hard time-stop at 5 trading days",
+    "Hard stop: close below entry day low",
+    "Take profit: +3% or hit of 5-day high, whichever first"
+  ],
+  "risk_reward_target": "1.0 to 2.0",
+  "max_risk_per_trade_pct": 1.0,
+  "suggested_backtesting_protocol": "Walk-forward S&P 500 daily, 12mo IS / 3mo OOS. n>=100 closed picks required before promotion to live. Track PF and MDD monthly.",
+  "confidence_calibration": "HIGH when RSI(2) < 5 and SPY also above its own 200SMA. MEDIUM at RSI(2) 5-10. LOW when uptrend regime is questionable (SPY below 50SMA).",
+  "best_market_conditions": ["Bull regime (SPY above 200SMA)", "Low-VIX (<20) trend-day environments", "Earnings-driven dispersion periods"],
+  "worst_market_conditions": ["Crisis tape with index-level breaks of 200SMA", "Sustained VIX > 30 regime", "Persistent gap-down opens"],
+  "min_historical_trades": 100,
+  "live_stats_validation_2026_05_31": {
+    "n_closed": 34,
+    "wr_pct": 52.9,
+    "pf": 1.52,
+    "avg_pnl_pct": 0.48,
+    "category": "equity"
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": 0.52,
+    "source": "reports/phase10b_equity_money_maker_readyv2_2026-05-31.md",
+    "verdict": "TRAJECTORY_T2"
+  },
+  "operator_activation_steps": [
+    "1. Verify stocks_rsi2_pullback is NOT in alpha_engine/auto_tuner.py:PERMANENTLY_KILLED (confirmed clean 2026-05-31).",
+    "2. If incident #202 kill action was applied at n=10 on 2026-05-28, un-kill by removing from any local LOW_CONFIDENCE_STRATEGIES override or kill registry.",
+    "3. Register persona in config/model_persona_mapping.json under at least one model's EQUITY assignment list (recommend cursor_agent or claude_opus for fundamentals-aware narration).",
+    "4. Add PERSONA_STRATEGIES entry to tools/populate_picks.py:405 with display: 'RSI(2) pullback in established uptrend'.",
+    "5. Add PERSONA_THESIS_MAP entry to tools/populate_picks.py:456.",
+    "6. Ship as shadow tournament-only emitter — DO NOT include in smart_picks_engine.passes_active_gate yet.",
+    "7. Re-promote to live sizing only after n>=100 closed with PF>=1.5 AND DSR concentration-gated."
+  ],
+  "kill_registry_check": "PASSED — stocks_rsi2_pullback absent from PERMANENTLY_KILLED, LOW_CONFIDENCE_STRATEGIES, HARD_DISABLED_PATTERNS as of 2026-05-31."
+}

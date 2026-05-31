@@ -1,0 +1,48 @@
+{
+  "persona_id": "strategy_persona__etf_regime_bull",
+  "display_name": "ETF Mild-Bull Regime Promoter (SHADOW, n<10)",
+  "strategy_family": "regime_overlay",
+  "wraps_strategy": "regime_mild_bull",
+  "asset_class": "ETF",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "philosophy": "Promotes the regime_mild_bull emitter on the ETF surface — long broad-index ETFs (SPY/QQQ/IWM/EEM/GLD) only when a 'mild bull' regime classifier fires. EXTREMELY thin n=2 win-only sample; this persona exists only to accumulate honest closed-trade volume in shadow.",
+  "entry_criteria": [
+    "regime_mild_bull classifier in 'BULL_MILD' state (SPY 50SMA up-sloping AND VIX < 20 AND no recent breadth-thrust violation)",
+    "Target ETF in tournament universe (SPY, QQQ, IWM, EEM, GLD)",
+    "ADV > $500M (ETF liquidity is rarely a problem)"
+  ],
+  "exit_criteria": [
+    "Regime classifier exits BULL_MILD (transitions to NEUTRAL or BEAR)",
+    "Hard time-stop: 30 trading days (ETF resolution window)",
+    "Hard ATR stop: 2x 20-day ATR from entry"
+  ],
+  "risk_reward_target": "1.5 to 2.5",
+  "max_risk_per_trade_pct": 1.0,
+  "suggested_backtesting_protocol": "ETF universe daily bars 2018-2025. Tag regime windows. Compare BULL_MILD-tagged returns vs all-weather buy-and-hold. n>=30 needed before any live discussion.",
+  "confidence_calibration": "HIGH only in shadow review — n=2 is statistically meaningless. Treat all signals as MEDIUM until n>=30.",
+  "best_market_conditions": ["Low-vol bull tape (VIX < 18)", "Earnings season with positive surprise rate > 70%"],
+  "worst_market_conditions": ["Vol-spike events", "Regime transitions misclassified by classifier"],
+  "min_historical_trades": 30,
+  "live_stats_validation_2026_05_31": {
+    "n_closed_ETF": 2,
+    "wr_pct": 100.0,
+    "avg_pnl_pct": 2.121,
+    "n_closed_EQUITY": 2,
+    "n_closed_other": 6,
+    "note": "n=2 is artifact-sized. Do NOT cite these stats as edge proof. Other categories (crypto n=1 -4.5%) suggest classifier may not generalize."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "ETF was INSUFF-N per /audit (n=2)",
+    "verdict": "INSUFF_N_SHADOW_ONLY"
+  },
+  "operator_activation_steps": [
+    "1. Verify regime_mild_bull NOT in PERMANENTLY_KILLED (confirmed clean).",
+    "2. Restrict persona to ETF asset_class only (block crypto/stocks branches — they leaked into raw data with poor results).",
+    "3. Add PERSONA_STRATEGIES + PERSONA_THESIS_MAP entries.",
+    "4. Assign to 1-2 macro-aware models (claude_opus, ring_261T) in model_persona_mapping.json under ETF.",
+    "5. Shadow MANDATORY until n>=30 closed ETF picks; do NOT consider live sizing on n=2."
+  ],
+  "kill_registry_check": "PASSED — regime_mild_bull not in any kill list."
+}

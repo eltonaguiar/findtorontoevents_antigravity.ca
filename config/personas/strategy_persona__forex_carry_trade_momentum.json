@@ -1,0 +1,50 @@
+{
+  "persona_id": "strategy_persona__forex_carry_trade_momentum",
+  "display_name": "FX Smart Carry+Momentum Promoter",
+  "strategy_family": "macro_carry_with_trend_filter",
+  "wraps_strategy": "fx_smart_carry_trade_momentum",
+  "asset_class": "FOREX",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "philosophy": "Promotes the fx_smart_carry_trade_momentum emitter — interest-rate-differential carry pairs filtered by short-term momentum confirmation. Top Phase-3 MC candidate for FOREX with P(T2 at n=100) = 64%.",
+  "entry_criteria": [
+    "Positive carry pair (long high-yield CCY vs low-yield CCY)",
+    "Carry differential >= 200bps annualised",
+    "20-day momentum sign matches carry direction (no fighting trend)",
+    "Symbol in {AUDJPY, NZDJPY, USDJPY, USDMXN, USDZAR} carry universe"
+  ],
+  "exit_criteria": [
+    "Carry differential collapses below 100bps",
+    "Momentum signal flips (20-day return turns adverse)",
+    "Hard ATR stop: 1.5x 20-day ATR from entry",
+    "Time stop: 21 trading days (matches FOREX resolution window)"
+  ],
+  "risk_reward_target": "1.5 to 3.0",
+  "max_risk_per_trade_pct": 1.0,
+  "suggested_backtesting_protocol": "Daily bars, walk-forward 24mo IS / 6mo OOS. Track DXY regime separately. Block during major CB meetings (FOMC/ECB/BOJ/BOE 24h window).",
+  "confidence_calibration": "HIGH when carry > 300bps AND momentum confirms AND DXY trending direction-consistent. MEDIUM at 200-300bps. LOW below.",
+  "best_market_conditions": ["Stable risk-on regimes", "VIX < 20 environments", "Diverging central-bank policy phases"],
+  "worst_market_conditions": ["Risk-off shocks (carry unwind)", "Surprise CB pivots", "VIX > 25 sustained"],
+  "min_historical_trades": 100,
+  "live_stats_validation_2026_05_31": {
+    "n_closed": 21,
+    "wr_pct": 52.4,
+    "pf": 1.62,
+    "avg_pnl_pct": 0.105,
+    "category": "forex"
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": 0.64,
+    "source": "reports/phase10b_forex_money_maker_readyv2_2026-05-31.md",
+    "verdict": "BEST_REAL_EDGE_CANDIDATE"
+  },
+  "operator_activation_steps": [
+    "1. Verify fx_smart_carry_trade_momentum is NOT in PERMANENTLY_KILLED (confirmed clean 2026-05-31).",
+    "2. Add PERSONA_STRATEGIES entry: 'Carry+momentum FX, IR-diff filter with trend confirmation'.",
+    "3. Add PERSONA_THESIS_MAP entry.",
+    "4. Wire into FOREX assignments list for 1-2 macro-aware models (claude_opus, gemini_25_pro).",
+    "5. Block USDJPY-only concentration: enforce per-symbol cap at 40% of persona's open exposure (note: USDJPY had 55% concentration in raw data per CLAUDE.md FOREX status).",
+    "6. Shadow until n>=100 AND USDJPY concentration < 40%."
+  ],
+  "kill_registry_check": "PASSED — fx_smart_carry_trade_momentum not in any kill list."
+}

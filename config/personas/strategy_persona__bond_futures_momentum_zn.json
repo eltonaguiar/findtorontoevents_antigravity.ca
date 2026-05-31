@@ -1,0 +1,51 @@
+{
+  "persona_id": "strategy_persona__bond_futures_momentum_zn",
+  "display_name": "BOND ZN Futures Momentum (SHADOW, artifact-flagged)",
+  "strategy_family": "trend_following_bonds",
+  "wraps_strategy": "futures_momentum",
+  "asset_class": "BOND",
+  "asset_symbol_whitelist": ["ZN=F"],
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "philosophy": "Promotes the futures_momentum emitter restricted to ZN=F (10Y Treasury futures) ONLY. Phase 10b plan #200 flagged futures_momentum as block-candidate; live n=5 BOND data shows 60% WR / +1.02% avg but PF=362 is a 1-trade artifact. This persona exists ONLY to harvest more BOND closed-trade volume to break the n=8 INSUFF-N stasis.",
+  "entry_criteria": [
+    "Symbol == ZN=F (CBOT 10Y Treasury futures)",
+    "20-day momentum positive AND 200-day SMA upward-sloping",
+    "MOVE index < 130 (rate-vol regime check — avoid Aug 2024 vol spike conditions)",
+    "Block during FOMC week (T-2 to T+1)"
+  ],
+  "exit_criteria": [
+    "20-day momentum sign flips",
+    "MOVE > 150 mid-trade",
+    "Hard time-stop: 60 trading days (BOND resolution window)",
+    "ATR stop: 2x 20-day ATR"
+  ],
+  "risk_reward_target": "1.5 to 2.5",
+  "max_risk_per_trade_pct": 0.5,
+  "suggested_backtesting_protocol": "ZN=F daily 2018-2025. Walk-forward. Tag rate-regime (rising/falling/stable). n>=30 BOND-tagged closed picks required.",
+  "confidence_calibration": "ALWAYS MEDIUM until n>=30. Current n=5 PF=362 is an artifact and MUST NOT be cited as edge.",
+  "best_market_conditions": ["Trending rate cycles (Fed mid-hike or mid-cut path)", "Quiet vol regimes (MOVE < 100)"],
+  "worst_market_conditions": ["FOMC weeks", "Surprise CPI prints", "MOVE > 150 vol spikes"],
+  "min_historical_trades": 30,
+  "live_stats_validation_2026_05_31": {
+    "n_closed": 5,
+    "wr_pct": 60.0,
+    "pf_raw": 362.63,
+    "pf_real_estimate": "1-trade artifact — true PF unknown",
+    "avg_pnl_pct": 1.02,
+    "warning": "futures_momentum on category=commodity has n=597 PF=0.45 (catastrophic). Symbol-scoping to ZN=F is critical."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "BOND INSUFF-N per /audit (n=8)",
+    "verdict": "INSUFF_N_ARTIFACT_FLAGGED"
+  },
+  "operator_activation_steps": [
+    "1. Verify futures_momentum NOT in PERMANENTLY_KILLED (confirmed clean — futures_ema_stack_momentum is killed but distinct).",
+    "2. **CRITICAL: persona MUST enforce symbol_whitelist=[ZN=F] at emit time.** Without this gate, the commodity branch (n=597, PF 0.45) dominates and destroys the persona.",
+    "3. Add PERSONA_STRATEGIES + PERSONA_THESIS_MAP entries scoped to 'ZN=F trend-following'.",
+    "4. Assign to 1 BOND-specialist model (claude_opus duration_call slot is adjacent; could also use ring_261T).",
+    "5. SHADOW MANDATORY until n>=30 ZN=F closed picks. Do NOT promote on the current 5-pick artifact PF."
+  ],
+  "kill_registry_check": "PASSED with caveat — futures_momentum is not killed, but the related futures_ema_stack_momentum IS. The symbol scope (ZN=F only) is essential."
+}
