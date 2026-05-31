@@ -89,6 +89,42 @@ def _repair_signal_outcomes(cur) -> int:
     return cur.rowcount
 
 
+def _repair_ghost_rows(cur) -> int:
+    """PR #3: Dedup ghost rows — keep only the earliest pick per
+    (category, strategy, symbol, direction, pnl_pct, created_sec) and delete the rest.
+
+    Uses UNIX_TIMESTAMP(created_at) to round timestamps to second precision,
+    fixing the microsecond mismatch.  Uses IFNULL on all nullable columns
+    because SQL NULL != NULL in JOIN conditions (GROUP BY groups NULLs, JOIN doesn't).
+    Returns number of rows deleted.
+    """
+    cur.execute("DROP TEMPORARY TABLE IF EXISTS tmp_ghost_dedup")
+    cur.execute(
+        "CREATE TEMPORARY TABLE tmp_ghost_dedup AS "
+        "SELECT category, strategy, symbol, direction, pnl_pct, "
+        "  UNIX_TIMESTAMP(created_at) as created_sec, MIN(id) as min_id "
+        "FROM trading_picks "
+        "GROUP BY category, strategy, symbol, direction, pnl_pct, UNIX_TIMESTAMP(created_at) "
+        "HAVING COUNT(*) > 1"
+    )
+    cur.execute("SELECT COUNT(*) as cnt FROM tmp_ghost_dedup")
+    dup_groups = cur.fetchone()["cnt"]
+    if dup_groups == 0:
+        return 0
+    cur.execute(
+        "DELETE t1 FROM trading_picks t1 "
+        "INNER JOIN tmp_ghost_dedup t2 "
+        "  ON IFNULL(t1.category,'') = IFNULL(t2.category,'') "
+        "  AND IFNULL(t1.strategy,'') = IFNULL(t2.strategy,'') "
+        "  AND t1.symbol = t2.symbol "
+        "  AND t1.direction = t2.direction "
+        "  AND IFNULL(t1.pnl_pct, -9999) = IFNULL(t2.pnl_pct, -9999) "
+        "  AND IFNULL(UNIX_TIMESTAMP(t1.created_at), 0) = IFNULL(t2.created_sec, 0) "
+        "WHERE t1.id > t2.min_id"
+    )
+    return cur.rowcount
+
+
 def _repair_cot_dedup(cur) -> int:
     """PR #5: Dedup COT over-emission — keep only the earliest pick per
     (symbol, strategy, direction, release_week) and delete the rest.
@@ -178,27 +214,13 @@ CHECKS = [
             SELECT COALESCE(SUM(grp_cnt - 1), 0) as cnt FROM (
                 SELECT COUNT(*) as grp_cnt
                 FROM trading_picks
-                GROUP BY category, strategy, symbol, direction, pnl_pct, created_at
+                GROUP BY category, strategy, symbol, direction, pnl_pct, UNIX_TIMESTAMP(created_at)
                 HAVING COUNT(*) > 1
             ) dupes
         """,
         "pass": lambda r: r["cnt"] == 0,
         "fmt": lambda r: f"{r['cnt']} ghost rows across all cohorts",
-        "repair_sql": (
-            "DELETE t1 FROM trading_picks t1 "
-            "INNER JOIN ("
-            "  SELECT category, strategy, symbol, direction, pnl_pct, created_at, MIN(id) as min_id "
-            "  FROM trading_picks "
-            "  GROUP BY category, strategy, symbol, direction, pnl_pct, created_at "
-            "  HAVING COUNT(*) > 1"
-            ") t2 ON IFNULL(t1.category,'') = IFNULL(t2.category,'') "
-            "  AND IFNULL(t1.strategy,'') = IFNULL(t2.strategy,'') "
-            "  AND t1.symbol = t2.symbol "
-            "  AND t1.direction = t2.direction "
-            "  AND t1.pnl_pct = t2.pnl_pct "
-            "  AND t1.created_at = t2.created_at "
-            "WHERE t1.id > t2.min_id"
-        ),
+        "repair_sql": _repair_ghost_rows,
     },
     {
         "id": "unknown_category_active",
