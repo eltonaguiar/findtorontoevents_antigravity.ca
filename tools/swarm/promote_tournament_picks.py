@@ -127,8 +127,8 @@ def promote_consensus_picks(
             entry = consensus[key]
             entry["models"].add(model_id)
             entry["providers"].add(sub.get("provider", model_id))
-            if pick.get("entry"):
-                entry["entry_prices"].append(float(pick["entry"]))
+            if pick.get("entry") or pick.get("entry_price"):
+                entry["entry_prices"].append(float(pick.get("entry") or pick.get("entry_price")))
             if pick.get("tp") or pick.get("take_profit"):
                 entry["tps"].append(float(pick.get("tp") or pick.get("take_profit")))
             if pick.get("sl") or pick.get("stop_loss"):
