@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# DEPRECATED 2026-05-31: methodology uses capping (winsorization), not intrabar OHLC replay.
+# Produces 2-5x INFLATED PF estimates. See reports/peer_claude-URGENT_METHODOLOGY_FLAG_MC_AUDIT_TOOL_2026-05-31.md
+# Use master paper-pilot harness (.github/workflows/paper-pilot-daily.yml) for forward-only evaluation instead.
 """
 Monte Carlo Edge Audit — Bootstrap significance testing for trading strategies.
 
