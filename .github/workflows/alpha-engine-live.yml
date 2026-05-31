@@ -762,14 +762,25 @@ jobs:
 
       #  Full MySQL Sync: sync ALL pick sources to ejaguiar1_stocks 
       - name: Full MySQL sync (all sources)
+        id: mysql_sync
         if: steps.mode.outputs.mode == 'full-cycle'
+        continue-on-error: true
         env:
           PYTHONPATH: ${{ github.workspace }}
           DB_HOST: mysql.50webs.com
           DB_USER: ejaguiar1_stocks
           DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
           DB_NAME: ejaguiar1_stocks
-        run: python sync_all_picks_to_mysql.py 2>&1 || echo "Full MySQL sync failed (non-fatal)"
+        run: |
+          if ! python sync_all_picks_to_mysql.py 2>&1; then
+            echo "::error::Full MySQL sync failed — live picks data integrity at risk. Investigate immediately."
+            exit 1
+          fi
+
+      - name: Warn on MySQL sync failure
+        if: steps.mysql_sync.outcome == 'failure'
+        run: |
+          echo "::warning::MySQL sync failed — scan results will still be committed. DB data may be stale until next successful sync."
 
       #  Commit results to git 
       - name: Commit results

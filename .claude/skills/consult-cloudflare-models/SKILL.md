@@ -187,6 +187,45 @@ PANEL_REASON=(
 - Network-restricted environments (CF API needs egress to `api.cloudflare.com`) — fall back to NIM if NVIDIA egress is open.
 - Production decision-making — multi-model votes are inputs to a human decision, not the decision itself.
 
+## 🔴 MANDATORY: Leakage-Context Block
+
+**Every prompt sent to CF models for asset-class / edge / pick-performance questions MUST include a leakage-context block.** Multi-model consensus is worthless when all models see the same corrupted inputs. (Incident P1: 5/5 NIM models converged on a false COMMODITY alpha in 2026-05-25 because the prompt omitted leakage evidence.)
+
+### Template — paste at the TOP of any analysis prompt
+
+```
+LEAKAGE CONTEXT — Read before analyzing:
+
+The following known data-quality incidents affect the dataset you are about
+to analyze. Your first task is to determine whether ANY of these incidents
+invalidate the numbers presented. If so, flag it explicitly and adjust your
+analysis accordingly.
+
+Known incidents (see reports/hypothesis_registry.json for full state):
+ - H-101 (COMMODITY): COT publication-lag look-ahead. Pre-dedup commodity
+   numbers show PF~4.3/WR~58%; post-policy ground truth is PF~0.31/WR~11%.
+ - M-095 (COMMODITY): CT=F cotton over-emission. 230 closed picks from 16
+   unique signal dates (14x re-emission ratio).
+ - M-069 (NET): slippage reclassification — gross-PF vs net-PF can diverge
+   by 2-3x.
+ - QUALITY_BUCKETS (ALL): quality_bucket in performance_report_*.json is
+   POST-HOC and circular. Do NOT treat as a pre-trade filter.
+
+Be skeptical:
+ - If one symbol/source dominates, flag concentration risk.
+ - If PF>3.0 on a single asset class, check for look-ahead or survivorship
+   bias before recommending allocation.
+```
+
+### When to include
+- ALWAYS for asset-class performance questions citing dashboard numbers
+- ALWAYS for COMMODITY questions (H-101 / M-095)
+- ALWAYS when referencing `quality_bucket` data
+- SKIP only for purely theoretical / no-dataset prompts
+
+### Post-fan-out cross-check
+After collecting model replies, **flag any model that endorses a known-bad signal without addressing the cited leakage evidence.**
+
 ## Related
 
 - `consult-cloudflare` — single-model CF consult, has its own `list/search/run` subcommands
