@@ -93,17 +93,32 @@ def _backfill_json(source: str, apply: bool) -> None:
         print("Dry-run only. Re-run with --apply.")
 
 
-def _backfill_mysql(apply: bool, backup_db: str = None) -> None:
-    """Backfill trust_score directly in MySQL trading_picks table.
+def _row_to_pick(row: dict) -> dict:
+    """Map trading_picks DB row → pick dict for trust_score enrichment."""
+    cat = (row.get("category") or row.get("asset_class") or "").upper()
+    return {
+        "id": row.get("id"),
+        "symbol": row.get("symbol"),
+        "strategy": row.get("strategy") or row.get("source_system") or "",
+        "asset_class": cat,
+        "category": cat,
+        "direction": row.get("direction"),
+        "confidence": row.get("confidence"),
+        "elite_score": row.get("elite_score"),
+        "entry_price": row.get("entry_price"),
+        "timestamp": row.get("created_at"),
+        "created_at": row.get("created_at"),
+        "strat_fwd_wr": row.get("forward_wr"),
+        "strat_fwd_trades": row.get("forward_trades"),
+    }
 
-    Reversible: before the destructive UPDATE, snapshots exactly the rows the
-    UPDATE will touch into a UTC-timestamped backup table in the same database,
-    commits the snapshot, then runs the UPDATE and asserts the affected-row count
-    matches the snapshot. On mismatch it rolls back the UPDATE (keeping the
-    backup table) and aborts.
 
-    backup_db: (reserved) cross-DB archive target for future parity. The default
-    behavior snapshots into the same database regardless.
+def _backfill_mysql(apply: bool, backup_db: str = None, batch_size: int = 500) -> None:
+    """Backfill trust_score in MySQL via alpha_engine.trust_score.enrich_picks_with_trust_score.
+
+    Live schema (2026-05-31): trading_picks has trust_score but NO trust_tier column.
+    Previous trust_tier CASE mapping was a no-op. This path computes scores from
+    strategy performance + pick fields, same as JSON backfill.
     """
     try:
         from tools.db_env import get_stocks_creds
@@ -112,15 +127,13 @@ def _backfill_mysql(apply: bool, backup_db: str = None) -> None:
         print("ERROR: pymysql not installed or db_env not available")
         sys.exit(1)
 
-    # The rows the UPDATE will touch — used for both the snapshot and the
-    # dry-run preview so they are guaranteed to describe the same set.
-    target_where = "trust_score IS NULL AND trust_tier IS NOT NULL"
+    from alpha_engine.trust_score import enrich_picks_with_trust_score  # noqa: E402
 
     creds = get_stocks_creds()
     conn = pymysql.connect(**creds, cursorclass=pymysql.cursors.DictCursor)
+    total_updated = 0
     try:
         with conn.cursor() as cur:
-            # Count NULL trust_score rows
             cur.execute("SELECT COUNT(*) AS n FROM trading_picks WHERE trust_score IS NULL")
             null_count = cur.fetchone()["n"]
             cur.execute("SELECT COUNT(*) AS n FROM trading_picks WHERE trust_score IS NOT NULL")
@@ -131,73 +144,67 @@ def _backfill_mysql(apply: bool, backup_db: str = None) -> None:
                 print("Nothing to do.")
                 return
 
-            # Count exactly the rows the UPDATE will touch.
-            cur.execute(f"SELECT COUNT(*) AS n FROM trading_picks WHERE {target_where}")
-            snapshot_count = cur.fetchone()["n"]
+            if not apply:
+                cur.execute(
+                    """
+                    SELECT id, symbol, strategy, category, direction, confidence, created_at
+                    FROM trading_picks WHERE trust_score IS NULL
+                    ORDER BY id DESC LIMIT 10
+                    """
+                )
+                sample = cur.fetchall()
+                picks = [_row_to_pick(r) for r in sample]
+                enrich_picks_with_trust_score(picks)
+                print("Dry-run sample (10 most recent NULL rows):")
+                for p in picks:
+                    print(f"  id={p['id']} {p.get('symbol')} trust_score={p.get('trust_score')}")
+                print(f"Would backfill up to {null_count} rows in batches of {batch_size}. Re-run with --apply.")
+                return
 
             ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
             backup_table = f"trust_score_backfill_bak_{ts}"
-
-            # PR6: Derive trust_score from strategy registry.
-            # Map trust_tier to numeric: PROVEN=9, ELITE=8, TRUSTED=7, DEVELOPING=5, WATCH=3, else=1
-            update_sql = f"""
-                UPDATE trading_picks
-                SET trust_score = CASE
-                    WHEN trust_tier = 'PROVEN' THEN 9
-                    WHEN trust_tier = 'ELITE' THEN 8
-                    WHEN trust_tier = 'TRUSTED' THEN 7
-                    WHEN trust_tier = 'DEVELOPING' THEN 5
-                    WHEN trust_tier = 'WATCH' THEN 3
-                    ELSE 1
-                END
-                WHERE {target_where}
-            """
-
-            if not apply:
-                # Dry-run: show what would happen, including the backup table name.
-                cur.execute(f"""
-                    SELECT trust_tier, COUNT(*) AS n
-                    FROM trading_picks
-                    WHERE {target_where}
-                    GROUP BY trust_tier ORDER BY n DESC
-                """)
-                rows = cur.fetchall()
-                print("Would update (dry-run):")
-                for r in rows:
-                    print(f"  {r['trust_tier']}: {r['n']} rows")
-                print(f"Would total: {snapshot_count} rows")
-                print(f"Would snapshot to backup table: {backup_table} (same DB)")
-                if backup_db:
-                    print(f"  (--backup-db reserved target noted: {backup_db}; not used in same-DB snapshot)")
-                print("Re-run with --apply to execute.")
-                return
-
-            # --apply path: snapshot the exact rows first, committed before UPDATE.
-            cur.execute(f"""
+            cur.execute(
+                f"""
                 CREATE TABLE `{backup_table}` AS
-                SELECT id, symbol, trust_score AS old_trust_score, trust_tier,
+                SELECT id, symbol, strategy, category, trust_score AS old_trust_score,
                        UTC_TIMESTAMP() AS captured_at
                 FROM trading_picks
-                WHERE {target_where}
-            """)
+                WHERE trust_score IS NULL
+                """
+            )
             conn.commit()
-            cur.execute(f"SELECT COUNT(*) AS n FROM `{backup_table}`")
-            backed_up = cur.fetchone()["n"]
-            print(f"Backup table created and committed: {backup_table} ({backed_up} rows)")
+            print(f"Backup table: {backup_table}")
 
-            # Now run the destructive UPDATE.
-            cur.execute(update_sql)
-            affected = cur.rowcount
-            if affected != snapshot_count:
-                conn.rollback()
-                raise SystemExit(
-                    f"ABORT: UPDATE affected {affected} rows but snapshot captured "
-                    f"{snapshot_count} rows. Rolled back the UPDATE; backup table "
-                    f"`{backup_table}` is preserved for inspection."
+            while True:
+                cur.execute(
+                    """
+                    SELECT id, symbol, strategy, category, direction, confidence,
+                           elite_score, entry_price, created_at
+                    FROM trading_picks
+                    WHERE trust_score IS NULL
+                    ORDER BY id ASC
+                    LIMIT %s
+                    """,
+                    (batch_size,),
                 )
-            conn.commit()
-            print(f"Applied: {affected} rows updated with derived trust_score "
-                  f"(matches snapshot of {snapshot_count}). Reversible via `{backup_table}`.")
+                rows = cur.fetchall()
+                if not rows:
+                    break
+                picks = [_row_to_pick(r) for r in rows]
+                enrich_picks_with_trust_score(picks)
+                for p in picks:
+                    ts_val = p.get("trust_score")
+                    if ts_val is None:
+                        continue
+                    cur.execute(
+                        "UPDATE trading_picks SET trust_score=%s, updated_at=NOW() WHERE id=%s AND trust_score IS NULL",
+                        (int(ts_val), p["id"]),
+                    )
+                    total_updated += cur.rowcount
+                conn.commit()
+                print(f"  batch updated={total_updated}")
+
+            print(f"Applied: {total_updated} rows enriched with computed trust_score.")
     finally:
         conn.close()
 

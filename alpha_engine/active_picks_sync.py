@@ -2,9 +2,7 @@
 """active_picks_sync — bridges at_raw_picks (MySQL, ACTIVE rows) → closed_picks.json
 when live price crosses TP/SL or signal_timestamp + MAX_HOLD_HOURS expires.
 
-PR #1 — DRY-RUN ONLY. No writes. Logs proposed verdicts to
-`reports/active_picks_sync_dryrun_<UTC>.json` so we can inspect the
-proposed transitions before flipping the writer on.
+PR #1 — dry-run by default; `--apply` + env ACTIVE_PICKS_SYNC_APPLY=1 for live writes.
 
 Why this exists
 ---------------
@@ -230,7 +228,10 @@ def compute_verdict(pick: dict, live_price: float | None, max_hold_hours: int,
         "exit_price": live_price,
         "tp": tp,
         "sl": sl,
-        "pnl_pct": round(pnl_pct * 100, 4),  # report as percent
+        # 2026-05-31: Store as decimal (0.05 = 5%) to match forward_validator convention.
+        # load_closed_picks() already normalizes abs>1.0 values, but consistency prevents
+        # future breakage when other readers bypass that normalization. (Incident: PnL integrity)
+        "pnl_pct": round(pnl_pct, 6),
         "new_status": new_status,
         "exit_reason": new_reason,
         "tp_hit": tp_hit,
@@ -562,8 +563,7 @@ def main():
         },
         "transitions": transitions[:500],   # cap detail payload
         "transitions_truncated_at": 500 if len(transitions) > 500 else None,
-        "nfa": "DRY-RUN ONLY — no MySQL UPDATE, no JSON append. "
-               "Wire writes in PR #2 after this output looks sane.",
+        "nfa": "Dry-run unless --apply and ACTIVE_PICKS_SYNC_APPLY=1.",
     }
 
     if args.out:

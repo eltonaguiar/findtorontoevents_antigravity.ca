@@ -373,7 +373,9 @@ def run_white_reality_check(closed_picks_path: Path = None) -> dict[str, float]:
         pnl = p.get("pnl_pct")
         symbol = str(p.get("symbol", "") or "").upper()
         if strat and pnl is not None and symbol not in OUTLIER_SYMBOLS:
-            strat_returns[strat].append(float(pnl) / 100.0)
+            # 2026-05-31: load_closed_picks() already normalizes pnl_pct to decimal (0.05 = 5%).
+            # No /100 needed here — was double-dividing. (Incident: PnL integrity / WRC)
+            strat_returns[strat].append(float(pnl))
 
     n_strategies_tested = max(len(strat_returns), 1)
     results: dict[str, float] = {}
@@ -2106,7 +2108,9 @@ def run_generation():
                 _strat_returns = []
                 for _cp in closed:
                     if _cp.get("strategy") == _strat_name and isinstance(_cp.get("pnl_pct"), (int, float)):
-                        _strat_returns.append(float(_cp["pnl_pct"]) / 100.0)
+                        # 2026-05-31: load_closed_picks() normalizes pnl_pct to decimal.
+                        # No /100 needed — was double-dividing, making Sharpe 100x too small.
+                        _strat_returns.append(float(_cp["pnl_pct"]))
                 if len(_strat_returns) < 20:
                     continue  # Not enough trades for DSR
                 _stats = returns_stats(_strat_returns)
@@ -3715,6 +3719,44 @@ def run_tweaker(perf: dict):
 # Main
 # ---------------------------------------------------------------------------
 
+def _run_active_picks_sync_inline() -> None:
+    """Run active_picks_sync for major asset classes (INC #15 upstream writer)."""
+    sync_script = Path(__file__).resolve().parent / "active_picks_sync.py"
+    if not sync_script.is_file():
+        print("[active_picks_sync] script missing — skip")
+        return
+    env = os.environ.copy()
+    env.setdefault("ACTIVE_PICKS_SYNC_APPLY", "1")
+    for ac, cap in (
+        ("CRYPTO", "3000"),
+        ("EQUITY", "2000"),
+        ("FOREX", "2000"),
+        ("COMMODITY", "1500"),
+        ("ETF", "1000"),
+        ("BOND", "500"),
+    ):
+        try:
+            import subprocess
+            rc = subprocess.run(
+                [
+                    sys.executable,
+                    str(sync_script),
+                    "--asset-class",
+                    ac,
+                    "--max-rows",
+                    cap,
+                    "--apply",
+                ],
+                env=env,
+                cwd=str(Path(__file__).resolve().parents[1]),
+                timeout=600,
+                check=False,
+            )
+            print(f"[active_picks_sync] {ac} exit={rc.returncode}")
+        except Exception as exc:
+            print(f"[active_picks_sync] {ac} failed (non-fatal): {exc}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="ALPHA ENGINE Forward Validator")
     parser.add_argument("--generate", action="store_true", help="Generate new picks")
@@ -3732,6 +3774,11 @@ def main():
         return
 
     if args.full_cycle or not args.generate:
+        # Optional: bridge at_raw_picks → closed_picks before JSON validation
+        # (same step as outcome-resolver.yml Active Picks Sync; opt-in for local runs)
+        if os.environ.get("FORWARD_VALIDATOR_ACTIVE_PICKS_SYNC", "0") == "1":
+            _run_active_picks_sync_inline()
+
         # Validate existing picks
         newly_closed, perf = run_validation()
 
