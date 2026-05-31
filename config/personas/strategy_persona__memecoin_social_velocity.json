@@ -1,12 +1,15 @@
 {
   "persona_id": "strategy_persona__memecoin_social_velocity",
-  "display_name": "MEMECOIN Social-Velocity Breakout (SHADOW PILOT, n<30)",
+  "display_name": "MEMECOIN Social-Velocity Breakout (SHADOW PILOT, PENDING_IMPLEMENTATION)",
   "strategy_family": "social_velocity_crypto",
   "wraps_strategy": "memecoin_social_velocity",
   "asset_class": "MEMECOIN",
-  "status": "shadow_paper_only",
+  "status": "shadow_paper_only_PENDING_IMPLEMENTATION",
   "shadow_paper_only": true,
   "requires_operator_promotion_to_live": true,
+  "requires_implementation": true,
+  "emission_blocked_pending_dependency": true,
+  "blocking_dependency": "No scanner implementation exists for MEMECOIN-class `memecoin_social_velocity`. The lookup `grep -rln memecoin_social_velocity alpha_engine/ tools/ multi_asset/ --include='*.py'` returns 0 hits (tick29 red-team 2026-05-31). The EQUITY-class strategy `meme_social_velocity` (alpha_engine/equity_strategies.py:238) is a different function operating on equity meme tickers (GME/AMC/etc), NOT crypto memecoins. Until a crypto-side scanner is implemented and wired into the production pick path, this persona will emit zero picks. Implementation gated on PR creation referencing `reports/asset_class_90day_plan_PENNY_MEME_2026-05-15.md` MEMECOIN quarantine policy — current operator policy is full quarantine / research-only / 0% allocation, so net-new emission code is NOT yet greenlit. Persona registration is FORWARD-LOOKING — the 30-day shadow pilot clock begins when (a) a scanner is implemented AND (b) the quarantine policy is relaxed, NOT from 2026-05-31.",
   "shadow_pilot_until": "2026-06-30",
   "philosophy": "Memecoin shadow-pilot to break n=1 INSUFF-N stasis (per tick23 fresh-stats: meme n=1, WR=0%). Combines social-volume velocity (Twitter/Telegram mentions accelerating) with on-chain liquidity floor + circuit-breaker exits. Pump-and-dump risk is the dominant failure mode — this persona exists to MEASURE whether a disciplined social-velocity signal produces a positive forward-test, not to capture meme alpha at live size.",
   "entry_criteria": [
@@ -52,7 +55,7 @@
     "4. Run in shadow_paper_only mode; emissions excluded from production gates.",
     "5. Day-30 (2026-06-30): review. Meme class promotion bar is HIGHER than other classes given PnD risk."
   ],
-  "kill_registry_check": "PASSED — memecoin_social_velocity not in any kill list (greenfield strategy).",
+  "kill_registry_check": "PASSED — memecoin_social_velocity not in any kill list (greenfield strategy, no scanner exists yet — emission blocked via requires_implementation/emission_blocked_pending_dependency, NOT via kill registry).",
   "references": [
     "reports/peer_claude-skyrocket-recommendation_2026-05-31.md (shadow-pilot pattern)",
     "reports/peer_claude-tick23-per-class-fresh-stats_2026-05-31.md (meme n=1 INSUFF-N)",
