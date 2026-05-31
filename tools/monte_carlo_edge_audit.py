@@ -88,13 +88,19 @@ RANDOM_SEED = 42
 CI_ALPHA = 0.05  # 95% CI
 
 
+PF_SENTINEL = 100.0  # Cap for all-win / extreme-outlier strategies
+
+
 def profit_factor(pnls: np.ndarray) -> float:
-    """Profit factor: sum of positive PnLs / abs(sum of negative PnLs)."""
+    """Profit factor: sum of positive PnLs / abs(sum of negative PnLs).
+
+    Capped at PF_SENTINEL to prevent float('inf') from breaking bootstrap CI.
+    """
     pos = pnls[pnls > 0].sum()
     neg = abs(pnls[pnls < 0].sum())
     if neg == 0:
-        return float("inf") if pos > 0 else 0.0
-    return float(pos / neg)
+        return PF_SENTINEL if pos > 0 else 0.0
+    return min(float(pos / neg), PF_SENTINEL)
 
 
 def bootstrap_pf_ci(pnls: np.ndarray, n_iter: int = N_BOOTSTRAP) -> Dict[str, float]:
@@ -358,9 +364,9 @@ def main():
     args = parser.parse_args()
 
     log.info("Connecting to ejaguiar1_stocks...")
-    conn = _connect()
-
+    conn = None
     try:
+        conn = _connect()
         report = run_audit(conn, min_n=args.min_n, category_filter=args.category)
 
         if args.json:
@@ -391,7 +397,8 @@ def main():
             log.info("Report written to %s", args.output)
 
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 
 if __name__ == "__main__":
