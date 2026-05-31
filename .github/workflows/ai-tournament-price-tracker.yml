@@ -41,6 +41,12 @@ jobs:
           FORCE_RESOLVE: ${{ github.event.inputs.force_resolve }}
         run: python tools/ai_tournament/price_tracker.py
 
+      - name: Resolve DB picks (PR #135 follow-up)
+        run: python3 tools/ai_tournament/resolve_db_picks.py --apply
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        continue-on-error: false
+
       - name: Restore full dataset from DB (anti-clobber guard)
         # price_tracker.py rebuilds ai_tournament_picks_latest.json from the
         # data/ai_tournament/submissions/*.json glob ONLY (recent picks), which
