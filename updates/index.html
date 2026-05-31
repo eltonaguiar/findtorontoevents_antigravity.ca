@@ -33,50 +33,89 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
-<<<<<<< Updated upstream
-<div class="update-entry" data-utc="2026-06-01T01:30:00Z" data-est="2026-05-31T21:30:00-04:00">
-  <h3>2026-05-31 (EST late) — CORRIGENDUM to Truth-Layer Validation card (3 late-landing corrections)</h3>
-  <p><strong>What this is</strong>: three corrections to the in-flight Truth-Layer Validation entry below &mdash; drafted before the w2n0g4jnv consolidation wave finished landing. The broader verdict ("no statistically-valid edge across any asset class today") stands. Source: <a href="../reports/peer_claude-CORRIGENDUM_TRUTH_REPORT_2026-05-31.md">CORRIGENDUM report</a>.</p>
-  <ul>
-    <li><strong>+313.43% verdict is NUANCED, not "FABRICATED"</strong>. Specific number 313.43 does not appear in current live JSONs, but closest live value is <code>rolling_100 = +300.53%</code> (decayed 13bp since 21:09 UTC). The operator screenshot was a real-but-decayed reading. What remains valid: a +300% rolling-100 is still mathematically incompatible with WR 25% / PF 0.61 &mdash; same <strong>compounded-vs-arithmetic dashboard rendering artifact</strong> as the Tier-2 Proven mega_mutation +318% row (<code>cum += v</code> at dashboard_generator.py:11543). Real compounded value is <strong>&minus;41.63%</strong>.</li>
-    <li><strong>Edge Stability daily refresh is LIVE</strong>. PR #285 MERGED (commit a0239170e). First scheduled run #26724681663 = SUCCESS. <code>edge_stability_*.json</code> <code>as_of</code> advanced 2026-05-12T21:53Z &rarr; 2026-05-31T21:15Z across all 8 classes (CRYPTO n=1022). The "Last updated May 12" headline is FIXED. Status: AUTOMATED + REFRESHED.</li>
-    <li><strong>Zoo work integrated</strong>: commit 5ad53a9d0 landed the COMMODITY filter-survival analysis (62/72 = 16.67% survival; smoking gun = <strong>resolver-v2 cross-contamination</strong>, SHIB $4100 exit leaking to EURUSD, NOT <code>RESOLVE_FAILED_MAX_RETRIES</code>). ML calibration audit REFUTES the "global ML inversion" framing &mdash; only FOREX is CRITICAL (0.65&rarr;0.75 = 46.7pp drop), COMMODITY MODERATE, CRYPTO has localized 0.8-bucket dip (matches PR #227 verdict + PR #263 dampen), others OK. Memory's "no global inversion" position holds.</li>
-    <li><strong>Hyrotrader phantom A+ STILL unfixed</strong> (consistent across 3 agents this session). Producer hyro_pick_performance_validator.py:461 + consumer line 1714. Account snapshot 2026-04-08 (53+ days stale). No PR has landed against it. Highest-impact unaddressed truthfulness defect on /audit/hyrotrader.</li>
-  </ul>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (2 MORE candidate edges REFUTED &mdash; 17 total today)</strong>: Kilo transcript surfaced 2 MC SL/TP edge claims from a Claude-parallel run: <strong>FOREX SHORT PF 3.43 @ -0.5%/+0.7%</strong> and <strong>COMMODITY LONG PF 4.43 @ -0.5%/+5.7%</strong>. Independent verification REFUTED both: <strong>FOREX SHORT actual PF 1.087, WR 46.39%</strong> (not 38.71% &mdash; PR #347); <strong>COMMODITY LONG actual PF 0.685 raw / 3.56 only-if-capped, with 96% concentration in HG=F+PL=F+SI=F</strong> + 4 red flags including cta_replicator survivorship bias (PR #343). Both MC runs used <strong>winsorization (capping closed pnl_pct to SL/TP range), NOT intrabar OHLC replay</strong> &mdash; the exact methodology my session memory <code>reference-sl-optimization-needs-pricepath</code> proved wrong earlier today (winsorized estimate predicts edge; intrabar replay shows whipsaw). The capping-not-replay pitfall is now demonstrated TWICE in one session &mdash; canonical example for future sessions. Total candidate fabrications caught today via verbatim+RT discipline: <strong>17</strong> (including my own ML-DYDX self-correction). Per-class deep-dive wave wht76ak1j still in flight producing master roadmap with TOP-6 untried angles + 2-class gap closure for FUTURES + PREDICTION_MARKETS via wiqjf5x2j.</p>
 </div>
-<div class="update-entry" data-utc="2026-06-01T00:00:00Z" data-est="2026-05-31T20:00:00-04:00">
-  <h3>2026-05-31 (EST late evening) — /audit Truth-Layer Validation Swarm: 10-agent honest verdict on every page stat</h3>
-  <p><strong>Honest TL;DR</strong>: External AI peer review (3 models) + 10-agent internal swarm converge on the same answer — <strong>no statistically-valid edge exists across any asset class today</strong>. Banner cleared durably (peer PR #210, sign-based pnl_integrity = 0.54% live-verified). The <code>+313.43% rolling 100</code> figure is <strong>FABRICATED</strong> — 4 agents independently grep'd the repo and reproduced rolling-100 windows; "313.43" appears only in a STOCKS price field, not as a return %. Mathematically incompatible with WR 25% / PF 0.61 headline. Likely LLM-rendering artifact per CLAUDE.md's own warning. Real <code>total_pnl_pct_compounded_rolling_100 = -41.63%</code> (NEGATIVE).</p>
-  <p><strong>Per-page truth audit</strong>:</p>
-  <ul>
-    <li><strong>Edge Stability</strong>: 6/6 cells stale (snapshot 2026-05-12, 19d old). COMMODITY PF 4.31 &rarr; 0.69 — flagship STABLE_EDGE flag is FALSE. Edge-stability daily cron shipped as PR #285 (00:30 UTC). EST timestamp added.</li>
-    <li><strong>Tier-2 Proven</strong>: 0/3 strict pass; heading misleading. signal_validation has 0 rows in trading_picks; mega_mutation has 2 closed (both losers -6.81%) in trading_picks but file ledger shows 283 closed at WR 65% — 3-level data drift. mega_mutation's "+318%" 90d_cum is an arithmetic-sum artifact (verbatim code <code>cum += v</code> at dashboard_generator.py:11543), NOT compound growth.</li>
-    <li><strong>Mercury Validation</strong>: 5/8 metrics match. Per-trade annualized Sharpe 4.82 is MISLEADING (inflates by &times;&radic;65 trades/year). Active P&amp;L 0.66% REFUTED — actual 0.096%, W:L 7:5 not 9:6.</li>
-    <li><strong>Active picks counterfactual</strong>: 7 lanes simulated; 4 profitable; best = SMART_PICKS_30D at +0.39% (CRYPTO only). Equity / Commodity / Stocks lanes net-negative.</li>
-    <li><strong>3 audit alerts</strong>: Alert 1 (volume_spike_breakout) REFUTES (baseline 51% fictional). Alert 2 (fc_crypto_pro 144h gap) MATCHES live. Alert 3 (copy_trader_highscore 167h) REFUTES — actual 1761h = <strong>74 days dead since 2026-03-19</strong>, 10&times; under-reporting bug. 13 silent source_systems unflagged (forex_copy_trader 164h n=229, polymarket_momentum 218h n=402, etc.).</li>
-    <li><strong>Hyrotrader phantom A+</strong> still NOT resolved (producer hyro_pick_performance_validator.py:461 + consumer line 1714). Account snapshot 2026-04-08 (53+ days stale).</li>
-    <li><strong>ML calibration (Zoo)</strong>: FOREX CRITICAL INVERSION (0.65-0.70 &rarr; 0.75-0.80 = 46.7pp cumulative drop). COMMODITY MODERATE (0.70-0.75 &rarr; 0.75-0.80 = 13.9pp). CRYPTO has localized 0.95-1.00 inversion + others NEUTRAL. EQUITY inversion 0.60-0.65 &rarr; 0.65-0.70.</li>
-    <li><strong>Filter-survival gap (Zoo)</strong>: 62 picks missing (not 126 originally claimed); main cause RESOLVE_FAILED_MAX_RETRIES.</li>
-  </ul>
-  <p><strong>Peer work integrated</strong>: PR #210 (banner clear), PR #284 (walk-forward gate — addresses +313-class leakage), PR #285 (edge_stability daily cron). Today's 4 scoring-path edits (#263 CRYPTO bucket-dampen, #275 FOREX wire-up, #277 EQUITY un-kill, #278 COMMODITY rebuild) all merged; production-emission observation window 24-48hr.</p>
-  <p><strong>External AI peer review</strong> on "do we have an edge?" &rarr; 3 models consulted (mimo / grok / qwen), 3/3 NO_EDGE.</p>
-  <p><strong>Reports</strong>: <a href="../reports/peer_claude-MASTER_TRUTH_REPORT_2026-05-31_FINAL.md">Master TRUTH report</a> | <a href="../reports/peer_claude-validate-plus-313-rolling-100_2026-05-31.md">+313 fabrication autopsy</a> | <a href="../reports/peer_claude-external-ai-edge-review_2026-05-31.md">External AI verdicts</a></p>
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,mercury2,truth-layer,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-05-31 EST — <strong style="color:#22c55e;">Mercury2 Validation Integration: Statistical Robustness vs. Predictive Power</strong></div>
+  <p><strong>2026-05-31 EST (Mercury2 Integration):</strong> Integrated Mercury2 validation findings into the audit truth layer. While Mercury2 passed statistical robustness gates (DSR p=1.0, Sharpe=4.08), it failed predictive power gates (WR=40.09%, Pearson IC=0.039). The system is overconfident and anti-predictive at extremes. Mercury2 is now in shadow-mode monitoring only. Full report: <code>updates/2026-05-31-mercury-validation-integration.md</code>.</p>
 </div>
-<div class="update-entry" style="border-left:4px solid #dc2626;background:#fef2f2;">
-  <h2 style="margin-top:0;">2026-05-31 — OPERATOR TL;DR (single-page action packet)</h2>
-  <p><strong>Read this FIRST when returning to the session.</strong> Banner: <code>any_red=false</code> (5/5 checks). Pipeline: 476 outcomes resolved last hour; 2/3 critical hourlies still queued (20 GHA runs queued). 147 session PRs merged. 14 action items pinned.</p>
-  <p><strong>PRIORITY 1 (~12 min):</strong> (1) GHA-unblock pick PR #250 — recommend OPTION A. (2) PR #229 harness_healthy approve/reject. (3) PR #227 reject-INVERT approve or bucket-dampen override.</p>
-  <p><strong>PRIORITY 2 (~2 hr):</strong> PR #228 skyrocket_detector pilot/retire/redo; 9 diagnostic packets (#239 + #243); 33 persona activations (CRYPTO blocked on resolver intrabar).</p>
-  <p><strong>PRIORITY 3 (heavy):</strong> FOREX kill list (INCIDENT_FOREX #6/#7); COMMODITY rebuild off COT; EQUITY un-kill <code>stocks_rsi2_pullback</code>; PENNY Gate 0 + UEPS scanner.</p>
-  <p><strong>DO NOT:</strong> apply PR #232 diffs (REVOKED — fabricated, warning in #235); trust agent self-reports of <code>verified=N</code> without third-party check.</p>
-  <p>Full packet: <a href="2026-05-31-OPERATOR_TLDR.md">2026-05-31-OPERATOR_TLDR.md</a></p>
-=======
-<div class="update-entry" style="border-left:4px solid #2563eb;background:#eff6ff;">
-  <h3>2026-05-31 (EST late) — Zoo ML Calibration Audit verdict (red-team PR #290)</h3>
-  <p><strong>Verdict</strong>: <strong>APPROVE WITH DAMPING</strong>. Direction is correct (FOREX inversion at 0.65&rarr;0.80 confirmed by live data), but 4 of Zoo's bands have n&lt;20 &mdash; recommend reducing penalty magnitudes from &minus;18/&minus;20 to &minus;8/&minus;10 for statistical safety. No conflict with PR #227's bucket-dampen approach (cross-checked).</p>
-  <p><strong>Context</strong>: caps off the Truth-Layer Validation Swarm wave (10-agent + 4 external peers). Same wave shipped PR #285 (edge-stability daily 00:30 UTC cron) and four scoring-path edits today (#263 CRYPTO, #275 FOREX, #277 EQUITY, #278 COMMODITY). Banner cleared durably via peer PR #210.</p>
-  <p><strong>Reports</strong>: <a href="../reports/peer_claude-redteam-zoo-calibration_2026-05-31.md">red-team report</a> | <a href="../reports/peer_claude-FINAL_OPERATOR_SUMMARY_2026-05-31.md">FINAL operator summary</a> | <a href="../reports/peer_claude-CORRIGENDUM_TRUTH_REPORT_2026-05-31.md">corrigendum</a></p>
->>>>>>> Stashed changes
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,db-backup,truth-layer,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-05-31 EST — <strong style="color:#22c55e;">Database Integrity Audit & Backup</strong></div>
+  <p><strong>2026-05-31 EST (DB Audit):</strong> Completed metadata backup of <code>ejaguiar1_stocks</code> (388 tables) and <code>ejaguiar1_backtests</code> (8 tables) via pymysql. Identified 3 cross-DB consistency issues (100K row gap on <code>bt_backtest_trades</code>, 343-row gap on <code>closed_picks</code>, 4-strategy registry sync issue). Full report: <code>updates/2026-05-31-db-operations-backup.md</code>.</p>
+</div>
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="ml-dydx,degradation,small-sample-regression,wilson-lb,n500-gate,self-correction,pr-318,pr-328,goal-1,audit,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#ef4444;">HONEST UPDATE — my own ML-DYDX candidate degraded under 3h fresh data</strong></div>
+  <p><strong>2026-06-01 EST (HONEST UPDATE — my own candidate degraded)</strong>: ML-DYDX (the "strongest verified small-n candidate" surfaced via PR #318 this morning at n=34, WR 94.12%, Wilson LB 0.8091) has degraded under 3 hours of fresh data. Re-verified just now via PR #328: <strong>n=63, WR 63.5%, Wilson LB ~0.52</strong> — barely above 0.50. The 29 new closed picks had only ~28% WR. This is exactly the small-sample regression the n&gt;=500 gate is designed to catch. <strong>My own claim is the 11th candidate caught degrading today via independent verification</strong> — the verbatim+RT discipline works even on my own outputs. CRYPTO volatility_breakout (LB 0.5057 this morning) similarly suspect — likely also regressed. <strong>Conclusion: 0 real candidates from the existing library after today's discipline.</strong> The 8 fresh strategies shipped via paper-pilot harness (PRs #307-#313, #316, #322) remain the honest path forward — they start n=0, will need 500+ trades over 30/60/90 days before any can clear gates. Vindicates the architecture; deflates the borderline-candidate narrative.</p>
+</div>
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="paper-pilot,fresh-strategies,academic-literature,statistical-framework,wilson,bonferroni,bootstrap-pf,no-edge-response,pr-307,pr-308,pr-309,pr-310,pr-311,pr-312,pr-313,pr-316,pr-317,goal-1,trading,documentation" data-category="trading" data-types="feature,documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#22c55e;">Addressing "no edge" with fresh strategies + statistical gates (operator-clear edition)</strong></div>
+  <p><strong>What we did to address the "no edge" finding:</strong></p>
+  <ol>
+    <li><strong>Confirmed the existing strategy library has no edge</strong> — 10 independent verification sources reached the same conclusion (10-agent swarm, 3 external AI consults, Kilo permutation test p=1.0, Kilo bright-spot REFUTED, Zoo truth filter, Qwen, 7-asset-class hunt 0/7 winners, expanded 60-strategy Monte-Carlo bootstrap 0/60 winners, Qwen edge-cell SINGLE_SOURCE artifact, freebuff 5/6 artifacts). 10+ AI-generated fabrications were caught and rejected via verbatim + red-team verification.</li>
+    <li><strong>Built 7 fresh strategies from classical academic literature</strong> (not derived from the failed current data):
+      <ul>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/307">PR #307</a> — FX Carry Trade, G10 (Lustig/Roussanov/Verdelhan RFS 2011)</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/308">PR #308</a> — Magic Formula (Greenblatt 2006)</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/309">PR #309</a> — Post-IPO Drift (Loughran/Ritter JF 1995)</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/310">PR #310</a> — Time-Series Momentum (Moskowitz/Ooi/Pedersen JFE 2012)</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/311">PR #311</a> — Faber 10-month MA Tactical (Faber 2007)</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/312">PR #312</a> — Connors RSI(2) Equity (Connors 2008)</li>
+        <li><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/313">PR #313</a> — Piotroski F-Score (Piotroski JAR 2000)</li>
+      </ul>
+      Each strategy is ~250-500 lines, AI-refined (grok / deepseek), with the cursor statistical framework applied <em>day 1</em>: n≥500 floor, Wilson 95% lower-bound on WR, Bootstrap PF confidence interval (1000 resamples, seed 17), Bonferroni correction α=0.05/7=0.007142857.</li>
+    <li><strong>Built a master paper-pilot harness</strong> (<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/316">PR #316</a>) running <strong>daily at 13:30 UTC via GitHub Actions cron</strong> (<code>.github/workflows/paper-pilot-daily.yml</code>). Paper picks only — no writes to <code>trading_picks</code> or any <code>ejaguiar1_*</code> DB per M-107. All 4 statistical thresholds must clear before any strategy is recommended for live capital.</li>
+    <li><strong>Surfaced small-n candidates from the existing library</strong> (monitor only, NOT live):
+      <ul>
+        <li>CRYPTO <code>ml_enhanced_DYDXUSDT</code> LONG — n=34, WR 94.12%, PF 10.36, Wilson LB 0.8091 (clean concentration). Needs 30-day forward confirmation at n≥100.</li>
+        <li>CRYPTO <code>volatility_breakout</code> — WR 61.2%, n=85, Wilson LB 0.5057 (borderline above 50%). Watch-only until n≥100 or LB≥0.55.</li>
+      </ul>
+    </li>
+  </ol>
+  <p><strong>Where the latest data for the new swarm picks is tracked on our site:</strong></p>
+  <ul>
+    <li>📊 <strong>Daily master paper-pilot status (aggregate of all 7 strategies):</strong> <a href="https://findtorontoevents.ca/reports/peer_claude-master_paper_pilot_status_2026-05-31.json"><code>https://findtorontoevents.ca/reports/peer_claude-master_paper_pilot_status_&lt;YYYY-MM-DD&gt;.json</code></a> — refreshed every day at 13:30 UTC (=09:30 ET, just before US open) and committed back to <code>main</code>. Contains per-strategy n / WR / PF / Wilson LB / Bootstrap PF CI / Bonferroni-adjusted p-value.</li>
+    <li>📈 <strong>Per-strategy paper sidecars</strong> (no DB writes per M-107): <code>connors_rsi2/paper_state.json</code>, <code>faber_tactical/faber_paper_ledger.json</code>, <code>fx_carry/paper_picks/fx_carry_paper_picks.json</code>, <code>magic_formula/paper_state.json</code>, <code>piotroski/paper_state.json</code>, <code>post_ipo_drift/state/</code>, <code>tsmom/tsmom_trades.json</code>. Full docs at <code>docs/PAPER_PILOT_HARNESS.md</code>.</li>
+    <li>🎯 <strong>Existing-library candidates watchlist</strong> (<code>ml_enhanced_DYDXUSDT</code>, <code>volatility_breakout</code>): tracked on the live <a href="https://findtorontoevents.ca/audit/">findtorontoevents.ca/audit</a> systems grid (search filter: <code>ml_enhanced_DYDXUSDT</code> or <code>volatility_breakout</code>) and the policy-clean cohort in <code>audit_dashboard/data/money_ready_verdict.json</code>.</li>
+    <li>📋 <strong>Launch plan + risk disclaimers:</strong> <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/317">PR #317</a> — <code>reports/peer_claude-FRESH_STRATEGY_BUILD_FINAL_LAUNCH_PLAN_2026-05-31.md</code>.</li>
+  </ul>
+  <p><strong>Day 30 / 60 / 90 checkpoints:</strong> at each checkpoint the harness emits Wilson LB, Bootstrap PF CI, and Bonferroni-corrected p-value per strategy. Any strategy passing all four gates at n≥500 → operator decision for live capital. <em>NFA — no real-money sizing without explicit greenlight + all gates clear.</em></p>
+  <p><strong>Honest disclaimer:</strong> building strategies from academic literature does NOT guarantee they will show edge in our data + execution + costs. Replication base-rate (McLean-Pontiff 2016) is ~58%; expected outcome is 1-2 of 7 graduating, 0 of 7 is plausible, 3+ would trigger a red-team audit. Paper-pilot only — we are starting fresh from an honest baseline.</p>
+</div>
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="wilson-lower-bound,correction,equity,crypto,close-candidate,no-edge-chain,fabrication-red-team,pr-306,pr-304,audit,goal-1,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#ef4444;">Wilson lower-bound correction — EQUITY "close candidate" refuted</strong></div>
+  <p><strong>2026-06-01 EST (Wilson lower-bound correction)</strong>: PR #306 independently computed Wilson 95% lower-bound for the two "close candidates" from PR #304. <strong>Only CRYPTO volatility_breakout (WR 61.2%, n=85, Wilson LB 0.5057) survives — barely above 0.50.</strong> EQUITY stocks_rsi2_pullback (WR 59%, n=39) Wilson LB is <strong>0.4344 — below 0.50, meaning the 59% WR is NOT statistically distinguishable from random noise at 95% confidence</strong>. Earlier "close candidate" framing for EQUITY was too optimistic. The 7th fabrication caught today — even my own outputs got the verbatim+RT treatment.</p>
+  <p><small>Source: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/306">PR #306</a> · report: <code>reports/peer_claude-EQUITY_CANDIDATE_REFUTED_2026-05-31.md</code> · NO_EDGE chain remains 8 sources · only borderline = CRYPTO volatility_breakout (LB 0.5057, not priority shadow-pilot until n≥100 or LB≥0.55) · BUILD swarm w2cgju6i9 (7 fresh academic strategies) unaffected.</small></p>
+</div>
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="ml-dydx,verified-candidate,wilson-lb,verifier-swarm,freebuff,artifacts-caught,paper-pilot,goal-1,audit,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#22c55e;">Verified candidate emerges — ml_enhanced_DYDXUSDT LONG survives 6-parallel verifier swarm</strong></div>
+  <p><strong>2026-06-01 EST (verified candidate emerges)</strong>: Freebuff peer claimed 6 sub-strategy winners via 10K MC bootstrap. My 6-parallel verifier swarm caught 5/6 as artifacts: 2 RETIRED_ALREADY (prediction_market_consensus both dirs from PR #182), 2 DOESNT_REPRODUCE (mega_mutation +318% = arithmetic-sum-not-compound; ml_RENDER stats wrong), 1 CONCENTRATION (ig_contrarian SHORT — top-3 trades = 93.2% of profit). <strong>1 SURVIVED: ml_enhanced_DYDXUSDT LONG (n=34, WR 94.12%, PF 10.36, Wilson LB 0.8091, top-3 share 18.3% — clean signal)</strong>. Strongest single candidate found today. CAVEATS: small n=34, single-symbol, needs 30-day forward paper-pilot before size-up. Plus parallel peer work in flight: kilo (8-agent truth-layer audit), qwen (DB cross-check found 3.7M row mismatch on bt_backtest_trades), zoo (pick_funnel reconciliation). 10+ fabrications caught today via independent verification.</p>
+</div>
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="audit,truth-layer,edge-stability,monte-carlo,no-edge,db-validation,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-05-31 EST — <strong style="color:#ef4444;">TRUTH LAYER AUDIT: Zero Real-Money Edges Found</strong></div>
+  <p><strong>2026-05-31 EST (Truth Layer Audit):</strong> A multi-subagent parallel audit (opencode + grok + qwen + cerebras) has validated the "No Edge" status. <strong>Zero asset classes pass industry-standard real-money thresholds</strong> (DSR>0.95, PBO<0.05, WFE>60%, Live-Sharpe>0.5, n≥100). All 8 classes (CRYPTO, EQUITY, COMMODITY, FOREX, FUTURES, ETF, BOND, PENNY) are statistically DEAD.</p>
+  <p><strong>Key Findings:</strong></p>
+  <ul>
+    <li><strong>Edge Stability:</strong> Fixed deployment gap. Daily refresh now live. Data was stale since May 12.</li>
+    <li><strong>CRYPTO Smart Picks:</strong> DISPUTED. Dashboard claims 78.9% WR; DB ground truth is 40%. Confirmed via direct MySQL query.</li>
+    <li><strong>Rolling 100:</strong> The reported +313.43% figure does not exist. Actual compounded rolling 100 is -41.63%.</li>
+    <li><strong>COMMODITY:</strong> COT strategy falsified (over-emission 6.33x). Deduped PF drops from 2.73 to 0.17.</li>
+    <li><strong>DB Validation:</strong> Attempted backup of ejaguiar1_stocks/backtests to ejaguiar1_backups (mysql client unavailable in env; documented in updates).</li>
+  </ul>
+  <p><strong>Path Forward:</strong> Per Claude note, building top-3 cross-AI-consensus strategies fresh, paper-pilot for 30+ days, and applying statistical framework from day 1. All real-money sizing HALTED. All classes moved to paper-only mode.</p>
+  <p><small>Worktree: audit/edge-stability-montecarlo-2026-05-31. Reports: <code>updates/2026-05-31-audit-truth-layer-report.md</code>, <code>updates/2026-05-31-edge-validity-per-class.md</code>, <code>updates/2026-05-31-crypto-picks-db-validation.md</code>.</small></p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (Qwen Mercury2 plan cross-reference)</strong>: Qwen produced a comprehensive coin-flip&rarr;edge roadmap. Statistical gates Qwen recommends (n&ge;500, WR&gt;0.55, PF&gt;1.2, Sharpe&gt;0.8, Bonferroni-corrected) <strong>match exactly</strong> the cursor framework we shipped today via PR #316 master harness &mdash; independent validation of the approach. Plus Qwen's audit found <strong>4 alarming claims</strong>: 3.7M row gap on bt_backtest_trades, CRYPTO 78.9% vs 39.4% gap, FOREX PF 2.02 vs 0.108 reversal, EQUITY PF 0.70 vs 5.56 reversal. Verified independently per today's verbatim+RT discipline (10+ fabrications caught) &mdash; verdicts in reports/peer_claude-verify-qwen-*_2026-05-31.md. Gap analysis: 5 Qwen plan elements not yet shipped &mdash; top priorities = DB creds &rarr; GitHub Secrets, walk-forward per-class (PR #654 pending), position sizing wire-up.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (verified P1 &mdash; bt_backtest_trades sync stale 25d)</strong>: Qwen's 3.7M row gap claim VERIFIED (actual ~4M) &mdash; root cause is <code>tools/migrate_backtests_to_backtests_db.py</code> is a manual one-shot, never wired to GHA. backtests-side snapshot frozen at 2026-05-06; stocks-side at 2026-05-13. Draft weekly sync workflow at <code>.github/workflows/bt-backtest-trades-sync.yml.draft</code> for operator review. Plus today's wkyapjb3g verifiers: CRYPTO 78.93% vs raw 26.95% ALREADY_DISPUTED (banner live), FOREX/EQUITY PF reversal qwen-claimed magnitudes DOESNT_REPRODUCE (raw FOREX 90d PF=3.87 positive, not 0.108; raw EQUITY PF=3.41, not 5.56) &mdash; qwen got direction right on EQUITY but magnitudes fabricated. Mercury2 gap analysis PR #333 merged: 5 gaps identified, top priority = DB creds &rarr; GitHub Secrets (deepseek P1 follow-up).</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (peer priority-table validation)</strong>: Incoming 7-row priority action table cross-referenced against today's 12+ verifications. <strong>Accepted: P0 COMMODITY hard-disable (pending operator), P2 remove WR&lt;15%+PF&gt;5.0 outliers</strong>. <strong>REJECTED: P1 "document &amp; scale mega_mutation as only proven edge"</strong> &mdash; DOESNT_REPRODUCE per PR #318 verifier swarm + fresh SQL (n=2 WR 0% PF 0); +318% is arithmetic-sum-not-compound artifact already flagged on /audit TIER-2. <strong>REJECTED: P0 FOREX LONG-only block</strong> &mdash; claim INVERTED: live SQL shows FOREX LONG PF=7.05 (winner) vs SHORT PF=1.75. <strong>CONDITIONAL: P1 ml_enhanced small-n candidates</strong> &mdash; DYDX degraded (LB 0.81&rarr;0.52, PF 0.31), RENDER doesn't reproduce (3.06 not 6.83), INJ promising (n=45 WR 82% PF 13.48). Accumulate-only, NO size-up. <strong>NEEDS_VERIFY</strong>: EQUITY disable (raw 90d PF=3.41 conflicts with money_ready PF=0.16 &mdash; cohort issue). Full table: reports/peer_claude-PRIORITY_TABLE_VALIDATION_2026-05-31.md.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (URGENT methodology bug flagged to kilo)</strong>: Kilo just pushed <code>tools/monte_carlo_edge_audit.py</code> + top-3 consensus runner to main. The MC tool uses <strong>capping (winsorization), NOT intrabar OHLC replay</strong> &mdash; methodology proven wrong this session (PR #347 FOREX inflated 3.16x, PR #343 COMMODITY inflated 6.46x). Deprecation warning added to tool header. Strategies emitted by top3_consensus_runner are fine (they just emit picks); just don't score backtests with the capped MC. Forward-only evaluation via master paper-pilot harness #316 (daily 13:30 UTC) stays the discipline. Full flag: <code>reports/peer_claude-URGENT_METHODOLOGY_FLAG_MC_AUDIT_TOOL_2026-05-31.md</code>.</p>
 </div>
 <!-- DOC_SUMMARY_ENTRY:START -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
@@ -111,7 +150,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-05-31 02:31 EDT · <strong>6 open incidents</strong> (2 P0 · 3 P1) · <strong>80 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-05-30 01:47 EDT · <strong>47 open incidents</strong> (20 P0 · 19 P1) · <strong>75 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -126,73 +165,73 @@
     <tbody>
       <tr>
         <td class="cls">OVERALL</td>
-        <td>2</td>
-        <td class="p0">—</td>
-        <td class="top-issue">CI Tests: 17 pytest failures on main (m096, m098, quality_gates, pr10_ab, outcome_resolver…</td>
-        <td>53</td>
+        <td>24</td>
+        <td class="p0">14</td>
+        <td class="top-issue">HC JS/Python parity drift can change eligibility by surface</td>
+        <td>52</td>
         <td class="top-issue">Update &#39;forward validator frozen 270h&#39; incident title/description to accurate ro…</td>
       </tr>
       <tr>
         <td class="cls">STOCKS</td>
-        <td>1</td>
+        <td>4</td>
         <td class="p0">1</td>
-        <td class="top-issue">EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3…</td>
+        <td class="top-issue">PEAD equity strategy stuck in shadow mode</td>
         <td>3</td>
         <td class="top-issue">Wire existing VIX&lt;22 regime gate (feat/equity-vix-regime-gate-sidecar-2026-05-13…</td>
       </tr>
       <tr>
         <td class="cls">ETFS</td>
-        <td>0</td>
+        <td>1</td>
         <td class="p0">—</td>
-        <td class="top-issue">—</td>
-        <td>4</td>
-        <td class="top-issue">ETF cross-sectional momentum is closest to first Tier-2 class — accumulate live …</td>
+        <td class="top-issue">All 5 ETF strategies on probation with ZERO verified forward trades</td>
+        <td>3</td>
+        <td class="top-issue">Make VIX-gated sector rotation the primary ETF sleeve</td>
       </tr>
       <tr>
         <td class="cls">CRYPTO</td>
-        <td>2</td>
+        <td>4</td>
         <td class="p0">—</td>
-        <td class="top-issue">meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_b…</td>
-        <td>6</td>
+        <td class="top-issue">CRYPTO ML strategies DSR&gt;=0.9995 on n=25-34 displayed without &#39;insufficient n&#39; badge</td>
+        <td>3</td>
         <td class="top-issue">Enable BTC UTC-hour death-zone filter (M-001 / QW-3) in score_booster.py - rejec…</td>
       </tr>
       <tr>
         <td class="cls">FOREX</td>
-        <td>0</td>
-        <td class="p0">—</td>
-        <td class="top-issue">—</td>
+        <td>4</td>
+        <td class="p0">1</td>
+        <td class="top-issue">All FOREX strategies losers except cta_cross_asset_tsmom SHORT (93% USDJPY concentration)</td>
         <td>2</td>
         <td class="top-issue">FOREX carry-factor scaffold (G10 long high-yield / short low-yield) as rescue le…</td>
       </tr>
       <tr>
         <td class="cls">COMMODITIES</td>
-        <td>1</td>
-        <td class="p0">1</td>
-        <td class="top-issue">Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534</td>
+        <td>4</td>
+        <td class="p0">3</td>
+        <td class="top-issue">COMMODITY headline PF/WR still contaminated by pre-clean COT aggregation</td>
         <td>3</td>
         <td class="top-issue">Recompute class health from deduped independent COT cycles only</td>
       </tr>
       <tr>
         <td class="cls">BONDS</td>
-        <td>0</td>
-        <td class="p0">—</td>
-        <td class="top-issue">—</td>
+        <td>2</td>
+        <td class="p0">1</td>
+        <td class="top-issue">Antigravity_bond: 0% WR on n=9 — kill emission</td>
         <td>6</td>
         <td class="top-issue">Wire bond_scanner.py (yield_momentum, duration_rotation, mean_reversion) + promo…</td>
       </tr>
       <tr>
         <td class="cls">FUTURES</td>
-        <td>0</td>
+        <td>2</td>
         <td class="p0">—</td>
-        <td class="top-issue">—</td>
+        <td class="top-issue">FUTURES is a zombie tile with real futures hidden under COMMODITY</td>
         <td>2</td>
         <td class="top-issue">Replace empty FUTURES tile with unified futures taxonomy</td>
       </tr>
       <tr>
         <td class="cls">PENNY</td>
-        <td>0</td>
+        <td>2</td>
         <td class="p0">—</td>
-        <td class="top-issue">—</td>
+        <td class="top-issue">skyrocket_detector NOT wired to production</td>
         <td>1</td>
         <td class="top-issue">Implement float-squeeze detector from skyrocket_detector framework</td>
       </tr>
@@ -201,28 +240,44 @@
 
 <h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">Stocks</span> <strong>EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes, alpha_engine/equity strategies</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>HC JS/Python parity drift can change eligibility by surface</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">COMMODITIES</span> <strong>Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534</strong>
-    <div class="ie-card-meta">P0 · IN_PROGRESS · component: <code>alpha_engine commodity strategies (post cot_positioning block)</code> · reporter: qwen-code+freebuff · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>Profitable-but-filtered picks are not surfaced anywhere</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/quality_gates.py + dashboard_generator.py audit surfaces</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
-  <div class="incident-card ie-card sev-P1">
-    <span class="ie-class">OVERALL</span> <strong>CI Tests: 17 pytest failures on main (m096, m098, quality_gates, pr10_ab, outcome_resolver)</strong>
-    <div class="ie-card-meta">P1 · OPEN · component: <code>alpha_engine/tests/, audit_trail/quality_gates.py</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>Cherry-picked SUPREME EDGE stats (82% WR / PF 13+) surfaced without &#39;post-hoc segment search&#39; caveat</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/template.html SUPREME EDGE block</code> · reporter: opencode/ring-2.6-1t + 3-engine swarm · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
-  <div class="incident-card ie-card sev-P1">
-    <span class="ie-class">CRYPTO</span> <strong>meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_backtest_trades</strong>
-    <div class="ie-card-meta">P1 · TRIAGED · component: <code>meta_strategy emitter / bt_backtest_trades writer</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>smart_picks_engine weights confidence-derived elite/quality at 35% — structurally inverts the ranker</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/smart_picks_engine.py</code> · reporter: opencode/ring-2.6-1t + 3-engine swarm · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
-  <div class="incident-card ie-card sev-P1">
-    <span class="ie-class">CRYPTO</span> <strong>ML &#39;edges&#39; with PF 99-1094 are likely look-ahead leakage</strong>
-    <div class="ie-card-meta">P1 · TRIAGED · component: <code>alpha_engine ml_enhanced_* family / copy_trader_intel feature pipeline</code> · reporter: claude-opus-4-7+deepseek+cerebras · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>sync_active_mysql_picks_to_json upstream writer missing — root cause of 0.09% raw-pick outcome coverage</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/active_picks_sync.py (proposed) + forward_validator.validate_picks()</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
-  <div class="incident-card ie-card sev-P3">
-    <span class="ie-class">OVERALL</span> <strong>at_signal_outcomes SL_HIT rows have 24% with positive pnl_pct (labeling inconsistency)</strong>
-    <div class="ie-card-meta">P3 · TRIAGED · component: <code>at_signal_outcomes</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>PnL integrity mismatch on 38.97% of sampled closed picks</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct integrity</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>WON status rows show avg pnl_pct = -41.1%</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.status=&#39;WON&#39; rows</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>56,559 ghost rows in trading_picks (top cohort: 20,474 identical MATICUSDT entries)</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks ghost-row write path</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>5 FOREX rows have pnl_pct &lt; -100% (one at -106,700%)</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct (FOREX category)</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>signal_outcomes table 82 days stale</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes / outcome resolver pipeline</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
 <h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
   <div class="enhancement-card ie-card">
@@ -1856,7 +1911,7 @@ JUNK &lt; 60</pre>
     
 <!-- Update: May 17, 2026 ~05:40 UTC — M-046/M-047 gates + CRYPTO T1 certification + weekly filter -->
     <div class="update-entry" style="--dot-color: #22c55e;" data-tags="gates,commodity,crypto,equity,vix,kelly,weekly-filter,t1-certification,goal-1,swarm-review" data-category="trading" data-types="feature,documentation">
-      <div class="update-date">May 31, 2026 &mdash; LIVE (updated hourly)</div>
+      <div class="update-date">May 30, 2026 &mdash; LIVE (updated hourly)</div>
       <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
         <p style="margin:0 0 8px;"><strong style="color:#fbbf24;">Session deliverables (autonomous loop, swarm round 5 reviewed):</strong></p>
         <ul style="margin:0 0 10px;padding-left:18px;">
@@ -10844,7 +10899,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          May 31, 2026 &mdash; 04:40 PM EST | Hourly Portfolio Update
+          May 30, 2026 &mdash; 07:39 PM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -10863,22 +10918,6 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -11339,7 +11378,7 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated May 31, 04:40 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated May 30, 07:39 PM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>
