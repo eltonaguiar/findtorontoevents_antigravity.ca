@@ -1,0 +1,65 @@
+{
+  "persona_id": "strategy_persona__penny_deep_oversold",
+  "display_name": "PENNY Deep-Oversold Reversion (SHADOW PILOT, GATE-0 BLOCKED)",
+  "strategy_family": "mean_reversion_microcap",
+  "wraps_strategy": "penny_deep_oversold",
+  "asset_class": "PENNY",
+  "status": "shadow_paper_only_BLOCKED_AT_GATE_0",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "shadow_pilot_until": "2026-06-30",
+  "emission_blocked_pending_dependency": true,
+  "blocking_dependency": "INCIDENT_PENNY #2 — Gate 0 (pump_guard.py allowlist) blocks all penny_deep_oversold emissions before they reach the shadow log. Persona is REGISTERED but will emit zero picks until Gate 0 is fixed/relaxed.",
+  "philosophy": "Penny micro-cap deep-oversold mean reversion (RSI(2)<5, price > $0.50 floor, ADV > $2M liquidity floor). INCIDENT_PENNY #2 surfaced this as a candidate but Gate 0 (pump_guard) blocks emission entirely. Persona registration here is FORWARD-LOOKING — once Gate 0 is unblocked, the 30-day shadow pilot begins from that date, NOT from 2026-05-31.",
+  "entry_criteria": [
+    "Symbol in penny universe (price < $5, ADV > $2M)",
+    "RSI(2) < 5 (extreme oversold)",
+    "Close > $0.50 (sub-penny floor — avoid pink-sheet PnD)",
+    "Volume > 1.5x 20d avg (real participation)",
+    "Pump-guard CLEARED (currently always FAILS — Gate 0 dependency)",
+    "Not on SEC suspension or delisting watch"
+  ],
+  "exit_criteria": [
+    "RSI(2) > 70 (mean reversion complete)",
+    "Hard TP: +20% from entry",
+    "Hard SL: -10% from entry",
+    "Time-stop: 5 trading days"
+  ],
+  "risk_reward_target": "2.0 to 1",
+  "max_risk_per_trade_pct": 0.25,
+  "suggested_backtesting_protocol": "PENNY universe daily bars 2020-2025. Tag PnD events + SEC suspensions. Walk-forward. n>=30 closed picks required.",
+  "confidence_calibration": "ALWAYS LOW — penny class shares meme's PnD risk profile. No promotion discussion below n>=30 clean shadow picks.",
+  "best_market_conditions": ["Risk-on small-cap tape", "Low VIX micro-cap mean reversion windows"],
+  "worst_market_conditions": ["Reg-SHO threshold-list periods", "SEC suspension waves", "Bag-holder rallies into liquidity exits"],
+  "min_historical_trades": 30,
+  "live_stats_validation_2026_05_31": {
+    "n_closed": 1,
+    "wr_pct": 0.0,
+    "pf_raw": 0.0,
+    "warning": "Per tick23: PENNY_STOCK n=1, 0% WR, source=multi_asset_scanner (100% concentration). penny_deep_oversold itself has zero emissions due to Gate 0 block."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "PENNY INSUFF-N per /audit (n=1); penny_deep_oversold blocked at Gate 0",
+    "verdict": "INSUFF_N_SHADOW_PILOT_GATE_BLOCKED"
+  },
+  "shadow_pilot_acceptance_criteria_2026_06_30": {
+    "note": "30-day window starts WHEN Gate 0 unblocks, NOT 2026-05-31. shadow_pilot_until is a placeholder.",
+    "promote_to_next_stage_paper_if": "PF >= 1.5 AND WR >= 50% AND n_closed >= 30 (post-Gate-0-unblock)",
+    "retire_if": "PF < 0.9 AND n_closed >= 30",
+    "extend_pilot_if": "Gate 0 still blocking at 2026-06-30 (likely)"
+  },
+  "operator_activation_steps": [
+    "1. **PREREQUISITE: Fix INCIDENT_PENNY #2 (Gate 0 / pump_guard.py).** Until this lands, persona registration is symbolic.",
+    "2. Verify penny_deep_oversold NOT in PERMANENTLY_KILLED.",
+    "3. Add PERSONA_STRATEGIES + PERSONA_THESIS_MAP entries scoped to PENNY.",
+    "4. Run in shadow_paper_only mode AFTER Gate 0 fix; emissions excluded from production gates.",
+    "5. Day-30-from-unblock: review acceptance criteria."
+  ],
+  "kill_registry_check": "PASSED — penny_deep_oversold not in any kill list. BUT emission blocked at Gate 0 (pump_guard) per INCIDENT_PENNY #2.",
+  "references": [
+    "reports/peer_claude-skyrocket-recommendation_2026-05-31.md (shadow-pilot pattern)",
+    "reports/peer_claude-phase10b-money-maker-penny_result_2026-05-31.md",
+    "INCIDENT_PENNY #2 (Gate 0 dependency)"
+  ]
+}
