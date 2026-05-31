@@ -82,7 +82,7 @@ _PENNY_SYMS = {
 _CATEGORY_TO_ASSET_CLASS = {
     "futures": "FUTURES", "stock": "EQUITY", "forex": "FOREX",
     "etf": "ETF", "penny": "PENNY_STOCK", "crypto": "CRYPTO",
-    "meme": "MEMECOIN",
+    "meme": "MEMECOIN", "bond": "BOND", "commodity": "COMMODITY",
 }
 
 
@@ -1046,6 +1046,17 @@ class PickSyncer:
             # Finish success
             if not self.dry_run:
                 self._finish_run()
+
+            # 5. Refresh strategy stats (aggregates picks -> at_strategy_stats)
+            if not self.dry_run:
+                print("\n--- Strategy Stats Refresh ---")
+                try:
+                    from audit_trail.mysql_client import refresh_strategy_stats_mysql
+                    stats_count = refresh_strategy_stats_mysql()
+                    print(f"  Strategy stats rows upserted: {stats_count}")
+                except Exception as e:
+                    print(f"  Strategy stats refresh failed (non-fatal): {e}")
+
         except Exception as e:
             self.stats["errors"] += 1
             self._fail_run(str(e))
