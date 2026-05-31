@@ -101,7 +101,18 @@ def connect():
 
 
 def fetch_active_picks(cur, asset_class: str, max_rows: int = 5000):
-    """SELECT OPEN/ACTIVE rows for one asset class, oldest first per Cerebras Q4."""
+    """SELECT OPEN/ACTIVE rows for one asset class, NEWEST FIRST.
+
+    2026-05-31: switched ORDER BY signal_timestamp ASC -> DESC per PR #87
+    follow-up. With 39,706 OPEN CRYPTO rows the old ASC ordering filled the
+    --max-rows cap with the oldest legacy picks (back to Apr 7), starving
+    every newer cohort of resolver attention. The 48h panel showed
+    n_closed=0 across 310 active picks dated 2026-05-29 because they were
+    never in the fetched window. DESC ensures the freshest picks (those
+    most likely to be at-or-near TP/SL) resolve first; the legacy 2-year
+    tail can be flushed by a one-time backfill rather than blocking the
+    hot path on every hourly sync. Refs: reports/crypto_resolver_lag_root_cause_2026-05-31.md
+    """
     cur.execute("""
         SELECT id, source_system, symbol, asset_class, direction,
                entry_price, take_profit, stop_loss, status,
@@ -111,7 +122,7 @@ def fetch_active_picks(cur, asset_class: str, max_rows: int = 5000):
           AND status IN ('OPEN', 'ACTIVE')
           AND entry_price IS NOT NULL
           AND entry_price > 0
-        ORDER BY signal_timestamp ASC
+        ORDER BY signal_timestamp DESC
         LIMIT %s
     """, (asset_class, max_rows))
     return cur.fetchall()
