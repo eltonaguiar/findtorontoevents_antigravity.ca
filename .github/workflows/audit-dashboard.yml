@@ -444,6 +444,22 @@ jobs:
         run: python tools/ml_metrics_ci_summary.py
         continue-on-error: true
 
+      - name: Run MA strategy forward-tracker (walk-forward leaderboard)
+        # Incident #31 (P2): audit_dashboard/data/ma_strategy_leaderboard.json
+        # was 44h+ stale because tools/ma_strategy_forward_tracker.py had no cron.
+        # Runs 8 MA variants x 6 asset classes via yfinance (6y lookback,
+        # walk-forward OOS with ATR risk overlay). Writes leaderboard JSON +
+        # signals; the existing FTP step deploys it to all 3 mirror sites.
+        # continue-on-error so a transient yfinance/network failure can't break
+        # the dashboard publish.
+        id: ma_strategy_tracker
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 30
+        run: |
+          pip install yfinance numpy pandas -q 2>/dev/null || true
+          python tools/ma_strategy_forward_tracker.py --asof "$(date -u +%Y-%m-%d)" || echo "MA strategy tracker failed (non-fatal)"
+
       - name: Generate dashboard payload and build HTML
         env:
           # 2026-04-18: Flip Phase-1 confidence gate to SHADOW mode to unblock
