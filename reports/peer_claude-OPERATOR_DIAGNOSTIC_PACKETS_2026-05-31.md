@@ -457,8 +457,10 @@ futures_bb_mean_reversion          236  1      +0.022
 combined_confidence                102  5      +0.012
 cot_positioning                     59  5      +0.118
 cftc_cot_commercial_signal          40  3      −0.019
-commodity_tsmom_12m                  9  2      +0.209
+futures_cross_asset_momentum        14  0      +0.075
 ```
+
+> **CORRECTION 2026-05-31 (red-team polish):** row 12 was packet-listed as `commodity_tsmom_12m n=9 +0.209` but live re-run shows row 12 = `futures_cross_asset_momentum n=14 +0.075`. `commodity_tsmom_12m` actually sits at rank 14 (n=9). Original packet quoted Top-12 from a stale snapshot; corrected here.
 
 ### 7.3 Decision criteria
 - T2 admit: PF≥1.5 / WR≥50 / n≥100. Eligible by n alone: 9 strategies have n≥100.
@@ -486,10 +488,15 @@ commodity_tsmom_12m                  9  2      +0.209
 f"EQUITY picks require conf >= 0.90"
 ```
 ```python
-# alpha_engine/production_scanner.py:2572-2575  (specific EQUITY block)
-# penny_deep_oversold (multi_asset_institutional source): IONQ -14.63%,
-# ...
-("EQUITY", "penny_deep_oversold"),
+# alpha_engine/production_scanner.py:2680  (specific EQUITY block — CORRECTED 2026-05-31)
+# (surrounding context lines 2675-2681:)
+#     ("equity", "claude_gainer_ml"),
+#     ("equity", "value_quality_factor"),
+#     ("equity", "consecutive_beats"),
+#     ("equity", "earnings_drift"),
+#     ("equity", "dividend_aristocrats"),
+("equity", "penny_deep_oversold"),
+#     ("equity", "extreme_oversold_bounce"),  # was etf - normalized to equity
 ```
 ```python
 # alpha_engine/non_crypto_policy.py:184-214 (EQUITY strategies, partial)
@@ -531,8 +538,10 @@ regime_mild_bear                      77   4    −0.011
 cta_golden_cross_200                  63   0    +0.000
 regime_strong_bear                    38   3    −0.281
 stocks_rsi2_pullback_aggressive       37   0    +0.000
-regime_accumulation                   27   3    −0.698
+non_crypto_consensus                  27   0    +0.000
 ```
+
+> **CORRECTION 2026-05-31 (red-team polish):** row 9 was packet-listed as `regime_accumulation n=27 -0.698` but live re-run shows row 9 = `non_crypto_consensus n=27 0.000` (tie at n=27 — order changed). `regime_accumulation` is rank 10 in the live result. Both stay below the n=100 / T2 floor, so the tail-reorder does not change the decision matrix; corrected for accuracy.
 
 ### 8.3 Decision criteria
 - T2 candidates (n≥100): `stocks_rsi2_pullback` (n=1397, avg_pnl +0.03) — borderline; needs TP_HIT WR to decide.
@@ -547,7 +556,7 @@ regime_accumulation                   27   3    −0.698
 - pf_registry policy_clean_net EQUITY: only 5 rows (top: regime_terminal n=17, multi_asset_copytrader n=11, stocks_rsi2_pullback n=10, all WR/PF=None).
 
 ### 8.5 One-line operator action
-**Read `alpha_engine/non_crypto_policy.py:180-440` + `alpha_engine/production_scanner.py:3849` + `:2572-2575`. Decide per-strategy and per-symbol kill/keep using TP_HIT WR. Apply your own diff. Backup target `ejaguiar1_backups.trading_picks_pre_equity_rebuild_<ts>`.**
+**Read `alpha_engine/non_crypto_policy.py:180-440` + `alpha_engine/production_scanner.py:3849` + `:2680` (penny_deep_oversold block — CORRECTED from 2572-2575). Decide per-strategy and per-symbol kill/keep using TP_HIT WR. Apply your own diff. Backup target `ejaguiar1_backups.trading_picks_pre_equity_rebuild_<ts>`.**
 
 ---
 
@@ -586,9 +595,13 @@ def passes_penny_meme_class_gate(pick: Dict[str, Any]) -> bool:
 # Class-wide penny/meme gate (2026-05-15). MEMECOIN had only
 # strategy-PAIR blocks; PENNY_STOCK was entirely ungated. Reject both
 # classes outright. Kill-switch: PENNY_MEME_CLASS_GATE_ENABLED=0.
-if not passes_penny_meme_class_gate(pick):
-    logger.info(
-        "Pick rejected: penny/meme class-wide gate (symbol=%s class=%s)",
+try:
+    if not passes_penny_meme_class_gate(pick):
+        logger.debug(
+            "Pick rejected: penny/meme class-wide gate (symbol=%s class=%s)",
+            symbol, pick.get("asset_class"))
+        return False
+except Exception:
 ```
 
 ### 9.2 Live data signal — PENNY/MEMECOIN emission count
@@ -600,11 +613,15 @@ FROM trading_picks
 WHERE LOWER(category) IN ('penny','penny_stock','memecoin')
   AND created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
 GROUP BY LOWER(category);
--- → 0 rows (gate is working; no PENNY/MEMECOIN picks in 90d)
+-- → CORRECTED 2026-05-31: penny (lowercase) = 4 rows, 0 TP_HIT, 3 LOST/SL_HIT
+--   ('penny', 4, 0, 3) — class gate compares uppercase PENNY_STOCK; lowercase 'penny' category bypassed
+--   No 'penny_stock' or 'memecoin' rows in 90d
 SELECT LOWER(category) cat, COUNT(*) n FROM trading_picks
 WHERE LOWER(category) IN ('penny','penny_stock','memecoin')
 GROUP BY LOWER(category);
--- → 0 rows ALL-TIME (no historical PENNY emission either)
+-- → CORRECTED: ('penny', 4) ALL-TIME. The PENNY_STOCK uppercase asset_class gate
+--   does NOT catch rows written with category='penny' (lowercase). Category-vs-
+--   asset_class semantic mismatch — see follow-up #2 in red-team report.
 ```
 
 ### 9.3 UEPS emission count
@@ -642,7 +659,7 @@ FROM trading_picks WHERE status='won' GROUP BY source_system;
 This explains why Items 6/7/8 raw WR queries returned `wr=0.0` for every strategy: the codebase casts wins as `status='TP_HIT'`, not `status='won'`. Any downstream metric that filters `status='won'` is silently wrong. Re-check `tools/db_health_check.py::check_won_pnl_contradiction` and `alpha_engine/outcome_resolver.py` mapping.
 
 ### 9.5 Decision criteria
-- **PENNY Gate 0:** working as-designed; 0 picks emitted last 90d AND all-time. Keep `PENNY_MEME_CLASS_GATE_ENABLED=1`. No code change needed unless operator wants to relax to allow research-only sidecar emission.
+- **PENNY Gate 0:** PARTIALLY working — `PENNY_STOCK`/`MEMECOIN` uppercase asset_class checks 0 emissions, but 4 lowercase `category='penny'` rows leaked through in 90d (0 TP_HIT / 3 LOST). Category-vs-asset_class semantic mismatch — gate compares `pick.get("asset_class")` upper-cased against `{"MEMECOIN","PENNY_STOCK"}`, but some emitters write `category='penny'` without setting `asset_class='PENNY_STOCK'`. Recommend: (a) keep `PENNY_MEME_CLASS_GATE_ENABLED=1`, (b) extend gate to also reject when `category` LOWER ∈ {`penny`,`penny_stock`,`memecoin`}, (c) audit emitter that wrote those 4 rows.
 - **UEPS:** 0 emissions = wiring failure or strategy disabled. Per CLAUDE.md Wire-Up Rule + `MEMORY.md::project-money-ready-2026-05-31` ("money-ready bottleneck is PLUMBING"), this is a top-priority wire-up:
   - Caller: `alpha_engine/value_screener_runner.py` (`grep` confirms it imports UEPS modules).
   - Entry yaml: `.github/workflows/ueps-pick-runner.yml`.
@@ -667,6 +684,27 @@ python3 /tmp/diag2.py   # SELECT trading_picks group-by strategy/category
 python3 /tmp/diag3.py   # SELECT status distribution + signed-pnl confidence buckets
 ```
 Connection: `mysql.connector.connect(host='mysql.50webs.com', user='ejaguiar1_stocks', password='stocks1234560', database='ejaguiar1_stocks')`. Operator can re-run any block by pasting the SQL into MySQL Workbench or `mysql -h mysql.50webs.com -u ejaguiar1_stocks -p ejaguiar1_stocks`.
+
+## APPENDIX C — Polish round (2026-05-31, post red-team)
+
+Red-team `reports/peer_claude-pr239-cross-verify_2026-05-31.md` flagged 2/9 quote MOSTLY_VERIFIED + 3/9 query non-EXACT. Each is corrected inline above. Summary of inline edits:
+
+| # | Packet | Type | Original | Corrected |
+|---|---|---|---|---|
+| 1 | 7 (COMMODITY top-12) | Query | row 12 = `commodity_tsmom_12m n=9 +0.209` | row 12 = `futures_cross_asset_momentum n=14 +0.075` (live re-run) |
+| 2 | 8 (EQUITY penny_deep_oversold line) | Quote | `production_scanner.py:2572-2575` + `("EQUITY", ...)` | `:2680` + `("equity", "penny_deep_oversold")` lowercase, verbatim w/ context |
+| 3 | 8 (EQUITY top-9) | Query | row 9 = `regime_accumulation n=27 -0.698` | row 9 = `non_crypto_consensus n=27 0.000` (tie-reorder) |
+| 4 | 9 (PENNY gate call-site) | Quote | `logger.info(` | `try: ... logger.debug(` w/ surrounding context |
+| 5 | 9c (PENNY emission) | Query | "0 rows 90d AND all-time" | `('penny', 4, 0, 3)` 90d AND all-time — lowercase category bypasses uppercase asset_class gate |
+
+Post-polish self-check (same sample method as red-team):
+- Packet 7 row 12 → re-ran query, matches `futures_cross_asset_momentum n=14 +0.075` ✓
+- Packet 8 :2680 → `grep -n penny_deep_oversold production_scanner.py` returns only `2680:` ✓
+- Packet 8 row 9 → re-ran query, matches `non_crypto_consensus n=27 0.000` ✓
+- Packet 9 logger.debug → `Read quality_gates.py:6743` matches `logger.debug(` ✓
+- Packet 9c PENNY 4 rows → re-ran both queries, matches ✓
+
+All 9/9 packets now have quoted code matching live source bytes AND SQL block matching live DB output.
 
 ## APPENDIX B — Tables consulted
 - `trading_picks` (raw emission table; columns include `category`, `status`, `pnl_pct`, `confidence`, `strategy`, `source_system`)
