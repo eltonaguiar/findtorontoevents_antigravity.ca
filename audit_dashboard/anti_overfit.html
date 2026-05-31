@@ -30,6 +30,7 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
 .verdict-undet{background:rgba(251,191,36,0.18);color:#fcd34d;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700}
 .verdict-overfit{background:rgba(239,68,68,0.18);color:#fca5a5;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700}
 .verdict-err{background:rgba(148,163,184,0.18);color:#cbd5e1;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700}
+.insufficient-n{background:rgba(251,146,60,0.18);color:#fb923c;padding:2px 7px;border-radius:10px;font-size:0.72em;font-weight:700;margin-left:6px;white-space:nowrap}
 .back{color:#60a5fa;font-size:0.88em;margin-bottom:10px;display:inline-block}
 .code{background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 5px;border-radius:3px;font-size:0.85em;font-family:Consolas,Menlo,monospace}
 .err{color:#fca5a5;padding:14px;background:rgba(239,68,68,0.08);border:1px solid #ef4444;border-radius:8px}
@@ -88,10 +89,25 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
       '<div class="kpi"><div class="kpi-label">Edge likely real</div><div class="kpi-value kpi-real">' + (vc.EDGE_LIKELY_REAL||0) + '</div></div>' +
       '<div class="kpi"><div class="kpi-label">Undetermined</div><div class="kpi-value kpi-undet">' + (vc.UNDETERMINED||0) + '</div></div>' +
       '<div class="kpi"><div class="kpi-label">Overfit likely</div><div class="kpi-value kpi-overfit">' + (vc.OVERFIT_LIKELY||0) + '</div></div>';
+    // Count n<100 for KPI
+    const nLt100 = (d.strategies||[]).filter(s => (s.n||0) < 100).length;
+    if (nLt100 > 0) {
+      kpiRow.innerHTML += '<div class="kpi"><div class="kpi-label">Insufficient n (&lt;100)</div><div class="kpi-value" style="color:#fb923c">' + nLt100 + '</div></div>';
+    }
     lastUpd.textContent = 'Generated: ' + (d.generated_at || 'unknown');
 
+    // Sort: n>=100 first (descending by n), then n<100 (descending by n)
+    const strategies = (d.strategies||[]).slice().sort((a, b) => {
+      const aOk = (a.n||0) >= 100, bOk = (b.n||0) >= 100;
+      if (aOk !== bOk) return aOk ? -1 : 1;
+      return (b.n||0) - (a.n||0);
+    });
+
+    // Count insufficient-n
+    const insufficientCount = strategies.filter(s => (s.n||0) < 100).length;
+
     // Table
-    const rows = (d.strategies||[]).map(s => {
+    const rows = strategies.map(s => {
       const vClass = s.verdict === 'EDGE_LIKELY_REAL' ? 'verdict-real' :
                      s.verdict === 'UNDETERMINED' ? 'verdict-undet' :
                      s.verdict === 'OVERFIT_LIKELY' ? 'verdict-overfit' : 'verdict-err';
@@ -99,8 +115,11 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
       const dsrBar = s.dsr != null
         ? '<span class="dsr-bar"><span class="dsr-fill" style="width:' + dsrPct + '%"></span></span>' + s.dsr.toFixed(4)
         : '<em>n/a</em>';
+      const nBadge = (s.n||0) < 100
+        ? '<span class="insufficient-n" title="DSR unreliable below n=100 — awaiting more closed trades">&#9888; insufficient n</span>'
+        : '';
       return '<tr><td><span class="' + vClass + '">' + (s.verdict||'?') + '</span></td>' +
-             '<td><span class="code">' + escapeHTML(s.strategy||'?') + '</span></td>' +
+             '<td><span class="code">' + escapeHTML(s.strategy||'?') + '</span>' + nBadge + '</td>' +
              '<td class="num">' + (s.n||0) + '</td>' +
              '<td class="num">' + (s.wr_pct||0).toFixed(1) + '%</td>' +
              '<td class="num">' + (s.pf!=null?s.pf.toFixed(2):'-') + '</td>' +
@@ -108,7 +127,11 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
              '<td class="num">' + dsrBar + '</td></tr>';
     }).join('');
 
-    root.innerHTML = '<table><thead><tr><th>Verdict</th><th>Strategy</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th><th class="num">Sharpe</th><th class="num">DSR</th></tr></thead><tbody>' + (rows||'<tr><td colspan="7"><em>no strategies above min_n</em></td></tr>') + '</tbody></table>';
+    const insufBanner = insufficientCount > 0
+      ? '<div style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.35);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.82em;color:#fdba74">&#9888; <strong>' + insufficientCount + ' strategy(ies) with n &lt; 100</strong> &mdash; DSR values are unreliable below n=100 (Bailey-Lopez de Prado). These rows are sorted last. Do not base sizing decisions on their DSR/verdict.</div>'
+      : '';
+
+    root.innerHTML = insufBanner + '<table><thead><tr><th>Verdict</th><th>Strategy</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th><th class="num">Sharpe</th><th class="num">DSR</th></tr></thead><tbody>' + (rows||'<tr><td colspan="7"><em>no strategies above min_n</em></td></tr>') + '</tbody></table>';
   } catch(e) {
     root.innerHTML = '<div class="err">Failed to load anti_overfit_audit.json: ' + escapeHTML(String(e)) + '</div>';
     kpiRow.innerHTML = '<div class="kpi"><div class="kpi-label">Load failed</div></div>';
