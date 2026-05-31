@@ -1,3 +1,7 @@
+# METHODOLOGY WARNING 2026-05-31: This module filters OUT TIME_EXIT trades (zero-pnl median outcomes) before computing metrics.
+# That is survivorship bias by selection. Reported PF/EV are INFLATED 5-30x vs. actual forward outcomes.
+# The module's own permutation p-values (commodity p=0.999, crypto_mega p=1.000, crypto_pma p=0.66, forex p=0.41) refute the PROMISING verdict.
+# Do NOT use for live capital sizing. Research artifact only. See reports/peer_claude-FORCED_RESOLUTION_SURVIVORSHIP_BIAS_2026-05-31.md
 """Forced-Resolution Strategy Wrapper.
 
 Solves the #1 edge killer: TIME_EXIT saturation (85-97% of trades exit at 0% PnL).
