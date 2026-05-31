@@ -302,7 +302,7 @@
   <ul style="margin:6px 0 6px 18px;padding:0">
     <li><b>Active</b> — currently open picks (status not WON/LOST).</li>
     <li><b>Dashboard (all decisive)</b> — every closed pick in the dashboard's <code>recent_closed</code> for this class, decisive only (WON+LOST, with pnl_pct).</li>
-    <li><b>Dashboard (Smart filter)</b> — same cohort restricted to elite_score≥60 &amp; confidence≥0.60. This is what the <i>Smart Picks</i> nav surface tab counts.</li>
+    <li><b>Dashboard (Smart filter)</b> — same cohort restricted to <code>elite_score ≥ per-class floor</code> &amp; <code>confidence ≥ 0.60</code>. Per-class floors (from <code>tools/audit_pick_funnel/extract_funnel.py::SMART_FLOOR_BY_CLASS</code>, FROZEN 2026-05-20): CRYPTO 60, EQUITY 60, PENNY 60, MEME 60, BOND 60, INDEX 55, ETF 55, FUTURES 45, FOREX 40, COMMODITY 30. This is what the <i>Smart Picks</i> nav surface tab counts.</li>
     <li><b>DB raw 90d</b> — <code>ejaguiar1_stocks.at_raw_picks</code> last 90 days via <code>closed_at</code> — the ground-truth row count without dashboard curation.</li>
   </ul>
   <b>Why two sources?</b> The dashboard pre-filters/dedups; the DB is raw. Big gap = the dashboard is showing a curated slice (which may carry bias). For the suspicious CRYPTO Smart cell (n=337, WR 78.9%) the DB equivalent (any source, conf≥0.60, 90d closed) is WR 33% — that's a 46-point gap and the reason for the DISPUTED banner above.<br>
@@ -368,7 +368,7 @@ function toEST(utcStr) {
           <th rowspan="2">Class</th>
           <th class="num" rowspan="2">Active</th>
           <th class="num" colspan="5" style="text-align:center;background:rgba(96,165,250,0.08)">Dashboard — all decisive</th>
-          <th class="num" colspan="5" style="text-align:center;background:rgba(34,197,94,0.08)">Dashboard — Smart filter (elite≥60 &amp; conf≥0.60)</th>
+          <th class="num" colspan="5" style="text-align:center;background:rgba(34,197,94,0.08)" title="Per-class smart_floor: CRYPTO/EQUITY/PENNY/MEME/BOND=60, INDEX/ETF=55, FUTURES=45, FOREX=40, COMMODITY=30">Dashboard — Smart filter (elite≥per-class floor &amp; conf≥0.60)</th>
           <th class="num" colspan="5" style="text-align:center;background:rgba(239,68,68,0.08)">DB raw 90d (at_raw_picks)</th>
         </tr>
         <tr>
