@@ -1,0 +1,51 @@
+{
+  "persona_id": "strategy_persona__commodity_non_cot_research",
+  "display_name": "COMMODITY Non-COT Research Harness (SHADOW, no edge yet)",
+  "strategy_family": "research_harness",
+  "wraps_strategy": "(NONE — research-only sandbox; emits signals from non-COT data sources for forward-tracking)",
+  "asset_class": "COMMODITY",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "philosophy": "COMMODITY has NO validated emitter as of 2026-05-31. cta_golden_cross_200 was retired in PR #182 as a resolver artifact. Phase 10b plan #200 says block futures_momentum on COMMODITY (live data confirms: n=597, PF 0.45, catastrophic). This persona is a SHADOW RESEARCH HARNESS that emits picks from non-COT signals (inventory cycle, weather, seasonal) purely to build forward-tracked data for future MC qualification — NOT a tradeable edge.",
+  "entry_criteria": [
+    "Signal source MUST be non-COT (CFTC COT data has known reconciliation issues — see reports/peer_claude-cftc-cot-commercial-mutation-analysis_result_2026-05-31.md)",
+    "Allowed signals: EIA inventory weekly delta, NOAA seasonal anomaly, USDA WASDE surprise, dollar-index regime",
+    "Symbol in {GC=F, SI=F, CL=F, NG=F, HG=F} (tournament COMMODITY universe)",
+    "Block CT=F (cotton) — current 57% concentration in COMMODITY raw data is a red flag (see CLAUDE.md COMMODITY status)"
+  ],
+  "exit_criteria": [
+    "Signal reverses",
+    "Hard time-stop: 28 trading days (COMMODITY resolution window)",
+    "ATR stop: 2x 20-day ATR"
+  ],
+  "risk_reward_target": "Research-only — no R:R target until n>=100 in shadow",
+  "max_risk_per_trade_pct": 0.5,
+  "suggested_backtesting_protocol": "Forward-only shadow tracking. NO historical backtests cited as edge (data sources are exotic and prone to lookahead). n>=100 forward-only closed shadow picks before any MC discussion.",
+  "confidence_calibration": "ALWAYS LOW in shadow. Persona exists to *generate* data, not to claim edge.",
+  "best_market_conditions": ["N/A — no validated regime"],
+  "worst_market_conditions": ["All — until proven otherwise"],
+  "min_historical_trades": 100,
+  "live_stats_validation_2026_05_31": {
+    "validated_emitter": null,
+    "futures_momentum_commodity_n": 597,
+    "futures_momentum_commodity_pf": 0.45,
+    "futures_momentum_commodity_wr_pct": 38.0,
+    "note": "futures_momentum on category=commodity is conclusively BAD. cta_golden_cross_200 was retired (PR #182). No alternative validated emitter exists. This persona is a RESEARCH harness, NOT a promoter."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "COMMODITY FAIL + INSUFF-N per /audit (n=28 clean, PF 0.31, WR 11%)",
+    "verdict": "NO_MC_CANDIDATE_RESEARCH_ONLY"
+  },
+  "operator_activation_steps": [
+    "1. Build the non-COT signal pipeline FIRST. Currently the harness has no signal source — it emits no picks. This is a SCAFFOLD persona only.",
+    "2. Required upstream work (DEFERRED — out of scope for this PR):",
+    "   a) EIA inventory weekly delta scraper",
+    "   b) NOAA seasonal anomaly index",
+    "   c) USDA WASDE surprise scorer",
+    "3. Once signal source exists, register persona in model_persona_mapping.json under COMMODITY (replace cta_trend / seasonal_pattern slots in 2-3 models).",
+    "4. Forward-only shadow tracking. No backtest claims of edge.",
+    "5. Promotion gate: n>=100 forward-only closed shadow picks AND PF>=1.5 AND CT=F concentration < 30%."
+  ],
+  "kill_registry_check": "PASSED — no underlying emitter named yet; persona will dynamically respect kill list via emitter selection."
+}

@@ -1,0 +1,50 @@
+{
+  "persona_id": "strategy_persona__crypto_trust7_promoter",
+  "display_name": "CRYPTO Trust-Score=7 Edge Promoter",
+  "strategy_family": "meta_trust_score_filter",
+  "wraps_strategy": "*ANY crypto emitter passing trust_score>=7 gate*",
+  "asset_class": "CRYPTO",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "philosophy": "Surfaces a meta-edge identified in session memory (project-confidence-trust-edges-2026-05-31): CRYPTO picks with trust_score=7 showed 85.9% WR over n=99 in the live audit refutation of the global-ML-inversion incident. Does NOT pick a single emitter — instead acts as a trust-score gate over all non-killed CRYPTO emitters.",
+  "entry_criteria": [
+    "asset_class = CRYPTO AND trust_score >= 7",
+    "Source emitter NOT in PERMANENTLY_KILLED",
+    "Source emitter NOT ml_crypto_predictor LONG or alpha_engine_fast (Phase 10b plan #198 blocklist — still unwired upstream)",
+    "Symbol in tournament CRYPTO universe (30 majors)"
+  ],
+  "exit_criteria": [
+    "Defer to underlying emitter's TP/SL",
+    "Hard time-cap: 14 days (matches CRYPTO resolution window)",
+    "Cut if trust_score drops below 6 mid-trade"
+  ],
+  "risk_reward_target": "Inherits from underlying emitter",
+  "max_risk_per_trade_pct": 1.0,
+  "suggested_backtesting_protocol": "Replay closed CRYPTO picks 2026-04-01 forward, filter by signal-ts unique groups (1864 dup groups in raw — must dedupe). Re-validate trust_score=7 cohort PF after EXPIRED->WON mislabel fix (162 picks affected per session memory).",
+  "confidence_calibration": "HIGH when trust_score=7 AND emitter outside concentration-banned set. UNKNOWN otherwise — gate disabled.",
+  "best_market_conditions": ["BTC dominance stable", "Range-bound or mild trending crypto regimes"],
+  "worst_market_conditions": ["Flash-crash 24h periods", "Macro risk-off events"],
+  "min_historical_trades": 100,
+  "live_stats_validation_2026_05_31": {
+    "n_in_trust_7_cohort": 99,
+    "wr_pct": 85.9,
+    "source": "session memory project-confidence-trust-edges-2026-05-31",
+    "note": "Cohort-level meta-edge, not a single emitter. Disputed Smart-Picks 78.9% figure is REFUTED in raw DB (39% WR); trust=7 sub-cohort survives that refutation."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "reports/phase10b_crypto_money_maker_readyv2_2026-05-31.md",
+    "verdict": "BLOCKLIST_UNWIRED_DEPENDENCY",
+    "blocking_dependency": "Plan #198 blocklist (ml_crypto_predictor LONG + alpha_engine_fast) is NOT wired; 369 banned picks emitted in 7d. Resolver TIME_EXIT fix must land too (162 TP_HIT mislabels)."
+  },
+  "operator_activation_steps": [
+    "1. **BLOCKED until upstream fixes land** — do NOT promote even to shadow without:",
+    "   a) Phase 10b plan #198 blocklist wired in production_scanner (currently emits banned strategies).",
+    "   b) Resolver TIME_EXIT vs TP_HIT label fix (162 mislabels confirmed).",
+    "2. Once (a) + (b) land, add trust_score>=7 filter to smart_picks_engine.passes_active_gate for CRYPTO only.",
+    "3. Add PERSONA_STRATEGIES entry: 'Trust-score >= 7 meta-filter over surviving CRYPTO emitters'.",
+    "4. Re-validate n>=100 in clean post-fix data BEFORE any live sizing.",
+    "5. Re-derive PF: raw CRYPTO is PF 0.37 with 91.7% concentration in claude_gainer_st (3 closed rows) — confirm trust=7 cohort survives concentration de-bias."
+  ],
+  "kill_registry_check": "MIXED — persona itself is a gate, not an emitter. Gate auto-respects PERMANENTLY_KILLED."
+}
