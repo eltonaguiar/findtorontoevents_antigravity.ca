@@ -218,31 +218,61 @@ def pick_to_row(pick):
     raw_status = str(pick.get("status", "ACTIVE") or "ACTIVE").upper()
     exit_reason = str(pick.get("exit_reason", "") or "").upper()
 
+    # PnL sign helper (used by both the CLOSED/FLAT derivation and the
+    # legacy-status canonicalization below).
+    def _pnl_sign():
+        pnl_raw = pick.get("pnl_pct")
+        if pnl_raw is None:
+            pnl_raw = pick.get("unrealized_pnl_pct")
+        pnl_f = _safe_float(pnl_raw)
+        return pnl_f if pnl_f is not None else 0.0
+
     # closed_picks sources commonly emit CLOSED/FLAT instead of final outcome.
-    # Derive canonical terminal status for MySQL analytics.
+    # Derive a CANONICAL terminal status for MySQL analytics. Canonical set
+    # (keep in sync with tools/db_health_check.py CANONICAL_STATUSES and
+    # tools/standardize_statuses.py): TP_HIT, SL_HIT, LOST, EXPIRED, TIME_EXIT,
+    # ACTIVE, OPEN. Emitting legacy 'WON'/'CLOSED_*' here was the root cause of
+    # the status_standardization RED gate (banner: DATA INTEGRITY FAILURE) —
+    # the writer kept re-seeding non-canonical rows faster than cleanup ran.
     if raw_status in ("CLOSED", "FLAT"):
         if exit_reason in ("TP", "TP_HIT", "TP_HIT_RESOLVED", "TP2_HIT", "TP1_HIT"):
-            status = "WON"
+            status = "TP_HIT"
         elif exit_reason in ("SL", "SL_HIT", "STOP_LOSS", "ATR_TRAIL", "TRAIL", "TRAIL_SL", "SL_HIT_RESOLVED"):
-            status = "LOST"
-        elif exit_reason in ("TIME_EXIT", "MAX_HOLD", "EXPIRED", "FORCE_CLOSED_TOXIC"):
+            status = "SL_HIT"
+        elif exit_reason in ("TIME_EXIT", "MAX_HOLD"):
+            status = "TIME_EXIT"
+        elif exit_reason in ("EXPIRED", "FORCE_CLOSED_TOXIC"):
             status = "EXPIRED"
         else:
             # Fallback: infer from PnL sign when exit_reason is ambiguous.
-            pnl_raw = pick.get("pnl_pct")
-            if pnl_raw is None:
-                pnl_raw = pick.get("unrealized_pnl_pct")
-            pnl_f = _safe_float(pnl_raw)
-            if pnl_f is None:
-                pnl_f = 0.0
+            # A positive close with no TP exit_reason is NOT a confirmed TP hit
+            # (it may be a time-exit at a profit), so it maps to TIME_EXIT, not
+            # TP_HIT — preserving the WR/PF semantics of TP_HIT.
+            pnl_f = _pnl_sign()
             if pnl_f > 0:
-                status = "WON"
+                status = "TIME_EXIT"
             elif pnl_f < 0:
                 status = "LOST"
             else:
                 status = "EXPIRED"
     else:
-        status = raw_status
+        # Canonicalize any legacy pass-through status so the writer never
+        # re-introduces a non-canonical value (WON/WIN/LOSS/closed/CLOSED_*).
+        _STATIC_CANON = {
+            "WIN": None, "WON": None,        # PnL-dependent → resolved below
+            "LOSS": "LOST", "CLOSED_SL": "SL_HIT", "CLOSED_TP": "TP_HIT",
+            "SIGNAL": "EXPIRED", "STALE": "EXPIRED",
+        }
+        if raw_status in ("WIN", "WON"):
+            pnl_f = _pnl_sign()
+            status = "TP_HIT" if pnl_f > 0 else "LOST"
+        elif raw_status == "CLOSED":
+            pnl_f = _pnl_sign()
+            status = "TP_HIT" if pnl_f > 0 else "LOST" if pnl_f < 0 else "TIME_EXIT"
+        elif raw_status in _STATIC_CANON:
+            status = _STATIC_CANON[raw_status]
+        else:
+            status = raw_status
 
     # Determine closed_at: use exit_date if present.
     # 2026-05-10: + exit_time fallback. battleground/data/closed_picks.json and
