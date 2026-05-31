@@ -19,7 +19,7 @@ System pipeline fully recovered after coordinated GHA unblock + natural drain. V
 
 Verification PR: **#258** (recovery verification). Skyrocket pilot registration PR: **#256** (SHADOW_PILOT, 30-day shadow timer started 2026-05-31).
 
-**Operator queue narrows from 14 → 12 items pinned.**
+**Operator queue narrows from 14 → 11 items pinned.** (PR #229 merged 2026-05-31T19:39Z; harness_healthy=true verified live)
 
 ---
 
@@ -29,15 +29,14 @@ Verification PR: **#258** (recovery verification). Skyrocket pilot registration 
 - **Production pipeline**: RECOVERED — resolver + audit + backtests all green (tick 16)
 - **GHA queue depth**: drained via 20+8 cancellations + 3 re-triggers (see Lessons applied)
 - **Session PRs merged**: 147+
-- **Action items pinned for you**: **12** (was 14; GHA-unblock + skyrocket retired)
+- **Action items pinned for you**: **11** (was 14; GHA-unblock + skyrocket + PR #229 retired)
 - **Open incidents**: see `vw_all_incidents` (TRIAGED + OPEN) — count via reproducibility block below
 
 ---
 
 ## PRIORITY 1 — do FIRST (5-minute decisions, ~7 min total)
 
-1. **PR #229 — `harness_healthy` draft**: approve OR reject (1-click).
-   - Time: 2 min
+~~1. **PR #229 — `harness_healthy` draft**: approve OR reject (1-click).~~ **RESOLVED** — merged 2026-05-31T19:39:35Z (squash `5771cdcc7`); live `db_health.json` (gen 18:57Z) confirms `harness_healthy=true`, `banner_should_show=false`, 5/5 passed. Gate active.
 
 2. **PR #227 — reject-INVERT verdict**: approve OR override with bucket-dampen.
    - If you override → set bucket-dampen factor in same decision
