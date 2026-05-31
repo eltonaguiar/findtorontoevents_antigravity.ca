@@ -544,18 +544,49 @@ def _copy_source_quality(pick: dict) -> dict:
 
 
 def _compute_ml_composite(pick: dict) -> tuple[float, str]:
-    """Return (ranking_score, ranking_method) for a pick."""
+    """Return (ranking_score, ranking_method) for a pick.
+
+    2026-05-31 SYNC FIX (#17): Asset-class-aware weights ported from
+    `alpha_engine/smart_picks_engine.py:122-167` (PR1 FIX 2026-05-27 block).
+    Keep these two callers synchronized — diverging weights = two-ranker
+    inconsistency (this scanner ranked picks with stale 0.6/0.3/0.1 weights
+    while smart_picks_engine used the inverted-CRYPTO-confidence weights).
+
+    Empirical justification (at_raw_picks 90d):
+      CRYPTO conf>=0.9 => 33.7% WR (n=406)
+      CRYPTO conf 0.5-0.7 => 45.4% WR (n=3470)
+      CRYPTO conf<0.5 => 44.7% WR (n=861)
+      => 11.7pp inverted gap — zero confidence weight for CRYPTO.
+      FOREX is direct (not inverted): 91.4% WR at conf>=0.9.
+    """
     ml = pick.get("ml_score")
     conf = float(pick.get("confidence", 0) or 0)
     fwd_wr = float(pick.get("forward_wr", pick.get("strat_fwd_wr", 0)) or 0)
     if fwd_wr > 1.0:
         fwd_wr = fwd_wr / 100.0
+
+    # Asset-class-aware default weights (mirror smart_picks_engine.py:127-133)
+    _raw_ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
+    if _raw_ac == "CRYPTO":
+        # CRYPTO: confidence anti-predictive -> zero it, boost ml_score + fwd_wr
+        _w_ml, _w_conf, _w_fwd = 0.80, 0.00, 0.20
+    else:
+        # Non-crypto: confidence IC ~0.20 (EQUITY) — keep small weight
+        _w_ml, _w_conf, _w_fwd = 0.75, 0.10, 0.15
+
     if ml is not None and float(ml) > 0:
         ml_val = float(ml)
-        score = ml_val * 0.6 + conf * 0.3 + fwd_wr * 0.1
+        score = ml_val * _w_ml + conf * _w_conf + fwd_wr * _w_fwd
         method = "ml_composite"
     else:
-        score = conf * 0.8
+        # Fallback path — mirror smart_picks_engine.py:155-167.
+        # CRYPTO: drastically scaled down (anti-predictive confidence).
+        # Non-crypto: half-strength to avoid beating real ml_composite picks.
+        if _raw_ac == "CRYPTO":
+            ml_null_penalty = 0.15
+        else:
+            ml_null_penalty = 0.5
+        score = conf * 0.8 * ml_null_penalty
         method = "confidence_fallback"
 
     # Whale Concentration Index (0-100) adjustment
