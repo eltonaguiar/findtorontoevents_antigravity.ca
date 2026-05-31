@@ -681,6 +681,7 @@ function renderLeaderboard(models, opts) {
     const hasPf = m.pf != null && !isNaN(m.pf) && m.pf !== 999;
     const pfDisplay = hasPf ? m.pf.toFixed(2) : '—';
     const pfClass = !hasPf ? 'pnl-neu' : (m.pf >= 1.5 ? 'pnl-pos' : m.pf < 1.0 ? 'pnl-neg' : 'pnl-neu');
+    const rankNum = (m.rank != null) ? m.rank : (i + 1);
     tbody.innerHTML += `<tr>
       <td class="rank">#${rankNum}</td>
       <td class="model-name">${esc(m.model_id)}</td>
