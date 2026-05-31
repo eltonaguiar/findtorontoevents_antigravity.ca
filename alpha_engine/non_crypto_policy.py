@@ -237,6 +237,17 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.50,
         "allow_without_forward": False,
     },
+    # INC FOREX P0 (2026-05-31): sole proven FOREX sleeve (57.6% WR SHORT, USDJPY-heavy).
+    # Admission gate above restricts to SHORT only for forex category.
+    "cta_cross_asset_tsmom": {
+        "categories": {"forex", "commodity", "futures", "bond", "equity"},
+        "min_confidence": 0.55,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 2,
+        "min_forward_wr": 0.45,
+        "allow_without_forward": True,
+    },
     # INC FOREX P0/P1 (2026-05-31): probation allowlist for G10 carry (Lustig et al. 2011).
     # Losers (forex_rsi2, carry_trade_momentum, inverse_carry, forex_carry_ppp) moved to
     # BLACKLISTED_STRATEGIES in config.py.
