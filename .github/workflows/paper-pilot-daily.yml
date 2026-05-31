@@ -1,0 +1,107 @@
+# Master Paper-Pilot Harness — daily run.
+#
+# Orchestrates all 7 cursor-framework strategy paper pilots:
+#   connors_rsi2, faber_tactical, fx_carry, magic_formula,
+#   piotroski, post_ipo_drift, tsmom.
+#
+# Writes per-strategy picks to JSON sidecars (never trading_picks DB),
+# emits reports/peer_claude-master_paper_pilot_status_<date>.json,
+# and commits the status JSON back to main so peers can see it.
+#
+# Cron: 13:30 UTC daily (=09:30 ET, just before US open).
+# Monthly strategies self-gate inside the harness (no-op except month-end).
+
+name: paper-pilot-daily
+
+on:
+  schedule:
+    - cron: "30 13 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force-run all strategies regardless of cadence gate"
+        required: false
+        default: "false"
+      strategy:
+        description: "Run only this strategy (leave blank for all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  run-paper-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install minimal deps
+        run: |
+          python -m pip install --upgrade pip
+          # Strategies use only stdlib + numpy/pandas for the core math.
+          pip install numpy pandas
+
+      - name: Stage strategy builds into /tmp
+        run: |
+          # The build artifacts live under /tmp/strategy_builds_2026-05-31/
+          # on the operator's box; in CI we keep the same path by syncing
+          # from the repo copy at tools/strategy_builds_2026-05-31/ if present,
+          # otherwise the workflow is a no-op (skip + warn).
+          SRC=tools/strategy_builds_2026-05-31
+          DST=/tmp/strategy_builds_2026-05-31
+          if [ -d "$SRC" ]; then
+            mkdir -p "$DST"
+            cp -r "$SRC"/* "$DST"/
+          else
+            echo "::warning::strategy build artifacts not staged under $SRC — running with whatever exists at $DST"
+            mkdir -p "$DST"
+          fi
+
+      - name: Run master paper-pilot harness
+        env:
+          FTE_REPO_ROOT: ${{ github.workspace }}
+        run: |
+          FORCE_FLAG=""
+          STRAT_FLAG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          if [ -n "${{ github.event.inputs.strategy }}" ]; then
+            STRAT_FLAG="--strategy ${{ github.event.inputs.strategy }}"
+          fi
+          python /tmp/strategy_builds_2026-05-31/master_paper_pilot_harness.py \
+            $FORCE_FLAG $STRAT_FLAG \
+            || echo "::warning::harness returned non-zero — see status JSON"
+
+      - name: Commit status JSON
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          DATE=$(date -u +%Y-%m-%d)
+          STATUS="reports/peer_claude-master_paper_pilot_status_${DATE}.json"
+          if [ -f "$STATUS" ]; then
+            git add "$STATUS"
+            git diff --cached --quiet || git commit -m "chore(paper-pilot): daily status ${DATE}"
+            git push || echo "::warning::push failed (likely concurrent commit) — will retry next cycle"
+          else
+            echo "::warning::no status file at $STATUS"
+          fi
+
+      - name: Upload status as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-pilot-status
+          path: reports/peer_claude-master_paper_pilot_status_*.json
+          if-no-files-found: warn
+          retention-days: 30
