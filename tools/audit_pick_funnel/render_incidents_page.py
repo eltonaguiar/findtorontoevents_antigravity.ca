@@ -40,14 +40,23 @@ def fetch_all():
     )
     incidents = {}
     enhancements = {}
+    findings = {}
     with conn.cursor() as cur:
         for cls in CLASSES:
             cur.execute(f"SELECT * FROM INCIDENT_{cls} ORDER BY FIELD(severity,'P0','P1','P2','P3','INFO'), created_at DESC")
             incidents[cls] = list(cur.fetchall())
             cur.execute(f"SELECT * FROM ENHANCEMENT_{cls} ORDER BY FIELD(expected_impact,'HIGH','MEDIUM','LOW','UNKNOWN'), FIELD(effort,'S','M','L','XL'), created_at DESC")
             enhancements[cls] = list(cur.fetchall())
+            # FINDING_<CLASS> tables are newer (migration 20260529_finding_tables).
+            # Tolerate their absence on environments where the migration hasn't
+            # been applied yet, so the renderer doesn't hard-fail on legacy DBs.
+            try:
+                cur.execute(f"SELECT * FROM FINDING_{cls} ORDER BY FIELD(severity,'P0','P1','P2','P3','NOTEWORTHY','INFO'), created_at_utc DESC")
+                findings[cls] = list(cur.fetchall())
+            except pymysql.err.ProgrammingError:
+                findings[cls] = []
     conn.close()
-    return incidents, enhancements
+    return incidents, enhancements, findings
 
 
 def esc(s):
@@ -56,7 +65,9 @@ def esc(s):
 
 
 def sev_badge(s):
-    colors = {"P0":"#ef4444", "P1":"#f59e0b", "P2":"#3b82f6", "P3":"#6b7280", "INFO":"#22c55e"}
+    # P0=red, P1=amber, P2=yellow, P3=grey, INFO=blue, NOTEWORTHY=teal (matches
+    # the FINDINGS spec; incidents still pass INFO/P0..P3 via the existing path).
+    colors = {"P0":"#ef4444", "P1":"#f59e0b", "P2":"#eab308", "P3":"#6b7280", "INFO":"#3b82f6", "NOTEWORTHY":"#14b8a6"}
     c = colors.get(s, "#6b7280")
     return f'<span style="background:{c};color:#0a0a0f;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700">{esc(s)}</span>'
 
@@ -116,7 +127,8 @@ def created_est(row):
 
 def status_badge(s):
     colors = {"OPEN":"#ef4444","TRIAGED":"#f59e0b","IN_PROGRESS":"#3b82f6","RESOLVED":"#22c55e","WONTFIX":"#6b7280","DUPLICATE":"#6b7280",
-              "BACKLOG":"#6b7280","VALIDATED":"#fbbf24","ACCEPTED":"#3b82f6","IMPLEMENTED":"#22c55e","REJECTED":"#6b7280","SUPERSEDED":"#6b7280"}
+              "BACKLOG":"#6b7280","VALIDATED":"#fbbf24","ACCEPTED":"#3b82f6","IMPLEMENTED":"#22c55e","REJECTED":"#6b7280","SUPERSEDED":"#6b7280",
+              "INVESTIGATING":"#f59e0b","CONFIRMED":"#a855f7"}
     c = colors.get(s, "#6b7280")
     return f'<span style="background:rgba({int(c[1:3],16)},{int(c[3:5],16)},{int(c[5:7],16)},0.18);color:{c};border:1px solid {c};padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600">{esc(s)}</span>'
 
@@ -181,7 +193,72 @@ def render_table_section(title, rows_by_class, is_incident=True):
     return "\n".join(out)
 
 
-def render_html(incidents, enhancements, generated_at):
+def finding_created_est(row):
+    """Render created_at_utc as EST. Finding tables use created_at_utc (not created_at)."""
+    ts = row.get("created_at_utc") or row.get("created_at")
+    if not ts:
+        return '<span style="color:#4b5563;font-size:10px">—</span>'
+    try:
+        if isinstance(ts, str):
+            dt = datetime.strptime(ts[:19], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        else:
+            dt = ts
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+        est = dt.astimezone(ZoneInfo("America/New_York"))
+        return f'<span class="small" style="white-space:nowrap" title="{esc(str(ts))} UTC">{est.strftime("%Y-%m-%d %H:%M %Z")}</span>'
+    except (ValueError, TypeError):
+        return f'<span class="small">{esc(str(ts))}</span>'
+
+
+def render_finding_linked(cls, row):
+    """Render the linked-incident / linked-enhancement cell (only the columns that aren't NULL)."""
+    bits = []
+    li = row.get("linked_incident_id")
+    le = row.get("linked_enhancement_id")
+    if li:
+        bits.append(f'<code>INCIDENT_{esc(cls)} #{int(li)}</code>')
+    if le:
+        bits.append(f'<code>ENHANCEMENT_{esc(cls)} #{int(le)}</code>')
+    return "<br>".join(bits) if bits else '<span style="color:#4b5563">—</span>'
+
+
+def render_findings_section(findings_by_class, generated_at):
+    """Render the FINDINGS block — IDE-agent-logged dated findings, optionally linked
+    to an incident/enhancement. Anchor 'findings' for in-page jumps."""
+    total = sum(len(v) for v in findings_by_class.values())
+    n_classes = sum(1 for v in findings_by_class.values() if v)
+    out = [f'<h2 id="findings"><a id="findings"></a>Findings — {total} total across {n_classes} classes (last refresh: {esc(generated_at)})</h2>']
+    out.append('<div class="small">Dated findings logged by IDE agents (Claude / Grok / Cursor / etc.) via <code>tools/audit_pick_funnel/cli_track.py finding</code>. Times stored UTC, rendered EST. Linked column points to the related INCIDENT or ENHANCEMENT row when set.</div>')
+    if total == 0:
+        out.append('<div class="small" style="color:#6b7280;margin-top:8px">No findings logged yet.</div>')
+        return "\n".join(out)
+    for cls in CLASSES:
+        rows = findings_by_class.get(cls, [])
+        if not rows:
+            continue
+        out.append(f'<details {"open" if cls in ("OVERALL","STOCKS","CRYPTO") else ""}><summary><strong>{cls}</strong> <span class="small">({len(rows)})</span></summary>')
+        out.append('<table class="lb"><thead><tr>')
+        out.append('<th>Sev</th><th>Title</th><th>Status</th><th>Agent</th><th>Created (EST)</th><th>Linked</th>')
+        out.append('</tr></thead><tbody>')
+        for r in rows:
+            desc = (r.get("description") or "")
+            desc_html = f'<div class="small" style="color:#9ca3af;margin-top:3px">{esc(desc[:300])}{"…" if len(desc)>300 else ""}</div>' if desc else ""
+            evidence = r.get("evidence")
+            evidence_html = f'<div class="small" style="color:#6b7280;margin-top:3px;font-family:monospace;font-size:10px">evidence: {esc(str(evidence)[:200])}</div>' if evidence else ""
+            out.append(
+                f'<tr><td>{sev_badge(r["severity"])}</td>'
+                f'<td><strong>{esc(r["title"])}</strong>{desc_html}{evidence_html}</td>'
+                f'<td>{status_badge(r["status"])}</td>'
+                f'<td class="small">{esc(r.get("agent") or "")}</td>'
+                f'<td>{finding_created_est(r)}</td>'
+                f'<td class="small">{render_finding_linked(cls, r)}</td></tr>'
+            )
+        out.append('</tbody></table></details>')
+    return "\n".join(out)
+
+
+def render_html(incidents, enhancements, findings, generated_at):
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Incidents + Enhancements · findtorontoevents.ca/audit</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -211,6 +288,7 @@ def render_html(incidents, enhancements, generated_at):
   <a href="/audit/ai-tournament.html">AI Tournament</a>
   <a href="/audit/pick_funnel.html">Pick Funnel</a>
   <a href="/updates/">Updates</a>
+  <a href="#findings">Findings ↓</a>
 </nav>
 
 <div class="hero">
@@ -220,6 +298,7 @@ def render_html(incidents, enhancements, generated_at):
 
 {render_table_section("Incidents (bugs / data-quality issues / outages)", incidents, is_incident=True)}
 {render_table_section("Enhancements (scoring / gate / data-feed / UI proposals)", enhancements, is_incident=False)}
+{render_findings_section(findings, generated_at)}
 
 <footer style="margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.07);color:#4b5563;font-size:11px">
   Generated by <code>tools/audit_pick_funnel/render_incidents_page.py</code> via GH Actions workflow <code>incidents-enhancements-nightly.yml</code>. Source: <code>vw_all_incidents</code> + <code>vw_all_enhancements</code> in <code>ejaguiar1_stocks</code>.
@@ -377,17 +456,22 @@ def inject_into_updates(html_block):
 
 
 def main():
-    incidents, enhancements = fetch_all()
+    incidents, enhancements, findings = fetch_all()
     now_utc = datetime.now(timezone.utc)
     est_now = now_utc.astimezone(ZoneInfo("America/New_York"))
     generated_at = est_now.strftime("%Y-%m-%d %H:%M %Z")
-    html = render_html(incidents, enhancements, generated_at)
+    html = render_html(incidents, enhancements, findings, generated_at)
     OUT_HTML.write_text(html, encoding="utf-8")
     feed = {
         "generated_at": generated_at,
         "incidents": {k: [{kk:(str(vv) if hasattr(vv,'isoformat') else vv) for kk,vv in r.items()} for r in v] for k,v in incidents.items()},
         "enhancements": {k: [{kk:(str(vv) if hasattr(vv,'isoformat') else vv) for kk,vv in r.items()} for r in v] for k,v in enhancements.items()},
-        "totals": {"incidents": sum(len(v) for v in incidents.values()), "enhancements": sum(len(v) for v in enhancements.values())},
+        "findings": {k: [{kk:(str(vv) if hasattr(vv,'isoformat') else vv) for kk,vv in r.items()} for r in v] for k,v in findings.items()},
+        "totals": {
+            "incidents": sum(len(v) for v in incidents.values()),
+            "enhancements": sum(len(v) for v in enhancements.values()),
+            "findings": sum(len(v) for v in findings.values()),
+        },
     }
     OUT_JSON.write_text(json.dumps(feed, indent=2, default=str), encoding="utf-8")
     block = render_updates_injection(incidents, enhancements, generated_at)
@@ -395,7 +479,7 @@ def main():
     print(f"[render] wrote {OUT_HTML.relative_to(REPO)} ({len(html):,} bytes)")
     print(f"[render] wrote {OUT_JSON.relative_to(REPO)} ({OUT_JSON.stat().st_size:,} bytes)")
     print(f"[render] updates/index.html injection: {'OK' if injected else 'SKIPPED'}")
-    print(f"[render] totals: {feed['totals']['incidents']} incidents · {feed['totals']['enhancements']} enhancements")
+    print(f"[render] totals: {feed['totals']['incidents']} incidents · {feed['totals']['enhancements']} enhancements · {feed['totals']['findings']} findings")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,676 @@
+{
+  "schema": "ejaguiar1_stocks",
+  "captured_utc": "2026-05-31",
+  "tables": {
+    "at_raw_picks": [
+      {
+        "column_name": "id",
+        "data_type": "char",
+        "is_nullable": "NO",
+        "column_key": "PRI"
+      },
+      {
+        "column_name": "aggregation_run_id",
+        "data_type": "char",
+        "is_nullable": "NO",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "source_system",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "symbol",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "asset_class",
+        "data_type": "enum",
+        "is_nullable": "NO",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "direction",
+        "data_type": "enum",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "entry_price",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "take_profit",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "stop_loss",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "risk_reward",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "confidence",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "strategy",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "raw_payload",
+        "data_type": "json",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "signal_timestamp",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "recorded_at",
+        "data_type": "datetime",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "dedup_hash",
+        "data_type": "char",
+        "is_nullable": "YES",
+        "column_key": "UNI"
+      },
+      {
+        "column_name": "was_stale",
+        "data_type": "tinyint",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "was_banned",
+        "data_type": "tinyint",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "was_demoted",
+        "data_type": "tinyint",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "was_wr_suppressed",
+        "data_type": "tinyint",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "created_by",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "status",
+        "data_type": "enum",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "exit_price",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "exit_reason",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "pnl_pct",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "closed_at",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": ""
+      }
+    ],
+    "at_signal_outcomes": [
+      {
+        "column_name": "id",
+        "data_type": "int",
+        "is_nullable": "NO",
+        "column_key": "PRI"
+      },
+      {
+        "column_name": "symbol",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "direction",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "entry_price",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "take_profit",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "stop_loss",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "exit_price",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "outcome",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "pnl_pct",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "source_system",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "strategy",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "asset_class",
+        "data_type": "enum",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "opened_at",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "closed_at",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "datetime",
+        "is_nullable": "NO",
+        "column_key": ""
+      }
+    ],
+    "at_strategy_stats": [
+      {
+        "column_name": "strategy",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": "PRI"
+      },
+      {
+        "column_name": "source_system",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": "PRI"
+      },
+      {
+        "column_name": "asset_class",
+        "data_type": "enum",
+        "is_nullable": "NO",
+        "column_key": "PRI"
+      },
+      {
+        "column_name": "total_picks",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "consensus_picks",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "wins",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "losses",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "win_rate",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "avg_pnl_pct",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "best_pnl",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "worst_pnl",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "avg_risk_reward",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "last_updated",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": ""
+      }
+    ],
+    "tournament_picks": [
+      {
+        "column_name": "id",
+        "data_type": "int",
+        "is_nullable": "NO",
+        "column_key": "PRI"
+      },
+      {
+        "column_name": "model_id",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "provider",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "persona_id",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "asset_class",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "symbol",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "direction",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "entry_price",
+        "data_type": "double",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "take_profit",
+        "data_type": "double",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "stop_loss",
+        "data_type": "double",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "thesis",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "rationale",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "strategy_name",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "entry_criteria",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "catalyst",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "exit_criteria",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "risk_factors",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "confidence",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "timeframe",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "expected_hold",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "status",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "exit_price",
+        "data_type": "double",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "pnl_pct",
+        "data_type": "double",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "exit_reason",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "submitted_at",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": ""
+      },
+      {
+        "column_name": "resolved_at",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "source_file",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "dedup_key",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": "UNI"
+      },
+      {
+        "column_name": "pick_hash",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "gameplan_id",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "prompt_submission_id",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "data_integrity_flag",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "_persona_note",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "_persona_method",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "_model_api_response",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_key": ""
+      }
+    ],
+    "trading_picks": [
+      {
+        "column_name": "id",
+        "data_type": "varchar",
+        "is_nullable": "NO",
+        "column_key": "PRI"
+      },
+      {
+        "column_name": "symbol",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "direction",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "strategy",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "entry_price",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "take_profit",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "stop_loss",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "confidence",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "elite_score",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "trust_score",
+        "data_type": "int",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "category",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "source_system",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "status",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "pnl_pct",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "exit_price",
+        "data_type": "decimal",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "closed_at",
+        "data_type": "datetime",
+        "is_nullable": "YES",
+        "column_key": "MUL"
+      },
+      {
+        "column_name": "exit_reason",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp",
+        "is_nullable": "YES",
+        "column_key": ""
+      },
+      {
+        "column_name": "tp_fill_method",
+        "data_type": "varchar",
+        "is_nullable": "YES",
+        "column_key": ""
+      }
+    ]
+  }
+}

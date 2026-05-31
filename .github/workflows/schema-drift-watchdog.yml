@@ -1,0 +1,105 @@
+name: Schema Drift Watchdog
+
+on:
+  schedule:
+    # Daily at 09:15 UTC
+    - cron: '15 9 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'schemas/baseline_*.json'
+      - '.github/workflows/schema-drift-watchdog.yml'
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pymysql
+        run: pip install pymysql
+
+      - name: Check schema drift
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.DB_STOCKS_PASSWORD }}
+          DB_NAME: ejaguiar1_stocks
+        run: |
+          python3 << 'PYEOF'
+          import json, os, sys, glob
+          import pymysql
+
+          # Load latest baseline
+          baselines = sorted(glob.glob('schemas/baseline_*.json'))
+          if not baselines:
+              print('::error::No baseline schema file found under schemas/')
+              sys.exit(1)
+          baseline_path = baselines[-1]
+          print(f'Using baseline: {baseline_path}')
+          with open(baseline_path) as f:
+              baseline = json.load(f)
+
+          # Fetch live schema
+          conn = pymysql.connect(
+              host=os.environ['DB_HOST'],
+              user=os.environ['DB_USER'],
+              password=os.environ['DB_PASS'],
+              database=os.environ['DB_NAME'],
+              connect_timeout=15,
+          )
+          cur = conn.cursor()
+          tables = list(baseline['tables'].keys())
+          placeholders = ','.join(['%s'] * len(tables))
+          cur.execute(f"""
+              SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_KEY
+              FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = %s AND TABLE_NAME IN ({placeholders})
+              ORDER BY TABLE_NAME, ORDINAL_POSITION
+          """, [os.environ['DB_NAME'], *tables])
+
+          live = {}
+          for tn, cn, dt, isn, ck in cur.fetchall():
+              live.setdefault(tn, []).append({
+                  'column_name': cn, 'data_type': dt,
+                  'is_nullable': isn, 'column_key': ck,
+              })
+
+          added, removed, changed = [], [], []
+          for tbl in tables:
+              base_cols = {c['column_name']: c for c in baseline['tables'].get(tbl, [])}
+              live_cols = {c['column_name']: c for c in live.get(tbl, [])}
+              for col in live_cols.keys() - base_cols.keys():
+                  added.append(f'{tbl}.{col} (type={live_cols[col]["data_type"]})')
+              for col in base_cols.keys() - live_cols.keys():
+                  removed.append(f'{tbl}.{col} (was type={base_cols[col]["data_type"]})')
+              for col in base_cols.keys() & live_cols.keys():
+                  b, l = base_cols[col], live_cols[col]
+                  if b['data_type'] != l['data_type']:
+                      changed.append(f'{tbl}.{col}: {b["data_type"]} -> {l["data_type"]}')
+                  elif b['is_nullable'] != l['is_nullable']:
+                      changed.append(f'{tbl}.{col}: nullable {b["is_nullable"]} -> {l["is_nullable"]}')
+
+          print(f'Added: {len(added)} | Removed: {len(removed)} | Type-changed: {len(changed)}')
+
+          hard_fail = False
+          for c in added:
+              print(f'::warning::SCHEMA_DRIFT_ADDED {c}')
+          for c in removed:
+              print(f'::error::SCHEMA_DRIFT_REMOVED {c}')
+              hard_fail = True
+          for c in changed:
+              print(f'::error::SCHEMA_DRIFT_CHANGED {c}')
+              hard_fail = True
+
+          if hard_fail:
+              print('::error::Schema drift detected (removed/type-changed columns). Update baseline only after confirming intent.')
+              sys.exit(1)
+          print('OK: no breaking schema drift')
+          PYEOF
