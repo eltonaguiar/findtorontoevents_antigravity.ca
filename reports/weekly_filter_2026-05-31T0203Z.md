@@ -5,9 +5,19 @@
 
 ---
 
+## ⚠️ CORRECTION (2026-05-31T02:10Z) — tighter-SL hypothesis REFUTED by price-path backtest
+
+A real intrabar (1m Binance) price-path backtest (`reports/rr_backtest_validation_2026-05-31.md`, reproducer `tools/rr_backtest_validation.py`, 100% data coverage, 0 skips) **refutes the winsorization counterfactual in §2**. Tightening the stop-loss does **NOT** raise PF — it collapses it, because tight stops get whipsawed out on 1m noise before the trade reverts:
+- `crypto_liquidity_wick_reversal_v1`: real PF at SL 0.4–0.8% = **0.22→0.64** (baseline 1.50). The winsorized 2.47–2.96 was an upper-bound fantasy. **Do not tighten.**
+- `atr_percentile_gate`: real PF at SL 0.4/0.5% = **0.93/1.07** (not 1.67/1.47). PF only *rises as the stop loosens* (0.8% → PF 1.28, WR 62%), still sub-Tier-2.
+
+**Also:** both strategies are **100% BTCUSDT** (single-symbol) — they are low-vol BTC scalps, not diversified sleeves. The corrected money-ready path is: explore *looser* stops + grow n≥100, not tighten. The §2 winsorized table below is retained only to show what was tested and disproven.
+
+---
+
 ## 0. Headline
 
-**0/8 asset classes pass Tier-2.** No class is money-ready today. But the audit is **not** "no edge anywhere" — there are **two ~58%-WR CRYPTO strategies that cross Tier-2 (PF>1.5) purely by tightening the stop-loss**, and one diversified backtest strategy (PF 4.28) that warrants OOS validation. The fastest path to a first money-ready sleeve is **R:R / TP-SL optimization on existing winning entries**, not new strategies.
+**0/8 asset classes pass Tier-2.** No class is money-ready today. ~~Two ~58%-WR CRYPTO strategies cross Tier-2 by tightening the stop~~ — **this was refuted on real price paths (see correction above)**. The genuine leads: `crypto_liquidity_wick_reversal_v1` already sits at PF 1.50 / 58% WR (n=43, BTCUSDT scalp) and needs n≥100 + a *looser*-stop experiment; `genome/mega_mutation_MACD_RSI` (PF 4.28) needs OOS validation. R:R *tightening* is off the table.
 
 ---
 
