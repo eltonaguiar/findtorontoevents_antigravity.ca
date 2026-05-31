@@ -146,6 +146,10 @@ def _compute_ml_composite(pick: dict) -> tuple[float, str]:
     if ml is not None and float(ml) > 0:
         ml_val = float(ml)
         score = ml_val * _w_ml + conf * _w_conf + fwd_wr * _w_fwd
+        # PR #227 bucket-dampen (2026-05-31): CRYPTO 0.8-confidence bucket
+        # WR 22% vs neighbour buckets 39-43%. Reject global invert, dampen only.
+        if _raw_ac == "CRYPTO" and 0.75 <= conf < 0.85:
+            score *= 0.5
         score *= _claude_penalty * _tier_penalty
         if _claude_penalty < 1.0:
             return (round(score, 4), "ml_composite_claude_discount")
