@@ -1,0 +1,39 @@
+# Daily refresh of per-asset-class edge-stability JSONs feeding /audit/edge_stability.html
+# Uses MySQL-direct reads (no dependency on dashboard_payload.json freshness).
+name: Edge stability refresh
+
+'on':
+  schedule:
+    - cron: '30 0 * * *'  # daily 00:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install pymysql -q
+      - name: Regenerate edge_stability per asset class (MySQL-direct)
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
+        run: python -m tools.edge.edge_stability --all --mysql
+      - name: Commit refreshed JSONs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/edge_stability/*.json
+          git diff --cached --quiet || git commit -m "chore(edge-stability): daily refresh [skip ci]"
+          git push
