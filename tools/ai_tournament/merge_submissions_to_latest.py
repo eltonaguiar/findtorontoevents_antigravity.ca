@@ -49,7 +49,7 @@ def main() -> None:
     added = updated = scanned = 0
 
     # Include today's picks file in the merge process
-    today_picks_path = REPO / "data" / "ai_tournament" / f"picks_{datetime.now(timezone.utc).strftime("%Y%m%d")}.json"
+    today_picks_path = REPO / "data" / "ai_tournament" / f"picks_{datetime.now(timezone.utc).strftime('%Y%m%d')}.json"
     all_submission_paths = sorted(list(SUBMISSIONS.glob("*.json")) + ([today_picks_path] if today_picks_path.exists() else []))
 
     for path in all_submission_paths:
