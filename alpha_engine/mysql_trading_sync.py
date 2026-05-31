@@ -22,6 +22,39 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger("mysql_trading_sync")
 
+# 2026-05-31 — pnl_pct verification. Per
+# reports/peer_claude-exit-logic-divergence_2026-05-31.md, the writer used to
+# trust upstream `pnl_pct` blindly — one of 4 bugs producing the
+# trading_picks vs at_signal_outcomes divergence. We now recompute from
+# entry_price/exit_price/direction when all three are present, and reject
+# rows whose upstream value disagrees with the recomputation by more than
+# `PNL_VERIFY_TOLERANCE_PCT` percentage points (1bp = 0.01 percentage points).
+# `compute_pnl()` returns FRACTIONAL pnl (0.05 == 5%), but `pnl_pct` in
+# trading_picks is stored as PERCENT (-0.751 == -0.751%), so the computed
+# fraction is multiplied by 100 before comparison.
+try:
+    from alpha_engine.outcome_resolver import compute_pnl as _compute_pnl
+except ImportError:
+    # When running this script directly (alpha_engine on sys.path implicitly),
+    # the absolute import above can fail. Fall back to a sibling import.
+    try:
+        from outcome_resolver import compute_pnl as _compute_pnl  # type: ignore
+    except ImportError:
+        _compute_pnl = None  # verification disabled if module not importable
+
+# 1bp = 0.01 percentage points. Tolerance widened slightly to absorb
+# float-rounding on the upstream side (it persists pnl rounded to 4 decimals).
+PNL_VERIFY_TOLERANCE_PCT = 0.01  # percentage points (1bp)
+
+# Run-level counters surfaced in the final summary. Populated as
+# build_row_payload() / write paths discover mismatches.
+_PNL_VERIFY_STATS = {
+    "checked": 0,        # rows where entry/exit/direction all present
+    "ok": 0,             # within tolerance
+    "mismatch": 0,       # upstream disagreed beyond tolerance — pnl_pct dropped to None
+    "skipped_no_inputs": 0,  # missing one of entry/exit/direction — verification not attempted
+}
+
 # ── Ensure pymysql is available ──────────────────────────────────────────────
 try:
     import pymysql
@@ -226,6 +259,68 @@ def pick_to_row(pick):
     # closed_picks payloads are percent values already (e.g. -0.751 == -0.751%).
     # Do not auto-scale values below 1.0.
     pnl = _safe_float(pnl)
+
+    # 2026-05-31 — pnl_pct verification.
+    # Recompute pnl from entry/exit/direction when all three are present and
+    # cross-check against the upstream value. If they disagree beyond
+    # PNL_VERIFY_TOLERANCE_PCT (1bp), the row's upstream pnl_pct is dropped
+    # (set to None) and a warning is logged — we'd rather have a NULL than
+    # let trading_picks be overwritten with a corrupted value.
+    #
+    # Refs: reports/peer_claude-exit-logic-divergence_2026-05-31.md (one of
+    # 4 bugs producing the trading_picks vs at_signal_outcomes divergence).
+    entry_for_verify = _safe_float(pick.get("entry_price"))
+    exit_for_verify = exit_price
+    direction_for_verify = str(
+        pick.get("direction") or pick.get("signal_type") or ""
+    ).strip().upper()
+    if (
+        _compute_pnl is not None
+        and pnl is not None
+        and entry_for_verify
+        and entry_for_verify > 0
+        and exit_for_verify is not None
+        and direction_for_verify
+    ):
+        try:
+            expected_frac = _compute_pnl(
+                entry_for_verify, exit_for_verify, direction_for_verify
+            )
+            expected_pct = expected_frac * 100.0  # convert fraction → percent
+            _PNL_VERIFY_STATS["checked"] += 1
+            if abs(expected_pct - pnl) > PNL_VERIFY_TOLERANCE_PCT:
+                _PNL_VERIFY_STATS["mismatch"] += 1
+                logger.warning(
+                    "pnl_pct verify mismatch: pick %s symbol=%s dir=%s "
+                    "entry=%s exit=%s upstream_pnl=%s expected_pnl=%.6f "
+                    "(diff=%.6f pp > %.4f pp tolerance) — dropping upstream "
+                    "value to NULL to avoid corrupting trading_picks",
+                    str(pick.get("id") or "?")[:60],
+                    str(pick.get("symbol") or "?")[:20],
+                    direction_for_verify[:8],
+                    entry_for_verify,
+                    exit_for_verify,
+                    pnl,
+                    expected_pct,
+                    expected_pct - pnl,
+                    PNL_VERIFY_TOLERANCE_PCT,
+                )
+                pnl = None
+            else:
+                _PNL_VERIFY_STATS["ok"] += 1
+        except Exception as e:  # never let verification crash the sync
+            logger.warning(
+                "pnl_pct verify error for pick %s: %s",
+                str(pick.get("id") or "?")[:60],
+                e,
+            )
+    else:
+        # Missing one of (entry, exit, direction) — verification skipped.
+        # Only count when there is an upstream pnl to verify; otherwise the
+        # row simply has no pnl_pct and the writer will store NULL.
+        if pnl is not None:
+            _PNL_VERIFY_STATS["skipped_no_inputs"] += 1
+
     if pnl is not None:
         pnl = round(pnl, 4)
         # 2026-05-09 — Anomaly clamp.
@@ -607,6 +702,19 @@ def sync(dry_run=False):
     print()
     print("-" * 60)
     log_ok(f"Sync complete: {inserted} upserted, {duplicates} dedup skipped, {errors} errors")
+
+    # 2026-05-31 — pnl_pct verification summary.
+    _v = _PNL_VERIFY_STATS
+    log_ok(
+        f"pnl_pct verify: checked={_v['checked']} ok={_v['ok']} "
+        f"mismatch={_v['mismatch']} skipped_no_inputs={_v['skipped_no_inputs']} "
+        f"(tolerance={PNL_VERIFY_TOLERANCE_PCT} pp; mismatches were dropped to NULL)"
+    )
+    if _v["mismatch"] > 0:
+        log_err(
+            f"WARN: {_v['mismatch']} row(s) had upstream pnl_pct disagreeing with "
+            "compute_pnl(entry,exit,direction) — dropped to NULL. See per-row warnings above."
+        )
 
     # Quick count verification
     try:
