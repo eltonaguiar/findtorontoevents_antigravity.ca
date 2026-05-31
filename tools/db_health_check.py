@@ -650,12 +650,22 @@ def main():
         results["checks"][name] = _safe_run(name, fn)
         results["checks"][name]["tier_label"] = tier
 
+    checks_failed = sum(1 for c in results["checks"].values() if not c["ok"] or not c.get("data", {}).get("threshold_pass", True))
+    any_red = any(c.get("data", {}).get("tier") == "red" for c in results["checks"].values() if c["ok"])
+    # harness_healthy=True iff every check ran AND passed threshold. Prior to this gate,
+    # any_red ignored errored checks (c["ok"]==False), so a fully-broken harness reported
+    # green by exclusion. See reports/peer_claude-harness-healthy-draft_2026-05-31.md.
+    harness_healthy = (checks_failed == 0)
     results["overall"] = {
         "elapsed_s": round(time.time() - started, 2),
         "checks_run": len(names),
         "checks_passed": sum(1 for c in results["checks"].values() if c["ok"] and c.get("data", {}).get("threshold_pass", False)),
-        "checks_failed": sum(1 for c in results["checks"].values() if not c["ok"] or not c.get("data", {}).get("threshold_pass", True)),
-        "any_red": any(c.get("data", {}).get("tier") == "red" for c in results["checks"].values() if c["ok"]),
+        "checks_failed": checks_failed,
+        "any_red": any_red,
+        "harness_healthy": harness_healthy,
+        # Dashboards should render *some* banner when any_red OR the harness itself is broken.
+        # Distinguishes hard "DATA INTEGRITY" (any_red) from soft "HARNESS ERRORED" (not harness_healthy).
+        "banner_should_show": bool(any_red or not harness_healthy),
     }
 
     body = json.dumps(results, ensure_ascii=True, indent=2, default=str)
