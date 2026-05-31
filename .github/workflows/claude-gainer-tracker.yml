@@ -76,6 +76,10 @@ jobs:
           ASTERDEX_API_SECRET: ${{ secrets.ASTERDEX_API_SECRET }}
         run: |
           cd claude_gainer_ml
+          if ! ls models/*.joblib >/dev/null 2>&1; then
+            echo "::warning::No model .joblib files in claude_gainer_ml/models/ — skipping scanner (gitignored artifacts, training run not landed yet)"
+            exit 0
+          fi
           python live_scanner.py
 
       - name: "Step 3: Self-improvement + ML feedback loop"
