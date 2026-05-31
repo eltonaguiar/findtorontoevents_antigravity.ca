@@ -45,13 +45,32 @@ from tools.db_env import get_stocks_creds  # noqa: E402
 import pymysql  # noqa: E402
 
 
-def _fetch_price(pick):
-    """Price fetch that fixes the price_tracker =F-stripping bug for COMMODITY/FUTURES.
+def _iso_aware(v) -> str:
+    """Return an ISO-8601 string that is always timezone-aware (UTC).
 
-    price_tracker.fetch_price_equity strips '=F' before querying yfinance, but
-    yfinance REQUIRES the '=F' suffix for futures/commodities (e.g. 'GC=F'),
-    so those silently fail ('possibly delisted'). For COMMODITY/FUTURES we query
-    yfinance directly with the symbol intact; everything else uses the tested path.
+    pymysql returns DATETIME columns as naive datetimes; submitted_at may also
+    arrive as a string. resolve_pick compares submitted_at+window against an
+    aware `datetime.now(timezone.utc)`, so a naive value would TypeError. Normalize.
+    """
+    if hasattr(v, "isoformat"):
+        if v.tzinfo is None:
+            v = v.replace(tzinfo=timezone.utc)
+        return v.isoformat()
+    s = str(v)
+    if "Z" not in s and "+" not in s[10:]:
+        s += "+00:00"
+    return s
+
+
+def _fetch_price(pick):
+    """Direct yfinance fetch for COMMODITY/FUTURES =F symbols; tested path otherwise.
+
+    price_tracker.fetch_price_equity historically stripped '=F' before querying
+    yfinance (which needs the suffix for futures/commodities, e.g. 'GC=F'). That
+    bug is fixed in this PR's price_tracker.py change, but we keep COMMODITY/FUTURES
+    on the direct yfinance path here to skip the Alpha Vantage fallback for symbols
+    that reliably exist in yfinance with their '=F' suffix. Redundant-but-harmless
+    once the price_tracker fix lands; safe to collapse in a future refactor.
     """
     ac = (pick.get("asset_class") or "EQUITY").upper()
     sym = pick.get("symbol", "")
@@ -122,8 +141,7 @@ def main() -> int:
             "entry_price": r["entry_price"], "take_profit": r["take_profit"],
             "stop_loss": r["stop_loss"], "direction": r.get("direction") or "LONG",
             "asset_class": r.get("asset_class") or "EQUITY", "symbol": r["symbol"],
-            "submitted_at": (r["submitted_at"].isoformat()
-                             if hasattr(r["submitted_at"], "isoformat") else str(r["submitted_at"])),
+            "submitted_at": _iso_aware(r["submitted_at"]),
             "status": "OPEN",
         }
         price = _fetch_price(pick)
