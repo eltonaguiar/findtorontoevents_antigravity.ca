@@ -14,7 +14,14 @@ jobs:
       - uses: actions/setup-python@v6
         with: { python-version: '3.11' }
       - run: pip install pymysql yfinance requests
+      - name: Verify DB secrets present
+        id: dbcheck
+        env:
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS }}
+        run: |
+          if [ -z "$DB_HOST_STOCKS" ]; then echo 'has_db=false' >> $GITHUB_OUTPUT; echo 'DB secrets missing — skipping'; else echo 'has_db=true' >> $GITHUB_OUTPUT; fi
       - name: Resolve simulation picks
+        if: steps.dbcheck.outputs.has_db == 'true'
         env:
           DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS }}
           DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS }}
