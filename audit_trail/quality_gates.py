@@ -1997,6 +1997,22 @@ BLOCKED_SOURCE_SYSTEMS = {
     # futures_momentum: 0% WR on 56 closed, PF 0.00 — KILLED 2026-05-06. Already in
     # PERMANENTLY_KILLED_STRATEGIES. Source-system-level block for defense-in-depth.
     "futures_momentum",
+    # Phase-5 retirement 2026-05-31 — Phase-4 SUSPECT-PF forensic audit (PR #180,
+    # reports/peer_claude-phase4-suspect-pf-audit_result_2026-05-31.md) confirmed
+    # both PFs below are RESOLVER ARTIFACTS, not real edge:
+    #
+    # cta_golden_cross_200 (COMMODITY): reported PF 44 / WR 96% on n=25. Reality:
+    # 24/24 winners are HG=F LONG with exit_reason = PRICE_RESOLVED* and exit_price
+    # overshooting TP by up to 286 bps. The resolver walks daily closes forward N
+    # days and stamps the first profitable close as exit, never checking intrabar
+    # SL. RETIRE from money_ready_verdict + dashboards.
+    "cta_golden_cross_200",
+    # prediction_market_consensus (CRYPTO): reported PF 24.5 / WR 90% on n=89.
+    # PF inflated by (a) 23 DOGEUSDT SHORT rows tagged SL_HIT_RESOLVED
+    # [PRICE_MISMATCH] with POSITIVE pnl (exit_reason vs pnl-sign contradiction =
+    # data corruption), (b) one XRPUSDT row literally tagged SL_HIT
+    # (REPAIRED_PNL_CONTRADIC) worth +80.37%. RETIRE.
+    "prediction_market_consensus",
 }
 
 # ── REQUIRES_WALKAHEAD_AUDIT (set): Systems flagged for mandatory walk-forward before live use ──
