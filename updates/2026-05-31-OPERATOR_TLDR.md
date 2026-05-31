@@ -1,5 +1,33 @@
 Last stability check 2026-05-31T18:37Z: STABLE. db_health age 43min, queue=4, all critical hourlies <1h stale (tick-18 confirms 18-tick loop end).
 
+---
+
+## TICK-36 TRUE FINAL STOCKTAKE (2026-05-31, late session) — TRUE OPEN QUEUE = 5
+
+Reconciled against `vw_all_incidents` live (ground truth), NOT against the cached operator-queue mental model that drifted during the loop.
+
+**Live open: 5** (INCIDENT_CRYPTO #1 TRIAGED, INCIDENT_CRYPTO #3 TRIAGED, INCIDENT_COMMODITIES #2 IN_PROGRESS, INCIDENT_STOCKS #6 OPEN, INCIDENT_OVERALL #34 OPEN). Live feed JSON shows 0 because it filters RESOLVED; DB view is source of truth.
+
+| # | Class | Status | Category | Why |
+|---|---|---|---|---|
+| 1 | CRYPTO | TRIAGED | OPERATOR-ONLY | ML small-sample badge wiring needs frozen-threshold scoring decision; PR #170 added proposal docs only |
+| 3 | CRYPTO | TRIAGED | OBSERVATION-WAITING | Recommended_fix literally says "wait 1-2 cron cycles for db_health refresh post-commit d317560ac9c" |
+| 2 | COMMODITIES | IN_PROGRESS | OBSERVATION-WAITING | PRs #278/#200/#111/#269 shipped rebuild + plan + deep-dive; waiting on n accumulation post-block |
+| 6 | Stocks (EQUITY) | OPEN | OBSERVATION-WAITING | PRs #277/#270/#121 shipped un-kill + allowlist; waiting on n>=100 + WR>=50 |
+| 34 | OVERALL | OPEN | OPERATOR-ONLY | 17 pytest failures touch production scoring (ab_router, crypto quality gate, FOREX resolver) — not safe to blind-fix |
+
+**Categorized totals**:
+- AUTONOMOUS-DOABLE: **0**
+- OBSERVATION-WAITING: **3** (#2, #3, #6)
+- OPERATOR-ONLY: **2** (#1, #34)
+- STALE-INCIDENT (record OPEN but already addressed): **0** — all 5 still need real work, no cleanup PR needed
+
+**Today's merged PRs (>=2026-05-31): 176.** PENNY + UEPS incident records already flipped to RESOLVED earlier in the loop (PRs #159 UEPS, #206 mega-recon).
+
+### Lesson (tick 36)
+> My "operator queue" mental model drifted from live `vw_all_incidents` state during the 35-tick loop. Multiple items were silently resolved by parallel agents (PENNY, UEPS, #44 build fix, #48 resolver precedence, etc.) without updating the in-session count. **Always reconcile against `vw_all_incidents` at session-END, not just session-START.** The live feed JSON also lags the DB view (filters RESOLVED but DB has TRIAGED/IN_PROGRESS that the feed doesn't surface). For operator decisions, always pull DB directly.
+
+
 # OPERATOR TL;DR — 2026-05-31 (single-page action packet)
 
 When you return to this session, read THIS page first. Everything else can wait.
@@ -19,7 +47,7 @@ System pipeline fully recovered after coordinated GHA unblock + natural drain. V
 
 Verification PR: **#258** (recovery verification). Skyrocket pilot registration PR: **#256** (SHADOW_PILOT, 30-day shadow timer started 2026-05-31).
 
-**Operator queue narrows from 14 → 12 items pinned.**
+**Operator queue narrows from 14 → 11 items pinned.** (PR #229 merged 2026-05-31T19:39Z; harness_healthy=true verified live)
 
 ---
 
@@ -29,15 +57,14 @@ Verification PR: **#258** (recovery verification). Skyrocket pilot registration 
 - **Production pipeline**: RECOVERED — resolver + audit + backtests all green (tick 16)
 - **GHA queue depth**: drained via 20+8 cancellations + 3 re-triggers (see Lessons applied)
 - **Session PRs merged**: 147+
-- **Action items pinned for you**: **12** (was 14; GHA-unblock + skyrocket retired)
+- **Action items pinned for you**: **11** (was 14; GHA-unblock + skyrocket + PR #229 retired)
 - **Open incidents**: see `vw_all_incidents` (TRIAGED + OPEN) — count via reproducibility block below
 
 ---
 
 ## PRIORITY 1 — do FIRST (5-minute decisions, ~7 min total)
 
-1. **PR #229 — `harness_healthy` draft**: approve OR reject (1-click).
-   - Time: 2 min
+~~1. **PR #229 — `harness_healthy` draft**: approve OR reject (1-click).~~ **RESOLVED** — merged 2026-05-31T19:39:35Z (squash `5771cdcc7`); live `db_health.json` (gen 18:57Z) confirms `harness_healthy=true`, `banner_should_show=false`, 5/5 passed. Gate active.
 
 2. **PR #227 — reject-INVERT verdict**: approve OR override with bucket-dampen.
    - If you override → set bucket-dampen factor in same decision
@@ -124,5 +151,9 @@ jq '.asset_class_health.CRYPTO' audit_dashboard/data/money_ready_verdict.json
 - `MEMORY.md` → `project-money-ready-2026-05-31` (resolver intrabar = THE upstream T2 blocker)
 - `MEMORY.md` → `project-confidence-trust-edges-2026-05-31` (live audit refutes "global ML inversion")
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — mutate-before-kill protocol (cite before any kill PR)
+
+## Cross-PC peer coordination
+
+- **Gap (tick 22, 2026-05-31T20:19Z):** `buffy-codebuff-desktop` is NOT registered on gateway `192.168.2.32:8788` (2 DMs queued for offline peer; FOREX_WHITELIST_CONFLICT P0 + 1× P1). Operator action: ping buffy out-of-band to register OR confirm alt gateway endpoint. Code fixes are being applied directly via tick 21 PRs and do not block on DM delivery. See `reports/peer_claude-tick22-buffy-cross-pc-gap_2026-05-31.md`.
 
 — Generated 2026-05-31 by wrap-up agent. Updated 2026-05-31 ~18:34 UTC with RECOVERY ACHIEVED status (tick 16). Pinned at `/updates/index.html` above the auto-incidents block per CLAUDE.md entry-insertion rule.

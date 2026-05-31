@@ -295,7 +295,17 @@ def cta_commodity_momentum(data: dict[str, pd.DataFrame]) -> list[dict]:
 
 
 def cta_cross_asset_tsmom(data: dict[str, pd.DataFrame]) -> list[dict]:
-    """Cross-Asset TSMOM (Pitkajarvi & Suominen 2020, Sharpe ~1.84)."""
+    """Cross-Asset TSMOM (Pitkajarvi & Suominen 2020, Sharpe ~1.84).
+
+    2026-05-31 (tick30): FOREX category is HARD-BLOCKED. Live audit shows
+    0 wins / 86 losses / 0% WR on closed FOREX picks (n=86 closed, 939 all-time,
+    248 emitted in last 30d via source_system='cta_replicator'). Paper claim
+    Sharpe ~1.84 is cross-asset including bond/equity/commodity rotation, which
+    does not generalize to forex pairs once carry+session microstructure are
+    stripped. Bond/equity/commodity picks from this strategy still pass through.
+    Replacement on FOREX side: dxy_trend_filter (probation entry added to
+    non_crypto_policy in same PR).
+    """
     if not _HAS_CTA:
         return []
     try:
@@ -303,8 +313,13 @@ def cta_cross_asset_tsmom(data: dict[str, pd.DataFrame]) -> list[dict]:
         signals = []
         for pick in picks:
             if pick.get("confidence", 0) >= MIN_CONFIDENCE:
+                # 2026-05-31 leakage cap: forex picks from this strategy are 0/86
+                # WR in live audit. Drop forex symbols at the emitter.
+                cat = (pick.get("category") or "").lower()
+                sym = pick.get("symbol", "") or ""
+                if cat == "forex" or sym.endswith("=X"):
+                    continue
                 # Vol regime gate per symbol
-                sym = pick.get("symbol", "")
                 df = data.get(sym)
                 if df is not None:
                     regime_ok, _vr = _fx_regime_ok(df)

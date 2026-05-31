@@ -267,7 +267,10 @@ BLACKLISTED_STRATEGIES = [
     'multi_period_rsi_confluence_eth',  # 16 trades, PF 0.43, -248% PnL
     'ml_breakout',               # 21 trades, 0% WR — ML model completely inverted
     'genome_mutations',          # 6 trades, 0% WR, -107% PnL — mutation engine not working
-    'stocks_rsi2_pullback',      # 10 EQUITY trades, WR 30%, PF 0.032 — catastrophically bad
+    # 2026-05-31 (tick 33): stocks_rsi2_pullback UN-KILLED — was killed at n=10 (premature per Phase 3 MC P(T2)=52% @ n=100).
+    # Definition lives at copy_trader_intel/multi_asset_copytrader_scraper.py:1247 (scan_stocks_rsi2_pullback) and is dispatched
+    # via scan loop at line 2480. quality_gates.py:2791 block already removed 2026-05-19 (WR 50.7% @ n=73 cleared 45% floor).
+    # Re-kill trigger: WR<40% on next 30 resolved picks. Mandatory review: 2026-06-15 or n_resolved>=30 post-unkill.
     'multi_asset_scanner',       # FOREX n=11 WR 9.1%, FUTURES n=11 WR 9.1% — universal loser
     'ctar_replicator',           # FOREX n=5 WR 40% PF 0.62, COMMODITY n=2 WR 0% PF 0.0
 ]
