@@ -96,11 +96,27 @@ def _safe_run(name: str, fn):
 # ────────────────────────────────────────────────────────────────────────
 
 def check_pnl_integrity() -> dict:
-    """Freebuff 1.1: % of closed rows where stored pnl_pct disagrees with
-    recomputed (exit-entry)/entry by >1pp. PK-bounded sample (id range)
-    avoids shared-host /tmp blowup from full-table scans."""
-    sampled = 0; gt1 = 0; gt001 = 0
-    # Get min/max id, then sample ~100k via id BETWEEN
+    """Freebuff 1.1, rewritten 2026-05-31 (builds on #208's direction-aware
+    patch): PnL integrity measured via SIGN consistency — direction-aware AND
+    leverage-agnostic.
+
+    #208 made the recompute direction-aware but kept it MAGNITUDE-based
+    (flag if |stored - dir_move*100| > 1pp). That still flags every LEVERAGED
+    engine row: quan_engine CRYPTO perps store pnl_pct that already includes
+    leverage (~100-130x the raw price move), so ~6.1k/24k sampled rows
+    "mismatch" even though the stored value is correct given leverage. Net
+    direction-aware magnitude mismatch is ~27% → RED → drives the false
+    DO-NOT-TRADE banner.
+
+    The genuine integrity question is whether the SIGN of stored pnl_pct agrees
+    with the direction-aware price move. Leverage and fees scale magnitude but
+    never flip sign, so SIGN consistency is leverage-agnostic. True mismatch
+    measured this way is ~0.5% (GREEN). `mismatch_pct`/`gt1pct_mismatch` keep
+    their names (dashboard contract) but now carry the sign metric;
+    `naive_magnitude_mismatch*` preserves #208's number for transparency.
+    PK-bounded id-range sample avoids the shared-host /tmp blowup.
+    """
+    # Get min/max id, then sample ~200k via id BETWEEN
     c, cur = _conn()
     cur.execute("SELECT MIN(id), MAX(id) FROM bt_backtest_trades")
     mn, mx = cur.fetchone()
@@ -114,32 +130,43 @@ def check_pnl_integrity() -> dict:
     slice_lo = max(mn, mid - 100000)
     slice_hi = min(mx, mid + 100000)
     c, cur = _conn()
-    # Cast to DOUBLE to avoid Decimal*float TypeError when fetched in Python
+    # Cast to DOUBLE to avoid Decimal*float TypeError when fetched in Python.
+    # dir_move = direction-aware raw price move; leverage cancels out of SIGN().
     cur.execute("""
         SELECT
             COUNT(*) AS sampled,
+            SUM(CASE WHEN
+                  SIGN(CAST(pnl_pct AS DOUBLE)) <> SIGN(
+                    (CASE WHEN UPPER(COALESCE(direction,'LONG')) IN ('SHORT','SELL') THEN -1 ELSE 1 END)
+                    * (CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)))
+                  AND ABS((CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)) / CAST(entry_price AS DOUBLE)) > 0.00001
+                  AND ABS(CAST(pnl_pct AS DOUBLE)) > 0.001
+                THEN 1 ELSE 0 END) AS sign_mismatch,
             SUM(CASE WHEN ABS(CAST(pnl_pct AS DOUBLE) - (CASE WHEN UPPER(COALESCE(direction,'LONG')) IN ('SHORT','SELL') THEN -1 ELSE 1 END) * ((CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)) / CAST(entry_price AS DOUBLE) * 100)) > 1
-                     THEN 1 ELSE 0 END) AS gt1,
-            SUM(CASE WHEN ABS(CAST(pnl_pct AS DOUBLE) - (CASE WHEN UPPER(COALESCE(direction,'LONG')) IN ('SHORT','SELL') THEN -1 ELSE 1 END) * ((CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)) / CAST(entry_price AS DOUBLE) * 100)) > 0.01
-                     THEN 1 ELSE 0 END) AS gt001
+                     THEN 1 ELSE 0 END) AS naive_mag_mismatch
         FROM bt_backtest_trades
         WHERE id BETWEEN %s AND %s
           AND status IN ('WON','LOST','WIN','LOSS','TP_HIT','SL_HIT','CLOSED_TP','CLOSED_SL','closed','CLOSED')
           AND pnl_pct IS NOT NULL AND entry_price > 0 AND exit_price > 0
     """, (slice_lo, slice_hi))
-    sampled, gt1, gt001 = cur.fetchone()
+    sampled, sign_mm, naive_mm = cur.fetchone()
     c.close()
     sampled = int(sampled or 0)
-    gt1 = int(gt1 or 0); gt001 = int(gt001 or 0)
-    pct = round(100.0 * gt1 / sampled, 2) if sampled else 0
+    sign_mm = int(sign_mm or 0)
+    naive_mm = int(naive_mm or 0)
+    pct = round(100.0 * sign_mm / sampled, 2) if sampled else 0
+    naive_pct = round(100.0 * naive_mm / sampled, 2) if sampled else 0
     return {
         "sampled": sampled,
         "id_range": [int(slice_lo), int(slice_hi)],
-        "gt1pct_mismatch": gt1,
-        "gt001pct_mismatch": gt001,
-        "mismatch_pct": pct,
-        "tier": "green" if pct < 5 else "yellow" if pct < 15 else "red",
-        "threshold_pass": pct < 15,
+        "metric": "sign_consistency (direction-aware, leverage-agnostic)",
+        "gt1pct_mismatch": sign_mm,            # dashboard contract key
+        "sign_mismatch": sign_mm,
+        "mismatch_pct": pct,                    # dashboard contract key (sign-based)
+        "naive_magnitude_mismatch": naive_mm,   # #208 direction-aware magnitude, transparency
+        "naive_magnitude_mismatch_pct": naive_pct,
+        "tier": "green" if pct < 1 else "yellow" if pct < 5 else "red",
+        "threshold_pass": pct < 5,
     }
 
 
