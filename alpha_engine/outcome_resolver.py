@@ -1030,6 +1030,25 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
         if pick.get("exit_reason"):
             pick["_legacy_exit_reason"] = pick.get("exit_reason")
 
+    # Incident #10 (2026-05-31): FOREX pnl_pct clamp to [-100, +inf).
+    # A long position can lose at most 100% of capital; anything more negative
+    # (e.g. -106700%) is a price-unit/direction-sign bug, not a real loss.
+    # Upper bound is left open (+inf) because a short FX position can exceed
+    # 100% gain on extreme moves. M-111 implausibility cap (above) still
+    # short-circuits the truly absurd cases; this clamp catches the residual
+    # write-path leak observed in 5 surviving rows.
+    if (asset_class or "").upper() == "FOREX" and pnl_pct < -100.0:
+        _logger = logging.getLogger("outcome_resolver")
+        _logger.warning(
+            "FOREX_PNL_CLAMP: %s %s pnl=%.4f clamped to -100.0 "
+            "(entry=%.6f exit=%.6f dir=%s)",
+            pick.get("symbol", ""), pick.get("strategy", ""),
+            pnl_pct, entry, effective_exit, direction,
+        )
+        pick["_pnl_clamped_raw"] = round(pnl_pct, 6)
+        pick["_pnl_clamped_reason"] = "forex_lower_bound_-100"
+        pnl_pct = -100.0
+
     # Update pick
     pick["exit_price"] = effective_exit
     pick["pnl_pct"] = round(pnl_pct, 6)
