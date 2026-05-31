@@ -80,16 +80,34 @@ CHECKS = [
         "fmt": lambda r: f"{r['cnt']} WON rows with negative pnl",
     },
     {
-        "id": "ghost_rows_matic",
-        "title": "56,559 ghost rows (20,474 MATICUSDT)",
+        "id": "ghost_rows",
+        "title": "Ghost rows — duplicate (category, strategy, symbol, direction, pnl_pct, created_at) groups",
         "sql": """
-            SELECT COUNT(*) as cnt
-            FROM trading_picks
-            WHERE strategy='quan_engine' AND symbol='MATICUSDT'
-                AND direction='LONG' AND pnl_pct=-15.0
+            SELECT COALESCE(SUM(grp_cnt - 1), 0) as cnt FROM (
+                SELECT COUNT(*) as grp_cnt
+                FROM trading_picks
+                GROUP BY category, strategy, symbol, direction, pnl_pct, created_at
+                HAVING COUNT(*) > 1
+            ) dupes
         """,
         "pass": lambda r: r["cnt"] == 0,
-        "fmt": lambda r: f"{r['cnt']} quan_engine/MATICUSDT ghost rows",
+        "fmt": lambda r: f"{r['cnt']} ghost rows across all cohorts",
+        "repair_sql": (
+            "DELETE t1 FROM trading_picks t1 "
+            "INNER JOIN ("
+            "  SELECT category, strategy, symbol, direction, pnl_pct, created_at, MIN(id) as min_id "
+            "  FROM trading_picks "
+            "  GROUP BY category, strategy, symbol, direction, pnl_pct, created_at "
+            "  HAVING COUNT(*) > 1"
+            ") t2 ON IFNULL(t1.category,'') = IFNULL(t2.category,'') "
+            "  AND IFNULL(t1.strategy,'') = IFNULL(t2.strategy,'') "
+            "  AND t1.symbol = t2.symbol "
+            "  AND t1.direction = t2.direction "
+            "  AND t1.pnl_pct = t2.pnl_pct "
+            "  AND t1.created_at = t2.created_at "
+            "WHERE t1.id > t2.min_id "
+            "LIMIT 50000"
+        ),
     },
     {
         "id": "unknown_category_active",
@@ -127,6 +145,7 @@ def run_checks(conn, write=False):
 
     passed = 0
     failed = 0
+    repaired = 0
 
     with conn.cursor() as cur:
         for check in CHECKS:
@@ -143,11 +162,20 @@ def run_checks(conn, write=False):
                     _mark_resolved(cur, check["title"])
             else:
                 failed += 1
+                # PR #3: Execute repair_sql for FAIL checks when --write
+                repair_sql = check.get("repair_sql")
+                if write and repair_sql:
+                    if callable(repair_sql):
+                        repair_sql = repair_sql()
+                    cur.execute(repair_sql)
+                    n = cur.rowcount
+                    repaired += n
+                    print(f"         [WRITE] Repaired {n} rows")
             print()
 
     if write:
         conn.commit()
-        print(f"\n[WRITE] Updated {passed} incidents to RESOLVED in MySQL.")
+        print(f"\n[WRITE] Updated {passed} incidents to RESOLVED, repaired {repaired} rows across {failed} failed checks.")
 
     print(f"\n=== Summary: {passed} PASS, {failed} FAIL, {passed + failed} total ===")
     return passed, failed
