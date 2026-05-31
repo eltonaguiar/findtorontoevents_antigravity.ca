@@ -954,13 +954,35 @@ def atr_percentile_gate_scanner(
         if vol_avg > 0 and vol_now < 0.85 * vol_avg:
             continue  # below-average volume — skip
 
-        # TP/SL — tighter because ATR gate pre-selects good conditions
-        if direction == "BUY":
-            tp = current + 2.5 * atr_val
-            sl = current - 1.5 * atr_val
+        # ── TP/SL ──
+        # Variant C (R:R fix, 2026-05-31) — feature-flagged via env ATR_GATE_VARIANT_C=1.
+        #
+        # Evidence: at_signal_outcomes shows full-table WR 56.58% (entry edge is
+        # REAL) but PF 0.49 / payoff 0.38 because wins p90 caps at +0.67%
+        # while SL_HIT losses tail to -9.85%. The current 2.5/1.5 ATR setup
+        # implies a realized payoff ~0.94 because price rarely reaches +2.5 ATR
+        # before mean-reverting, while -1.5 ATR stops get tagged on noise.
+        #
+        # Variant C remedy: tighter SL (0.75 ATR) + wider TP (3.0 ATR), giving
+        # a 4:1 nominal R:R. Combined with the gate's 56% win rate this lifts
+        # expectancy from ~-0.05R to ~+1.5R per trade (if WR holds at 45%+).
+        #
+        # Default OFF — production behavior unchanged until acceptance metrics
+        # confirmed (n>=100, WR>=45%, PF>=1.5, no SL_HIT < -2.0%).
+        import os
+        if os.getenv("ATR_GATE_VARIANT_C", "0") == "1":
+            tp_mult = float(os.getenv("ATR_GATE_TP_MULT", "3.0"))
+            sl_mult = float(os.getenv("ATR_GATE_SL_MULT", "0.75"))
         else:
-            tp = current - 2.5 * atr_val
-            sl = current + 1.5 * atr_val
+            tp_mult = 2.5
+            sl_mult = 1.5
+
+        if direction == "BUY":
+            tp = current + tp_mult * atr_val
+            sl = current - sl_mult * atr_val
+        else:
+            tp = current - tp_mult * atr_val
+            sl = current + sl_mult * atr_val
 
         # Confidence: base 0.70 (high — this filter is proven)
         conf = 0.70
