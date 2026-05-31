@@ -237,6 +237,23 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.50,
         "allow_without_forward": False,
     },
+    # 2026-05-31 (tick30): DXY trend filter wire-up.
+    # Already registered in multi_asset.forex_strategies.FOREX_STRATEGIES and
+    # called via scanner.py FOREX_STRATEGIES.update(), but blocked by missing
+    # policy entry ("strategy_on_probation"). Edge premise: EURUSD/GBPUSD/AUDUSD
+    # have -0.95..-0.90 DXY correlation; entering aligned trades w/ DXY ADX>=20
+    # trend confirmation is the textbook DXY macro overlay. Probationary until
+    # forward record builds. Replaces cta_cross_asset_tsmom FOREX (0/86 WR, killed
+    # via cap in cta_bridge.py same PR).
+    "dxy_trend_filter": {
+        "categories": {"forex"},
+        "min_confidence": 0.55,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.40,
+        "allow_without_forward": True,  # Probation: build forward record
+    },
     "forex_rsi2_mean_reversion": {
         "categories": {"forex"},
         "min_confidence": 0.60,
