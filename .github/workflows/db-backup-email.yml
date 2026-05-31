@@ -184,6 +184,13 @@ jobs:
           retention-days: 90
 
       - name: Send backup email
+        # DISABLED 2026-05-31 (INCIDENT_OVERALL #36): 50webs SMTP rejects external
+        # relay with "550 relay not permitted" -- mail.50webs.com only allows mail
+        # FROM @findtorontoevents.ca TO @findtorontoevents.ca, not gmail/yahoo.
+        # Backup data is preserved via actions/upload-artifact (90-day retention).
+        # To re-enable: provision SendGrid/Mailgun/AWS-SES creds, or use a 50webs
+        # allowlisted recipient. Then remove the `if: false` line below.
+        if: false
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: mail.50webs.com
