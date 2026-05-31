@@ -29,9 +29,10 @@ jobs:
 
       - name: Run smart picks engine + tracker
         env:
-          CONFIDENCE_INVERT_CRYPTO: "1"
-          # M-034: block CRYPTO super_signals/luxalgo_filters at conf>=0.85 (anti-correlated WR)
-          CRYPTO_CONF_INVERSION_GATE: "1"
+          CONFIDENCE_INVERT_CRYPTO: "0"
+          # M-034 DISABLED 2026-05-31: live DB shows conf=1.0 cohort is 52.1% WR / +2.78% PnL (best).
+          # Global inversion was demoting best crypto picks. 0.8-bucket dampener active in smart_picks_engine.py.
+          CRYPTO_CONF_INVERSION_GATE: "0"
           # PCG-5: enforce portfolio gates (regime, duplicate, concentration, profit-lock, correlation)
           PCG5_ENFORCE: "1"
           # M-042: COMMODITY SHORT-only (cta_replicator LONG WR=0%, LONG already hard-blocked)
