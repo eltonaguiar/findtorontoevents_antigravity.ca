@@ -1003,7 +1003,7 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
             asset_class, pnl_pct, _pnl_cap, entry, effective_exit,
         )
         pick["_pnl_implausible"] = True
-        pick["_pnl_implausible_raw"] = round(pnl_pct, 6)
+        pick["_pnl_implausible_raw"] = round(pnl_pct * 100, 6)
         pick["_pnl_implausible_cap"] = _pnl_cap
         return pick  # do not write corrupt PnL to analytics
 
@@ -1045,13 +1045,13 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
             pick.get("symbol", ""), pick.get("strategy", ""),
             pnl_pct, entry, effective_exit, direction,
         )
-        pick["_pnl_clamped_raw"] = round(pnl_pct, 6)
+        pick["_pnl_clamped_raw"] = round(pnl_pct * 100, 6)
         pick["_pnl_clamped_reason"] = "forex_lower_bound_-100"
         pnl_pct = -100.0
 
     # Update pick
     pick["exit_price"] = effective_exit
-    pick["pnl_pct"] = round(pnl_pct, 6)
+    pick["pnl_pct"] = round(pnl_pct * 100, 6)
     pick["status"] = outcome
     pick["exit_reason"] = exit_reason
     pick["direction"] = direction
@@ -1475,7 +1475,7 @@ def _resolve_rapid_fire_now_pick(pick: dict, live_price: Optional[float]) -> Opt
     else:
         pnl_pct = (entry - live_price) / entry
     
-    result["pnl_pct"] = round(pnl_pct, 6)
+    result["pnl_pct"] = round(pnl_pct * 100, 6)
 
     scan_dt = pick.get("_scan_dt") or _parse_utc_timestamp(pick.get("scan_time", ""))
     aged_out = False
@@ -2609,7 +2609,7 @@ def resolve_active_non_crypto(dry_run: bool = False) -> dict:
                 symbol, asset_class, pnl_pct, _pnl_cap, entry, exit_price,
             )
             pick["_pnl_implausible"] = True
-            pick["_pnl_implausible_raw"] = round(pnl_pct, 6)
+            pick["_pnl_implausible_raw"] = round(pnl_pct * 100, 6)
             pick["_pnl_implausible_cap"] = _pnl_cap
             report["no_price"] += 1
             continue
@@ -2624,7 +2624,7 @@ def resolve_active_non_crypto(dry_run: bool = False) -> dict:
                 pick["_legacy_exit_reason"] = pick.get("exit_reason")
 
         pick["exit_price"] = exit_price
-        pick["pnl_pct"] = round(pnl_pct, 6)
+        pick["pnl_pct"] = round(pnl_pct * 100, 6)
         pick["status"] = outcome
         # Charter §7 P0.5-2: stamp _pnl_pct_gross + _pnl_pct_net.
         try:
@@ -2885,7 +2885,7 @@ def heal_null_exit_prices_non_crypto(dry_run: bool = False) -> dict:
                                 pick["_legacy_exit_reason"] = pick.get("exit_reason")
                         pick["exit_price"] = effective_exit
                         pnl_pct = compute_pnl(entry, effective_exit, direction)
-                        pick["pnl_pct"] = round(pnl_pct, 6)
+                        pick["pnl_pct"] = round(pnl_pct * 100, 6)
                         pick["status"] = classify_outcome(pnl_pct, asset_class=asset_class)
                         pick["exit_reason"] = exit_reason
                         pick["direction"] = direction

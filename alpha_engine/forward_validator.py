@@ -858,13 +858,32 @@ def load_closed_picks() -> list[dict]:
             if not p.get("closed_at") and p.get("last_checked"):
                 p["closed_at"] = p["last_checked"]
                 dirty = True
-        # Normalize pnl_pct: some strategies write percentages (e.g. -62.18)
-        # instead of decimals (e.g. -0.6218). Standardize to decimal format.
+        # Normalize pnl_pct: some strategies write decimals (e.g. -0.0062)
+        # instead of percentages (e.g. -0.62). Standardize to percentage format.
         for p in picks:
             pnl = p.get('pnl_pct')
-            if pnl is not None and abs(pnl) > 1.0:
-                p['pnl_pct'] = round(pnl / 100.0, 6)
-                dirty = True
+            # If it looks like a fractional decimal (e.g. 0.05 for 5%), scale up.
+            # Use a threshold like 1.0 - but be careful with small percentages.
+            # The best way is to recompute from entry/exit if available.
+            entry = p.get('entry_price')
+            exit_p = p.get('exit_price')
+            if entry and exit_p and pnl is not None:
+                try:
+                    entry_f = float(entry)
+                    exit_f = float(exit_p)
+                    if entry_f > 0:
+                        direction = str(p.get('direction', 'LONG')).upper()
+                        if direction in ('LONG', 'BUY'):
+                            calc_ratio = (exit_f - entry_f) / entry_f
+                        else:
+                            calc_ratio = (entry_f - exit_f) / entry_f
+                        
+                        # If stored pnl matches ratio but not pct, it's fractional
+                        if abs(pnl - calc_ratio) < 0.0001 and abs(pnl - (calc_ratio * 100)) > 0.001:
+                            p['pnl_pct'] = round(calc_ratio * 100, 6)
+                            dirty = True
+                except (ValueError, TypeError):
+                    pass
         # Normalize confidence: some strategies write percentages (e.g. 62.7)
         # instead of decimals (e.g. 0.627). Standardize to 0.0-1.0.
         for p in picks:
