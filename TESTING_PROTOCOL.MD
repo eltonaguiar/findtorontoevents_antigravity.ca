@@ -1,8 +1,38 @@
 # TESTING_PROTOCOL
 
-Date: 2026-04-01 (original) | **Audited: 2026-04-04** | **Consolidated: 2026-05-31 (canonical synthesis)**
-Scope: Crypto, Stocks, ETFs, Forex, Futures, Commodities
+Date: 2026-04-01 (original) | **Audited: 2026-04-04** | **Consolidated: 2026-05-31 (canonical synthesis)** | **Live numbers refreshed: 2026-05-31 (this PR)**
+Scope: Crypto, Stocks, ETFs, Forex, Futures, Commodities, Bonds, Prediction Markets
 Primary DB: `mysql.50webs.com` -> `ejaguiar1_stocks`
+
+> **Last refreshed: 2026-05-31 from `audit_dashboard/data/money_ready_verdict.json`
+> (generated_at `2026-05-31T22:41:12Z`, source `alpha_engine/money_ready_verdict.py --json`)
+> and `audit_dashboard/data/pf_registry.json` (`generated_utc 2026-05-31T22:41:13Z`,
+> view `by_asset_class_policy_clean_net`).** Any number in this file marked with
+> `verified_at: 2026-05-31` was confirmed against the live cohort on that date.
+> Numbers cited as "2026-04-04 / 1,000-pick sample" are the original empirical
+> claims — most have **drifted or died** (see §2.5 verdict column below and
+> `reports/peer_claude-REFRESH_TESTING_PROTOCOL_NUMBERS_2026-05-31.md`).
+>
+> ### Live per-class verdicts (policy-clean, net of slippage, 2026-05-31)
+>
+> | Class | n_resolved | WR | PF | MDD | Top-source share | Verdict |
+> |-------|------------|----|----|-----|------------------|---------|
+> | CRYPTO | 347 | 39.2% | 0.879 | 100.0% | `file:battleground` 25.4% | **NOT_READY** |
+> | EQUITY | 43 | 30.2% | 0.156 | 98.2% | `regime_terminal` 41.9% | INSUFFICIENT_DATA |
+> | FOREX | 29 | 27.6% | 0.035 | 82.3% | `multi_asset_scanner` 37.9% | INSUFFICIENT_DATA |
+> | FUTURES | 12 | 16.7% | 0.536 | 16.6% | `multi_asset_scanner` 91.7% (single-source) | INSUFFICIENT_DATA |
+> | UNKNOWN | 8 | 50.0% | 0.514 | 16.8% | `file:alpha_engine` 87.5% (single-source) | INSUFFICIENT_DATA |
+> | COMMODITY | 7 | 57.1% | 3.870 | 4.6% | `file:alpha_engine` 57.1% | INSUFFICIENT_DATA |
+> | ETF | 4 | 50.0% | 0.476 | 6.2% | `file:alpha_engine` 50.0% | INSUFFICIENT_DATA |
+> | PENNY_STOCK | 1 | 0.0% | 0.000 | 1.5% | `multi_asset_scanner` 100% | INSUFFICIENT_DATA |
+> | BOND | 0 | n/a | n/a | n/a | n/a | INSUFFICIENT_DATA (no closed) |
+> | PREDICTION_MARKETS | absent | n/a | n/a | n/a | n/a | not present in canonical view |
+>
+> **Summary:** 0 / 9 classes money-ready, 0 watch, 8 INSUFFICIENT_DATA, 1 NOT_READY (CRYPTO).
+> Three classes (FUTURES, UNKNOWN, PENNY_STOCK) are single-source artifacts —
+> concentration cap fires before any tier verdict.
+> All n_resolved are post-M-067 dedup; do **not** cite older recompute-path figures
+> (CRYPTO n=8067, COMMODITY n=750, FOREX n=1169 — deprecated, see Caveat #2 §0.4).
 
 > **CANONICAL STATUS (2026-05-31):** This file is the SINGLE SOURCE OF TRUTH for the
 > repo's testing protocol. It supersedes the conflicting / dated docs listed in
@@ -290,22 +320,39 @@ Standardize a multi-layer testing pipeline so strategy promotion is evidence-bas
   - final holdout/live-forward: last 15%
 - Reject if OOS drift is too severe vs IS.
 
-### Layer 2.5: Data-Driven Quality Gates *(NEW — 2026-04-04)*
+### Layer 2.5: Data-Driven Quality Gates *(NEW — 2026-04-04 | REVERIFIED 2026-05-31)*
 
 > Empirical gates derived from 1,000 closed dashboard picks. Applied **before** forward test
 > entry to prevent garbage picks from polluting test portfolios.
+>
+> **Reverification verdict (2026-05-31, n=6,619 closed, source `ejaguiar1_stocks.trading_picks`):**
+> of the 9 original claims, **1 HOLDS (stronger), 5 DRIFTED, 3 DEAD, max drift 43.1pp.**
+> See `reports/peer_claude-REFRESH_TESTING_PROTOCOL_NUMBERS_2026-05-31.md` for the full
+> side-by-side table. Treat any unmarked April number below as suspect until reverified.
 
-| Gate | Threshold | Evidence | Action |
-|------|-----------|----------|--------|
-| **Score Floor** | Score ≥ 40 | Score < 40 = 33.9% WR (372 picks) | Hard block — pick never enters forward test or dashboard |
-| **Promotion Score Floor** | Score ≥ 60 | Score ≥ 60 = 75.2% WR | Required for PRODUCTION status |
-| **Trust Floor (LONGs)** | Trust ≥ 4 for LONG picks | LONG + Trust 0-3 = 36.2% WR (506 picks) | Block LONG picks with Trust < 4 |
-| **Toxic Combo Kill** | Block LONG + Conf ≥ 0.90 | 19.5% WR on 41 picks — worst combo | Hard block |
-| **Dead Zone Flag** | Flag LONG + Conf 0.60-0.69 | 31.3% WR on 182 picks | Score penalty (-12), not hard block |
-| **Overconfidence Penalty** | Conf ≥ 0.90 (any direction) | 22.9% WR system-wide | Score penalty (-20) |
-| **SHORT Base Bonus** | SHORT direction | 56.7% WR vs LONG 48.7% (+8pp) | Score bonus (+5) |
+| Gate | Threshold | Original Evidence (2026-04-04, n≈1,000) | 2026-05-31 Verdict (n=6,619) | Action |
+|------|-----------|------------------------------------------|------------------------------|--------|
+| **Score Floor** | Score ≥ 40 | Score < 40 = 33.9% WR (372 picks) | **DRIFTED +11.2pp** → 45.1% WR n=1,777 (now ≈ baseline 46.9%). Filter no longer separates signal. | Hard block (kept conservatively; **re-tune scoring or relax**) |
+| **Promotion Score Floor** | Score ≥ 60 | Score ≥ 60 = 75.2% WR | NOT REVERIFIED 2026-05-31 — treat as suspect | Required for PRODUCTION status |
+| **Trust Floor (LONGs)** | Trust ≥ 4 for LONG picks | LONG + Trust 0-3 = 36.2% WR (506 picks) | **DRIFTED +11.4pp** → 47.6% WR n=2,105 (≈ baseline). Dead filter. | Block LONG picks with Trust < 4 (review for removal) |
+| **Toxic Combo Kill** | Block LONG + Conf ≥ 0.90 | 19.5% WR on 41 picks — worst combo | **DRIFTED MAJOR +23.1pp** → 42.6% WR n=54. Toxicity gone. **New toxic cell:** conf 0.70–0.75 = 39.4% WR n=436. | Hard block (keep; retune to new toxic cell) |
+| **Dead Zone Flag** | Flag LONG + Conf 0.60-0.69 | 31.3% WR on 182 picks | NOT REVERIFIED 2026-05-31 — treat as suspect | Score penalty (-12), not hard block |
+| **Overconfidence Penalty** | Conf ≥ 0.90 (any direction) | 22.9% WR system-wide | **INVERTED** — Conf ≥ 0.90 is now the **sweet spot**: 62.3% WR n=231 (BUY-side 72.1% n=147). | Penalty is wrong-signed — **remove or invert** |
+| **SHORT Base Bonus** | SHORT direction | 56.7% WR vs LONG 48.7% (+8pp) | **REVERSED −12.1pp** → SHORT 44.6% n=1,753 vs LONG 48.0% n=2,304. 30d window worse: SHORT 20.7% n=111 vs LONG 37.6% n=226 (post PR #277 EQUITY un-kill). | Bonus is wrong-signed — **remove the SHORT bonus** |
+| **Conf 0.75-0.79 sweet spot** | (referenced elsewhere as +18 bonus) | 86.5% WR | **DEAD −43.1pp** → 43.4% WR n=1,059 (sub-baseline). | Remove the +18 bonus; reapply to the new sweet spot (Conf≥0.90 + BUY) |
+| **Trust 6-7 bonus** | Trust 6 or 7 | 77% WR (strongest single predictor) | **HOLDS STRONGER +8.9pp** → Trust=7 = 85.9% WR n=99 (no Trust=6 rows exist in DB). | **Preserve this gate** — it is the only live, single-axis edge |
+| **EXPIRED exits "patience pays"** | (cited in Layer 5 hold-time tweak) | 94.9% WR | **DEAD −42.1pp** → 52.8% WR n=231. Likely M-067 / resolver v2.1 reclassified what counts as EXPIRED. | Do **not** use as evidence for hold-time extensions |
 
 **Recalibrate quarterly** as closed pick count grows past 2,000.
+**Next reverification due:** 2026-08-31 or when n_closed > 10,000, whichever first.
+**Automation TODO (filed):** weekly CI job to recompute this table from
+`ejaguiar1_stocks.trading_picks` and open a drift PR — see test plan in PR #396.
+
+> **Why this matters:** 6 of 9 gates above carry the wrong sign or are dead today.
+> Treating the April numbers as live truth leads operators to keep filters that no
+> longer separate signal (Score<40, LONG+Trust<4) and bonuses/penalties that are
+> inverted (SHORT +5, Conf≥0.90 −20). Trust=7 is the only single-axis edge that
+> survives — keep it.
 
 ### Layer 3: Walk-Forward
 - Rolling train window (example: 2 years) + forward test (example: 3 months).
@@ -498,16 +545,49 @@ Accept loosened variant only if:
 
 ---
 
-## 7) Rehabilitation-First Pipeline *(OVERHAULED — 2026-04-04)*
+## 7) Rehabilitation-First Pipeline *(OVERHAULED — 2026-04-04 | NOTES ADDED 2026-05-31)*
 
+> **NOTE 2026-05-31 — superseding canonical docs (read these before applying §7):**
+> - **Investigation-before-kill workflow** (mandatory before expanding
+>   `BLOCKED_SOURCE_SYSTEMS` or `BLACKLISTED_STRATEGIES`):
+>   `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`.
+> - **Three-axis mutation autopsy** (symbol × direction × timeframe slice):
+>   `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — run `python tools/mutation_analysis.py --json`
+>   first. The §7 trigger below (WR<35% on ≥10 trades) is the **auto-rehab screening
+>   surface only**, not a graduation or kill threshold.
+> - **N-floor decoder** (per PR #404 §0.2, this file once merged): six distinct
+>   n-floor surfaces — auto-rehab=10, screening=30-100, SPA=20, scarcity=25,
+>   walk-forward=200, paper-pilot graduation=500, money-ready verdict class-floor=50.
+>   `WR<35% on ≥10 trades` is the **REHAB_CANDIDATE entry trigger** — it does NOT
+>   authorize a kill on its own. A kill requires the full investigation + three-axis
+>   autopsy + concentration-first gating per §0.1.
+> - **Direction-edge claims in this section are now stale.** The "inverse wins"
+>   anecdotes below (`winner_pattern_precursor`, `claude_gainer_ml`) were verified
+>   in April; `winner_pattern_precursor` returns **0 rows in `trading_picks` today**
+>   (renamed or culled), and SHORT vs LONG has **reversed** since April (see §2.5
+>   verdict column). Keep the philosophy ("rehabilitate, don't kill") and the
+>   6-stage process, but treat the per-strategy WR numbers as historical only.
+> - **Active blacklist diff (2026-05-31):** `alpha_engine/config.py::BLACKLISTED_STRATEGIES`
+>   now lists 19 entries (binance_smart_money, hl_funding_fade, quan_engine_scalp,
+>   claude_gainer_st, kimi_signal_tracking, rapid_fire, ensemble, battleground_luxalgo,
+>   multi_period_rsi_confluence_eth, ml_breakout, genome_mutations, multi_asset_scanner,
+>   ctar_replicator, forex_rsi2_mean_reversion, inverse_carry_contrarian,
+>   carry_trade_momentum, forex_carry_ppp) plus `BLACKLISTED_EXCHANGES = ['bitget']`.
+>   `stocks_rsi2_pullback` was UN-KILLED on 2026-05-31 (tick 33). Any new addition
+>   must cite the investigation + autopsy artifact and link the closed-rows CSV.
+>
 > **CORE PHILOSOPHY: Rehabilitate, don't kill.** Every underperforming strategy contains
 > a signal — it may just be applied to the wrong symbol, wrong asset class, wrong direction,
-> or wrong parameters. Evidence:
+> or wrong parameters. Evidence (historical, April 2026 — verify before re-citing):
 > - `winner_pattern_precursor`: 0% WR LONG → inverse = **81.2% WR, PF 2.35** (48 trades)
+>   *(strategy not present in `trading_picks` 2026-05-31 — renamed or culled)*
 > - `claude_gainer_ml`: low WR → inverse = **80.0% WR, PF 19.56** (10 trades)
+>   *(parent `claude_gainer_st` now blacklisted; revisit before re-running the inverse)*
 > - `st_multi_day_momentum`: 0% WR → inverse = profitable after validation
 >
-> **Killing these strategies would have destroyed massive value.**
+> **Killing these strategies would have destroyed massive value** — but the inverse
+> trade is itself path-dependent (SHORT edge has reversed in 2026 — §2.5). Re-verify
+> before sizing.
 
 ### Trigger: Auto-Detection
 
