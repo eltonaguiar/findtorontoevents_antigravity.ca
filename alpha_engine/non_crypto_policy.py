@@ -451,6 +451,25 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.45,  # Below the published Sharpe but conservative
         "allow_without_forward": True,
     },
+    # 2026-05-31 (tick33): Gold safe-haven policy entry — formalize probation.
+    # Already registered in alpha_engine/commodities_strategies.py:1076 and
+    # dispatched via scanner.py:2101 (COMMODITY_STRATEGIES.update on
+    # strategy_filter in {"all","commodity"}), but had NO policy gate so
+    # default-deny via _default_policy was the implicit behavior. Per PR #269
+    # deep-dive: best wired commodity backtest (PF 1.98 / n=61) but
+    # UNREPLICATED LIVE. Probationary gate gives it room to build a real
+    # forward record without blanket admission. Floor matches commodity_tsmom_12m
+    # (min_forward_wr 0.45) since they share the same vol-targeted long-only
+    # commodity-future regime profile.
+    "gold_safe_haven": {
+        "categories": {"commodity"},
+        "min_confidence": 0.55,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.45,
+        "allow_without_forward": True,  # Probation: build forward record
+    },
 }
 
 
