@@ -1,14 +1,14 @@
 # 🎯 Market Beating Trading System Report
 
-**Generated:** 2026-05-31T14:37:48.102937
+**Generated:** 2026-05-31T16:32:10.908563
 **Status:** ⏳ OPTIMIZING
 
 ---
 
 ## 📊 Overall Performance
-- **Total Signals Tracked:** 371
-- **Signals Validated:** 364
-- **Overall Accuracy:** 58.5%
+- **Total Signals Tracked:** 378
+- **Signals Validated:** 365
+- **Overall Accuracy:** 58.7%
 - **Target Accuracy:** 60%
 - **Status:** ⏳ BELOW TARGET
 
@@ -29,8 +29,8 @@
 | USD-JPY | 58.8% | 17 | ⚠️ |
 
 ## 🎯 Road to Beating the Market
-- **Signals:** 371/50 (742%)
-- **Accuracy:** 58.5%/65.0%
+- **Signals:** 378/50 (756%)
+- **Accuracy:** 58.7%/65.0%
 
 ### ⏳ Continuing Optimization
 The system is gathering more data and refining parameters.
