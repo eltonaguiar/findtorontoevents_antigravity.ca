@@ -96,7 +96,7 @@ def make_long_term_value_pick(
     catalyst_dates: list[str],
     holding_horizon: HoldingHorizon = "3y+",
     asset_class: str = "EQUITY",
-    source_system: str = "value_screener",
+    source_system: str = "ueps",
     strategy: str = "magic_formula_x_piotroski_x_acquirers",
     score: float | None = None,
     confidence: float | None = None,
