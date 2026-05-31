@@ -63,10 +63,15 @@ CHECKS = [
     },
     {
         "id": "signal_outcomes_freshness",
-        "title": "signal_outcomes table 82 days stale",
-        "sql": "SELECT COUNT(*) as cnt, MAX(created_at) as last_ts FROM at_signal_outcomes",
-        "pass": lambda r: r["cnt"] > 1000,
-        "fmt": lambda r: f"{r['cnt']} rows, last={r['last_ts']}",
+        "title": "signal_outcomes table stale (last write > 7 days)",
+        "sql": (
+            "SELECT COUNT(*) as cnt, MAX(created_at) as last_ts,"
+            "  CASE WHEN MAX(created_at) > NOW() - INTERVAL 7 DAY THEN 1 ELSE 0 END as fresh"
+            "  FROM at_signal_outcomes"
+        ),
+        "pass": lambda r: r["cnt"] > 1000 and r.get("fresh", 0) == 1,
+        "fmt": lambda r: f"{r['cnt']} rows, last={r['last_ts']}, fresh={'yes' if r.get('fresh') else 'no'}",
+        "repair_sql": _repair_signal_outcomes,
     },
     {
         "id": "won_status_contradiction",
@@ -162,13 +167,14 @@ def run_checks(conn, write=False):
                     _mark_resolved(cur, check["title"])
             else:
                 failed += 1
-                # PR #3: Execute repair_sql for FAIL checks when --write
+                # PR #3/#4: Execute repair_sql for FAIL checks when --write
                 repair_sql = check.get("repair_sql")
                 if write and repair_sql:
                     if callable(repair_sql):
-                        repair_sql = repair_sql()
-                    cur.execute(repair_sql)
-                    n = cur.rowcount
+                        n = repair_sql(cur)
+                    else:
+                        cur.execute(repair_sql)
+                        n = cur.rowcount
                     repaired += n
                     print(f"         [WRITE] Repaired {n} rows")
             print()
@@ -179,6 +185,45 @@ def run_checks(conn, write=False):
 
     print(f"\n=== Summary: {passed} PASS, {failed} FAIL, {passed + failed} total ===")
     return passed, failed
+
+
+def _repair_signal_outcomes(cur) -> int:
+    """PR #4: Rebuild at_signal_outcomes from trading_picks (closed picks only).
+
+    Truncates stale table and repopulates from the source of truth.
+    Maps trading_picks statuses to at_signal_outcomes outcome codes.
+    Returns total rows inserted.
+    """
+    cur.execute("TRUNCATE TABLE at_signal_outcomes")
+    cur.execute("""
+        INSERT INTO at_signal_outcomes
+            (symbol, direction, entry_price, exit_price, outcome, pnl_pct,
+             source_system, strategy, asset_class, opened_at, closed_at)
+        SELECT
+            symbol,
+            COALESCE(direction, 'LONG'),
+            entry_price,
+            exit_price,
+            CASE
+                WHEN status IN ('TP_HIT', 'WON', 'CLOSED_TP') THEN 'TP_HIT'
+                WHEN status IN ('SL_HIT', 'LOST', 'CLOSED_SL') THEN 'SL_HIT'
+                WHEN status = 'EXPIRED' THEN
+                    CASE WHEN pnl_pct IS NOT NULL AND pnl_pct > 0 THEN 'WIN' ELSE 'LOSS' END
+                ELSE status
+            END,
+            pnl_pct,
+            COALESCE(NULLIF(source_system, ''), 'scanner'),
+            strategy,
+            COALESCE(NULLIF(category, ''), 'UNKNOWN'),
+            created_at,
+            closed_at
+        FROM trading_picks
+        WHERE status IN ('WON', 'LOST', 'TP_HIT', 'SL_HIT', 'EXPIRED',
+                         'CLOSED_TP', 'CLOSED_SL')
+            AND symbol IS NOT NULL AND symbol != ''
+            AND closed_at IS NOT NULL
+    """)
+    return cur.rowcount
 
 
 def _mark_resolved(cur, title_substr: str):
