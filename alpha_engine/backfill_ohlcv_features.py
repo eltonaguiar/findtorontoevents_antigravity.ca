@@ -29,6 +29,19 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
+# STOCKS #7 fix (2026-05-31): classifier import.
+try:
+    from alpha_engine.config import detect_asset_class as _detect_asset_class
+except ImportError:
+    try:
+        from config import detect_asset_class as _detect_asset_class  # type: ignore
+    except ImportError:
+        def _detect_asset_class(symbol: str) -> str:  # type: ignore
+            s = str(symbol or "").upper().strip()
+            if s.endswith(("USDT", "USDC", "BUSD", "DAI", "PERP")):
+                return "crypto"
+            return "unknown"
+
 # ---------------------------------------------------------------------------
 # Binance API helpers (3-mirror failover per MEMORY.md API Failover Rule)
 # ---------------------------------------------------------------------------
@@ -342,7 +355,13 @@ def backfill_picks(picks: list[dict], dry_run: bool = False,
 
     for i, pick in enumerate(candidates):
         symbol = pick.get("symbol", "")
-        category = pick.get("category", "crypto")
+        # STOCKS #7 fix (2026-05-31): use classifier when category is missing
+        # — was unconditionally "crypto" which forced equity/forex symbols
+        # through the Binance fetch path before the skip check below.
+        category = pick.get("category")
+        if not category:
+            detected = _detect_asset_class(symbol)
+            category = detected if detected and detected != "unknown" else "crypto"
 
         binance_symbol = _to_binance_symbol(symbol, category)
         if binance_symbol is None:
