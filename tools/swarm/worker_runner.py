@@ -54,6 +54,85 @@ CLI_ENGINES = {"claude", "gemini", "opencode", "kilo", "copilot", "agent", "kimi
 # engine is added later — also restore call_pty_engine() and pty_driver.py.
 API_ENGINES = {"deepseek", "cerebras", "xai", "inception", "ollama_cloud", "ollama_local", "openrouter", "nous", "groq", "huggingface", "gemini_api", "github_models", "pollinations", "ofox"}
 
+# --- Grounding context: inject rejected-hypothesis leakage warnings ---
+_GROUNDING_CACHE: str | None = None
+_KILLED_STATUSES = frozenset({"REJECTED", "KILLED", "FAILED_ARCHIVED", "TESTED_KILL"})
+
+# Keywords that indicate a prompt is about financial/trading analysis.
+# Grounding context is only injected when at least one matches (case-insensitive).
+_FINANCIAL_KEYWORDS = (
+    "asset_class", "asset class", "strategy", "win rate", "win_rate",
+    "profit factor", "profit_factor", "pick", "confidence", "backtest",
+    "forward test", "forward_test", "edge", "sharpe", "drawdown",
+    "crypto", "equity", "forex", "commodity", "commodities",
+    "etf", "bond", "futures", "memecoin", "penny",
+    "trading", "picks", "wr ", "pf ", "dsr", "pnl",
+    "leakage", "hypothesis", "cot_positioning", "cot positioning",
+    "look-ahead", "lookahead", "over-emission", "overfit",
+    "smart_picks", "smart picks", "elite_score", "elite score",
+    "trust_score", "trust score", "regime", "alpha_engine", "alpha engine",
+    "walk-forward", "walk forward", "audit", "dashboard",
+    "anti-predictive", "inverted confidence",
+)
+
+
+def _is_financial_prompt(text: str) -> bool:
+    """Return True if *text* looks like a financial/trading analysis prompt."""
+    lower = text[:4000].lower()  # check first 4KB for keyword matches
+    return any(kw in lower for kw in _FINANCIAL_KEYWORDS)
+
+
+def _load_grounding_context() -> str:
+    """Load rejected/killed hypotheses from the registry as a grounding block.
+
+    Returns a string to prepend to prompts so multi-AI panels cannot
+    independently "discover" edges already known to be look-ahead biased
+    or falsified.  Caches the result for the lifetime of the process.
+    """
+    global _GROUNDING_CACHE
+    if _GROUNDING_CACHE is not None:
+        return _GROUNDING_CACHE
+
+    registry_path = REPO / "reports" / "hypothesis_registry.json"
+    if not registry_path.exists():
+        _GROUNDING_CACHE = ""
+        return ""
+
+    try:
+        reg = json.loads(registry_path.read_text(encoding="utf-8"))
+    except Exception:
+        _GROUNDING_CACHE = ""
+        return ""
+
+    lines: list[str] = []
+    for h in reg.get("hypotheses", []):
+        status = h.get("status", "")
+        if status not in _KILLED_STATUSES:
+            continue
+        hid = h.get("id", "?")
+        ac = h.get("asset_class", "?")
+        family = h.get("family", "?")
+        kill = h.get("kill_reason") or (h.get("result") or {}).get("verdict", "")
+        if not kill:
+            continue
+        lines.append(f"- [{hid}] {ac}/{family}: {kill}")
+
+    if not lines:
+        _GROUNDING_CACHE = ""
+        return ""
+
+    block = (
+        "\n\n## KNOWN FALSIFIED / REJECTED HYPOTHESES — DO NOT RE-DERIVE\n"
+        "The following hypotheses have been formally tested and rejected. "
+        "Do NOT cite them as edges, recommend them, or re-discover them. "
+        "If your analysis converges on a similar signal, flag it as a "
+        "potential leakage recurrence instead.\n\n"
+        + "\n".join(lines)
+        + "\n\nSee reports/hypothesis_registry.json for full audit trail.\n"
+    )
+    _GROUNDING_CACHE = block
+    return block
+
 # Cursor `agent` CLI ships outside %APPDATA%/npm — its installer drops a
 # .cmd shim under %LOCALAPPDATA%/cursor-agent/. _resolve_cli() only probes
 # %APPDATA%/npm + PATH, so we add an explicit override here so the
@@ -196,6 +275,9 @@ def _read_prompt(args: argparse.Namespace) -> str:
             + "\n\n## Task\n"
             + base
         )
+    grounding = _load_grounding_context()
+    if grounding and _is_financial_prompt(base):
+        base += grounding
     return base
 
 

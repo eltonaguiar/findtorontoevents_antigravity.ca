@@ -194,6 +194,7 @@ echo "Give me a stock-prediction-algorithm scoring formula in 200 words" | \
 - All slugs start with `@cf/<vendor>/<model>` (Cloudflare-managed) or `@hf/<vendor>/<model>` (HuggingFace-mirrored).
 - Token in this repo: see `/home/eaguiar2015/.bashrc` or ask user for `CF_API_TOKEN`. Account ID `3c1f2867a7120334ef745ceb9345d9e6` (host: zerounderscore@gmail.com).
 - For non-CF NVIDIA models (DeepSeek-R1-distill, Kimi-k2.6, MiniMax-m2.7) use `/consult-nvidia-deepseek` — different endpoint, different model catalog.
+- **🔴 Grounding:** For asset-class / edge / pick-performance prompts, include the leakage-context block from `consult-cloudflare-models/SKILL.md` or `consult-nvidia-models/SKILL.md`. The `worker_runner.py` now auto-injects `hypothesis_registry.json` rejected entries into all swarm prompts, but manual consults still need the block prepended. See `reports/2026-05-25_multi_ai_panel_meta_review.md` for why this matters.
 
 ## Reference
 
