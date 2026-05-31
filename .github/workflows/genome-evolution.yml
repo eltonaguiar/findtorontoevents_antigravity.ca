@@ -97,7 +97,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add quant_lab/genome_results/ crypto_data.db
+          # `crypto_data.db` is a runtime sqlite cache (re-populated by
+          # sqlite3.connect('crypto_data.db') at line 62 of this same job) and
+          # is gitignored by the `*.db` rule. Persisting it bloats history and
+          # nothing reads it across runs. Genome JSON artifacts are the
+          # durable output. Drop the .db from the commit.
+          git add quant_lab/genome_results/
           git diff --staged --quiet || git commit -m "Genome evolution run [$(date -u +%Y-%m-%d)] top strategy: $(python -c "
           import json, glob
           files = sorted(glob.glob('quant_lab/genome_results/genome_results_*.json'))

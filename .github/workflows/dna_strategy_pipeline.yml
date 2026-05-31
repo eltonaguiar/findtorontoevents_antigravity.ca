@@ -336,6 +336,10 @@ jobs:
 
       - name: Check promotions and notify Discord
         env:
+          # progressive_promotion.py does `from alpha_engine...` — without
+          # PYTHONPATH on the workspace root the import fails (per ~30 other
+          # workflows that ship the same line).
+          PYTHONPATH: ${{ github.workspace }}
           MYSQL_HOST: mysql.50webs.com
           MYSQL_USER: ejaguiar1_stocks
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
@@ -368,6 +372,8 @@ jobs:
 
       - name: Evaluate promotions
         env:
+          # Same PYTHONPATH note as the "Check promotions" step above.
+          PYTHONPATH: ${{ github.workspace }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
           DISCORD_WEBHOOK_DNA_MASTER: ${{ secrets.DISCORD_WEBHOOK_DNA_MASTER }}
