@@ -31,18 +31,21 @@ They track performance only — they do not allocate live capital. To activate a
 variant for live sizing, **operator action required** (promote-to-live toggle in
 the variant's JSON `requires_operator_promotion_to_live` flag).
 
-NOTE (transparency): the variant HTML pages serve 200, but the individual
-`/audit/data/pf/portfolio_mix__*.json` data files are currently **404 on the
-FTP root** — the HTML template is deployed, the per-variant JSONs need an FTP
-push to `audit/data/pf/`. Open follow-up: deploy the 5 JSON sidecars to make
-the in-page metrics render fully. See `reports/peer_claude-ftp-deploy-portfolios_2026-05-31.md`.
+NOTE (transparency, corrected 2026-05-31 post-PR #224): earlier drafts of
+this doc cited a wrong JSON URL pattern (`/audit/data/pf/portfolio_mix__*.json`,
+subdir form). That pattern does not exist. `audit_dashboard/pf.html` line 363
+fetches the **flat** path `/audit/data/pf_portfolio_<key>.json` (prefix
+`pf_portfolio_`, no subdir). All 5 JSONs are deployed and serve 200 at the
+correct path — see `reports/peer_claude-portfolio-404-fix_2026-05-31.md` for
+the post-fix curl table. Operators should use the `pf.html?key=<variant>`
+links above; pf.html internally resolves to the correct flat JSON.
 
 ## 6 per-class strategy-grounded personas also landed (PR #219)
 EQUITY / FOREX / CRYPTO / ETF / BOND / COMMODITY — each grounded in a specific
 proven strategy. **33 operator activation steps** documented in the PR.
 
 ## Operator-pending decisions
-1. Deploy the 5 `portfolio_mix__*.json` sidecars to FTP (`audit/data/pf/`) — HTML renders, JSON 404
+1. ~~Deploy the 5 `portfolio_mix__*.json` sidecars to FTP~~ DONE — JSONs serve 200 at `/audit/data/pf_portfolio_portfolio_mix__*.json` (flat path, not `pf/` subdir). Earlier 404 claim was URL-pattern error, fixed in PR #224.
 2. Promote-to-live decision on each of the 5 portfolio variants (all currently shadow-paper)
 3. Activate the 6 per-class personas from PR #219 (33-step playbook)
 4. ENH#54 follow-up (per money-ready 2026-05-31 memory)
