@@ -42,6 +42,19 @@ except ImportError:
     except ImportError:
         _compute_pnl = None  # verification disabled if module not importable
 
+# STOCKS #7 defense-in-depth (2026-05-31): import the classifier so we can
+# sanity-check raw_cat against detect_asset_class(symbol) before INSERT. This
+# catches future bug sites that hardcode category="crypto" for non-crypto
+# symbols (the root cause of the STOCKS #7 EQUITY mistag — see
+# reports/stocks_7_equity_mistag_investigation_2026-05-31.md).
+try:
+    from alpha_engine.config import detect_asset_class as _detect_asset_class
+except ImportError:
+    try:
+        from config import detect_asset_class as _detect_asset_class  # type: ignore
+    except ImportError:
+        _detect_asset_class = None  # type: ignore
+
 # 1bp = 0.01 percentage points. Tolerance widened slightly to absorb
 # float-rounding on the upstream side (it persists pnl rounded to 4 decimals).
 PNL_VERIFY_TOLERANCE_PCT = 0.01  # percentage points (1bp)
@@ -363,6 +376,28 @@ def pick_to_row(pick):
         elif sym.endswith("=X"):
             raw_cat = "forex"
         # else: leave empty — caller knows their pick is unclassifiable
+
+    # STOCKS #7 defense-in-depth (2026-05-31): if the upstream raw_cat is
+    # "crypto" but the symbol classifier disagrees (e.g. AAPL came in tagged
+    # crypto from a buggy producer), override raw_cat with the classifier
+    # result and log a WARNING. This catches future hardcoded-crypto bugs
+    # before they corrupt the EQUITY/COMMODITY/FOREX class buckets.
+    # Refs: reports/stocks_7_equity_mistag_investigation_2026-05-31.md
+    if _detect_asset_class is not None and raw_cat == "crypto":
+        sym_check = str(pick.get("symbol") or "").upper()
+        if sym_check:
+            detected = _detect_asset_class(sym_check)
+            if detected and detected not in ("crypto", "unknown"):
+                logger.warning(
+                    "STOCKS#7 mistag override: pick %s symbol=%s upstream "
+                    "category=crypto but classifier=%s — overriding to %s "
+                    "(refs: reports/stocks_7_equity_mistag_investigation_2026-05-31.md)",
+                    str(pick.get("id") or "?")[:60],
+                    sym_check[:20],
+                    detected,
+                    detected,
+                )
+                raw_cat = detected
 
     return {
         "id": pick.get("id", "")[:100],
