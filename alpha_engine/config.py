@@ -1915,6 +1915,7 @@ STRATEGY_FAMILIES: dict[str, str] = {
     "forex_tsmom_12m":                  "momentum",
     "forex_logistic_direction":         "momentum",
     "forex_rsi2_mean_reversion":        "momentum",
+    "forex_carry_ppp":                  "carry",        # PPP-enhanced carry trade (Kwas et al. 2024)
     "cot_positioning":                  "sentiment",
 
     # -----------------------------------------------------------------------
