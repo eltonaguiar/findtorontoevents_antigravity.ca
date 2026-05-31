@@ -1,0 +1,61 @@
+{
+  "persona_id": "strategy_persona__bond_connors_rsi2",
+  "display_name": "BOND Connors RSI(2) Mean-Reversion (SHADOW PILOT, n<30)",
+  "strategy_family": "mean_reversion_bonds",
+  "wraps_strategy": "bond_connors_rsi2",
+  "asset_class": "BOND",
+  "asset_symbol_whitelist": ["TLT", "IEF", "AGG", "LQD", "HYG"],
+  "status": "shadow_paper_only",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "shadow_pilot_until": "2026-06-30",
+  "philosophy": "Classic Larry Connors RSI(2) mean-reversion adapted to broad bond ETFs. Buys oversold (RSI(2)<10) above 200-SMA. INCIDENT_BONDS #1 surfaced this as the strongest academically-backed BOND candidate to break the n=2 INSUFF-N stasis (per reports/deep_dive_BOND_2026-05-31.md). Shadow-pilot only — claimed 73% WR is unverified and forward-test must reach n>=30 before any live discussion.",
+  "entry_criteria": [
+    "Symbol in {TLT, IEF, AGG, LQD, HYG}",
+    "Close > 200-day SMA (regime filter)",
+    "RSI(2) < 10 (Connors oversold threshold)",
+    "MOVE index < 130 (rate-vol regime check)",
+    "Block during FOMC week (T-2 to T+1)"
+  ],
+  "exit_criteria": [
+    "Close > 5-day SMA (Connors exit)",
+    "Hard time-stop: 10 trading days",
+    "ATR stop: 2x 20-day ATR from entry"
+  ],
+  "risk_reward_target": "1.0 to 1.5",
+  "max_risk_per_trade_pct": 0.5,
+  "suggested_backtesting_protocol": "BOND ETF universe daily 2018-2025. Walk-forward, tag rate-regime. n>=30 BOND-tagged closed picks required before any promotion discussion.",
+  "confidence_calibration": "ALWAYS MEDIUM until n>=30. The 73% WR claim from INCIDENT_BONDS #1 is unverified — do NOT cite as edge until forward-test reproduces.",
+  "best_market_conditions": ["Quiet rate regime (MOVE < 100)", "Mid-cut Fed path with stable curve"],
+  "worst_market_conditions": ["FOMC weeks", "Surprise CPI prints", "MOVE > 150 spikes", "Crisis flight-to-quality whipsaws"],
+  "min_historical_trades": 30,
+  "live_stats_validation_2026_05_31": {
+    "n_closed": 0,
+    "wr_pct": null,
+    "pf_raw": null,
+    "warning": "No live emissions. INCIDENT_BONDS #1 claims 73% WR backtest but unverified. BOND class has n=2 raw closed picks / 0% WR per pf_registry.json."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "BOND INSUFF-N per /audit (n=2-8)",
+    "verdict": "INSUFF_N_SHADOW_PILOT"
+  },
+  "shadow_pilot_acceptance_criteria_2026_06_30": {
+    "promote_to_next_stage_paper_if": "PF >= 1.5 AND WR >= 50% AND n_closed >= 30",
+    "retire_if": "PF < 0.9 AND n_closed >= 30",
+    "extend_pilot_if": "n_closed < 30 (insufficient forward-test volume)"
+  },
+  "operator_activation_steps": [
+    "1. Verify bond_connors_rsi2 NOT in PERMANENTLY_KILLED.",
+    "2. Restrict emission to BOND ETF whitelist {TLT,IEF,AGG,LQD,HYG} — strategy MUST NOT leak to other asset classes.",
+    "3. Add PERSONA_STRATEGIES + PERSONA_THESIS_MAP entries scoped to BOND.",
+    "4. Run daily cron in shadow_paper_only mode; emissions excluded from Smart Picks / High Conviction / Money Ready gates.",
+    "5. Day-30 (2026-06-30): review acceptance criteria. Do NOT promote on n<30."
+  ],
+  "kill_registry_check": "PASSED — bond_connors_rsi2 not in any kill list (greenfield strategy).",
+  "references": [
+    "reports/peer_claude-skyrocket-recommendation_2026-05-31.md (shadow-pilot pattern)",
+    "reports/deep_dive_BOND_2026-05-31.md (BOND INSUFF-N analysis)",
+    "INCIDENT_BONDS #1 (candidate surfacing)"
+  ]
+}
