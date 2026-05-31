@@ -23,6 +23,31 @@ import time
 from pathlib import Path
 from typing import Optional
 
+# STOCKS #7 fix (2026-05-31): classifier import to avoid hardcoding "crypto".
+try:
+    from alpha_engine.config import detect_asset_class as _detect_asset_class
+except ImportError:
+    try:
+        from config import detect_asset_class as _detect_asset_class  # type: ignore
+    except ImportError:
+        def _detect_asset_class(symbol: str) -> str:  # type: ignore
+            s = str(symbol or "").upper().strip()
+            if s.endswith(("USDT", "USDC", "BUSD", "DAI", "PERP")):
+                return "crypto"
+            return "unknown"
+
+
+def _category_for_pick(pick: dict) -> str:
+    """Resolve a pick's asset category, preferring explicit category but
+    falling back to the symbol classifier so non-crypto picks aren't
+    silently treated as crypto.
+    """
+    cat = (pick.get("category") or "").strip().lower()
+    if cat:
+        return cat
+    detected = _detect_asset_class(pick.get("symbol") or "")
+    return detected if detected and detected != "unknown" else "crypto"
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -314,7 +339,9 @@ def compute_realistic_sharpe() -> dict:
                 pnl_pct = pnl_pct / 100.0
 
         symbol = pick.get("symbol", "UNKNOWN")
-        category = pick.get("category", "crypto")
+        # STOCKS #7 fix (2026-05-31): resolve category via classifier so we
+        # don't apply crypto fees/spreads to equity/forex/etc. picks.
+        category = _category_for_pick(pick)
 
         # Estimate slippage for this trade (assume $500 order size as proxy)
         # Volume data not available for historical trades, use base spread * 2
@@ -400,7 +427,8 @@ def calibrate_k_from_history() -> float:
 
         observed_slippage = abs(fill_f - entry_f) / entry_f
         symbol = pick.get("symbol", "")
-        category = pick.get("category", "crypto")
+        # STOCKS #7 fix (2026-05-31): classifier-aware category.
+        category = _category_for_pick(pick)
         base = _get_base_spread(symbol, category)
 
         # market_impact = observed_slippage - base_spread
@@ -489,7 +517,8 @@ def apply_slippage_and_vol_sizing(active_picks: list[dict],
 
     for pick in active_picks:
         symbol = pick.get("symbol", "")
-        category = pick.get("category", "crypto")
+        # STOCKS #7 fix (2026-05-31): classifier-aware category.
+        category = _category_for_pick(pick)
 
         # Get order size from Kelly sizing or default
         kelly_pct = pick.get("kelly_size_pct", 0.02)

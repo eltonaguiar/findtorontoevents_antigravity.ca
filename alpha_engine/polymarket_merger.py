@@ -15,6 +15,19 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+# STOCKS #7 fix (2026-05-31): classifier import for category assignment.
+try:
+    from alpha_engine.config import detect_asset_class as _detect_asset_class
+except ImportError:
+    try:
+        from config import detect_asset_class as _detect_asset_class  # type: ignore
+    except ImportError:
+        def _detect_asset_class(symbol: str) -> str:  # type: ignore
+            s = str(symbol or "").upper().strip()
+            if s.endswith(("USDT", "USDC", "BUSD", "DAI", "PERP")):
+                return "crypto"
+            return "unknown"
+
 DATA_DIR = Path(__file__).resolve().parent / "data"
 ACTIVE_PICKS_PATH = DATA_DIR / "active_picks.json"
 POLYMARKET_PATH = DATA_DIR / "polymarket_signals.json"
@@ -97,7 +110,16 @@ def merge():
 
         # Convert to ACTIVE pick format
         pick["status"] = "ACTIVE"
-        pick["category"] = pick.get("category", "crypto")
+        # STOCKS #7 fix (2026-05-31): was unconditionally defaulting absent
+        # category to "crypto". For polymarket underlyings the symbol may be
+        # an equity (e.g. AAPL) — only override to crypto when the classifier
+        # cannot identify equity/etf/forex/etc.
+        existing_cat = pick.get("category")
+        if existing_cat:
+            pick["category"] = existing_cat
+        else:
+            detected = _detect_asset_class(sym)
+            pick["category"] = detected if detected and detected != "unknown" else "crypto"
         pick["direction"] = dir_
         # Ensure it has fields the pipeline expects
         if not pick.get("entry_price"):

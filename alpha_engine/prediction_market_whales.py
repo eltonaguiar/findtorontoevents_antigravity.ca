@@ -29,6 +29,21 @@ import urllib.error
 import urllib.parse
 from datetime import datetime, timezone, timedelta
 
+# STOCKS #7 fix (2026-05-31): use classifier instead of hardcoding "crypto".
+# Prediction-market underlying symbols can be equity/etf/forex/etc; tagging
+# them all crypto poisons the EQUITY/COMMODITY/FOREX class buckets.
+try:
+    from alpha_engine.config import detect_asset_class as _detect_asset_class
+except ImportError:
+    try:
+        from config import detect_asset_class as _detect_asset_class  # type: ignore
+    except ImportError:
+        def _detect_asset_class(symbol: str) -> str:  # type: ignore
+            s = str(symbol or "").upper().strip()
+            if s.endswith(("USDT", "USDC", "BUSD", "DAI", "PERP")):
+                return "crypto"
+            return "unknown"
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -1261,7 +1276,13 @@ def _compute_cross_market_consensus(polymarket_signals, kalshi_signals):
 # 9. Main Signal Generator
 # ---------------------------------------------------------------------------
 
-# Strategy metadata for scanner.py integration
+# Strategy metadata for scanner.py integration.
+# NOTE (STOCKS #7 fix 2026-05-31): the "category" fields below are *default*
+# metadata, not per-pick categories. The actual per-pick `category` is now
+# set in _format_picks() via _detect_asset_class(symbol) so the bucket
+# reflects the underlying symbol (CRYPTO/EQUITY/ETF/...) rather than this
+# default. Keeping these as "crypto" because the majority of prediction
+# market signals reference BTC/ETH/SOL.
 PREDICTION_MARKET_WHALE_STRATEGIES = {
     "polymarket_momentum": {
         "name": "Polymarket Probability Momentum",
@@ -1461,7 +1482,10 @@ def _signals_to_picks(signals, spot_prices):
             "id": pick_id,
             "strategy": strategy,
             "symbol": symbol,
-            "category": "crypto",
+            # STOCKS #7 fix (2026-05-31): was hardcoded "crypto" — caused
+            # equity/etf prediction-market underlyings (e.g. SPY, AAPL on
+            # election/macro markets) to mis-tag into the CRYPTO bucket.
+            "category": _detect_asset_class(symbol) or "crypto",
             "signal_type": signal_type,
             "entry_price": entry_price,
             "entry_date": now.strftime("%Y-%m-%d"),
