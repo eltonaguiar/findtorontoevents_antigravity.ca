@@ -48,7 +48,14 @@ jobs:
         run: |
           git config user.name "Hermes Agent"
           git config user.email "hermes@agent.com"
-          git add audit_trail/data/2hour_challenge_results.json
+          # Ensure results file exists even if the python script exits early.
+          mkdir -p audit_trail/data
+          DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          if [ ! -f audit_trail/data/2hour_challenge_results.json ]; then
+            echo "::warning::2hour_challenge_results.json not produced by script — writing stub"
+            echo "{\"timestamp\": \"$DATE\", \"strategies\": {}, \"active_signals\": {}}" > audit_trail/data/2hour_challenge_results.json
+          fi
+          git add -f audit_trail/data/2hour_challenge_results.json
           git commit -m "Update 2-hour challenge results [skip ci]" || echo "No changes to commit"
           bash .github/scripts/safe_push.sh
 

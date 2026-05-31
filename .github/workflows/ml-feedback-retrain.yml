@@ -94,6 +94,9 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
+          # Ensure output directory exists — .gitignore tracks *.joblib files but not the dir itself
+          mkdir -p ml_crypto_predictor/enhanced_models/models/
+          mkdir -p ml_crypto_predictor/enhanced_models/feedback_data/
           python -m ml_crypto_predictor.enhanced_models.feedback_trainer
 
       - name: Commit feedback model and data

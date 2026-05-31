@@ -1921,6 +1921,7 @@ STRATEGY_FAMILIES: dict[str, str] = {
     # FOREX strategies — extended (forex_strategies.py / community)
     # 2026-04-14: missing family assignments found by confluence test
     # -----------------------------------------------------------------------
+    "forex_carry_ppp":                  "carry",  # PPP-overlay carry (Kwas 2024 ECB)
     "orb_breakout":                     "volatility",   # Opening range breakout
     "asian_range_breakout":             "volatility",   # Asian session range breakout
     "ig_contrarian_sentiment":          "sentiment",   # IG retail client positioning contrarian

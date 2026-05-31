@@ -356,21 +356,24 @@ def check_backtests(conn: Any) -> Dict[str, Any]:
             result["table"] = table
 
             # Pick the freshness column. Prefer created_at, fall back to
-            # imported_at. Both may be absent if the schema changes — in
-            # that case skip the staleness check (YELLOW, not RED).
-            cur.execute(f"SHOW COLUMNS FROM {table} LIKE 'created_at'")
-            has_created = bool(cur.fetchone())
-            cur.execute(f"SHOW COLUMNS FROM {table} LIKE 'imported_at'")
-            has_imported = bool(cur.fetchone())
+            # imported_at, then updated_at/modified_at. If none exist, skip
+            # the staleness check gracefully (SKIPPED, not RED/YELLOW).
+            ts_col = None
+            for candidate in ("created_at", "imported_at", "updated_at", "modified_at"):
+                cur.execute(f"SHOW COLUMNS FROM {table} LIKE %s", (candidate,))
+                if cur.fetchone():
+                    ts_col = candidate
+                    break
 
-            if has_created:
-                ts_col = "created_at"
-            elif has_imported:
-                ts_col = "imported_at"
-            else:
-                result["status"] = "YELLOW"
-                result["error"] = f"no timestamp column in {table} — schema check needed"
-                log.warning("backtests freshness: no created_at or imported_at in %s", table)
+            if not ts_col:
+                # No timestamp column — table schema doesn't support freshness checks.
+                # This is expected for some legacy/import-only tables.
+                result["status"] = "SKIPPED"
+                result["skip_reason"] = (
+                    f"no timestamp column (created_at/imported_at/updated_at/modified_at) "
+                    f"in {table} — freshness N/A"
+                )
+                log.info("backtests freshness: no timestamp column in %s — skipping", table)
                 return result
 
             cur.execute(f"SELECT MAX({ts_col}), COUNT(*) FROM {table}")

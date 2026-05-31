@@ -34,6 +34,7 @@ def _base_ctf_pick(**overrides):
         "take_profit": 88.0,
         "stop_loss": 76.0,
         "wf_verdict": "PASS",
+        "forward_validated": True,  # Real multi_asset_cot picks carry this; without it the smart gate rejects before reaching M-096
     }
     pick.update(overrides)
     return pick

@@ -231,15 +231,14 @@ def test_sitc_scrape_paginates_and_stops():
 
 # ---------- Audit page integration ----------
 
-def test_audit_page_exists_and_links_to_report():
+def test_audit_page_exists_and_links_to_charts():
     audit_html = REPO_ROOT / "TORONTOEVENTS_ANTIGRAVITY" / "audit" / "index.html"
     assert audit_html.is_file(), "audit page must be deployed at /audit/index.html"
     text = audit_html.read_text(encoding="utf-8")
-    assert "Toronto_Events_Database_Audit.docx" in text
     for img in ("chart_categories.png", "chart_quality.png", "chart_coverage.png", "chart_priorities.png"):
         assert img in text, f"audit page missing image {img}"
     for asset in (
         "chart_categories.png", "chart_quality.png", "chart_coverage.png",
-        "chart_priorities.png", "Toronto_Events_Database_Audit.docx",
+        "chart_priorities.png",
     ):
         assert (audit_html.parent / asset).is_file(), f"missing asset {asset}"

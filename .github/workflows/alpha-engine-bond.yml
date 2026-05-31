@@ -34,11 +34,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install yfinance pandas numpy
+          pip install -r requirements.txt
 
       - name: Run Bond scanner (production)
         env:
           PYTHONPATH: ${{ github.workspace }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           # 2026-05-12: FRED API has been timing out on every series (10 min
           # wasted per run, see reports/asset_class_deep_dive_BOND_2026-05-12.md).
           # Skip FRED entirely until reachability is restored — the ETF-aware
@@ -49,7 +50,8 @@ jobs:
           # bond_yield_curve_slope strategy (T10Y2Y inversion→BUY TLT) was impaired.
           # BOND has 0 picks in last 30d — restoring FRED unlocks a 6th strategy.
           # Rollback: set to '1' if FRED timeouts recur (>5min wasted per run).
-          SKIP_FRED: '0'
+          # 2026-05-31: Set to '1' — FRED consistently times out on GHA runners.
+          SKIP_FRED: '1'
         run: |
           # 2026-05-17: Replaced proof-of-concept spike (bond_emitter_spike.py, 0 picks)
           # with the production bond_scanner.py which uses all 6 strategies, iterates

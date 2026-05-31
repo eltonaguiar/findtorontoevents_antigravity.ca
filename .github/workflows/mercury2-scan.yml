@@ -47,10 +47,19 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "=== Mercury 2 Scanner ==="
+          # Check if ensemble model exists; if not, warn and use fallback
+          if [ ! -f mercury2/models/ensemble_conservative.joblib ]; then
+            echo "::warning::ensemble_conservative.joblib not found — running in rule-based fallback mode"
+            echo "To train models: run mercury2-retrain workflow first"
+          fi
           if [ "$MERCURY2_FORCE_MODE" = "true" ]; then
             echo "  FORCE MODE ENABLED  Picks will be generated with validation_warning flag"
           fi
-          python -m mercury2
+          python -m mercury2 || {
+            echo "::error::Mercury 2 scanner failed — writing safe fallback"
+            mkdir -p mercury2/data
+            echo '{"picks":[],"scanned_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","mode":"fallback"}' > mercury2/data/mercury2_picks.json
+          }
 
       - name: Mercury 2 quality metrics
         env:

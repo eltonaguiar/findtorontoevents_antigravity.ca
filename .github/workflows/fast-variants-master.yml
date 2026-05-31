@@ -52,6 +52,10 @@ jobs:
           FORCE_REFRESH: ${{ github.event.inputs.force_refresh || false }}
         run: |
           echo "=== Fast Stocks Competition Scanner ==="
+          if [ ! -f STOCKS/competition/run_fast_competition.py ]; then
+            echo "::warning::run_fast_competition.py not found — skipping fast stocks job"
+            exit 0
+          fi
           if [ "$FORCE_REFRESH" = "true" ]; then
             echo " FORCE REFRESH ENABLED  Clearing existing picks"
             rm -f STOCKS/competition/fast_forward_picks.json

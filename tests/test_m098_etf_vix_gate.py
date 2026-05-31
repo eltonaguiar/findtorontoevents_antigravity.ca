@@ -19,7 +19,7 @@ def _etf_pick(**overrides):
         "asset_class": "ETF",
         "symbol": "SPY",
         "strategy": "sector_rotation",
-        "source_system": "sector_rotation",
+        "source_system": "etf_sector_rotation",
         "direction": "LONG",
         "status": "OPEN",
         "score": 72,
@@ -38,6 +38,7 @@ def _etf_pick(**overrides):
         "stop_loss": 490.0,
         "wf_verdict": "PASS",
         "ml_score": 0.75,
+        "forward_validated": True,
     }
     pick.update(overrides)
     return pick
@@ -49,6 +50,8 @@ def _common_env(monkeypatch):
     monkeypatch.setenv("NUPL_GATE_ENFORCE", "0")
     monkeypatch.setenv("M044_MIN_AGE_SECONDS", "0")
     monkeypatch.setenv("BOOK_CONFLICT_GATE_DISABLED", "1")
+    # Disable the earlier VIX regime active gate so the pick reaches M-098.
+    monkeypatch.setenv("VIX_REGIME_ACTIVE_GATE_ENABLED", "0")
 
 
 class TestM098ETFVixGate:

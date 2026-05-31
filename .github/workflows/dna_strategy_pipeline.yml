@@ -343,6 +343,7 @@ jobs:
           DISCORD_WEBHOOK_DNA_MASTER: ${{ secrets.DISCORD_WEBHOOK_DNA_MASTER }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python genome/progressive_promotion.py --check --notify --summary
 
   evaluate-promotions:
@@ -371,6 +372,7 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           DISCORD_WEBHOOK_SANDBOX: ${{ secrets.DISCORD_WEBHOOK_SANDBOX }}
           DISCORD_WEBHOOK_DNA_MASTER: ${{ secrets.DISCORD_WEBHOOK_DNA_MASTER }}
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           python genome/progressive_promotion.py --evaluate --notify --summary
 

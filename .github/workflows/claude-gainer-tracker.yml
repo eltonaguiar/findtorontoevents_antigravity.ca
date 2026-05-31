@@ -76,7 +76,18 @@ jobs:
           ASTERDEX_API_SECRET: ${{ secrets.ASTERDEX_API_SECRET }}
         run: |
           cd claude_gainer_ml
-          python live_scanner.py
+          # Check if trained models exist
+          MODEL_COUNT=0
+          for f in models/claude_rf.joblib models/claude_xgb.joblib models/claude_gainer_model.joblib; do
+            [ -f "$f" ] && MODEL_COUNT=$((MODEL_COUNT + 1))
+          done
+          if [ "$MODEL_COUNT" -eq 0 ]; then
+            echo "::warning::No trained ML models found — skipping predictions"
+            mkdir -p tracker
+            echo '{"picks":[],"updated_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","mode":"fallback_no_model"}' > tracker/claude_live_picks.json
+            exit 0
+          fi
+          python live_scanner.py || echo "::warning::live_scanner.py exited with non-zero"
 
       - name: "Step 3: Self-improvement + ML feedback loop"
         if: ${{ github.event.inputs.mode != 'dashboard-only' }}

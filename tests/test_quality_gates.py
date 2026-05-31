@@ -215,8 +215,8 @@ def test_smart_gate_rejects_source_less_pick() -> None:
         source_system=None,
         source=None,
         asset_class="CRYPTO",
-        strategy="ml_enhanced_FETUSDT_1d_B_lightgbm",
-        symbol="FETUSDT",
+        strategy="ml_enhanced_SOLUSDT_1d_B_lightgbm",
+        symbol="SOLUSDT",
         score=67,
         elite_score=85,
         confidence=0.80,
@@ -235,8 +235,8 @@ def test_active_gate_rejects_exempt_safety_mode() -> None:
     base_pick = _base_pick(
         source_system="ml_enhanced",
         asset_class="CRYPTO",
-        strategy="ml_enhanced_FETUSDT_1d_B_lightgbm",
-        symbol="FETUSDT",
+        strategy="ml_enhanced_SOLUSDT_1d_B_lightgbm",
+        symbol="SOLUSDT",
         score=67,
         elite_score=85,
         elite_grade="A",
@@ -368,11 +368,11 @@ def test_smart_gate_uses_concentration_adjusted_score_floor() -> None:
     pick = _base_pick(
         source_system="super_signals",
         strategy="super_signal_trend",
-        symbol="FETUSDT",
+        symbol="SOLUSDT",
         score=58,
         confidence=0.68,
         strat_concentration_penalty=10,
-        strat_top_symbol="FETUSDT",
+        strat_top_symbol="SOLUSDT",
         strat_top_symbol_pnl_pct=112.0,
     )
 
@@ -401,8 +401,8 @@ def test_smart_gate_blocks_highly_concentrated_non_verified_strategy() -> None:
     # use mega_mutation (no matrix restriction) to isolate the concentration gate.
     pick = _base_pick(
         source_system="mega_mutation",
-        strategy="ml_enhanced_FETUSDT_1d_B_lightgbm",
-        symbol="FETUSDT",
+        strategy="ml_enhanced_SOLUSDT_1d_B_lightgbm",
+        symbol="SOLUSDT",
         score=82,
         confidence=0.83,
         strategy_top_symbol_pnl_pct=189.6,

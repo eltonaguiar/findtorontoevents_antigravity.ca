@@ -10,6 +10,10 @@ on:
     - cron: '0 6 * * *'   # Daily at 6:00 AM UTC (2 hours after backup at 4 AM)
   workflow_dispatch:
 
+concurrency:
+  group: db-sync-to-mirror
+  cancel-in-progress: false
+
 permissions:
   contents: read
 

@@ -10,8 +10,9 @@ concurrency:
 
 on:
   schedule:
-    # Staggered from :00/:45 to reduce push storms with other hourly workflows
-    - cron: '18,48 * * * *'
+    # Staggered from :00/:10/:45 marks to reduce push storms with other hourly workflows.
+    # 22,52 avoids the :00 cluster, the :10 alpha-engine wave, and the :18/:48 old slot.
+    - cron: '22,52 * * * *'
   workflow_dispatch:
     inputs:
       mode:

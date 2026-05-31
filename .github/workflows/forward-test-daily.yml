@@ -58,16 +58,31 @@ jobs:
 
       - name: Generate forward picks
         if: steps.action.outputs.action == 'generate' || steps.action.outputs.action == 'both'
-        run: python3 STOCKS/competition/forward_test.py generate
+        run: |
+          if [ ! -f STOCKS/competition/forward_test.py ]; then
+            echo "::warning::STOCKS/competition/forward_test.py not found — script was deleted. Workflow is effectively disabled."
+            exit 0
+          fi
+          python3 STOCKS/competition/forward_test.py generate
         timeout-minutes: 10
 
       - name: Resolve open picks
         if: steps.action.outputs.action == 'resolve' || steps.action.outputs.action == 'both'
-        run: python3 STOCKS/competition/forward_test.py resolve
+        run: |
+          if [ ! -f STOCKS/competition/forward_test.py ]; then
+            echo "::warning::STOCKS/competition/forward_test.py not found — skipping resolve"
+            exit 0
+          fi
+          python3 STOCKS/competition/forward_test.py resolve
         timeout-minutes: 10
 
       - name: Print status
-        run: python3 STOCKS/competition/forward_test.py status
+        run: |
+          if [ ! -f STOCKS/competition/forward_test.py ]; then
+            echo "::warning::STOCKS/competition/forward_test.py not found — skipping status"
+            exit 0
+          fi
+          python3 STOCKS/competition/forward_test.py status
 
       - name: Commit and push
         run: |
