@@ -118,9 +118,9 @@ def check_pnl_integrity() -> dict:
     cur.execute("""
         SELECT
             COUNT(*) AS sampled,
-            SUM(CASE WHEN ABS(CAST(pnl_pct AS DOUBLE) - ((CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)) / CAST(entry_price AS DOUBLE) * 100)) > 1
+            SUM(CASE WHEN ABS(CAST(pnl_pct AS DOUBLE) - (CASE WHEN UPPER(COALESCE(direction,'LONG')) IN ('SHORT','SELL') THEN -1 ELSE 1 END) * ((CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)) / CAST(entry_price AS DOUBLE) * 100)) > 1
                      THEN 1 ELSE 0 END) AS gt1,
-            SUM(CASE WHEN ABS(CAST(pnl_pct AS DOUBLE) - ((CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)) / CAST(entry_price AS DOUBLE) * 100)) > 0.01
+            SUM(CASE WHEN ABS(CAST(pnl_pct AS DOUBLE) - (CASE WHEN UPPER(COALESCE(direction,'LONG')) IN ('SHORT','SELL') THEN -1 ELSE 1 END) * ((CAST(exit_price AS DOUBLE) - CAST(entry_price AS DOUBLE)) / CAST(entry_price AS DOUBLE) * 100)) > 0.01
                      THEN 1 ELSE 0 END) AS gt001
         FROM bt_backtest_trades
         WHERE id BETWEEN %s AND %s
@@ -240,9 +240,14 @@ def check_open_bloat() -> dict:
     bbt_info = int(cur.fetchone()[0] or 0)
     c.close()
 
+    # Compare TOTAL row count vs info_schema estimate (not OPEN vs total).
+    c2, cur2 = _conn()
+    cur2.execute("SELECT COUNT(*) FROM bt_backtest_trades")
+    bbt_total = int(cur2.fetchone()[0])
+    c2.close()
     bbt_suspect_count = (
-        bbt_open > 0 and bbt_info > 0
-        and (bbt_open > bbt_info * 10 or bbt_info > bbt_open * 10)
+        bbt_total > 0 and bbt_info > 0
+        and (bbt_total > bbt_info * 10 or bbt_info > bbt_total * 10)
     )
 
     # ── Single connection: trading_picks all queries + info_schema ─────
@@ -268,9 +273,10 @@ def check_open_bloat() -> dict:
     last_ts, hours_ago = cur.fetchone()
     c.close()
 
+    # Compare TOTAL row count vs info_schema estimate (not OPEN vs total).
     tp_suspect_count = (
-        tp_open > 0 and tp_info > 0
-        and (tp_open > tp_info * 10 or tp_info > tp_open * 10)
+        tp_total > 0 and tp_info > 0
+        and (tp_total > tp_info * 10 or tp_info > tp_total * 10)
     )
 
     # ── Assemble output ────────────────────────────────────────────────
@@ -280,6 +286,7 @@ def check_open_bloat() -> dict:
     out["info_schema_estimate"] = tp_info
     out["bt_backtest_trades"] = {
         "open_count": bbt_open,
+        "total_count": bbt_total,
         "info_schema_estimate": bbt_info,
         "count_suspect": bbt_suspect_count,
     }
