@@ -44,6 +44,28 @@ from tools.ai_tournament.price_tracker import (  # noqa: E402
 from tools.db_env import get_stocks_creds  # noqa: E402
 import pymysql  # noqa: E402
 
+
+def _fetch_price(pick):
+    """Price fetch that fixes the price_tracker =F-stripping bug for COMMODITY/FUTURES.
+
+    price_tracker.fetch_price_equity strips '=F' before querying yfinance, but
+    yfinance REQUIRES the '=F' suffix for futures/commodities (e.g. 'GC=F'),
+    so those silently fail ('possibly delisted'). For COMMODITY/FUTURES we query
+    yfinance directly with the symbol intact; everything else uses the tested path.
+    """
+    ac = (pick.get("asset_class") or "EQUITY").upper()
+    sym = pick.get("symbol", "")
+    if ac in ("COMMODITY", "FUTURES") and sym.endswith("=F"):
+        try:
+            import yfinance as yf
+            h = yf.Ticker(sym).history(period="2d")
+            if len(h):
+                return float(h["Close"].iloc[-1])
+        except Exception:
+            pass
+        return None
+    return fetch_price(pick)
+
 RESOLVE_COLS = ["id", "symbol", "asset_class", "direction",
                 "entry_price", "take_profit", "stop_loss", "submitted_at", "status"]
 
@@ -104,7 +126,7 @@ def main() -> int:
                              if hasattr(r["submitted_at"], "isoformat") else str(r["submitted_at"])),
             "status": "OPEN",
         }
-        price = fetch_price(pick)
+        price = _fetch_price(pick)
         if price is None:
             counts["price_fail"] += 1
             continue
