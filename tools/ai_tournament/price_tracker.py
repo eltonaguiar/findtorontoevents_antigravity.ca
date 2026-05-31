@@ -120,7 +120,7 @@ def fetch_price_crypto(symbol: str) -> float | None:
 
 def fetch_price_equity(symbol: str) -> float | None:
     """yfinance → Alpha Vantage failover for equity/ETF/commodity/bond prices."""
-    clean = symbol.replace("=F", "").replace("=X", "")
+    clean = symbol.replace("=X", "")  # keep =F: yfinance requires it for futures/commodities (GC=F etc.)
     try:
         ticker = yf.Ticker(clean)
         hist = ticker.history(period="2d")
