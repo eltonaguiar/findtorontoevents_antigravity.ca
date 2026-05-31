@@ -117,6 +117,9 @@
 <div class="update-entry">
 <p><strong>2026-06-01 EST (URGENT methodology bug flagged to kilo)</strong>: Kilo just pushed <code>tools/monte_carlo_edge_audit.py</code> + top-3 consensus runner to main. The MC tool uses <strong>capping (winsorization), NOT intrabar OHLC replay</strong> &mdash; methodology proven wrong this session (PR #347 FOREX inflated 3.16x, PR #343 COMMODITY inflated 6.46x). Deprecation warning added to tool header. Strategies emitted by top3_consensus_runner are fine (they just emit picks); just don't score backtests with the capped MC. Forward-only evaluation via master paper-pilot harness #316 (daily 13:30 UTC) stays the discipline. Full flag: <code>reports/peer_claude-URGENT_METHODOLOGY_FLAG_MC_AUDIT_TOOL_2026-05-31.md</code>.</p>
 </div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (18th flag - kilo forced_resolution survivorship bias)</strong>: Kilo committed forced_resolution.py + winning_strategies.py to main claiming 4 "PROMISING" edges. <strong>Their OWN permutation p-values refute this</strong>: commodity_cta p=0.999, crypto_mega_mut p=1.000, crypto_pma p=0.66, forex_contrarian p=0.409. Zero pass p&lt;0.05. Methodology filters OUT all TIME_EXIT trades (zero-pnl medians) and analyzes only TP_HIT+SL_HIT extreme tails = survivorship bias by selection. Same class of error as capping today (PR #347/#343). Deprecation headers added to both modules; peer DM sent. <strong>24-strategy paper-pilot harness tomorrow 13:30 UTC must include TIME_EXIT in scoring</strong> or it reproduces kilo's error. 18 candidate fabrications caught today.</p>
+</div>
 <!-- DOC_SUMMARY_ENTRY:START -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
