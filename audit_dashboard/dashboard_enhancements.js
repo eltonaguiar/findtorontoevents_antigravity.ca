@@ -672,6 +672,16 @@
       html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> in DRY_RUN; <code>tools/db_health_check.py</code> emitting hourly; resolver coverage still low. ' +
               'See <a href="/updates/2026-05-11-money-maker-master-plan.html#db-health-remediation" style="color:#fde68a;text-decoration:underline">money-maker master plan</a> for the live fix queue.</span>';
       html += '</div>';
+    } else if (payload.overall && payload.overall.harness_healthy === false) {
+      // Soft-warning banner: harness itself is broken (one or more checks errored OR failed threshold),
+      // so any_red may be falsely-green by exclusion. Distinct from the hard DATA INTEGRITY banner above.
+      var _failedN = payload.overall.checks_failed != null ? payload.overall.checks_failed : '?';
+      var _runN = payload.overall.checks_run != null ? payload.overall.checks_run : '?';
+      html += '<div style="margin-top:10px;padding:12px;background:#3a2a0a;border-left:4px solid #f59e0b;border-radius:4px;font-size:13px;line-height:1.6;">';
+      html += '<strong style="color:#fde68a;font-size:14px;">&#x26A0; DB HEALTH HARNESS DEGRADED &mdash; verdict may be incomplete</strong><br>';
+      html += '<span style="color:#fef3c7;">' + htmlEscape(String(_failedN)) + ' of ' + htmlEscape(String(_runN)) + ' checks errored or failed threshold on <code>' + htmlEscape(payload.generated_at || 'unknown') + '</code>. ' +
+              'The "any_red" gate only inspects checks that returned successfully, so a fully-broken harness can report green by exclusion. Treat the verdict above as provisional until the harness is healthy.</span>';
+      html += '</div>';
     }
     html += '</div>';
 
