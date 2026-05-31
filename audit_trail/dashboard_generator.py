@@ -8101,7 +8101,13 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
             or "unknown"
         ),
         "source_system": dashboard_source_system,
-        "asset_class": asset_class,
+        "asset_class": _coerce_asset_class({
+            "asset_class": asset_class,
+            "symbol": symbol,
+            "source_system": source_system,
+            "strategy": strategy,
+            "category": raw.get("category"),
+        }),
         # Additive contract-type tag (2026-05-16). Distinguishes
         # commodity_future / index_future / rates_future / currency_future so
         # the FUTURES tile can show honest n — most `=F` symbols route to the
