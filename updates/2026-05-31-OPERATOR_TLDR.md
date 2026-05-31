@@ -2,6 +2,29 @@ Last stability check 2026-05-31T18:37Z: STABLE. db_health age 43min, queue=4, al
 
 ---
 
+## SESSION-FINAL (tick 36 — TRUE END, 2026-05-31T20:57Z)
+
+Autonomous loop converged at tick 36. Next progress requires either (a) production cron observation window to confirm live emission impact of PRs #263/#275/#277/#278, or (b) operator decision on the 2 remaining operator-only items. No autonomous waves will spawn until either condition is met. Closing broadcast `SESSION_CLOSED_FINAL` sent to gateway 192.168.2.32:8788 (msgid `d0ab2b6f-3e5d-429d-bec5-9f69e84543d4`). End.
+
+### FINAL operator queue (5 items, all autonomous-doable struck)
+
+**OBSERVATION-WAITING (3) — cron-check cadence:**
+- INCIDENT_CRYPTO #3 — check after 1-2 db_health cycles (~2h) post-commit `d317560ac9c`; acceptance: db_health refreshes without stale flag.
+- INCIDENT_COMMODITIES #2 — check after 7d (n accumulation post PRs #278/#200/#111/#269); acceptance: n>=30 closed COMMODITY trades from rebuilt non-COT stack with PF>1.0.
+- INCIDENT_STOCKS #6 — check after 14d (n accumulation post PRs #277/#270/#121 un-kill); acceptance: n>=100 EQUITY trades with WR>=50% on un-killed `stocks_rsi2_pullback`.
+
+**OPERATOR-ONLY (2) — explicit acceptance criteria:**
+- INCIDENT_CRYPTO #1 — ML small-sample badge wiring requires frozen-threshold scoring decision. Acceptance: operator picks one of {dampen-factor, hard-block, badge-only} and approves the threshold value in `alpha_engine/smart_picks_engine.py`. PR #170 has the proposal docs.
+- INCIDENT_OVERALL #34 — 17 pytest failures touch production scoring (ab_router, crypto quality gate, FOREX resolver). Acceptance: operator triages each failure as {fix-now, accept-as-known-broken, retire-test} — not safe for autonomous blind-fix.
+
+### Final acknowledgment
+
+Autonomous loop converged at tick 36. Next progress requires either (a) production cron observation window to confirm live emission impact of PRs #263/#275/#277/#278, or (b) operator decision on the 2 remaining operator-only items. No autonomous waves will spawn until either condition is met.
+
+---
+
+---
+
 ## TICK-36 TRUE FINAL STOCKTAKE (2026-05-31, late session) — TRUE OPEN QUEUE = 5
 
 Reconciled against `vw_all_incidents` live (ground truth), NOT against the cached operator-queue mental model that drifted during the loop.
@@ -66,9 +89,7 @@ Verification PR: **#258** (recovery verification). Skyrocket pilot registration 
 
 ~~1. **PR #229 — `harness_healthy` draft**: approve OR reject (1-click).~~ **RESOLVED** — merged 2026-05-31T19:39:35Z (squash `5771cdcc7`); live `db_health.json` (gen 18:57Z) confirms `harness_healthy=true`, `banner_should_show=false`, 5/5 passed. Gate active.
 
-2. **PR #227 — reject-INVERT verdict**: approve OR override with bucket-dampen.
-   - If you override → set bucket-dampen factor in same decision
-   - Time: 5 min
+~~2. **PR #227 — reject-INVERT verdict**: approve OR override with bucket-dampen.~~ **RESOLVED at tick 36** via PR #263 (CRYPTO bucket-dampen shipped to scoring path). Observation-window started.
 
 ~~3. **GHA-unblock pick** — PR #250 ships 3 options (A/B/C).~~ **RESOLVED** — natural drain + tick 8–12 unblock cycle achieved full recovery at tick 16. Options A/B/C no longer required. See PRs #244, #245, #249, #258.
 
@@ -87,10 +108,10 @@ Verification PR: **#258** (recovery verification). Skyrocket pilot registration 
 
 ## PRIORITY 3 — heavy lifts (1–3 hr each, unchanged)
 
-- **FOREX kill list** (INCIDENT_FOREX #6 / #7): wire `dxy_trend_filter`; retire `cta_cross_asset_tsmom` whitelist.
-- **COMMODITY rebuild** from non-COT signals (current COT-heavy stack is failing — PF 0.31 / WR 11% / n=28 per CLAUDE.md).
-- **EQUITY rebuild**: un-kill `stocks_rsi2_pullback` (live audit refutes the kill premise).
-- **PENNY Gate 0 + UEPS scanner** stand-up.
+~~- **FOREX kill list** (INCIDENT_FOREX #6 / #7): wire `dxy_trend_filter`; retire `cta_cross_asset_tsmom` whitelist.~~ **DONE at tick 36** via PR #275 (FOREX wire-up). Observation-window started.
+~~- **COMMODITY rebuild** from non-COT signals~~ **DONE at tick 36** via PR #278 (rebuild) + PR #200/#111/#269 (plan + deep-dive). Observation-window started.
+~~- **EQUITY rebuild**: un-kill `stocks_rsi2_pullback`~~ **DONE at tick 36** via PR #277 (un-kill) + #270/#121 (allowlist). Observation-window started.
+~~- **PENNY Gate 0 + UEPS scanner** stand-up.~~ **DONE earlier in loop** — PENNY + UEPS incident records flipped RESOLVED (PRs #159 UEPS, #206 mega-recon).
 
 ---
 

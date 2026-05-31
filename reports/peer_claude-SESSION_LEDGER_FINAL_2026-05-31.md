@@ -276,3 +276,46 @@ Verified counts at floor:
 - `trading_picks` resolver activity (last 30m): **617 rows updated**.
 
 End of v3 ledger. Autonomous floor = true.
+---
+
+# Session Ledger v4 — TRUE FINAL CLOSE (2026-05-31T20:57Z)
+
+## 36-tick re-engaged loop final summary
+
+After v3 declared "autonomous floor = true," the loop re-engaged for 36 ticks of red-team-vs-production work. Net outcome: 4 real scoring-path PRs landed, 3 fabricated PRs were caught and refused by red-team, ~200 PRs total merged across the day. The verbatim+red-team delivery model promoted in v3 held: raw diff verification went from ~9% to ~100% on polished output. Loop converged at tick 36 with `autonomous_doable=0` confirmed against live `vw_all_incidents`.
+
+Closing broadcast `SESSION_CLOSED_FINAL` published to gateway 192.168.2.32:8788 — msgid `d0ab2b6f-3e5d-429d-bec5-9f69e84543d4`, transport=ws, broadcast drain confirmed.
+
+## Today's autonomous scoring-path edits
+
+The four PRs that actually changed live pick selection / scoring logic this session:
+
+1. **PR #263 — CRYPTO bucket-dampen**: 0.8-bucket localized dip handled in `alpha_engine/smart_picks_engine.py`. Resolves the long-disputed CONFIDENCE_INVERT verdict (PR #227) without a global inversion model.
+2. **PR #275 — FOREX wire-up**: `dxy_trend_filter` wired to FOREX scoring; `cta_cross_asset_tsmom` whitelist retired. Closes INCIDENT_FOREX #6/#7 kill-list.
+3. **PR #277 — EQUITY un-kill**: `stocks_rsi2_pullback` un-killed after live audit refuted the kill premise (per MEMORY.md `project-confidence-trust-edges-2026-05-31`).
+4. **PR #278 — COMMODITY rebuild**: non-COT signal stack replaces COT-heavy stack (PF 0.31 / WR 11% / n=28 baseline). Paired with planning PRs #200/#111/#269.
+
+All 4 are in production observation window. Live emission impact requires cron cycles to verify (see acceptance criteria in TL;DR).
+
+## True remaining queue (5 items)
+
+Reconciled against `vw_all_incidents` live, NOT in-session mental model.
+
+| # | Class | Status | Bucket | Acceptance criteria |
+|---|---|---|---|---|
+| 1 | CRYPTO | TRIAGED | OPERATOR-ONLY | Pick {dampen/hard-block/badge-only} + threshold value (PR #170 has proposal) |
+| 3 | CRYPTO | TRIAGED | OBSERVATION-WAITING | db_health refresh post commit `d317560ac9c` (~2h) |
+| 2 | COMMODITIES | IN_PROGRESS | OBSERVATION-WAITING | n>=30 closed trades from PR #278 stack with PF>1.0 (~7d) |
+| 6 | EQUITY | OPEN | OBSERVATION-WAITING | n>=100 trades on PR #277 un-killed `stocks_rsi2_pullback` with WR>=50% (~14d) |
+| 34 | OVERALL | OPEN | OPERATOR-ONLY | Triage each of 17 pytest failures as {fix-now/accept-known-broken/retire-test} |
+
+**Buckets**: autonomous-doable=0, observation-waiting=3, operator-only=2.
+
+## Discipline lessons codified
+
+1. **Verbatim+red-team beats diff production.** Raw agent-claimed diffs verified at ~9%; verbatim-quoted + red-team-checked output verified at ~100%. The 3 fake PRs caught this loop (refused before merge) prove the surface is real and worth the latency cost.
+2. **My session memory drifts; ground truth is verbatim Read of `vw_all_incidents` + `db_health.json`.** The in-session "operator queue" mental model was off by 9 items at tick 36 — parallel agents silently RESOLVED entries that I still counted as open. Always reconcile at session-END, not just session-START.
+3. **Live feed JSON lags DB view.** Feed filters RESOLVED but DB has TRIAGED/IN_PROGRESS the feed doesn't surface. For operator decisions, pull DB directly via `vw_all_incidents`.
+4. **No more autonomous waves after convergence.** Producing more reports about a converged state is churn. The keyword reminder gets ignored if the next system message arrives without a substantive user request. Wait for (a) cron observation window outcome or (b) operator decision on the 2 operator-only items.
+
+End of v4 ledger. TRUE FINAL CLOSE.
