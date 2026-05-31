@@ -47,6 +47,85 @@ def connect():
     )
 
 
+# ── Repair functions (must be defined BEFORE CHECKS since they're referenced there) ─
+
+
+def _repair_signal_outcomes(cur) -> int:
+    """PR #4: Rebuild at_signal_outcomes from trading_picks (closed picks only).
+
+    Truncates stale table and repopulates from the source of truth.
+    Maps trading_picks statuses to at_signal_outcomes outcome codes.
+    Returns total rows inserted.
+    """
+    cur.execute("TRUNCATE TABLE at_signal_outcomes")
+    cur.execute("""
+        INSERT INTO at_signal_outcomes
+            (symbol, direction, entry_price, exit_price, outcome, pnl_pct,
+             source_system, strategy, asset_class, opened_at, closed_at)
+        SELECT
+            symbol,
+            COALESCE(direction, 'LONG'),
+            entry_price,
+            exit_price,
+            CASE
+                WHEN status IN ('TP_HIT', 'WON', 'CLOSED_TP') THEN 'TP_HIT'
+                WHEN status IN ('SL_HIT', 'LOST', 'CLOSED_SL') THEN 'SL_HIT'
+                WHEN status = 'EXPIRED' THEN
+                    CASE WHEN pnl_pct IS NOT NULL AND pnl_pct > 0 THEN 'WIN' ELSE 'LOSS' END
+                ELSE status
+            END,
+            pnl_pct,
+            COALESCE(NULLIF(source_system, ''), 'scanner'),
+            strategy,
+            COALESCE(NULLIF(category, ''), 'UNKNOWN'),
+            created_at,
+            closed_at
+        FROM trading_picks
+        WHERE status IN ('WON', 'LOST', 'TP_HIT', 'SL_HIT', 'EXPIRED',
+                         'CLOSED_TP', 'CLOSED_SL')
+            AND symbol IS NOT NULL AND symbol != ''
+            AND closed_at IS NOT NULL
+    """)
+    return cur.rowcount
+
+
+def _repair_cot_dedup(cur) -> int:
+    """PR #5: Dedup COT over-emission — keep only the earliest pick per
+    (symbol, strategy, direction, release_week) and delete the rest.
+
+    Mirrors audit_trail/dashboard_generator.py _dedup_cot_over_emission()
+    dedup key: (symbol, direction, YEARWEEK(created_at, 1)).
+    Only touches strategies in _COT_DEDUP_STRATS.
+    Returns number of rows deleted.
+    """
+    placeholders = ",".join(["%s"] * len(_COT_DEDUP_STRATS))
+    cur.execute("DROP TEMPORARY TABLE IF EXISTS tmp_cot_dedup")
+    cur.execute(
+        "CREATE TEMPORARY TABLE tmp_cot_dedup AS "
+        "SELECT symbol, strategy, direction, YEARWEEK(created_at, 1) as release_week, "
+        "  MIN(id) as min_id "
+        "FROM trading_picks "
+        f"WHERE strategy IN ({placeholders}) "
+        "GROUP BY symbol, strategy, direction, YEARWEEK(created_at, 1) "
+        "HAVING COUNT(*) > 1",
+        tuple(_COT_DEDUP_STRATS),
+    )
+    cur.execute("SELECT COUNT(*) as cnt FROM tmp_cot_dedup")
+    dup_groups = cur.fetchone()["cnt"]
+    if dup_groups == 0:
+        return 0
+    cur.execute(
+        "DELETE t1 FROM trading_picks t1 "
+        "INNER JOIN tmp_cot_dedup t2 "
+        "  ON t1.symbol = t2.symbol "
+        "  AND t1.strategy = t2.strategy "
+        "  AND t1.direction = t2.direction "
+        "  AND YEARWEEK(t1.created_at, 1) = t2.release_week "
+        "WHERE t1.id > t2.min_id"
+    )
+    return cur.rowcount
+
+
 # ── Verification queries ──────────────────────────────────────────────
 CHECKS = [
     {
@@ -118,8 +197,7 @@ CHECKS = [
             "  AND t1.direction = t2.direction "
             "  AND t1.pnl_pct = t2.pnl_pct "
             "  AND t1.created_at = t2.created_at "
-            "WHERE t1.id > t2.min_id "
-            "LIMIT 50000"
+            "WHERE t1.id > t2.min_id"
         ),
     },
     {
@@ -210,83 +288,6 @@ def run_checks(conn, write=False):
 
     print(f"\n=== Summary: {passed} PASS, {failed} FAIL, {passed + failed} total ===")
     return passed, failed
-
-
-def _repair_signal_outcomes(cur) -> int:
-    """PR #4: Rebuild at_signal_outcomes from trading_picks (closed picks only).
-
-    Truncates stale table and repopulates from the source of truth.
-    Maps trading_picks statuses to at_signal_outcomes outcome codes.
-    Returns total rows inserted.
-    """
-    cur.execute("TRUNCATE TABLE at_signal_outcomes")
-    cur.execute("""
-        INSERT INTO at_signal_outcomes
-            (symbol, direction, entry_price, exit_price, outcome, pnl_pct,
-             source_system, strategy, asset_class, opened_at, closed_at)
-        SELECT
-            symbol,
-            COALESCE(direction, 'LONG'),
-            entry_price,
-            exit_price,
-            CASE
-                WHEN status IN ('TP_HIT', 'WON', 'CLOSED_TP') THEN 'TP_HIT'
-                WHEN status IN ('SL_HIT', 'LOST', 'CLOSED_SL') THEN 'SL_HIT'
-                WHEN status = 'EXPIRED' THEN
-                    CASE WHEN pnl_pct IS NOT NULL AND pnl_pct > 0 THEN 'WIN' ELSE 'LOSS' END
-                ELSE status
-            END,
-            pnl_pct,
-            COALESCE(NULLIF(source_system, ''), 'scanner'),
-            strategy,
-            COALESCE(NULLIF(category, ''), 'UNKNOWN'),
-            created_at,
-            closed_at
-        FROM trading_picks
-        WHERE status IN ('WON', 'LOST', 'TP_HIT', 'SL_HIT', 'EXPIRED',
-                         'CLOSED_TP', 'CLOSED_SL')
-            AND symbol IS NOT NULL AND symbol != ''
-            AND closed_at IS NOT NULL
-    """)
-    return cur.rowcount
-
-
-def _repair_cot_dedup(cur) -> int:
-    """PR #5: Dedup COT over-emission — keep only the earliest pick per
-    (symbol, strategy, direction, release_week) and delete the rest.
-
-    Mirrors audit_trail/dashboard_generator.py _dedup_cot_over_emission()
-    dedup key: (symbol, direction, YEARWEEK(created_at, 1)).
-    Only touches strategies in _COT_DEDUP_STRATS.
-    Returns number of rows deleted.
-    """
-    placeholders = ",".join(["%s"] * len(_COT_DEDUP_STRATS))
-    cur.execute(f"DROP TEMPORARY TABLE IF EXISTS tmp_cot_dedup")
-    cur.execute(
-        "CREATE TEMPORARY TABLE tmp_cot_dedup AS "
-        "SELECT symbol, strategy, direction, YEARWEEK(created_at, 1) as release_week, "
-        "  MIN(id) as min_id "
-        "FROM trading_picks "
-        f"WHERE strategy IN ({placeholders}) "
-        "GROUP BY symbol, strategy, direction, YEARWEEK(created_at, 1) "
-        "HAVING COUNT(*) > 1",
-        tuple(_COT_DEDUP_STRATS),
-    )
-    cur.execute("SELECT COUNT(*) as cnt FROM tmp_cot_dedup")
-    dup_groups = cur.fetchone()["cnt"]
-    if dup_groups == 0:
-        return 0
-    cur.execute(
-        "DELETE t1 FROM trading_picks t1 "
-        "INNER JOIN tmp_cot_dedup t2 "
-        "  ON t1.symbol = t2.symbol "
-        "  AND t1.strategy = t2.strategy "
-        "  AND t1.direction = t2.direction "
-        "  AND YEARWEEK(t1.created_at, 1) = t2.release_week "
-        "WHERE t1.id > t2.min_id "
-        "LIMIT 50000"
-    )
-    return cur.rowcount
 
 
 def _mark_resolved(cur, title_substr: str):
