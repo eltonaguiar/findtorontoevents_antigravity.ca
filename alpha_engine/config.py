@@ -270,6 +270,25 @@ BLACKLISTED_STRATEGIES = [
     'stocks_rsi2_pullback',      # 10 EQUITY trades, WR 30%, PF 0.032 — catastrophically bad
     'multi_asset_scanner',       # FOREX n=11 WR 9.1%, FUTURES n=11 WR 9.1% — universal loser
     'ctar_replicator',           # FOREX n=5 WR 40% PF 0.62, COMMODITY n=2 WR 0% PF 0.0
+    # PR #6: FOREX Strategy Consolidation (2026-05-31)
+    # Blocked at scanner level + non_crypto_policy hard gate. Class PF 0.29 / WR 46.1% / PnL -1026%.
+    'forex_rsi2_mean_reversion',
+    'inverse_carry_contrarian',
+    'carry_trade_momentum',
+    'forex_carry_ppp',
+    # PR #7: BOND & COMMODITY Class Cleanup (2026-05-31)
+    # BOND class 0% WR / PF 0.00 / Sharpe -2.465. Kill all emission.
+    # Re-enable after viable yield-curve or duration strategy builds forward record.
+    'antigravity_bond',
+    'bond_connors_rsi2',
+    'bond_duration_rotation',
+    'bond_ust_tsmom',
+    'bond_credit_spread_mean_reversion',
+    'bond_yield_momentum',
+    'bond_mean_reversion',
+    'bond_yield_curve_slope',
+    # COMMODITY class 11.9% WR / PF 0.29 / Sharpe -0.534. Retire losers.
+    'commodity_tsmom_12m',
 ]
 BLACKLISTED_EXCHANGES = ['bitget']
 
