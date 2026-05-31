@@ -57,7 +57,9 @@ def _iso_aware(v) -> str:
             v = v.replace(tzinfo=timezone.utc)
         return v.isoformat()
     s = str(v)
-    if "Z" not in s and "+" not in s[10:]:
+    # only append UTC offset if the string carries no tz info already
+    # (Z, or a +HH:MM / -HH:MM offset after the date portion at index 10)
+    if "Z" not in s and "+" not in s[10:] and "-" not in s[10:]:
         s += "+00:00"
     return s
 
@@ -67,7 +69,7 @@ def _fetch_price(pick):
 
     price_tracker.fetch_price_equity historically stripped '=F' before querying
     yfinance (which needs the suffix for futures/commodities, e.g. 'GC=F'). That
-    bug is fixed in this PR's price_tracker.py change, but we keep COMMODITY/FUTURES
+    bug was fixed in PR #135's price_tracker.py change, but we keep COMMODITY/FUTURES
     on the direct yfinance path here to skip the Alpha Vantage fallback for symbols
     that reliably exist in yfinance with their '=F' suffix. Redundant-but-harmless
     once the price_tracker fix lands; safe to collapse in a future refactor.
