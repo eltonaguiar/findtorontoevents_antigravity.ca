@@ -122,7 +122,12 @@ def _load_strategy_returns_cache() -> "dict[str, list[float]]":
                 pnl = p.get("pnl_pct")
                 if strat and pnl is not None:
                     try:
-                        cache.setdefault(strat, []).append(float(pnl))
+                        _pnl = float(pnl)
+                        # 2026-05-31: Normalize to decimal convention (same as load_closed_picks).
+                        # Some writers stored pnl_pct as percent (>1.0); divide by 100.
+                        if abs(_pnl) > 1.0:
+                            _pnl = _pnl / 100.0
+                        cache.setdefault(strat, []).append(_pnl)
                     except (TypeError, ValueError):
                         pass
     except Exception:

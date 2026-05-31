@@ -373,7 +373,9 @@ def run_white_reality_check(closed_picks_path: Path = None) -> dict[str, float]:
         pnl = p.get("pnl_pct")
         symbol = str(p.get("symbol", "") or "").upper()
         if strat and pnl is not None and symbol not in OUTLIER_SYMBOLS:
-            strat_returns[strat].append(float(pnl) / 100.0)
+            # 2026-05-31: load_closed_picks() already normalizes pnl_pct to decimal (0.05 = 5%).
+            # No /100 needed here — was double-dividing. (Incident: PnL integrity / WRC)
+            strat_returns[strat].append(float(pnl))
 
     n_strategies_tested = max(len(strat_returns), 1)
     results: dict[str, float] = {}
@@ -2106,7 +2108,9 @@ def run_generation():
                 _strat_returns = []
                 for _cp in closed:
                     if _cp.get("strategy") == _strat_name and isinstance(_cp.get("pnl_pct"), (int, float)):
-                        _strat_returns.append(float(_cp["pnl_pct"]) / 100.0)
+                        # 2026-05-31: load_closed_picks() normalizes pnl_pct to decimal.
+                        # No /100 needed — was double-dividing, making Sharpe 100x too small.
+                        _strat_returns.append(float(_cp["pnl_pct"]))
                 if len(_strat_returns) < 20:
                     continue  # Not enough trades for DSR
                 _stats = returns_stats(_strat_returns)

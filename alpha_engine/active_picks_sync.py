@@ -230,7 +230,10 @@ def compute_verdict(pick: dict, live_price: float | None, max_hold_hours: int,
         "exit_price": live_price,
         "tp": tp,
         "sl": sl,
-        "pnl_pct": round(pnl_pct * 100, 4),  # report as percent
+        # 2026-05-31: Store as decimal (0.05 = 5%) to match forward_validator convention.
+        # load_closed_picks() already normalizes abs>1.0 values, but consistency prevents
+        # future breakage when other readers bypass that normalization. (Incident: PnL integrity)
+        "pnl_pct": round(pnl_pct, 6),
         "new_status": new_status,
         "exit_reason": new_reason,
         "tp_hit": tp_hit,
