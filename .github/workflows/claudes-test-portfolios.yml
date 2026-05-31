@@ -48,7 +48,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add audit_dashboard/data/claudes_test_state.json audit_dashboard/data/claudes_test_dashboard.json audit_dashboard/claudes_test.html
+          # claudes_test_*.json are gitignored (.gitignore:469) and FTP-only —
+          # the JSONs are local-only artifacts of portfolio_manager.py and the
+          # FTP step below only uploads the HTML. Pre-fix, this line tripped on
+          # the gitignored JSONs ("The following paths are ignored by one of
+          # your .gitignore files") and the whole step failed after PR #92.
+          git add audit_dashboard/claudes_test.html
           git diff --cached --quiet && echo "No changes" && exit 0
           git stash
           git pull --rebase -X theirs origin main 2>/dev/null || {
@@ -66,7 +71,7 @@ jobs:
               git add "$f" 2>/dev/null || true
             done
           }
-          git add audit_dashboard/data/claudes_test_state.json audit_dashboard/data/claudes_test_dashboard.json audit_dashboard/claudes_test.html
+          git add audit_dashboard/claudes_test.html
           git diff --cached --quiet && echo "No changes after pull" && exit 0
           # issue #141: block conflict-marker commits after stash-pop recovery
           bash .github/scripts/assert_no_conflict_markers.sh || exit 1
