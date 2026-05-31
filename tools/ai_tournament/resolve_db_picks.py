@@ -45,6 +45,18 @@ from tools.db_env import get_stocks_creds  # noqa: E402
 import pymysql  # noqa: E402
 
 
+def _iso_aware(v) -> str:
+    """ISO-8601 UTC string, always tz-aware (defensive vs naive pymysql DATETIME)."""
+    if hasattr(v, "isoformat"):
+        if v.tzinfo is None:
+            v = v.replace(tzinfo=timezone.utc)
+        return v.isoformat()
+    s = str(v)
+    if "Z" not in s and "+" not in s[10:]:
+        s += "+00:00"
+    return s
+
+
 def _fetch_price(pick):
     """Price fetch that fixes the price_tracker =F-stripping bug for COMMODITY/FUTURES.
 
@@ -122,8 +134,7 @@ def main() -> int:
             "entry_price": r["entry_price"], "take_profit": r["take_profit"],
             "stop_loss": r["stop_loss"], "direction": r.get("direction") or "LONG",
             "asset_class": r.get("asset_class") or "EQUITY", "symbol": r["symbol"],
-            "submitted_at": (r["submitted_at"].isoformat()
-                             if hasattr(r["submitted_at"], "isoformat") else str(r["submitted_at"])),
+            "submitted_at": _iso_aware(r["submitted_at"]),
             "status": "OPEN",
         }
         price = _fetch_price(pick)
