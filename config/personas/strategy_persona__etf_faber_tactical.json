@@ -1,0 +1,61 @@
+{
+  "persona_id": "strategy_persona__etf_faber_tactical",
+  "display_name": "ETF Faber Tactical Asset Allocation (SHADOW PILOT, n<30)",
+  "strategy_family": "tactical_asset_allocation",
+  "wraps_strategy": "etf_faber_tactical",
+  "asset_class": "ETF",
+  "asset_symbol_whitelist": ["SPY", "EFA", "IEF", "VNQ", "DBC"],
+  "status": "shadow_paper_only",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "shadow_pilot_until": "2026-06-30",
+  "philosophy": "Implements Mebane Faber's canonical 5-asset Tactical Asset Allocation (SSRN 962461, 2007/2013). Long when monthly close > 10-month SMA; cash otherwise. INCIDENT_ETFS #1 + Ring consult identified this as the strongest academic backing for ETF. Shadow-pilot only — the existing etf_scanner is a KILL-CANDIDATE (PF=0 on n=2 energy concentration); etf_rsi2_pullback is n=1 win. We need an academically grounded ETF emitter to break INSUFF-N stasis.",
+  "entry_criteria": [
+    "Symbol in {SPY (US eq), EFA (intl eq), IEF (bonds), VNQ (REITs), DBC (commodities)}",
+    "Monthly close > 10-month SMA (Faber timing signal)",
+    "Re-evaluate ONLY on month-end close (avoid intra-month noise)",
+    "ADV > $500M (ETF liquidity rarely binding)"
+  ],
+  "exit_criteria": [
+    "Monthly close < 10-month SMA (Faber regime exit)",
+    "Hard time-stop: 60 trading days (ETF resolution window aligned to monthly cadence)",
+    "ATR stop: 3x 20-day ATR (Faber uses time-based exits primarily; ATR as guardrail)"
+  ],
+  "risk_reward_target": "1.5 to 2.5",
+  "max_risk_per_trade_pct": 1.0,
+  "suggested_backtesting_protocol": "Faber 5-asset universe monthly bars 2007-2025. Walk-forward. Compare to 60/40 and to AGG hurdle. n>=30 per-symbol closed picks required before promotion.",
+  "confidence_calibration": "MEDIUM only until n>=30. Faber's published live track record is well-known (SSRN replications) but our forward-test sample is zero — treat as unproven on THIS stack.",
+  "best_market_conditions": ["Persistent trending regimes across asset classes", "Clear month-over-month price persistence"],
+  "worst_market_conditions": ["Choppy sideways tape", "Sharp month-end whipsaws (March 2020-style)"],
+  "min_historical_trades": 30,
+  "live_stats_validation_2026_05_31": {
+    "n_closed": 0,
+    "wr_pct": null,
+    "pf_raw": null,
+    "warning": "No live emissions. Existing ETF strategies: etf_scanner (n=2, WR=0%, KILL-CANDIDATE), etf_rsi2_pullback (n=1, win, INSUFF-N). Faber TAA is a NEW shadow-pilot candidate."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "ETF INSUFF-N per /audit (n=2-6); existing etf_scanner is KILL-CANDIDATE",
+    "verdict": "INSUFF_N_SHADOW_PILOT"
+  },
+  "shadow_pilot_acceptance_criteria_2026_06_30": {
+    "promote_to_next_stage_paper_if": "PF >= 1.5 AND WR >= 50% AND n_closed >= 30",
+    "retire_if": "PF < 0.9 AND n_closed >= 30",
+    "extend_pilot_if": "n_closed < 30 (Faber's monthly cadence makes 30 trades in 30 days hard — extension is the expected outcome)"
+  },
+  "operator_activation_steps": [
+    "1. Verify etf_faber_tactical NOT in PERMANENTLY_KILLED.",
+    "2. Restrict emission to ETF whitelist {SPY,EFA,IEF,VNQ,DBC}.",
+    "3. Add PERSONA_STRATEGIES + PERSONA_THESIS_MAP entries scoped to ETF.",
+    "4. Run on month-end-close cadence in shadow_paper_only mode; emissions excluded from production gates.",
+    "5. Day-30 (2026-06-30): expect to EXTEND pilot — monthly cadence + n>=30 is structurally a 6-12 month bar."
+  ],
+  "kill_registry_check": "PASSED — etf_faber_tactical not in any kill list (greenfield strategy).",
+  "references": [
+    "reports/peer_claude-skyrocket-recommendation_2026-05-31.md (shadow-pilot pattern)",
+    "reports/deep_dive_ETF_2026-05-31.md (ETF INSUFF-N, etf_scanner KILL-CANDIDATE)",
+    "INCIDENT_ETFS #1 (Faber TAA surfacing + Ring consult)",
+    "Faber, M. (2007/2013). A Quantitative Approach to Tactical Asset Allocation. SSRN 962461."
+  ]
+}

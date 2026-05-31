@@ -1,0 +1,61 @@
+{
+  "persona_id": "strategy_persona__memecoin_social_velocity",
+  "display_name": "MEMECOIN Social-Velocity Breakout (SHADOW PILOT, n<30)",
+  "strategy_family": "social_velocity_crypto",
+  "wraps_strategy": "memecoin_social_velocity",
+  "asset_class": "MEMECOIN",
+  "status": "shadow_paper_only",
+  "shadow_paper_only": true,
+  "requires_operator_promotion_to_live": true,
+  "shadow_pilot_until": "2026-06-30",
+  "philosophy": "Memecoin shadow-pilot to break n=1 INSUFF-N stasis (per tick23 fresh-stats: meme n=1, WR=0%). Combines social-volume velocity (Twitter/Telegram mentions accelerating) with on-chain liquidity floor + circuit-breaker exits. Pump-and-dump risk is the dominant failure mode — this persona exists to MEASURE whether a disciplined social-velocity signal produces a positive forward-test, not to capture meme alpha at live size.",
+  "entry_criteria": [
+    "Asset tagged MEMECOIN in registry (DOGE, SHIB, PEPE, WIF, BONK, FLOKI, etc.)",
+    "Social-volume z-score > 3.0 over 24h baseline (velocity acceleration)",
+    "On-chain liquidity > $5M (avoid honeypot/illiquid tokens)",
+    "Pump-guard NOT triggered (pump_guard.py allowlist)",
+    "Block during macro vol-spike (BTC 24h |return| > 8%)"
+  ],
+  "exit_criteria": [
+    "Hard TP: +25% from entry (meme momentum half-life is short)",
+    "Hard SL: -10% from entry (asymmetric — pump-and-dump tail)",
+    "Time-stop: 72 hours (meme half-life)",
+    "Social-velocity decay > 50% from entry peak"
+  ],
+  "risk_reward_target": "2.5 to 1 (asymmetric — meme upside dominates)",
+  "max_risk_per_trade_pct": 0.25,
+  "suggested_backtesting_protocol": "MEMECOIN universe hourly bars 2023-2025. Tag pump-and-dump events. Walk-forward. n>=30 closed picks required.",
+  "confidence_calibration": "ALWAYS LOW until n>=30 — meme class has the worst PnD risk profile of any asset class.",
+  "best_market_conditions": ["Risk-on crypto regimes (BTC trending up)", "High social attention without vol-spike"],
+  "worst_market_conditions": ["BTC vol-spikes", "Exchange-listing PnD setups", "Influencer dump cycles"],
+  "min_historical_trades": 30,
+  "live_stats_validation_2026_05_31": {
+    "n_closed": 1,
+    "wr_pct": 0.0,
+    "pf_raw": null,
+    "warning": "n=1, single loss. Per reports/peer_claude-tick23-per-class-fresh-stats_2026-05-31.md. INSUFF-N stasis must be broken before any conclusions."
+  },
+  "phase3_mc_reference": {
+    "p_t2_at_n_100": null,
+    "source": "MEMECOIN INSUFF-N per /audit (n=1)",
+    "verdict": "INSUFF_N_SHADOW_PILOT"
+  },
+  "shadow_pilot_acceptance_criteria_2026_06_30": {
+    "promote_to_next_stage_paper_if": "PF >= 1.5 AND WR >= 50% AND n_closed >= 30",
+    "retire_if": "PF < 0.9 AND n_closed >= 30",
+    "extend_pilot_if": "n_closed < 30 (likely outcome — meme universe is small + pump_guard suppresses most signals)"
+  },
+  "operator_activation_steps": [
+    "1. Verify memecoin_social_velocity NOT in PERMANENTLY_KILLED.",
+    "2. Confirm pump_guard.py integration is active and emissions respect its blocklist.",
+    "3. Add PERSONA_STRATEGIES + PERSONA_THESIS_MAP entries scoped to MEMECOIN.",
+    "4. Run in shadow_paper_only mode; emissions excluded from production gates.",
+    "5. Day-30 (2026-06-30): review. Meme class promotion bar is HIGHER than other classes given PnD risk."
+  ],
+  "kill_registry_check": "PASSED — memecoin_social_velocity not in any kill list (greenfield strategy).",
+  "references": [
+    "reports/peer_claude-skyrocket-recommendation_2026-05-31.md (shadow-pilot pattern)",
+    "reports/peer_claude-tick23-per-class-fresh-stats_2026-05-31.md (meme n=1 INSUFF-N)",
+    "reports/asset_class_90day_plan_PENNY_MEME_2026-05-15.md"
+  ]
+}
