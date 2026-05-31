@@ -27,6 +27,14 @@ CLASSES = [
     "COMMODITIES", "BONDS", "FUTURES", "PENNY",
 ]
 
+# COT dedup systems — mirror of audit_trail/quality_gates.py COT_DEDUP_SYSTEMS
+_COT_DEDUP_STRATS = frozenset({
+    "multi_asset_cot",
+    "cot_positioning",
+    "cftc_cot_commercial_signal",
+    "multi_asset_copytrader",
+})
+
 
 def connect():
     if not DB_PASS:
@@ -126,6 +134,23 @@ CHECKS = [
         "fmt": lambda r: f"{r['cnt']} active picks with UNKNOWN category",
     },
     {
+        "id": "cot_dedup",
+        "title": "COT over-emission — duplicate picks per (symbol, strategy, direction, release_week)",
+        "sql": """
+            SELECT COALESCE(SUM(grp_cnt - 1), 0) as cnt FROM (
+                SELECT COUNT(*) as grp_cnt
+                FROM trading_picks
+                WHERE strategy IN ('multi_asset_cot','cot_positioning',
+                                  'cftc_cot_commercial_signal','multi_asset_copytrader')
+                GROUP BY symbol, strategy, direction, YEARWEEK(created_at, 1)
+                HAVING COUNT(*) > 1
+            ) dupes
+        """,
+        "pass": lambda r: r["cnt"] == 0,
+        "fmt": lambda r: f"{r['cnt']} duplicate COT picks across release weeks",
+        "repair_sql": _repair_cot_dedup,
+    },
+    {
         "id": "pnl_integrity",
         "title": "PnL integrity mismatch on 38.97%",
         "sql": """
@@ -223,6 +248,44 @@ def _repair_signal_outcomes(cur) -> int:
             AND symbol IS NOT NULL AND symbol != ''
             AND closed_at IS NOT NULL
     """)
+    return cur.rowcount
+
+
+def _repair_cot_dedup(cur) -> int:
+    """PR #5: Dedup COT over-emission — keep only the earliest pick per
+    (symbol, strategy, direction, release_week) and delete the rest.
+
+    Mirrors audit_trail/dashboard_generator.py _dedup_cot_over_emission()
+    dedup key: (symbol, direction, YEARWEEK(created_at, 1)).
+    Only touches strategies in _COT_DEDUP_STRATS.
+    Returns number of rows deleted.
+    """
+    placeholders = ",".join(["%s"] * len(_COT_DEDUP_STRATS))
+    cur.execute(f"DROP TEMPORARY TABLE IF EXISTS tmp_cot_dedup")
+    cur.execute(
+        "CREATE TEMPORARY TABLE tmp_cot_dedup AS "
+        "SELECT symbol, strategy, direction, YEARWEEK(created_at, 1) as release_week, "
+        "  MIN(id) as min_id "
+        "FROM trading_picks "
+        f"WHERE strategy IN ({placeholders}) "
+        "GROUP BY symbol, strategy, direction, YEARWEEK(created_at, 1) "
+        "HAVING COUNT(*) > 1",
+        tuple(_COT_DEDUP_STRATS),
+    )
+    cur.execute("SELECT COUNT(*) as cnt FROM tmp_cot_dedup")
+    dup_groups = cur.fetchone()["cnt"]
+    if dup_groups == 0:
+        return 0
+    cur.execute(
+        "DELETE t1 FROM trading_picks t1 "
+        "INNER JOIN tmp_cot_dedup t2 "
+        "  ON t1.symbol = t2.symbol "
+        "  AND t1.strategy = t2.strategy "
+        "  AND t1.direction = t2.direction "
+        "  AND YEARWEEK(t1.created_at, 1) = t2.release_week "
+        "WHERE t1.id > t2.min_id "
+        "LIMIT 50000"
+    )
     return cur.rowcount
 
 
