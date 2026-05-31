@@ -32,6 +32,8 @@ from pathlib import Path
 from datetime import datetime
 
 REPO = Path(__file__).resolve().parent.parent
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
 
 try:
     import pymysql
@@ -41,13 +43,39 @@ except ImportError:
                           stdout=subprocess.DEVNULL)
     import pymysql
 
+try:
+    from alpha_engine.config import EQUITY_SYMBOLS, LARGE_CAP_EQUITY_SYMBOLS
+    _EQUITY_ALLOWLIST = frozenset(EQUITY_SYMBOLS.keys()) | LARGE_CAP_EQUITY_SYMBOLS
+except Exception:  # defensive: keep mirror functional if config import fails
+    _EQUITY_ALLOWLIST = frozenset({
+        "SPY", "QQQ", "IWM", "TLT", "GLD", "SLV", "COPX", "VIX", "DIA",
+        "AAPL", "MSFT", "TSLA", "NVDA", "AMZN", "GOOGL", "META", "AMD",
+        "NFLX",
+    })
 
-def derive_asset_class(s):
+_UNKNOWN_TOKENS = {"", "UNKNOWN", "NONE", "NULL"}
+
+
+def derive_asset_class(s, row_asset_class=None):
+    """Derive asset class for a pick.
+
+    P0 fix (PR #118 follow-up): if the source row already carries an
+    asset_class (non-empty, non-UNKNOWN), HONOR IT — do not re-derive from
+    symbol. Only fall back to symbol-based derivation when the source row
+    has no asset_class. EQUITY allowlist is now imported from
+    `alpha_engine.config.EQUITY_SYMBOLS` (+ LARGE_CAP_EQUITY_SYMBOLS),
+    replacing the 13-symbol hard-coded set that mis-classified AMZN/GOOGL/
+    META/AMD/NFLX as UNKNOWN.
+    """
+    if row_asset_class is not None:
+        rac = str(row_asset_class).strip().upper()
+        if rac not in _UNKNOWN_TOKENS:
+            return rac
+
     s = s.upper().replace("-", "")
-    equity = {"SPY", "QQQ", "IWM", "TLT", "GLD", "SLV", "COPX", "VIX", "DIA", "AAPL", "MSFT", "TSLA", "NVDA"}
     meme = {"DOGE", "SHIB", "PEPE", "BONK", "FLOKI", "WIF", "BOME", "FAI", "ROBO", "EDGE", "MANTRA", "PHA"}
     forex_bases = {"EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF"}
-    if any(s.startswith(e) for e in equity) or s in equity:
+    if s in _EQUITY_ALLOWLIST:
         return "EQUITY"
     for m in meme:
         if m in s:
@@ -138,7 +166,7 @@ def create_tables(cur):
 
 def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
                 source_system, source_file, status, exit_price, exit_reason,
-                pnl_pct, signal_ts):
+                pnl_pct, signal_ts, row_asset_class=None):
     try:
         cur.execute(
             "INSERT IGNORE INTO at_local_picks "
@@ -148,7 +176,8 @@ def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
             "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             (symbol, direction or "LONG", safe_float(entry), safe_float(tp),
              safe_float(sl), safe_float(confidence), strategy,
-             source_system, source_file, derive_asset_class(symbol),
+             source_system, source_file,
+             derive_asset_class(symbol, row_asset_class),
              status or "OPEN", safe_float(exit_price), exit_reason,
              safe_float(pnl_pct), safe_ts(signal_ts))
         )
@@ -158,7 +187,8 @@ def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
 
 
 def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
-                   pnl_pct, source_system, strategy, opened_at, closed_at):
+                   pnl_pct, source_system, strategy, opened_at, closed_at,
+                   row_asset_class=None):
     try:
         cur.execute(
             "INSERT IGNORE INTO at_signal_outcomes "
@@ -168,7 +198,8 @@ def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
             (symbol, direction or "LONG", safe_float(entry), safe_float(tp),
              safe_float(sl), safe_float(exit_price), outcome,
              safe_float(pnl_pct), source_system, strategy,
-             derive_asset_class(symbol), safe_ts(opened_at), safe_ts(closed_at))
+             derive_asset_class(symbol, row_asset_class),
+             safe_ts(opened_at), safe_ts(closed_at))
         )
         return cur.rowcount
     except Exception:
@@ -253,10 +284,12 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
         tp = p.get("take_profit", p.get("tp_price", p.get("tp", p.get("target_price"))))
         sl = p.get("stop_loss", p.get("sl_price", p.get("sl", p.get("stop_price"))))
 
+        row_ac = p.get("asset_class") or p.get("assetClass")
         picks_cnt += insert_pick(
             cur, symbol, direction, entry, tp, sl,
             p.get("confidence"), strategy, source_system, filepath,
             status, exit_price, exit_reason, pnl, ts,
+            row_asset_class=row_ac,
         )
 
         # ── Also insert into at_signal_outcomes for closed picks ──
@@ -285,6 +318,7 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
                 outcomes_cnt += insert_outcome(
                     cur, symbol, direction, entry, tp, sl, exit_price,
                     outcome, pnl, source_system, strategy, ts, closed_at,
+                    row_asset_class=row_ac,
                 )
 
     return picks_cnt, outcomes_cnt
@@ -335,10 +369,12 @@ def load_sqlite_table(cur, db_path, table, source_system):
         pnl = d.get("pnl_pct", d.get("net_pnl_pct", d.get("return_pct")))
         exit_reason = d.get("exit_reason", d.get("close_reason"))
 
+        row_ac = d.get("asset_class") or d.get("assetClass")
         picks += insert_pick(
             cur, symbol, direction, entry, tp, sl, confidence, strategy,
             source_system, f"{db_path}:{table}", status, exit_price,
             exit_reason, pnl, ts,
+            row_asset_class=row_ac,
         )
 
         # If this has outcome data, also insert into at_signal_outcomes
@@ -348,6 +384,7 @@ def load_sqlite_table(cur, db_path, table, source_system):
             outcomes += insert_outcome(
                 cur, symbol, direction, entry, tp, sl, exit_price,
                 outcome or status, pnl, source_system, strategy, ts, closed_at,
+                row_asset_class=row_ac,
             )
 
     db.close()
