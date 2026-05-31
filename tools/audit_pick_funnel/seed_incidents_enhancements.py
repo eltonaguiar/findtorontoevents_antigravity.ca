@@ -34,10 +34,10 @@ INCIDENTS = [
      "reports/2026-05-25_audit_ui_edge_audit.md", None, None, "claude-opus-4-7"),
 
     ("OVERALL", "5 FOREX rows have pnl_pct < -100% (one at -106,700%)",
-     "Unit-clamp bug commit #876 missed 5 rows. Distorts FOREX avg to -8% and rounds PF to 0.00, making the entire class look catastrophic even though baseline WR is 43.9% on n=1666.",
-     "P0", "OPEN", "trading_picks.pnl_pct (FOREX category)",
-     "UPDATE trading_picks SET pnl_pct = -100 WHERE pnl_pct < -100 AND category='FOREX'. Investigate the 5 rows to see which strategy/script bypassed the clamp.",
-     "reports/2026-05-25_audit_ui_edge_audit.md", None, None, "claude-opus-4-7"),
+     "Unit-clamp bug commit #876 missed 5 rows. Distorts FOREX avg to -8% and rounds PF to 0.00. Fix script at tools/fix_forex_pnl_clamp.py — run with DB_PASS_STOCKS env var to UPDATE the rows to -100.",
+     "P0", "IN_PROGRESS", "trading_picks.pnl_pct (FOREX category)",
+     "UPDATE trading_picks SET pnl_pct = -100 WHERE pnl_pct < -100 AND category='FOREX'. Script at tools/fix_forex_pnl_clamp.py. Investigate which strategy/script bypassed the clamp.",
+     "updates/2026-05-31-incident-fixes-signal-time-forex-clamp.md", None, None, "opencode"),
 
     ("OVERALL", "signal_outcomes table 82 days stale",
      "Last resolved 2026-03-04. Outcome resolver pipeline appears dead. All forward-WR performance claims unverifiable because signal_outcomes has only 0.09% coverage of raw picks.",
@@ -64,10 +64,10 @@ INCIDENTS = [
      None, None, None, "kimi/multiple"),
 
     ("OVERALL", "Smart Picks 'Signal Time' is dashboard-file age, not pick age",
-     "smart_picks_feed pick objects lack the signal_time field. Template logic falls back to age_hours which is computed at dashboard JSON build time. So all rows display the same '1.4h ago' regardless of when the pick actually fired.",
-     "P1", "OPEN", "audit_trail/dashboard_generator.py (smart_picks_feed builder)",
-     "Populate signal_time = trading_picks.created_at on every entry in the smart_picks_feed payload. One-line addition.",
-     "reports/2026-05-25_audit_ui_edge_audit.md", "https://findtorontoevents.ca/audit/", None, "claude-opus-4-7"),
+     "smart_picks_feed pick objects lacked the signal_time field. Template logic fell back to age_hours which is computed at dashboard JSON build time. Fixed 2026-05-31: _load_smart_picks_feed now computes signal_time = generated_at - age_hours for every pick.",
+     "P1", "RESOLVED", "audit_trail/dashboard_generator.py (smart_picks_feed builder)",
+     "Populated signal_time from generated_at - age_hours in _load_smart_picks_feed(). Computed from existing data, no DB query needed.",
+     "updates/2026-05-31-incident-fixes-signal-time-forex-clamp.md", "https://findtorontoevents.ca/audit/", None, "opencode"),
 
     ("OVERALL", "smart_picks.json file 25 days stale",
      "data/smart_picks.json last regenerated 2026-04-30T02:56. The dashboard reads smart_picks_feed which IS more recent (~1.5h), but the underlying picks may be cycled with stale entry prices.",

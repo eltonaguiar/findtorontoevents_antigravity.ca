@@ -2312,11 +2312,40 @@ def _maybe_refresh_universal_resolved():
         log.warning("  Universal resolver refresh failed: %s", e)
 
 
+def _add_signal_time(pick: dict, base_dt):
+    if pick.get("signal_time"):
+        return
+    age_h = pick.get("age_hours")
+    if base_dt is not None and age_h is not None:
+        try:
+            pick["signal_time"] = (base_dt - timedelta(hours=float(age_h))).isoformat()
+        except (ValueError, TypeError):
+            pass
+    elif not pick.get("signal_time") and base_dt is not None:
+        pick["signal_time"] = base_dt.isoformat()
+
+
 def _load_smart_picks_feed():
-    """Load the current Smart Picks feed for embedding into the dashboard payload."""
+    """Load the current Smart Picks feed for embedding into the dashboard payload.
+    Enriches each pick with a computed signal_time derived from generated_at - age_hours."""
     path = ROOT / "alpha_engine" / "data" / "smart_picks.json"
     data = _safe_json(path)
-    return data if isinstance(data, dict) else {"picks": []}
+    if not isinstance(data, dict):
+        return {"picks": []}
+    generated_at = data.get("generated_at", "")
+    base_dt = None
+    if generated_at:
+        try:
+            base_dt = datetime.fromisoformat(generated_at)
+        except (ValueError, TypeError):
+            pass
+    for key in ("picks", "scalp_picks", "swing_picks", "position_picks"):
+        entries = data.get(key)
+        if isinstance(entries, list):
+            for pick in entries:
+                if isinstance(pick, dict):
+                    _add_signal_time(pick, base_dt)
+    return data
 
 
 def _summarize_smart_picks_history():
