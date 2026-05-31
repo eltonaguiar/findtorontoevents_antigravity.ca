@@ -51,6 +51,28 @@ proven strategy. **33 operator activation steps** documented in the PR.
 7. BONDS#3 follow-up
 8. Confirm AI-tournament leaderboard ranking formula (`lower_95pct_WR * lower_95pct_PF`, min_n=30) matches operator expectation
 
+## Final 5 operator decisions awaiting you
+
+Zoo's stale 30-item dump triaged: **25/30 already shipped, 5 genuinely remain**.
+These are operator-only because each touches production-scoring-path files,
+policy decisions, or multi-file scope. Cross-referenced against all merged PRs
+on 2026-05-31 — none have an existing merged PR.
+
+| # | ID | Class | Sev | Title | Why operator-only | Acceptance criteria | Blast | Best time |
+|---|----|-------|-----|-------|-------------------|--------------------|-------|-----------|
+| 1 | INC#6 | Stocks/EQUITY | P0 | EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust=3) | Touches strategy registry trust_score policy + wiring of pead_equity/us_equity_screener into MySQL write path. Multi-file scope across `alpha_engine/` strategy modules + scoring gates. | One existing EQUITY strategy promoted to trust>=5 with WR>=50% / PF>=1.5 on n>=100 clean; OR a new wired strategy demonstrating same. | HIGH | After soak — let current 1,424 outcomes accumulate to n>=100 per strategy first |
+| 2 | INC#1 | CRYPTO | P1 | ML "edges" with PF 99–1094 are likely look-ahead leakage | Requires policy call: mark vs kill the DSR=0.9995 claims; touches `calculate_smart_score` + dashboard labeling. Walk-forward gate is a scoring-path change. | Walk-forward gate landed in `alpha_engine/` scoring; dashboard relabels suspect claims as "small-sample, awaiting n>=100"; PF cap audit logged. | MED | Next session — needs scoring review, not blind-fix |
+| 3 | INC#3 | CRYPTO | P1 | meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_backtest_trades | Policy fork: blanket-block meta_strategy on CRYPTO/MEMECOIN vs symbol-triple enumeration. Both options touch `BLOCKED_SOURCE_SYSTEMS` and require `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md` + `docs/MUTATION_THREE_AXIS_PROTOCOL.md` per CLAUDE.md. | db_health refresh post-commit `d317560ac9c` shows template count stable; operator picks block-vs-enumerate; mutation analysis CSV exported. | MED | After soak — wait 1-2 cron cycles for db_health refresh |
+| 4 | INC#34 | OVERALL | P1 | CI Tests: 17 pytest failures on main (m096, m098, quality_gates, pr10_ab, outcome_resolver) | Three sub-decisions all change production scoring: (a) AB_ENABLED default flip after 24h soak, (b) crypto_not_liquid_core gate rejecting CRYPTO picks, (c) FOREX noncrypto resolver test data. Not safe to blind-fix. | All 17 pytest failures resolved with explicit operator sign-off per sub-decision; PR notes per (a)/(b)/(c). | HIGH | Now for (a) (24h soak elapsed); next session for (b)/(c) |
+| 5 | INC#41 | OVERALL | P3 | at_signal_outcomes SL_HIT rows have 24% with positive pnl_pct (labeling inconsistency) | Sign-convention policy decision (reclassify vs normalize) affects outcome_resolver — same upstream path the resolver-intrabar T2-blocker (per MEMORY.md session-close 2026-05-31) sits on. | source_system breakdown investigated; policy choice documented; resolver patch lands behind feature flag. | LOW | After soak — coordinate with resolver-intrabar work |
+
+## 4 NEW operator-action items from latest waves
+
+1. **Re-trigger `Run-Backtests-and-Deploy-Dashboards`** to publish post-#210 `db_health.json` — current live file is pre-fix; needs the next nightly or a manual workflow_dispatch.
+2. **Decide on `harness_healthy` gate fix** for `tools/db_health_check.py:624` — silent-broken-harness defect surfaced in PR #221 findings. Needs operator review because gate logic touches what /audit considers "healthy".
+3. **Decide on qwen vs zoo `CONFIDENCE_INVERT_CRYPTO` contradiction** — qwen claims global ML inversion; live audit refutes (per MEMORY.md confidence/trust edges 2026-05-31, localized 0.8-bucket dip only). Operator picks which peer to trust.
+4. **Decide on qwen's false `skyrocket_detector` wiring claim** — re-attempt the wire-up under CLAUDE.md Wire-Up Rule, or formally retire the module. No callers in production scoring path today.
+
 ## Session ledger
 ~70+ PRs merged + 11 closed. 12 phases shipped. Banner went from RED -> GREEN.
 Tournament leaderboard fixed (blank -> ranked). 5 portfolio variants + 6
