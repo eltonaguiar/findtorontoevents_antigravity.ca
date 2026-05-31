@@ -241,7 +241,7 @@ jobs:
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q 2>/dev/null || true
-          python tools/anti_overfit_audit_sidecar.py --min-n 20 || echo "anti_overfit sidecar failed (non-fatal)"
+          python tools/anti_overfit_audit_sidecar.py --min-n 20 || echo "::warning title=anti-overfit sidecar failed::see log; audit_dashboard/data/anti_overfit_audit.json will go stale (INCIDENT_OVERALL #45)"
         continue-on-error: true
 
       - name: Run research sidecars (Agent C external-research — 4 academically-backed)
@@ -421,10 +421,11 @@ jobs:
         run: python alpha_engine/contrarian_consensus.py || echo "Contrarian consensus warning (non-fatal)"
         continue-on-error: true
 
-      - name: Run walk-forward validation
-        id: walkforward_validation
-        run: python -m alpha_engine.walkforward_validator || echo "Walk-forward validation warning (non-fatal)"
-        continue-on-error: true
+      # NOTE: walk-forward validation MOVED to run AFTER `Generate dashboard
+      # payload and build HTML` (below) — it reads audit_trail/data/dashboard_payload.json
+      # which doesn't exist at this point in the pipeline. Pre-2026-05-31 it
+      # crashed with FileNotFoundError on every run, silenced by `|| echo
+      # "...non-fatal"`. See INCIDENT_OVERALL #45.
 
       - name: Run ML Gatekeeper (pick quality scoring)
         id: ml_gatekeeper
@@ -514,6 +515,57 @@ jobs:
           python tools/sync_summary_picks_json.py || echo "summary_picks sync warning (non-fatal)"
           python -m audit_trail.dashboard_generator
           python -m audit_dashboard.blueprint_generator
+
+      - name: Run walk-forward validation (post-payload — INCIDENT #45 fix)
+        id: walkforward_validation
+        # MOVED from pre-payload position 2026-05-31. Validator at
+        # alpha_engine/walkforward_validator.py:36 opens
+        # audit_trail/data/dashboard_payload.json — that file is produced by
+        # the preceding `python -m audit_trail.dashboard_generator` step, so
+        # the validator MUST run after it. Previously it ran ~90 steps earlier
+        # and crashed with FileNotFoundError every cycle (silenced by `|| echo
+        # "...non-fatal"`), which is why alpha_engine/data/walkforward_results.json
+        # has had no `by_class` key since 2026-04-15.
+        run: python -m alpha_engine.walkforward_validator || echo "::warning title=walkforward validator failed::see log; alpha_engine/data/walkforward_results.json by_class panel will go stale (INCIDENT_OVERALL #45)"
+        continue-on-error: true
+
+      - name: Freshness tripwire — anti_overfit + walkforward (INCIDENT #45)
+        if: always()
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import json, datetime as dt, pathlib
+          now = dt.datetime.now(dt.timezone.utc)
+          # Thresholds (per Grok-4 review 2026-05-31): anti_overfit at 24h
+          # tolerates occasional missed hourly runs without spamming warnings;
+          # walkforward at 8d gives the weekly cadence headroom.
+          for path, slug, max_h in [
+              ("audit_dashboard/data/anti_overfit_audit.json", "anti_overfit", 24),
+              ("alpha_engine/data/walkforward_results.json",   "walkforward",  24*8),
+          ]:
+              fp = pathlib.Path(path)
+              if not fp.exists():
+                  print(f"::warning title={slug} missing::{path}")
+                  continue
+              try:
+                  d = json.loads(fp.read_text())
+                  ts = d.get("generated_at") or ""
+                  # Robust ISO-8601 parse: handle "Z" suffix, naive timestamps
+                  # (treat as UTC), and offsets. Per Grok-4 review.
+                  ts_norm = ts.replace("Z", "+00:00")
+                  parsed = dt.datetime.fromisoformat(ts_norm)
+                  if parsed.tzinfo is None:
+                      parsed = parsed.replace(tzinfo=dt.timezone.utc)
+                  age_h = (now - parsed).total_seconds()/3600
+                  has_by_class = bool(d.get("by_class")) if slug == "walkforward" else None
+                  print(f"{slug}: generated_at={ts} age={age_h:.1f}h max={max_h}h by_class_present={has_by_class}")
+                  if age_h > max_h:
+                      print(f"::warning title={slug} stale::{path} age {age_h:.1f}h > {max_h}h threshold")
+                  if slug == "walkforward" and not has_by_class:
+                      print(f"::warning title=walkforward by_class empty::{path} has no by_class key — per-asset-class panel will render empty")
+              except Exception as e:
+                  print(f"::warning title={slug} parse failed::{e}")
+          PY
 
       - name: Reconcile canonical PF registry vs /audit verdict
         # A8 / Move #1 / M-067: reconcile_pf_registry.py cross-checks the
@@ -730,7 +782,7 @@ jobs:
           # every run, and committing them added ~100MB/hr to .git history
           # (19GB repo → checkout hangs). They are .gitignored; do not re-add.
           # See reports/AUDIT_STAT_VALIDATION_2026-05-22.md.
-          for f in reports/pick_flow_snapshot.json audit_trail/data/non_crypto_pick_audit.json audit_trail/data/universal_resolved_picks.json audit_trail/data/stock_prices.json audit_trail/data/pipeline_health.json audit_trail/data/feed_health_report.json audit_dashboard/index.html audit_dashboard/data/summary_picks.json audit_dashboard/data/pf_registry.json audit_dashboard/data/money_ready_verdict.json audit_dashboard/data/db_health.json audit_dashboard/data/cot_paper_pilot_status.json audit_dashboard/data/crypto_mega_mutation_paper_pilot.json audit_dashboard/data/top_n_rank_backtest.json audit_dashboard/data/cot_step7_ror_mc.json audit_dashboard/data/ml_gatekeeper_ab_decision.json audit_dashboard/data/effective_n_report.json audit_dashboard/trading_blueprint.html audit_dashboard/data/ai_challenge_*.json audit_dashboard/data/hyro_quan_bridge.json audit_dashboard/data/hyrotrader_picks.json audit_dashboard/data/hyrotrader_enhanced_picks.json audit_dashboard/data/hyrotrader_short_term_entries.json audit_dashboard/data/hyro_live_strategies.json audit_dashboard/data/hyrotrader_journal.json audit_dashboard/data/hyro_backtest_results.json audit_dashboard/data/hyro_pick_performance.json audit_dashboard/data/hyro_ml_pick_rankings.json alpha_engine/data/active_picks.json alpha_engine/data/contrarian_picks.json alpha_engine/data/polymarket_signals.json alpha_engine/data/kalshi_signals.json alpha_engine/data/prediction_market_picks.json alpha_engine/data/system_trends.json alpha_engine/data/funding_rate_picks.json alpha_engine/data/btc_breakout_picks.json alpha_engine/data/regime_report.json alpha_engine/data/regime_flip_alert.json alpha_engine/data/cot_emitted_releases.json copy_trader_intel/data/technical_analysis.json copy_trader_intel/data/polymarket_trader_profiles.json copy_trader_intel/data/polymarket_picks.json copy_trader_intel/data/non_crypto_consensus_picks.json copy_trader_intel/data/non_crypto_enhanced_picks.json prediction_market_agents/data/*.json ml_gatekeeper/models/*.joblib ml_gatekeeper/models/*.json ml_gatekeeper/models/*.npy ml_consensus/models/*.json; do
+          for f in reports/pick_flow_snapshot.json audit_trail/data/non_crypto_pick_audit.json audit_trail/data/universal_resolved_picks.json audit_trail/data/stock_prices.json audit_trail/data/pipeline_health.json audit_trail/data/feed_health_report.json audit_dashboard/index.html audit_dashboard/data/summary_picks.json audit_dashboard/data/pf_registry.json audit_dashboard/data/money_ready_verdict.json audit_dashboard/data/db_health.json audit_dashboard/data/cot_paper_pilot_status.json audit_dashboard/data/crypto_mega_mutation_paper_pilot.json audit_dashboard/data/top_n_rank_backtest.json audit_dashboard/data/cot_step7_ror_mc.json audit_dashboard/data/ml_gatekeeper_ab_decision.json audit_dashboard/data/effective_n_report.json audit_dashboard/trading_blueprint.html audit_dashboard/data/ai_challenge_*.json audit_dashboard/data/hyro_quan_bridge.json audit_dashboard/data/hyrotrader_picks.json audit_dashboard/data/hyrotrader_enhanced_picks.json audit_dashboard/data/hyrotrader_short_term_entries.json audit_dashboard/data/hyro_live_strategies.json audit_dashboard/data/hyrotrader_journal.json audit_dashboard/data/hyro_backtest_results.json audit_dashboard/data/hyro_pick_performance.json audit_dashboard/data/hyro_ml_pick_rankings.json alpha_engine/data/active_picks.json alpha_engine/data/contrarian_picks.json alpha_engine/data/polymarket_signals.json alpha_engine/data/kalshi_signals.json alpha_engine/data/prediction_market_picks.json alpha_engine/data/system_trends.json alpha_engine/data/funding_rate_picks.json alpha_engine/data/btc_breakout_picks.json alpha_engine/data/regime_report.json alpha_engine/data/regime_flip_alert.json alpha_engine/data/cot_emitted_releases.json audit_dashboard/data/anti_overfit_audit.json alpha_engine/data/walkforward_results.json copy_trader_intel/data/technical_analysis.json copy_trader_intel/data/polymarket_trader_profiles.json copy_trader_intel/data/polymarket_picks.json copy_trader_intel/data/non_crypto_consensus_picks.json copy_trader_intel/data/non_crypto_enhanced_picks.json prediction_market_agents/data/*.json ml_gatekeeper/models/*.joblib ml_gatekeeper/models/*.json ml_gatekeeper/models/*.npy ml_consensus/models/*.json; do
             # Guard: skip files that don't exist to avoid noisy pathspec errors
             # (e.g. funding_rate_picks.json may not be generated every run)
             [ -f "$f" ] || continue
