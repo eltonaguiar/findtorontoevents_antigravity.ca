@@ -955,6 +955,44 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
         # win-rate denominators. status remains "FLAT" for MySQL
         # compatibility (mysql_client.py:674 maps FLAT -> CLOSED).
         status = str(pick.get("status", "")).upper()
+        # 2026-05-31 fix: preserve pre-recorded exit_price when an upstream
+        # closer (portfolio_tracker_* TIME_EXIT_*, force_close_breached
+        # STALE_NO_DATA, MAX_HOLD, EXPIRED, etc.) already stamped a real
+        # exit_price that differs from entry. The pre-fix breakeven branch
+        # below unconditionally overwrote exit_price=entry and pnl_pct=0.0,
+        # destroying 581 of 1,394 exit-logic divergence rows per
+        # reports/peer_claude-exit-logic-divergence_2026-05-31.md.
+        #
+        # Rule: only zero pnl_pct when exit_price is None/0/missing OR
+        # within float-tolerance of entry. If exit_price is recorded and
+        # differs meaningfully from entry, recompute pnl_pct from it.
+        if (
+            status in ("CLOSED", "EXPIRED", "WON", "LOST")
+            and entry > 0
+            and exit_p > 0
+            and abs(exit_p - entry) / entry > 0.00001
+        ):
+            preserved_pnl = compute_pnl(entry, exit_p, direction)
+            _pnl_cap_preserve = _pnl_sanity_cap_for(asset_class)
+            if abs(preserved_pnl) <= _pnl_cap_preserve:
+                pick["pnl_pct"] = round(preserved_pnl, 6)
+                pick["direction"] = direction
+                pick["resolved_at"] = datetime.now(timezone.utc).isoformat()
+                pick["resolved_by"] = "outcome_resolver_preserve_exit_price"
+                pick["_resolver_preserved_exit_price"] = True
+                # Re-classify so status/exit_reason are consistent.
+                _preserved_outcome = classify_outcome(preserved_pnl, asset_class=asset_class or None)
+                _er = str(pick.get("exit_reason") or "").upper()
+                if _er and any(
+                    _er.startswith(prefix)
+                    for prefix in ("EXPIRED", "TIME_EXIT", "MAX_HOLD", "STALE_NO_DATA")
+                ):
+                    _preserved_outcome = "EXPIRED"
+                pick["status"] = _preserved_outcome
+                if not pick.get("resolver_version"):
+                    pick["resolver_version"] = RESOLVER_VERSION
+                return pick
+
         if status in ("CLOSED", "EXPIRED", "WON", "LOST") and entry > 0:
             retry_count = int(pick.get("_resolve_retry_count", 0) or 0) + 1
             pick["_resolve_retry_count"] = retry_count
