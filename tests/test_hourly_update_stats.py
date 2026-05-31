@@ -176,18 +176,20 @@ def test_read_marker_corrupt_returns_none(tmp_path, monkeypatch):
     assert ghu.read_last_run_marker() is None
 
 
-def test_load_state_missing_raises(tmp_path, monkeypatch):
+def test_load_state_missing_returns_none(tmp_path, monkeypatch):
+    # PR #102: load_state() now returns None instead of raising when STATE_FILE
+    # is absent — the file is gitignored and missing in fresh CI checkouts, so
+    # callers must skip state-dependent work rather than crash.
     monkeypatch.setattr(ghu, "STATE_FILE", str(tmp_path / "nonexistent.json"))
-    with pytest.raises(FileNotFoundError):
-        ghu.load_state()
+    assert ghu.load_state() is None
 
 
-def test_load_state_corrupt_raises(tmp_path, monkeypatch):
+def test_load_state_corrupt_returns_none(tmp_path, monkeypatch):
+    # PR #102: corrupt JSON is logged and surfaced as None, not raised.
     p = tmp_path / "state.json"
     p.write_text("{not valid")
     monkeypatch.setattr(ghu, "STATE_FILE", str(p))
-    with pytest.raises(json.JSONDecodeError):
-        ghu.load_state()
+    assert ghu.load_state() is None
 
 
 def test_load_integrity_missing_returns_none(tmp_path, monkeypatch):
