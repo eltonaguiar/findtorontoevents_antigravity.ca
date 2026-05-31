@@ -36,8 +36,25 @@ ENH_STATUS = ["BACKLOG", "VALIDATED", "ACCEPTED", "IMPLEMENTED", "REJECTED", "SU
 ENH_CATEGORIES = ["SCORING", "GATE", "DATA_FEED", "UI", "METHODOLOGY", "PERSONA", "OTHER"]
 IMPACTS = ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]
 EFFORTS = ["S", "M", "L", "XL"]
-FINDING_STATUS = ["OPEN", "TRIAGED", "ACK", "ARCHIVED", "SUPERSEDED"]
-FINDING_TYPES = ["OBSERVATION", "METRIC", "LEAKAGE", "CORRELATION", "RISK", "DATA_QUALITY", "OTHER"]
+FINDING_SEVERITIES = ["P0", "P1", "P2", "P3", "INFO", "NOTEWORTHY"]
+FINDING_STATUS = ["OPEN", "INVESTIGATING", "CONFIRMED", "RESOLVED", "WONTFIX"]
+
+
+# Sentinel for "user did not pass this arg on the CLI". Distinct from None,
+# which is a legitimate user-supplied "clear this field" value for nullable
+# columns. argparse default=_UNSET lets cmd_* detect omission and avoid
+# overwriting existing rows with the documented INSERT default (see
+# FINDING_OVERALL#2: --severity defaulted to "INFO" on update, flipping
+# resolved P0s to INFO).
+class _Unset:
+    def __repr__(self): return "<UNSET>"
+    def __bool__(self): return False
+_UNSET = _Unset()
+
+
+def _coalesce_insert(val, default):
+    """For INSERTs, substitute the documented default when user omitted the arg."""
+    return default if val is _UNSET else val
 
 
 def _connect():
@@ -59,33 +76,49 @@ def _resolve_table(kind: str, cls: str) -> str:
 
 def cmd_incident(args):
     """Create-or-update an incident keyed on (table, title)."""
-    if args.severity not in SEVERITIES: sys.exit(f"--severity must be {SEVERITIES}")
-    if args.status not in INC_STATUS:   sys.exit(f"--status must be {INC_STATUS}")
+    if args.severity is not _UNSET and args.severity not in SEVERITIES:
+        sys.exit(f"--severity must be {SEVERITIES}")
+    if args.status is not _UNSET and args.status not in INC_STATUS:
+        sys.exit(f"--status must be {INC_STATUS}")
     tbl = _resolve_table("INCIDENT", args.cls)
+    # (column, value, insert_default)
+    field_map = [
+        ("description",        args.description,    None),
+        ("severity",           args.severity,       "P2"),
+        ("status",             args.status,         "OPEN"),
+        ("affected_component", args.component,      None),
+        ("recommended_fix",    args.fix,            None),
+        ("reported_by",        args.reporter,       None),
+        ("link_md_path",       args.link_md,        None),
+        ("link_url",           args.link_url,       None),
+        ("link_github_ref",    args.link_github,    None),
+        ("target_release",     args.target_release, None),
+        ("resolution_notes",   args.resolution_notes, None),
+    ]
     conn = _connect()
     with conn.cursor() as cur:
         cur.execute(f"SELECT incident_id FROM {tbl} WHERE title=%s", (args.title,))
         existing = cur.fetchone()
         if existing:
-            cur.execute(f"""UPDATE {tbl} SET description=%s, severity=%s, status=%s,
-                affected_component=%s, recommended_fix=%s, reported_by=%s,
-                link_md_path=%s, link_url=%s, link_github_ref=%s,
-                target_release=COALESCE(%s, target_release),
-                resolution_notes=COALESCE(%s, resolution_notes),
-                resolved_at=CASE WHEN %s IN ('RESOLVED','WONTFIX','DUPLICATE') AND resolved_at IS NULL THEN NOW() ELSE resolved_at END
-                WHERE incident_id=%s""",
-                (args.description, args.severity, args.status, args.component,
-                 args.fix, args.reporter, args.link_md, args.link_url, args.link_github,
-                 args.target_release, args.resolution_notes, args.status, existing["incident_id"]))
+            sets, params = [], []
+            for col, val, _ in field_map:
+                if val is not _UNSET:
+                    sets.append(f"{col}=%s")
+                    params.append(val)
+            # Auto-stamp resolved_at on terminal-status transitions, only when
+            # the user actually passed --status.
+            if args.status is not _UNSET and args.status in ("RESOLVED", "WONTFIX", "DUPLICATE"):
+                sets.append("resolved_at=IFNULL(resolved_at, NOW())")
+            if sets:
+                params.append(existing["incident_id"])
+                cur.execute(f"UPDATE {tbl} SET {', '.join(sets)} WHERE incident_id=%s", params)
             conn.commit()
             print(f"UPDATED  {tbl}.incident_id={existing['incident_id']}  title={args.title!r}")
         else:
-            cur.execute(f"""INSERT INTO {tbl}
-                (title, description, severity, status, affected_component, recommended_fix,
-                 reported_by, link_md_path, link_url, link_github_ref, target_release)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-                (args.title, args.description, args.severity, args.status, args.component,
-                 args.fix, args.reporter, args.link_md, args.link_url, args.link_github, args.target_release))
+            cols = ["title"] + [c for c, _, _ in field_map]
+            values = [args.title] + [_coalesce_insert(v, d) for _, v, d in field_map]
+            placeholders = ",".join(["%s"] * len(values))
+            cur.execute(f"INSERT INTO {tbl} ({', '.join(cols)}) VALUES ({placeholders})", values)
             new_id = cur.lastrowid
             conn.commit()
             print(f"CREATED  {tbl}.incident_id={new_id}  title={args.title!r}")
@@ -125,41 +158,56 @@ def cmd_update_incident(args):
 
 def cmd_enhancement(args):
     """Create-or-update an enhancement keyed on (table, title)."""
-    if args.category not in ENH_CATEGORIES: sys.exit(f"--category must be {ENH_CATEGORIES}")
-    if args.impact   not in IMPACTS:        sys.exit(f"--impact must be {IMPACTS}")
-    if args.effort   not in EFFORTS:        sys.exit(f"--effort must be {EFFORTS}")
-    if args.status   not in ENH_STATUS:     sys.exit(f"--status must be {ENH_STATUS}")
+    if args.category is not _UNSET and args.category not in ENH_CATEGORIES:
+        sys.exit(f"--category must be {ENH_CATEGORIES}")
+    if args.impact is not _UNSET and args.impact not in IMPACTS:
+        sys.exit(f"--impact must be {IMPACTS}")
+    if args.effort is not _UNSET and args.effort not in EFFORTS:
+        sys.exit(f"--effort must be {EFFORTS}")
+    if args.status is not _UNSET and args.status not in ENH_STATUS:
+        sys.exit(f"--status must be {ENH_STATUS}")
     tbl = _resolve_table("ENHANCEMENT", args.cls)
+    field_map = [
+        ("description",        args.description,        None),
+        ("category",           args.category,           "OTHER"),
+        ("expected_impact",    args.impact,             "UNKNOWN"),
+        ("effort",             args.effort,             "M"),
+        ("status",             args.status,             "BACKLOG"),
+        ("proposed_by",        args.proposed_by,        None),
+        ("related_persona_id", args.persona,            None),
+        ("success_metric",     args.success_metric,     None),
+        ("link_md_path",       args.link_md,            None),
+        ("link_url",           args.link_url,           None),
+        ("link_github_ref",    args.link_github,        None),
+        ("target_release",     args.target_release,     None),
+        ("enhancement_plan",   args.enhancement_plan,   None),
+        ("implementation_pr",  args.implementation_pr,  None),
+    ]
     conn = _connect()
     with conn.cursor() as cur:
         cur.execute(f"SELECT enhancement_id FROM {tbl} WHERE title=%s", (args.title,))
         existing = cur.fetchone()
         if existing:
-            cur.execute(f"""UPDATE {tbl} SET description=%s, category=%s, expected_impact=%s,
-                effort=%s, status=%s, proposed_by=%s, related_persona_id=%s, success_metric=%s,
-                link_md_path=%s, link_url=%s, link_github_ref=%s,
-                target_release=COALESCE(%s, target_release),
-                enhancement_plan=COALESCE(%s, enhancement_plan),
-                implementation_pr=COALESCE(%s, implementation_pr),
-                implemented_at=CASE WHEN %s='IMPLEMENTED' AND implemented_at IS NULL THEN NOW() ELSE implemented_at END
-                WHERE enhancement_id=%s""",
-                (args.description, args.category, args.impact, args.effort, args.status,
-                 args.proposed_by, args.persona, args.success_metric,
-                 args.link_md, args.link_url, args.link_github, args.target_release,
-                 args.enhancement_plan, args.implementation_pr,
-                 args.status, existing["enhancement_id"]))
+            sets, params = [], []
+            for col, val, _ in field_map:
+                if val is not _UNSET:
+                    sets.append(f"{col}=%s")
+                    params.append(val)
+            if args.status is not _UNSET and args.status == "IMPLEMENTED":
+                sets.append("implemented_at=IFNULL(implemented_at, NOW())")
+            if sets:
+                params.append(existing["enhancement_id"])
+                cur.execute(f"UPDATE {tbl} SET {', '.join(sets)} WHERE enhancement_id=%s", params)
             conn.commit()
             print(f"UPDATED  {tbl}.enhancement_id={existing['enhancement_id']}  title={args.title!r}")
         else:
-            cur.execute(f"""INSERT INTO {tbl}
-                (title, description, category, expected_impact, effort, status, proposed_by,
-                 related_persona_id, success_metric, link_md_path, link_url, link_github_ref,
-                 target_release, enhancement_plan)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-                (args.title, args.description, args.category, args.impact, args.effort, args.status,
-                 args.proposed_by, args.persona, args.success_metric,
-                 args.link_md, args.link_url, args.link_github, args.target_release,
-                 args.enhancement_plan))
+            # implementation_pr is included in field_map but historical INSERT
+            # omitted it; we now include it so the documented default (None)
+            # is written. Harmless — the column allows NULL.
+            cols = ["title"] + [c for c, _, _ in field_map]
+            values = [args.title] + [_coalesce_insert(v, d) for _, v, d in field_map]
+            placeholders = ",".join(["%s"] * len(values))
+            cur.execute(f"INSERT INTO {tbl} ({', '.join(cols)}) VALUES ({placeholders})", values)
             new_id = cur.lastrowid
             conn.commit()
             print(f"CREATED  {tbl}.enhancement_id={new_id}  title={args.title!r}")
@@ -167,46 +215,64 @@ def cmd_enhancement(args):
 
 
 def cmd_finding(args):
-    """Create-or-update a FINDING (single table, upsert keyed on title).
+    """Create-or-update a FINDING (per-class FINDING_<CLASS> table, upsert by title).
 
-    Findings are dated, agent-logged notes (some standalone 'noteworthy', some
-    linked to an incident/enhancement). created_at is left to the DB default
-    (UTC); EST is derived at render time — never store EST here.
+    Findings are dated, agent-logged notes (some standalone NOTEWORTHY observations,
+    some linked to an incident/enhancement). created_at_utc is left to the DB default
+    (UTC CURRENT_TIMESTAMP); EST is derived at render time — never store EST here.
+
+    Mirrors INCIDENT_<CLASS> / ENHANCEMENT_<CLASS> upsert semantics (idempotent by
+    title within the class table).
     """
-    if args.severity not in SEVERITIES:      sys.exit(f"--severity must be {SEVERITIES}")
-    if args.status not in FINDING_STATUS:     sys.exit(f"--status must be {FINDING_STATUS}")
-    if args.type not in FINDING_TYPES:        sys.exit(f"--type must be {FINDING_TYPES}")
-    cls = args.cls.upper() if args.cls else None
-    if cls and cls not in CLASSES:            sys.exit(f"--class must be one of {CLASSES} (or omit for cross-cutting)")
+    # Validate only fields the user actually provided. Omitted args carry _UNSET.
+    if args.severity is not _UNSET and args.severity not in FINDING_SEVERITIES:
+        sys.exit(f"--severity must be {FINDING_SEVERITIES}")
+    if args.status is not _UNSET and args.status not in FINDING_STATUS:
+        sys.exit(f"--status must be {FINDING_STATUS}")
+    tbl = _resolve_table("FINDING", args.cls)
+    # Map CLI args -> DB column. Used for both the UPDATE-only-what-was-passed
+    # path and the INSERT-with-defaults path.
+    field_map = [
+        ("description",        args.description,        None),
+        ("severity",           args.severity,           "INFO"),
+        ("status",             args.status,             "OPEN"),
+        ("agent",              args.agent,              None),
+        ("evidence",           args.evidence,           None),
+        ("linked_incident_id", args.linked_incident,    None),
+        ("linked_enhancement_id", args.linked_enhancement, None),
+    ]
     conn = _connect()
     with conn.cursor() as cur:
-        cur.execute("SELECT finding_id FROM FINDINGS WHERE title=%s", (args.title,))
+        cur.execute(f"SELECT id, severity FROM {tbl} WHERE title=%s", (args.title,))
         existing = cur.fetchone()
         if existing:
-            cur.execute("""UPDATE FINDINGS SET asset_class=%s, source_agent=%s, finding_type=%s,
-                severity=%s, detail=%s, evidence=%s, status=%s, noteworthy=%s,
-                linked_incident_id=%s, linked_enhancement_id=%s,
-                link_md_path=%s, link_url=%s, link_github_ref=%s
-                WHERE finding_id=%s""",
-                (cls, args.source_agent, args.type, args.severity, args.detail, args.evidence,
-                 args.status, 1 if args.noteworthy else 0,
-                 args.linked_incident, args.linked_enhancement,
-                 args.link_md, args.link_url, args.link_github, existing["finding_id"]))
+            # Build SET clause only from fields the user actually passed —
+            # never overwrite existing columns with argparse defaults.
+            sets, params = [], []
+            for col, val, _ in field_map:
+                if val is not _UNSET:
+                    sets.append(f"{col}=%s")
+                    params.append(val)
+            row_id = existing["id"]
+            if sets:
+                params.append(row_id)
+                cur.execute(f"UPDATE {tbl} SET {', '.join(sets)} WHERE id=%s", params)
             conn.commit()
-            print(f"UPDATED  FINDINGS.finding_id={existing['finding_id']}  title={args.title!r}")
+            effective_sev = args.severity if args.severity is not _UNSET else existing["severity"]
         else:
-            cur.execute("""INSERT INTO FINDINGS
-                (asset_class, source_agent, finding_type, severity, title, detail, evidence,
-                 status, noteworthy, linked_incident_id, linked_enhancement_id,
-                 link_md_path, link_url, link_github_ref)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-                (cls, args.source_agent, args.type, args.severity, args.title, args.detail, args.evidence,
-                 args.status, 1 if args.noteworthy else 0, args.linked_incident, args.linked_enhancement,
-                 args.link_md, args.link_url, args.link_github))
-            new_id = cur.lastrowid
+            # INSERT path keeps documented defaults (INFO/OPEN).
+            cols = ["title"] + [c for c, _, _ in field_map]
+            values = [args.title] + [_coalesce_insert(v, d) for _, v, d in field_map]
+            placeholders = ",".join(["%s"] * len(values))
+            cur.execute(
+                f"INSERT INTO {tbl} ({', '.join(cols)}) VALUES ({placeholders})",
+                values,
+            )
+            row_id = cur.lastrowid
             conn.commit()
-            print(f"CREATED  FINDINGS.finding_id={new_id}  title={args.title!r}")
+            effective_sev = _coalesce_insert(args.severity, "INFO")
     conn.close()
+    print(f"[finding] {tbl}#{row_id} {effective_sev} {args.title}")
 
 
 def cmd_list(args):
@@ -247,23 +313,23 @@ def cmd_list(args):
 
 
 def main():
-    p = argparse.ArgumentParser(description="Create/update INCIDENT_* + ENHANCEMENT_* rows on live ejaguiar1_stocks.")
+    p = argparse.ArgumentParser(description="Create/update INCIDENT_* + ENHANCEMENT_* + FINDING_* rows on live ejaguiar1_stocks.")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     inc = sub.add_parser("incident", help="Create or update an incident (upsert by title within class).")
     inc.add_argument("--class", dest="cls", required=True, help=f"One of {CLASSES}")
     inc.add_argument("--title", required=True)
-    inc.add_argument("--description", default=None)
-    inc.add_argument("--severity", default="P2", help=f"One of {SEVERITIES}")
-    inc.add_argument("--status", default="OPEN", help=f"One of {INC_STATUS}")
-    inc.add_argument("--component", default=None, help="affected_component (file path / table name)")
-    inc.add_argument("--fix", default=None, help="recommended_fix")
-    inc.add_argument("--reporter", default=None)
-    inc.add_argument("--link-md", default=None, help="repo-relative path to a doc, e.g. reports/foo.md")
-    inc.add_argument("--link-url", default=None, help="public URL of affected page")
-    inc.add_argument("--link-github", default=None, help="PR #, issue #, or commit SHA (comma-separated)")
-    inc.add_argument("--target-release", dest="target_release", default=None, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
-    inc.add_argument("--resolution-notes", default=None)
+    inc.add_argument("--description", default=_UNSET)
+    inc.add_argument("--severity", default=_UNSET, help=f"One of {SEVERITIES} (INSERT default: P2)")
+    inc.add_argument("--status", default=_UNSET, help=f"One of {INC_STATUS} (INSERT default: OPEN)")
+    inc.add_argument("--component", default=_UNSET, help="affected_component (file path / table name)")
+    inc.add_argument("--fix", default=_UNSET, help="recommended_fix")
+    inc.add_argument("--reporter", default=_UNSET)
+    inc.add_argument("--link-md", default=_UNSET, help="repo-relative path to a doc, e.g. reports/foo.md")
+    inc.add_argument("--link-url", default=_UNSET, help="public URL of affected page")
+    inc.add_argument("--link-github", default=_UNSET, help="PR #, issue #, or commit SHA (comma-separated)")
+    inc.add_argument("--target-release", dest="target_release", default=_UNSET, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
+    inc.add_argument("--resolution-notes", default=_UNSET)
     inc.set_defaults(func=cmd_incident)
 
     up = sub.add_parser("update-incident", help="Patch one or more fields on an existing incident by id.")
@@ -279,38 +345,33 @@ def main():
     enh = sub.add_parser("enhancement", help="Create or update an enhancement (upsert by title within class).")
     enh.add_argument("--class", dest="cls", required=True)
     enh.add_argument("--title", required=True)
-    enh.add_argument("--description", default=None)
-    enh.add_argument("--category", default="OTHER", help=f"One of {ENH_CATEGORIES}")
-    enh.add_argument("--impact", default="UNKNOWN", help=f"One of {IMPACTS}")
-    enh.add_argument("--effort", default="M", help=f"One of {EFFORTS}")
-    enh.add_argument("--status", default="BACKLOG", help=f"One of {ENH_STATUS}")
-    enh.add_argument("--proposed-by", default=None)
-    enh.add_argument("--persona", default=None, help="related_persona_id")
-    enh.add_argument("--success-metric", default=None)
-    enh.add_argument("--link-md", default=None)
-    enh.add_argument("--link-url", default=None)
-    enh.add_argument("--link-github", default=None)
-    enh.add_argument("--target-release", dest="target_release", default=None, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
-    enh.add_argument("--enhancement-plan", dest="enhancement_plan", default=None,
+    enh.add_argument("--description", default=_UNSET)
+    enh.add_argument("--category", default=_UNSET, help=f"One of {ENH_CATEGORIES} (INSERT default: OTHER)")
+    enh.add_argument("--impact", default=_UNSET, help=f"One of {IMPACTS} (INSERT default: UNKNOWN)")
+    enh.add_argument("--effort", default=_UNSET, help=f"One of {EFFORTS} (INSERT default: M)")
+    enh.add_argument("--status", default=_UNSET, help=f"One of {ENH_STATUS} (INSERT default: BACKLOG)")
+    enh.add_argument("--proposed-by", default=_UNSET)
+    enh.add_argument("--persona", default=_UNSET, help="related_persona_id")
+    enh.add_argument("--success-metric", default=_UNSET)
+    enh.add_argument("--link-md", default=_UNSET)
+    enh.add_argument("--link-url", default=_UNSET)
+    enh.add_argument("--link-github", default=_UNSET)
+    enh.add_argument("--target-release", dest="target_release", default=_UNSET, help="ETA, e.g. '2026-06-15 17:00 EST' or 'YYYY-MM-DD'")
+    enh.add_argument("--enhancement-plan", dest="enhancement_plan", default=_UNSET,
         help="Free-text implementation plan; can be extracted from linked reports")
-    enh.add_argument("--implementation-pr", default=None)
+    enh.add_argument("--implementation-pr", default=_UNSET)
     enh.set_defaults(func=cmd_enhancement)
 
-    fnd = sub.add_parser("finding", help="Log a dated finding (single table; optionally link to an incident/enhancement).")
-    fnd.add_argument("--title", required=True)
-    fnd.add_argument("--class", dest="cls", default=None, help=f"Optional {CLASSES} (omit for cross-cutting)")
-    fnd.add_argument("--type", default="OBSERVATION", help=f"One of {FINDING_TYPES}")
-    fnd.add_argument("--severity", default="INFO", help=f"One of {SEVERITIES}")
-    fnd.add_argument("--status", default="OPEN", help=f"One of {FINDING_STATUS}")
-    fnd.add_argument("--detail", default=None)
-    fnd.add_argument("--evidence", default=None, help="JSON string: {file:line, query, numbers} — claimed, not verified")
-    fnd.add_argument("--source-agent", dest="source_agent", default=None, help="which AI/IDE agent logged this")
-    fnd.add_argument("--noteworthy", action="store_true", help="pin to the top of the findings feed")
-    fnd.add_argument("--linked-incident", dest="linked_incident", type=int, default=None, help="INCIDENT_*.incident_id")
-    fnd.add_argument("--linked-enhancement", dest="linked_enhancement", type=int, default=None, help="ENHANCEMENT_*.enhancement_id")
-    fnd.add_argument("--link-md", default=None)
-    fnd.add_argument("--link-url", default=None)
-    fnd.add_argument("--link-github", default=None)
+    fnd = sub.add_parser("finding", help="Log a dated finding in FINDING_<CLASS> (upsert by title; optionally link to incident/enhancement).")
+    fnd.add_argument("--class", dest="cls", required=True, help=f"One of {CLASSES}")
+    fnd.add_argument("--title", required=True, help="Upsert key — same title within a class updates the existing row")
+    fnd.add_argument("--description", default=_UNSET)
+    fnd.add_argument("--severity", default=_UNSET, help=f"One of {FINDING_SEVERITIES} (INSERT default: INFO)")
+    fnd.add_argument("--status", default=_UNSET, help=f"One of {FINDING_STATUS} (INSERT default: OPEN)")
+    fnd.add_argument("--agent", default=_UNSET, help="Who logged it (e.g. claude-opus-4-7, grok-4.3, freebuff)")
+    fnd.add_argument("--evidence", default=_UNSET, help="file:line refs, cite reports/, etc.")
+    fnd.add_argument("--linked-incident-id", dest="linked_incident", type=int, default=_UNSET, help="INCIDENT_<class>.incident_id")
+    fnd.add_argument("--linked-enhancement-id", dest="linked_enhancement", type=int, default=_UNSET, help="ENHANCEMENT_<class>.enhancement_id")
     fnd.set_defaults(func=cmd_finding)
 
     ls = sub.add_parser("list", help="List/search rows.")
