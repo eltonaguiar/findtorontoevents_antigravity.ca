@@ -369,6 +369,38 @@ PROVEN_WINNERS = {
 PROVEN_PREFIXES = {
     "ml_enhanced_": 8, "copy_hl_": 8, "copy_hl_whale": 10,
 }
+
+# ── Incident #1: walk-forward gate for ML "edge" claims ──────────────────────
+# ml_enhanced_* strategies surfaced PF 99-1094 / DSR=0.9995 that are almost
+# certainly look-ahead leakage (reports/hypothesis_registry.json H-001/H-004
+# pattern). They must NOT receive the "proven winner" score boost
+# (PROVEN_WINNERS / PROVEN_PREFIXES) until they have EARNED it via walk-forward
+# validation (wf_verdict in {ELITE,STRONG,VIABLE,PASS}) AND n>=100 resolved
+# forward trades. Until then the edge is treated as unvalidated
+# ("small-sample, awaiting n>=100") and scored on its raw merits with no boost.
+# Default-ON; set ML_ENHANCED_WF_GATE_ENABLED=0 to restore the legacy boost.
+_ML_WF_PASS_VERDICTS = {"ELITE", "STRONG", "VIABLE", "PASS"}
+_ML_WF_MIN_N = 100
+
+
+def _ml_enhanced_edge_validated(pick: dict, strat_name: str) -> bool:
+    """True iff an ml_enhanced_* strategy has earned its 'proven' boost via
+    walk-forward validation AND n>=100 forward trades. Non-ml_enhanced
+    strategies (and the gate-disabled case) are unaffected -> returns True."""
+    if not strat_name.startswith("ml_enhanced_"):
+        return True
+    if os.environ.get("ML_ENHANCED_WF_GATE_ENABLED", "1") != "1":
+        return True
+    wf = str(pick.get("wf_verdict", "") or "").upper().strip()
+    try:
+        n = int(float(pick.get("strat_fwd_trades")
+                      or pick.get("strat_fwd_n")
+                      or pick.get("forward_trades") or 0))
+    except (TypeError, ValueError):
+        n = 0
+    return wf in _ML_WF_PASS_VERDICTS and n >= _ML_WF_MIN_N
+
+
 VETTED_COPY_PREFIXES = (
     "copy_hl_",
     "copy_hl_lb_",
@@ -1110,6 +1142,12 @@ def score_pick(pick, live_price, regime_data, now, fear_greed=0):
             if strat_name.startswith(prefix):
                 winner_boost = max(winner_boost, boost)
                 break
+    # Incident #1: an ml_enhanced_* strategy may not claim the "proven winner"
+    # boost until it is walk-forward-validated with n>=100 — otherwise the
+    # likely-leakage PF 99-1094 / DSR=0.9995 edge gets credited as real.
+    if winner_boost > 0 and not _ml_enhanced_edge_validated(pick, strat_name):
+        pick["_ml_edge_status"] = "UNVALIDATED_AWAITING_WF_N100"
+        winner_boost = 0
     # Multi-symbol strength adjustment: boost strategies that work across many pairs
     try:
         _tiers_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "ab_test_portfolios", "symbol_strength_tiers.json")
