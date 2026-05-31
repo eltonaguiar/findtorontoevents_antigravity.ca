@@ -1112,7 +1112,15 @@ def detect_asset_class(symbol: str) -> str:
         return "forex"
 
     # 7. Equity: single-ticker alpha (AAPL, META, GOOGL, ...)
-    if s in EQUITY_SYMBOLS or (1 <= len(s) <= 5 and s.isalpha()):
+    # INCIDENT STOCKS-P1 (2026-05-31): Route penny/meme symbols to "penny"
+    # so they don't pollute EQUITY class metrics. RESEARCH_ONLY_SPECULATIVE_SYMBOLS
+    # already marks them; this closes the classification gap.
+    if s in EQUITY_SYMBOLS:
+        eq_info = EQUITY_SYMBOLS.get(s, {})
+        if eq_info.get("cat") in ("penny", "meme"):
+            return "penny"
+        return "equity"
+    if 1 <= len(s) <= 5 and s.isalpha():
         return "equity"
 
     return "unknown"

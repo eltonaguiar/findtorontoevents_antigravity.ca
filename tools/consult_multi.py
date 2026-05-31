@@ -460,6 +460,19 @@ def main() -> int:
         else:
             ap.error("provide --prompt, --prompt-file, or pipe to stdin")
 
+    # INCIDENT OVERALL-P1 (2026-05-31): Multi-AI panel reached wrong COMMODITY
+    # consensus on ungrounded prompt. Add mandatory leakage-context boilerplate.
+    _LEAKAGE_BLOCK = (
+        "\n\n---\n"
+        "**Leakage-Context Block (mandatory):** Be skeptical. If data suggests "
+        "one symbol or source dominates results, flag concentration risk before "
+        "claiming an edge. Check `reports/hypothesis_registry.json` for any "
+        "rejected hypotheses that intersect this analysis. A single-symbol or "
+        "single-source result with n<20 is NOT a confirmed edge — it is a "
+        "pattern that requires out-of-sample verification."
+    )
+    prompt = prompt + _LEAKAGE_BLOCK
+
     if args.provider:
         if args.provider not in PROVIDERS:
             ap.error(f"unknown provider {args.provider!r}")
