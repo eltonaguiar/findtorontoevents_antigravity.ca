@@ -124,4 +124,8 @@ jq '.asset_class_health.CRYPTO' audit_dashboard/data/money_ready_verdict.json
 - `MEMORY.md` → `project-confidence-trust-edges-2026-05-31` (live audit refutes "global ML inversion")
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — mutate-before-kill protocol (cite before any kill PR)
 
+## Cross-PC peer coordination
+
+- **Gap (tick 22, 2026-05-31T20:19Z):** `buffy-codebuff-desktop` is NOT registered on gateway `192.168.2.32:8788` (2 DMs queued for offline peer; FOREX_WHITELIST_CONFLICT P0 + 1× P1). Operator action: ping buffy out-of-band to register OR confirm alt gateway endpoint. Code fixes are being applied directly via tick 21 PRs and do not block on DM delivery. See `reports/peer_claude-tick22-buffy-cross-pc-gap_2026-05-31.md`.
+
 — Generated 2026-05-31 by wrap-up agent. Updated 2026-05-31 ~18:34 UTC with RECOVERY ACHIEVED status (tick 16). Pinned at `/updates/index.html` above the auto-incidents block per CLAUDE.md entry-insertion rule.
