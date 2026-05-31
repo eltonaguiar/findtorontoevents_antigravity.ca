@@ -35,6 +35,27 @@ _COT_DEDUP_STRATS = frozenset({
     "multi_asset_copytrader",
 })
 
+# Canonical terminal statuses — keep in sync with tools/standardize_statuses.py
+_CANONICAL_STATUSES = frozenset({
+    "TP_HIT", "SL_HIT", "LOST", "EXPIRED", "TIME_EXIT", "ACTIVE", "OPEN",
+})
+
+# Status mapping rules — subset of tools/standardize_statuses.py STATUS_MAPPINGS
+# Each: (from_status, condition_sql, to_status, exit_reason_override)
+_STATUS_MAPPINGS = [
+    ("WIN",        "pnl_pct > 0",                      "TP_HIT",    "STATUS_STANDARDIZED"),
+    ("WIN",        "pnl_pct <= 0 OR pnl_pct IS NULL",  "LOST",      "STATUS_STANDARDIZED"),
+    ("WON",        "pnl_pct > 0",                      "TP_HIT",    "STATUS_STANDARDIZED"),
+    ("WON",        "pnl_pct <= 0 OR pnl_pct IS NULL",  "LOST",      "STATUS_STANDARDIZED"),
+    ("LOSS",       "pnl_pct < 0",                      "LOST",      "STATUS_STANDARDIZED"),
+    ("LOSS",       "pnl_pct >= 0 OR pnl_pct IS NULL",  "TP_HIT",    "STATUS_STANDARDIZED"),
+    ("CLOSED_SL",  "1=1",                              "SL_HIT",    "STATUS_STANDARDIZED"),
+    ("CLOSED_TP",  "1=1",                              "TP_HIT",    "STATUS_STANDARDIZED"),
+    ("SIGNAL",     "1=1",                              "EXPIRED",   "STATUS_STANDARDIZED"),
+    ("FLAT",       "1=1",                              "TIME_EXIT", "STATUS_STANDARDIZED"),
+    ("STALE",      "1=1",                              "EXPIRED",   "STATUS_STANDARDIZED"),
+]
+
 
 def connect():
     if not DB_PASS:
@@ -162,6 +183,74 @@ def _repair_cot_dedup(cur) -> int:
     return cur.rowcount
 
 
+def _repair_status_standardization(cur) -> int:
+    """PR #2: Standardize all non-canonical statuses to canonical values.
+
+    Applies the same STATUS_MAPPINGS as tools/standardize_statuses.py:
+    WON/WIN → TP_HIT (pnl>0) / LOST (pnl<=0)
+    LOSS → LOST (pnl<0) / TP_HIT (pnl>=0)
+    CLOSED_SL → SL_HIT, CLOSED_TP → TP_HIT
+    FLAT → TIME_EXIT, SIGNAL/STALE → EXPIRED
+    Returns total rows updated.
+    """
+    total = 0
+
+    # Fix edge case: rows already tagged with STATUS_STANDARDIZED but
+    # status wasn't actually corrected (race condition / partial update).
+    # The normal idempotency guard would skip these, so fix them explicitly.
+    for from_status, pnl_cond, to_status in [
+        ("WON",  "pnl_pct > 0",                     "TP_HIT"),
+        ("WON",  "pnl_pct <= 0 OR pnl_pct IS NULL",  "LOST"),
+        ("WIN",  "pnl_pct > 0",                     "TP_HIT"),
+        ("WIN",  "pnl_pct <= 0 OR pnl_pct IS NULL",  "LOST"),
+        ("LOSS", "pnl_pct < 0",                     "LOST"),
+        ("LOSS", "pnl_pct >= 0 OR pnl_pct IS NULL",  "TP_HIT"),
+    ]:
+        cur.execute(
+            f"UPDATE trading_picks "
+            f"SET status = %s, updated_at = NOW() "
+            f"WHERE status = %s AND ({pnl_cond}) "
+            f"  AND exit_reason LIKE %s",
+            (to_status, from_status, "%STATUS_STANDARDIZED%"),
+        )
+        total += cur.rowcount
+
+    # Also handle 1=1 statuses (unconditional mappings) for tagged-but-uncorrected rows
+    for from_status, to_status in [
+        ("CLOSED_SL", "SL_HIT"),
+        ("CLOSED_TP", "TP_HIT"),
+        ("FLAT",      "TIME_EXIT"),
+        ("SIGNAL",    "EXPIRED"),
+        ("STALE",     "EXPIRED"),
+    ]:
+        cur.execute(
+            "UPDATE trading_picks SET status = %s, updated_at = NOW() "
+            "WHERE status = %s AND exit_reason LIKE %s",
+            (to_status, from_status, "%STATUS_STANDARDIZED%"),
+        )
+        total += cur.rowcount
+
+    for from_status, condition, to_status, exit_reason in _STATUS_MAPPINGS:
+        sql = (
+            f"UPDATE trading_picks "
+            f"SET status = %s, "
+            f"    exit_reason = CASE "
+            f"        WHEN exit_reason IS NULL OR exit_reason = '' OR exit_reason = %s "
+            f"            THEN %s "
+            f"        ELSE CONCAT(exit_reason, ' (', %s, ')') "
+            f"    END, "
+            f"    updated_at = NOW() "
+            f"WHERE status = %s AND ({condition}) "
+            f"  AND (exit_reason IS NULL OR exit_reason NOT LIKE %s)"
+        )
+        cur.execute(sql, (
+            to_status, from_status, exit_reason, exit_reason,
+            from_status, "%STATUS_STANDARDIZED%",
+        ))
+        total += cur.rowcount
+    return total
+
+
 # ── Verification queries ──────────────────────────────────────────────
 CHECKS = [
     {
@@ -195,6 +284,20 @@ CHECKS = [
         "pass": lambda r: r["cnt"] > 1000 and r.get("fresh", 0) == 1,
         "fmt": lambda r: f"{r['cnt']} rows, last={r['last_ts']}, fresh={'yes' if r.get('fresh') else 'no'}",
         "repair_sql": _repair_signal_outcomes,
+    },
+    {
+        "id": "status_standardization",
+        "title": "Status standardization — non-canonical statuses (WON, CLOSED_SL, CLOSED_TP, FLAT, etc.)",
+        "sql": (
+            "SELECT COUNT(*) as cnt "
+            "FROM trading_picks "
+            "WHERE status NOT IN ("
+            + ",".join([f"'{s}'" for s in sorted(_CANONICAL_STATUSES)]) +
+            ")"
+        ),
+        "pass": lambda r: r["cnt"] == 0,
+        "fmt": lambda r: f"{r['cnt']} rows with non-canonical status",
+        "repair_sql": _repair_status_standardization,
     },
     {
         "id": "won_status_contradiction",
