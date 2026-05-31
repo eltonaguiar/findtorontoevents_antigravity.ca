@@ -1,3 +1,9 @@
+# DISABLED 2026-05-31 (INCIDENT_BONDS #3): redundant emitter — bond picks now flow via
+# etf-bond-scanner.yml (5/5 successful runs at 13:35/14:00 UTC weekdays).
+# Root cause of 5d failure streak: 06:10 UTC cron hit the push-storm window (12+ workflows on 0 6 * * *)
+# causing git pull --rebase to fail 10/10 retries, silenced by 2>/dev/null.
+# If reviving: reschedule off 06:00 UTC, un-mute the rebase 2>/dev/null, set SKIP_FRED=1.
+# See reports/bonds_3_emitter_failure_diagnosis_2026-05-31.md.
 name: ALPHA ENGINE - Bond Emitter
 
 # Serialize against itself + the overall push-storm mitigation pattern.
