@@ -2689,6 +2689,23 @@ def apply_quality_gates(
             # (1.15x boost) and has 50% WR / positive PnL on forex. Insufficient data on commodity,
             # not proven bad.
             ("commodity", "cftc_cot_commercial_signal"),
+            # 2026-05-31 (tick33): COMMODITY-leg blocks per PR #269 deep-dive verdict.
+            # cta_cross_asset_tsmom: dispatched via scanner.py:2191 on
+            #   ("all","forex","equity") filter and reaches commodity symbols
+            #   through "all"-filter; confirmed loser per deep-dive (FOREX leg
+            #   already capped at emitter via PR #275). Defense-in-depth block
+            #   for any commodity emission from cta_replicator source_system.
+            # futures_momentum: lives in multi_asset/scanner.py:91,2809 and is
+            #   already banned via hedge_fund_quality_gate.FUTURES_BANNED + the
+            #   ("futures","...") gate below — but commodity-category emission
+            #   is not covered by the futures rule (no futures→commodity
+            #   normalization). Defense-in-depth.
+            # ema_stack_momentum: test-harness only per Wire-Up Rule
+            #   (live_forward_test.py:481), already blocked for ("futures",...);
+            #   mirror for commodity in case any future dispatch surface adds it.
+            ("commodity", "cta_cross_asset_tsmom"),
+            ("commodity", "futures_momentum"),
+            ("commodity", "ema_stack_momentum"),
             # Futures losers (Gate 5b already catches some)
             ("futures", "futures_mean_reversion"),
             ("futures", "ema_stack_momentum"),

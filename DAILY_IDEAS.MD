@@ -3675,3 +3675,69 @@ Full report: [reports/2026-05-25_audit_ui_edge_audit.md](reports/2026-05-25_audi
 - MA variants to track per asset class: SMA-200, EMA-200, HMA-200 (+ shorter-period variations from peer consult).
 - Entry: enter next trading day after daily close > MA; Exit: close < MA. No TP; MA = trailing exit. Risk overlay: 1–2%/trade, hard floor stop.
 - Surface results on ai_leaderboard.html; add sortable/highlighted "golden" view (high PF/WR per model-persona).
+
+
+2025-05-31
+If you had a project https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/ with github actions to refresh data. a set of key databases and their credentials , and also AI api keys that can be leveraged to delegate parallel agents
+mysql.50webs.com 
+/home/eaguiar2015/dbpasses.txt
+
+ejaguiar1_stocks
+ejaguiar1_backtests
+any database operation that can be destructive, should make a backup to ejaguiar1_backtests
+
+now we have pages findtorontoevents.ca/audit with  text which needs to be automated and have a date/time stamp..|
+
+we have predictions including TP/SL for stocks/crypto/forex/bonds/ETFs/commodities /futures + plans for penny stocks'/IPOs/cheap stocks..
+
+However, even if we back-test , we arent sure how to properly measure future performance, and how many trades would be considered a statistically valid edge? 
+
+How can we determine if a strategy is ready for production?
+
+we also have a ton of filtesr and buttons under findtorontoevents.ca/audit which we try to document the stats on each permutation of filter options/buton clicks into https://findtorontoevents.ca/audit/pick_funnel.html
+We also have "verified alpha" tab, and 
+We are trying to avoid having some hidden edge.
+we have an AI leaderboard https://findtorontoevents.ca/audit/ai_leaderboard.html we try to compare performance against buy & hold, but what sort of Quant/hedge fund manageger sstats would be ideal?
+
+We have a set of personas and picks per asset class, and a portfolio by each AI model fed into 
+https://findtorontoevents.ca/audit/ai-tournament.html
+
+overall our main sources of potentially profitable picks would be on 
+https://findtorontoevents.ca/audit/ai-tournament.html
+OR 
+findtorontoevents.ca/audit 
+
+but how can be verify an edge on those pages?
+leaderboard looks something like this:
+
+#	Model	Provider	WR	WR 95% CI	PF	Score*	n picks	n resolved	Tier	Status
+#1	deepseek_v4	DeepSeek	57.7%	[50.9%, 64.2%]	3.46	1.288	249	208	T1	LIVE
+#2	gpt4o	OpenAI	59.7%	[51.2%, 67.6%]	3.14	1.090	223	134	T1	LIVE
+#3	deepseek_r1	DeepSeek	62.9%	[54.4%, 70.7%]	2.93	1.028	168	132	T1	LIVE
+#4	grok3	xAI	55.8%	[50.1%, 61.3%]	2.29	0.871	369	303	T1	LIVE
+
+it also has model performance
+Model Summary — All-Time Performance
+[?] ELI5
+46 models · 4953 picks · 3692 resolved · refreshed May 31, 08:51 AM EST
+Model	Picks	WR	PF	Resolved	W/L	Avg PnL	Last Pick (EST)	Personas	Classes	Drill-down
+grok3	369	55.8%	2.29	303	169/134	+2.73%	May 31, 08:37 AM	15	8	View picks →
+deepseek_v4	249	57.7%	3.46	208	120/88	+4.23%	May 31, 08:36 AM	10	7	View picks →
+
+
+There are also risk-managed portfolios, but the automation seems broken!
+Model Portfolios — Risk-Managed Books (Model Portfolios — Risk-Managed Books on https://findtorontoevents.ca/audit/ai-tournament.html)
+One paper portfolio per (AI-model × risk appetite). Each book runs the model's daily picks through a lifecycle engine (entry/sizing/TP/SL/exit) plus appetite-specific risk caps (gross exposure, per-position weight, drawdown breaker). See docs/DESIGN_AI_MODEL_HEDGE_FUND_PORTFOLIOS_2026-05-29.md.
+
+12 portfolio(s) · refreshed May 29, 06:33 PM EST
+All
+Conservative
+Balanced
+Aggressive
+Portfolio	Provider	NAV	Total Return	CAGR	Sharpe 30d	Sortino 30d	MaxDD	PF	Gross Exp	#Open	Last Mark (EST)	Drill
+cursor_agent__aggressive AGG	—	$100000.00	0.00%	—	—	—	-0.00%	—	159.2%	14	May 28, 08:00 PM	View →
+cursor_agent__balanced BAL	—	$100000.00	0.00%	—	—	—	-0.00%	—	42.2%	9	May 28, 08:00 PM	View →
+cursor_agent__conservative CONS	—	$100000.00	0.00%	—	—	—	-0.00%	—	11.6%	6	May 28, 08:00 PM	View →
+deepseek_v4__aggressive AGG	—	$100002.41	+0.00%	—	—	—	-0.00%	—	158.0%	11	May 28, 08:00 PM	View →
+
+Create a comprehensive plan to get us from "coin flip" or "hidden edge" to actually getting profitable strategies per asset class!
