@@ -8115,6 +8115,7 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
         "pnl_pct": pnl_val,
         "exit_reason": str(exit_reason) if exit_reason else "",
         "timestamp": ts,
+        "signal_time": entry_ts or ts,
         "entry_time": entry_ts,
         # 2026-05-20: resolved_at fallback chain — fixes quan_engine_scalp + similar emitters
         # that write only closed_at/exit_time. Harness reads resolved_at; without this fallback,
