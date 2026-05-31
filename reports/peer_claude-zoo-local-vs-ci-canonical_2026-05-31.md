@@ -1,0 +1,87 @@
+# Peer Clarification: Zoo Local DB-Health Run vs CI/Live Canonical
+
+**Date:** 2026-05-31T07:24Z
+**Author:** Claude Opus 4.7 (verifier)
+**Trigger:** Zoo ran `tools/db_health_check.py` locally from IP 142.181.130.10 (no prod DB grant). 10/11 checks errored with "Access denied"; the local artifact reported `any_red=false`, creating false confidence.
+
+---
+
+## TL;DR
+
+The **authoritative `db_health.json` is the CI-cron-produced file served from `https://findtorontoevents.ca/audit/data/db_health.json`.** Zoo's local run is artifactual (no DB grant from a residential IP) and must be ignored. Live JSON shows clean state but pre-dates PR #210 merge by ~21 min.
+
+```
+CLARIFY:live_any_red=false:live_gen=2026-05-31T06:41:42Z:authoritative=ci-cron-live-json:operator_action=trigger_cron
+```
+
+Operator should re-trigger `Run-Backtests-and-Deploy-Dashboards` so the post-#210 fix (sign-based pnl_integrity + canonical status writer) is reflected in the published JSON, then verify the banner on `/audit/` is genuinely cleared.
+
+---
+
+## Side-by-Side: Zoo Local (Artifactual) vs LIVE Production JSON
+
+| Field | Zoo Local (IP 142.181.130.10) | LIVE `/audit/data/db_health.json` |
+|---|---|---|
+| `generated_at` | 2026-05-31T06:12:59 | **2026-05-31T06:41:42.122077+00:00** |
+| `host` | (errored — no grant) | **mysql.50webs.com** (real prod) |
+| `checks_passed` | 1 | **5** |
+| `checks_failed` | 10 | **0** |
+| `any_red` | **false (FALSE POSITIVE)** | **false (genuine)** |
+| `pnl_integrity.tier` | n/a (Access denied) | green |
+| `status_standardization.tier` | n/a (Access denied) | green |
+| `ghost_rows.tier` | "passed by exclusion" | yellow (real residual) |
+| `open_bloat.tier` | n/a | green |
+| `won_pnl_contradiction.tier` | n/a | green |
+
+**Zoo's run is not a "second opinion" — it is a broken probe from a host without prod credentials.** The 10 Access-denied errors mean only `ghost_rows` produced any tier signal, and even that one's per-class queries returned 0 by exclusion (errors silently dropped rows out of the comparison).
+
+---
+
+## The "any_red=false on Access-Denied" Failure Mode
+
+Confirmed in code at `tools/db_health_check.py:624`:
+
+```python
+"any_red": any(c.get("data", {}).get("tier") == "red"
+               for c in results["checks"].values() if c["ok"]),
+```
+
+The `if c["ok"]` filter EXCLUDES errored checks from the `any_red` computation. Consequence:
+
+- **Fully working harness with one red check** → `any_red=true` (correct).
+- **Fully broken harness where every check errors** → `any_red=false` (silent green).
+
+This is the same class of bug as "100% test pass rate because all tests were skipped." It produced today's confusion: Zoo saw `any_red=false` and reported clean, when in fact zero checks had ever run successfully.
+
+**Recommended follow-up** (separate PR):
+1. Compute a parallel `harness_healthy = (checks_failed == 0)` and treat `any_red=false AND harness_healthy=false` as `tier=unknown` in the banner.
+2. Exit non-zero from `db_health_check.py` when `checks_failed > checks_passed` (broken-harness guard), independent of `any_red`.
+3. Stamp the JSON with `runner_ip_class` (private/public/unknown) so consumers can detect "ran from laptop, not CI".
+
+---
+
+## Operator Recommendation
+
+1. **Re-trigger `Run-Backtests-and-Deploy-Dashboards`** to publish a post-#210 (07:02:43Z merge) `db_health.json`. The current live file (06:41:42Z) was generated 21 min before the sign-based pnl_integrity fix landed and therefore does not yet validate the fix in production.
+2. **Verify on `/audit/`** that the DB-health banner is cleared with `gen > 07:02:43Z`.
+3. **If banner remains red after re-trigger**, the PR #210 fix did not propagate — do not assume Zoo's local "green" carries any weight.
+
+---
+
+## Meta-Pattern: Third Stale/Access-Denied Confusion Today
+
+Logged for operator awareness:
+
+1. Earlier: stale-cached `/audit/incidents.html` carried pre-fix numbers → wrong swarm-mutation triggers (see `feedback-incident-page-stale-vs-live-db.md`).
+2. Earlier: cached `/audit/data/db_health.json` served pre-#210 figures while peers argued about whether the fix was live.
+3. Now: Zoo's Access-denied local run reported clean (artifactual) — could have been promoted as "second confirmation" if not caught.
+
+**All three share a root cause:** consumers (humans and agents) read a JSON/HTML artifact without checking provenance (generated_at vs known fix timestamp, host=prod vs host=local-error, harness_healthy boolean). Suggested operator rule: **before citing any `_health.json`, run `jq '{gen: .generated_at, host: .host, passed: .overall.checks_passed, failed: .overall.checks_failed}'` and reject if `failed > passed` or `host != "mysql.50webs.com"` or `gen` is older than the most recent relevant fix.**
+
+---
+
+## Authoritative Sources
+
+- LIVE JSON: `https://findtorontoevents.ca/audit/data/db_health.json` (only canonical source)
+- Local artifact at `audit_dashboard/data/db_health.json` is regenerated by CI; do not edit by hand.
+- Code path: `tools/db_health_check.py` runs in GitHub Actions under `Run-Backtests-and-Deploy-Dashboards` with the prod DB grant (50webs whitelist for the runner IP).
