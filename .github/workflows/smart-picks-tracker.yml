@@ -39,9 +39,18 @@ jobs:
           # A1 meta-label shadow gate — shadow mode only (AUC=0.5795, 941 post-v2.1 picks)
           META_LABEL_GATE: "1"
         run: |
-          cd alpha_engine
-          python smart_picks_engine.py || true
-          python smart_picks_tracker.py || true
+          # INCIDENT_OVERALL #14 fix (2026-05-31): run from repo root with PYTHONPATH set.
+          # Previous `cd alpha_engine` broke `from alpha_engine.risk.vol_target import ...`
+          # added in recent refactor; `|| true` masked the ImportError for 30+ days,
+          # leaving smart_picks.json stale since 2026-04-30.
+          export PYTHONPATH="${GITHUB_WORKSPACE}:${PYTHONPATH:-}"
+          python alpha_engine/smart_picks_engine.py || echo "::warning::smart_picks_engine failed"
+          python alpha_engine/smart_picks_tracker.py || echo "::warning::smart_picks_tracker failed"
+          # Tripwire: surface staleness so a future regression doesn't go 30 days unnoticed
+          if [ -f alpha_engine/data/smart_picks.json ]; then
+            GEN=$(python3 -c "import json; print(json.load(open('alpha_engine/data/smart_picks.json')).get('generated_at',''))")
+            echo "::notice::smart_picks.json generated_at=${GEN}"
+          fi
 
       - name: Commit and push
         run: |
@@ -49,4 +58,5 @@ jobs:
             "Smart picks batch $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]" \
             alpha_engine/data/smart_picks.json \
             alpha_engine/data/smart_picks_history.json
+
 
