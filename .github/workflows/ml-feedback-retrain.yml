@@ -94,6 +94,10 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
+          # joblib.dump fails with FileNotFoundError on a fresh runner because
+          # these dirs are not in git (*.joblib is gitignored + the dirs hold
+          # no tracked files). mkdir -p is idempotent.
+          mkdir -p ml_crypto_predictor/enhanced_models/models ml_crypto_predictor/enhanced_models/feedback_data
           python -m ml_crypto_predictor.enhanced_models.feedback_trainer
 
       - name: Commit feedback model and data
