@@ -1,3 +1,5 @@
+Last stability check 2026-05-31T18:37Z: STABLE. db_health age 43min, queue=4, all critical hourlies <1h stale (tick-18 confirms 18-tick loop end).
+
 # OPERATOR TL;DR — 2026-05-31 (single-page action packet)
 
 When you return to this session, read THIS page first. Everything else can wait.
