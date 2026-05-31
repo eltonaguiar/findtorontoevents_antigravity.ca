@@ -158,22 +158,42 @@ def _record_emitted_release(symbol: str, direction: str,
             data = {"emitted": []}
         cutoff_dt = datetime.now(timezone.utc).date() - timedelta(weeks=LOOKBACK_WEEKS)
         cutoff_iso = cutoff_dt.isoformat()
+        
+        # Canonicalize current entry for comparison
+        target_dir = _normalize_direction(direction)
+        
         kept = []
+        already_exists = False
         for e in data.get("emitted", []):
             rd = e.get("latest_cot_date", "")
             if not rd or rd >= cutoff_iso:
+                # Check if this exact release was already recorded
+                if (e.get("symbol") == symbol and 
+                    _normalize_direction(e.get("direction", "")) == target_dir and 
+                    rd == latest_cot_date):
+                    already_exists = True
                 kept.append(e)
-        kept.append({
-            "symbol": symbol,
-            "direction": _normalize_direction(direction),
-            "latest_cot_date": latest_cot_date,
-            "emitted_at": emitted_at,
-        })
-        data["emitted"] = kept
-        tmp_path = EMITTED_RELEASES_PATH + ".tmp"
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-        os.replace(tmp_path, EMITTED_RELEASES_PATH)
+        
+        if not already_exists:
+            kept.append({
+                "symbol": symbol,
+                "direction": target_dir,
+                "latest_cot_date": latest_cot_date,
+                "emitted_at": emitted_at,
+            })
+            data["emitted"] = kept
+            tmp_path = EMITTED_RELEASES_PATH + ".tmp"
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            os.replace(tmp_path, EMITTED_RELEASES_PATH)
+        else:
+            # Still prune if needed even if we didn't add a new one
+            if len(kept) < len(data.get("emitted", [])):
+                data["emitted"] = kept
+                tmp_path = EMITTED_RELEASES_PATH + ".tmp"
+                with open(tmp_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
+                os.replace(tmp_path, EMITTED_RELEASES_PATH)
     finally:
         _release_ledger_lock(lock_path)
 

@@ -41,6 +41,126 @@ _COT_TP_PCT = float(os.environ.get("COT_TP_PCT", "0.08"))   # 8% take profit
 _COT_SL_PCT = float(os.environ.get("COT_SL_PCT", "0.05"))   # 5% stop loss
 
 
+LOOKBACK_WEEKS = 52  # 1 year for percentile calculation
+
+# Per-release emit ledger. Each CFTC weekly release should emit at most ONE pick
+# per (symbol). Without this guard, every scanner cycle that runs between
+# release-N (Friday) and release-N+1 (next Friday) re-emits the same pick from
+# release-N — the over-emission bug audited 2026-05-13. Falsified the COT
+# paper-pilot's TIER-1 status (WR 90.1% → 40%, PF 2.73 → 0.17, n=101 → 5 real
+# releases). Refs: cot_paper_pilot_overemission_falsified_20260513.md,
+# tools/verify_cot_post_patch.py.
+EMITTED_RELEASES_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data", "cot_emitted_releases.json"
+)
+
+
+def _normalize_direction(direction: str) -> str:
+    """Map BUY/SELL (scanner vocab) to LONG/SHORT (audit vocab) so the
+    ledger has a single direction vocabulary regardless of caller."""
+    d = (direction or "").upper().strip()
+    if d == "BUY":
+        return "LONG"
+    if d == "SELL":
+        return "SHORT"
+    return d
+
+
+def _load_emitted_releases() -> set:
+    """Return set of (symbol, direction, latest_cot_date) 3-tuples
+    already emitted.
+    """
+    if not os.path.exists(EMITTED_RELEASES_PATH):
+        return set()
+    try:
+        with open(EMITTED_RELEASES_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return set()
+    return {
+        (
+            e.get("symbol", ""),
+            _normalize_direction(e.get("direction", "")),
+            e.get("latest_cot_date", ""),
+        )
+        for e in data.get("emitted", [])
+        if e.get("symbol") and e.get("latest_cot_date")
+    }
+
+
+def _acquire_ledger_lock(timeout: float = 5.0, retry: float = 0.05) -> "Optional[str]":
+    """Best-effort O_EXCL sidecar lock for cross-process serialization."""
+    import errno
+    import time as _time
+    lock_path = EMITTED_RELEASES_PATH + ".lock"
+    deadline = _time.time() + timeout
+    while _time.time() < deadline:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(fd)
+            return lock_path
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                return None
+            _time.sleep(retry)
+    try:
+        os.unlink(lock_path)
+    except OSError:
+        pass
+    return None
+
+
+def _release_ledger_lock(lock_path: "Optional[str]") -> None:
+    if not lock_path:
+        return
+    try:
+        os.unlink(lock_path)
+    except OSError:
+        pass
+
+
+def _record_emitted_release(symbol: str, direction: str,
+                            latest_cot_date: str, emitted_at: str) -> None:
+    """Append one (symbol, direction, latest_cot_date) row to the ledger."""
+    os.makedirs(os.path.dirname(EMITTED_RELEASES_PATH), exist_ok=True)
+    lock_path = _acquire_ledger_lock()
+    try:
+        try:
+            with open(EMITTED_RELEASES_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            data = {"emitted": []}
+        cutoff_dt = datetime.now(timezone.utc).date() - timedelta(weeks=LOOKBACK_WEEKS)
+        cutoff_iso = cutoff_dt.isoformat()
+        
+        target_dir = _normalize_direction(direction)
+        kept = []
+        already_exists = False
+        for e in data.get("emitted", []):
+            rd = e.get("latest_cot_date", "")
+            if not rd or rd >= cutoff_iso:
+                if (e.get("symbol") == symbol and 
+                    _normalize_direction(e.get("direction", "")) == target_dir and 
+                    rd == latest_cot_date):
+                    already_exists = True
+                kept.append(e)
+        
+        if not already_exists:
+            kept.append({
+                "symbol": symbol,
+                "direction": target_dir,
+                "latest_cot_date": latest_cot_date,
+                "emitted_at": emitted_at,
+            })
+            data["emitted"] = kept
+            tmp_path = EMITTED_RELEASES_PATH + ".tmp"
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            os.replace(tmp_path, EMITTED_RELEASES_PATH)
+    finally:
+        _release_ledger_lock(lock_path)
+
+
 def _fetch_current_price(ticker: str) -> Optional[float]:
     """Fetch the latest close price for *ticker* via yfinance. Returns None on failure."""
     try:
@@ -223,6 +343,7 @@ def commodity_cot_contrarian_picks() -> list[dict]:
 
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
+    emitted_keys = _load_emitted_releases()
     picks: list[dict] = []
 
     for sym, info in COMMODITY_CONTRACTS.items():
@@ -251,6 +372,13 @@ def commodity_cot_contrarian_picks() -> list[dict]:
             except (ValueError, TypeError):
                 pass
 
+        # Per-release dedup: one pick per (symbol, direction, CFTC release).
+        _release_dir = _normalize_direction(result["direction"])
+        release_key = (sym, _release_dir, latest_cot_date)
+        if release_key in emitted_keys:
+            print(f"  [COT-DEDUP] {sym}: release {latest_cot_date} already emitted (skip)")
+            continue
+
         # Fetch current price so the pick passes the entry_price gate downstream.
         current_price = _fetch_current_price(info["yahoo"])
         entry_price = current_price  # mark-to-market at signal time
@@ -264,6 +392,11 @@ def commodity_cot_contrarian_picks() -> list[dict]:
             else:  # LONG
                 take_profit = round(entry_price * (1 + _COT_TP_PCT), 4)
                 stop_loss = round(entry_price * (1 - _COT_SL_PCT), 4)
+
+        # Record emission in ledger before appending to return list
+        _record_emitted_release(sym, result["direction"],
+                                latest_cot_date, now_iso)
+        emitted_keys.add(release_key)
 
         picks.append({
             "symbol": info["yahoo"],
