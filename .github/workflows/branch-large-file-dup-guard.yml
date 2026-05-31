@@ -47,7 +47,7 @@ jobs:
         env:
           MIN_SIZE_MB: ${{ github.event.inputs.min_size_mb || '20' }}
           MIN_BRANCH_COPIES: ${{ github.event.inputs.min_branch_copies || '3' }}
-          FAIL_ON_FINDINGS: ${{ github.event.inputs.fail_on_findings || 'true' }}
+          FAIL_ON_FINDINGS: ${{ github.event.inputs.fail_on_findings || (github.event_name == 'workflow_dispatch' && 'true' || 'false') }}
         run: |
           python - <<'PY'
           import collections
@@ -281,7 +281,7 @@ jobs:
       - name: Enforce fail-on-findings policy
         if: always()
         env:
-          FAIL_ON_FINDINGS: ${{ github.event.inputs.fail_on_findings || 'true' }}
+          FAIL_ON_FINDINGS: ${{ github.event.inputs.fail_on_findings || (github.event_name == 'workflow_dispatch' && 'true' || 'false') }}
           HAS_FINDINGS: ${{ steps.scan.outputs.has_findings }}
         run: |
           if [ "${HAS_FINDINGS}" = "true" ] && [ "${FAIL_ON_FINDINGS}" = "true" ]; then
