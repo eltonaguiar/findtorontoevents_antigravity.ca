@@ -849,3 +849,49 @@ def mysql_record_event(
         _derive_asset_class(symbol) if symbol else "UNKNOWN",
         _json_dumps(payload), origin, now,
     ))
+
+
+def refresh_strategy_stats_mysql() -> int:
+    """Rebuild at_strategy_stats from at_consensus_picks. Returns rows inserted."""
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        # Clear existing stats
+        cur.execute("DELETE FROM at_strategy_stats")
+
+        # Aggregate from consensus_picks — unpack source_systems JSON array
+        sql = """
+            INSERT INTO at_strategy_stats
+                (strategy, source_system, asset_class, total_picks, consensus_picks,
+                 wins, losses, win_rate, avg_pnl_pct, best_pnl, worst_pnl, last_updated)
+            SELECT
+                COALESCE(cp.consensus_tier, 'unknown') AS strategy,
+                jt.source_system,
+                cp.asset_class,
+                COUNT(*) AS total_picks,
+                COUNT(*) AS consensus_picks,
+                SUM(CASE WHEN cp.status = 'WON' THEN 1 ELSE 0 END) AS wins,
+                SUM(CASE WHEN cp.status = 'LOST' THEN 1 ELSE 0 END) AS losses,
+                CASE WHEN SUM(CASE WHEN cp.status IN ('WON','LOST') THEN 1 ELSE 0 END) > 0
+                    THEN ROUND(SUM(CASE WHEN cp.status='WON' THEN 1 ELSE 0 END)
+                         / SUM(CASE WHEN cp.status IN ('WON','LOST') THEN 1 ELSE 0 END), 4)
+                    ELSE 0.0 END AS win_rate,
+                ROUND(AVG(COALESCE(cp.pnl_pct, 0)), 4) AS avg_pnl_pct,
+                ROUND(MAX(COALESCE(cp.pnl_pct, 0)), 4) AS best_pnl,
+                ROUND(MIN(COALESCE(cp.pnl_pct, 0)), 4) AS worst_pnl,
+                UTC_TIMESTAMP() AS last_updated
+            FROM at_consensus_picks cp,
+                 JSON_TABLE(cp.source_systems, '$[*]' COLUMNS (source_system VARCHAR(100) PATH '$')) jt
+            WHERE cp.status != 'OPEN'
+            GROUP BY strategy, jt.source_system, cp.asset_class
+        """
+        cur.execute(sql)
+        count = cur.rowcount
+        conn.commit()
+        return count
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning("refresh_strategy_stats_mysql failed: %s", e)
+        return 0
+    finally:
+        _return_conn(conn)

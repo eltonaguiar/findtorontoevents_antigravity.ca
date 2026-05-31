@@ -485,6 +485,15 @@ jobs:
           # 2026-05-19 resolver step 3: enforce monotone-conservative shadow gates (downgrade-only).
           MDD_GATE_ENFORCE: '1'
           ML_ENHANCED_CRYPTO_QUARANTINE: '1'
+          # 2026-05-31: PR #89 plumbed the AI-tournament cohort (40 models /
+          # ~1.6k resolved trades) into pf_registry behind a separate env flag
+          # so it can be enabled independently of PF_REGISTRY_INCLUDE_DB
+          # (trading_picks). Flip ON here so build_pf_registry.py picks up the
+          # tournament cohort on every hourly run. Revert: set to '0' or delete
+          # this line — opt-in design means default OFF behavior is restored
+          # immediately. Days window honored by PF_REGISTRY_TOURNAMENT_DB_DAYS
+          # (default 90 if unset).
+          PF_REGISTRY_INCLUDE_TOURNAMENT_DB: '1'
         run: |
           python -m alpha_engine.score_booster || echo "Score booster warning (non-fatal)"
           # 2026-05-28: refresh money_ready_verdict.json on every hourly dashboard

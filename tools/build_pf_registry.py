@@ -379,12 +379,103 @@ def _load_mysql_rows(days: int = 90) -> tuple[list, dict]:
     return rows, meta
 
 
+def _load_tournament_picks_rows(days: int = 90) -> tuple[list, dict]:
+    """Read resolved picks from MySQL `tournament_picks` (the AI-tournament
+    table populated by `tools/ai_tournament/ingest_to_db.py`). 40 models ×
+    ~1613 resolved trades that are otherwise invisible to pf_registry.
+
+    Gated by env var `PF_REGISTRY_INCLUDE_TOURNAMENT_DB=1` (separate from
+    `PF_REGISTRY_INCLUDE_DB` so operators can opt into tournament + trading
+    picks independently). Only `status IN ('WIN','LOSS')` rows are returned.
+
+    Returns (rows, meta). rows match the JSON shape consumed by classify_rows:
+      - `strategy` from `strategy_name` (falls back to `persona_id`).
+      - `asset_class` carried through as-is.
+      - `_origin_file` tagged `mysql:tournament_picks:Nd`.
+      - `entry_date` filled from `submitted_at` (else `created_at`).
+    """
+    rows: list = []
+    meta: dict = {"enabled": True, "days": days}
+    try:
+        from tools import db_env  # type: ignore[import-not-found]
+    except ImportError as exc:
+        meta.update({"loaded": 0, "error": f"import failed: {exc}"})
+        return rows, meta
+    try:
+        import pymysql  # type: ignore[import-not-found]
+    except ImportError as exc:
+        meta.update({"loaded": 0, "error": f"pymysql missing: {exc}"})
+        return rows, meta
+    try:
+        creds = db_env.get_stocks_creds()
+        creds.setdefault("cursorclass", pymysql.cursors.DictCursor)
+        conn = pymysql.connect(**creds)
+    except Exception as exc:
+        meta.update({"loaded": 0, "error": f"connect failed: {type(exc).__name__}"})
+        return rows, meta
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT strategy_name, persona_id, model_id, asset_class,
+                       symbol, direction, entry_price, exit_price, pnl_pct,
+                       status, submitted_at, resolved_at, created_at,
+                       data_integrity_flag
+                FROM tournament_picks
+                WHERE status IN ('WIN','LOSS')
+                  AND COALESCE(submitted_at, created_at) >= NOW() - INTERVAL %s DAY
+                """,
+                (days,),
+            )
+            raw = list(cur.fetchall())
+    except Exception as exc:
+        meta.update({"loaded": 0, "error": f"fetch failed: {type(exc).__name__}"})
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return rows, meta
+    try:
+        conn.close()
+    except Exception:
+        pass
+    for r in raw:
+        if not isinstance(r, dict):
+            continue
+        r = dict(r)
+        strategy = (
+            r.get("strategy_name")
+            or r.get("persona_id")
+            or r.get("model_id")
+            or "tournament_unknown"
+        )
+        r["strategy"] = str(strategy)
+        if r.get("asset_class"):
+            r["asset_class"] = str(r["asset_class"])
+        status = str(r.get("status") or "").upper()
+        if status:
+            r["status"] = status
+        # entry_date: classify_rows dedup key reads entry_date with fallbacks;
+        # set it explicitly so DB rows dedup against JSON re-emissions cleanly.
+        if not r.get("entry_date"):
+            r["entry_date"] = (
+                r.get("submitted_at") or r.get("created_at") or ""
+            )
+        r["_origin_file"] = f"mysql:tournament_picks:{days}d"
+        rows.append(r)
+    meta["loaded"] = len(rows)
+    return rows, meta
+
+
 def load_rows():
     """Returns (rows, source_meta). rows is a flat list of dicts; source_meta
     records which files were found and how many rows each contributed.
 
     When env var PF_REGISTRY_INCLUDE_DB=1 is set, ALSO loads closed picks
-    direct from MySQL trading_picks via _load_mysql_rows(). The merged
+    direct from MySQL trading_picks via _load_mysql_rows(). When
+    PF_REGISTRY_INCLUDE_TOURNAMENT_DB=1 is set, ALSO loads resolved picks
+    from MySQL tournament_picks via _load_tournament_picks_rows() (the
+    AI-tournament cohort: 40 models, ~1.6k resolved trades). The merged
     cohort then flows through the same classify_rows dedup + flicker filter
     + policy-clean NET aggregation as JSON-sourced rows. See
     reports/2026-05-25_policy_clean_vs_top_edges_funnel.md."""
@@ -417,6 +508,34 @@ def load_rows():
             rows.append(r)
             count += 1
         source_meta.append({"file": rel, "present": True, "rows": count})
+    # Additional non-JSON_PICK_SOURCES feeder: hyrotrader emits closed picks
+    # from its real-fills-only journal via tools/hyrotrader_closed_picks_emitter.py.
+    # Wired here (rather than added to JSON_PICK_SOURCES in dashboard_generator)
+    # so this PR doesn't touch the dashboard generator. Empty journal → file
+    # is either absent or has picks=[] → 0 rows contributed.
+    _hyro_rel = "audit_dashboard/data/hyrotrader_closed_picks.json"
+    _hyro_path = os.path.join(REPO_ROOT, _hyro_rel)
+    if os.path.isfile(_hyro_path):
+        try:
+            with open(_hyro_path, "r", encoding="utf-8") as f:
+                _hyro_doc = json.load(f)
+            _hyro_picks = _hyro_doc.get("picks") if isinstance(_hyro_doc, dict) else _hyro_doc
+            _hyro_n = 0
+            if isinstance(_hyro_picks, list):
+                for r in _hyro_picks:
+                    if not isinstance(r, dict):
+                        continue
+                    r = dict(r)
+                    r["_origin_file"] = _hyro_rel
+                    rows.append(r)
+                    _hyro_n += 1
+            source_meta.append({"file": _hyro_rel, "present": True, "rows": _hyro_n})
+        except (OSError, json.JSONDecodeError) as exc:
+            source_meta.append({"file": _hyro_rel, "present": True, "rows": 0,
+                                "error": f"read failed: {type(exc).__name__}"})
+    else:
+        source_meta.append({"file": _hyro_rel, "present": False, "rows": 0,
+                            "note": "run tools/hyrotrader_closed_picks_emitter.py to materialize closed picks from hyrotrader_journal.json"})
     if os.environ.get("PF_REGISTRY_INCLUDE_DB") == "1":
         db_days_raw = os.environ.get("PF_REGISTRY_DB_DAYS") or "90"
         try:
@@ -437,6 +556,27 @@ def load_rows():
             "present": False,
             "rows": 0,
             "note": "set PF_REGISTRY_INCLUDE_DB=1 to merge MySQL cohort",
+        })
+    if os.environ.get("PF_REGISTRY_INCLUDE_TOURNAMENT_DB") == "1":
+        t_days_raw = os.environ.get("PF_REGISTRY_TOURNAMENT_DB_DAYS") or "90"
+        try:
+            t_days = max(1, int(t_days_raw))
+        except ValueError:
+            t_days = 90
+        t_rows, t_meta = _load_tournament_picks_rows(days=t_days)
+        rows.extend(t_rows)
+        source_meta.append({
+            "file": f"mysql://tournament_picks?days={t_days}",
+            "present": True,
+            "rows": t_meta.get("loaded", 0),
+            **{k: v for k, v in t_meta.items() if k in ("error", "days")},
+        })
+    else:
+        source_meta.append({
+            "file": "mysql://tournament_picks",
+            "present": False,
+            "rows": 0,
+            "note": "set PF_REGISTRY_INCLUDE_TOURNAMENT_DB=1 to merge AI-tournament cohort (40 models, ~1.6k resolved trades)",
         })
     return rows, source_meta
 

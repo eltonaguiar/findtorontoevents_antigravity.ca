@@ -35,6 +35,14 @@ jobs:
             --save --output audit_dashboard/data/hyrotrader_picks.json
         continue-on-error: true
 
+      - name: Materialize hyrotrader closed picks from journal (for pf_registry)
+        # Reads hyrotrader_journal.json (real fills only — never auto-invented)
+        # and writes hyrotrader_closed_picks.json so pf_registry picks up the
+        # source automatically. Empty journal → 0-row file (still written).
+        run: |
+          python tools/hyrotrader_closed_picks_emitter.py
+        continue-on-error: true
+
       - name: Hyro backtest (expanded symbols × strategies, LONG-only)
         env:
           GITHUB_ACTIONS: 'true'

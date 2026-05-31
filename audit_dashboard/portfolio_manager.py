@@ -5154,7 +5154,16 @@ def main():
     save_state(state)
 
     # Generate dashboard data
-    ports_list = [state[pdef["id"]] for pdef in PORTFOLIOS]
+    # KILLED portfolios (rr_kings, multi_asset_diversified, …) are intentionally
+    # skipped during the `manage` cycle, so they never get written into `state`.
+    # Filter them out here too — otherwise the comprehension below raises
+    # KeyError as soon as ANY paused/killed portfolio is in PORTFOLIOS, which is
+    # why claudes-test-portfolios.yml has been failing every 30 min since the
+    # rr_kings kill landed (run 26697733257 → exit 1 KeyError: 'rr_kings').
+    ports_list = [
+        state[pdef["id"]] for pdef in PORTFOLIOS
+        if pdef["id"] in state and pdef["id"] not in PAUSED_PORTFOLIOS
+    ]
     dashboard_data = generate_dashboard(ports_list, regime)
 
     # Write dashboard JSON
