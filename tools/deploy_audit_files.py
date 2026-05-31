@@ -46,6 +46,8 @@ UPLOADS = [
     ("audit_dashboard/data/money_ready_verdict.json",        "/findtorontoevents.ca/audit/data/money_ready_verdict.json",         "audit_data"),
     ("alpha_engine/data/regime_report.json",                 "/findtorontoevents.ca/audit/data/regime_report.json",              "audit_data"),
     ("audit_dashboard/data/ai_tournament_model_diagnostics.json", "/findtorontoevents.ca/audit/data/ai_tournament_model_diagnostics.json", "ai_tournament"),
+    ("audit_dashboard/pf.html",                              "/findtorontoevents.ca/audit/pf.html",                               "ai_portfolios"),
+    ("audit_dashboard/data/pf_portfolios.json",              "/findtorontoevents.ca/audit/data/pf_portfolios.json",               "ai_portfolios"),
     ("audit_dashboard/data/pick_summary_stats_2w.json",      "/findtorontoevents.ca/audit/data/pick_summary_stats_2w.json",       "pick_funnel"),
     ("audit_dashboard/data/pick_summary_stats_48h.json",     "/findtorontoevents.ca/audit/data/pick_summary_stats_48h.json",      "pick_funnel"),
     ("audit_dashboard/portfolio_history.html",               "/findtorontoevents.ca/audit/portfolio_history.html",                "portfolio_history"),

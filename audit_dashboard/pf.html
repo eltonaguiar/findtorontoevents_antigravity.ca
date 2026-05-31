@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portfolio · findtorontoevents.ca/audit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 1400px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.5; }
+  h1 { margin-bottom: 4px; font-size: 22px; }
+  h2 { font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #a0a0b0; margin: 20px 0 10px; }
+  h3 { font-size: 13px; color: #c0c0d0; margin: 12px 0 6px; }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .small { font-size: 11px; color: #a0a0b0; }
+  .back { display: inline-block; margin-bottom: 12px; font-size: 12px; color: #93c5fd; }
+  header.pf-header { padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px; letter-spacing: 0.3px; }
+  .b-pending { background: #6b7280; color: #e6e6f0; }
+  .b-cons { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
+  .b-bal { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+  .b-agg { background: #7c2d12; color: #fca5a5; border: 1px solid #ef4444; }
+  .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 12px 0; }
+  .metric { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; }
+  .metric .lbl { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
+  .metric .val { font-size: 18px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .pnl-pos { color: #22c55e; }
+  .pnl-neg { color: #ef4444; }
+  .pnl-neu { color: #a0a0b0; }
+  table.lb { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  table.lb th { background: rgba(255,255,255,0.04); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; color: #a0a0b0; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.lb th.num { text-align: right; }
+  table.lb td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  table.lb .num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.lb tr:hover td { background: rgba(96,165,250,0.06); }
+  .trunc { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+  .empty { padding: 20px; text-align: center; color: #6b7280; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1); }
+  svg.chart { width: 100%; height: 240px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); }
+  svg.donut { width: 200px; height: 200px; }
+  .exposure-wrap { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .exposure-legend { font-size: 11px; }
+  .exposure-legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<a class="back" href="./ai-tournament.html">← Back to AI Tournament</a>
+
+<header class="pf-header">
+  <h1 id="pf-title">Portfolio · <span id="pf-key">…</span></h1>
+  <div class="small" id="pf-subtitle">Loading…</div>
+</header>
+
+<div id="pf-empty" class="empty" style="display:none">
+  This portfolio has no data yet — first daily run is scheduled 22:00 UTC. Check back after <code>pf_portfolio_&lt;key&gt;.json</code> is written.
+</div>
+
+<div id="pf-body" style="display:none">
+
+  <div class="metrics-row" id="pf-metrics"></div>
+
+  <h2>NAV Equity Curve</h2>
+  <svg class="chart" id="nav-chart" viewBox="0 0 800 240" preserveAspectRatio="none" aria-label="NAV equity curve"></svg>
+
+  <h2>Open Positions</h2>
+  <div style="overflow-x:auto">
+    <table class="lb">
+      <thead><tr>
+        <th>Symbol</th><th>Class</th><th>Dir</th>
+        <th>Entry Date (EST)</th><th class="num">Entry $</th><th class="num">Qty</th>
+        <th class="num">Weight%</th><th class="num">TP</th><th class="num">SL</th>
+        <th class="num">Current $</th><th class="num">Unrealized %</th>
+        <th>Entry Reason</th><th>Sizing Reason</th>
+      </tr></thead>
+      <tbody id="open-tbody"><tr><td colspan="13" class="small" style="text-align:center;color:#4b5563;padding:14px">No open positions.</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>Closed Positions / Blotter</h2>
+  <div style="overflow-x:auto">
+    <table class="lb">
+      <thead><tr>
+        <th>Symbol</th><th>Class</th><th>Dir</th>
+        <th>Entry → Exit (EST)</th><th class="num">Realized %</th><th class="num">Realized $</th>
+        <th>Exit Reason</th>
+      </tr></thead>
+      <tbody id="closed-tbody"><tr><td colspan="7" class="small" style="text-align:center;color:#4b5563;padding:14px">No closed positions.</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>Exposure by Asset Class</h2>
+  <div class="exposure-wrap">
+    <svg class="donut" id="exp-donut" viewBox="0 0 120 120" aria-label="Exposure by asset class"></svg>
+    <div class="exposure-legend" id="exp-legend">—</div>
+  </div>
+
+  <h2>Rule Events Log (last 50)</h2>
+  <div style="overflow-x:auto">
+    <table class="lb">
+      <thead><tr>
+        <th>When (EST)</th><th>Event</th><th>Symbol</th><th>Detail</th>
+      </tr></thead>
+      <tbody id="events-tbody"><tr><td colspan="4" class="small" style="text-align:center;color:#4b5563;padding:14px">No rule events recorded.</td></tr></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+function esc(s){ if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function toEST(utcStr) {
+  if (!utcStr) return '—';
+  try {
+    var d = new Date(utcStr);
+    if (isNaN(d.getTime())) return String(utcStr).slice(0, 10);
+    return d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return String(utcStr).slice(0, 10); }
+}
+function fmtNum(v, dp){ if (v == null || isNaN(v)) return '—'; return Number(v).toFixed(dp == null ? 2 : dp); }
+function fmtPct(v, dp){ if (v == null || isNaN(v)) return '—'; var n = Number(v); return (n > 0 ? '+' : '') + n.toFixed(dp == null ? 2 : dp) + '%'; }
+function fmtUsd(v){ if (v == null || isNaN(v)) return '—'; return '$' + Number(v).toFixed(2); }
+function pnlClass(v){ if (v == null || isNaN(v)) return 'pnl-neu'; return v > 0 ? 'pnl-pos' : v < 0 ? 'pnl-neg' : 'pnl-neu'; }
+function appetiteBadge(a){
+  if (!a) return '<span class="badge b-pending">—</span>';
+  var k = String(a).toLowerCase();
+  if (k === 'conservative') return '<span class="badge b-cons">CONSERVATIVE</span>';
+  if (k === 'balanced') return '<span class="badge b-bal">BALANCED</span>';
+  if (k === 'aggressive') return '<span class="badge b-agg">AGGRESSIVE</span>';
+  return '<span class="badge b-pending">' + esc(a) + '</span>';
+}
+function safeKey(k){ return String(k || '').replace(/[^A-Za-z0-9_.-]/g, '_'); }
+
+function getKeyParam(){
+  try {
+    var u = new URL(window.location.href);
+    return u.searchParams.get('key') || '';
+  } catch (e) {
+    var m = (window.location.search || '').match(/[?&]key=([^&]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+}
+
+function renderHeader(detail){
+  var pf = detail.portfolio || {};
+  var key = pf.portfolio_key || detail.portfolio_key || getKeyParam();
+  document.getElementById('pf-key').textContent = key;
+  document.title = 'Portfolio · ' + key + ' · findtorontoevents.ca/audit';
+  var startNav = pf.starting_nav;
+  var navs = detail.nav_curve || [];
+  var latest = navs.length ? navs[navs.length - 1] : null;
+  var totalReturn = null;
+  if (latest && startNav) {
+    totalReturn = (Number(latest.nav_usd) - Number(startNav)) / Number(startNav) * 100.0;
+  }
+  var lastMark = latest ? toEST(latest.asof_date) : '—';
+  var sub = '<strong>' + esc(pf.model_id || '—') + '</strong> · ' + appetiteBadge(pf.risk_appetite) +
+            ' · <span class="' + pnlClass(totalReturn) + '">Total return: ' + fmtPct(totalReturn) + '</span>' +
+            ' · <span class="small">Last mark: ' + lastMark + ' EST</span>';
+  document.getElementById('pf-subtitle').innerHTML = sub;
+}
+
+function renderMetrics(detail){
+  var pf = detail.portfolio || {};
+  var m = detail.metrics_latest || {};
+  var navs = detail.nav_curve || [];
+  var latest = navs.length ? navs[navs.length - 1] : null;
+  var startNav = Number(pf.starting_nav || 0);
+  var latestNav = latest ? Number(latest.nav_usd) : null;
+  var totalReturn = (latestNav != null && startNav) ? (latestNav - startNav) / startNav * 100.0 : null;
+  var cells = [
+    { lbl: 'NAV', val: latestNav == null ? '—' : fmtUsd(latestNav), cls: 'pnl-neu' },
+    { lbl: 'Total Return', val: fmtPct(totalReturn), cls: pnlClass(totalReturn) },
+    { lbl: 'CAGR', val: fmtPct(m.cagr), cls: pnlClass(m.cagr) },
+    { lbl: 'Sharpe 30d', val: fmtNum(m.sharpe_30d), cls: pnlClass(m.sharpe_30d) },
+    { lbl: 'Sortino 30d', val: fmtNum(m.sortino_30d), cls: pnlClass(m.sortino_30d) },
+    { lbl: 'MaxDD', val: (m.max_dd == null ? '—' : '-' + Math.abs(Number(m.max_dd)).toFixed(2) + '%'), cls: m.max_dd == null ? 'pnl-neu' : 'pnl-neg' },
+    { lbl: 'PF', val: fmtNum(m.pf_to_date), cls: (m.pf_to_date == null || isNaN(m.pf_to_date)) ? 'pnl-neu' : (m.pf_to_date >= 1.5 ? 'pnl-pos' : m.pf_to_date < 1.0 ? 'pnl-neg' : 'pnl-neu') },
+    { lbl: 'Gross Exp', val: (latest && latest.gross_exposure_pct != null) ? Number(latest.gross_exposure_pct).toFixed(1) + '%' : '—', cls: 'pnl-neu' }
+  ];
+  var html = '';
+  cells.forEach(function(c){
+    html += '<div class="metric"><div class="lbl">' + esc(c.lbl) + '</div><div class="val ' + c.cls + '">' + c.val + '</div></div>';
+  });
+  document.getElementById('pf-metrics').innerHTML = html;
+}
+
+function renderNavChart(detail){
+  var svg = document.getElementById('nav-chart');
+  var navs = (detail.nav_curve || []).filter(function(n){ return n && n.nav_usd != null; });
+  if (!navs.length) {
+    svg.innerHTML = '<text x="400" y="120" fill="#6b7280" font-size="12" text-anchor="middle">No NAV history yet.</text>';
+    return;
+  }
+  var W = 800, H = 240, padL = 50, padR = 16, padT = 14, padB = 26;
+  var xs = navs.map(function(n){ return new Date(n.asof_date).getTime(); });
+  var ys = navs.map(function(n){ return Number(n.nav_usd); });
+  var xMin = Math.min.apply(null, xs), xMax = Math.max.apply(null, xs);
+  var yMin = Math.min.apply(null, ys), yMax = Math.max.apply(null, ys);
+  if (yMin === yMax) { yMin = yMin * 0.99; yMax = yMax * 1.01; }
+  if (xMin === xMax) xMax = xMin + 1;
+  function sx(x){ return padL + (x - xMin) / (xMax - xMin) * (W - padL - padR); }
+  function sy(y){ return padT + (1 - (y - yMin) / (yMax - yMin)) * (H - padT - padB); }
+  var startNav = Number((detail.portfolio || {}).starting_nav || ys[0]);
+  var pts = navs.map(function(n){ return sx(new Date(n.asof_date).getTime()).toFixed(1) + ',' + sy(Number(n.nav_usd)).toFixed(1); }).join(' ');
+  var last = ys[ys.length - 1];
+  var lineColor = last >= startNav ? '#22c55e' : '#ef4444';
+  var fillColor = last >= startNav ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
+  var fillPts = padL + ',' + (H - padB) + ' ' + pts + ' ' + sx(xs[xs.length-1]).toFixed(1) + ',' + (H - padB);
+  var baselineY = sy(startNav).toFixed(1);
+  var yTicks = '';
+  [yMin, (yMin + yMax) / 2, yMax].forEach(function(v){
+    var y = sy(v).toFixed(1);
+    yTicks += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="rgba(255,255,255,0.05)"/>';
+    yTicks += '<text x="' + (padL - 6) + '" y="' + y + '" fill="#6b7280" font-size="10" text-anchor="end" dominant-baseline="middle">$' + Number(v).toFixed(0) + '</text>';
+  });
+  var firstDate = toEST(navs[0].asof_date), lastDate = toEST(navs[navs.length-1].asof_date);
+  svg.innerHTML =
+    yTicks +
+    '<line x1="' + padL + '" y1="' + baselineY + '" x2="' + (W - padR) + '" y2="' + baselineY + '" stroke="#6b7280" stroke-dasharray="3 3"/>' +
+    '<polygon points="' + fillPts + '" fill="' + fillColor + '"/>' +
+    '<polyline points="' + pts + '" fill="none" stroke="' + lineColor + '" stroke-width="2"/>' +
+    '<text x="' + padL + '" y="' + (H - 8) + '" fill="#6b7280" font-size="10">' + esc(firstDate) + '</text>' +
+    '<text x="' + (W - padR) + '" y="' + (H - 8) + '" fill="#6b7280" font-size="10" text-anchor="end">' + esc(lastDate) + '</text>';
+}
+
+function renderOpen(detail){
+  var positions = detail.positions || [];
+  var open = positions.filter(function(p){ return String(p.status || '').toLowerCase() === 'open'; });
+  var tbody = document.getElementById('open-tbody');
+  if (!open.length) { tbody.innerHTML = '<tr><td colspan="13" class="small" style="text-align:center;color:#4b5563;padding:14px">No open positions.</td></tr>'; return; }
+  var html = '';
+  open.forEach(function(p){
+    var unr = p.unrealized_pnl_pct;
+    if (unr == null && p.current_price != null && p.entry_price) {
+      var dir = String(p.direction || 'long').toLowerCase();
+      var sign = (dir === 'short' || dir === 'sell') ? -1 : 1;
+      unr = sign * (Number(p.current_price) - Number(p.entry_price)) / Number(p.entry_price) * 100.0;
+    }
+    var entryReason = p.entry_reason || '';
+    var sizingReason = p.sizing_reason || '';
+    html += '<tr>' +
+      '<td><strong>' + esc(p.symbol) + '</strong></td>' +
+      '<td>' + esc(p.asset_class || '—') + '</td>' +
+      '<td>' + esc((p.direction || '').toUpperCase()) + '</td>' +
+      '<td class="small">' + toEST(p.entry_date) + '</td>' +
+      '<td class="num">' + fmtNum(p.entry_price, 4) + '</td>' +
+      '<td class="num">' + fmtNum(p.qty, 4) + '</td>' +
+      '<td class="num">' + (p.weight_pct == null ? '—' : Number(p.weight_pct).toFixed(2) + '%') + '</td>' +
+      '<td class="num">' + fmtNum(p.tp_price, 4) + '</td>' +
+      '<td class="num">' + fmtNum(p.sl_price, 4) + '</td>' +
+      '<td class="num">' + fmtNum(p.current_price, 4) + '</td>' +
+      '<td class="num ' + pnlClass(unr) + '">' + fmtPct(unr) + '</td>' +
+      '<td><span class="trunc" title="' + esc(entryReason) + '">' + esc(String(entryReason).slice(0, 60)) + '</span></td>' +
+      '<td><span class="trunc" title="' + esc(sizingReason) + '">' + esc(String(sizingReason).slice(0, 60)) + '</span></td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function renderClosed(detail){
+  var positions = detail.positions || [];
+  var closed = positions.filter(function(p){ return String(p.status || '').toLowerCase() === 'closed'; });
+  closed.sort(function(a, b){ return String(b.exit_date || '').localeCompare(String(a.exit_date || '')); });
+  var tbody = document.getElementById('closed-tbody');
+  if (!closed.length) { tbody.innerHTML = '<tr><td colspan="7" class="small" style="text-align:center;color:#4b5563;padding:14px">No closed positions.</td></tr>'; return; }
+  var html = '';
+  closed.forEach(function(p){
+    html += '<tr>' +
+      '<td><strong>' + esc(p.symbol) + '</strong></td>' +
+      '<td>' + esc(p.asset_class || '—') + '</td>' +
+      '<td>' + esc((p.direction || '').toUpperCase()) + '</td>' +
+      '<td class="small">' + toEST(p.entry_date) + ' → ' + toEST(p.exit_date) + '</td>' +
+      '<td class="num ' + pnlClass(p.realized_pnl_pct) + '">' + fmtPct(p.realized_pnl_pct) + '</td>' +
+      '<td class="num ' + pnlClass(p.realized_pnl_usd) + '">' + (p.realized_pnl_usd == null ? '—' : fmtUsd(p.realized_pnl_usd)) + '</td>' +
+      '<td><span class="trunc" title="' + esc(p.exit_reason || '') + '">' + esc(String(p.exit_reason || '').slice(0, 80)) + '</span></td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function renderExposure(detail){
+  var svg = document.getElementById('exp-donut');
+  var legend = document.getElementById('exp-legend');
+  var m = detail.metrics_latest || {};
+  var exp = m.exposure_by_class;
+  if (typeof exp === 'string') { try { exp = JSON.parse(exp); } catch (e) { exp = null; } }
+  if (!exp || typeof exp !== 'object') {
+    // Fallback: derive from open positions' weight_pct.
+    exp = {};
+    var positions = (detail.positions || []).filter(function(p){ return String(p.status || '').toLowerCase() === 'open'; });
+    positions.forEach(function(p){
+      var k = p.asset_class || 'UNKNOWN';
+      var w = Number(p.weight_pct || 0);
+      exp[k] = (exp[k] || 0) + w;
+    });
+  }
+  var entries = Object.keys(exp).map(function(k){ return [k, Number(exp[k]) || 0]; }).filter(function(e){ return e[1] > 0; });
+  if (!entries.length) {
+    svg.innerHTML = '<text x="60" y="62" fill="#6b7280" font-size="9" text-anchor="middle">No exposure</text>';
+    legend.textContent = '—';
+    return;
+  }
+  var total = entries.reduce(function(s, e){ return s + e[1]; }, 0);
+  var palette = ['#60a5fa', '#22c55e', '#fbbf24', '#ef4444', '#a78bfa', '#f472b6', '#34d399', '#fb923c'];
+  var cx = 60, cy = 60, rOuter = 50, rInner = 30;
+  function polar(angle, r){ return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)]; }
+  var start = -Math.PI / 2;
+  var segs = '';
+  var legendHtml = '';
+  entries.forEach(function(e, i){
+    var frac = e[1] / total;
+    var end = start + frac * Math.PI * 2;
+    var large = frac > 0.5 ? 1 : 0;
+    var p1 = polar(start, rOuter), p2 = polar(end, rOuter);
+    var p3 = polar(end, rInner), p4 = polar(start, rInner);
+    var color = palette[i % palette.length];
+    segs += '<path d="M ' + p1[0].toFixed(2) + ' ' + p1[1].toFixed(2) +
+            ' A ' + rOuter + ' ' + rOuter + ' 0 ' + large + ' 1 ' + p2[0].toFixed(2) + ' ' + p2[1].toFixed(2) +
+            ' L ' + p3[0].toFixed(2) + ' ' + p3[1].toFixed(2) +
+            ' A ' + rInner + ' ' + rInner + ' 0 ' + large + ' 0 ' + p4[0].toFixed(2) + ' ' + p4[1].toFixed(2) +
+            ' Z" fill="' + color + '" opacity="0.85"/>';
+    legendHtml += '<div><span class="swatch" style="background:' + color + '"></span>' + esc(e[0]) + ' — ' + e[1].toFixed(1) + '%</div>';
+    start = end;
+  });
+  svg.innerHTML = segs + '<text x="60" y="64" fill="#a0a0b0" font-size="9" text-anchor="middle">' + total.toFixed(0) + '%</text>';
+  legend.innerHTML = legendHtml;
+}
+
+function renderEvents(detail){
+  var events = (detail.rule_events || detail.events || []).slice();
+  events.sort(function(a, b){ return String(b.asof_date || b.ts || '').localeCompare(String(a.asof_date || a.ts || '')); });
+  events = events.slice(0, 50);
+  var tbody = document.getElementById('events-tbody');
+  if (!events.length) { tbody.innerHTML = '<tr><td colspan="4" class="small" style="text-align:center;color:#4b5563;padding:14px">No rule events recorded.</td></tr>'; return; }
+  var html = '';
+  events.forEach(function(e){
+    var when = toEST(e.asof_date || e.ts);
+    var detailText = e.detail || e.message || (typeof e.payload === 'object' ? JSON.stringify(e.payload) : (e.payload || ''));
+    html += '<tr>' +
+      '<td class="small">' + when + '</td>' +
+      '<td>' + esc(e.event_type || e.type || '—') + '</td>' +
+      '<td>' + esc(e.symbol || '') + '</td>' +
+      '<td><span class="trunc" style="max-width:600px" title="' + esc(detailText) + '">' + esc(String(detailText).slice(0, 200)) + '</span></td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+async function loadPortfolio(){
+  var key = getKeyParam();
+  if (!key) {
+    document.getElementById('pf-empty').style.display = 'block';
+    document.getElementById('pf-empty').innerHTML = 'Missing <code>?key=&lt;portfolio_key&gt;</code> URL parameter. <a href="./ai-tournament.html">← Back to AI Tournament</a>';
+    document.getElementById('pf-subtitle').textContent = 'No portfolio selected.';
+    document.getElementById('pf-key').textContent = '—';
+    return;
+  }
+  document.getElementById('pf-key').textContent = key;
+  document.title = 'Portfolio · ' + key + ' · findtorontoevents.ca/audit';
+  var safe = safeKey(key);
+  try {
+    var resp = await fetch('./data/pf_portfolio_' + safe + '.json?' + Date.now());
+    if (!resp.ok) throw new Error('not-found');
+    var detail = await resp.json();
+    document.getElementById('pf-body').style.display = 'block';
+    document.getElementById('pf-empty').style.display = 'none';
+    renderHeader(detail);
+    renderMetrics(detail);
+    renderNavChart(detail);
+    renderOpen(detail);
+    renderClosed(detail);
+    renderExposure(detail);
+    renderEvents(detail);
+  } catch (e) {
+    document.getElementById('pf-body').style.display = 'none';
+    document.getElementById('pf-empty').style.display = 'block';
+    document.getElementById('pf-subtitle').innerHTML = appetiteBadge(null) + ' <span class="small">Pending first daily run.</span>';
+  }
+}
+
+loadPortfolio();
+</script>
+
+</body>
+</html>
