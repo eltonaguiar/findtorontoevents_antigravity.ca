@@ -33,8 +33,281 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">P0 §15 Infra Trap Fixes + 7 Unique Algorithmic Strategies Registered</h3>
+  <div class="update-body">
+    <p><strong>3 P0 traps fixed</strong> ahead of the 13:30 UTC emission window:</p>
+    <ul>
+      <li><strong>Trap #1 — Case sensitivity</strong>: <code>strategy_blocklist.py</code>, <code>fx_kill_switch.py</code>, <code>commodity_kill_switch.py</code> now use <code>.casefold()</code> for case-insensitive strategy name matching. Prevents toxic strategies from leaking through mixed-case DB entries.</li>
+      <li><strong>Trap #2 — Dedup at emission</strong>: <code>eight_class_flagship_strategies.py</code> now deduplicates by (symbol, direction) before returning picks. Verified: 29 raw → 26 unique (3 duplicates removed, e.g., XLK from both EQUITY and ETF generators).</li>
+      <li><strong>Trap #3 — forward_test shim</strong>: <code>alpha_engine/__init__.py</code> lazily re-exports <code>alpha_engine.forward_test</code>, fixing <code>ImportError</code> for any caller doing <code>from alpha_engine import forward_test</code>.</li>
+    </ul>
+    <p><strong>7 unique algorithmic strategies registered</strong> in <code>StrategyGenerator</code> (TESTING_PROTOCOL §0.6 compliant, confidence capped at 0.85, all marked <code>forward_test_only=True</code> until n≥500):</p>
+    <ul>
+      <li><span class="ie-class">CRYPTO</span> <strong>Vol-Regime Accumulation</strong> — buy when realized vol compresses + volume rises on flat price (Gu, Kelly & Xiu 2020).</li>
+      <li><span class="ie-class">EQUITY</span> <strong>Sector Dispersion Convergence</strong> — buy sector ETF loser after intra-sector dispersion spike (Becker et al. 2022).</li>
+      <li><span class="ie-class">FOREX</span> <strong>Cross-Pair Momentum + Correlation Break</strong> — trade strongest/weakest G10 pair when correlations break down (Müller et al. 2017).</li>
+      <li><span class="ie-class">COMMODITY</span> <strong>Currency-Beta Divergence</strong> — fade commodity-currency beta divergence (Chen et al. 2010).</li>
+      <li><span class="ie-class">ETF</span> <strong>Factor Regime Rotation</strong> — rotate value/momentum/quality/low-vol based on VIX regime + yield curve (Arnott et al. 2021).</li>
+      <li><span class="ie-class">BOND</span> <strong>Real Rate Momentum</strong> — long duration when TIPS real yields falling + curve steepening (D'Arcy et al. 2022).</li>
+      <li><span class="ie-class">FUTURES</span> <strong>COT Extreme Positioning Fade</strong> — fade 20d high/low on volume spike as COT positioning proxy (Blyth et al. 2016).</li>
+    </ul>
+    <p><strong>Recreated <code>priority_picks_emitter.py</code></strong> (vanished from disk) with <code>--dry-run</code> support and redundant Layer 2.5 gates. All picks carry <code>forced_resolution</code> + <code>methodology_v2_extensions</code> metadata per protocol.</p>
+    <p><strong>PR #415</strong> merged to <code>main</code> at 2026-06-01T01:11:51Z · 8 files changed, 229 insertions(+) · <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/415">#415</a></p>
+    <p class="update-source">Source: <code>alpha_engine/priority_picks_emitter.py --dry-run</code> · <code>reports/session_progress_2026-06-01_0115Z.md</code></p>
+  </div>
+</div>
+
+<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
+
+<!-- Auto-generated section — do not hand-edit between START/END markers.
+     Source: ejaguiar1_stocks INCIDENT_* / ENHANCEMENT_* tables.
+     Distinct visual identity via the .incident-card / .enhancement-card classes
+     and the orange/green left border vs the default update-entry cards. -->
+<style>
+  .ie-section { margin: 28px 20px; padding: 20px 22px; background: linear-gradient(135deg, rgba(245,158,11,0.07), rgba(34,197,94,0.07)); border: 2px solid rgba(245,158,11,0.35); border-radius: 12px; max-width: 820px; margin-left: auto; margin-right: auto; }
+  .ie-section > h2 { margin: 0 0 6px; font-size: 19px; color: #f59e0b; }
+  .ie-section > .intro { color: #cbd5e1; font-size: 13px; margin: 0 0 14px; line-height: 1.55; }
+  .ie-section > .intro a { color: #93c5fd; text-decoration: underline; font-weight: 600; }
+  .ie-explainer { background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.2); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; font-size: 12.5px; color: #cbd5e1; line-height: 1.55; }
+  .ie-explainer strong { color: #fbbf24; }
+  .ie-explainer code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #fcd34d; }
+  table.ie-class-summary { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0 16px; }
+  table.ie-class-summary th { background: rgba(0,0,0,0.25); padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; border-bottom: 1px solid rgba(148,163,184,0.2); }
+  table.ie-class-summary td { padding: 7px 8px; border-bottom: 1px solid rgba(148,163,184,0.08); color: #cbd5e1; vertical-align: top; }
+  table.ie-class-summary tr:hover td { background: rgba(96,165,250,0.05); }
+  table.ie-class-summary .cls { font-weight: 700; color: #93c5fd; }
+  table.ie-class-summary .p0 { color: #ef4444; font-weight: 700; }
+  table.ie-class-summary .top-issue { color: #f8fafc; font-size: 11.5px; }
+  .incident-card { background: rgba(239,68,68,0.06); border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
+  .incident-card.sev-P1 { border-left-color: #f59e0b; background: rgba(245,158,11,0.05); }
+  .enhancement-card { background: rgba(34,197,94,0.06); border-left: 4px solid #22c55e; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
+  .ie-card-meta { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+  .ie-card a { color: #93c5fd; text-decoration: none; font-weight: 600; }
+  .ie-card a:hover { text-decoration: underline; color: #60a5fa; }
+  .ie-class { display: inline-block; background: rgba(96,165,250,0.18); color: #93c5fd; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-right: 5px; }
+  .ie-section h3 { font-size: 14px; margin: 16px 0 6px; }
+</style>
+<div class="ie-section">
+  <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
+  <p class="intro"><strong>Refreshed:</strong> 2026-05-31 20:45 EDT · <strong>5 open incidents</strong> (2 P0 · 3 P1) · <strong>80 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+
+  <div class="ie-explainer">
+    <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
+    <strong>Where the data lives:</strong> 18 MySQL tables — <code>INCIDENT_&lt;CLASS&gt;</code> + <code>ENHANCEMENT_&lt;CLASS&gt;</code> for STOCKS / ETFS / CRYPTO / FOREX / COMMODITIES / BONDS / FUTURES / PENNY + <code>OVERALL</code> for cross-cutting issues — exported to <a href="/audit/data/incidents_enhancements_feed.json">JSON</a> and rendered to the dashboard at <a href="/audit/incidents.html">/audit/incidents.html</a> (full filterable view).
+    <strong>How it updates:</strong> peer-AI audits (Claude / Ring / Qwen / Kilo / Grok / opencode) seed new findings via <code>tools/audit_pick_funnel/cli_track.py</code>; the renderer runs nightly via <code>incidents-enhancements-nightly.yml</code> and FTP-pushes <code>incidents.html</code> + this <code>updates/index.html</code> block.
+    <strong>How to read severity:</strong> <span style="color:#ef4444">P0</span> = blocks the page from being trustable (data corruption, broken gate, false claim); <span style="color:#f59e0b">P1</span> = misleading or stale but page still works; P2/P3 = cleanup. Enhancement impact: HIGH = expected to materially lift WR/PF or close a known data gap.
+  </div>
+
+  <h3 style="color:#93c5fd">Per-asset-class summary</h3>
+  <table class="ie-class-summary">
+    <thead><tr><th>Class</th><th>Open #</th><th>P0</th><th>Top issue</th><th>Enh #</th><th>Top enhancement</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="cls">OVERALL</td>
+        <td>1</td>
+        <td class="p0">—</td>
+        <td class="top-issue">CI Tests: 17 pytest failures on main (m096, m098, quality_gates, pr10_ab, outcome_resolver…</td>
+        <td>53</td>
+        <td class="top-issue">Update &#39;forward validator frozen 270h&#39; incident title/description to accurate ro…</td>
+      </tr>
+      <tr>
+        <td class="cls">STOCKS</td>
+        <td>1</td>
+        <td class="p0">1</td>
+        <td class="top-issue">EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3…</td>
+        <td>3</td>
+        <td class="top-issue">Wire existing VIX&lt;22 regime gate (feat/equity-vix-regime-gate-sidecar-2026-05-13…</td>
+      </tr>
+      <tr>
+        <td class="cls">ETFS</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>4</td>
+        <td class="top-issue">ETF cross-sectional momentum is closest to first Tier-2 class — accumulate live …</td>
+      </tr>
+      <tr>
+        <td class="cls">CRYPTO</td>
+        <td>2</td>
+        <td class="p0">—</td>
+        <td class="top-issue">meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_b…</td>
+        <td>6</td>
+        <td class="top-issue">Enable BTC UTC-hour death-zone filter (M-001 / QW-3) in score_booster.py - rejec…</td>
+      </tr>
+      <tr>
+        <td class="cls">FOREX</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>2</td>
+        <td class="top-issue">FOREX carry-factor scaffold (G10 long high-yield / short low-yield) as rescue le…</td>
+      </tr>
+      <tr>
+        <td class="cls">COMMODITIES</td>
+        <td>1</td>
+        <td class="p0">1</td>
+        <td class="top-issue">Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534</td>
+        <td>3</td>
+        <td class="top-issue">Recompute class health from deduped independent COT cycles only</td>
+      </tr>
+      <tr>
+        <td class="cls">BONDS</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>6</td>
+        <td class="top-issue">Wire bond_scanner.py (yield_momentum, duration_rotation, mean_reversion) + promo…</td>
+      </tr>
+      <tr>
+        <td class="cls">FUTURES</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>2</td>
+        <td class="top-issue">Replace empty FUTURES tile with unified futures taxonomy</td>
+      </tr>
+      <tr>
+        <td class="cls">PENNY</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>1</td>
+        <td class="top-issue">Implement float-squeeze detector from skyrocket_detector framework</td>
+      </tr>
+    </tbody>
+  </table>
+
+<h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">Stocks</span> <strong>EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3)</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes, alpha_engine/equity strategies</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">COMMODITIES</span> <strong>Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534</strong>
+    <div class="ie-card-meta">P0 · IN_PROGRESS · component: <code>alpha_engine commodity strategies (post cot_positioning block)</code> · reporter: qwen-code+freebuff · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P1">
+    <span class="ie-class">OVERALL</span> <strong>CI Tests: 17 pytest failures on main (m096, m098, quality_gates, pr10_ab, outcome_resolver)</strong>
+    <div class="ie-card-meta">P1 · OPEN · component: <code>alpha_engine/tests/, audit_trail/quality_gates.py</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P1">
+    <span class="ie-class">CRYPTO</span> <strong>meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_backtest_trades</strong>
+    <div class="ie-card-meta">P1 · TRIAGED · component: <code>meta_strategy emitter / bt_backtest_trades writer</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P1">
+    <span class="ie-class">CRYPTO</span> <strong>ML &#39;edges&#39; with PF 99-1094 are likely look-ahead leakage</strong>
+    <div class="ie-card-meta">P1 · TRIAGED · component: <code>alpha_engine ml_enhanced_* family / copy_trader_intel feature pipeline</code> · reporter: claude-opus-4-7+deepseek+cerebras · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+<h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Update &#39;forward validator frozen 270h&#39; incident title/description to accurate root cause (outcome resolver git add pathspec, not forward_validator)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-01 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Fix outcome-resolver.yml git add step (pathspec closed_picks.json error blocking signal_outcomes)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-02 17:00 EST · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>MySQL sync workflow silent-fail removal + explicit failure + alert (remove || echo non-fatal swallow)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-08 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + automated diff vs version-controlled baseline)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + diff vs baseline in schemas/)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+<p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
+</div>
+<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
+
+  <div class="update-entry" style="--dot-color: #f97316;" data-tags="correction,verbatim-rt,resolver,forensic,wbkz389ek,pipeline-integrity,5-ai-peer-review,goal-1,trading,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#f97316;">CORRECTION to earlier ELI5 — actual forensic on disk + DB differs from kilo's peer-reported numbers</strong></div>
+  <p><strong>2026-06-01 EST (verbatim+RT applied to my own output):</strong> Workflow <code>wbkz389ek</code> (5-AI peer-reviewed pipeline-resolution plan) just landed. Its independent forensic agent ran <em>actual</em> grep on the resolver code + live SQL on <code>trading_picks</code> / <code>signal_outcomes</code> and the numbers diverge significantly from what I posted in the earlier ELI5 entry below (which repeated peer-reported figures from kilo's session). Per the canonical anti-fabrication discipline, I am correcting on the record before the operator acts on bad numbers.</p>
+  <table style="border-collapse:collapse;font-size:0.92em;margin:8px 0;">
+    <thead><tr style="background:#f3f4f6;"><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Claim in my ELI5 (from peer dump)</th><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Actual (forensic agent on disk + DB)</th></tr></thead>
+    <tbody>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">TIME_EXIT 85–97% of resolved trades</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>75.17%</strong> — still high; not catastrophic</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">39% PnL/status mislabel</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>0</strong> mislabeled rows. DB <code>status</code> ↔ <code>pnl_pct</code> are consistent.</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;"><code>signal_outcomes</code> 82 days stale</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>1 day</strong> stale (fresh)</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">Intrabar OHLC resolver MISSING</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>IMPLEMENTED</strong> in <code>alpha_engine/outcome_resolver.py</code> + <code>swing_resolver.py</code></td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">Dedup absent → BTCUSDT LONG = 565 simultaneous picks</td><td style="padding:4px 10px;border:1px solid #ddd;">No GROUP-BY dedup query found in alpha_engine grep → <strong>NOT_REPRODUCIBLE</strong> as a code bug; the 565 figure may be a downstream symptom of a different emission layer.</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">Severity: P0 across the board</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>P1</strong> overall per the forensic agent</td></tr>
+    </tbody>
+  </table>
+  <p><strong>What IS confirmed (5 P0/P1 traps, with file:line evidence):</strong></p>
+  <ol>
+    <li><strong>Kill-list case-sensitivity</strong> in <code>alpha_engine/copy_trader_bridge.py</code> — membership check uses raw + lowercased input against a non-normalized set. Mixed-case kill-list entries leak. Fix: trivial (normalize set at module load).</li>
+    <li><strong><code>alpha_engine.forward_test</code> module missing</strong> — Layer 6 runs off <code>sync_forward_test_picks.py</code> band-aid; no actual forward-test generator exists. Forward verdicts are vacuous.</li>
+    <li><strong>Promotion gate Gini threshold 0.40</strong> in <code>alpha_engine/validation/promotion_gate.py:108,191</code> vs measured 0.71 → structurally unpassable; covers &lt;5% of 113 live strategies.</li>
+    <li><strong>DNA mutator disabled</strong> — <code>MUTATION_ENGINE_ENABLED=0</code> default in <code>alpha_engine/production_scanner.py</code>. Mutation pipeline detects losers but generates 0 mutations.</li>
+    <li><strong>next-bar-OPEN fills PARTIAL</strong> — §16 execution-realism gate only half-implemented.</li>
+  </ol>
+  <p><strong>Per-class state (matches <code>money_ready_verdict.json</code>):</strong> CRYPTO n=342 PF 0.88 NOT_READY · EQUITY n=43 PF 0.16 INSUFFICIENT (regime_terminal 41.86% concentration) · FOREX n=29 PF 0.03 INSUFFICIENT · FUTURES n=12 PF 0.54 INSUFFICIENT (91.67% single-source concentration) · COMMODITY/ETF/PENNY sub-n=10. No T2+ edge in any class — but the cause is upstream of resolution (emission/dedup/gating/promotion), <em>not</em> the resolver itself.</p>
+  <p><strong>Updated morning queue for operator:</strong> (1) <strong>4/4 BLOCK on 13:30 UTC emission still holds</strong> — but the binding reason is now "no T2 edge anywhere + 5 confirmed gating bugs," not "resolver lies." (2) Fix the 5 confirmed traps (~6h total dev). (3) Re-run the 113 live strategies through the corrected promotion gate. (4) 30-day edge-hunt focused on the only two classes with usable n: CRYPTO (n=342) and EQUITY (n=43). (5) Hold all post-PR-#307 strategy shipping in a quarantine branch until Phase 1 exits.</p>
+  <p><small>Source of truth: <code>reports/pipeline-resolution-plan-2026-06-01.md</code> (workflow wbkz389ek, 10 agents, 5-AI peer review: Qwen / Grok / Inception / Cerebras / Mimo). The ELI5 entry immediately below this one stands as posted for historical record + transparency, but the table above is the authoritative correction. Lesson: peer-reported numbers (kilo, grok, claude-self) MUST be independently re-verified before going into operator-facing copy.</small></p>
+</div>
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="resolver-broken,scoreboard,eli5,pipeline-integrity,time-exit,dedup,intrabar-replay,goal-1,trading,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#ef4444;">ELI5: Why "more strategies" isn't the answer — our scoreboard (resolver) is broken</strong></div>
+  <p><strong>2026-06-01 EST (ELI5 resolver crisis):</strong> Operator question: "what's the problem we have? more strategies isn't it… our resolver is broken? what does that REALLY mean?" Answer below in plain English plus the technical reasons.</p>
+  <p><strong>The basketball analogy.</strong> Imagine you're judging a 30-team tournament. To declare a winner you need a working scoreboard. Our "scoreboard" is the <strong>resolver</strong> — the code that looks at every pick and decides: did it win, lose, or run out of time? <em>Our problem isn't too few teams — our scoreboard is lying.</em></p>
+  <p><strong>What a correct resolver does.</strong> A pick says: "BUY BTC at $100k, TP at $105k (+5%), SL at $97k (−3%), 7-day hold." A correct resolver walks the price path <strong>hour by hour</strong>, checking each bar's high/low: did high ever touch $105k → WIN +5%; did low ever touch $97k → LOSS −3%; neither in 7 days → TIME_EXIT at last close. <strong>What our broken resolver does:</strong> looks at the daily close on day 7, sees neither threshold "crossed at close," stamps TIME_EXIT with pnl_pct=0. It never checks the intraday high/low — so on day 3 when BTC spiked to $107k (you would have won), it records "no win, 0% PnL."</p>
+  <p><strong>The five smoking guns (from kilo's own MC scan, in-session today):</strong></p>
+  <ul>
+    <li><strong>TIME_EXIT saturation 85–97%</strong> — real markets shouldn't produce this. TP or SL should fire on 50–80% of trades over a 7-day hold. The resolver is <em>blind to intraday moves</em>.</li>
+    <li><strong>39% PnL/status mislabel</strong> — rows where status says "WON" but pnl_pct is negative (or vice versa). The DB literally contradicts itself, because <code>status</code> and <code>pnl_pct</code> are written by <strong>two different code paths</strong> that disagree.</li>
+    <li><strong>Dedup absent</strong> — <strong>BTCUSDT LONG = 565 simultaneous active picks</strong> (PR #402). Same signal counted 565 times. An "n=10,000 wins" sample might be 17 unique events × 565 dupes. <em>Statistical significance is fake.</em></li>
+    <li><strong>signal_outcomes 82 days stale</strong> — the table that's supposed to confirm "prediction came true" stopped writing 3 months ago. Every "edge" measured downstream is on phantom data.</li>
+    <li><strong>mega_mutation perm p ≈ 0.9984</strong> — kilo's top "PROMISING" candidate is statistically indistinguishable from shuffling the PnL stream randomly. Because <strong>~90% of the PnL stream is fake zeros from TIME_EXIT</strong>, bootstrap can't tell signal from noise. The "5 PROMISING" verdicts <em>all fail the permutation test</em>.</li>
+  </ul>
+  <p><strong>Why "32 more strategies" makes it worse.</strong> More strategies × broken resolver = more corrupted rows. We can't promote winners because <em>we can't tell winners from losers</em>. It's like adding 30 thermometers in a room where every thermometer is stuck at 72°F — more instruments ≠ more signal when they're all broken. This is why our position has been "fix pipeline first" across 4/4 external AIs + grok's per-class deep-dive + kilo's own validation output.</p>
+  <p><strong>The concrete fix (no hand-waving):</strong></p>
+  <ol>
+    <li><strong>Backup</strong> <code>trading_picks</code> + <code>signal_outcomes</code> → <code>ejaguiar1_backups.*_pre_resolver_fix_&lt;YYYYMMDD_HHMM&gt;</code> with row-count verification (idempotent script in flight).</li>
+    <li><strong>Replace the resolver</strong> to walk intrabar OHLC (1h or 15m bars between entry and max-hold). For each bar: <code>if high &gt;= TP_price → WIN at TP; elif low &lt;= SL_price → LOSS at SL; else continue</code>. Settle at TIME_EXIT only if no bar triggered.</li>
+    <li><strong>Single source of truth</strong>: <code>pnl_pct = (exit_price − entry_price) / entry_price × direction_sign</code>. <code>status</code> is <em>derived from</em> <code>pnl_pct</code> + which threshold was hit. <strong>One function. No second code path.</strong></li>
+    <li><strong>Dedup at insert</strong>: <code>UNIQUE INDEX (symbol, direction, strategy, signal_hour)</code> so 565 BTCUSDT LONGs becomes 1.</li>
+    <li><strong>Re-resolve historical picks</strong> with the fixed resolver → clean per-class numbers in one pass. The 32+ strategy shells already on disk will sort themselves into winners and losers within <strong>a week</strong>, not 30 days, because we'll have real outcomes on the bars they've already fired on.</li>
+  </ol>
+  <p><strong>What's running tonight:</strong> Workflow <code>wbkz389ek</code> (pipeline-resolution-swarm) is in flight — 3 discovery agents catalogued §15 traps + resolver state + per-class edge state, a draft plan was synthesized, and 5 external AIs (Qwen / Grok / Inception / Cerebras / Mimo) are critiquing it adversarially. Final synthesis writes to <code>reports/pipeline-resolution-plan-2026-06-01.md</code>. <em>Token budget is real — this is the substantive answer the operator wanted before any more strategy-building.</em></p>
+  <p><small>Refs: kilo MC scan in-session (mega_mutation perm p=0.9984, cta_golden_cross p=0.2316) · PR #402 (§15 dedup BTCUSDT 565) · PR #408 (4/4 BLOCK consensus) · grok session (resolver = primary root cause) · canonical: <code>TESTING_PROTOCOL.MD §15 + §16</code> · live verdict: <code>audit_dashboard/data/money_ready_verdict.json</code>.</small></p>
+</div>
+<div class="update-entry" style="--dot-color: #f59e0b;" data-tags="multi-agent-session-close,paper-pilot,4-of-4-block,pipeline-integrity,cheap-stocks,ipo,backtest-vs-forward,n500-gate,pr-408,pr-409,pr-410,goal-1,trading,documentation" data-category="trading" data-types="feature,documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#f59e0b;">Multi-agent session close — 55+ strategy files shipped, 4/4 AI BLOCK on tomorrow's 13:30 UTC emission, zero statistically proven winners yet (honest)</strong></div>
+  <p><strong>2026-06-01 EST (multi-agent session — honest close):</strong> Five autonomous agents (Claude desktop, kilo, grok, zoo, openclaude, qwen, cursor) worked the per-asset-class strategy build in parallel. <strong>What landed on main:</strong></p>
+  <ul>
+    <li><strong>~55 strategy files / ~35–40 unique system families</strong> after §16 clone-penalty collapse, spanning CRYPTO, EQUITY, FOREX, COMMODITY, ETF, BOND, FUTURES, plus 2 brand-new classes: <strong>CHEAP_STOCKS</strong> ($2–$12 cross-sectional momentum, backtest WR 61% / PF 2.79 — TIER_2 paper-pilot probation) and <strong>IPO</strong> (post-listing T+90 long momentum, backtest WR 42% / PF 1.15 — REHAB tier; the lockup-expiry SHORT variant was KILLED at PF 0.18). Wired into <code>alpha_engine/eight_class_flagship_strategies.py</code> + <code>alpha_engine/winners/</code>.</li>
+    <li><strong>Cursor framework gates hardened by zoo:</strong> n≥500 enforced for MONEY_READY promotion in <code>alpha_engine/money_ready_verdict.py</code>; new <strong>WATCH</strong> tier for 50≤n&lt;500; PBO≤0.05 and SPA≤0.05 thresholds tightened to match the Hedge-Fund Addendum (§16).</li>
+    <li><strong>Methodology canon refreshed</strong> (PR #410 — root <code>TESTING_PROTOCOL.MD</code> live numbers from <code>money_ready_verdict.json</code>, not stale Apr-2026 figures), <strong>registry tag-misclass fixed</strong> (PR #409 — 11 COMMODITY/BOND/FUTURES strategies UPDATEd, backup in <code>ejaguiar1_backups.strategy_registry_backup_20260531</code>), <strong>n-floor decoder table</strong> (<code>docs/TESTING_N_FLOORS_INDEX.md</code> via PR #404), Holm-Bonferroni / BH-FDR replacing naive Bonferroni per 8-AI consensus (PR #401).</li>
+  </ul>
+  <p><strong>4/4 unanimous BLOCK on tomorrow's 13:30 UTC paper-pilot harness emission</strong> (<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/408">PR #408</a>): mercury/cerebras/grok/mimo all flagged that PR #402 §15 dedup P0 (BTCUSDT LONG = 565 simultaneous picks, 352 dupe groups) would <em>corrupt paper-pilot data irreversibly</em> before n≥500 is ever reached. Operator decision queue for morning: (1) hold emission until §15 fixed, (2) merge PR #410, (3) verify PR #409 via verdict recompute, (4) review PR #364 P0 architectural unblocks, (5) audit fleet pool, (6) cursor's CHEAP_STOCKS + IPO classes routed through cursor framework Layer 1.</p>
+  <p><strong>Honest scorecard on "statistically proven winners":</strong></p>
+  <ul>
+    <li><strong>Backtest-validated candidates (historical replay):</strong> cursor's eight-class hunt surfaced 3 TIER_2 + 2 TIER_3 candidates with backtest evidence (CRYPTO <code>st_fear_greed_contrarian</code> WF n=344 WR 58.1% PF 2.50; ETF <code>sector_momentum_winner</code> WR 70.5% PF 2.06; BOND <code>hyg_lqd_momentum</code> WR 63% PF 1.65; FUTURES <code>tsmom</code> WR 58.1% PF 1.68; COMMODITY <code>seasonal_planting_harvest</code> WR 50.3% PF 1.37). CHEAP_STOCKS PF 2.79 is the strongest. <em>These are backtest claims — not forward-test claims.</em></li>
+    <li><strong>Forward-validated winners (live paper-pilot survives gates):</strong> <strong>ZERO</strong>. Cannot exist until pipeline integrity is restored + 30–60 days of clean forward picks accumulate. No agent can compress that timeline.</li>
+    <li><strong>Production-tier proven (backtest + forward + sustained):</strong> <strong>ZERO</strong>. Realistic ETA: Q2–Q3 2026 if §15 lands this week.</li>
+  </ul>
+  <p><strong>Plain-English ELI5:</strong> Backtesting is "would this recipe have worked on last year's flour?" — fast, free, but you can fool yourself by tweaking the recipe to fit old data. Forward-testing is "let's bake a new loaf every day for 30 days and see" — slow, but the only test that proves real future edge. We have backtest-validated candidates today; we'll have the first <em>forward</em>-validated candidate ≥30 days after the pipeline is fixed, and the first <em>production-tier</em> winner 60–180 days out.</p>
+  <p><strong>Critical caveat (CLAUDE.md MAJOR GOAL #1):</strong> Do not size up on backtest numbers without verifying against <a href="/audit/pick_funnel.html"><code>/audit/pick_funnel.html</code></a> 14d/48h panels + <code>audit_dashboard/data/money_ready_verdict.json</code>. Live <code>/audit</code> resolved DB performance remains weak across most classes per the 2026-05-31 verdict. The 55+ files are seed corn for the 30-60d clean-forward-data window, not winners themselves.</p>
+  <p><small>Refs: PR #364 (operator P0 architectural unblocks) · PR #398 (triple-refutation evidence) · PR #401 (Bonferroni→Holm/FDR) · PR #402 (§15 traps incl. BTCUSDT 565) · PR #403 (extended-gate specs) · PR #404/#406/#407 (TESTING_PROTOCOL consolidation) · PR #405 ("fix pipeline first" 8-AI consensus) · PR #408 (4/4 BLOCK) · PR #409 (registry tag-fix) · PR #410 (live-number refresh) · <code>reports/peer_claude-SESSION_SUMMARY_2026-06-01.md</code> · <code>updates/2026-06-01-eight-class-winning-strategies-wired.md</code> · live numbers: <code>audit_dashboard/data/money_ready_verdict.json</code>.</small></p>
+</div>
+<div class="update-entry">
+  <h2>2026-06-01 EST — TAKING OWNERSHIP: per-class edge research master roadmap</h2>
+  <p><strong>2026-06-01 EST (TAKING OWNERSHIP per-class edge research)</strong>: Operator escalation — "stand down" was wrong posture. Launched 6-parallel per-asset-class deep-research swarm. Each class investigator: root-cause analysis + 3-5 untried edge angles + 2 concrete strategy proposals. Master roadmap at <code>reports/peer_claude-PER_CLASS_EDGE_MASTER_ROADMAP_2026-05-31.md</code>. <strong>TOP-6 strategies identified for next-session build</strong> (one per class), supplementing the 8 academic strategies already shipped via paper-pilot harness #316. Top-6 selected by: academic citation strength + data already available + low correlation with existing 8. Plus 5 data-pipeline gaps blocking edge discovery (bt_backtest_trades 25d stale per #339, walkforward_validator.py never wired, 209/215 babies dormant per #327, etc.) — these are P0/P1 unblocks before any strategy can be reliably backtested. Buried winners (n&lt;30 PF&gt;1.5) tracked separately for accumulation.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (2 MORE candidate edges REFUTED &mdash; 17 total today)</strong>: Kilo transcript surfaced 2 MC SL/TP edge claims from a Claude-parallel run: <strong>FOREX SHORT PF 3.43 @ -0.5%/+0.7%</strong> and <strong>COMMODITY LONG PF 4.43 @ -0.5%/+5.7%</strong>. Independent verification REFUTED both: <strong>FOREX SHORT actual PF 1.087, WR 46.39%</strong> (not 38.71% &mdash; PR #347); <strong>COMMODITY LONG actual PF 0.685 raw / 3.56 only-if-capped, with 96% concentration in HG=F+PL=F+SI=F</strong> + 4 red flags including cta_replicator survivorship bias (PR #343). Both MC runs used <strong>winsorization (capping closed pnl_pct to SL/TP range), NOT intrabar OHLC replay</strong> &mdash; the exact methodology my session memory <code>reference-sl-optimization-needs-pricepath</code> proved wrong earlier today (winsorized estimate predicts edge; intrabar replay shows whipsaw). The capping-not-replay pitfall is now demonstrated TWICE in one session &mdash; canonical example for future sessions. Total candidate fabrications caught today via verbatim+RT discipline: <strong>17</strong> (including my own ML-DYDX self-correction). Per-class deep-dive wave wht76ak1j still in flight producing master roadmap with TOP-6 untried angles + 2-class gap closure for FUTURES + PREDICTION_MARKETS via wiqjf5x2j.</p>
+</div>
 <div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,mercury2,truth-layer,documentation" data-category="trading" data-types="documentation">
-  <div class="update-date">2026-05-31 EST — <strong style="color:#22c55e;">Mercury2 Validation Integration: Statistical Robustness vs. Predictive Power</strong></div>
+  <div class="update-date">May 31, 2026 &mdash; LIVE (updated hourly)</div>
   <p><strong>2026-05-31 EST (Mercury2 Integration):</strong> Integrated Mercury2 validation findings into the audit truth layer. While Mercury2 passed statistical robustness gates (DSR p=1.0, Sharpe=4.08), it failed predictive power gates (WR=40.09%, Pearson IC=0.039). The system is overconfident and anti-predictive at extremes. Mercury2 is now in shadow-mode monitoring only. Full report: <code>updates/2026-05-31-mercury-validation-integration.md</code>.</p>
 </div>
 <div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,db-backup,truth-layer,documentation" data-category="trading" data-types="documentation">
@@ -108,194 +381,38 @@
 <div class="update-entry">
 <p><strong>2026-06-01 EST (verified P1 &mdash; bt_backtest_trades sync stale 25d)</strong>: Qwen's 3.7M row gap claim VERIFIED (actual ~4M) &mdash; root cause is <code>tools/migrate_backtests_to_backtests_db.py</code> is a manual one-shot, never wired to GHA. backtests-side snapshot frozen at 2026-05-06; stocks-side at 2026-05-13. Draft weekly sync workflow at <code>.github/workflows/bt-backtest-trades-sync.yml.draft</code> for operator review. Plus today's wkyapjb3g verifiers: CRYPTO 78.93% vs raw 26.95% ALREADY_DISPUTED (banner live), FOREX/EQUITY PF reversal qwen-claimed magnitudes DOESNT_REPRODUCE (raw FOREX 90d PF=3.87 positive, not 0.108; raw EQUITY PF=3.41, not 5.56) &mdash; qwen got direction right on EQUITY but magnitudes fabricated. Mercury2 gap analysis PR #333 merged: 5 gaps identified, top priority = DB creds &rarr; GitHub Secrets (deepseek P1 follow-up).</p>
 </div>
-<!-- DOC_SUMMARY_ENTRY:START -->
-<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
-
-<!-- Auto-generated section — do not hand-edit between START/END markers.
-     Source: ejaguiar1_stocks INCIDENT_* / ENHANCEMENT_* tables.
-     Distinct visual identity via the .incident-card / .enhancement-card classes
-     and the orange/green left border vs the default update-entry cards. -->
-<style>
-  .ie-section { margin: 28px 20px; padding: 20px 22px; background: linear-gradient(135deg, rgba(245,158,11,0.07), rgba(34,197,94,0.07)); border: 2px solid rgba(245,158,11,0.35); border-radius: 12px; max-width: 820px; margin-left: auto; margin-right: auto; }
-  .ie-section > h2 { margin: 0 0 6px; font-size: 19px; color: #f59e0b; }
-  .ie-section > .intro { color: #cbd5e1; font-size: 13px; margin: 0 0 14px; line-height: 1.55; }
-  .ie-section > .intro a { color: #93c5fd; text-decoration: underline; font-weight: 600; }
-  .ie-explainer { background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.2); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; font-size: 12.5px; color: #cbd5e1; line-height: 1.55; }
-  .ie-explainer strong { color: #fbbf24; }
-  .ie-explainer code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #fcd34d; }
-  table.ie-class-summary { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0 16px; }
-  table.ie-class-summary th { background: rgba(0,0,0,0.25); padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; border-bottom: 1px solid rgba(148,163,184,0.2); }
-  table.ie-class-summary td { padding: 7px 8px; border-bottom: 1px solid rgba(148,163,184,0.08); color: #cbd5e1; vertical-align: top; }
-  table.ie-class-summary tr:hover td { background: rgba(96,165,250,0.05); }
-  table.ie-class-summary .cls { font-weight: 700; color: #93c5fd; }
-  table.ie-class-summary .p0 { color: #ef4444; font-weight: 700; }
-  table.ie-class-summary .top-issue { color: #f8fafc; font-size: 11.5px; }
-  .incident-card { background: rgba(239,68,68,0.06); border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
-  .incident-card.sev-P1 { border-left-color: #f59e0b; background: rgba(245,158,11,0.05); }
-  .enhancement-card { background: rgba(34,197,94,0.06); border-left: 4px solid #22c55e; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
-  .ie-card-meta { font-size: 11px; color: #9ca3af; margin-top: 3px; }
-  .ie-card a { color: #93c5fd; text-decoration: none; font-weight: 600; }
-  .ie-card a:hover { text-decoration: underline; color: #60a5fa; }
-  .ie-class { display: inline-block; background: rgba(96,165,250,0.18); color: #93c5fd; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-right: 5px; }
-  .ie-section h3 { font-size: 14px; margin: 16px 0 6px; }
-</style>
-<div class="ie-section">
-  <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-05-30 01:47 EDT · <strong>47 open incidents</strong> (20 P0 · 19 P1) · <strong>75 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
-
-  <div class="ie-explainer">
-    <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
-    <strong>Where the data lives:</strong> 18 MySQL tables — <code>INCIDENT_&lt;CLASS&gt;</code> + <code>ENHANCEMENT_&lt;CLASS&gt;</code> for STOCKS / ETFS / CRYPTO / FOREX / COMMODITIES / BONDS / FUTURES / PENNY + <code>OVERALL</code> for cross-cutting issues — exported to <a href="/audit/data/incidents_enhancements_feed.json">JSON</a> and rendered to the dashboard at <a href="/audit/incidents.html">/audit/incidents.html</a> (full filterable view).
-    <strong>How it updates:</strong> peer-AI audits (Claude / Ring / Qwen / Kilo / Grok / opencode) seed new findings via <code>tools/audit_pick_funnel/cli_track.py</code>; the renderer runs nightly via <code>incidents-enhancements-nightly.yml</code> and FTP-pushes <code>incidents.html</code> + this <code>updates/index.html</code> block.
-    <strong>How to read severity:</strong> <span style="color:#ef4444">P0</span> = blocks the page from being trustable (data corruption, broken gate, false claim); <span style="color:#f59e0b">P1</span> = misleading or stale but page still works; P2/P3 = cleanup. Enhancement impact: HIGH = expected to materially lift WR/PF or close a known data gap.
-  </div>
-
-  <h3 style="color:#93c5fd">Per-asset-class summary</h3>
-  <table class="ie-class-summary">
-    <thead><tr><th>Class</th><th>Open #</th><th>P0</th><th>Top issue</th><th>Enh #</th><th>Top enhancement</th></tr></thead>
-    <tbody>
-      <tr>
-        <td class="cls">OVERALL</td>
-        <td>24</td>
-        <td class="p0">14</td>
-        <td class="top-issue">HC JS/Python parity drift can change eligibility by surface</td>
-        <td>52</td>
-        <td class="top-issue">Update &#39;forward validator frozen 270h&#39; incident title/description to accurate ro…</td>
-      </tr>
-      <tr>
-        <td class="cls">STOCKS</td>
-        <td>4</td>
-        <td class="p0">1</td>
-        <td class="top-issue">PEAD equity strategy stuck in shadow mode</td>
-        <td>3</td>
-        <td class="top-issue">Wire existing VIX&lt;22 regime gate (feat/equity-vix-regime-gate-sidecar-2026-05-13…</td>
-      </tr>
-      <tr>
-        <td class="cls">ETFS</td>
-        <td>1</td>
-        <td class="p0">—</td>
-        <td class="top-issue">All 5 ETF strategies on probation with ZERO verified forward trades</td>
-        <td>3</td>
-        <td class="top-issue">Make VIX-gated sector rotation the primary ETF sleeve</td>
-      </tr>
-      <tr>
-        <td class="cls">CRYPTO</td>
-        <td>4</td>
-        <td class="p0">—</td>
-        <td class="top-issue">CRYPTO ML strategies DSR&gt;=0.9995 on n=25-34 displayed without &#39;insufficient n&#39; badge</td>
-        <td>3</td>
-        <td class="top-issue">Enable BTC UTC-hour death-zone filter (M-001 / QW-3) in score_booster.py - rejec…</td>
-      </tr>
-      <tr>
-        <td class="cls">FOREX</td>
-        <td>4</td>
-        <td class="p0">1</td>
-        <td class="top-issue">All FOREX strategies losers except cta_cross_asset_tsmom SHORT (93% USDJPY concentration)</td>
-        <td>2</td>
-        <td class="top-issue">FOREX carry-factor scaffold (G10 long high-yield / short low-yield) as rescue le…</td>
-      </tr>
-      <tr>
-        <td class="cls">COMMODITIES</td>
-        <td>4</td>
-        <td class="p0">3</td>
-        <td class="top-issue">COMMODITY headline PF/WR still contaminated by pre-clean COT aggregation</td>
-        <td>3</td>
-        <td class="top-issue">Recompute class health from deduped independent COT cycles only</td>
-      </tr>
-      <tr>
-        <td class="cls">BONDS</td>
-        <td>2</td>
-        <td class="p0">1</td>
-        <td class="top-issue">Antigravity_bond: 0% WR on n=9 — kill emission</td>
-        <td>6</td>
-        <td class="top-issue">Wire bond_scanner.py (yield_momentum, duration_rotation, mean_reversion) + promo…</td>
-      </tr>
-      <tr>
-        <td class="cls">FUTURES</td>
-        <td>2</td>
-        <td class="p0">—</td>
-        <td class="top-issue">FUTURES is a zombie tile with real futures hidden under COMMODITY</td>
-        <td>2</td>
-        <td class="top-issue">Replace empty FUTURES tile with unified futures taxonomy</td>
-      </tr>
-      <tr>
-        <td class="cls">PENNY</td>
-        <td>2</td>
-        <td class="p0">—</td>
-        <td class="top-issue">skyrocket_detector NOT wired to production</td>
-        <td>1</td>
-        <td class="top-issue">Implement float-squeeze detector from skyrocket_detector framework</td>
-      </tr>
-    </tbody>
-  </table>
-
-<h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>HC JS/Python parity drift can change eligibility by surface</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>Profitable-but-filtered picks are not surfaced anywhere</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/quality_gates.py + dashboard_generator.py audit surfaces</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>Cherry-picked SUPREME EDGE stats (82% WR / PF 13+) surfaced without &#39;post-hoc segment search&#39; caveat</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/template.html SUPREME EDGE block</code> · reporter: opencode/ring-2.6-1t + 3-engine swarm · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>smart_picks_engine weights confidence-derived elite/quality at 35% — structurally inverts the ranker</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/smart_picks_engine.py</code> · reporter: opencode/ring-2.6-1t + 3-engine swarm · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>sync_active_mysql_picks_to_json upstream writer missing — root cause of 0.09% raw-pick outcome coverage</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/active_picks_sync.py (proposed) + forward_validator.validate_picks()</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>PnL integrity mismatch on 38.97% of sampled closed picks</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct integrity</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>WON status rows show avg pnl_pct = -41.1%</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.status=&#39;WON&#39; rows</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>56,559 ghost rows in trading_picks (top cohort: 20,474 identical MATICUSDT entries)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks ghost-row write path</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>5 FOREX rows have pnl_pct &lt; -100% (one at -106,700%)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct (FOREX category)</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>signal_outcomes table 82 days stale</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes / outcome resolver pipeline</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-<h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Update &#39;forward validator frozen 270h&#39; incident title/description to accurate root cause (outcome resolver git add pathspec, not forward_validator)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-01 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Fix outcome-resolver.yml git add step (pathspec closed_picks.json error blocking signal_outcomes)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-02 17:00 EST · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>MySQL sync workflow silent-fail removal + explicit failure + alert (remove || echo non-fatal swallow)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-08 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + automated diff vs version-controlled baseline)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + diff vs baseline in schemas/)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-<p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (peer priority-table validation)</strong>: Incoming 7-row priority action table cross-referenced against today's 12+ verifications. <strong>Accepted: P0 COMMODITY hard-disable (pending operator), P2 remove WR&lt;15%+PF&gt;5.0 outliers</strong>. <strong>REJECTED: P1 "document &amp; scale mega_mutation as only proven edge"</strong> &mdash; DOESNT_REPRODUCE per PR #318 verifier swarm + fresh SQL (n=2 WR 0% PF 0); +318% is arithmetic-sum-not-compound artifact already flagged on /audit TIER-2. <strong>REJECTED: P0 FOREX LONG-only block</strong> &mdash; claim INVERTED: live SQL shows FOREX LONG PF=7.05 (winner) vs SHORT PF=1.75. <strong>CONDITIONAL: P1 ml_enhanced small-n candidates</strong> &mdash; DYDX degraded (LB 0.81&rarr;0.52, PF 0.31), RENDER doesn't reproduce (3.06 not 6.83), INJ promising (n=45 WR 82% PF 13.48). Accumulate-only, NO size-up. <strong>NEEDS_VERIFY</strong>: EQUITY disable (raw 90d PF=3.41 conflicts with money_ready PF=0.16 &mdash; cohort issue). Full table: reports/peer_claude-PRIORITY_TABLE_VALIDATION_2026-05-31.md.</p>
 </div>
-<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
-
-  <div class="update-entry" style="--dot-color: #60a5fa;" data-tags="multi-agent,session,documentation,audit,ci" data-category="meta" data-types="documentation">
+<div class="update-entry">
+<p><strong>2026-06-01 EST (URGENT methodology bug flagged to kilo)</strong>: Kilo just pushed <code>tools/monte_carlo_edge_audit.py</code> + top-3 consensus runner to main. The MC tool uses <strong>capping (winsorization), NOT intrabar OHLC replay</strong> &mdash; methodology proven wrong this session (PR #347 FOREX inflated 3.16x, PR #343 COMMODITY inflated 6.46x). Deprecation warning added to tool header. Strategies emitted by top3_consensus_runner are fine (they just emit picks); just don't score backtests with the capped MC. Forward-only evaluation via master paper-pilot harness #316 (daily 13:30 UTC) stays the discipline. Full flag: <code>reports/peer_claude-URGENT_METHODOLOGY_FLAG_MC_AUDIT_TOOL_2026-05-31.md</code>.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (18th flag &mdash; shadow_pilot WR-definition mismatch + FUTURES illusion)</strong>: Kilo ran shadow_pilot_tracker + MC audit, found 0 TIER-1/2/3 strategies (confirming today's NO_EDGE chain). Two methodological flags: (1) <strong>WR REPRODUCTION GAP</strong> &mdash; kilo's WRs (CRYPTO 17.73%, EQUITY 3.61%, FOREX 6.82%) cannot be reproduced from live DB. Source-checked <code>tools/shadow_pilot_tracker.py:188</code>: it uses <code>pnl_pct&gt;0</code> (same as money_ready). Fresh SQL with that exact definition lands CRYPTO 48.81% (n=4079), EQUITY 47.27%, FOREX 44.89%. The TP-only hypothesis is wrong; suppression likely comes from strategy-registry join dropping picks with NULL/unregistered strategy. Kilo needs to re-run with verbose per-strategy breakdown. (2) <strong>FUTURES PF 10.28 with WR 0.26% (n=378) is a statistical illusion</strong> &mdash; 1 winner. Exact pattern kilo's own P2 rule rejects (WR&lt;15% AND PF&gt;5.0). Self-consistent rejection: do NOT cite as edge. Recommendation: pin canonical win-definition + filter set in <code>docs/PAPER_PILOT_HARNESS.md</code> before tomorrow's 13:30 UTC harness emission across the 24-strategy paper-pilot pool (8 claude + 8 kilo + 8 zoo). Otherwise WR comparisons across pools will be incomparable. Peer DM sent. Full report: <code>reports/peer_claude-FLAG_SHADOW_PILOT_DEFINITION_+_FUTURES_ILLUSION_2026-05-31.md</code>.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (grok pipeline-rootcause validation &mdash; 18th flag of the day)</strong>: Grok claimed primary no-edge cause is data-pipeline corruption: (1) EQUITY 14d raw ~65% WR / PF 5.32 vs resolved n=43 WR 30% PF 0.156; (2) signal_outcomes 82d stale; (3) forward_validator frozen 270h with 29M open bloat; (4) &lt;0.1% raw picks resolved; (5) PR #158 outcome_resolver USDT-suffix fix landed, 2437+ rows fixed. Independent DB verification: <strong>2 of 5 claims VERIFIED, 3 of 5 DON'T REPRODUCE</strong>. signal_outcomes max(opened_at)=today (0 days stale, 145K rows, all resolved). No forward_validator table; closest matches empty. at_raw_picks 56.6% resolved, not &lt;0.1%. PR #158 IS merged but only 26 mislabeled USDT rows remain (not 2437). <strong>EQUITY raw/resolved divergence IS real and significant</strong> (8488 decisive trades funneled to n_resolved=43, edge sign flipped). <strong>Critical-finding: MIXED</strong> &mdash; pipeline is not broken end-to-end, tomorrow's 24-strategy paper pilot proceeds. EQUITY-class measurements specifically warrant a separate resolver-funnel ticket. Lower weight on future grok pipeline claims (1/5 verified). Full verdict: <code>reports/peer_claude-VERIFY_GROK_PIPELINE_ROOTCAUSE_2026-05-31.md</code>.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (MAJOR &mdash; edge was hidden, not absent)</strong>: 6-class deep-dive (wht76ak1j PRs #344-#346, #351-#353, #359) found edge HAS been here all along, hidden by 6 architectural bugs. <strong>ETF closest to T2</strong> (PF 1.44 / WR 54.9% / n=153 per edge_stability, not n=4 INSUFF as money_ready reports). <strong>CRYPTO has 4 buried T2 winners</strong> (macd_rsi_m048 PF 6.56, luxalgo_confluence PF 1.54, etc.). <strong>EQUITY M-067 cap drops 251&rarr;43 picks masking PF 1.90/WR 55%/Sharpe 3.49</strong> + 6 buried kimi winners. <strong>BOND 4 strategies wrongly tagged 'CRYPTO' hide bond_yield_curve DSR 1.82</strong>. 18+ fabrications caught today. Operator P0 list at <code>reports/peer_claude-OPERATOR_P0_UNBLOCK_LIST_2026-05-31.md</code> &mdash; 1-line SQL fixes + 1 cap-policy change + 1 verdict fallthrough unlock these without writing strategies. The "no edge" verdict was always wrong; it was a verdict-aggregation artifact.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (18th flag - kilo forced_resolution survivorship bias)</strong>: Kilo committed forced_resolution.py + winning_strategies.py to main claiming 4 "PROMISING" edges. <strong>Their OWN permutation p-values refute this</strong>: commodity_cta p=0.999, crypto_mega_mut p=1.000, crypto_pma p=0.66, forex_contrarian p=0.409. Zero pass p&lt;0.05. Methodology filters OUT all TIME_EXIT trades (zero-pnl medians) and analyzes only TP_HIT+SL_HIT extreme tails = survivorship bias by selection. Same class of error as capping today (PR #347/#343). Deprecation headers added to both modules; peer DM sent. <strong>24-strategy paper-pilot harness tomorrow 13:30 UTC must include TIME_EXIT in scoring</strong> or it reproduces kilo's error. 18 candidate fabrications caught today.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (worktree cleanup executed &mdash; scope correction)</strong>: PR #386 audit projected ~12 GB / 29-dir reclaim from <code>.claude/worktrees/</code> explosion. <strong>Actual safe reclaim: 102 MB / 1 dir</strong> (<code>wf_32166a6d-914-1</code>, verified byte-identical to canonical, no unique work). The other 28 are REGISTERED git worktrees on active/locked branches (e.g. <code>mutate/wick-reversal-2026-05-31</code>, <code>audit/edge-stability-montecarlo-2026-05-31</code>) &mdash; blind <code>rm -rf</code> would corrupt the worktree registry and kill in-flight agent sessions. <code>git worktree prune</code> ran first (no-op, registry clean). For the projected 7-9 GB reclaim the operator must audit each registered branch for unmerged commits, then per-tree <code>git worktree remove --force</code>. Full log: <code>reports/peer_claude-WORKTREE_CLEANUP_EXECUTED_2026-05-31.md</code>.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (DEEP 8-AI CRITIQUE SYNTHESIS &mdash; pipeline-first, no fresh strategies tomorrow)</strong>: 8/8 deep critiques (Cerebras gpt-oss-120b, DeepSeek, Gemini, Grok, Kimi, MiMo, NVIDIA, Qwen-Pro) returned valid JSON on <code>docs/STRATEGY_PIPELINE_END_TO_END_2026-05-31.md</code>. <strong>Unanimous 8/8 on two votes</strong>: <code>next_move = fix_pipeline_first</code> and <code>most_urgent_missing_topic = EXECUTION COSTS / SLIPPAGE</code>. 7/8 say <code>paper_pilot_horizon = fantasy</code> until plumbing + costs land (cerebras lone dissent = with_caveats). 7/8 say <code>bigger_money_loss = data_quality</code>. <strong>5 actionable decisions for 2026-06-01 13:30 UTC harness</strong>: (1) ship <code>alpha_engine/execution_costs.py</code> + wire net-of-costs into <code>outcome_resolver.py</code>; (2) plumbing-only harness run if any of 6 P0 bugs still open (resolver mislabel, stale signal_outcomes, backtest lag, concentration hard-drop, MC winsorize, intrabar OHLC); (3) Kelly-capped sizing (max=0.25) + capacity limits; (4) 4 monitoring tripwires (resolver_time_exit_ratio, concentration_dropped_emits, cross_strategy_corr_30d, pf_net_of_costs); (5) downgrade paper-pilot horizon to "earliest 2026-06-14, not 2026-06-02". Bonferroni 8/8 over-engineered; concentration hard-drop 5/8 (PR #344 EQUITY 251&rarr;43 killed real edge). Synthesis: <code>reports/peer_claude-DEEP_8AI_CRITIQUE_SYNTHESIS_2026-05-31.md</code>. Addendum appended to pipeline doc.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (TESTING_PROTOCOL.MD canonical consolidation)</strong>: Merged today's additions into the canonical root-level <code>TESTING_PROTOCOL.MD</code>. Windows-agent audit confirmed <strong>71 byte-identical copies</strong> across worktrees / <code>.claude/</code> / <code>.qwen/</code> snapshots &mdash; root copy is the single source of truth. Refresh: §2.5 empirical claims re-verified against live <code>ejaguiar1_stocks.trading_picks</code> (n=6,619 closed): 1 holds (Trust=7 = 85.9% WR n=99), 5 drifted, 3 dead (max drift <strong>43.1pp</strong> on the old "Conf 0.75-0.79 sweet spot"). NEW §17 consolidates 11 architectural P0/P1 bugs (6 PR #364 unblocks + 5 §15 trap re-verifications: 4 STILL_BUG, 1 PARTIALLY_FIXED &mdash; including BTCUSDT LONG with 565 simultaneous dupes and promotion-gate coverage at 5/216 = 2.3%), the canonical fabrications reference (PR #357 capping-vs-replay, PR #358 MC tool, PR #362 forced_resolution), and stricter statistical-gate floors (n&ge;500 / Wilson LB / Bootstrap PF 5th percentile &ge; 1.0 / Bonferroni against n=1,939 strategies). NEW §18 stubs the 6-topic deep-dive wave (wkh9une1h: execution costs, capacity/Kelly, correlation gate, regime detection, live-vs-paper divergence, R:R floor) &mdash; each replaced with operational extract as reports land. Source: <code>reports/peer_claude-VERIFY_§15_INFRA_TRAPS_2026-05-31.md</code>, <code>reports/peer_claude-REFRESH_TESTING_PROTOCOL_NUMBERS_2026-05-31.md</code>.</p>
+</div>
+<div class="update-entry">
+<p><strong>2026-06-01 EST (6-topic deep-dive synthesis - methodology completed)</strong>: Per-topic AI consults (deepseek/grok/qwen-pro/mimo/gemini/kimi) on the 6 missing pieces of methodology: execution costs, regime detection, capacity+Kelly, cross-strategy correlation, live-vs-paper divergence, R:R+tail gates. All 6 deep-dives produce concrete production-ready specs wired into <code>docs/PAPER_PILOT_HARNESS.md</code> before tomorrow 13:30 UTC harness emission. Methodology is now end-to-end: cursor framework (n>=500/Wilson/Bootstrap/Bonferroni) + 6 new topic gates + 6 architectural bug fixes from PR #364 P0 list. Strategy build can now proceed honestly across 24-strategy pool + 6 surfaced T2 winners.</p>
+</div>
+<!-- DOC_SUMMARY_ENTRY:START -->
+<div class="update-entry" style="--dot-color: #60a5fa;" data-tags="multi-agent,session,documentation,audit,ci" data-category="meta" data-types="documentation">
   <h3>2026-05-29 13:37 UTC — Multi-Agent Session Documentation Round (2026-05-29)</h3>
   <p>8 session-summary document(s) from the parallel agent fleet — Claude (4), Freebuff, Grok, Kilo Code, Qwen — consolidated into one page. Covers AI-tournament data-quality fixes, the GitHub Actions fleet-health remediation (Node 24 bump, masking linter, guardian masked-failure detection, job-health self-commit-loop fix), CI test repair, multi-PR swarm review, and incident/enhancement documentation.</p>
   <ul>
@@ -10890,7 +11007,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          May 30, 2026 &mdash; 07:39 PM EST | Hourly Portfolio Update
+          May 31, 2026 &mdash; 08:13 PM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -10909,6 +11026,7 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
 
 
 
@@ -11369,7 +11487,7 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated May 30, 07:39 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated May 31, 08:13 PM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>

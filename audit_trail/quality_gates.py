@@ -6122,6 +6122,43 @@ def _passes_dow_gate(pick: Dict[str, Any]) -> bool:
     if conf < 0.70:
         logger.debug(f"DOW gate reject: {asset_class} {dow} conf={conf:.2f}")
         return False
+
+
+# --- §15 DEDUP GATE: block picks with duplicate symbol+direction+strategy ---
+# Addresses §15 trap #2: 352 dupe groups, BTCUSDT LONG = 565 simultaneous picks.
+# This gate is applied at emission time (quality_gates), not just tagging (dashboard_generator).
+_SEEN_PICK_KEYS: set = set()
+
+
+def _dedup_gate_blocks(pick: Dict[str, Any], active_picks: Optional[List[Dict]] = None) -> Optional[str]:
+    """Block picks that duplicate an already-active symbol+direction+strategy combo.
+    
+    Returns None if pass, or a reason string if blocked.
+    """
+    symbol = str(pick.get("symbol", "") or "").upper().strip()
+    direction = str(pick.get("direction", "") or "").upper().strip()
+    strategy = str(pick.get("strategy", "") or "").lower().strip()
+    
+    if not symbol or not direction:
+        return None  # can't dedup without symbol+direction
+    
+    dedup_key = (symbol, direction, strategy)
+    
+    # Check against active picks if provided
+    if active_picks:
+        for active in active_picks:
+            a_sym = str(active.get("symbol", "") or "").upper().strip()
+            a_dir = str(active.get("direction", "") or "").upper().strip()
+            a_str = str(active.get("strategy", "") or "").lower().strip()
+            if (a_sym, a_dir, a_str) == dedup_key:
+                return f"DEDUP: {symbol} {direction} {strategy} already active"
+    
+    # Check against seen keys (in-memory dedup for batch processing)
+    if dedup_key in _SEEN_PICK_KEYS:
+        return f"DEDUP: {symbol} {direction} {strategy} duplicate in batch"
+    _SEEN_PICK_KEYS.add(dedup_key)
+    
+    return None
     return True
 
 

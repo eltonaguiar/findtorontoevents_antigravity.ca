@@ -238,7 +238,8 @@ def check_strategy_for_kill(
         return False, "Kill switch disabled via FX_KILL_SWITCH_DISABLED=1"
     
     # Check known toxic list (immediate hard-block)
-    if strategy_name in _KNOWN_TOXIC_FOREX_STRATEGIES:
+    # P0 §15 Trap #1 — case-insensitive matching
+    if strategy_name.casefold() in {s.casefold() for s in _KNOWN_TOXIC_FOREX_STRATEGIES}:
         return True, f"Known toxic FOREX strategy (hard-blocked per swarm analysis)"
     
     # Check if it's even a FOREX strategy

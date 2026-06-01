@@ -309,6 +309,8 @@ MIN_ELITE_SCORE_BY_CLASS: dict[str, int] = {
     # scanner; class-specific floor of 20 + grade-D/source-trust exemptions = admissible.
     # Tighten if FUTURES WR drops below 45% on first 50 closed picks.
     "FUTURES":   20,
+    "CHEAP_STOCKS": 35,
+    "IPO":       40,
 }
 
 # FOREX hard disable — 2026-05-15

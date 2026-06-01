@@ -27,7 +27,7 @@
         "m095_fix_doc": "updates/2026-05-20-cot-lookahead-fix-m095.md",
         "operator_note": "H-001 LIVE_TESTING was based on falsified WR 78.4% from leaked future data. The strategy as a whole is NOT salvageable as a directional signal. Do NOT re-test COT_positioning on this sample. If a COT-derived signal is revisited, it must be a materially different construction (e.g. small-spec exhaustion H-021) with publication-lag enforcement."
       },
-      "kill_reason": "M-095: look-ahead leakage \u2014 CFTC COT data used before publication time. 85% of picks were CT=F cotton. After fixing timestamps and dedup: WR=30%, PF=0.51."
+      "kill_reason": "M-095: look-ahead leakage — CFTC COT data used before publication time. 85% of picks were CT=F cotton. After fixing timestamps and dedup: WR=30%, PF=0.51."
     },
     {
       "id": "H-002",
@@ -49,7 +49,7 @@
         "harness_verdict": "UNTESTED (too few walk-forward windows, harness needs >=3)",
         "pooled_wr": 0.532,
         "pooled_n": 1964,
-        "implementation_note": "equity_pead_strategy.py \u2014 opt-in sidecar, gate EQUITY_PEAD_ENABLED=0 (default OFF). Uses yfinance get_earnings_dates. Wiring to production blocked by M-107 until harness confirms eff>=0.30 on >=3 windows with >=30 events each.",
+        "implementation_note": "equity_pead_strategy.py — opt-in sidecar, gate EQUITY_PEAD_ENABLED=0 (default OFF). Uses yfinance get_earnings_dates. Wiring to production blocked by M-107 until harness confirms eff>=0.30 on >=3 windows with >=30 events each.",
         "implementation_commit": null
       }
     },
@@ -142,11 +142,11 @@
           "root_cause": "EIA WCESTUS1 stocks series starts 1982; USO price series starts 2006-04-10. 1228/2276 stock dates predate USO inception. Pre-inception signals all map to 2006-04-10 (first USO trading day), inflating USO n=1066 with stale-date trades sharing identical 14-day return windows.",
           "artifact": "USO WR=59.9% was inflated by pre-2006 signal mapping artifact",
           "corrected_wr_estimate": "WR ~46-48% based on H-036 post-2006-only run (WR=46.1%, n=1051)",
-          "corrected_verdict": "H-004 USO finding is INVALID \u2014 stale-signal artifact. No USO edge confirmed."
+          "corrected_verdict": "H-004 USO finding is INVALID — stale-signal artifact. No USO edge confirmed."
         }
       },
       "implementation_file": "tools/h004_inventory_surprise_roll_yield.py",
-      "notes": "Implemented 2026-05-19. Tests: tests/test_h004_inventory_roll_yield.py (27/27 pass). Backtest pending live run. IDEA-A Sector ETF RS wired into EQUITY smart score via equity_sector_rs.py. 2026-05-19 backtest run: harness fixed (harness.run AttributeError \u2192 inline _walk_forward_harness). USO WR=59.9% n=1066 real EIA data \u2014 directional edge confirmed. Eff gate rejects (mean_eff=-0.0285) because signal is categorical, not magnitude-scaled. SYNTHETIC drag from DBA/DBB."
+      "notes": "Implemented 2026-05-19. Tests: tests/test_h004_inventory_roll_yield.py (27/27 pass). Backtest pending live run. IDEA-A Sector ETF RS wired into EQUITY smart score via equity_sector_rs.py. 2026-05-19 backtest run: harness fixed (harness.run AttributeError → inline _walk_forward_harness). USO WR=59.9% n=1066 real EIA data — directional edge confirmed. Eff gate rejects (mean_eff=-0.0285) because signal is categorical, not magnitude-scaled. SYNTHETIC drag from DBA/DBB."
     },
     {
       "id": "H-005",
@@ -187,14 +187,14 @@
         "verdict": "KILLED",
         "reason": "Module alpha_engine/options_flow.py rejected by kilo 6-agent vetting (2026-05-18): compute_skew() has a KeyError on every call (dead signal), dealer-gamma formula double-subtracts put gamma, no edge_stability_harness integration, no unit tests. Module was NOT merged. Registered retroactively per M-107 consistency requirement.",
         "source": "reports/kilo_fork2_vetting_2026_05_18.md",
-        "post_mortem": "Module failure mode: structural code defects prevented any edge measurement. Not a data issue \u2014 the signal computation itself was broken. R4 violation: hypothesis was cited in code header but never pre-registered."
+        "post_mortem": "Module failure mode: structural code defects prevented any edge measurement. Not a data issue — the signal computation itself was broken. R4 violation: hypothesis was cited in code header but never pre-registered."
       }
     },
     {
       "id": "H-011",
       "asset_class": "EQUITY",
       "family": "options_dealer_gamma",
-      "description": "Dealer gamma net exposure signal: aggregate (call_gamma - put_gamma) \u00d7 open_interest across strike/expiry. Net positive gamma \u2192 dealers hedge by selling into rallies (dampening). Net negative gamma \u2192 dealers buy dips (amplifying). Use gamma-crossing zero as a regime signal.",
+      "description": "Dealer gamma net exposure signal: aggregate (call_gamma - put_gamma) × open_interest across strike/expiry. Net positive gamma → dealers hedge by selling into rallies (dampening). Net negative gamma → dealers buy dips (amplifying). Use gamma-crossing zero as a regime signal.",
       "test_statistic": "walk_forward eff via edge_stability_harness.is_admissible()",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -208,7 +208,7 @@
         "verdict": "KILLED",
         "reason": "Module alpha_engine/options_flow.py rejected by kilo 6-agent vetting: dealer-gamma formula was call_gamma - 2*put_gamma (double-subtracts put), core signal mathematically incorrect. No edge_stability_harness integration. Module NOT merged. Registered retroactively per M-107 consistency requirement.",
         "source": "reports/kilo_fork2_vetting_2026_05_18.md",
-        "post_mortem": "Signal computation defect: walrus + second subtraction in the gamma aggregator. Would need a corrected implementation before any meaningful test is possible. NOT a banned family \u2014 structurally new signal. Corrected version could be pre-registered as H-017+ with proper harness gate."
+        "post_mortem": "Signal computation defect: walrus + second subtraction in the gamma aggregator. Would need a corrected implementation before any meaningful test is possible. NOT a banned family — structurally new signal. Corrected version could be pre-registered as H-017+ with proper harness gate."
       }
     },
     {
@@ -231,7 +231,7 @@
       "registered_at": "2026-05-19",
       "data_sample_lock": null,
       "risk_flags": [
-        "Crypto trends through vol clusters in strong bull/bear regimes \u2014 sign-flip risk if regime conditioning is wrong",
+        "Crypto trends through vol clusters in strong bull/bear regimes — sign-flip risk if regime conditioning is wrong",
         "Mean-reversion alpha in crypto eroded since 2024 as quant participation increased",
         "Small-bar resolution (daily) may miss intraday mean-reversion; consider 4H bars as secondary test"
       ],
@@ -266,7 +266,7 @@
       "registered_at": "2026-05-19",
       "wiring": "OPT-IN RESEARCH SIDECAR. Pre-registered before build per M-107. No production wiring.",
       "distinction_from_killed": {
-        "H-003_funding_rate_cross_tf": "H-003 used funding rate as a DIRECTIONAL predictor across timeframes. H-035 uses the FIXED SETTLEMENT TIME as a mechanical event anchor. Direction of the bet follows the mechanical flow (long paying short \u2192 temporary longs reduce \u2192 short-side rebound), not the funding rate level alone.",
+        "H-003_funding_rate_cross_tf": "H-003 used funding rate as a DIRECTIONAL predictor across timeframes. H-035 uses the FIXED SETTLEMENT TIME as a mechanical event anchor. Direction of the bet follows the mechanical flow (long paying short → temporary longs reduce → short-side rebound), not the funding rate level alone.",
         "funding_arb_carry": "Carry arbitrage holds the perp vs spot to collect the funding rate continuously. H-035 is a SHORT-WINDOW TIMING bet (5h) around the settlement moment, not a continuous carry position."
       },
       "result": {
@@ -289,19 +289,19 @@
           0.321
         ]
       },
-      "kill_reason": "Sign instability across all 4 walk-forward windows (SHORT effs: [0.547, -0.496, 0.07, 0.066], LONG effs: [-0.626, 0.138, -0.231, 0.321]). Not trending toward stability \u2014 peer analysis 2026-05-19 confirmed noise, not regime-dependent edge. Ring-2.6-1T confirmed kill."
+      "kill_reason": "Sign instability across all 4 walk-forward windows (SHORT effs: [0.547, -0.496, 0.07, 0.066], LONG effs: [-0.626, 0.138, -0.231, 0.321]). Not trending toward stability — peer analysis 2026-05-19 confirmed noise, not regime-dependent edge. Ring-2.6-1T confirmed kill."
     },
     {
       "id": "H-036",
       "asset_class": "COMMODITY",
       "family": "inventory_direction_gate",
-      "description": "EIA petroleum inventory draw (actual < seasonal expectation) \u2192 LONG USO/CL=F 14-day; build (actual > expectation) \u2192 SHORT. Categorical directional signal, not magnitude-scaled. Pre-registered as H-004a variant after H-004 found WR=59.9% on USO n=1066.",
+      "description": "EIA petroleum inventory draw (actual < seasonal expectation) → LONG USO/CL=F 14-day; build (actual > expectation) → SHORT. Categorical directional signal, not magnitude-scaled. Pre-registered as H-004a variant after H-004 found WR=59.9% on USO n=1066.",
       "test_statistic": "win_rate_gross (14-day forward, direction-only gate)",
       "acceptance_criteria": {
         "min_wr": 0.56,
         "min_n": 100,
         "min_windows_admissible": 3,
-        "eff_floor": "N/A \u2014 categorical signal uses WR gate not eff gate",
+        "eff_floor": "N/A — categorical signal uses WR gate not eff gate",
         "validation": "walk-forward WR gate: 3 consecutive 14-day windows with WR >= 0.56 and n >= 30 per window"
       },
       "economic_prior": "Physical inventory draws are supply shocks. EIA crude oil report is the single highest-impact weekly data release for crude markets. USO WR=59.9% on n=1066 real EIA trades in H-004 backtest establishes the prior.",
@@ -320,7 +320,7 @@
       "implementation_file": "tools/h036_inventory_direction_gate.py",
       "notes": "H-004 discovered USO WR=59.9% but harness rejected on eff gate (categorical signal). This hypothesis uses WR gate instead. SEPARABLE from H-004: H-004 tests inventory+roll_yield BUNDLE; H-036 tests PURE inventory direction, no roll yield component, different test statistic.",
       "parent_hypothesis": "H-004",
-      "family_rule": "Max 5 families per COMMODITY \u2014 current: COT_positioning (H-001), inventory_surprise_roll_yield (H-004), inventory_direction_gate (H-036 = 3/5 slots used)",
+      "family_rule": "Max 5 families per COMMODITY — current: COT_positioning (H-001), inventory_surprise_roll_yield (H-004), inventory_direction_gate (H-036 = 3/5 slots used)",
       "kill_reason": "HARNESS_REJECTED with real EIA data: WR=46.1% n=1051, 0/7 windows pass WR>=56%. Direction-only inventory signal is not a stable edge."
     },
     {
@@ -335,12 +335,12 @@
         "same_sign": true,
         "cost_survival_min": 0.6
       },
-      "economic_prior": "Large coin transfers INTO spot exchanges precede selling; transfers OUT precede accumulation. CryptoQuant/Glassnode exchange-attributed wallet flow leads price by hours \u2014 genuine information asymmetry.",
+      "economic_prior": "Large coin transfers INTO spot exchanges precede selling; transfers OUT precede accumulation. CryptoQuant/Glassnode exchange-attributed wallet flow leads price by hours — genuine information asymmetry.",
       "status": "UNTESTED",
       "registered_at": "2026-05-18",
       "result": {
         "verdict": "UNTESTED",
-        "reason": "Requires CryptoQuant exchange-flow API (~$30-200/mo) \u2014 paid-data decision pending operator approval.",
+        "reason": "Requires CryptoQuant exchange-flow API (~$30-200/mo) — paid-data decision pending operator approval.",
         "blocked_on": "operator paid-data approval (CryptoQuant ~$30-200/mo)"
       }
     },
@@ -361,7 +361,7 @@
       "registered_at": "2026-05-18",
       "result": {
         "verdict": "UNTESTED",
-        "reason": "Requires 1-minute intraday equity bars \u2014 Polygon.io Stocks Starter ~$30/mo. Paid-data decision pending operator approval.",
+        "reason": "Requires 1-minute intraday equity bars — Polygon.io Stocks Starter ~$30/mo. Paid-data decision pending operator approval.",
         "blocked_on": "operator paid-data approval (Polygon.io ~$30/mo)"
       }
     },
@@ -369,7 +369,7 @@
       "id": "H-017",
       "asset_class": "CRYPTO",
       "family": "funding_settlement_liquidation_cascade",
-      "description": "Funding-settlement liquidation cascade. At each 8h perp funding settlement (00:00/08:00/16:00 UTC) fade mechanical price dislocation: entry at settlement+1min, exit at VWAP reversion or 30-min time stop. Condition: displacement > 1.5x recent realized vol AND funding magnitude in top quartile. NOT a funding-rate directional bet \u2014 fades a mechanical settlement-CLOCK liquidity event.",
+      "description": "Funding-settlement liquidation cascade. At each 8h perp funding settlement (00:00/08:00/16:00 UTC) fade mechanical price dislocation: entry at settlement+1min, exit at VWAP reversion or 30-min time stop. Condition: displacement > 1.5x recent realized vol AND funding magnitude in top quartile. NOT a funding-rate directional bet — fades a mechanical settlement-CLOCK liquidity event.",
       "test_statistic": "walk_forward eff via edge_stability_harness.is_admissible() on resolved-pick records, 14-day windows",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -377,7 +377,7 @@
         "same_sign": true,
         "cost_survival_min": 0.6
       },
-      "economic_prior": "Perp funding settles every 8h at fixed UTC clock times; over-leveraged positions get squeezed; thin books at settlement minute overshoot then mean-revert. Mechanical forced-flow signal \u2014 not predictive, reactive.",
+      "economic_prior": "Perp funding settles every 8h at fixed UTC clock times; over-leveraged positions get squeezed; thin books at settlement minute overshoot then mean-revert. Mechanical forced-flow signal — not predictive, reactive.",
       "status": "UNTESTED_DATA_GAP",
       "registered_at": "2026-05-18",
       "result": {
@@ -388,7 +388,7 @@
         "ring_approval": "Ring 2.6 1T 2026-05-19 confirmed different alpha from H-035. Proxy-based cascade detection implemented. Data gap is the only blocker.",
         "forward_path": "Shadow implementation: run daily to collect cascade events. Re-test when n>=50 cascade trades accumulated (est. 2-3 months)."
       },
-      "wiring": "OPT-IN RESEARCH SIDECAR ONLY \u2014 no production wiring until harness clears."
+      "wiring": "OPT-IN RESEARCH SIDECAR ONLY — no production wiring until harness clears."
     },
     {
       "id": "H-018",
@@ -409,7 +409,7 @@
       "data_source_researched_at": "2026-05-19",
       "data_source": "Glassnode API realized_profit/realized_loss/sopr. Standard tier ~$29/mo needed for 8-asset coverage. Operator decision required before build.",
       "result": null,
-      "notes": "SOPR data availability research (2026-05-19): Glassnode free tier does not expose per-asset SOPR or realized_profit/realized_loss at daily resolution \u00e2\u20ac\u201d those endpoints require the Standard plan (~$29/mo). CryptoQuant free tier similarly gates SOPR behind paid access; their free dashboard shows aggregate BTC SOPR only with no programmatic API. IntoTheBlock free API (via RapidAPI) exposes an 'In/Out of the Money' ratio per coin (fraction of addresses holding at profit vs loss), which is a structural analogue to SOPR but not the same metric \u00e2\u20ac\u201d it lags intraday and uses address-cost-basis rather than realized UTXO profit. Messari free tier provides no SOPR endpoint. Alternative free proxy: CoinMetrics Community API exports realized_cap and market_cap daily for BTC/ETH (free, no key); SOPR can be approximated as delta(realized_cap)/realized_cap but only for UTXO chains (BTC), not account-model chains (ETH, SOL). Recommendation: downgrade H-018 to DATA_GAP. If operator obtains Glassnode Standard (~$29/mo), re-register as H-018v2. Low-cost fallback: restrict universe to BTC-only and use CoinMetrics Community realized_cap delta as SOPR proxy \u00e2\u20ac\u201d re-register as H-018-btc-proxy.",
+      "notes": "SOPR data availability research (2026-05-19): Glassnode free tier does not expose per-asset SOPR or realized_profit/realized_loss at daily resolution â€” those endpoints require the Standard plan (~$29/mo). CryptoQuant free tier similarly gates SOPR behind paid access; their free dashboard shows aggregate BTC SOPR only with no programmatic API. IntoTheBlock free API (via RapidAPI) exposes an 'In/Out of the Money' ratio per coin (fraction of addresses holding at profit vs loss), which is a structural analogue to SOPR but not the same metric â€” it lags intraday and uses address-cost-basis rather than realized UTXO profit. Messari free tier provides no SOPR endpoint. Alternative free proxy: CoinMetrics Community API exports realized_cap and market_cap daily for BTC/ETH (free, no key); SOPR can be approximated as delta(realized_cap)/realized_cap but only for UTXO chains (BTC), not account-model chains (ETH, SOL). Recommendation: downgrade H-018 to DATA_GAP. If operator obtains Glassnode Standard (~$29/mo), re-register as H-018v2. Low-cost fallback: restrict universe to BTC-only and use CoinMetrics Community realized_cap delta as SOPR proxy â€” re-register as H-018-btc-proxy.",
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY. Pre-registered per M-107 BEFORE any data fetch or backtest."
     },
     {
@@ -454,8 +454,8 @@
           "start": "2021-05-19",
           "end": "2026-05-11"
         },
-        "verdict": "PASS \u2014 WR=58.9%, PF=1.295, n=1185, 3/4 walk-forward folds admissible. Contango regime favors long ETF basket 5-day hold.",
-        "notes": "Fold 2 (WR=54.4%) below 55% threshold but majority pass. Avg loss (+1.52%) > avg win (+1.37%) warning \u2014 edge is win-rate driven, not win-size driven. Recommend: live-shadow with 10% Kelly on ETF basket when VIX < VIX3M. Stop: if live WR drops below 52% after n=50."
+        "verdict": "PASS — WR=58.9%, PF=1.295, n=1185, 3/4 walk-forward folds admissible. Contango regime favors long ETF basket 5-day hold.",
+        "notes": "Fold 2 (WR=54.4%) below 55% threshold but majority pass. Avg loss (+1.52%) > avg win (+1.37%) warning — edge is win-rate driven, not win-size driven. Recommend: live-shadow with 10% Kelly on ETF basket when VIX < VIX3M. Stop: if live WR drops below 52% after n=50."
       },
       "wiring": "OPT-IN RESEARCH SIDECAR. Pre-registered per M-107 BEFORE any data fetch or backtest.",
       "tested_at": "2026-05-19"
@@ -466,11 +466,11 @@
       "family": "insider_open_market_cluster_buy_diverse",
       "status": "UNTESTED_DATA_GAP",
       "pre_registered_utc": "2026-05-19T21:00:00Z",
-      "description": "SEC Form-4 code-P insider open-market cluster-buy signal on a diverse Russell-2000-style small-cap universe (100+ tickers across financials, industrials, energy, healthcare). A cluster = 3+ distinct insiders buying the same ticker within 10 days. LONG-only for 20 trading days per resolved record. Continuous-position full-book (H-008 density pattern). Universe excludes meme/retail-darling stocks \u2014 those insiders use options/RSUs. Targets sectors where management actually buys: banks, insurance, REITs, manufacturing, transport, E&P, midstream, medical devices, pharma.",
+      "description": "SEC Form-4 code-P insider open-market cluster-buy signal on a diverse Russell-2000-style small-cap universe (100+ tickers across financials, industrials, energy, healthcare). A cluster = 3+ distinct insiders buying the same ticker within 10 days. LONG-only for 20 trading days per resolved record. Continuous-position full-book (H-008 density pattern). Universe excludes meme/retail-darling stocks — those insiders use options/RSUs. Targets sectors where management actually buys: banks, insurance, REITs, manufacturing, transport, E&P, midstream, medical devices, pharma.",
       "economic_prior": "Insider open-market cluster buys represent personal capital commitment under legal information advantage. Clustering (3+ insiders) filters out 10b5-1 plans, option exercises, and diversification sales. Cohen-Malloy-Pomorski (2012) and Jeng et al. document significant alpha in small-cap broad cross-sectional universes, not in mega-caps (arbed away) or meme stocks (no code-P buying).",
       "stratification_disclosure": "SMALL-CAP DIVERSE UNIVERSE ONLY. Market cap < B at cluster time. Tickers pre-selected from financials/industrials/energy/healthcare where code-P insider buying is historically documented. Full-universe and meme-stock universe explicitly NOT tested. This is a new pre-registration distinct from H-028 (which used meme/volatile tickers and produced UNTESTED-data-gap due to 0 real clusters).",
       "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN/MIN_WINDOW_N/MIN_STABLE_WINDOWS unchanged). Full continuous-position book (one resolved record per ticker-day for 20 trading days after cluster signal). Post-cost gate: net edge must retain >= 60% of gross after 15bps round-trip. Both gates must pass. Form-4 filing lag enforced: cluster stamped at latest filing date, visible D+1, position entered D+1.",
-      "banned_check": "NOT H-028 \u2014 H-028 used meme-stock universe (AMC/GME/BBBYQ etc.) which had 0 real clusters. H-028v2 uses a distinct pre-registered universe (diverse Russell-2000-style sectors). NOT PEAD (H-002/H-010) \u2014 those use earnings surprise; this uses Form-4 disclosed insider capital commitment. NOT yield-curve, COT, funding-rate, or any killed family.",
+      "banned_check": "NOT H-028 — H-028 used meme-stock universe (AMC/GME/BBBYQ etc.) which had 0 real clusters. H-028v2 uses a distinct pre-registered universe (diverse Russell-2000-style sectors). NOT PEAD (H-002/H-010) — those use earnings surprise; this uses Form-4 disclosed insider capital commitment. NOT yield-curve, COT, funding-rate, or any killed family.",
       "data_sources": "SEC EDGAR submissions API (free, no key, SEC-UA header required). yfinance daily close + marketCap scalar. No paid data.",
       "swarm_decision": "2/2 consensus BUILD with HIGH confidence (deepseek + kilo, 2026-05-19). Key concern: cluster density may be sparse even in target sectors. Universe design: 150 tickers, financials/industrials/energy/healthcare, ticker screen requires >= 2 distinct code-P filings in trailing 12 months.",
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY. Pre-registered per M-107 BEFORE any data fetch or backtest. No caller in any pick-generation or scoring path. Reproducer: python tools/e1_insider_cluster_buy_research.py --universe diverse",
@@ -484,7 +484,7 @@
         "net_edge_bps": -15.9,
         "is_admissible": false,
         "harness_windows_passed": 0,
-        "verdict": "UNTESTED_DATA_GAP \u2014 EDGAR XML parser not wired; 78/82 tickers used synthetic fallback, harness score meaningless. Re-register as H-028v3 after wiring real parser.",
+        "verdict": "UNTESTED_DATA_GAP — EDGAR XML parser not wired; 78/82 tickers used synthetic fallback, harness score meaningless. Re-register as H-028v3 after wiring real parser.",
         "most_active_tickers": [
           "GOOD (7 clusters, Gladstone Commercial REIT)",
           "BSVN (2 clusters, Bank of Southern California)"
@@ -573,7 +573,7 @@
               "avg_ret_pct": -0.225
             },
             "verdict": "TESTED_WEAK",
-            "verdict_rationale": "VIX gate blocks 13% of entry days (206/1589). Fold 2 (2022 bear) worsened from PF=1.009 to PF=0.871 and WR=47.9%. Aggregate PF dropped 1.2307 -> 1.1907, below 1.2 threshold. Finding: VIX>=28 regime is NOT the root cause of Fold 2 degradation \u2014 the signal itself weakens in risk-off. A different regime filter is needed (e.g., trend direction, credit spreads).",
+            "verdict_rationale": "VIX gate blocks 13% of entry days (206/1589). Fold 2 (2022 bear) worsened from PF=1.009 to PF=0.871 and WR=47.9%. Aggregate PF dropped 1.2307 -> 1.1907, below 1.2 threshold. Finding: VIX>=28 regime is NOT the root cause of Fold 2 degradation — the signal itself weakens in risk-off. A different regime filter is needed (e.g., trend direction, credit spreads).",
             "run_date": "2026-05-20"
           }
         }
@@ -588,7 +588,7 @@
       "tested_utc": "2026-05-20T00:00:00Z",
       "signal": "Long top-3 G10 pairs by rate differential, short bottom-3; weekly rebalance; hold 5 days",
       "data_source": "yfinance daily FX closes (free); hardcoded central bank rates 2020-2026",
-      "causal_mechanism": "Uncovered interest parity violation \u2014 carry pairs tend to appreciate (Lustig et al. 2011)",
+      "causal_mechanism": "Uncovered interest parity violation — carry pairs tend to appreciate (Lustig et al. 2011)",
       "source": "Anonymous AI council consensus 2026-05-19 (Pollinations.ai + Perplexity.ai + eye2.ai)",
       "notes": "G10 universe: AUD/NZD/GBP/EUR/CAD/JPY/CHF/NOK/SEK vs USD. Rate differentials hardcoded from public central bank data. JPY and AUD show best per-currency WR (57.8% and 56.5%). Overall PF=1.033 too thin for promotion.",
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY. Pre-registered per M-107 BEFORE any data fetch or backtest.",
@@ -876,10 +876,10 @@
       },
       "economic_prior": "If COT extreme-positioning SHORT actually predicts commodity mean-reversion, the signal should survive the 3-day publication lag. If it does not, the headline 70% WR is fully attributable to look-ahead, identical to H-001.",
       "statistical_test": "Two-stage: (1) Time-split PF & WR (pre-2026-05-20 vs post-2026-05-20) with binomial CI on WR; (2) on post-fix subset only, walk-forward 14-day windows with eff floor 0.30 and Bonferroni correction over family-of-tests = 1 (this cell only, no fishing).",
-      "harness": "tools/audit/replay_cell_with_pubguard.py (TO BUILD) \u2014 reads closed_picks.json, filters to the exact cell, splits pre/post 2026-05-20, prints PF/WR/n + underlying breakdown.",
+      "harness": "tools/audit/replay_cell_with_pubguard.py (TO BUILD) — reads closed_picks.json, filters to the exact cell, splits pre/post 2026-05-20, prints PF/WR/n + underlying breakdown.",
       "sample_size_requirement": {
         "minimum_post_fix_trades": 50,
-        "if_below_minimum": "DEFER \u2014 wait until n>=50 post-fix; do NOT promote on aggregate window"
+        "if_below_minimum": "DEFER — wait until n>=50 post-fix; do NOT promote on aggregate window"
       },
       "consult_panel_inputs": {
         "engines": [
@@ -901,6 +901,134 @@
       "predecessor": "H-001 (REJECTED 2026-05-20)",
       "money_recommendation": "PAPER_ONLY until acceptance criteria met",
       "operator_notes": "M-107 pre-registration. Per CLAUDE.md operator_note on H-001, COT_positioning as a whole is NOT salvageable; H-101 is intentionally a NARROW survival test of one specific cell, not a re-test of the rejected hypothesis. If post-fix PF < 1.10 OR n < 30, mark REJECTED and STOP cell-mining this source+family. Two parallel agents are running adjacent checks: a972ec (statistical sanity / data quality) and a4fa75 (filter pipeline). Their findings should be merged into this entry before any backtest execution."
+    },
+    {
+      "id": "H-041",
+      "asset_class": "CRYPTO",
+      "family": "whale_accumulation_divergence",
+      "description": "Whale accumulation vs price divergence: volume surge + price drop = bullish divergence.",
+      "test_statistic": "win_rate (72h)",
+      "acceptance_criteria": {
+        "min_wr": 0.55,
+        "min_n": 100,
+        "min_profit_factor": 1.2,
+        "min_windows_admissible": 3,
+        "eff_floor": 0.3
+      },
+      "economic_prior": "Large holders accumulate during fear, distribute during greed.",
+      "status": "PAPER_PILOT",
+      "registered_at": "2026-06-01",
+      "wiring": "alpha_engine/strategies/unique_whale_accumulation_divergence.py"
+    },
+    {
+      "id": "H-042",
+      "asset_class": "EQUITY",
+      "family": "sector_breadth_exhaustion",
+      "description": "Sector breadth exhaustion: 5+ day streak + narrowing breadth = reversal.",
+      "test_statistic": "win_rate (120h)",
+      "acceptance_criteria": {
+        "min_wr": 0.55,
+        "min_n": 50,
+        "min_profit_factor": 1.2,
+        "min_windows_admissible": 3,
+        "eff_floor": 0.3
+      },
+      "economic_prior": "Sector momentum reverses when breadth narrows.",
+      "status": "PAPER_PILOT",
+      "registered_at": "2026-06-01",
+      "wiring": "alpha_engine/strategies/unique_sector_breadth_exhaustion.py"
+    },
+    {
+      "id": "H-043",
+      "asset_class": "ETF",
+      "family": "volatility_risk_premium_harvest",
+      "description": "Volatility risk premium harvest via VIX term structure.",
+      "test_statistic": "win_rate (168h)",
+      "acceptance_criteria": {
+        "min_wr": 0.55,
+        "min_n": 50,
+        "min_profit_factor": 1.2,
+        "min_windows_admissible": 3,
+        "eff_floor": 0.3
+      },
+      "economic_prior": "Implied vol exceeds realized vol ~80% of the time.",
+      "status": "PAPER_PILOT",
+      "registered_at": "2026-06-01",
+      "wiring": "alpha_engine/strategies/unique_vol_risk_premium_harvest.py"
+    },
+    {
+      "id": "H-044",
+      "asset_class": "FOREX",
+      "family": "session_range_breakout",
+      "description": "Asian session range breakout continuation into London/NY.",
+      "test_statistic": "win_rate (24h)",
+      "acceptance_criteria": {
+        "min_wr": 0.55,
+        "min_n": 100,
+        "min_profit_factor": 1.2,
+        "min_windows_admissible": 3,
+        "eff_floor": 0.3
+      },
+      "economic_prior": "Support/resistance breaks trigger order cascades.",
+      "status": "PAPER_PILOT",
+      "registered_at": "2026-06-01",
+      "wiring": "alpha_engine/strategies/unique_session_range_breakout.py"
+    },
+    {
+      "id": "H-045",
+      "asset_class": "COMMODITY",
+      "family": "seasonal_spread_reversion",
+      "description": "Gold/Silver ratio seasonal mean reversion with z-score.",
+      "test_statistic": "win_rate (168h)",
+      "acceptance_criteria": {
+        "min_wr": 0.55,
+        "min_n": 50,
+        "min_profit_factor": 1.2,
+        "min_windows_admissible": 3,
+        "eff_floor": 0.3
+      },
+      "economic_prior": "Gold/Silver ratio mean reverts around seasonal demand patterns.",
+      "status": "PAPER_PILOT",
+      "registered_at": "2026-06-01",
+      "wiring": "alpha_engine/strategies/unique_seasonal_spread_reversion.py"
+    },
+    {
+      "id": "H-046",
+      "asset_class": "FUTURES",
+      "family": "term_structure_roll_yield",
+      "description": "Term structure roll yield: contango/backwardation signals.",
+      "test_statistic": "win_rate (336h)",
+      "acceptance_criteria": {
+        "min_wr": 0.55,
+        "min_n": 50,
+        "min_profit_factor": 1.2,
+        "min_windows_admissible": 3,
+        "eff_floor": 0.3
+      },
+      "economic_prior": "Backwardated curves embed positive expected roll returns.",
+      "status": "PAPER_PILOT",
+      "registered_at": "2026-06-01",
+      "wiring": "alpha_engine/strategies/unique_term_structure_roll_yield.py",
+      "probation": true
+    },
+    {
+      "id": "H-047",
+      "asset_class": "BOND",
+      "family": "yield_curve_steepener_flattener",
+      "description": "2s10s spread mean reversion with momentum confirmation.",
+      "test_statistic": "win_rate (336h)",
+      "acceptance_criteria": {
+        "min_wr": 0.55,
+        "min_n": 50,
+        "min_profit_factor": 1.2,
+        "min_windows_admissible": 3,
+        "eff_floor": 0.3
+      },
+      "economic_prior": "Yield curve dynamics predict recessions and bond returns.",
+      "status": "PAPER_PILOT",
+      "registered_at": "2026-06-01",
+      "wiring": "alpha_engine/strategies/unique_yield_curve_steepener.py",
+      "probation": true
     }
   ],
   "fork2_new_signals": [
@@ -923,10 +1051,10 @@
       "data_sample_lock": "Binance fapi funding-rate history fetched 2026-05-18, PAGINATED to full multi-year span (10 perps: BTC/ETH/SOL/BNB/XRP/ADA/AVAX/LINK/DOGE/LTC, ~2020-2026); basis from Binance premiumIndexKlines; perp daily close for forward return. Cache: reports/h006_funding_cache_2026-05-18.json",
       "result": {
         "tested_at": "2026-05-18",
-        "tested_by": "tools/new_signal_research.py (Fork 2 \u00e2\u20ac\u201d UNTESTED, 58 events) then tools/h006_funding_research.py (P2 deep-archive retest)",
+        "tested_by": "tools/new_signal_research.py (Fork 2 â€” UNTESTED, 58 events) then tools/h006_funding_research.py (P2 deep-archive retest)",
         "n": 4838,
         "verdict": "REJECTED - sign-unstable (regime noise) on a properly deep sample",
-        "evidence": "P2 fixed the data-archive problem: the Fork 2 run used a single limit=1000 fapi call (58 events); /fapi/v1/fundingRate caps 1000 rows PER REQUEST, not in total. tools/h006_funding_research.py paginates the FULL history via startTime/endTime \u00e2\u20ac\u201d 4838 signal events across 10 perps spanning ~6 years (2020-05 -> 2026-05, ~2191 funding-days/symbol). Harness verdict: the canonical 14-day windowing still scored only 2 windows (extreme funding z-scores cluster in regime episodes, so most 14-day buckets fall below the 80-pick / 15-winner-15-loser floor). The supplementary 30-day windowing \u00e2\u20ac\u201d a fair eff-stability look at the same records \u00e2\u20ac\u201d scored 21 windows, 8 strong, but the eff SIGN SPLITS 4+/4- (fails same-sign stability). Pooled purged+embargoed walk-forward WR 49.7% (coin-flip). Same failure mode as method_a_score and H-007: in-sample separation that flips sign across regimes. NOT admissible, NOT wired, NOT sized.",
+        "evidence": "P2 fixed the data-archive problem: the Fork 2 run used a single limit=1000 fapi call (58 events); /fapi/v1/fundingRate caps 1000 rows PER REQUEST, not in total. tools/h006_funding_research.py paginates the FULL history via startTime/endTime â€” 4838 signal events across 10 perps spanning ~6 years (2020-05 -> 2026-05, ~2191 funding-days/symbol). Harness verdict: the canonical 14-day windowing still scored only 2 windows (extreme funding z-scores cluster in regime episodes, so most 14-day buckets fall below the 80-pick / 15-winner-15-loser floor). The supplementary 30-day windowing â€” a fair eff-stability look at the same records â€” scored 21 windows, 8 strong, but the eff SIGN SPLITS 4+/4- (fails same-sign stability). Pooled purged+embargoed walk-forward WR 49.7% (coin-flip). Same failure mode as method_a_score and H-007: in-sample separation that flips sign across regimes. NOT admissible, NOT wired, NOT sized.",
         "eff_per_window_14d": [
           -0.18,
           0.16
@@ -956,7 +1084,7 @@
         ],
         "is_admissible": false,
         "report": "reports/h006_crypto_funding_rate_2026-05-18.md",
-        "next_step": "Kill #6. The data-archive excuse is removed \u00e2\u20ac\u201d a deeper sample renders a sign-unstable fail, not an untested verdict. Do not re-test funding z-score x basis on this sample. Forcing 14-day density via a lower |z| threshold would be p-hacking the window count, not edge discovery."
+        "next_step": "Kill #6. The data-archive excuse is removed â€” a deeper sample renders a sign-unstable fail, not an untested verdict. Do not re-test funding z-score x basis on this sample. Forcing 14-day density via a lower |z| threshold would be p-hacking the window count, not edge discovery."
       }
     },
     {
@@ -1143,7 +1271,7 @@
         "next_step": "Kill #9. Do NOT re-test this construction on this sample.",
         "note": "Verdict re-applied 2026-05-18 after peer registry-restore (commit 55b1cbfccb) reverted it to UNTESTED."
       },
-      "banned_check": "NOT H-006/H-012 (those used funding rate as a DIRECTIONAL price predictor / delta-neutral carry). H-017 predicts nothing from the funding RATE direction \u2014 it fades a mechanical liquidity dislocation anchored on the settlement CLOCK TIME. Funding magnitude is used only as a one-sided-positioning gate, not as a direction signal. NOT F&G/RSI, NOT COT, NOT yield-curve.",
+      "banned_check": "NOT H-006/H-012 (those used funding rate as a DIRECTIONAL price predictor / delta-neutral carry). H-017 predicts nothing from the funding RATE direction — it fades a mechanical liquidity dislocation anchored on the settlement CLOCK TIME. Funding magnitude is used only as a one-sided-positioning gate, not as a direction signal. NOT F&G/RSI, NOT COT, NOT yield-curve.",
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY - no caller in any pick-generation / scoring path until it clears the harness."
     }
   ],
@@ -1152,17 +1280,17 @@
       "id": "H-013",
       "asset_class": "EQUITY/ETF",
       "family": "options_flow_implied_signal",
-      "description": "Options-flow / options-implied signal as a GENUINELY NEW input class \u2014 the system has never ingested options-derived data (prior signals were price/volume technicals, COT, funding rate, futures term structure, earnings surprise \u2014 all exhausted, 7 harness kills). Three options-IMPLIED sub-signals computed from real CBOE/Yahoo options data on liquid US index/ETF underlyings: (a) put/call volume ratio z-score from the CBOE daily market-statistics put/call ratios (TOTAL / INDEX / ETP \u2014 real exchange options volume); (b) IV skew via the CBOE SKEW Index (^SKEW \u2014 derived from OTM SPX option prices, the 25-delta-style tail-skew proxy); (c) a VIX-term-structure / unusual-options-activity signal from the ^VIX9D/^VIX/^VIX3M implied-vol curve. A dealer-gamma proxy is computed for documentation from the live CBOE option-chain snapshot but is EXCLUDED from the harness verdict because no free historical option-chain OI series exists to build a gamma time series (honest H2 boundary \u2014 a snapshot is not a backtestable signal). Direction-signed contrarian: extreme high put/call or skew (crowded fear / expensive tails) signals a SPY mean-reversion LONG; extreme low signals SHORT. Entry STRICTLY after the signal date.",
-      "test_statistic": "walk_forward eff = (mean_signal_z|WON - mean_signal_z|LOST) / pooled_sd, 14-day windows, via tools/edge_stability_harness.is_admissible() (imported UNMODIFIED); plus a post-cost gate \u2014 net edge must retain >= 60% of gross after realistic round-trip options cost.",
+      "description": "Options-flow / options-implied signal as a GENUINELY NEW input class — the system has never ingested options-derived data (prior signals were price/volume technicals, COT, funding rate, futures term structure, earnings surprise — all exhausted, 7 harness kills). Three options-IMPLIED sub-signals computed from real CBOE/Yahoo options data on liquid US index/ETF underlyings: (a) put/call volume ratio z-score from the CBOE daily market-statistics put/call ratios (TOTAL / INDEX / ETP — real exchange options volume); (b) IV skew via the CBOE SKEW Index (^SKEW — derived from OTM SPX option prices, the 25-delta-style tail-skew proxy); (c) a VIX-term-structure / unusual-options-activity signal from the ^VIX9D/^VIX/^VIX3M implied-vol curve. A dealer-gamma proxy is computed for documentation from the live CBOE option-chain snapshot but is EXCLUDED from the harness verdict because no free historical option-chain OI series exists to build a gamma time series (honest H2 boundary — a snapshot is not a backtestable signal). Direction-signed contrarian: extreme high put/call or skew (crowded fear / expensive tails) signals a SPY mean-reversion LONG; extreme low signals SHORT. Entry STRICTLY after the signal date.",
+      "test_statistic": "walk_forward eff = (mean_signal_z|WON - mean_signal_z|LOST) / pooled_sd, 14-day windows, via tools/edge_stability_harness.is_admissible() (imported UNMODIFIED); plus a post-cost gate — net edge must retain >= 60% of gross after realistic round-trip options cost.",
       "acceptance_criteria": {
         "eff_floor": 0.3,
         "min_windows_admissible": 3,
         "same_sign": true,
         "cost_survival_min": 0.6,
         "min_window_n": 80,
-        "validation": "edge_stability_harness.is_admissible() on resolved-pick records (one per signal event, status WON/LOST from the direction-signed post-cost forward return on the underlying); records are the FULL signal-generated series \u2014 NOT a self-selected liked-trades subset. Purged + embargoed walk-forward (5-day embargo). BOTH the harness AND the cost-survival gate must pass to call it an edge. If free options history cannot supply >= 5 windows at n>=80 the honest verdict is UNTESTED \u2014 data-insufficient, explicitly NOT a pass."
+        "validation": "edge_stability_harness.is_admissible() on resolved-pick records (one per signal event, status WON/LOST from the direction-signed post-cost forward return on the underlying); records are the FULL signal-generated series — NOT a self-selected liked-trades subset. Purged + embargoed walk-forward (5-day embargo). BOTH the harness AND the cost-survival gate must pass to call it an edge. If free options history cannot supply >= 5 windows at n>=80 the honest verdict is UNTESTED — data-insufficient, explicitly NOT a pass."
       },
-      "economic_prior": "Options order flow carries information not in the cash tape: dealers/market-makers hedge, and crowded option positioning (extreme put/call, expensive tail skew) marks one-sided sentiment that historically mean-reverts. This is the strategic-fork Option 1 (new input class) \u2014 the only path that adds information the system has never seen. A sound prior is NOT an edge; only the harness + cost verdict counts. Base rate after 7 kills is poor.",
+      "economic_prior": "Options order flow carries information not in the cash tape: dealers/market-makers hedge, and crowded option positioning (extreme put/call, expensive tail skew) marks one-sided sentiment that historically mean-reverts. This is the strategic-fork Option 1 (new input class) — the only path that adds information the system has never seen. A sound prior is NOT an edge; only the harness + cost verdict counts. Base rate after 7 kills is poor.",
       "status": "REJECTED - tested, all 3 sub-signals harness-killed (sign-unstable)",
       "registered_at": "2026-05-18",
       "data_sample_lock": "CBOE daily market-statistics put/call 2020-01-02..2026-05-16 (1602 trading days) + Yahoo ^VIX/^VIX9D/^VIX3M/^SKEW + 11-ETF basket, fetched 2026-05-18; cache tools/cache/options_flow_cboe_cache.json",
@@ -1179,19 +1307,19 @@
         "harness_output": "reports/options_flow_harness_output_2026-05-18.json",
         "reproducer": "python tools/options_flow_research.py  (uses tools/cache/options_flow_cboe_cache.json; --refresh-cache to re-fetch)"
       },
-      "banned_check": "NOT a rebuild of any killed family \u2014 options flow is NEW. Explicitly NOT fear&greed/RSI contrarian (no RSI, no F&G index), NOT funding-rate (H-006/H-012), NOT yield-curve (H-008), NOT COT (H-001/cot_positioning). Signal inputs are options-market-only: CBOE put/call ratios, CBOE SKEW, VIX implied-vol term structure."
+      "banned_check": "NOT a rebuild of any killed family — options flow is NEW. Explicitly NOT fear&greed/RSI contrarian (no RSI, no F&G index), NOT funding-rate (H-006/H-012), NOT yield-curve (H-008), NOT COT (H-001/cot_positioning). Signal inputs are options-market-only: CBOE put/call ratios, CBOE SKEW, VIX implied-vol term structure."
     }
   ],
   "notes": [
     "Once a hypothesis is tested and FAILS acceptance criteria, move to archived_failures with failure evidence. Never re-test on the same data sample.",
     "Max 5 active hypotheses per asset class at any time.",
-    "H-001 was LIVE_TESTING until M-095 look-ahead leakage was discovered on 2026-05-20. Now REJECTED. No LIVE_TESTING entries remain \u2014 all require implementation before testing.",
+    "H-001 was LIVE_TESTING until M-095 look-ahead leakage was discovered on 2026-05-20. Now REJECTED. No LIVE_TESTING entries remain — all require implementation before testing.",
     {
       "id": "MONITOR-001",
-      "subject": "myfxbook_retail_contrarian SHORT \u2014 FOREX",
+      "subject": "myfxbook_retail_contrarian SHORT — FOREX",
       "decision": "MONITOR",
       "decided_at": "2026-05-18",
-      "evidence": "n=14 WR=50.0% PF=0.94 \u2014 below charter n>=30 floor. LONG already blocked (WR=10.6%). 3-agent swarm: 3/3 MONITOR.",
+      "evidence": "n=14 WR=50.0% PF=0.94 — below charter n>=30 floor. LONG already blocked (WR=10.6%). 3-agent swarm: 3/3 MONITOR.",
       "hard_trigger": "Block immediately if PF < 0.80 at any point before n=30. Mandatory reassessment at n=30.",
       "next_review": "2026-08-16"
     }
@@ -1253,7 +1381,7 @@
       "id": "H-018",
       "asset_class": "CRYPTO",
       "family": "sopr_realized_profit_cross_sectional_spread",
-      "description": "C-2 realized-profit cross-sectional spread. LONG 2 CRYPTO majors with highest SOPR-flush signal (spent-output-profit-ratio dropping \u00e2\u20ac\u201d holders capitulating). SHORT 2 with highest realized-profit inflow (coins moving to exchanges at profit \u00e2\u2020\u2019 sell pressure incoming). Beta-neutral: both legs equal-dollar sized. Signal: daily Glassnode 'realized_profit' / 'realized_loss' endpoints (NOT raw exchange_flows/netflow \u00e2\u20ac\u201d conflates OTC/staking/self-custody, 24h lag). Cross-sectional ranking on 7-day rolling z-score of SOPR change. Universe: BTC, ETH, SOL, BNB, XRP, ADA, AVAX, LINK.",
+      "description": "C-2 realized-profit cross-sectional spread. LONG 2 CRYPTO majors with highest SOPR-flush signal (spent-output-profit-ratio dropping â€” holders capitulating). SHORT 2 with highest realized-profit inflow (coins moving to exchanges at profit â†’ sell pressure incoming). Beta-neutral: both legs equal-dollar sized. Signal: daily Glassnode 'realized_profit' / 'realized_loss' endpoints (NOT raw exchange_flows/netflow â€” conflates OTC/staking/self-custody, 24h lag). Cross-sectional ranking on 7-day rolling z-score of SOPR change. Universe: BTC, ETH, SOL, BNB, XRP, ADA, AVAX, LINK.",
       "test_statistic": "walk_forward eff = (mean_sopr_z|WON - mean_sopr_z|LOST) / pooled_sd, 14-day windows, edge_stability_harness.is_admissible()",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -1266,7 +1394,7 @@
       "economic_prior": "SOPR > 1: coins moved at profit (sell pressure). SOPR < 1: capitulation bottom. Cross-sectional ranking isolates relative signal from beta. Glassnode realized_profit/realized_loss is the correct construction per swarm correction 2026-05-18. Academic: Checkmate (2021) 'Bitcoin SOPR revisited'; Liu & Tsyvinski (2021 JF) crypto network factors (1-4 week horizon).",
       "status": "UNTESTED - data-gap (free Dune cex.flows path; SOPR path needs paid Glassnode)",
       "registered_at": "2026-05-18",
-      "data_source": "Glassnode API realized_profit/realized_loss/sopr. Standard tier $29/mo needed for 8-asset coverage. Free tier = BTC+ETH only (insufficient for cross-sectional spread \u00e2\u20ac\u201d need 4+ assets). Operator decision required before build. Fallback: CryptoQuant realized_profit_loss (verify free-tier asset coverage).",
+      "data_source": "Glassnode API realized_profit/realized_loss/sopr. Standard tier $29/mo needed for 8-asset coverage. Free tier = BTC+ETH only (insufficient for cross-sectional spread â€” need 4+ assets). Operator decision required before build. Fallback: CryptoQuant realized_profit_loss (verify free-tier asset coverage).",
       "swarm_corrections_2026_05_18": [
         "Do NOT use CryptoQuant exchange_flows/netflow: 24h lag, conflates OTC/staking/self-custody",
         "Use Glassnode realized_profit / realized_loss or SOPR directly",
@@ -1301,7 +1429,7 @@
         "cost_survival_min": 0.6
       },
       "economic_prior": "Sentiment extremes mark crowded positioning that mean-reverts. Not funding rate (H-006/H-012), not CBOE options (H-013).",
-      "data_source": "https://api.alternative.me/fng/?limit=730 \u2014 2yr daily, no API key.",
+      "data_source": "https://api.alternative.me/fng/?limit=730 — 2yr daily, no API key.",
       "status": "TESTED_KILL",
       "registered_at": "2026-05-18",
       "result": {
@@ -1328,7 +1456,7 @@
         "slippage_bps": 100
       },
       "economic_prior": "Clustered insider buys +8-12% median 60d return (Seyhun 1998, Cohen 2012). Form 4 same-day since 2002.",
-      "data_source": "OpenInsider.com screener \u2014 free scrape, no auth.",
+      "data_source": "OpenInsider.com screener — free scrape, no auth.",
       "status": "TESTED_KILL",
       "registered_at": "2026-05-18",
       "result": {
@@ -1354,12 +1482,12 @@
         "same_sign": true
       },
       "economic_prior": "Small specs systematically buy tops/sell bottoms in commodity futures (De Roon 2000). Free CFTC weekly CSV, 1995+.",
-      "data_source": "https://www.cftc.gov/dea/newcot/deahistfo.zip \u2014 weekly legacy futures CSV, free.",
+      "data_source": "https://www.cftc.gov/dea/newcot/deahistfo.zip — weekly legacy futures CSV, free.",
       "status": "NEAR_ADMISSIBLE",
       "registered_at": "2026-05-18",
       "result": {
         "verdict": "KILL",
-        "kill_reason": "DATA_VOLUME_ARTIFACT: only 2 of 3 required windows populated (all COMMODITY picks resolve within 28-day span). eff_z=1.51 and 1.25 \u2014 both same sign CONTRARIAN_SHORT_WHEN_SMALLSPEC_LONG. Re-run in ~7 days.",
+        "kill_reason": "DATA_VOLUME_ARTIFACT: only 2 of 3 required windows populated (all COMMODITY picks resolve within 28-day span). eff_z=1.51 and 1.25 — both same sign CONTRARIAN_SHORT_WHEN_SMALLSPEC_LONG. Re-run in ~7 days.",
         "admissible_windows": 2,
         "eff_z_w1": 1.508,
         "eff_z_w2": 1.252,
@@ -1372,12 +1500,12 @@
       "window3_preregistration": {
         "preregistered_at": "2026-05-19",
         "scheduled_rerun": "2026-05-26",
-        "rationale": "Pre-registering window 3 acceptance criteria now (per M-107) to prevent goal-post moving. 2/3 windows pass eff>=1.2 (CONTRARIAN_SHORT_WHEN_SMALLSPEC_LONG). Window 3 not yet populated \u2014 data accumulates until 2026-05-26.",
+        "rationale": "Pre-registering window 3 acceptance criteria now (per M-107) to prevent goal-post moving. 2/3 windows pass eff>=1.2 (CONTRARIAN_SHORT_WHEN_SMALLSPEC_LONG). Window 3 not yet populated — data accumulates until 2026-05-26.",
         "window3_verdicts": {
-          "ADMISSIBLE": "eff_z >= 0.30 AND same sign as W1/W2 (CONTRARIAN_SHORT) \u2192 promote to ADMISSIBLE, begin quarter-Kelly sizing",
-          "NEAR_ADMISSIBLE": "0.20 <= eff_z < 0.30 AND same sign \u2192 NEAR_ADMISSIBLE, schedule W4 re-run 2026-06-09",
-          "TESTED_KILL": "eff_z < 0.20 OR opposite sign \u2192 TESTED_KILL, archive hypothesis, do not retest on same sample",
-          "near_admissible_threshold_note": "0.29 specifically (just below 0.30 floor) is NEAR_ADMISSIBLE, NOT TESTED_KILL \u2014 the economic prior is strong enough to allow one more window before kill"
+          "ADMISSIBLE": "eff_z >= 0.30 AND same sign as W1/W2 (CONTRARIAN_SHORT) → promote to ADMISSIBLE, begin quarter-Kelly sizing",
+          "NEAR_ADMISSIBLE": "0.20 <= eff_z < 0.30 AND same sign → NEAR_ADMISSIBLE, schedule W4 re-run 2026-06-09",
+          "TESTED_KILL": "eff_z < 0.20 OR opposite sign → TESTED_KILL, archive hypothesis, do not retest on same sample",
+          "near_admissible_threshold_note": "0.29 specifically (just below 0.30 floor) is NEAR_ADMISSIBLE, NOT TESTED_KILL — the economic prior is strong enough to allow one more window before kill"
         }
       },
       "wiring": "OPT-IN RESEARCH SIDECAR. Pre-registered per M-107."
@@ -1394,7 +1522,7 @@
         "same_sign": true
       },
       "economic_prior": "Supply shocks move grain futures 3-8% on release. Post-announcement drift documented in commodity futures lit. Free USDA API, monthly 1973+.",
-      "data_source": "https://apps.fas.usda.gov/psdonline \u2014 free CSV, no key. Monthly WASDE dates from usda.gov calendar.",
+      "data_source": "https://apps.fas.usda.gov/psdonline — free CSV, no key. Monthly WASDE dates from usda.gov calendar.",
       "status": "TESTED_KILL",
       "registered_at": "2026-05-18",
       "result": {
@@ -1459,7 +1587,7 @@
       "family": "carry_block",
       "description": "Anti-carry block for FOREX: block LONG picks in high-carry pairs (EURJPY, AUDJPY, GBPJPY, CADJPY). H-024 harness showed these have catastrophic WR (2.5%, 6.1%, 10.0%). Flip: SHORT high-carry pairs or simply block long direction.",
       "economic_prior": "Carry unwind events (risk-off) systematically wipe LONG high-carry positions. Our strategies enter long-carry but are not momentum-timing the entry. Carry pairs are only safe SHORT per our current strategy base.",
-      "data_source": "FRED G10 rates \u2014 same as H-024. No new data needed.",
+      "data_source": "FRED G10 rates — same as H-024. No new data needed.",
       "status": "IMPLEMENTED",
       "registered_at": "2026-05-18",
       "result": "Wired 2026-05-18: FOREX_CARRY_LONG_BLOCKED_SYMBOLS in quality_gates.py. Blocks AUDJPY/GBPJPY/CADJPY LONG picks (WR 3-9% catastrophic). SHORT not blocked (n<10 insufficient data). Kill-switch: FOREX_CARRY_LONG_GATE_ENABLED=0.",
@@ -1516,7 +1644,7 @@
       "id": "H-020",
       "asset_class": "CRYPTO",
       "family": "cross_exchange_coinbase_premium_zscore",
-      "description": "Cross-exchange price-premium signal (the 'Coinbase Premium Index'). For each liquid crypto major, premium = (coinbase_usd_close - binance_usdt_close) / binance_usdt_close on the synchronized UTC daily grid. signal_z = strictly-past rolling z-score of the premium. Economic direction: a persistent POSITIVE Coinbase premium reflects US-institutional net spot buying pressure leading price discovery on the dominant US venue -> momentum LONG; a persistent NEGATIVE premium reflects US-institutional distribution -> SHORT. Direction-signed, momentum (not contrarian). Tested as a FULL continuous-position cross-sectional book (one resolved record per coin per day, NO |z| self-selection) over ~8 liquid majors covered by BOTH Coinbase and Binance \u2014 the legitimate H-008/H-014 density construction. Entry strictly D+1 (signal computed from premium observations strictly before the position date), forward return resolved by the harness.",
+      "description": "Cross-exchange price-premium signal (the 'Coinbase Premium Index'). For each liquid crypto major, premium = (coinbase_usd_close - binance_usdt_close) / binance_usdt_close on the synchronized UTC daily grid. signal_z = strictly-past rolling z-score of the premium. Economic direction: a persistent POSITIVE Coinbase premium reflects US-institutional net spot buying pressure leading price discovery on the dominant US venue -> momentum LONG; a persistent NEGATIVE premium reflects US-institutional distribution -> SHORT. Direction-signed, momentum (not contrarian). Tested as a FULL continuous-position cross-sectional book (one resolved record per coin per day, NO |z| self-selection) over ~8 liquid majors covered by BOTH Coinbase and Binance — the legitimate H-008/H-014 density construction. Entry strictly D+1 (signal computed from premium observations strictly before the position date), forward return resolved by the harness.",
       "test_statistic": "walk_forward eff = (mean_signal_z|WON - mean_signal_z|LOST) / pooled_sd, 14-day windows, edge_stability_harness.is_admissible() imported UNMODIFIED",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -1524,13 +1652,13 @@
         "same_sign": true,
         "cost_survival_min": 0.6,
         "min_window_n": 80,
-        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position resolved series (one record per coin-day); strictly look-ahead-free (premium z past-only, both venues' UTC daily close synchronized, entry D+1); purged + embargoed walk-forward (5-day embargo); PLUS a post-cost gate \u2014 net edge must retain >= 60% of gross after a 30bps crypto round-trip. BOTH gates must pass."
+        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position resolved series (one record per coin-day); strictly look-ahead-free (premium z past-only, both venues' UTC daily close synchronized, entry D+1); purged + embargoed walk-forward (5-day embargo); PLUS a post-cost gate — net edge must retain >= 60% of gross after a 30bps crypto round-trip. BOTH gates must pass."
       },
-      "economic_prior": "Coinbase is the dominant US-institutional spot venue; Binance the global retail/offshore hub. A persistent Coinbase-vs-Binance price premium ('Coinbase Premium Index', a widely-watched CryptoQuant metric) proxies the direction of US-institutional spot flow \u2014 institutions accumulating on Coinbase bid its price above Binance, distributing pulls it below. Cross-exchange arbitrage closes the spread intraday, so the daily-close residual is thin; the swarm pressure-test (groq/ollama/pollinations 2026-05-18) estimates a <20% base rate of clearing a strict post-cost walk-forward gate. A sound prior is NOT an edge; only the harness + cost verdict counts.",
+      "economic_prior": "Coinbase is the dominant US-institutional spot venue; Binance the global retail/offshore hub. A persistent Coinbase-vs-Binance price premium ('Coinbase Premium Index', a widely-watched CryptoQuant metric) proxies the direction of US-institutional spot flow — institutions accumulating on Coinbase bid its price above Binance, distributing pulls it below. Cross-exchange arbitrage closes the spread intraday, so the daily-close residual is thin; the swarm pressure-test (groq/ollama/pollinations 2026-05-18) estimates a <20% base rate of clearing a strict post-cost walk-forward gate. A sound prior is NOT an edge; only the harness + cost verdict counts.",
       "status": "REJECTED - tested, sign-unstable harness fail AND cost-gate fail (kill #11)",
       "registered_at": "2026-05-18",
       "data_sample_lock": "Binance spot daily klines (paginated full history via api/api1/api2/api3 failover) + Coinbase Exchange daily candles (/products/<p>/candles, free, no key, 300-candle backward pagination), 8 liquid majors (BTC/ETH/SOL/XRP/ADA/AVAX/LINK/LTC), fetched 2026-05-18; cache tools/cache/h020_cross_exchange_cache.json",
-      "banned_check": "NOT a re-test of any of the 10 killed families. NOT funding-rate directional (H-006) or delta-neutral funding carry (H-012) \u2014 uses no funding rate. NOT COT (H-001). NOT roll-yield (H-007) or yield-curve (H-008). NOT PEAD (H-010/H-002). NOT options-flow (H-013/H-009/H-011). NOT on-chain address/tx counts or stablecoin-supply change (H-014). NOT funding-settlement cascade (H-017). NOT exchange net-flow (H-018/H-019) \u2014 H-018/H-019 use exchange-attributed on-chain WALLET flow (Dune cex.flows inflow/outflow volumes); H-020 uses the cross-VENUE PRICE SPREAD between two exchanges' order books, a distinct microstructure input the pick system has never ingested.",
+      "banned_check": "NOT a re-test of any of the 10 killed families. NOT funding-rate directional (H-006) or delta-neutral funding carry (H-012) — uses no funding rate. NOT COT (H-001). NOT roll-yield (H-007) or yield-curve (H-008). NOT PEAD (H-010/H-002). NOT options-flow (H-013/H-009/H-011). NOT on-chain address/tx counts or stablecoin-supply change (H-014). NOT funding-settlement cascade (H-017). NOT exchange net-flow (H-018/H-019) — H-018/H-019 use exchange-attributed on-chain WALLET flow (Dune cex.flows inflow/outflow volumes); H-020 uses the cross-VENUE PRICE SPREAD between two exchanges' order books, a distinct microstructure input the pick system has never ingested.",
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY. Pre-registered per M-107 BEFORE any data fetch or backtest. No caller in any pick-generation / scoring path.",
       "result": {
         "tested_at": "2026-05-18",
@@ -1562,7 +1690,7 @@
       "id": "H-026",
       "asset_class": "ETF",
       "family": "etf_creation_redemption_share_count_flow",
-      "description": "ETF creation/redemption share-count flow signal (proposal ET-1, ranked #1 of 14 in reports/new_strategy_proposals_2026_05_18.md). When an ETF's shares outstanding rises, an Authorized Participant created new units = committed primary-market capital flowing into the basket; a falling share count = redemption = outflow. net_creation_flow(D) = (shares_out(D) - shares_out(D-10)) / shares_out(D-10) \u00e2\u20ac\u201d the 10-day AP creation/redemption share-count delta. signal_z = strictly-past rolling 30-observation z-score of the net creation flow. Direction (momentum): z>0 (persistent net creation = institutional inflow) -> LONG; z<0 (persistent net redemption = outflow) -> SHORT. Direction-signed momentum, not contrarian. Tested as a FULL continuous-position cross-sectional book (one resolved record per ETF per day, NO |z| self-selection) over ~20 thematic/sector ETFs (XLK/XLF/XLE/XLV/XLI/XLY/XLP/XLU/XLB/XLRE/SMH/XBI/ITB/KRE/JETS/TAN/ICLN/ARKK/IYR/XOP) \u00e2\u20ac\u201d the legitimate H-008/H-014/H-019/H-020 density construction. Broad-market mega-funds excluded (their creation/redemption is mechanical index rebalancing, not a view). Entry strictly D+1 (signal computed from share-count observations strictly before the position date), forward return resolved by the harness.",
+      "description": "ETF creation/redemption share-count flow signal (proposal ET-1, ranked #1 of 14 in reports/new_strategy_proposals_2026_05_18.md). When an ETF's shares outstanding rises, an Authorized Participant created new units = committed primary-market capital flowing into the basket; a falling share count = redemption = outflow. net_creation_flow(D) = (shares_out(D) - shares_out(D-10)) / shares_out(D-10) â€” the 10-day AP creation/redemption share-count delta. signal_z = strictly-past rolling 30-observation z-score of the net creation flow. Direction (momentum): z>0 (persistent net creation = institutional inflow) -> LONG; z<0 (persistent net redemption = outflow) -> SHORT. Direction-signed momentum, not contrarian. Tested as a FULL continuous-position cross-sectional book (one resolved record per ETF per day, NO |z| self-selection) over ~20 thematic/sector ETFs (XLK/XLF/XLE/XLV/XLI/XLY/XLP/XLU/XLB/XLRE/SMH/XBI/ITB/KRE/JETS/TAN/ICLN/ARKK/IYR/XOP) â€” the legitimate H-008/H-014/H-019/H-020 density construction. Broad-market mega-funds excluded (their creation/redemption is mechanical index rebalancing, not a view). Entry strictly D+1 (signal computed from share-count observations strictly before the position date), forward return resolved by the harness.",
       "test_statistic": "walk_forward eff = (mean_signal_z|WON - mean_signal_z|LOST) / pooled_sd, 14-day windows, edge_stability_harness.is_admissible() imported UNMODIFIED",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -1570,18 +1698,18 @@
         "same_sign": true,
         "cost_survival_min": 0.6,
         "min_window_n": 80,
-        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position resolved series (one record per ETF-day); strictly look-ahead-free (creation-flow z past-only, N-PORT monthly share counts forward-filled strictly-past onto the daily grid, entry D+1); purged + embargoed walk-forward (5-day embargo); PLUS a post-cost gate \u00e2\u20ac\u201d net edge must retain >= 60% of gross after a 10bps ETF round-trip (tight spreads). BOTH gates must pass."
+        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position resolved series (one record per ETF-day); strictly look-ahead-free (creation-flow z past-only, N-PORT monthly share counts forward-filled strictly-past onto the daily grid, entry D+1); purged + embargoed walk-forward (5-day embargo); PLUS a post-cost gate â€” net edge must retain >= 60% of gross after a 10bps ETF round-trip (tight spreads). BOTH gates must pass."
       },
-      "economic_prior": "Creation/redemption is executed by Authorized Participants and large allocators \u00e2\u20ac\u201d a revealed institutional-flow signal with no behavioural noise. Persistent net creation into a sector/thematic ETF is a momentum-of-capital signal that may lead the basket. The data is free but scattered across issuer fund pages and N-PORT filings \u00e2\u20ac\u201d assembly cost is the only moat. A sound prior is NOT an edge; only the harness + cost verdict counts. Base rate is poor (8-11 prior harness kills).",
+      "economic_prior": "Creation/redemption is executed by Authorized Participants and large allocators â€” a revealed institutional-flow signal with no behavioural noise. Persistent net creation into a sector/thematic ETF is a momentum-of-capital signal that may lead the basket. The data is free but scattered across issuer fund pages and N-PORT filings â€” assembly cost is the only moat. A sound prior is NOT an edge; only the harness + cost verdict counts. Base rate is poor (8-11 prior harness kills).",
       "data_source": "FREE only: yfinance (daily ETF close + sharesOutstanding scalar, no key); SEC EDGAR data.sec.gov N-PORT-derived shares-outstanding facts per fund registrant (no key, SEC-UA required); issuer fund pages (SPDR/iShares/Vanguard/Invesco) publish daily shares-outstanding as a documented manual-fetch fallback. No paid feed.",
-      "banned_check": "NOT a re-test of any killed family. NOT yield-curve (H-008), NOT COT (H-001), NOT funding-rate directional (H-006) or funding carry (H-012), NOT roll-yield (H-007), NOT options-flow / dealer-gamma (H-009/H-011/H-013), NOT exchange net-flow (H-018/H-019), NOT PEAD (H-002/H-010), NOT ETF premium/discount to iNAV (proposal ET-2 \u00e2\u20ac\u201d a different input). ET-1 is the primary-market share-count delta \u00e2\u20ac\u201d a creation/redemption fund-flow input the pick system has never ingested.",
+      "banned_check": "NOT a re-test of any killed family. NOT yield-curve (H-008), NOT COT (H-001), NOT funding-rate directional (H-006) or funding carry (H-012), NOT roll-yield (H-007), NOT options-flow / dealer-gamma (H-009/H-011/H-013), NOT exchange net-flow (H-018/H-019), NOT PEAD (H-002/H-010), NOT ETF premium/discount to iNAV (proposal ET-2 â€” a different input). ET-1 is the primary-market share-count delta â€” a creation/redemption fund-flow input the pick system has never ingested.",
       "status": "REJECTED",
       "registered_at": "2026-05-18",
       "data_sample_lock": null,
       "result": {
         "verdict": "NOT_ADMISSIBLE",
         "is_admissible": false,
-        "harness_reason": "REJECTED \u2014 0/62 windows reach eff>=0.3; net_edge_bps -9.24; cost gate fails. Harness run 2026-05-19.",
+        "harness_reason": "REJECTED — 0/62 windows reach eff>=0.3; net_edge_bps -9.24; cost gate fails. Harness run 2026-05-19.",
         "net_edge_bps": -9.24,
         "recorded_utc": "2026-05-19"
       },
@@ -1614,7 +1742,7 @@
       "result": {
         "verdict": "NOT_ADMISSIBLE",
         "is_admissible": false,
-        "harness_reason": "REJECTED \u2014 0/0 windows reach eff>=0.3 (seasonal_proxy consensus too sparse); net_edge_bps -13.66. Harness run 2026-05-19.",
+        "harness_reason": "REJECTED — 0/0 windows reach eff>=0.3 (seasonal_proxy consensus too sparse); net_edge_bps -13.66. Harness run 2026-05-19.",
         "net_edge_bps": -13.66,
         "recorded_utc": "2026-05-19"
       },
@@ -1647,7 +1775,7 @@
       "result": {
         "verdict": "NOT_ADMISSIBLE",
         "is_admissible": false,
-        "harness_reason": "REJECTED/UNTESTED-data-gap \u2014 free SEC EDGAR Form-4 dense code-P cluster tape unavailable, synthetic fallback; harness 0/10 windows, net_edge_bps -17.47. Harness run 2026-05-19.",
+        "harness_reason": "REJECTED/UNTESTED-data-gap — free SEC EDGAR Form-4 dense code-P cluster tape unavailable, synthetic fallback; harness 0/10 windows, net_edge_bps -17.47. Harness run 2026-05-19.",
         "net_edge_bps": -17.47,
         "recorded_utc": "2026-05-19"
       },
@@ -1669,7 +1797,7 @@
         "min_window_n": 80,
         "validation": "edge_stability_harness.is_admissible() UNMODIFIED; post-cost gate net edge >= 60% of gross after 15bps round-trip"
       },
-      "economic_prior": "Same as H-028 \u2014 SEC Form-4 code-P cluster-buy signal, small-cap stratification. Diverse universe tests generalisability beyond financial sector.",
+      "economic_prior": "Same as H-028 — SEC Form-4 code-P cluster-buy signal, small-cap stratification. Diverse universe tests generalisability beyond financial sector.",
       "data_source": "FREE only: SEC EDGAR data.sec.gov submissions API + Form-4 ownership XML; yfinance daily OHLCV. Dense EDGAR code-P tape required but largely unavailable (most tickers degraded to synthetic fallback). Real clusters found for: CCNE (1), BSVN (2), GOOD (7), FWRD (1).",
       "status": "TESTED_KILL",
       "registered_at": "2026-05-19",
@@ -1724,18 +1852,18 @@
       "id": "H-028v3",
       "asset_class": "EQUITY",
       "family": "insider_cluster_buy",
-      "description": "SEC Form-4 code-P insider open-market cluster-buy signal \u00e2\u20ac\u201d H-028v2 with real EDGAR XML parser wired. Walk nonDerivativeTable for transactionCode=='P' insider purchases. Cluster: >=3 insiders buying same ticker within 10-day window.",
+      "description": "SEC Form-4 code-P insider open-market cluster-buy signal â€” H-028v2 with real EDGAR XML parser wired. Walk nonDerivativeTable for transactionCode=='P' insider purchases. Cluster: >=3 insiders buying same ticker within 10-day window.",
       "status": "PRE_REGISTERED",
       "pre_registration_date": "2026-05-20",
-      "academic_basis": "Lakonishok & Lee (2001) \u00e2\u20ac\u201d insider purchases predict 12-month abnormal returns",
-      "signal_logic": "EDGAR full-text search API \u00e2\u2020\u2019 filter transactionCode=P \u00e2\u2020\u2019 group by issuerCik+10d window \u00e2\u2020\u2019 trigger when cluster_size>=3",
+      "academic_basis": "Lakonishok & Lee (2001) â€” insider purchases predict 12-month abnormal returns",
+      "signal_logic": "EDGAR full-text search API â†’ filter transactionCode=P â†’ group by issuerCik+10d window â†’ trigger when cluster_size>=3",
       "acceptance_criteria": {
         "min_wr": 0.55,
         "min_pf": 1.5,
         "min_n": 30
       },
       "backtest_result": null,
-      "notes": "H-028v2 UNTESTED_DATA_GAP because XML parser not wired. H-028v3 fixes this. Parser implemented at tools/h028v3_edgar_form4_parser.py. Test ticker: GOOD (Gladstone Commercial REIT) showed 7 clusters in H-028v2 research \u00e2\u20ac\u201d use as smoke-test reference. EDGAR full-text search endpoint: https://efts.sec.gov/LATEST/search-index?q=%22{ticker}%22&dateRange=custom&forms=4. SEC-UA header required (User-Agent: contact@example.com). XML ownership namespace: http://www.sec.gov/XMLSchema/document/ownership/4. No paid data \u00e2\u20ac\u201d all free EDGAR endpoints.",
+      "notes": "H-028v2 UNTESTED_DATA_GAP because XML parser not wired. H-028v3 fixes this. Parser implemented at tools/h028v3_edgar_form4_parser.py. Test ticker: GOOD (Gladstone Commercial REIT) showed 7 clusters in H-028v2 research â€” use as smoke-test reference. EDGAR full-text search endpoint: https://efts.sec.gov/LATEST/search-index?q=%22{ticker}%22&dateRange=custom&forms=4. SEC-UA header required (User-Agent: contact@example.com). XML ownership namespace: http://www.sec.gov/XMLSchema/document/ownership/4. No paid data â€” all free EDGAR endpoints.",
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY. Pre-registered per M-107 BEFORE any data fetch or backtest. No caller in any pick-generation or scoring path. Reproducer: python tools/h028v3_edgar_form4_parser.py --ticker GOOD --lookback 365"
     }
   ],
@@ -1753,7 +1881,7 @@
         "cost_survival_min": 0.6,
         "post_cost_gate_bps": 30
       },
-      "economic_prior": "Extreme-range high-volume days are liquidation/capitulation spikes that overshoot; the next session mean-reverts. Volatility clustering (Mandelbrot) plus exhaustion. Distinct from funding-rate (H-006/H-012) and netflow (H-018/H-019) families \u2014 pure price/volume microstructure.",
+      "economic_prior": "Extreme-range high-volume days are liquidation/capitulation spikes that overshoot; the next session mean-reverts. Volatility clustering (Mandelbrot) plus exhaustion. Distinct from funding-rate (H-006/H-012) and netflow (H-018/H-019) families — pure price/volume microstructure.",
       "data_source": "Binance public klines via the api-failover chain (api/api1/api2/api3 -> CoinGecko -> KuCoin -> CryptoCompare), daily interval, free, no key. Cached to tools/cache/.",
       "status": "TESTED_KILL",
       "registered_at": "2026-05-19",
@@ -1779,7 +1907,7 @@
       "id": "H-030",
       "asset_class": "EQUITY",
       "family": "smallcap_liquidity_shock_reversion",
-      "description": "Fade a liquidity-shock day in liquid small-cap Russell-2000 names (price>$5). SIGNAL DAY D qualifies when (a) D's volume is > 3x its trailing 60-day mean (relative-volume shock) AND (b) D closes weak \u2014 close in the bottom 25% of D's high-low range. ENTRY LONG at the open of D+1. EXIT at +3 trading days, or +/-1xATR(14), whichever first. Continuous multi-asset LONG-only book across a fixed pre-registered basket of liquid Russell-2000 small caps, yfinance daily bars.",
+      "description": "Fade a liquidity-shock day in liquid small-cap Russell-2000 names (price>$5). SIGNAL DAY D qualifies when (a) D's volume is > 3x its trailing 60-day mean (relative-volume shock) AND (b) D closes weak — close in the bottom 25% of D's high-low range. ENTRY LONG at the open of D+1. EXIT at +3 trading days, or +/-1xATR(14), whichever first. Continuous multi-asset LONG-only book across a fixed pre-registered basket of liquid Russell-2000 small caps, yfinance daily bars.",
       "test_statistic": "walk_forward eff on resolved records, 14-day windows; harness score field |signal_z| = z-score of the relative-volume shock magnitude",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -1814,7 +1942,7 @@
       "id": "H-031",
       "asset_class": "COMMODITY",
       "family": "agricultural_harvest_seasonality",
-      "description": "Calendar-anchored corn (ZC=F) and wheat (ZW=F) harvest-cycle directional windows. The hypothesis: grain futures exhibit a recurring seasonal pattern around the North American harvest \u2014 pre-harvest strength and harvest-pressure weakness. Entry and exit are on FIXED CALENDAR DATES (month/day) for each window; the directional sign and the calendar dates are derived ONLY from a pre-sample training period (years strictly before the out-of-sample test years), then applied unchanged to the test years. Continuous multi-asset book over the calendar windows.",
+      "description": "Calendar-anchored corn (ZC=F) and wheat (ZW=F) harvest-cycle directional windows. The hypothesis: grain futures exhibit a recurring seasonal pattern around the North American harvest — pre-harvest strength and harvest-pressure weakness. Entry and exit are on FIXED CALENDAR DATES (month/day) for each window; the directional sign and the calendar dates are derived ONLY from a pre-sample training period (years strictly before the out-of-sample test years), then applied unchanged to the test years. Continuous multi-asset book over the calendar windows.",
       "test_statistic": "walk_forward eff on resolved records, 14-day windows; harness score field |signal_z| = standardised distance into the calendar window (conviction proxy)",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -1822,7 +1950,7 @@
         "same_sign": true,
         "cost_survival_min": 0.6,
         "post_cost_gate_bps": 30,
-        "density_note": "COMMODITY seasonal windows are sparse \u2014 <5 scored harness windows -> UNTESTED, not REJECTED"
+        "density_note": "COMMODITY seasonal windows are sparse — <5 scored harness windows -> UNTESTED, not REJECTED"
       },
       "economic_prior": "Agricultural futures carry a documented harvest seasonality: supply peaks at harvest depress prices, scarcity into the next planting supports them. Calendar dates fixed from pre-sample years only -> genuinely look-ahead-free seasonal test.",
       "data_source": "yfinance daily OHLCV for ZC=F and ZW=F, free, no key. Cached to tools/cache/.",
@@ -2011,7 +2139,7 @@
       "id": "H-034",
       "asset_class": "COMMODITY",
       "family": "commodity_term_structure_roll_yield",
-      "description": "Gorton-Rouwenhorst (2006) cross-sectional commodity-futures basis / roll-yield long-short. Universe: liquid =F continuous futures (CL=F crude, NG=F natgas, HG=F copper, GC=F gold, SI=F silver, ZC=F corn, ZW=F wheat, ZS=F soybeans, KC=F coffee, CT=F cotton \u2014 CT=F kept in HARNESS universe only per MEMORY.md blacklist; this sidecar emits zero picks). Signal: basis_proxy(i,D) = ln(close(i,D)/close(i,D-21)) \u2014 a TRAILING-RETURN basis stand-in (yfinance has no free true second-month series, see basis_proxy_mode disclosure). signal_z(i,D) = rolling 60-observation strictly-past z-score of basis_proxy. Cross-sectional rank at each weekly rebalance: top 20% (most-backwardated) -> LONG (+1), bottom 20% (most-contangoed) -> SHORT (-1), middle quintiles skipped. Rebalance every 5 trading days; hold 5 days. Tested as a FULL continuous-position cross-sectional book (the H-008/H-019/H-020/H-026/H-027 density construction). STRICT NO-LOOK-AHEAD: basis_proxy uses prices strictly before D, z-score look-back is the 60 STRICTLY-PAST basis obs (current obs excluded), cross-sectional rank at D sees only quantities computed strictly before D; entry close(D); exit close(D+5).",
+      "description": "Gorton-Rouwenhorst (2006) cross-sectional commodity-futures basis / roll-yield long-short. Universe: liquid =F continuous futures (CL=F crude, NG=F natgas, HG=F copper, GC=F gold, SI=F silver, ZC=F corn, ZW=F wheat, ZS=F soybeans, KC=F coffee, CT=F cotton — CT=F kept in HARNESS universe only per MEMORY.md blacklist; this sidecar emits zero picks). Signal: basis_proxy(i,D) = ln(close(i,D)/close(i,D-21)) — a TRAILING-RETURN basis stand-in (yfinance has no free true second-month series, see basis_proxy_mode disclosure). signal_z(i,D) = rolling 60-observation strictly-past z-score of basis_proxy. Cross-sectional rank at each weekly rebalance: top 20% (most-backwardated) -> LONG (+1), bottom 20% (most-contangoed) -> SHORT (-1), middle quintiles skipped. Rebalance every 5 trading days; hold 5 days. Tested as a FULL continuous-position cross-sectional book (the H-008/H-019/H-020/H-026/H-027 density construction). STRICT NO-LOOK-AHEAD: basis_proxy uses prices strictly before D, z-score look-back is the 60 STRICTLY-PAST basis obs (current obs excluded), cross-sectional rank at D sees only quantities computed strictly before D; entry close(D); exit close(D+5).",
       "basis_proxy_mode": "front_return_zscore",
       "basis_proxy_disclosure": "No free true second-month CME futures feed exists on yfinance. H-034 uses a DOCUMENTED trailing-return basis proxy: basis_proxy(D) = ln(close(D)/close(D-21)), a stand-in for the front-vs-second-month roll yield. The cross-sectional RANK across commodities is the part Gorton-Rouwenhorst cares about (not the absolute basis level), so the proxy is honest FOR THE SORT. A true Quandl CME WIKI front/second calendar-spread feed would be a sharper test and constitutes a different test. The proxy mode is stamped in the cache and every report header for traceability.",
       "test_statistic": "walk_forward eff = (mean_signal_z|WON - mean_signal_z|LOST) / pooled_sd, 14-day windows, edge_stability_harness.is_admissible() imported UNMODIFIED",
@@ -2050,7 +2178,7 @@
         "n_trades": 297,
         "win_rate": 0.478,
         "profit_factor": 0.97,
-        "note": "Simplified payoff simulation (no real options pricing). WR 47.8% vs screenshot 90.5% \u00e2\u20ac\u201d gap expected: screenshot is 1 ideal month (April 2026 TSLA catalyst); backtest is 2.3yr across all regimes with proxy payoffs. PF near-break-even signals the model needs IV data and real strike selection to capture the premium-selling edge."
+        "note": "Simplified payoff simulation (no real options pricing). WR 47.8% vs screenshot 90.5% â€” gap expected: screenshot is 1 ideal month (April 2026 TSLA catalyst); backtest is 2.3yr across all regimes with proxy payoffs. PF near-break-even signals the model needs IV data and real strike selection to capture the premium-selling edge."
       },
       "acceptance_criteria": {
         "min_wr": 0.6,
@@ -2068,8 +2196,8 @@
       "asset_class": "FUTURES",
       "family": "futures_time_series_momentum_diversified",
       "stratification": "diversified_liquid_futures_universe",
-      "stratification_disclosure": "Diversified cross-asset book of liquid yfinance =F continuous-front-month contracts spanning equity-index (ES=F, NQ=F, YM=F, RTY=F), currency (6E=F, 6B=F, 6J=F, 6A=F), commodity (CL=F, GC=F, HG=F), and government bond futures (ZN=F, ZB=F). 13 contracts across 4 sub-asset-classes. Equal-weighted at the diversified-book level; per-leg vol-scaled to ~10% annualised. Single-class TSMOM variants are explicitly NOT pre-registered here \u2014 only the diversified Moskowitz-Ooi-Pedersen cross-asset construction.",
-      "description": "Classical Moskowitz-Ooi-Pedersen (2012) time-series momentum factor reimplemented as a diversified equal-weighted vol-targeted book across liquid futures. SIGNAL on day D: the SIGN of each contract's trailing 12-month total return (close(D)/close(D-252)-1). LONG if positive, SHORT if negative. Each leg is vol-scaled to a target ~10% annualised volatility (weight = min(0.10 / realised_vol_60d, 5.0); realised vol from the strictly-past 60-day daily log returns). Equal-weight across the diversified book. Harness score field |signal_z| = |z-score of trailing_ret against its own 60-obs strictly-past distribution| \u2014 the conviction magnitude the harness ranks on (the binary sign carries no magnitude alone). Tested as a FULL continuous-position cross-sectional daily-rebalance book (one record per contract per day with a next bar) \u2014 the H-008/H-019/H-026/H-027/H-028 legitimate density construction the 14-day harness window needs. The classical monthly-rebalance MOP variant is computed for descriptive context only (~0.6 records/day across 13 contracts \u00d7 21 trading days/month is too sparse for the 14-day harness window). STRICT NO-LOOK-AHEAD: trailing return uses prices at-or-before D, realised vol uses the 60 daily returns strictly before D, z-score baseline uses trailing-return observations strictly before D; entry close(D), exit close(D+1).",
+      "stratification_disclosure": "Diversified cross-asset book of liquid yfinance =F continuous-front-month contracts spanning equity-index (ES=F, NQ=F, YM=F, RTY=F), currency (6E=F, 6B=F, 6J=F, 6A=F), commodity (CL=F, GC=F, HG=F), and government bond futures (ZN=F, ZB=F). 13 contracts across 4 sub-asset-classes. Equal-weighted at the diversified-book level; per-leg vol-scaled to ~10% annualised. Single-class TSMOM variants are explicitly NOT pre-registered here — only the diversified Moskowitz-Ooi-Pedersen cross-asset construction.",
+      "description": "Classical Moskowitz-Ooi-Pedersen (2012) time-series momentum factor reimplemented as a diversified equal-weighted vol-targeted book across liquid futures. SIGNAL on day D: the SIGN of each contract's trailing 12-month total return (close(D)/close(D-252)-1). LONG if positive, SHORT if negative. Each leg is vol-scaled to a target ~10% annualised volatility (weight = min(0.10 / realised_vol_60d, 5.0); realised vol from the strictly-past 60-day daily log returns). Equal-weight across the diversified book. Harness score field |signal_z| = |z-score of trailing_ret against its own 60-obs strictly-past distribution| — the conviction magnitude the harness ranks on (the binary sign carries no magnitude alone). Tested as a FULL continuous-position cross-sectional daily-rebalance book (one record per contract per day with a next bar) — the H-008/H-019/H-026/H-027/H-028 legitimate density construction the 14-day harness window needs. The classical monthly-rebalance MOP variant is computed for descriptive context only (~0.6 records/day across 13 contracts × 21 trading days/month is too sparse for the 14-day harness window). STRICT NO-LOOK-AHEAD: trailing return uses prices at-or-before D, realised vol uses the 60 daily returns strictly before D, z-score baseline uses trailing-return observations strictly before D; entry close(D), exit close(D+1).",
       "test_statistic": "walk_forward eff = (mean_signal_z|WON - mean_signal_z|LOST) / pooled_sd, 14-day windows, edge_stability_harness.is_admissible() imported UNMODIFIED",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -2078,11 +2206,11 @@
         "cost_survival_min": 0.6,
         "min_window_n": 80,
         "post_cost_gate_bps": 10,
-        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position daily-rebalance resolved series; strictly look-ahead-free (12-month trailing return at-or-before D, 60-day realised vol strictly before D, z-score baseline strictly before D, entry close(D), exit close(D+1)); PLUS a post-cost gate \u2014 net edge must retain >= 60% of gross after a 10bps diversified-futures round-trip (futures are cheap; mini-ES ~0.5bp, bond/currency comparable, commodity contracts a hair wider \u2014 10bps is a conservative diversified round-trip). BOTH gates must pass. Result must hold on the diversified universe; single-class variants are out of pre-registered scope."
+        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position daily-rebalance resolved series; strictly look-ahead-free (12-month trailing return at-or-before D, 60-day realised vol strictly before D, z-score baseline strictly before D, entry close(D), exit close(D+1)); PLUS a post-cost gate — net edge must retain >= 60% of gross after a 10bps diversified-futures round-trip (futures are cheap; mini-ES ~0.5bp, bond/currency comparable, commodity contracts a hair wider — 10bps is a conservative diversified round-trip). BOTH gates must pass. Result must hold on the diversified universe; single-class variants are out of pre-registered scope."
       },
-      "economic_prior": "Moskowitz, Ooi & Pedersen (2012) 'Time series momentum' documented the TSMOM premium across 58 contracts spanning equities, FX, commodities, bonds (1985-2009). The premium is consistent with under-reaction to information and delayed over-reaction by uninformed momentum traders. The diversification across uncorrelated futures classes is the moat \u2014 a single-class TSMOM book is noisier. CAVEAT: TSMOM is one of the most-mined factors in academic finance; the published premium has been criticised as decaying since the GFC. A sound prior is NOT an edge; only the harness + cost verdict counts, and any pass must hold on the post-2010 sub-sample separately and clear a deflated-Sharpe / SPA multiple-testing correction. Base rate is poor (8-11 prior harness kills).",
-      "data_source": "FREE only. PRIMARY (verdict input): yfinance =F continuous-front-month tickers (free, no key, ~25-30 years of daily history on the major contracts). The Claude swarm verdict (2026-05-19) was explicit: 'AQR publishes factor returns but NOT constituent positions. You need to reimplement using yfinance =F tickers.' So the yfinance reconstruction IS the real implementation. OPTIONAL SANITY CHECK: AQR Capital Management publishes the academic monthly Time-Series Momentum factor return series for free at https://www.aqr.com/Insights/Datasets/Time-Series-Momentum-Factors-Monthly \u2014 manually download the Excel workbook into tools/cache/aqr_tsmom_monthly.xlsx (or convert to a 2-column CSV at tools/cache/aqr_tsmom_monthly.csv). When present the module reports it alongside the reconstruction as a smell-test only; AQR's series carries NO per-contract positions and CANNOT drive the harness. No paid feed, no API key. If yfinance is unreachable the module degrades to a clearly-labelled synthetic series and reports UNTESTED-data-gap \u2014 never a fabricated pass.",
-      "banned_check": "NOT a re-test of any killed family. NOT yield-curve (H-008), NOT COT positioning (H-001), NOT funding-rate (H-006/H-012), NOT roll-yield (H-007), NOT options-flow / dealer-gamma (H-009/H-011/H-013), NOT exchange net-flow (H-018/H-019), NOT PEAD (H-002/H-010), NOT inventory surprise (H-004/H-027), NOT ETF creation/redemption share-count flow (H-026), NOT insider cluster buy (H-028), NOT overnight cross-sectional reversal (H-033), NOT anti-PEAD reversal (H-034), NOT mining-difficulty-lag (H-038). H-035 is the Moskowitz-Ooi-Pedersen (2012) cross-asset diversified time-series momentum factor \u2014 a futures factor family the pick system has never ingested. The closest existing family is single-symbol price momentum used by some scanners, which is materially different from a vol-targeted equal-weighted cross-asset TSMOM book (different signal definition, different vol-normalisation, different universe, different rebalance cadence). Not an M-107 banned family.",
+      "economic_prior": "Moskowitz, Ooi & Pedersen (2012) 'Time series momentum' documented the TSMOM premium across 58 contracts spanning equities, FX, commodities, bonds (1985-2009). The premium is consistent with under-reaction to information and delayed over-reaction by uninformed momentum traders. The diversification across uncorrelated futures classes is the moat — a single-class TSMOM book is noisier. CAVEAT: TSMOM is one of the most-mined factors in academic finance; the published premium has been criticised as decaying since the GFC. A sound prior is NOT an edge; only the harness + cost verdict counts, and any pass must hold on the post-2010 sub-sample separately and clear a deflated-Sharpe / SPA multiple-testing correction. Base rate is poor (8-11 prior harness kills).",
+      "data_source": "FREE only. PRIMARY (verdict input): yfinance =F continuous-front-month tickers (free, no key, ~25-30 years of daily history on the major contracts). The Claude swarm verdict (2026-05-19) was explicit: 'AQR publishes factor returns but NOT constituent positions. You need to reimplement using yfinance =F tickers.' So the yfinance reconstruction IS the real implementation. OPTIONAL SANITY CHECK: AQR Capital Management publishes the academic monthly Time-Series Momentum factor return series for free at https://www.aqr.com/Insights/Datasets/Time-Series-Momentum-Factors-Monthly — manually download the Excel workbook into tools/cache/aqr_tsmom_monthly.xlsx (or convert to a 2-column CSV at tools/cache/aqr_tsmom_monthly.csv). When present the module reports it alongside the reconstruction as a smell-test only; AQR's series carries NO per-contract positions and CANNOT drive the harness. No paid feed, no API key. If yfinance is unreachable the module degrades to a clearly-labelled synthetic series and reports UNTESTED-data-gap — never a fabricated pass.",
+      "banned_check": "NOT a re-test of any killed family. NOT yield-curve (H-008), NOT COT positioning (H-001), NOT funding-rate (H-006/H-012), NOT roll-yield (H-007), NOT options-flow / dealer-gamma (H-009/H-011/H-013), NOT exchange net-flow (H-018/H-019), NOT PEAD (H-002/H-010), NOT inventory surprise (H-004/H-027), NOT ETF creation/redemption share-count flow (H-026), NOT insider cluster buy (H-028), NOT overnight cross-sectional reversal (H-033), NOT anti-PEAD reversal (H-034), NOT mining-difficulty-lag (H-038). H-035 is the Moskowitz-Ooi-Pedersen (2012) cross-asset diversified time-series momentum factor — a futures factor family the pick system has never ingested. The closest existing family is single-symbol price momentum used by some scanners, which is materially different from a vol-targeted equal-weighted cross-asset TSMOM book (different signal definition, different vol-normalisation, different universe, different rebalance cadence). Not an M-107 banned family.",
       "status": "UNTESTED",
       "registered_at": "2026-05-19",
       "data_sample_lock": null,
@@ -2093,10 +2221,10 @@
     {
       "id": "H-040",
       "user_label": "H-033",
-      "id_collision_note": "Operator framed this hypothesis as 'H-033' per the Fork-2 D-path consensus run (Grok/Codex/Gemini/Kilo/Opencode 2026-05-19). The registry slot H-033 is already occupied by a TESTED_KILL/REJECTED hypothesis (residualized_overnight_return_xs_reversal, killed 2026-05-19) \u2014 a structurally different signal. H-039 was claimed by a parallel sidecar (futures TSMOM, user-label H-035). Per M-107 registry hygiene this hypothesis is filed under the next free id H-040. The module/scaffold filenames and the JSON summary.hypothesis field keep the operator's H-033 label for traceability; the canonical registry id is H-040.",
+      "id_collision_note": "Operator framed this hypothesis as 'H-033' per the Fork-2 D-path consensus run (Grok/Codex/Gemini/Kilo/Opencode 2026-05-19). The registry slot H-033 is already occupied by a TESTED_KILL/REJECTED hypothesis (residualized_overnight_return_xs_reversal, killed 2026-05-19) — a structurally different signal. H-039 was claimed by a parallel sidecar (futures TSMOM, user-label H-035). Per M-107 registry hygiene this hypothesis is filed under the next free id H-040. The module/scaffold filenames and the JSON summary.hypothesis field keep the operator's H-033 label for traceability; the canonical registry id is H-040.",
       "asset_class": "EQUITY",
       "family": "equity_sector_cross_sectional_momentum",
-      "description": "EQUITY industry/sector cross-sectional momentum signal (Moskowitz & Grinblatt 1999, Do Industries Explain Momentum?). Universe: the 11 SPDR sector ETFs \u2014 XLB (materials), XLE (energy), XLF (financials), XLI (industrials), XLK (technology), XLP (consumer staples), XLU (utilities), XLV (health care), XLY (consumer discretionary), XLRE (real estate), XLC (communication services) \u2014 the GICS sector partition of the US large-cap market. At every monthly rebalance date D: momentum_i(D) = close_i(D) / close_i(D-21) - 1; rank sectors cross-sectionally; LONG the TOP-2, SHORT the BOTTOM-2; equal-weight long-short basket held until the next monthly rebalance (~21 trading days). Optional trend filter (pre-registered ON): the book sits FLAT unless SPY is above its 252-day (12-month) moving average at the rebalance date \u2014 the regime guard for bear markets where cross-sectional dispersion narrows and the momentum spread inverts. signal_z = |cross-sectional momentum z-score| of the picked sector vs the 11-sector cross-section on the rebalance date (conviction magnitude; harness score field |signal_z|). Tested as a FULL continuous-position long-short book \u2014 every (picked_sector, held_day) with a next bar is one resolved record, NO selection of big momentum moves, NO post-hoc |z| threshold \u2014 the legitimate H-008/H-019/H-026/H-027 density construction. STRICT no-look-ahead: 21d momentum at D uses closes strictly through D; entry on the bar AFTER D; the 252d SPY MA is end-anchored at D over the trailing window. Turnover-aware cost: a single 15bps round-trip is charged on the FIRST held day of each rebalance period (in + out across the period), not per-day.",
+      "description": "EQUITY industry/sector cross-sectional momentum signal (Moskowitz & Grinblatt 1999, Do Industries Explain Momentum?). Universe: the 11 SPDR sector ETFs — XLB (materials), XLE (energy), XLF (financials), XLI (industrials), XLK (technology), XLP (consumer staples), XLU (utilities), XLV (health care), XLY (consumer discretionary), XLRE (real estate), XLC (communication services) — the GICS sector partition of the US large-cap market. At every monthly rebalance date D: momentum_i(D) = close_i(D) / close_i(D-21) - 1; rank sectors cross-sectionally; LONG the TOP-2, SHORT the BOTTOM-2; equal-weight long-short basket held until the next monthly rebalance (~21 trading days). Optional trend filter (pre-registered ON): the book sits FLAT unless SPY is above its 252-day (12-month) moving average at the rebalance date — the regime guard for bear markets where cross-sectional dispersion narrows and the momentum spread inverts. signal_z = |cross-sectional momentum z-score| of the picked sector vs the 11-sector cross-section on the rebalance date (conviction magnitude; harness score field |signal_z|). Tested as a FULL continuous-position long-short book — every (picked_sector, held_day) with a next bar is one resolved record, NO selection of big momentum moves, NO post-hoc |z| threshold — the legitimate H-008/H-019/H-026/H-027 density construction. STRICT no-look-ahead: 21d momentum at D uses closes strictly through D; entry on the bar AFTER D; the 252d SPY MA is end-anchored at D over the trailing window. Turnover-aware cost: a single 15bps round-trip is charged on the FIRST held day of each rebalance period (in + out across the period), not per-day.",
       "test_statistic": "walk_forward eff = (mean_signal_z|WON - mean_signal_z|LOST) / pooled_sd, 14-day windows, edge_stability_harness.is_admissible() imported UNMODIFIED",
       "acceptance_criteria": {
         "eff_floor": 0.3,
@@ -2104,11 +2232,11 @@
         "same_sign": true,
         "cost_survival_min": 0.6,
         "min_window_n": 80,
-        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position resolved series (one record per (picked_sector, held_day) pair); strictly look-ahead-free (21d momentum at rebalance D uses closes strictly through D, entry on bar after D, 252d SPY MA end-anchored at D over trailing window only); PLUS a post-cost gate \u2014 net edge must retain >= 60% of gross after a 15bps round-trip charged on the first held day of each rebalance period (turnover-aware). BOTH gates must pass."
+        "validation": "edge_stability_harness.is_admissible() UNMODIFIED (EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS never touched) on the FULL continuous-position resolved series (one record per (picked_sector, held_day) pair); strictly look-ahead-free (21d momentum at rebalance D uses closes strictly through D, entry on bar after D, 252d SPY MA end-anchored at D over trailing window only); PLUS a post-cost gate — net edge must retain >= 60% of gross after a 15bps round-trip charged on the first held day of each rebalance period (turnover-aware). BOTH gates must pass."
       },
-      "economic_prior": "Moskowitz & Grinblatt (1999) documented industry momentum as a separable risk-premium distinct from individual-stock momentum: industries that have outperformed over 1-12 months continue to outperform over the next 1-3 months. The mechanism is slow information diffusion across the supply chain plus persistent factor exposure shifts (rates, energy prices, credit) that benefit some sectors over multi-month horizons. The optional SPY 12-month trend filter is the documented regime guard \u2014 cross-sectional dispersion narrows and the momentum spread inverts in bear markets. A sound prior is NOT an edge; only the harness + cost verdict counts. Base rate is poor (8-11 prior harness kills, including the prior H-033 residualized-overnight reversal killed 2026-05-19).",
-      "data_source": "FREE only: yfinance daily close series for the 11 SPDR sector ETFs (XLB/XLE/XLF/XLI/XLK/XLP/XLU/XLV/XLY/XLRE/XLC) and SPY (the 12-month MA trend benchmark). No paid feed, no API key. auto_adjust=False so the absolute price level is preserved; momentum is a ratio so splits/dividends do not matter once the ratio is taken. If yfinance is unavailable the module degrades to a clearly-labelled synthetic series and reports UNTESTED-data-gap \u2014 never a fabricated pass.",
-      "banned_check": "NOT a re-test of any killed family. NOT yield-curve (H-008), NOT COT (H-001), NOT funding-rate directional (H-006) or funding carry (H-012), NOT roll-yield (H-007), NOT options-flow / dealer-gamma (H-009/H-011/H-013), NOT exchange net-flow (H-018/H-019), NOT PEAD (H-002/H-010), NOT inventory surprise (H-004/H-027), NOT ETF creation/redemption share-count flow (H-026), NOT insider cluster-buy (H-028/H-028v2), NOT volatility-cluster-reversion (H-029), NOT small-cap liquidity-shock reversion (H-030), NOT intraday orderbook-imbalance reversion (H-032), NOT residualized-overnight cross-sectional reversal (the prior H-033, TESTED_KILL/REJECTED 2026-05-19 \u2014 uses individual-name 1-day overnight gaps residualized against the market overnight move, NOT 21-day sector cross-sectional momentum on the SPDR ETF set), NOT anti-PEAD 1-day post-earnings reversal (H-034), NOT futures TSMOM (H-035/registry H-039 \u2014 Moskowitz-Ooi-Pedersen cross-asset diversified time-series momentum on liquid =F contracts, materially different signal definition, universe, and vol-normalisation), NOT mining-difficulty-lag (H-038). H-040 / user-label H-033 is the FIRST registry hypothesis to test the industry / sector cross-sectional momentum primitive on the SPDR sector-ETF set \u2014 a primary cross-sectional risk-premium the pick system has never ingested. Not an M-107 banned family.",
+      "economic_prior": "Moskowitz & Grinblatt (1999) documented industry momentum as a separable risk-premium distinct from individual-stock momentum: industries that have outperformed over 1-12 months continue to outperform over the next 1-3 months. The mechanism is slow information diffusion across the supply chain plus persistent factor exposure shifts (rates, energy prices, credit) that benefit some sectors over multi-month horizons. The optional SPY 12-month trend filter is the documented regime guard — cross-sectional dispersion narrows and the momentum spread inverts in bear markets. A sound prior is NOT an edge; only the harness + cost verdict counts. Base rate is poor (8-11 prior harness kills, including the prior H-033 residualized-overnight reversal killed 2026-05-19).",
+      "data_source": "FREE only: yfinance daily close series for the 11 SPDR sector ETFs (XLB/XLE/XLF/XLI/XLK/XLP/XLU/XLV/XLY/XLRE/XLC) and SPY (the 12-month MA trend benchmark). No paid feed, no API key. auto_adjust=False so the absolute price level is preserved; momentum is a ratio so splits/dividends do not matter once the ratio is taken. If yfinance is unavailable the module degrades to a clearly-labelled synthetic series and reports UNTESTED-data-gap — never a fabricated pass.",
+      "banned_check": "NOT a re-test of any killed family. NOT yield-curve (H-008), NOT COT (H-001), NOT funding-rate directional (H-006) or funding carry (H-012), NOT roll-yield (H-007), NOT options-flow / dealer-gamma (H-009/H-011/H-013), NOT exchange net-flow (H-018/H-019), NOT PEAD (H-002/H-010), NOT inventory surprise (H-004/H-027), NOT ETF creation/redemption share-count flow (H-026), NOT insider cluster-buy (H-028/H-028v2), NOT volatility-cluster-reversion (H-029), NOT small-cap liquidity-shock reversion (H-030), NOT intraday orderbook-imbalance reversion (H-032), NOT residualized-overnight cross-sectional reversal (the prior H-033, TESTED_KILL/REJECTED 2026-05-19 — uses individual-name 1-day overnight gaps residualized against the market overnight move, NOT 21-day sector cross-sectional momentum on the SPDR ETF set), NOT anti-PEAD 1-day post-earnings reversal (H-034), NOT futures TSMOM (H-035/registry H-039 — Moskowitz-Ooi-Pedersen cross-asset diversified time-series momentum on liquid =F contracts, materially different signal definition, universe, and vol-normalisation), NOT mining-difficulty-lag (H-038). H-040 / user-label H-033 is the FIRST registry hypothesis to test the industry / sector cross-sectional momentum primitive on the SPDR sector-ETF set — a primary cross-sectional risk-premium the pick system has never ingested. Not an M-107 banned family.",
       "status": "UNTESTED",
       "registered_at": "2026-05-19",
       "data_sample_lock": null,
