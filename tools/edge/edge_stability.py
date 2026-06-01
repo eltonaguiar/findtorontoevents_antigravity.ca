@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -156,6 +157,123 @@ def _load_all_picks() -> list[dict]:
         if n:
             out.append(n)
     return out
+
+
+_CAT_MAP = {
+    "crypto": "CRYPTO", "cryptocurrency": "CRYPTO",
+    "equity": "EQUITY", "stock": "EQUITY", "stocks": "EQUITY",
+    "penny": "EQUITY", "pennystock": "EQUITY",
+    "forex": "FOREX",
+    "commodity": "COMMODITY", "commodities": "COMMODITY",
+    "futures": "FUTURES",
+    "etf": "ETF",
+    "bond": "BOND",
+    "index": "INDEX_STOCK",
+}
+
+_STATUS_CLOSED = frozenset({
+    "WON", "WIN", "LOST", "LOSS", "CLOSED", "CLOSED_TP", "CLOSED_SL",
+    "tp_hit", "sl_hit", "EXPIRED", "FLAT", "time_exit",
+})
+
+
+def _load_all_picks_mysql(max_age_days: int = 730, limit: int = 50000) -> list[dict]:
+    """Read closed picks directly from MySQL trading_picks table.
+
+    Eliminates dependency on dashboard_payload.json freshness.
+    Uses AUDIT_DB_* env vars (default: ejaguiar1_stocks on mysql.50webs.com).
+    """
+    try:
+        import pymysql
+    except ImportError:
+        import subprocess
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pymysql"],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        import pymysql
+
+    host = os.getenv("AUDIT_DB_HOST", "mysql.50webs.com")
+    port = int(os.getenv("AUDIT_DB_PORT", "3306"))
+    user = os.getenv("AUDIT_DB_USER", "ejaguiar1_stocks")
+    password = os.getenv("AUDIT_DB_PASS", os.getenv("DB_STOCKS_PASSWORD", ""))
+    database = os.getenv("AUDIT_DB_NAME", os.getenv("DB_NAME_STOCKS", "ejaguiar1_stocks"))
+
+    conn = pymysql.connect(
+        host=host, port=port, user=user, password=password,
+        database=database, connect_timeout=15, read_timeout=30,
+        charset="utf8mb4", autocommit=True,
+    )
+    try:
+        cur = conn.cursor()
+        sql = """
+            SELECT symbol, direction, strategy, source_system, category,
+                   status, pnl_pct, entry_price, exit_price,
+                   created_at, closed_at, id
+            FROM trading_picks
+            WHERE status IN ('WON','WIN','LOST','LOSS','CLOSED','CLOSED_TP','CLOSED_SL',
+                             'tp_hit','sl_hit','EXPIRED','FLAT','time_exit')
+              AND pnl_pct IS NOT NULL
+              AND closed_at IS NOT NULL
+              AND closed_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            ORDER BY closed_at DESC
+            LIMIT %s
+        """
+        cur.execute(sql, (max_age_days, limit))
+        columns = [desc[0] for desc in cur.description]
+        rows = cur.fetchall()
+        print(f"MySQL: fetched {len(rows)} raw closed picks from {database}.trading_picks")
+
+        out = []
+        for row in rows:
+            r = dict(zip(columns, row))
+            cat_raw = str(r.get("category", "")).strip().lower()
+            ac = _CAT_MAP.get(cat_raw, "")
+            if not ac:
+                sym_upper = str(r.get("symbol", "")).upper()
+                if any(k in sym_upper for k in ("USDT", "BTC", "ETH", "BNB", "SOL", "DOGE", "ADA", "XRP")):
+                    ac = "CRYPTO"
+                elif "=" in sym_upper or sym_upper.endswith("=X"):
+                    ac = "FOREX"
+                else:
+                    ac = "EQUITY"
+            pnl = r.get("pnl_pct")
+            if pnl is None:
+                continue
+            try:
+                pnl = float(pnl)
+            except (TypeError, ValueError):
+                continue
+            closed_at = r.get("closed_at")
+            if closed_at is None:
+                continue
+            if isinstance(closed_at, str):
+                dt = _exit_dt({"closed_at": closed_at})
+            else:
+                dt = closed_at if hasattr(closed_at, "isoformat") else None
+                if dt and dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+            if dt is None:
+                continue
+            sym = str(r.get("symbol", "")).strip().upper()
+            src = str(r.get("source_system", "")).strip() or "(unknown)"
+            if (sym, src) in GHOST_SYMBOL_STATS:
+                continue
+            status = str(r.get("status", "")).upper().strip()
+            won = status in ("WON", "WIN", "CLOSED_TP", "TP_HIT") or (status not in ("LOST", "LOSS", "CLOSED_SL", "SL_HIT") and pnl > 0)
+            out.append({
+                "asset_class": ac,
+                "strategy": str(r.get("strategy", "")).strip() or "(unknown)",
+                "source_system": src,
+                "symbol": sym,
+                "pnl_pct": pnl,
+                "won": won,
+                "exit_dt": dt,
+                "id": r.get("id"),
+                "direction": r.get("direction"),
+            })
+        print(f"MySQL: {len(out)} usable normalized picks after filtering")
+        return out
+    finally:
+        conn.close()
 
 
 def _slice_window(picks: list[dict], now: datetime, days: int | None) -> list[dict]:
@@ -391,14 +509,29 @@ def main():
     ap.add_argument("--all", action="store_true", help="Compute every asset class.")
     ap.add_argument("--out", type=Path, default=OUT_DIR,
                     help="Output dir (default audit_dashboard/data/edge_stability/).")
+    ap.add_argument("--mysql", action="store_true",
+                    help="Read closed picks directly from MySQL (no payload dependency).")
+    ap.add_argument("--max-age-days", type=int, default=730,
+                    help="Max age of closed picks in MySQL mode (default 730d).")
     args = ap.parse_args()
 
     if not args.asset_class and not args.all:
         ap.error("pass --class <NAME> or --all")
 
-    print("Loading dashboard_payload.json...")
-    all_picks = _load_all_picks()
+    if args.mysql:
+        print("Loading closed picks from MySQL...")
+        all_picks = _load_all_picks_mysql(max_age_days=args.max_age_days)
+    else:
+        print("Loading dashboard_payload.json...")
+        all_picks = _load_all_picks()
+        if not all_picks:
+            print("Payload empty/missing — falling back to MySQL...")
+            all_picks = _load_all_picks_mysql(max_age_days=args.max_age_days)
     print(f"Loaded {len(all_picks)} usable closed picks.")
+
+    if not all_picks:
+        print("::error::No picks loaded from any source. Aborting.", file=sys.stderr)
+        return 1
 
     classes = ASSET_CLASSES if args.all else [args.asset_class.upper()]
     for cls in classes:
