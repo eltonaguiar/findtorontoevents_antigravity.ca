@@ -50,6 +50,8 @@ def _parse_dt(s: str | None) -> datetime | None:
 
 
 def is_expired(pick: dict, now: datetime) -> bool:
+    if not isinstance(pick, dict):
+        return False
     exp = _parse_dt(pick.get("expires_at"))
     if exp is not None:
         return exp < now
@@ -74,7 +76,13 @@ def main() -> int:
         return 0
 
     with open(ACTIVE_PICKS_FILE, encoding="utf-8") as f:
-        all_picks: list[dict] = json.load(f)
+        raw_picks: list = json.load(f)
+
+    non_dict = [x for x in raw_picks if not isinstance(x, dict)]
+    if non_dict:
+        print(f"WARN: skipped {len(non_dict)} non-dict entries in active_picks.json "
+              f"(types: {sorted({type(x).__name__ for x in non_dict})})")
+    all_picks: list[dict] = [p for p in raw_picks if isinstance(p, dict)]
 
     fresh = [p for p in all_picks if not is_expired(p, now)]
     expired = [p for p in all_picks if is_expired(p, now)]
