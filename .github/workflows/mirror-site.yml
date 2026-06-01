@@ -25,6 +25,10 @@ jobs:
         run: sudo apt-get install -y lftp
 
       - name: Download from findtorontoevents.ca (50webs FTP)
+        # 2026-06-01: per-step cap so a stalled FTP upload fails fast instead of
+        # burning the job's 90-min wall (the tdotevent.ca 50webs target hung for the
+        # full 90m on 8/12 recent runs). See triage report.
+        timeout-minutes: 15
         env:
           SRC_HOST: ${{ secrets.FTP_HOST }}
           SRC_USER: ${{ secrets.FTP_USER }}
@@ -37,7 +41,8 @@ jobs:
           cat > /tmp/lftp_download.script << LFTPEOF
           set ftp:ssl-force true
           set ssl:verify-certificate no
-          set net:max-retries 3
+          set net:timeout 30
+          set net:max-retries 2
           set net:reconnect-interval-base 5
           set net:reconnect-interval-multiplier 1
           open -u "$SRC_USER","$SRC_PASS" "$SRC_HOST"
@@ -58,6 +63,10 @@ jobs:
           echo " Downloaded $(find /tmp/site_mirror -type f | wc -l) files"
 
       - name: Upload to torontoevent.net (GoDaddy FTP)
+        # 2026-06-01: per-step cap so a stalled FTP upload fails fast instead of
+        # burning the job's 90-min wall (the tdotevent.ca 50webs target hung for the
+        # full 90m on 8/12 recent runs). See triage report.
+        timeout-minutes: 15
         env:
           DST_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
           DST_USER: ${{ secrets.FTPGODADDYUSER }}
@@ -83,7 +92,8 @@ jobs:
           cat > /tmp/lftp_upload.script << LFTPEOF
           set ftp:ssl-force true
           set ssl:verify-certificate no
-          set net:max-retries 3
+          set net:timeout 30
+          set net:max-retries 2
           set net:reconnect-interval-base 5
           set net:reconnect-interval-multiplier 1
           open -u "$DST_USER","$DST_PASS" "$DST_HOST"
@@ -105,6 +115,10 @@ jobs:
           echo " Upload to torontoevent.net complete"
 
       - name: Upload to tdotevent.ca (50webs FTP, /tdotevent.ca)
+        # 2026-06-01: per-step cap so a stalled FTP upload fails fast instead of
+        # burning the job's 90-min wall (the tdotevent.ca 50webs target hung for the
+        # full 90m on 8/12 recent runs). See triage report.
+        timeout-minutes: 15
         env:
           SRC_HOST: ${{ secrets.FTP_HOST }}
           SRC_USER: ${{ secrets.FTP_USER }}
@@ -116,7 +130,8 @@ jobs:
           cat > /tmp/lftp_tdote.script << LFTPEOF
           set ftp:ssl-force true
           set ssl:verify-certificate no
-          set net:max-retries 3
+          set net:timeout 30
+          set net:max-retries 2
           set net:reconnect-interval-base 5
           set net:reconnect-interval-multiplier 1
           open -u "$SRC_USER","$SRC_PASS" "$SRC_HOST"
