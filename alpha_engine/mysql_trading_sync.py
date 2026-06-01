@@ -712,7 +712,10 @@ def sync(dry_run=False):
         # a separate DDL migration step
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS at_pick_outcomes (
-                pick_id           CHAR(36) PRIMARY KEY,
+                -- pick_id widened to varchar(100) on 2026-06-01 to support
+                -- composite IDs from genome_revival_battlegro_* sources that
+                -- were silently dropped under char(36) by INSERT IGNORE.
+                pick_id           VARCHAR(100) PRIMARY KEY,
                 symbol            VARCHAR(50),
                 strategy          VARCHAR(200),
                 asset_class       VARCHAR(20),
