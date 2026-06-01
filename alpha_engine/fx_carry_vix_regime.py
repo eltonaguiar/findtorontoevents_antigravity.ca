@@ -72,13 +72,38 @@ def generate_fx_carry_vix_regime_picks() -> List[dict[str, Any]]:
     picks = []
     now = datetime.now(timezone.utc)
     
+    try:
+        import yfinance as yf
+    except ImportError:
+        yf = None
+
     for pair in top_pairs:
+        sym = pair["symbol"]
+        entry = None
+        if yf is not None:
+            try:
+                hist = yf.Ticker(sym).history(period="5d")
+                if hist is not None and not hist.empty:
+                    entry = float(hist["Close"].iloc[-1])
+            except Exception as e:
+                logger.debug("FX price %s: %s", sym, e)
+        if entry is None or entry <= 0:
+            continue
+        direction = "LONG" if pair["carry"] > 0 else "SHORT"
+        tp_pct, sl_pct = 0.015, 0.008
+        if direction == "LONG":
+            tp, sl = round(entry * (1 + tp_pct), 5), round(entry * (1 - sl_pct), 5)
+        else:
+            tp, sl = round(entry * (1 - tp_pct), 5), round(entry * (1 + sl_pct), 5)
         picks.append({
-            "symbol": pair["symbol"],
-            "direction": "LONG" if pair["carry"] > 0 else "SHORT",
+            "symbol": sym,
+            "direction": direction,
             "strategy": "fx_carry_vix_regime",
             "asset_class": "FOREX",
             "category": "forex",
+            "entry_price": entry,
+            "take_profit": tp,
+            "stop_loss": sl,
             "confidence": 0.65 if vix < 15 else 0.55,
             "generated_at": now.isoformat(),
             "reason": f"Carry={pair['carry']:.2f}% VIX={vix:.1f} (regime: {'LOW' if vix<15 else 'NORMAL' if vix<20 else 'ELEVATED'})",
