@@ -241,8 +241,48 @@ FLAGSHIP_BY_CLASS: dict[str, dict[str, Any]] = {
 }
 
 
+def _deduplicate_by_symbol_direction(picks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep highest-confidence pick per (symbol, direction).
+    Resolve LONG+SHORT conflicts on same symbol by keeping dominant side.
+    P0 §15 Trap #2 fix — dedup at emission point before DB write.
+    """
+    best: dict[tuple[str, str], dict[str, Any]] = {}
+    for p in picks:
+        sym = str(p.get("symbol", "")).strip().upper()
+        direction = str(p.get("direction") or p.get("signal_type") or "LONG").strip().upper()
+        direction = "SHORT" if direction in ("SELL", "SHORT") else "LONG"
+        key = (sym, direction)
+        conf = float(p.get("confidence") or 0)
+        if key not in best or conf > float(best[key].get("confidence") or 0):
+            best[key] = p
+
+    # Resolve conflicts: same symbol with both LONG and SHORT
+    by_symbol: dict[str, list[dict[str, Any]]] = {}
+    for p in best.values():
+        sym = str(p.get("symbol", "")).strip().upper()
+        by_symbol.setdefault(sym, []).append(p)
+
+    final: list[dict[str, Any]] = []
+    for sym, group in by_symbol.items():
+        if len(group) <= 1:
+            final.extend(group)
+            continue
+        group.sort(key=lambda p: float(p.get("confidence") or 0), reverse=True)
+        winner = group[0]
+        w_dir = str(winner.get("direction") or winner.get("signal_type") or "LONG").strip().upper()
+        w_dir = "SHORT" if w_dir in ("SELL", "SHORT") else "LONG"
+        logger.info("[DEDUP] %s: conflict resolved → %s (conf=%.2f, strat=%s)",
+                    sym, w_dir, float(winner.get("confidence", 0)), winner.get("strategy", ""))
+        final.append(winner)
+
+    removed = len(picks) - len(final)
+    if removed:
+        logger.info("[DEDUP] Removed %d picks, kept %d unique", removed, len(final))
+    return final
+
+
 def generate_all_flagship_picks() -> list[dict[str, Any]]:
-    """Run all eight class generators; apply Layer 2.5 normalization."""
+    """Run all eight class generators; apply Layer 2.5 normalization + dedup."""
     all_picks: list[dict[str, Any]] = []
     for asset_class, spec in FLAGSHIP_BY_CLASS.items():
         try:
@@ -261,7 +301,17 @@ def generate_all_flagship_picks() -> list[dict[str, Any]]:
             }
             all_picks.append(norm)
         logger.info("%s: %d raw → kept after L2.5", asset_class, len(raw_list))
-    return all_picks
+
+    # P0 §15 final safety net (2026-06-01, per 2026-05-31 findings + Claude notes)
+    # Post-process all returned picks to guarantee forward_test_only=True / validated=False
+    # for the 30 academic strategies, regardless of individual generator behavior.
+    for p in all_picks:
+        p["forward_test_only"] = True
+        p["forward_validated"] = False
+
+    deduped = _deduplicate_by_symbol_direction(all_picks)
+    logger.info("ALL: %d picks → %d after dedup", len(all_picks), len(deduped))
+    return deduped
 
 
 if __name__ == "__main__":

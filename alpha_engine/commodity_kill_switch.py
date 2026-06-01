@@ -260,9 +260,10 @@ def check_strategy_for_kill(
         return False, "Kill switch disabled via COMMODITY_INVERSE_KILL_DISABLED=1"
 
     name = str(strategy_name or "").strip()
+    name_cf = name.casefold()  # P0 §15 Trap #1 — case-insensitive matching
 
     # Check known toxic list (immediate hard-block)
-    if name in _KNOWN_TOXIC_COMMODITY_STRATEGIES:
+    if name_cf in {s.casefold() for s in _KNOWN_TOXIC_COMMODITY_STRATEGIES}:
         return True, f"Known toxic COMMODITY strategy (hard-blocked per swarm analysis)"
 
     # Primary check: COMMODITY asset class + inverse naming
