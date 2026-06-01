@@ -451,6 +451,118 @@ def _fetch_yfinance_prices(symbols: list[str]) -> dict[str, float]:
     return prices
 
 
+def _fetch_yfinance_ohlcv(symbol: str, period: str = "5d", interval: str = "1h") -> list[dict]:
+    """Fetch intrabar OHLCV for a non-crypto symbol via yfinance.
+
+    Returns list of {open, high, low, close, volume} dicts sorted by time.
+    Used for intrabar TP/SL checking (not just daily close).
+    """
+    try:
+        import yfinance as yf
+    except ImportError:
+        return []
+
+    try:
+        ticker = yf.Ticker(symbol)
+        hist = ticker.history(period=period, interval=interval, progress=False)
+        if hist is None or hist.empty:
+            return []
+
+        bars = []
+        for _, row in hist.iterrows():
+            bars.append({
+                "open": float(row.get("Open", 0)),
+                "high": float(row.get("High", 0)),
+                "low": float(row.get("Low", 0)),
+                "close": float(row.get("Close", 0)),
+                "volume": float(row.get("Volume", 0)),
+            })
+        if bars:
+            log.debug("  yfinance intrabar: %s -> %d bars (%s)", symbol, len(bars), interval)
+        return bars
+    except Exception as e:
+        log.debug("  yfinance intrabar failed for %s: %s", symbol, e)
+        return []
+
+
+def _fetch_binance_klines_ohlcv(symbol: str, interval: str = "1h", limit: int = 48) -> list[dict]:
+    """Fetch intrabar OHLCV for crypto symbols via Binance klines.
+
+    Returns list of {open, high, low, close, volume} dicts sorted by time.
+    Uses 4-mirror failover. Used for intrabar TP/SL checking on crypto picks.
+    """
+    hosts = (
+        "api.binance.com", "api1.binance.com",
+        "api2.binance.com", "api3.binance.com",
+    )
+    for host in hosts:
+        try:
+            url = f"https://{host}/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
+            req = urllib.request.Request(url, headers={"User-Agent": "UniversalResolver/1.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read())
+            if not data or not isinstance(data, list):
+                continue
+            bars = []
+            for k in data:
+                # Binance kline format: [open_time, open, high, low, close, volume, ...]
+                if len(k) < 5:
+                    continue
+                bars.append({
+                    "open": float(k[1]),
+                    "high": float(k[2]),
+                    "low": float(k[3]),
+                    "close": float(k[4]),
+                    "volume": float(k[5]) if len(k) > 5 else 0,
+                })
+            if bars:
+                log.debug("  binance intrabar: %s -> %d bars (%s)", symbol, len(bars), interval)
+                return bars
+        except Exception as e:
+            log.debug("  binance intrabar failed for %s on %s: %s", symbol, host, e)
+            continue
+    return []
+
+
+def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
+    """Check TP/SL against intrabar OHLC data (not just close price).
+
+    For each bar, check if high/low crossed TP or SL levels.
+    Returns (reason, exit_price, pnl_pct) or None.
+    This is more accurate than close-only checking — catches wicks that hit TP/SL.
+    """
+    direction = pick["direction"]
+    entry = pick["entry_price"]
+    tp = pick.get("take_profit", 0)
+    sl = pick.get("stop_loss", 0)
+
+    if not entry or (not tp and not sl):
+        return None
+
+    for bar in ohlcv_bars:
+        high = bar.get("high", 0)
+        low = bar.get("low", 0)
+        if not high or not low:
+            continue
+
+        if direction == "LONG":
+            if tp and high >= tp:
+                pnl = round((tp - entry) / entry * 100, 2) if entry else 0
+                return ("TP_HIT", tp, pnl)
+            if sl and low <= sl:
+                pnl = round((sl - entry) / entry * 100, 2) if entry else 0
+                return ("SL_HIT", sl, pnl)
+        else:  # SHORT
+            if tp and low <= tp:
+                pnl = round((entry - tp) / entry * 100, 2) if entry else 0
+                return ("TP_HIT", tp, pnl)
+            if sl and high >= sl:
+                pnl = round((entry - sl) / entry * 100, 2) if entry else 0
+                return ("SL_HIT", sl, pnl)
+
+    return None
+
+
 def _normalize_symbol(sym):
     """Normalize symbol for price lookup (BTC-USD -> BTCUSDT)."""
     if not sym:
@@ -1027,8 +1139,18 @@ def main():
                     else:
                         pick["stop_loss"] = round(entry * 1.02, 8)
 
-            # Check TP/SL
-            result = check_tp_sl(pick, current_price)
+            # Check TP/SL — use intrabar OHLC for non-crypto, close price for crypto
+            result = None
+            if _is_non_crypto_symbol(norm_sym) or _is_non_crypto_symbol(orig_sym):
+                # Try intrabar OHLC first (catches wicks that hit TP/SL)
+                intrabar_bars = _fetch_yfinance_ohlcv(norm_sym, period="5d", interval="1h")
+                if intrabar_bars:
+                    result = _check_tp_sl_intrabar(pick, intrabar_bars)
+                    if result:
+                        log.debug("  intrabar hit for %s %s", norm_sym, pick["direction"])
+            # Fallback to close-price check
+            if result is None:
+                result = check_tp_sl(pick, current_price)
             if result:
                 reason, exit_price, pnl_pct = result
                 # F-1 PnL outlier cap +/-100% applied to JSON-side resolution too
