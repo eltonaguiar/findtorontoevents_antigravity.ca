@@ -721,6 +721,9 @@ def sync(dry_run=False):
                 pnl_pct           DECIMAL(10,4),
                 resolved_at       DATETIME,
                 resolver_version  VARCHAR(20),
+                forward_test_only BOOLEAN DEFAULT FALSE,
+                forward_validated   BOOLEAN DEFAULT FALSE,
+                _gated_forward_test_isolated BOOLEAN DEFAULT FALSE,
                 INDEX idx_po_status   (status),
                 INDEX idx_po_strategy (strategy),
                 INDEX idx_po_resolved (resolved_at),
@@ -729,6 +732,12 @@ def sync(dry_run=False):
         """)
         conn.commit()
         log_ok("Table `at_pick_outcomes` ensured")
+        # P0 §15 (2026-06-01 fires): One-time prod ALTER for forward_test isolation tags
+        # (required on existing ejaguiar1_stocks DB before the writer skips + health checks are fully live):
+        # ALTER TABLE at_pick_outcomes
+        #   ADD COLUMN forward_test_only BOOLEAN DEFAULT FALSE,
+        #   ADD COLUMN forward_validated BOOLEAN DEFAULT FALSE,
+        #   ADD COLUMN _gated_forward_test_isolated BOOLEAN DEFAULT FALSE;
     except pymysql.Error as e:
         log_err(f"Failed to create table: {e}")
         conn.close()
