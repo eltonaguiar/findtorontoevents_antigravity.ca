@@ -1,6 +1,6 @@
 # Autonomous Trading Bot - Performance Report
 
-**Last Updated:** 2026-06-01 18:00:44 UTC
+**Last Updated:** 2026-06-01 21:11:09 UTC
 
 ## Portfolio Summary
 
@@ -21,7 +21,7 @@
 
 | Symbol | Direction | Entry Price | Stop Loss | Take Profit | Strategy |
 |--------|-----------|-------------|-----------|-------------|----------|
-| BTC-USD | LONG | $71,564.17 | $70,132.89 | $75,858.02 | MeanReversion |
+| BTC-USD | LONG | $71,104.16 | $69,682.08 | $75,370.41 | MeanReversion |
 
 ---
 
