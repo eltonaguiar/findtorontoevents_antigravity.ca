@@ -30,6 +30,13 @@ def __getattr__(name: str) -> Any:
         from alpha_engine.decay_tracker import StrategyStatus
 
         return StrategyStatus
+    # P0 §15 Trap #3 — forward_test shim (2026-06-01)
+    # Module was split; callers doing `from alpha_engine import forward_test`
+    # need a working re-export.  We lazily import the existing entry point.
+    if name == "forward_test":
+        import alpha_engine.forward_test as _ft
+
+        return _ft
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 

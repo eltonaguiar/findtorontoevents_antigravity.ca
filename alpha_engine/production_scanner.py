@@ -1541,11 +1541,38 @@ def resolve_direction_conflicts(picks: list[dict]) -> list[dict]:
 
 
 def deduplicate_picks(picks: list[dict]) -> list[dict]:
-    """Keep only the highest-confidence pick per symbol+direction.
+    """Keep only the highest-confidence pick per symbol+direction+strategy.
 
-    Prevents BUY+SELL conflicts on the same symbol by deduplicating
-    per (symbol, direction) pair, keeping the higher-confidence pick.
+    §15 dedup: first pass deduplicates by (symbol, direction, strategy) to prevent
+    the same strategy emitting duplicate picks for the same symbol+direction.
+    Second pass resolves BUY+SELL conflicts on the same symbol.
     """
+    # --- §15 first pass: dedup by (symbol, direction, strategy) ---
+    from collections import defaultdict as _dd_s15
+    _s15_groups: dict[tuple, list] = _dd_s15(list)
+    for pick in picks:
+        sym = str(pick.get("symbol", "") or "").upper().strip()
+        direction = (pick.get("signal_type") or pick.get("direction") or "BUY").upper()
+        if direction in ("SELL", "SHORT"):
+            direction = "SHORT"
+        else:
+            direction = "LONG"
+        strategy = str(pick.get("source_system") or pick.get("strategy", "") or "").lower().strip()
+        _s15_groups[(sym, direction, strategy)].append(pick)
+    _s15_deduped = []
+    _s15_blocked = 0
+    for _key, _group in _s15_groups.items():
+        if len(_group) == 1:
+            _s15_deduped.append(_group[0])
+            continue
+        _group.sort(key=lambda p: float(p.get("confidence", 0) or 0), reverse=True)
+        _s15_deduped.append(_group[0])
+        _s15_blocked += len(_group) - 1
+    if _s15_blocked:
+        print(f"  [§15-DEDUP] Blocked {_s15_blocked} picks: duplicate (symbol, direction, strategy)")
+    picks = _s15_deduped
+
+    # --- Second pass: resolve BUY+SELL conflicts on same symbol ---
     best: dict[tuple, dict] = {}
     for pick in picks:
         sym = pick.get("symbol", "")
@@ -4182,7 +4209,16 @@ def main():
     #
     #   Default OFF on first ship -- flip with MUTATION_ENGINE_ENABLED=1 once a
     #   cycle of telemetry confirms picks emit cleanly. See PR feat/wire-mutation-engine.
+    # BUG-4 (wbkz389ek / 2026-06-01): DNA mutator has been OFF for 6+ weeks, making
+    # the engine detection-only (no rehab mutations actually emitted). Default kept
+    # OFF intentionally -- enabling mutates live strategies and is an operator call.
+    # To enable mutations: export MUTATION_ENGINE_ENABLED=1 (default OFF since 2026-04).
+    # See wbkz389ek/2026-06-01.
     _ME_ENABLED = os.environ.get("MUTATION_ENGINE_ENABLED", "0") == "1"
+    if not _ME_ENABLED and not globals().get("_ME_DISABLED_WARNED", False):
+        import sys as _sys
+        print("WARN [production_scanner] DNA mutator DISABLED -- set MUTATION_ENGINE_ENABLED=1 to enable rehab mutations", file=_sys.stderr)
+        globals()["_ME_DISABLED_WARNED"] = True
     _ME_SHADOW = os.environ.get("MUTATION_ENGINE_SHADOW", "0") == "1"
     try:
         _ME_HAIRCUT = float(os.environ.get("MUTATION_SCORE_HAIRCUT", "0.85") or "0.85")

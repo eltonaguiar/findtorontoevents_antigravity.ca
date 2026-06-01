@@ -34,6 +34,13 @@ def _base_ctf_pick(**overrides):
         "take_profit": 88.0,
         "stop_loss": 76.0,
         "wf_verdict": "PASS",
+        # 2026-06-01: multi_asset_cot was removed from the COMMODITY
+        # forward_validated exemption (quality_gates.py:9269) on 2026-05-28, so
+        # the smart gate now rejects these picks at the forward_validated check
+        # (line 9284) BEFORE reaching the M-096 concentration logic under test.
+        # A real pick reaching the concentration gate has passed forward
+        # validation; set it so M-096 is exercised in isolation.
+        "forward_validated": True,
     }
     pick.update(overrides)
     return pick

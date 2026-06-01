@@ -40,6 +40,9 @@ KNOWN_HYRO_FILES = {
     "hyrotrader_journal.json",
     "hyrotrader_enhanced_picks.json",
     "hyrotrader_short_term_entries.json",
+    # 2026-06-01: emitted by tools/hyrotrader_closed_picks_emitter.py, read by
+    # tools/build_pf_registry.py (confirmed reader+writer exist).
+    "hyrotrader_closed_picks.json",
 }
 
 ML_RANKINGS = DATA_DIR / "hyro_ml_pick_rankings.json"

@@ -53,13 +53,12 @@ _RETRY_COUNT = int(os.environ.get("DB_HEALTH_RETRY", "2"))
 def _conn():
     """Create a fresh MySQL connection w/ long read_timeout (overrides
     audit_trail.mysql_client._create_connection's hardcoded 10s)."""
+    from tools.db_env import get_stocks_creds  # uses DB_PASSWORDS_JSON canonical source
     import pymysql  # type: ignore
-    host = os.environ.get("AUDIT_DB_HOST", "mysql.50webs.com")
-    user = os.environ.get("AUDIT_DB_USER", "ejaguiar1_stocks")
-    pwd = os.environ.get("AUDIT_DB_PASS", "stocks")
-    db = os.environ.get("AUDIT_DB_NAME", "ejaguiar1_stocks")
+    creds = get_stocks_creds()
     c = pymysql.connect(
-        host=host, user=user, password=pwd, database=db,
+        host=creds["host"], user=creds["user"], password=creds["password"],
+        database=creds["database"], port=creds.get("port", 3306),
         connect_timeout=_CONNECT_TIMEOUT,
         read_timeout=_READ_TIMEOUT,
         write_timeout=_READ_TIMEOUT,

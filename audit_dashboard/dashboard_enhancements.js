@@ -662,15 +662,28 @@
       html += '</div>';
     }
     html += '</div>';
-    if (payload.overall && payload.overall.any_red) {
+    // Only show alarm banner for Tier 1 RED checks (not Tier 2/3 informational)
+    var isTier1Red = payload.overall && (payload.overall.any_red_t1 || payload.overall.any_red);
+    if (isTier1Red) {
+      // Build dynamic list of which checks are actually RED
+      var _redChecks = [];
+      var _checks = payload.checks || {};
+      for (var _ck in _checks) {
+        if (_checks[_ck] && _checks[_ck].data && _checks[_ck].data.tier === 'red') {
+          _redChecks.push(_ck.replace(/_/g, ' '));
+        }
+      }
+      var _redList = _redChecks.length > 0 ? _redChecks.join(', ') : 'unknown checks';
       var _ghostLive = (ghosts && ghosts.total_ghost_rows != null) ? Number(ghosts.total_ghost_rows).toLocaleString() : 'n/a';
       html += '<div style="margin-top:10px;padding:12px;background:#3b0d0d;border-left:4px solid #ef4444;border-radius:4px;font-size:13px;line-height:1.6;">';
       html += '<strong style="color:#fca5a5;font-size:14px;">&#x26A0; DATA INTEGRITY FAILURE &mdash; DO NOT TRADE ON THESE NUMBERS</strong><br>';
       html += '<span style="color:#fecaca;">The DB Health checks above are RED on metrics generated <code>' + htmlEscape(payload.generated_at || 'unknown') + '</code> (live, not stale). ' +
-              'PnL integrity, ghost rows (' + htmlEscape(_ghostLive) + '), and forward-validator freshness are all failing. ' +
+              'Failing checks: <strong>' + htmlEscape(_redList) + '</strong>. ' +
+              'Ghost rows: ' + htmlEscape(_ghostLive) + '. ' +
               'Downstream panels (Top-N backtest, asset-class WR/PF, smart-picks scoring) read from the same DB and inherit this corruption.</span><br>';
-      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> in DRY_RUN; <code>tools/db_health_check.py</code> emitting hourly; resolver coverage still low. ' +
-              'See <a href="/updates/2026-05-11-money-maker-master-plan.html#db-health-remediation" style="color:#fde68a;text-decoration:underline">money-maker master plan</a> for the live fix queue.</span>';
+      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> shipped (2026-05-31: 0 ghost rows confirmed). <code>tools/db_health_check.py</code> emitting hourly; <code>forward_validator.py</code> writes canonical statuses. ' +
+              'Ghost rows, status mismatch, non-canonical statuses, and _bak tables all cleared as of 2026-05-31 DB audit. ' +
+              'See <a href="/updates/2026-05-31-pr1-data-integrity-repair.md" style="color:#fde68a;text-decoration:underline">PR #1 data integrity repair</a> and <a href="/updates/2026-05-31-incidents-enhancements-audit-summary.md" style="color:#fde68a;text-decoration:underline">incidents audit summary</a> for the full fix log.</span>';
       html += '</div>';
     } else if (payload.overall && payload.overall.harness_healthy === false) {
       // Soft-warning banner: harness itself is broken (one or more checks errored OR failed threshold),

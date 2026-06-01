@@ -163,7 +163,10 @@ class TestTimeExitV22:
         # Should NOT be breakeven — pnl reflects last bar close
         assert out["pnl_pct"] != 0.0
         assert out["pnl_pct"] > 0  # LONG, price moved up
-        assert out["status"] == "WON"
+        # v2.3: a time-exit is classified EXPIRED (it expired via max-hold,
+        # it did NOT hit TP), even when the realized pnl is positive. The
+        # real-outcome behavior is still asserted by the pnl checks above.
+        assert out["status"] == "EXPIRED"
         assert out["exit_price"] == pytest.approx(1.012, rel=1e-6)
         assert out["resolver_version"] == RESOLVER_VERSION
         assert out["_resolver_subversion"] == RESOLVER_SUBVERSION
@@ -189,7 +192,9 @@ class TestTimeExitV22:
         out = resolve_single_pick(pick, ohlc_window=bars)
         assert out["exit_reason"] == "TIME_EXIT_REPLAY"
         assert out["pnl_pct"] < 0  # SHORT lost (price up)
-        assert out["status"] == "LOST"
+        # v2.3: time-exit is classified EXPIRED regardless of pnl sign; the
+        # loss is asserted by the pnl<0 check above.
+        assert out["status"] == "EXPIRED"
 
     def test_young_pick_no_touch_still_retries(self):
         """Pick younger than max_hold with no TP/SL touch still uses retry path

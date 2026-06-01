@@ -211,7 +211,7 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "allow_without_forward": True,  # Probation: build forward record
     },
     "cot_positioning": {
-        "categories": {"forex", "commodity", "futures", "bond", "equity"},
+        "categories": {"forex", "commodity", "futures", "equity"},
         "min_confidence": 0.55,
         "min_rr": 1.25,
         "min_elite_score": 60,
@@ -220,7 +220,7 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "allow_without_forward": False,
     },
     "cta_tsmom_blend": {
-        "categories": {"forex", "commodity", "futures", "bond", "equity"},
+        "categories": {"forex", "commodity", "futures", "equity"},
         "min_confidence": 0.68,
         "min_rr": 1.20,
         "min_elite_score": 58,
@@ -228,8 +228,10 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.50,
         "allow_without_forward": False,
     },
+    # PR #7 (2026-05-31): Restricted to futures-only — commodity sleeve retired
+    # (class WR 11.9% / PF 0.29). Rebuild from non-COT signals before re-enabling.
     "cta_commodity_momentum_term": {
-        "categories": {"commodity", "futures"},
+        "categories": {"futures"},
         "min_confidence": 0.67,
         "min_rr": 1.20,
         "min_elite_score": 58,
@@ -254,26 +256,21 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.40,
         "allow_without_forward": True,  # Probation: build forward record
     },
-    "forex_rsi2_mean_reversion": {
-        "categories": {"forex"},
-        "min_confidence": 0.60,
+    # INC FOREX P0 (2026-05-31): sole proven FOREX sleeve (57.6% WR SHORT, USDJPY-heavy).
+    # Admission gate above restricts to SHORT only for forex category.
+    "cta_cross_asset_tsmom": {
+        "categories": {"forex", "commodity", "futures", "equity"},
+        "min_confidence": 0.55,
         "min_rr": 1.20,
         "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.35,
-        "allow_without_forward": True,  # 2026-04-19: Allow on probation to build forward record
-        # ORIGINAL was min_forward_trades=50 (impossible gate — strategy can never
-        # accumulate 50 trades if blocked at every scan). Lowered to 5 + probation
-        # so the strategy can actually build a forward history. Backtest claim:
-        # 57.6% WR on 118 trades (Connors RSI2 mean reversion), so the edge exists.
-        # Also lowered min_confidence 0.74→0.60, min_rr 1.40→1.20, min_elite_score 70→50
-        # to align with other probationary forex strategies.
+        "min_forward_trades": 2,
+        "min_forward_wr": 0.45,
+        "allow_without_forward": True,
     },
-    # Inverse carry contrarian — FOREX Rescue Operation bonus edge (2026-05-08)
-    # Mirrors carry_trade_momentum: short high-yield currencies when carry > 0
-    # but price is below SMA50/SMA200 (carry trade reversal/unwind setup).
-    # Verdelhan (2015) crash risk premium + session-overlap edge (58% WR).
-    "inverse_carry_contrarian": {
+    # INC FOREX P0/P1 (2026-05-31): probation allowlist for G10 carry (Lustig et al. 2011).
+    # Losers (forex_rsi2, carry_trade_momentum, inverse_carry, forex_carry_ppp) moved to
+    # BLACKLISTED_STRATEGIES in config.py.
+    "forex_carry": {
         "categories": {"forex"},
         "min_confidence": 0.52,
         "min_rr": 1.20,
@@ -281,27 +278,6 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_trades": 5,
         "min_forward_wr": 0.40,
         "allow_without_forward": True,
-    },
-    "carry_trade_momentum": {
-        "categories": {"forex"},
-        "min_confidence": 0.52,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.40,
-        "allow_without_forward": True,  # New strategy, build forward record
-    },
-    # PR3 (2026-05-27): Wire forex_carry_ppp — ECB research-based enhanced carry
-    # Kwas et al. (2024) PPP equilibrium overlay. EURUSD-focused, needs forward record.
-    # Incident: INC P0 (FOREX all losers) + INC P1 (forex_carry not in allowlist).
-    "forex_carry_ppp": {
-        "categories": {"forex"},
-        "min_confidence": 0.52,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.40,
-        "allow_without_forward": True,  # Probation: build forward record
     },
     # ── ETF strategies (new 2026-04-07) ──────────────────────────────────────
     # All start on probation (allow_without_forward=True) to build forward record.
@@ -395,62 +371,18 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.45,
         "allow_without_forward": True,
     },
-    # ── Bond strategies (new 2026-04-16) ──────────────────────────────────────
-    # Connors & Alvarez (2008) "Short Term Trading Strategies That Work" Ch. 7.
-    # Published edge: TLT 2002-2018 → WR 73%, PF 2.1, avg hold 4d, Sharpe 1.1.
-    # Probation gate: 0.55 forward WR (18pt margin under 73% claim).
-    "bond_connors_rsi2": {
-        "categories": {"bond"},
-        "min_confidence": 0.60,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.55,  # Aligns with Connors 73% claim, 18pt margin
-        "allow_without_forward": True,
-    },
-    # PR5 (2026-05-27): Wire remaining viable bond strategies from bond_scanner.py.
-    # bond_mean_reversion, bond_yield_momentum, bond_yield_curve_slope are KILLED
-    # (0% WR). These three have theoretical edge but need forward validation.
-    "bond_duration_rotation": {
-        "categories": {"bond"},
-        "min_confidence": 0.55,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.45,
-        "allow_without_forward": True,  # Probation: TLT regime-based allocation
-    },
-    "bond_ust_tsmom": {
-        "categories": {"bond"},
-        "min_confidence": 0.55,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.50,
-        "allow_without_forward": True,  # Probation: FRED DGS10 time-series momentum
-    },
-    "bond_credit_spread_mean_reversion": {
-        "categories": {"bond"},
-        "min_confidence": 0.55,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.45,
-        "allow_without_forward": True,  # Probation: credit spread mean reversion
-    },
-    # ── Commodity TSMOM (Moskowitz, Ooi & Pedersen 2012) ────────────────────
-    # 12-month time-series momentum on commodity futures with vol-targeted
-    # sizing.  Conservative forward-WR floor (0.45) sits below the published
-    # Sharpe to allow the strategy to build live track record on probation.
-    "commodity_tsmom_12m": {
-        "categories": {"commodity", "futures"},
-        "min_confidence": 0.55,
-        "min_rr": 1.20,
-        "min_elite_score": 50,
-        "min_forward_trades": 5,
-        "min_forward_wr": 0.45,  # Below the published Sharpe but conservative
-        "allow_without_forward": True,
-    },
+    # ── Bond strategies — KILLED 2026-05-31 (PR #7) ───────────────────────────
+    # All bond strategies removed from allowlist. BOND class is hard-blocked at
+    # the emission gate (0% WR / PF 0.00 / Sharpe -2.465). Re-enable path:
+    #   1. Build viable yield-curve or duration strategy with backtest evidence
+    #   2. Run 60-day forward test in shadow mode (n>=20, WR>=55%)
+    #   3. Remove bond_class_kill_switch gate
+    #   4. Add strategy back here with probation thresholds
+    # Removed: bond_connors_rsi2, bond_duration_rotation, bond_ust_tsmom,
+    #          bond_credit_spread_mean_reversion
+    # ── Commodity TSMOM — RETIRED 2026-05-31 (PR #7) ──────────────────────────
+    # commodity_tsmom_12m removed from allowlist (class WR 11.9% / PF 0.29).
+    # Rebuild from non-COT signals: term structure, EIA inventory, weather overlay.
     # 2026-05-31 (tick33): Gold safe-haven policy entry — formalize probation.
     # Already registered in alpha_engine/commodities_strategies.py:1076 and
     # dispatched via scanner.py:2101 (COMMODITY_STRATEGIES.update on
@@ -625,12 +557,13 @@ def evaluate_non_crypto_candidate(candidate: dict[str, Any], *, context: str = "
         candidate.get("asset_class"),
     )
     strategy = _normalize_strategy(candidate.get("strategy"))
+    symbol = str(candidate.get("symbol") or "").upper()
 
     # Fix B + C: emission gates — re-entry cooldown + daily session cap.
     # Applied before strategy policy checks so any non-crypto pick is blocked
     # when the symbol just exited or the daily cap is reached.
     try:
-        gate = check_emission_gates(str(candidate.get("symbol") or ""))
+        gate = check_emission_gates(symbol)
         if gate.get("blocked"):
             return {
                 "allowed": False,
@@ -641,6 +574,38 @@ def evaluate_non_crypto_candidate(candidate: dict[str, Any], *, context: str = "
             }
     except Exception:
         pass
+
+    # INC FOREX P0 (2026-05-31): consolidate to proven sleeve + one probation carry leg.
+    _FOREX_ALLOWED = frozenset({"cta_cross_asset_tsmom", "forex_carry"})
+    if category == "forex":
+        if strategy not in _FOREX_ALLOWED:
+            return {
+                "allowed": False,
+                "category": category,
+                "strategy": strategy,
+                "reason": "forex_strategy_consolidation_blocked",
+            }
+        if strategy == "cta_cross_asset_tsmom":
+            direction = str(candidate.get("direction", "LONG")).upper()
+            if direction != "SHORT":
+                return {
+                    "allowed": False,
+                    "category": category,
+                    "strategy": strategy,
+                    "reason": "cta_cross_asset_tsmom_short_only",
+                }
+
+    # PR #7 (2026-05-31): BOND Class Kill Switch
+    # BOND class is 0% WR / PF 0.00 / Sharpe -2.465. All bond strategies are on
+    # probation with zero verified forward trades. Re-enable only after a viable
+    # yield-curve or duration strategy builds a forward record (n>=20, WR>=55%).
+    if category == "bond":
+        return {
+            "allowed": False,
+            "category": category,
+            "strategy": strategy,
+            "reason": "bond_class_kill_switch",
+        }
 
     if category not in NON_CRYPTO_CATEGORIES:
         return {

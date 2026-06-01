@@ -712,7 +712,10 @@ def sync(dry_run=False):
         # a separate DDL migration step
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS at_pick_outcomes (
-                pick_id           CHAR(36) PRIMARY KEY,
+                -- pick_id widened to varchar(100) on 2026-06-01 to support
+                -- composite IDs from genome_revival_battlegro_* sources that
+                -- were silently dropped under char(36) by INSERT IGNORE.
+                pick_id           VARCHAR(100) PRIMARY KEY,
                 symbol            VARCHAR(50),
                 strategy          VARCHAR(200),
                 asset_class       VARCHAR(20),
@@ -721,6 +724,9 @@ def sync(dry_run=False):
                 pnl_pct           DECIMAL(10,4),
                 resolved_at       DATETIME,
                 resolver_version  VARCHAR(20),
+                forward_test_only BOOLEAN DEFAULT FALSE,
+                forward_validated   BOOLEAN DEFAULT FALSE,
+                _gated_forward_test_isolated BOOLEAN DEFAULT FALSE,
                 INDEX idx_po_status   (status),
                 INDEX idx_po_strategy (strategy),
                 INDEX idx_po_resolved (resolved_at),
@@ -729,6 +735,12 @@ def sync(dry_run=False):
         """)
         conn.commit()
         log_ok("Table `at_pick_outcomes` ensured")
+        # P0 §15 (2026-06-01 fires): One-time prod ALTER for forward_test isolation tags
+        # (required on existing ejaguiar1_stocks DB before the writer skips + health checks are fully live):
+        # ALTER TABLE at_pick_outcomes
+        #   ADD COLUMN forward_test_only BOOLEAN DEFAULT FALSE,
+        #   ADD COLUMN forward_validated BOOLEAN DEFAULT FALSE,
+        #   ADD COLUMN _gated_forward_test_isolated BOOLEAN DEFAULT FALSE;
     except pymysql.Error as e:
         log_err(f"Failed to create table: {e}")
         conn.close()

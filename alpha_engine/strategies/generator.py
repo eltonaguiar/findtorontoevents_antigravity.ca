@@ -15,6 +15,9 @@ from .mean_reversion_strategies import BollingerMeanReversionStrategy, ShortTerm
 from .earnings_drift import EarningsDriftStrategy, ConsecutiveBeatsStrategy
 from .quality_value import QualityCompoundersStrategy, ValueQualityStrategy, DividendAristocratsStrategy
 from .ml_ranker import MLRankerStrategy
+# NOTE: unique_algorithmic_strategies import removed 2026-06-01 — file was
+# referenced by commit a57d3d18a ("P0 §15 trap fixes") but never committed,
+# causing ModuleNotFoundError on every import. Re-add once the file lands.
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +55,9 @@ class StrategyGenerator:
             DividendAristocratsStrategy(),
             # ML
             MLRankerStrategy(model_type="lightgbm"),
+            # NOTE: 7 unique-algorithmic strategies removed 2026-06-01 — see
+            # __init__.py / generator.py header comment. Re-add once
+            # unique_algorithmic_strategies.py file is committed.
         ]
 
         for strategy in defaults:

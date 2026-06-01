@@ -1,3 +1,11 @@
+# ⚠️ DO NOT APPLY THESE DIFFS — FABRICATED CONTENT
+
+**Red-team review (2026-05-31 tick 3) found 0/5 diffs verified.** 3 were fabricated function names / line numbers / data citations; 2 needed correction. See PR #234 for corrections (also pending re-verification by tick 4) and PR #235 for this revocation notice.
+
+**Operators: STOP. Do not apply any diff from this document until tick-4 re-verification clears them.**
+
+---
+
 # OPERATOR-READY DIFFS — 5 Items (2026-05-31)
 
 **Audience:** operator with shell + git push rights. Each section is

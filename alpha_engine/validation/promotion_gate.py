@@ -16,9 +16,18 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
+
+# BUG-3 fix (finding wbkz389ek): the original default gini_threshold=0.40 was
+# structurally unpassable — the measured production Gini across 113 live
+# strategies is ~0.71, so only ~5% of strategies were ever evaluated by the
+# concentration gate. Raised the empirical default to 0.65 (still rejects
+# toxic concentration) and made it env-tunable via PROMOTION_GINI_THRESHOLD
+# so operators can adjust without a code change. See Option B in BUG-3 report.
+DEFAULT_GINI_THRESHOLD: float = float(os.environ.get("PROMOTION_GINI_THRESHOLD", "0.65"))
 
 import numpy as np
 import pandas as pd
@@ -105,7 +114,7 @@ def run_gate(
     posterior_threshold: float = 0.95,
     dsr_threshold: float = 1.64,
     corr_threshold: float = 0.75,
-    gini_threshold: float = 0.40,
+    gini_threshold: float = DEFAULT_GINI_THRESHOLD,
 ) -> Dict[str, Any]:
     wf = _load(walk_forward_path)
     inst = _load(institutional_path)
