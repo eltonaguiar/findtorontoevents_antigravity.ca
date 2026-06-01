@@ -68,9 +68,23 @@ except Exception as e:
 
 
 # ---------------------------------------------------------------------------
-# EQUITY (3/5 wired — equity_qmom_residual + equity_post_earnings_drift
-# lack generate_* entry points; they are feature-computation modules)
+# EQUITY (5/5 wired)
 # ---------------------------------------------------------------------------
+try:
+    from alpha_engine.equity_qmom_residual import equity_qmom_residual_signals as _eq_qmom_raw
+    def _gen_eq_qmom():
+        # Month-end rebalance per Asness et al.; force=False respects gate
+        return _eq_qmom_raw(force=False)
+    _register("equity_qmom_residual", "EQUITY", _gen_eq_qmom)
+except Exception as e:
+    logger.debug("equity_qmom_residual not available: %s", e)
+
+try:
+    from alpha_engine.equity_post_earnings_drift import equity_post_earnings_drift_signals as _eq_pead_raw
+    _register("equity_post_earnings_drift", "EQUITY", _eq_pead_raw)
+except Exception as e:
+    logger.debug("equity_post_earnings_drift not available: %s", e)
+
 try:
     from alpha_engine.equity_insider_buying import generate_picks as _gen_eq_insider
     _register("equity_insider_buying", "EQUITY", _gen_eq_insider)
