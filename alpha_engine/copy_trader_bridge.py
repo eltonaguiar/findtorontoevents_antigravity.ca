@@ -48,6 +48,11 @@ try:
 except Exception:
     # Defensive fallback if config import fails — preserve prior behavior
     BLACKLISTED_STRATEGIES = {"binance_smart_money", "hl_funding_fade", "quan_engine_scalp"}
+# 2026-06-01 BUG-1 fix: normalize blacklist to lowercase ONCE so case-variant
+# strategy names (e.g. "Claude_Gainer_ST" vs "claude_gainer_st") match. Prior
+# membership check compared both raw + lowercased input against the same
+# mixed-case set, so lowercased input never matched mixed-case set entries.
+_BLACKLISTED_LC = frozenset(s.lower() for s in BLACKLISTED_STRATEGIES)
 BLOCKED_EXCHANGE_TAGS = ("bitget",)
 PROVEN_TRADERS = {
     "copy_hl_NMTD_25M",
@@ -201,7 +206,7 @@ def _qualify_copy_pick(pick: dict, strategy_perf: dict) -> tuple[bool, str]:
     strategy_l = strategy.lower()
     source_system = str(pick.get("source_system", "") or "").lower()
 
-    if strategy in BLACKLISTED_STRATEGIES or strategy_l in BLACKLISTED_STRATEGIES:
+    if strategy_l in _BLACKLISTED_LC:
         return False, "blacklisted strategy"
     if any(tag in strategy_l for tag in BLOCKED_EXCHANGE_TAGS) or any(tag in source_system for tag in BLOCKED_EXCHANGE_TAGS):
         return False, "blocked exchange/source"

@@ -15,6 +15,15 @@ from .mean_reversion_strategies import BollingerMeanReversionStrategy, ShortTerm
 from .earnings_drift import EarningsDriftStrategy, ConsecutiveBeatsStrategy
 from .quality_value import QualityCompoundersStrategy, ValueQualityStrategy, DividendAristocratsStrategy
 from .ml_ranker import MLRankerStrategy
+from .unique_algorithmic_strategies import (
+    CryptoVolRegimeAccumulationStrategy,
+    EquitySectorDispersionConvergenceStrategy,
+    FxCrossPairMomentumStrategy,
+    CommodityCurrencyBetaDivergenceStrategy,
+    EtfFactorRegimeRotationStrategy,
+    BondRealRateMomentumStrategy,
+    FuturesCotExtremeStrategy,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +61,14 @@ class StrategyGenerator:
             DividendAristocratsStrategy(),
             # ML
             MLRankerStrategy(model_type="lightgbm"),
+            # Unique algorithmic batch (2026-06-01, TESTING_PROTOCOL §0.6)
+            CryptoVolRegimeAccumulationStrategy(),
+            EquitySectorDispersionConvergenceStrategy(),
+            FxCrossPairMomentumStrategy(),
+            CommodityCurrencyBetaDivergenceStrategy(),
+            EtfFactorRegimeRotationStrategy(),
+            BondRealRateMomentumStrategy(),
+            FuturesCotExtremeStrategy(),
         ]
 
         for strategy in defaults:

@@ -375,14 +375,16 @@ def is_blocked_strategy(name, asset_class: str = "") -> bool:
     COMMODITY-inverse-killed."""
     if not name:
         return False
-    s = str(name).strip()
-    if s in _BLOCKED_STRATEGIES:
+    s = str(name).strip().casefold()  # P0 §15 Trap #1 — case-insensitive matching
+    # Check both casefolded and original for backward compat with mixed-case DB entries
+    s_orig = str(name).strip()
+    if s in {k.casefold() for k in _BLOCKED_STRATEGIES} or s_orig in _BLOCKED_STRATEGIES:
         return True
     # FX Kill Switch: dynamic FOREX strategy kills
-    if is_fx_killed_strategy(s):
+    if is_fx_killed_strategy(s) or is_fx_killed_strategy(s_orig):
         return True
     # COMMODITY Inverse Kill Switch
-    if is_commodity_inverse_killed_strategy(s, asset_class=asset_class):
+    if is_commodity_inverse_killed_strategy(s, asset_class=asset_class) or is_commodity_inverse_killed_strategy(s_orig, asset_class=asset_class):
         return True
     return False
 
@@ -392,14 +394,15 @@ def block_reason(name, asset_class: str = "") -> str:
     'commodity-inverse-kill', or ''."""
     if not name:
         return ""
-    s = str(name).strip()
-    if s in _RETIRED_STRATEGIES:
+    s = str(name).strip().casefold()
+    s_orig = str(name).strip()
+    if s in {k.casefold() for k in _RETIRED_STRATEGIES} or s_orig in _RETIRED_STRATEGIES:
         return "retired"
-    if s in _PAPER_ONLY_STRATEGIES:
+    if s in {k.casefold() for k in _PAPER_ONLY_STRATEGIES} or s_orig in _PAPER_ONLY_STRATEGIES:
         return "paper-only"
-    if is_fx_killed_strategy(s):
+    if is_fx_killed_strategy(s) or is_fx_killed_strategy(s_orig):
         return "fx-kill"
-    if is_commodity_inverse_killed_strategy(s, asset_class=asset_class):
+    if is_commodity_inverse_killed_strategy(s, asset_class=asset_class) or is_commodity_inverse_killed_strategy(s_orig, asset_class=asset_class):
         return "commodity-inverse-kill"
     return ""
 

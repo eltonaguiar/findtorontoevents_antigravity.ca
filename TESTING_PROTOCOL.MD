@@ -1,8 +1,240 @@
 # TESTING_PROTOCOL
 
-Date: 2026-04-01 (original) | **Audited: 2026-04-04**  
-Scope: Crypto, Stocks, ETFs, Forex, Futures, Commodities  
+Date: 2026-04-01 (original) | **Audited: 2026-04-04** | **Consolidated: 2026-05-31 (canonical synthesis)**
+Scope: Crypto, Stocks, ETFs, Forex, Futures, Commodities
 Primary DB: `mysql.50webs.com` -> `ejaguiar1_stocks`
+
+> **CANONICAL STATUS (2026-05-31):** This file is the SINGLE SOURCE OF TRUTH for the
+> repo's testing protocol. It supersedes the conflicting / dated docs listed in
+> Section 0.7 (now archived under `archive/2026-05-31_testing_protocol_dedupe/`).
+> Synthesized from the 5 batch reviews
+> (`reports/peer_claude-batch_{1..5}_of_5_testing_protocol_review_2026-05-31.md`)
+> plus today's canonical methodology in PRs #357 / #358 / #362.
+
+---
+
+## Section 0 — Canonical Synthesis (2026-05-31)
+
+### 0.1 Hard Gates (graduation to live capital)
+
+A strategy passes the hard gate ONLY when ALL of the following are simultaneously
+true on a closed-pick cohort:
+
+| Gate | Threshold | Reference |
+|------|-----------|-----------|
+| **n-floor (graduation)** | `n_closed >= 500` (per strategy, post policy-clean dedup) | `docs/PAPER_PILOT_HARNESS.md` |
+| **Wilson 95% lower bound (WR)** | `WR_lb > break-even WR` (one-sided, z=1.96) | `docs/PAPER_PILOT_HARNESS.md` |
+| **Bootstrap PF 95% CI lower bound** | `PF_lo > 1.0` (1000 resamples, seed=17) | `docs/PAPER_PILOT_HARNESS.md` |
+| **Bonferroni significance** | `p < 0.05/k`, default k=7 paper strategies -> alpha = 0.007142857; one-sided exact binomial vs break-even | `docs/PAPER_PILOT_HARNESS.md` |
+| **Concentration (top-symbol share)** | top symbol share `<= 0.60` (default); per-class overrides (COMMODITY 0.85). MUST run BEFORE DSR/SPA | `tools/ci_gate_money_ready_vs_registry.py`, `reports/money_maker_readyv2_2026-05-17.md` |
+
+**These five gates are conjunctive.** Failing any one disqualifies the strategy
+from live-capital sizing regardless of how strong the others are. There is no
+"point-estimate" path to graduation.
+
+### 0.2 N-Floor Decoder (use the right floor for the right surface)
+
+The repo has SIX distinct n-floors, each gating a different decision. A peer
+agent reading just one doc historically picked the wrong floor.
+This table is authoritative:
+
+| Surface | n-floor | Authoritative file |
+|---------|---------|--------------------|
+| **Paper-pilot graduation -> live money** | **n_closed >= 500** | `docs/PAPER_PILOT_HARNESS.md` (CANONICAL) |
+| Per-class money-ready verdict (`/audit` badge) | `n_resolved >= 50` (`MIN_N_CLASS`) | `alpha_engine/money_ready_verdict.py:137` |
+| Per-strategy SPA / PBO inclusion | `n >= 20` (`MIN_N_STRATEGY`) | same module |
+| Per-class screening (money-maker-readyv2) | `CRYPTO n>=100, COMMODITY n>=50, EQUITY n>=30/bucket, BOND n>=20` | `.claude/skills/money-maker-readyv2/SKILL.md` |
+| Walk-forward weekly refresh | `>= 200 picks per run` | TESTING_PROTOCOL §3 (below) |
+| Closed-trade scarcity flag | `< 25 trades` (noise threshold) | TESTING_PROTOCOL §7 |
+| Auto-rehab trigger (NOT graduation) | `>= 10 resolved picks AND WR < 35%` | TESTING_PROTOCOL §2 Layer 7 |
+
+**Rule:** when in doubt, cite the FIVE HARD GATES (§0.1) and the SURFACE you are
+gating. Never quote "n >= X" without naming the surface.
+
+### 0.3 Required Testing Protocol (procedural)
+
+Every strategy promotion candidate must pass, in order:
+
+1. **Intrabar OHLC replay** for any SL/TP-sensitive change. Winsorized estimates
+   are forbidden for TP/SL tuning — they collapse PF when replayed
+   (proven 2026-05-31, see
+   `reports/peer_claude-CAPPING_VS_INTRABAR_REPLAY_TWO_EXAMPLES_2026-05-31.md`
+   and MEMORY `reference-sl-optimization-needs-pricepath.md`).
+2. **TIME_EXIT included in pnl_pct.** Strategies that report PF without including
+   TIME_EXIT closes are over-stating edge.
+3. **Walk-forward:** rolling train (~2yr) + forward (~3mo) with weekly refresh
+   minimum 200 picks/run; refresh staleness > 7 days BLOCKS new promotions.
+4. **DSR / PBO:** Deflated Sharpe Ratio on policy-clean cohort;
+   PBO <= 0.05 (use `alpha_engine/money_ready_verdict.py` DSR computation).
+5. **Independent agent verification** of any code-diff PR — fabrication rate
+   measured at ~9% trustworthy (1/11) on 2026-05-31; require at least one
+   independent agent to quote pre-change lines verbatim from the target file
+   before opening a code-change PR (see
+   `docs/AGENT_DIFF_FABRICATION_PATTERN_2026-05-31.md`).
+6. **Concentration check runs BEFORE DSR / SPA**, not after. Two false Tier-1
+   PASSes shipped on 2026-05-17 because concentration ran last.
+
+### 0.4 Caveats / Land Mines (verified 2026-05-31)
+
+1. **Cloudflare-hosted models hallucinate /audit numbers.** They have no tool
+   access. Always feed verdict JSON verbatim — never let the model claim to fetch.
+2. **`AUDIT_HEALTH_SOURCE=recompute` figures pre-dating M-067 are deprecated**
+   (bypassed flicker-dedup). Cite `asset_class_health.n_resolved` not raw
+   `by_asset_class`.
+3. **`/audit/pick_funnel.html` "78.9% CRYPTO Smart-Picks" is DISPUTED.** Raw DB
+   CRYPTO 90d is 39% WR / PF 0.37 (4 leakage signals).
+4. **Old May-3 CRYPTO n=8067 figure is dead** (deprecated recompute path).
+5. **Tournament T3 PF threshold drifted** (charter T3=PF>=1.2 vs tournament=1.3).
+   Canonical = charter (1.2). T3 is *display/ranking only*, not a real-money gate.
+6. **"Tier 3" band (PF>=1.2 / WR>=45%) was orphaned in
+   `money_ready_state_2026-05-12T23Z.md`**. Only Tier 1 and Tier 2 are real
+   graduation tiers. T3 is screening only.
+7. **DSR alpha mismatch:** `money_ready_verdict_2026-05-17.{md,json}` used SPA
+   family-wise alpha=0.1 (14x looser than Bonferroni 0.007). Archived.
+8. **PBO threshold mismatch:** `MONEY_READY_METHODOLOGY.md` says PBO<=0.05;
+   `roadmap_no_edge_to_money_ready_2026_05_18.md` said PBO<=0.55 (11x looser).
+   Canonical = **PBO <= 0.05**.
+9. **Bootstrap resample count varied** (5000 in 2026-05-16 snapshot vs canonical 1000).
+   Canonical = **1000 resamples, seed=17** per `docs/PAPER_PILOT_HARNESS.md`.
+10. **Conf >= 0.90 WR varies by direction segment** — 47% (all-direction, Kimi dim02)
+    vs 19.5% (LONG-only, n=41). Both correct in scope; always cite segment.
+11. **Persona n>=20 floor self-acknowledged unsupportable** — "80% confidence on
+    n=23 is mathematically unsupportable" per
+    `reports/CONFIDENCE_METHODOLOGY_2026-05-24.md`. Use Wilson LB, not point estimate.
+12. **Capped-MC bootstrap inflates winners.** Bootstrapping `pnl_pct` clamped to
+    `[SL, TP]` systematically over-states tier labels. Use realized series only
+    (see `reports/peer_claude-URGENT_METHODOLOGY_FLAG_MC_AUDIT_TOOL_2026-05-31.md`).
+13. **`reports/money_maker_ready_v2_deep_dive_2026-05-31.md` tier labels are
+    quarantined** pending rewrite (used capped-MC at n=30-45).
+14. **Hermes "RR>=1.5 + conf>=0.65 -> 48.9% WR" filter is POISONED** — 146 CRYPTO
+    rows had confidence 15-78 in a 0-1 domain. Confidence unit-check required.
+15. **`multi_asset_cot PF=12.16 n=91`** previously cited as actionable T1 — fails
+    n>=500 AND fails concentration (now known 85% CT=F).
+16. **`category` column is case-mess** (`stock` / `stocks` / `equity`). Always
+    normalize before aggregation.
+17. **`alpha_engine` is a meta-engine**, not a strategy source. Measure
+    concentration at STRATEGY level (HHI>0.30), not at engine/source level
+    (MEMORY `feedback-concentration-strategy-not-engine.md`).
+18. **Resolver intrabar replay is THE upstream T2 blocker** (MEMORY
+    `project-session-close-2026-05-31.md`). Until shipped, all close-to-close
+    PF estimates undershoot true PF for protective-stop strategies.
+19. **DATA INTEGRITY banner means CHECK BUGS, not corruption.** Live `db_health`
+    is always `--quick` mode and flags leverage / dir-blind pnl / open_bloat
+    count_suspect (MEMORY `project-audit-integrity-banner-2026-05-31.md`).
+20. **`/audit/incidents.html` is cached.** Always cross-check against
+    `vw_all_incidents` + live `trading_picks` counts before swarm mutation
+    (MEMORY `feedback-incident-page-stale-vs-live-db.md`).
+21. **Trust=7 IS a real edge** (85.9% WR n=99) — refutes "global ML inversion"
+    premise (MEMORY `project-confidence-trust-edges-2026-05-31.md`).
+22. **CRYPTO does NOT have global confidence inversion** — only a localized
+    0.8-bucket dip (same MEMORY entry).
+23. **Two false Tier-1 PASSes on 2026-05-17** = top-symbol concentration ran
+    AFTER DSR/SPA. Concentration MUST run first (Caveat #6).
+24. **Updates entry insertion rule** (procedural): new cards go BEFORE
+    `<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->`, not after `:END`.
+    See CLAUDE.md.
+25. **`npm run deploy:sftp` sequence bug** — phase-1 SFTP build is overwritten
+    by phase-2 GITHUB build before subdir upload. Use
+    `scripts/upload-next-only.mjs` for surgical retries.
+
+### 0.5 Architectural Unblock Checklist (six items)
+
+For ANY claim that asset-class X is "MONEY_READY", verify all six are wired:
+
+1. **Verdict aggregation** uses policy-clean cohort
+   (`pf_registry.by_asset_class_policy_clean_net`), not raw `by_asset_class`.
+2. **M-067 (flicker-dedup) cap** enforced — `n == n_resolved` in
+   `asset_class_health`.
+3. **Concentration gate runs BEFORE DSR/SPA** (Caveat #6).
+4. **Resolver v2 + v2.1 bug fix applied** (`outcome_resolver.py:115-126`,
+   `PNL_WIN_THRESHOLD_BY_CLASS` shipped 2026-04-28).
+5. **CI gate `tools/ci_gate_money_ready_vs_registry.py` green** — blocks merge
+   when verdict declares MONEY_READY but `pf_registry` shows PF<1.5 or
+   concentration bypass.
+6. **Intrabar replay applied** for any SL/TP-sensitive class (Caveat #18 + §0.3.1).
+
+### 0.6 Topic Gates (six explicit categories) — wkh9une1h synthesis
+
+Six gates ANY new strategy proposal must pass before harness runs:
+
+1. **EXECUTION:** per-class slippage applied. One-way: CRYPTO 4bp, EQUITY 3bp,
+   ETF 2bp, COMMODITY 6bp, FOREX 1bp, BOND 3bp, FUTURES 4bp. Round-trip:
+   CRYPTO 8bp, EQUITY 6bp, COMMODITY 12bp, default 16bp. Source:
+   `alpha_engine/charter_slippage.py` + `tests/test_charter_slippage.py`.
+2. **REGIME:** positive edge in `>= 2` Fear & Greed Index regimes
+   (Extreme Fear / Fear / Neutral / Greed / Extreme Greed). Bull/bear/
+   sideways/high-vol tested separately.
+3. **CAPACITY:** notional <= 5% per pick (Charter §7 sizer); daily-loss kill
+   switch active; class-allocator cap (CRYPTO 0.25 default) not exceeded.
+4. **CORRELATION:** cross-strategy correlation gate (HRP / corr-gate per PR #385);
+   single-source / single-symbol concentration HHI <= 0.30.
+5. **DIVERGENCE:** realized-WR 30d window must not deviate >X stddev from
+   forward-projected WR (Charter drift CB, `DEFAULT_MIN_REALIZED_N`).
+6. **R:R FLOOR:** realistic R:R (post-intrabar replay) >= 1.0 for symmetric
+   strategies, >= 1.2 for asymmetric. Winsorized estimates banned.
+
+### 0.7 Superseded files (archived 2026-05-31)
+
+The following files were moved to `archive/2026-05-31_testing_protocol_dedupe/`
+in the companion archive PR. Their content was either dated, methodologically
+superseded, or contradicted the canonical synthesis above:
+
+- `reports/money_maker_ready_20260512T194402Z.md` and `_CORRIGENDUM.md`
+- `reports/money_maker_ready_20260514T001749Z.md`
+- `reports/money_maker_ready_20260514T204900Z.md`
+- `reports/money_maker_ready_20260514T231246Z.md`
+- `reports/money_maker_ready_20260515T211949Z.md`
+- `reports/money_maker_ready_20260516T000106Z.md`
+- `reports/money_maker_ready_20260516T060000Z.md`
+- `reports/money_ready_state_2026-05-12T23Z.md` (orphan "Tier 3" band)
+- `reports/money_ready_verdict_2026-05-17.md` + `.json` (SPA alpha=0.1 divergence)
+- `reports/money_ready_validation_plan_2026-05-11.md` (cited poisoned multi_asset_cot)
+- `reports/MONEY_MAKER_READYV2_ADDENDUM_TODOS_2026-05-19T0010Z.md`
+- `reports/MONEY_MAKER_READYV2_FREEBUFF_INTEGRATION_2026-05-19T0030Z.md`
+- `reports/MONEY_MAKER_READYV2_NORTH_STAR_2026-05-19T2350Z.md`
+- `reports/roadmap_no_edge_to_money_ready_2026_05_18.md` (PBO<=0.55, 11x looser)
+- `reports/equity_money_ready_path_20260517.md` (n>=50 / n>=20 floors)
+- `reports/2026-05-25_money_maker_readyv2_vs_actual.md` (screening-only floors)
+- `reports/PHENOMENAL_PERFORMANCE_METHODOLOGY.md`
+- `reports/CONFIDENCE_METHODOLOGY_2026-05-24.md` (persona n>=20 self-deprecated)
+- `reports/ai_tournament_methodology_swarm_review_20260519.md` (n=30 ranking-only)
+- `reports/CLAUDE_METHODOLOGY_PROOF_2026_05_02.md`
+- `reports/SWARM_REVISED_METHODOLOGY_2026-05-13.md` (pre-cursor-framework)
+- `docs/METHODOLOGY_FOR_EXPERTS.md` (stale Mar-24 snapshot)
+- `reports/kimi_uplift_2026_05_02/METHODOLOGY.md` (point-estimate tier table)
+- `reports/hyrotrader_methodology_enhancements_2026-05-15.md`
+- `reports/90day_pages_2026-05-15/hyrotrader_methodology_enhancements_2026-05-15.html`
+- `reports/DEEP_DIVE_MONEYREADY_2026-05-18.md`
+- `reports/HARVEST_CONSTRUCTIVE_MONEY_READY_2026-05-19.md`
+- `reports/MONEY_READY_METHODOLOGY.md` (preserved as historical bridge doc)
+- `reports/money_maker_readyv2_2026-05-17.md` (preserved as historical)
+- `reports/money_maker_ready_v2_deep_dive_2026-05-31.md` (capped-MC INVALID)
+- `updates/2026-04-23-audit-whatif-hc-scoping-methodology.md` (historical scoping)
+
+The following files remain canonical / authoritative:
+
+- `docs/PAPER_PILOT_HARNESS.md` — graduation gates (this protocol §0.1)
+- `docs/PERFORMANCE_CHARTER.md` — retrospective tier classification
+- `config/charter_floors.yaml` — machine-readable charter thresholds
+- `alpha_engine/money_ready_verdict.py` — verdict engine (n>=50 surface)
+- `tools/ci_gate_money_ready_vs_registry.py` — merge-blocking CI gate
+- `reports/money_ready_per_class_synthesis_2026-05-31.md` — latest per-class verdict
+- `reports/peer_claude-URGENT_METHODOLOGY_FLAG_MC_AUDIT_TOOL_2026-05-31.md` — capped-MC ban
+- This file (`TESTING_PROTOCOL.MD`) — single-source-of-truth synthesis
+
+### 0.8 How to use this document
+
+- If you are PROMOTING a strategy to live money: use §0.1 hard gates + §0.5
+  architectural checklist + §0.6 topic gates.
+- If you are LABELING a class on `/audit`: use §0.2 surface decoder.
+- If you are PROPOSING a new methodology doc: this file supersedes it unless the
+  new doc explicitly cites §0.x and explains a delta with justification.
+- If you find a conflict between this file and any other repo doc: this file
+  wins. Open a PR updating the conflicting doc or moving it to
+  `archive/2026-05-31_testing_protocol_dedupe/`.
+
+---
+
 
 > **⚠️ AUDIT STATUS (2026-04-04):** Infrastructure audit against 1,000 closed picks revealed
 > significant gaps between this protocol and reality. See Section 13 for data-driven calibration
