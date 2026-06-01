@@ -42,6 +42,8 @@ _DEFAULT_PORT = 3306
 _DEFAULT_STOCKS_USER = "ejaguiar1_stocks"
 _DEFAULT_STOCKS_NAME = "ejaguiar1_stocks"
 _DEFAULT_BACKTESTS_NAME = "ejaguiar1_backtests"
+_DEFAULT_BACKUPS_USER = "ejaguiar1_backups"
+_DEFAULT_BACKUPS_NAME = "ejaguiar1_backups"
 
 
 # 2026-05-25 — the canonical source of truth for DB credentials is the
@@ -176,6 +178,42 @@ def get_backtests_creds(*, raise_on_missing: bool = True) -> dict:
     }
 
 
+def get_backups_creds(*, raise_on_missing: bool = True) -> dict:
+    """Build pymysql.connect() kwargs for ejaguiar1_backups (archive DB).
+
+    Mandatory target before mutating ejaguiar1_stocks tables per project safety rule.
+    """
+    pw = _passwords_json().get("backups") or _first_set(
+        "DB_PASS_BACKUPS",
+        "DB_BACKUPS_PASSWORD",
+        "BACKUPS_DB_PASS",
+        "MYSQL_PASSWORD",
+    )
+    if not pw and raise_on_missing:
+        raise ValueError(
+            "no backups DB password found — set DB_PASSWORDS_JSON['backups'] or "
+            "DB_PASS_BACKUPS / DB_BACKUPS_PASSWORD"
+        )
+    return {
+        "host": _first_set(
+            "DB_HOST_BACKUPS", "DB_BACKUPS_HOST", "AUDIT_DB_HOST", default=_DEFAULT_HOST
+        ),
+        "user": _first_set(
+            "DB_USER_BACKUPS", "DB_BACKUPS_USER", default=_DEFAULT_BACKUPS_USER
+        ),
+        "password": pw,
+        "database": _first_set(
+            "DB_NAME_BACKUPS", "DB_BACKUPS_NAME", default=_DEFAULT_BACKUPS_NAME
+        ),
+        "port": int(
+            _first_set("DB_PORT_BACKUPS", "DB_BACKUPS_PORT", "AUDIT_DB_PORT",
+                       default=str(_DEFAULT_PORT))
+        ),
+        "connect_timeout": 30,
+        "read_timeout": 120,
+    }
+
+
 def diagnose() -> dict:
     """Diagnostic: which credential sources are set, redacted. Names+lengths only."""
     relevant = [
@@ -184,6 +222,7 @@ def diagnose() -> dict:
         # Per-DB names db_env.py uses
         "DB_PASS_STOCKS", "DB_NAME_STOCKS", "DB_USER_STOCKS", "DB_HOST_STOCKS",
         "DB_PASS_BACKTESTS", "DB_NAME_BACKTESTS",
+        "DB_PASS_BACKUPS", "DB_NAME_BACKUPS",
         "MYSQL_PASSWORD",
         "DB_STOCKS_PASSWORD", "DB_STOCKS_USER", "DB_STOCKS_HOST", "DB_STOCKS_NAME",
         "DB_BACKTESTS_PASSWORD",
@@ -218,3 +257,10 @@ if __name__ == "__main__":
               f"pass=*** (len={len(b['password'])})")
     except ValueError as e:
         print(f"# get_backtests_creds() FAILED: {e}")
+    try:
+        bk = get_backups_creds()
+        print(f"# get_backups_creds() -> resolved: host={bk['host']} "
+              f"user={bk['user']} db={bk['database']} port={bk['port']} "
+              f"pass=*** (len={len(bk['password'])})")
+    except ValueError as e:
+        print(f"# get_backups_creds() FAILED: {e}")

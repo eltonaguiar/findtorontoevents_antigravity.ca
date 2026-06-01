@@ -47,8 +47,8 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "=== Mercury 2 Scanner ==="
-          if ! ls mercury2/models/*.joblib 2>/dev/null | head -1 > /dev/null; then
-            echo "::warning::No mercury2 model .joblib files found  skipping scanner (gitignored bloat-fix v6; train via Mercury 2 Weekly Retrain workflow first)"
+          if [ ! -f mercury2/models/ensemble_conservative.joblib ]; then
+            echo "::warning::ensemble_conservative.joblib not found — skipping scanner (models committed by Mercury 2 Weekly Retrain workflow; run it first via workflow_dispatch)"
             exit 0
           fi
           if [ "$MERCURY2_FORCE_MODE" = "true" ]; then

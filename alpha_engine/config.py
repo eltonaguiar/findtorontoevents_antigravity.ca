@@ -273,6 +273,14 @@ BLACKLISTED_STRATEGIES = [
     # Re-kill trigger: WR<40% on next 30 resolved picks. Mandatory review: 2026-06-15 or n_resolved>=30 post-unkill.
     'multi_asset_scanner',       # FOREX n=11 WR 9.1%, FUTURES n=11 WR 9.1% — universal loser
     'ctar_replicator',           # FOREX n=5 WR 40% PF 0.62, COMMODITY n=2 WR 0% PF 0.0
+    # INC FOREX P0 (2026-05-31): block proven losers; only cta_cross_asset_tsmom SHORT + forex_carry probation remain
+    'forex_rsi2_mean_reversion',
+    'inverse_carry_contrarian',
+    'carry_trade_momentum',
+    'forex_carry_momentum',
+    'forex_carry_ppp',
+    'myfxbook_retail_contrarian',
+    'forex_carry_bb_hybrid',
 ]
 BLACKLISTED_EXCHANGES = ['bitget']
 
