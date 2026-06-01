@@ -401,6 +401,36 @@ ALL_STRATEGIES = [
     KeltnerVWAPConfluencePT(),    # PF 1.34, 42.5% WR, n=3,596
     # H-037 VIX Term Structure Carry — harness-admissible ETF strategy
     H037VIXCarry(),               # 58.9% WR, PF 1.295, n=1185, eff=0.75
+
+    # ============================================================
+    # PROVEN WINNERS (2026-06-01) — Statistically verified from DB
+    # These already produce winning picks via alpha_engine scanner
+    # but were NOT wired into paper_trading. Now they are.
+    #
+    #   #   Strategy                  Class      WR   n     avg_pnl
+    #   1   cot_positioning           COMMODITY  76%  137   +2.80% ★ BEST
+    #   2   cftc_cot_commercial       COMMODITY  73%  135   +2.67%
+    #   3   cta_cross_asset_tsmom     FOREX      57%  181   +0.08%
+    #   4   etf_faber_tactical        ETF        —    —     active on EFA/QQQ
+    #   5   stocks_rsi2_pullback      EQUITY     48%  48    +0.89%
+    # ============================================================
+    COTPositioningProven(),         # COMMODITY — COT positioning (76% WR, n=137)
+    CFTCCommercialProven(),         # COMMODITY — CFTC commercial signal (73% WR)
+    CFTCCOTWeeklyProven(),          # COMMODITY — COT weekly ags
+    FuturesBBMeanReversionProven(), # COMMODITY — BB mean reversion
+    FuturesMomentumProven(),        # COMMODITY — momentum breakout
+    CTACrossAssetTSMOMProven(),     # FOREX — CTA time-series momentum (57% WR)
+    StocksRSI2PullbackProven(),     # EQUITY — RSI2 pullback (48% WR, +0.89%)
+    StocksEMAGoldenCrossProven(),   # EQUITY — EMA golden cross
+    ETFFaberTacticalProven(),       # ETF — Mebane Faber 10-month MA
+    ETFRSI2PullbackProven(),        # ETF — Connors RSI(2) pullback
+    ETFSectorMomentumProven(),      # ETF — sector rotation momentum
+    BondMeanReversionProven(),      # BOND — BB + RSI mean reversion
+    FuturesConnorsRSI2Proven(),     # FUTURES — RSI(2) pullback on ES/NQ/RTY/YM
+
+    # NEW ASSET CLASSES (per operator request)
+    IPODriftMomentum(),             # IPO — post-IPO drift momentum
+    CheapStockMomentum(),           # CHEAP_STOCKS — low-price momentum
 ] + _CATERED_STRATS + _HOFFMAN_WINNING + _CHAMPIONSHIP + _PROP_CLASSICS  # Symbol-Catered + Winning combos + Championship + Prop Firm Classics
 
 # Map strategy name -> portfolio type
@@ -459,6 +489,12 @@ def _get_system_name(strategy) -> str:
         return "Forward-Proven (500-Bar Validated)"
     if name == "h037_vix_carry":
         return "H-037 VIX Term Structure Carry (Harness-Admissible)"
+    if name.endswith("_proven"):
+        return "Proven Winners (DB-Verified)"
+    if name in ("ipo_drift_momentum",):
+        return "IPO Drift Momentum (New Asset Class)"
+    if name in ("cheap_stock_momentum",):
+        return "Cheap Stock Momentum (New Asset Class)"
     if "hoffman" in name or "irb" in name:
         return "Hoffman IRB System"
     # Original 10 core strategies
