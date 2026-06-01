@@ -7,9 +7,10 @@ Wiring plan per TESTING_PROTOCOL §0.6 + Wire-Up Rule:
   promotion gate out of paper-pilot.
 
 Status (2026-06-01):
-  CRYPTO 5/5 wired  |  EQUITY 3/5 wired (2 need interface shim)
+  CRYPTO 5/5 wired  |  EQUITY 5/5 wired
   FOREX  5/5 wired  |  COMMODITY 5/5 wired
   ETF    5/5 wired  |  BOND     5/5 wired
+  MEME   1/3 wired (prototype)
 """
 from __future__ import annotations
 
@@ -260,6 +261,9 @@ def generate_academic_picks() -> list[dict[str, Any]]:
             norm["forward_validated"] = False
             norm["paper_pilot"] = True
             norm["academic_source"] = True
+            # P0 §15 dedup harmonization (TON-validated 2026-06-01): inject canonical ID at emission
+            from alpha_engine.dedup import build_canonical_outcomes_pick_id
+            norm.setdefault("id", build_canonical_outcomes_pick_id(norm))
             all_picks.append(norm)
         logger.info("%s: %d picks", strategy_name, len(raw_list))
     return all_picks

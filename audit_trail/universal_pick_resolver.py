@@ -910,9 +910,9 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
                         "resolved_at": resolved_at,
                         "resolver_version": "universal_v2",
                     }
-                    import hashlib
-                    _seed = f"{symbol}|{strategy}|{resolved_at or ''}|{asset_class}"
-                    params["pick_id"] = hashlib.md5(_seed.encode("utf-8")).hexdigest()[:36]
+                    # P0 §15 dedup harmonization (TON-validated 2026-06-01): use canonical helper
+                    from alpha_engine.dedup import build_canonical_outcomes_pick_id
+                    params["pick_id"] = build_canonical_outcomes_pick_id(pick)
                     cur.execute(UPSERT_SQL, params)
                     written += 1
                 except Exception as e:
