@@ -5845,7 +5845,7 @@ is stricter truthfulness and confluence.
 - I intentionally did **not** do another full local generator run here, because overlapping local/CI writes were the failure mode being hardened.
 
 ### LOW-SCORE TRACKER SNAPSHOT (auto-updated)
-**Last scan:** 2026-06-01 04:05:47 UTC
+**Last scan:** 2026-06-01 04:58:01 UTC
 **Low-score winners:** 8 picks with score <50 and PnL > 0
 **Total missed PnL:** +10.05%
 
