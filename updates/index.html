@@ -33,7 +33,173 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
-<div class="update-entry" style="--dot-color: #f97316;" data-tags="correction,verbatim-rt,resolver,forensic,wbkz389ek,pipeline-integrity,5-ai-peer-review,goal-1,trading,documentation" data-category="trading" data-types="documentation">
+<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
+
+<!-- Auto-generated section — do not hand-edit between START/END markers.
+     Source: ejaguiar1_stocks INCIDENT_* / ENHANCEMENT_* tables.
+     Distinct visual identity via the .incident-card / .enhancement-card classes
+     and the orange/green left border vs the default update-entry cards. -->
+<style>
+  .ie-section { margin: 28px 20px; padding: 20px 22px; background: linear-gradient(135deg, rgba(245,158,11,0.07), rgba(34,197,94,0.07)); border: 2px solid rgba(245,158,11,0.35); border-radius: 12px; max-width: 820px; margin-left: auto; margin-right: auto; }
+  .ie-section > h2 { margin: 0 0 6px; font-size: 19px; color: #f59e0b; }
+  .ie-section > .intro { color: #cbd5e1; font-size: 13px; margin: 0 0 14px; line-height: 1.55; }
+  .ie-section > .intro a { color: #93c5fd; text-decoration: underline; font-weight: 600; }
+  .ie-explainer { background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.2); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; font-size: 12.5px; color: #cbd5e1; line-height: 1.55; }
+  .ie-explainer strong { color: #fbbf24; }
+  .ie-explainer code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #fcd34d; }
+  table.ie-class-summary { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0 16px; }
+  table.ie-class-summary th { background: rgba(0,0,0,0.25); padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; border-bottom: 1px solid rgba(148,163,184,0.2); }
+  table.ie-class-summary td { padding: 7px 8px; border-bottom: 1px solid rgba(148,163,184,0.08); color: #cbd5e1; vertical-align: top; }
+  table.ie-class-summary tr:hover td { background: rgba(96,165,250,0.05); }
+  table.ie-class-summary .cls { font-weight: 700; color: #93c5fd; }
+  table.ie-class-summary .p0 { color: #ef4444; font-weight: 700; }
+  table.ie-class-summary .top-issue { color: #f8fafc; font-size: 11.5px; }
+  .incident-card { background: rgba(239,68,68,0.06); border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
+  .incident-card.sev-P1 { border-left-color: #f59e0b; background: rgba(245,158,11,0.05); }
+  .enhancement-card { background: rgba(34,197,94,0.06); border-left: 4px solid #22c55e; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
+  .ie-card-meta { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+  .ie-card a { color: #93c5fd; text-decoration: none; font-weight: 600; }
+  .ie-card a:hover { text-decoration: underline; color: #60a5fa; }
+  .ie-class { display: inline-block; background: rgba(96,165,250,0.18); color: #93c5fd; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-right: 5px; }
+  .ie-section h3 { font-size: 14px; margin: 16px 0 6px; }
+</style>
+<div class="ie-section">
+  <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
+  <p class="intro"><strong>Refreshed:</strong> 2026-05-31 20:45 EDT · <strong>5 open incidents</strong> (2 P0 · 3 P1) · <strong>80 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+
+  <div class="ie-explainer">
+    <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
+    <strong>Where the data lives:</strong> 18 MySQL tables — <code>INCIDENT_&lt;CLASS&gt;</code> + <code>ENHANCEMENT_&lt;CLASS&gt;</code> for STOCKS / ETFS / CRYPTO / FOREX / COMMODITIES / BONDS / FUTURES / PENNY + <code>OVERALL</code> for cross-cutting issues — exported to <a href="/audit/data/incidents_enhancements_feed.json">JSON</a> and rendered to the dashboard at <a href="/audit/incidents.html">/audit/incidents.html</a> (full filterable view).
+    <strong>How it updates:</strong> peer-AI audits (Claude / Ring / Qwen / Kilo / Grok / opencode) seed new findings via <code>tools/audit_pick_funnel/cli_track.py</code>; the renderer runs nightly via <code>incidents-enhancements-nightly.yml</code> and FTP-pushes <code>incidents.html</code> + this <code>updates/index.html</code> block.
+    <strong>How to read severity:</strong> <span style="color:#ef4444">P0</span> = blocks the page from being trustable (data corruption, broken gate, false claim); <span style="color:#f59e0b">P1</span> = misleading or stale but page still works; P2/P3 = cleanup. Enhancement impact: HIGH = expected to materially lift WR/PF or close a known data gap.
+  </div>
+
+  <h3 style="color:#93c5fd">Per-asset-class summary</h3>
+  <table class="ie-class-summary">
+    <thead><tr><th>Class</th><th>Open #</th><th>P0</th><th>Top issue</th><th>Enh #</th><th>Top enhancement</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="cls">OVERALL</td>
+        <td>1</td>
+        <td class="p0">—</td>
+        <td class="top-issue">CI Tests: 17 pytest failures on main (m096, m098, quality_gates, pr10_ab, outcome_resolver…</td>
+        <td>53</td>
+        <td class="top-issue">Update &#39;forward validator frozen 270h&#39; incident title/description to accurate ro…</td>
+      </tr>
+      <tr>
+        <td class="cls">STOCKS</td>
+        <td>1</td>
+        <td class="p0">1</td>
+        <td class="top-issue">EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3…</td>
+        <td>3</td>
+        <td class="top-issue">Wire existing VIX&lt;22 regime gate (feat/equity-vix-regime-gate-sidecar-2026-05-13…</td>
+      </tr>
+      <tr>
+        <td class="cls">ETFS</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>4</td>
+        <td class="top-issue">ETF cross-sectional momentum is closest to first Tier-2 class — accumulate live …</td>
+      </tr>
+      <tr>
+        <td class="cls">CRYPTO</td>
+        <td>2</td>
+        <td class="p0">—</td>
+        <td class="top-issue">meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_b…</td>
+        <td>6</td>
+        <td class="top-issue">Enable BTC UTC-hour death-zone filter (M-001 / QW-3) in score_booster.py - rejec…</td>
+      </tr>
+      <tr>
+        <td class="cls">FOREX</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>2</td>
+        <td class="top-issue">FOREX carry-factor scaffold (G10 long high-yield / short low-yield) as rescue le…</td>
+      </tr>
+      <tr>
+        <td class="cls">COMMODITIES</td>
+        <td>1</td>
+        <td class="p0">1</td>
+        <td class="top-issue">Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534</td>
+        <td>3</td>
+        <td class="top-issue">Recompute class health from deduped independent COT cycles only</td>
+      </tr>
+      <tr>
+        <td class="cls">BONDS</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>6</td>
+        <td class="top-issue">Wire bond_scanner.py (yield_momentum, duration_rotation, mean_reversion) + promo…</td>
+      </tr>
+      <tr>
+        <td class="cls">FUTURES</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>2</td>
+        <td class="top-issue">Replace empty FUTURES tile with unified futures taxonomy</td>
+      </tr>
+      <tr>
+        <td class="cls">PENNY</td>
+        <td>0</td>
+        <td class="p0">—</td>
+        <td class="top-issue">—</td>
+        <td>1</td>
+        <td class="top-issue">Implement float-squeeze detector from skyrocket_detector framework</td>
+      </tr>
+    </tbody>
+  </table>
+
+<h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">Stocks</span> <strong>EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3)</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes, alpha_engine/equity strategies</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">COMMODITIES</span> <strong>Class-level COMMODITY 11.9% WR / PF 0.29 / Sharpe -0.534</strong>
+    <div class="ie-card-meta">P0 · IN_PROGRESS · component: <code>alpha_engine commodity strategies (post cot_positioning block)</code> · reporter: qwen-code+freebuff · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P1">
+    <span class="ie-class">OVERALL</span> <strong>CI Tests: 17 pytest failures on main (m096, m098, quality_gates, pr10_ab, outcome_resolver)</strong>
+    <div class="ie-card-meta">P1 · OPEN · component: <code>alpha_engine/tests/, audit_trail/quality_gates.py</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P1">
+    <span class="ie-class">CRYPTO</span> <strong>meta_strategy template explosion — 1.6M template rows across ~140 symbol/dir pairs in bt_backtest_trades</strong>
+    <div class="ie-card-meta">P1 · TRIAGED · component: <code>meta_strategy emitter / bt_backtest_trades writer</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P1">
+    <span class="ie-class">CRYPTO</span> <strong>ML &#39;edges&#39; with PF 99-1094 are likely look-ahead leakage</strong>
+    <div class="ie-card-meta">P1 · TRIAGED · component: <code>alpha_engine ml_enhanced_* family / copy_trader_intel feature pipeline</code> · reporter: claude-opus-4-7+deepseek+cerebras · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+<h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Update &#39;forward validator frozen 270h&#39; incident title/description to accurate root cause (outcome resolver git add pathspec, not forward_validator)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-01 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Fix outcome-resolver.yml git add step (pathspec closed_picks.json error blocking signal_outcomes)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-02 17:00 EST · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>MySQL sync workflow silent-fail removal + explicit failure + alert (remove || echo non-fatal swallow)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-08 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + automated diff vs version-controlled baseline)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + diff vs baseline in schemas/)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
+<p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
+</div>
+<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
+
+  <div class="update-entry" style="--dot-color: #f97316;" data-tags="correction,verbatim-rt,resolver,forensic,wbkz389ek,pipeline-integrity,5-ai-peer-review,goal-1,trading,documentation" data-category="trading" data-types="documentation">
   <div class="update-date">2026-06-01 EST — <strong style="color:#f97316;">CORRECTION to earlier ELI5 — actual forensic on disk + DB differs from kilo's peer-reported numbers</strong></div>
   <p><strong>2026-06-01 EST (verbatim+RT applied to my own output):</strong> Workflow <code>wbkz389ek</code> (5-AI peer-reviewed pipeline-resolution plan) just landed. Its independent forensic agent ran <em>actual</em> grep on the resolver code + live SQL on <code>trading_picks</code> / <code>signal_outcomes</code> and the numbers diverge significantly from what I posted in the earlier ELI5 entry below (which repeated peer-reported figures from kilo's session). Per the canonical anti-fabrication discipline, I am correcting on the record before the operator acts on bad numbers.</p>
   <table style="border-collapse:collapse;font-size:0.92em;margin:8px 0;">
@@ -216,193 +382,7 @@
 <p><strong>2026-06-01 EST (6-topic deep-dive synthesis - methodology completed)</strong>: Per-topic AI consults (deepseek/grok/qwen-pro/mimo/gemini/kimi) on the 6 missing pieces of methodology: execution costs, regime detection, capacity+Kelly, cross-strategy correlation, live-vs-paper divergence, R:R+tail gates. All 6 deep-dives produce concrete production-ready specs wired into <code>docs/PAPER_PILOT_HARNESS.md</code> before tomorrow 13:30 UTC harness emission. Methodology is now end-to-end: cursor framework (n>=500/Wilson/Bootstrap/Bonferroni) + 6 new topic gates + 6 architectural bug fixes from PR #364 P0 list. Strategy build can now proceed honestly across 24-strategy pool + 6 surfaced T2 winners.</p>
 </div>
 <!-- DOC_SUMMARY_ENTRY:START -->
-<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
-
-<!-- Auto-generated section — do not hand-edit between START/END markers.
-     Source: ejaguiar1_stocks INCIDENT_* / ENHANCEMENT_* tables.
-     Distinct visual identity via the .incident-card / .enhancement-card classes
-     and the orange/green left border vs the default update-entry cards. -->
-<style>
-  .ie-section { margin: 28px 20px; padding: 20px 22px; background: linear-gradient(135deg, rgba(245,158,11,0.07), rgba(34,197,94,0.07)); border: 2px solid rgba(245,158,11,0.35); border-radius: 12px; max-width: 820px; margin-left: auto; margin-right: auto; }
-  .ie-section > h2 { margin: 0 0 6px; font-size: 19px; color: #f59e0b; }
-  .ie-section > .intro { color: #cbd5e1; font-size: 13px; margin: 0 0 14px; line-height: 1.55; }
-  .ie-section > .intro a { color: #93c5fd; text-decoration: underline; font-weight: 600; }
-  .ie-explainer { background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.2); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; font-size: 12.5px; color: #cbd5e1; line-height: 1.55; }
-  .ie-explainer strong { color: #fbbf24; }
-  .ie-explainer code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #fcd34d; }
-  table.ie-class-summary { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0 16px; }
-  table.ie-class-summary th { background: rgba(0,0,0,0.25); padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; border-bottom: 1px solid rgba(148,163,184,0.2); }
-  table.ie-class-summary td { padding: 7px 8px; border-bottom: 1px solid rgba(148,163,184,0.08); color: #cbd5e1; vertical-align: top; }
-  table.ie-class-summary tr:hover td { background: rgba(96,165,250,0.05); }
-  table.ie-class-summary .cls { font-weight: 700; color: #93c5fd; }
-  table.ie-class-summary .p0 { color: #ef4444; font-weight: 700; }
-  table.ie-class-summary .top-issue { color: #f8fafc; font-size: 11.5px; }
-  .incident-card { background: rgba(239,68,68,0.06); border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
-  .incident-card.sev-P1 { border-left-color: #f59e0b; background: rgba(245,158,11,0.05); }
-  .enhancement-card { background: rgba(34,197,94,0.06); border-left: 4px solid #22c55e; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 13px; }
-  .ie-card-meta { font-size: 11px; color: #9ca3af; margin-top: 3px; }
-  .ie-card a { color: #93c5fd; text-decoration: none; font-weight: 600; }
-  .ie-card a:hover { text-decoration: underline; color: #60a5fa; }
-  .ie-class { display: inline-block; background: rgba(96,165,250,0.18); color: #93c5fd; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-right: 5px; }
-  .ie-section h3 { font-size: 14px; margin: 16px 0 6px; }
-</style>
-<div class="ie-section">
-  <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-05-30 01:47 EDT · <strong>47 open incidents</strong> (20 P0 · 19 P1) · <strong>75 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
-
-  <div class="ie-explainer">
-    <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
-    <strong>Where the data lives:</strong> 18 MySQL tables — <code>INCIDENT_&lt;CLASS&gt;</code> + <code>ENHANCEMENT_&lt;CLASS&gt;</code> for STOCKS / ETFS / CRYPTO / FOREX / COMMODITIES / BONDS / FUTURES / PENNY + <code>OVERALL</code> for cross-cutting issues — exported to <a href="/audit/data/incidents_enhancements_feed.json">JSON</a> and rendered to the dashboard at <a href="/audit/incidents.html">/audit/incidents.html</a> (full filterable view).
-    <strong>How it updates:</strong> peer-AI audits (Claude / Ring / Qwen / Kilo / Grok / opencode) seed new findings via <code>tools/audit_pick_funnel/cli_track.py</code>; the renderer runs nightly via <code>incidents-enhancements-nightly.yml</code> and FTP-pushes <code>incidents.html</code> + this <code>updates/index.html</code> block.
-    <strong>How to read severity:</strong> <span style="color:#ef4444">P0</span> = blocks the page from being trustable (data corruption, broken gate, false claim); <span style="color:#f59e0b">P1</span> = misleading or stale but page still works; P2/P3 = cleanup. Enhancement impact: HIGH = expected to materially lift WR/PF or close a known data gap.
-  </div>
-
-  <h3 style="color:#93c5fd">Per-asset-class summary</h3>
-  <table class="ie-class-summary">
-    <thead><tr><th>Class</th><th>Open #</th><th>P0</th><th>Top issue</th><th>Enh #</th><th>Top enhancement</th></tr></thead>
-    <tbody>
-      <tr>
-        <td class="cls">OVERALL</td>
-        <td>24</td>
-        <td class="p0">14</td>
-        <td class="top-issue">HC JS/Python parity drift can change eligibility by surface</td>
-        <td>52</td>
-        <td class="top-issue">Update &#39;forward validator frozen 270h&#39; incident title/description to accurate ro…</td>
-      </tr>
-      <tr>
-        <td class="cls">STOCKS</td>
-        <td>4</td>
-        <td class="p0">1</td>
-        <td class="top-issue">PEAD equity strategy stuck in shadow mode</td>
-        <td>3</td>
-        <td class="top-issue">Wire existing VIX&lt;22 regime gate (feat/equity-vix-regime-gate-sidecar-2026-05-13…</td>
-      </tr>
-      <tr>
-        <td class="cls">ETFS</td>
-        <td>1</td>
-        <td class="p0">—</td>
-        <td class="top-issue">All 5 ETF strategies on probation with ZERO verified forward trades</td>
-        <td>3</td>
-        <td class="top-issue">Make VIX-gated sector rotation the primary ETF sleeve</td>
-      </tr>
-      <tr>
-        <td class="cls">CRYPTO</td>
-        <td>4</td>
-        <td class="p0">—</td>
-        <td class="top-issue">CRYPTO ML strategies DSR&gt;=0.9995 on n=25-34 displayed without &#39;insufficient n&#39; badge</td>
-        <td>3</td>
-        <td class="top-issue">Enable BTC UTC-hour death-zone filter (M-001 / QW-3) in score_booster.py - rejec…</td>
-      </tr>
-      <tr>
-        <td class="cls">FOREX</td>
-        <td>4</td>
-        <td class="p0">1</td>
-        <td class="top-issue">All FOREX strategies losers except cta_cross_asset_tsmom SHORT (93% USDJPY concentration)</td>
-        <td>2</td>
-        <td class="top-issue">FOREX carry-factor scaffold (G10 long high-yield / short low-yield) as rescue le…</td>
-      </tr>
-      <tr>
-        <td class="cls">COMMODITIES</td>
-        <td>4</td>
-        <td class="p0">3</td>
-        <td class="top-issue">COMMODITY headline PF/WR still contaminated by pre-clean COT aggregation</td>
-        <td>3</td>
-        <td class="top-issue">Recompute class health from deduped independent COT cycles only</td>
-      </tr>
-      <tr>
-        <td class="cls">BONDS</td>
-        <td>2</td>
-        <td class="p0">1</td>
-        <td class="top-issue">Antigravity_bond: 0% WR on n=9 — kill emission</td>
-        <td>6</td>
-        <td class="top-issue">Wire bond_scanner.py (yield_momentum, duration_rotation, mean_reversion) + promo…</td>
-      </tr>
-      <tr>
-        <td class="cls">FUTURES</td>
-        <td>2</td>
-        <td class="p0">—</td>
-        <td class="top-issue">FUTURES is a zombie tile with real futures hidden under COMMODITY</td>
-        <td>2</td>
-        <td class="top-issue">Replace empty FUTURES tile with unified futures taxonomy</td>
-      </tr>
-      <tr>
-        <td class="cls">PENNY</td>
-        <td>2</td>
-        <td class="p0">—</td>
-        <td class="top-issue">skyrocket_detector NOT wired to production</td>
-        <td>1</td>
-        <td class="top-issue">Implement float-squeeze detector from skyrocket_detector framework</td>
-      </tr>
-    </tbody>
-  </table>
-
-<h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>HC JS/Python parity drift can change eligibility by surface</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>Profitable-but-filtered picks are not surfaced anywhere</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/quality_gates.py + dashboard_generator.py audit surfaces</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>Cherry-picked SUPREME EDGE stats (82% WR / PF 13+) surfaced without &#39;post-hoc segment search&#39; caveat</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/template.html SUPREME EDGE block</code> · reporter: opencode/ring-2.6-1t + 3-engine swarm · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>smart_picks_engine weights confidence-derived elite/quality at 35% — structurally inverts the ranker</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/smart_picks_engine.py</code> · reporter: opencode/ring-2.6-1t + 3-engine swarm · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>sync_active_mysql_picks_to_json upstream writer missing — root cause of 0.09% raw-pick outcome coverage</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/active_picks_sync.py (proposed) + forward_validator.validate_picks()</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>PnL integrity mismatch on 38.97% of sampled closed picks</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct integrity</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>WON status rows show avg pnl_pct = -41.1%</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.status=&#39;WON&#39; rows</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>56,559 ghost rows in trading_picks (top cohort: 20,474 identical MATICUSDT entries)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks ghost-row write path</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>5 FOREX rows have pnl_pct &lt; -100% (one at -106,700%)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.pnl_pct (FOREX category)</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>signal_outcomes table 82 days stale</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes / outcome resolver pipeline</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-<h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Update &#39;forward validator frozen 270h&#39; incident title/description to accurate root cause (outcome resolver git add pathspec, not forward_validator)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-01 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Fix outcome-resolver.yml git add step (pathspec closed_picks.json error blocking signal_outcomes)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-02 17:00 EST · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>MySQL sync workflow silent-fail removal + explicit failure + alert (remove || echo non-fatal swallow)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-08 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + automated diff vs version-controlled baseline)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Schema drift watchdog nightly workflow (information_schema snapshot + diff vs baseline in schemas/)</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · target: 2026-06-10 · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
-<p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
-</div>
-<!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
-
-  <div class="update-entry" style="--dot-color: #60a5fa;" data-tags="multi-agent,session,documentation,audit,ci" data-category="meta" data-types="documentation">
+<div class="update-entry" style="--dot-color: #60a5fa;" data-tags="multi-agent,session,documentation,audit,ci" data-category="meta" data-types="documentation">
   <h3>2026-05-29 13:37 UTC — Multi-Agent Session Documentation Round (2026-05-29)</h3>
   <p>8 session-summary document(s) from the parallel agent fleet — Claude (4), Freebuff, Grok, Kilo Code, Qwen — consolidated into one page. Covers AI-tournament data-quality fixes, the GitHub Actions fleet-health remediation (Node 24 bump, masking linter, guardian masked-failure detection, job-health self-commit-loop fix), CI test repair, multi-PR swarm review, and incident/enhancement documentation.</p>
   <ul>
