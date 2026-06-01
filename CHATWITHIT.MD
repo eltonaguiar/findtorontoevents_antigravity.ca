@@ -5843,3 +5843,29 @@ is stricter truthfulness and confluence.
 - Cross-asset score floors are already present on `main` in `audit_trail/quality_gates.py`:
   - `CRYPTO=70`, `EQUITY=50`, `FOREX=75`, `COMMODITY=30`, `BOND=40`, `ETF=40`, `FUTURES=60`
 - I intentionally did **not** do another full local generator run here, because overlapping local/CI writes were the failure mode being hardened.
+
+### LOW-SCORE TRACKER SNAPSHOT (auto-updated)
+**Last scan:** 2026-06-01 04:58:01 UTC
+**Low-score winners:** 8 picks with score <50 and PnL > 0
+**Total missed PnL:** +10.05%
+
+| Strategy Family | Winners | Total PnL% | Avg Score | Recommended Boost |
+|-----------------|---------|------------|-----------|-------------------|
+| kimi_riseoftheclaw | 3 | +7.0% | 31 | +23 |
+| luxalgo | 2 | +2.6% | 0 | - |
+| super_signals | 2 | +0.3% | 18 | - |
+| alpha_engine | 1 | +0.2% | 24 | - |
+
+**Top 10 hidden winners:**
+
+| Symbol | PnL% | Score | Family |
+|--------|-------|-------|--------|
+| MSTR | +4.06% | 30 | kimi_riseoftheclaw |
+| XLK | +1.94% | 46 | kimi_riseoftheclaw |
+| SOLUSDT | +1.88% | 0 | luxalgo |
+| VTI | +0.96% | 18 | kimi_riseoftheclaw |
+| AVAXUSDT | +0.72% | 0 | luxalgo |
+| QQQ | +0.25% | 13 | super_signals |
+| AAPL | +0.21% | 24 | alpha_engine |
+| TLT | +0.03% | 23 | super_signals |
+

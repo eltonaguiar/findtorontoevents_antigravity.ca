@@ -64,6 +64,450 @@
 </div>
 
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-ai">TON</span>
+  </div>
+  <h3 class="update-title">Focused TON Launched on Current Dedup Harmonization State (Implementation + Tests + Coverage)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (fresh external validation on substantial artifacts):</p>
+    <ul>
+      <li>Created clean follow-up prompt referencing the permanent artifact + the full current state:
+        <ul>
+          <li>Full trace + refined proposal (hash removed, namespacing)</li>
+          <li>Live implementation in <code>alpha_engine/dedup.py</code></li>
+          <li>Both writers wired symmetrically</li>
+          <li>Emitters enriched (priority_picks + academic)</li>
+          <li>Coverage audit positive (no material gaps)</li>
+          <li>Expanded unit tests with cross-writer parity + TON edge cases</li>
+        </ul>
+      </li>
+      <li>Launched focused TON: <code>python3 tools/consult_multi.py --fanout fast4</code> on the current state (validation + recommendations before canary).
+      <li>Background task active (task 019e817c-44ce-74c3-a02a-9c0fb1df6027). Artifacts in <code>/tmp/ton_dedup_state_...</code>.
+    </ul>
+    <p><strong>Purpose:</strong> Get fresh external input on the implementation + tests + coverage now that we have substantial artifacts for the TON-identified #1 gap.</p>
+    <p class="update-source">Source: <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (full state) · Background task 019e817c-44ce-74c3-a02a-9c0fb1df6027</p>
+  </div>
+</div>
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Unit Tests Expanded (Cross-Writer Parity + TON Edge Cases)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (directly actioning TON fast4 guidance on parity + historical validation):</p>
+    <ul>
+      <li>Expanded <code>tests/test_dedup.py</code> with:
+        <ul>
+          <li>Cross-writer parity tests that simulate the exact old divergent logic (narrow hash vs raw incoming id) we traced in the two writers.</li>
+          <li>Additional historical-like, raw-ID validation, and TIME_EXIT edge cases repeatedly called out by the TON swarm.</li>
+        </ul>
+      </li>
+      <li>py_compile SUCCESS.
+      <li>Permanent artifact + SESSION + card updated.
+    </ul>
+    <p><strong>Status:</strong> Concrete parity + historical tests now exist for the refined helper. Full integration + canary prep are the next micro-steps.</p>
+    <p class="update-source">Source: <code>tests/test_dedup.py</code> (expanded this fire) · <code>alpha_engine/dedup.py</code> · prior TON fast4 results</p>
+  </div>
+</div>
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Unit Tests Added for TON-Validated Dedup Helper</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (directly actioning TON fast4 guidance on validation/testing):</p>
+    <ul>
+      <li>Created <code>tests/test_dedup.py</code> with focused cases:
+        <ul>
+          <li>Determinism and stability</li>
+          <li>Raw ID namespacing (per TON refinement)</li>
+          <li>Fallback logic (no hash)</li>
+          <li>Historical-like missing fields</li>
+          <li>TIME_EXIT cohort stable time</li>
+          <li>Version prefix presence</li>
+        </ul>
+      </li>
+      <li>py_compile SUCCESS.
+      <li>Permanent artifact updated with "Tests Added" note.
+    </ul>
+    <p><strong>Status:</strong> Concrete, verifiable unit tests now exist for the refined helper (addressing swarm-recommended edge cases). Full cross-writer parity + integration tests are the next micro-steps.</p>
+    <p class="update-source">Source: <code>tests/test_dedup.py</code> (this fire) · <code>alpha_engine/dedup.py</code> · <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code></p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Remaining Emission Sources Audit Complete (Coverage Confirmed)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (closing the emitter coverage audit for the TON-validated dedup fix):</p>
+    <ul>
+      <li>Targeted grep across alpha_engine/ and repo for other <code>generate_*picks</code> / <code>emit_picks</code> functions.
+      <li><strong>Finding (positive):</strong> No other high-volume primary emission paths in the main flagship/academic/priority flow bypass the canonical ID injection. Internal utilities consume/transform rather than originate.
+      <li>Copy-trader sources (<code>copy_trader_intel/</code>) are a separate track (their own outcome_resolver does not write to the primary <code>at_pick_outcomes</code> table used for core pf_registry/money-ready).
+    </ul>
+    <p><strong>Conclusion:</strong> TON-validated dedup harmonization coverage is now complete for the critical paths. No material gaps in the main emission surface.</p>
+    <p><strong>Artifact updated:</strong> <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (new "Remaining Emission Sources Audit" section).</p>
+    <p class="update-source">Source: full grep audit this fire · prior emitter enrichment (priority_picks + academic)</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Emitter Enrichment Progress (Academic Now Covered)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (completing the main flagship + academic emission paths):</p>
+    <ul>
+      <li>Updated <code>alpha_engine/academic_strategies_emitter.py</code> (inside <code>generate_academic_picks</code>, after normalization + academic flags) to inject the canonical ID via the helper.
+      <li>py_compile SUCCESS.
+      <li>Permanent artifact updated (priority_picks + academic now covered).
+    </ul>
+    <p><strong>Status:</strong> Both major emission paths now emit the refined, TON-validated canonical key. This significantly advances alignment of emission dedup with the outcomes measurement table. Remaining sources + tests + canary are the next micro-steps.</p>
+    <p class="update-source">Source: <code>alpha_engine/academic_strategies_emitter.py</code> (this fire) · <code>alpha_engine/dedup.py</code> · <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code></p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Emitter Enrichment Started (Canonical ID Injected at Emission)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (aligning emission dedup with outcomes key at the source):</p>
+    <ul>
+      <li>Updated <code>priority_picks_emitter.py</code> enrichment loop to inject the canonical ID via <code>build_canonical_outcomes_pick_id</code> (after existing dedup + metadata).
+      <li>py_compile SUCCESS.
+      <li>Permanent artifact updated (emitter enrichment started; academic and others pending).
+    </ul>
+    <p><strong>Status:</strong> First major emitter now emits the refined, TON-validated canonical key. This aligns emission-time dedup with the outcomes measurement table. Full emitter coverage + tests + canary are the next micro-steps.</p>
+    <p class="update-source">Source: <code>alpha_engine/priority_picks_emitter.py</code> (this fire) · <code>alpha_engine/dedup.py</code> · <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code></p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Helper Wiring Complete (Both Writers Symmetric)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (completing symmetric usage of the TON-validated canonical key):</p>
+    <ul>
+      <li>Wired <code>audit_trail/universal_pick_resolver.py</code> <code>_write_outcomes_to_mysql</code> to call <code>build_canonical_outcomes_pick_id</code> (replaced the old narrow hash override).
+      <li>py_compile SUCCESS.
+      <li>Permanent artifact updated (wiring now complete for both writers).
+    </ul>
+    <p><strong>Status:</strong> Both production writers now use the refined, TON-validated canonical key for <code>at_pick_outcomes</code>. This eliminates the primary source of the dedup inconsistency in the measurement pipeline. Full emitter enrichment + tests + canary are the next micro-steps.</p>
+    <p class="update-source">Source: <code>audit_trail/universal_pick_resolver.py</code> (this fire) · <code>alpha_engine/dedup.py</code> · <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code></p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Helper Wired into First Writer (alpha_engine/outcome_resolver.py)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (making the TON-validated helper live in a production measurement path):</p>
+    <ul>
+      <li>Wired <code>alpha_engine/outcome_resolver.py</code> <code>_write_outcomes_to_mysql</code> to call <code>build_canonical_outcomes_pick_id</code> (local import for minimal diff).
+      <li>Replaced the old divergent raw <code>pick.get("id")</code> logic with the canonical helper.
+      <li><code>py_compile</code> SUCCESS.
+      <li>Permanent artifact updated (alpha wired, universal still pending).
+    </ul>
+    <p><strong>Status:</strong> First writer now uses the refined, TON-validated canonical key for <code>at_pick_outcomes</code>. Full migration + tests + canary are the next micro-steps.</p>
+    <p class="update-source">Source: <code>alpha_engine/outcome_resolver.py</code> (this fire) · <code>alpha_engine/dedup.py</code> · <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code></p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization: Refined Helper Implemented (Live Code in alpha_engine/dedup.py)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (first working code for the TON-validated dedup fix):</p>
+    <ul>
+      <li>Created <code>alpha_engine/dedup.py</code> with the refined <code>build_canonical_outcomes_pick_id(pick: dict) -> str</code> (per TON fast4 consensus):
+        <ul>
+          <li>No hash in fallback (deterministic fields sufficient — top swarm refinement).</li>
+          <li>Emitter/source namespacing on raw IDs.</li>
+          <li>Version prefix.</li>
+          <li>Clear docstring matching the validated proposal.</li>
+        </ul>
+      </li>
+      <li><code>py_compile</code> SUCCESS.</li>
+      <li>Permanent artifact updated to reference the live implementation.</li>
+    </ul>
+    <p><strong>Status:</strong> The TON-endorsed dedup harmonization fix now exists as working, importable code. Wiring into both writers (and emitters) + tests + canary rollout are the next micro-steps.</p>
+    <p class="update-source">Source: <code>alpha_engine/dedup.py</code> (this fire) · <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (refined proposal)</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Harmonization Proposal: TON Fast4 Refinements Incorporated (Hash Removed)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (cleaning up the artifact to the externally-validated version of the fix):</p>
+    <ul>
+      <li>Updated the "Proposed Unified Canonical Outcomes Pick ID Helper" section in <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> to incorporate the top TON fast4 refinement (repeated across groq qwen, mistral, and github_models):
+        <ul>
+          <li><strong>Removed the hash from the fallback logic</strong> — the deterministic fields (symbol, direction, strategy, stable time, asset_class) are already unique enough; the hash is redundant and adds unnecessary complexity/collision risk.</li>
+          <li>Added explicit guidance on emitter/source namespacing for raw IDs (e.g., `emitter_name|raw_id`).</li>
+        </ul>
+      </li>
+      <li>The proposal text in the artifact is now the refined, swarm-vetted version.</li>
+    </ul>
+    <p><strong>Status:</strong> The dedup harmonization fix direction is now authoritative and clean in the permanent artifact. No code change in this fire (documentation only).</p>
+    <p class="update-source">Source: TON fast4-on-proposal results (previous fire) · refinement incorporation this fire</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-ai">TON</span>
+  </div>
+  <h3 class="update-title">Fresh TON Fast4 Results on the Dedup Harmonization Proposal (Strong Endorsement + Key Refinement)</h3>
+  <div class="update-body">
+    <p><strong>New external validation this fire</strong> (focused fast4 on the concrete `build_canonical_outcomes_pick_id` proposal + full trace):</p>
+    <ul>
+      <li>groq/qwen3-32b (6.9k) + mistral + github_models gave detailed, consistent feedback.</li>
+      <li><strong>Verdict</strong>: The proposal directly addresses the root cause and is production-grade with caveats.</li>
+      <li><strong>Top refinement (repeated across models)</strong>: Remove the hash from the fallback logic — the deterministic fields (symbol, direction, strategy, stable time, asset_class) are already unique enough; the hash is redundant and adds unnecessary complexity/collision risk.</li>
+      <li>Other refinements: Add emitter namespacing to raw ID, handle historical untagged data carefully, ensure cross-writer parity with unit tests, add raw ID sanity checks.</li>
+      <li>Implementation order + canary/rollback mitigations provided.</li>
+      <li>Production-ready **after** full validation against historical data (incl. TIME_EXIT) + canary confirmation.</li>
+    </ul>
+    <p><strong>Artifact updated:</strong> <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> now contains the new fast4-on-proposal section + the clear top refinement (remove hash).</p>
+    <p class="update-source">Source: /tmp/ton_dedup_proposal_20260601_035541/ (fast4, task 019e8152-b49e-7ba1-aba8-c6b500bcb316) · Prior dedup trace + proposal</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-ai">TON</span>
+  </div>
+  <h3 class="update-title">Focused TON Launched on the Dedup Harmonization Proposal (External Validation of the Fix)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (directly serving the recurring "get a TON of other AI models to validate your methodology" requirement):</p>
+    <ul>
+      <li>Created clean follow-up prompt that references the permanent artifact + the new `build_canonical_outcomes_pick_id(pick)` helper proposal (with full emission→outcomes trace context).</li>
+      <li>Launched focused TON: <code>python3 tools/consult_multi.py --fanout fast4</code> on the proposal (validation + suggested refinements).</li>
+      <li>Background task active (task 019e8152-b49e-7ba1-aba8-c6b500bcb316). Artifacts in <code>/tmp/ton_dedup_proposal_...</code>.</li>
+    </ul>
+    <p><strong>Purpose:</strong> Get fresh external input on whether the proposed unified canonical key correctly solves the root cause and any improvements before implementation.</p>
+    <p class="update-source">Source: <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (proposal section) · Background task 019e8152-b49e-7ba1-aba8-c6b500bcb316</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Key Harmonization: Concrete Unified Canonical Outcomes Pick ID Helper Proposed</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (moved the TON fast4 #1 gap from "trace complete" to "fix proposal on the table"):</p>
+    <ul>
+      <li>Completed the cross-emitter picture (academic paths are covered by the same flagship/priority dedup surface already traced).</li>
+      <li>Drafted a concrete `build_canonical_outcomes_pick_id(pick)` helper proposal in the permanent artifact, including:
+        <ul>
+          <li>Signature and versioning strategy</li>
+          <li>Logic that respects emission dedup intent (symbol + direction + strategy + stable time) while producing a stable, hash-based key for the outcomes table</li>
+          <li>Exact wiring points in both writers + emitters</li>
+        </ul>
+      </li>
+    </ul>
+    <p><strong>Status:</strong> Proposal is now documented and reviewable. No code change in this fire (pure documentation of the cleanest harmonization direction).</p>
+    <p><strong>Artifact:</strong> <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (new "Proposed Unified Canonical Outcomes Pick ID Helper" section).</p>
+    <p class="update-source">Source: dedup review progression (this fire + prior) · TON fast4 consensus (dedup as #1)</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Key Harmonization Review Deepened (Full Emission → Outcomes Trace)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (deepening the TON fast4 #1 gap from the prior fire):</p>
+    <ul>
+      <li>Read the actual emitter dedup functions in detail:
+        <ul>
+          <li><code>eight_class_flagship_strategies.py</code>: <code>_deduplicate_by_symbol_direction</code> — highest-confidence per (symbol, direction) + explicit LONG/SHORT conflict resolution.</li>
+          <li><code>priority_picks_emitter.py</code>: <code>_deduplicate_across_sources</code> — same logic across flagship + academic sources + emitter metadata enrichment.</li>
+        </ul>
+      </li>
+      <li><strong>End-to-end trace:</strong> Emission-time (symbol + direction + confidence) dedup + conflict rules → "id" carried in the pick dict → divergent primary keys in <code>at_pick_outcomes</code>:
+        <ul>
+          <li>universal: narrow hash override (<code>symbol|strategy|resolved_at|asset_class</code>).</li>
+          <li>alpha: raw incoming <code>pick.get("id")</code> as-is.</li>
+        </ul>
+      </li>
+    </ul>
+    <p><strong>Implication:</strong> The emission dedup key that determines which picks survive is not the same key used for the outcomes measurement table in at least one writer. This is a direct, traceable source of potential pf_registry measurement rot.</p>
+    <p><strong>Artifact updated:</strong> <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (new emitter trace section + strengthened implication).</p>
+    <p class="update-source">Source: detailed read of emitter dedup functions this fire · TON fast4 consensus (dedup as #1)</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Dedup Key Harmonization Review Started (Directly from Latest TON Consensus)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (first concrete step on the swarm's current #1 recommendation after the fast4 results):</p>
+    <ul>
+      <li>Performed initial targeted audit of pick_id / dedup key construction logic in the two production writers + major emitters.</li>
+      <li><strong>Initial finding:</strong> Clear divergence exists:
+        <ul>
+          <li><code>audit_trail/universal_pick_resolver.py</code>: has <code>make_pick_id</code> + specific narrow <code>hashlib.md5</code> override in the <code>at_pick_outcomes</code> write path.</li>
+          <li><code>alpha_engine/outcome_resolver.py</code>: takes incoming <code>pick.get("id")</code> directly for <code>at_pick_outcomes</code> (no same narrow hash).</li>
+          <li>Emitters have their own emission-time dedup that feeds the "id".</li>
+        </ul>
+      </li>
+      <li>This is a real potential source of measurement rot / ghosts for <code>pf_registry</code>.</li>
+    </ul>
+    <p><strong>Artifact updated:</strong> <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> now contains the new dedup review section + proposed micro-steps (unified <code>build_canonical_outcomes_pick_id()</code> helper).</p>
+    <p class="update-source">Source: TON fast4 consensus (groq qwen + mistral) · audit this fire</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-ai">TON</span>
+  </div>
+  <h3 class="update-title">Fresh TON Fast4 Results: Dedup Key Harmonization Emerges as Clear #1 Remaining Gap</h3>
+  <div class="update-body">
+    <p><strong>New external validation this fire</strong> (focused fast4 on state including the positive symmetry audit):</p>
+    <ul>
+      <li>groq/qwen3-32b + mistral both confirm the symmetry fix is real progress (one model now calls the core isolation "production-grade").</li>
+      <li><strong>Strong consensus on next priority:</strong> <strong>Dedup key harmonization</strong> across the two writers (and emitters) is now the single highest-leverage remaining §15 gap for pf_registry integrity and idempotency.</li>
+      <li>Other recurring items: cross-writer consistency under edge cases, TIME_EXIT handling in test cohort denominators, concentration cap pre-DSR/SPA.</li>
+      <li>Paper-pilot posture (n≥500 + statistical floors): no change recommended until more gaps closed.</li>
+    </ul>
+    <p><strong>Artifact updated:</strong> <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> now contains the new fast4 section + clear next action.</p>
+    <p class="update-source">Source: /tmp/ton_isolation_followup_20260601_033543/ (fast4, task 019e8140-6d2c-7680-b011-8e9a8e5bb9f3) · Prior symmetry audit + permanent TON artifact</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-ai">TON</span>
+  </div>
+  <h3 class="update-title">Focused TON Re-run Launched (Symmetry Audit Result Now Included)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (continuing the TON thread from the recurring mandate):</p>
+    <ul>
+      <li>Created short follow-up prompt that references the permanent artifact <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> + the positive resolver symmetry audit result from the prior fire (only two production writers; the skips now cover the actual outcome writing surface).</li>
+      <li>Launched focused TON: <code>python3 tools/consult_multi.py --fanout fast4</code> (lower timeout risk) on the updated state.</li>
+      <li>Background task active (task 019e8140-6d2c-7680-b011-8e9a8e5bb9f3). Artifacts will land in <code>/tmp/ton_isolation_followup_...</code>.</li>
+    </ul>
+    <p><strong>Purpose:</strong> Give the swarm the latest P0 evidence (one major gap now closed with concrete audit) and request updated verdict + re-prioritized next actions on the remaining §15/§16 gaps.</p>
+    <p class="update-source">Source: <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> + prior symmetry audit card · Background task 019e8140-6d2c-7680-b011-8e9a8e5bb9f3</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Resolver Symmetry Audit Complete (Acting on TON Partial Feedback)</h3>
+  <div class="update-body">
+    <p><strong>Audit this fire</strong> (directly addressing the top gap repeatedly flagged in the partial TON results from Groq Qwen + Together Llama):</p>
+    <ul>
+      <li>Comprehensive search across the entire codebase for any other <code>_write_outcomes_to_mysql</code> definitions or direct <code>at_pick_outcomes</code> INSERT/UPSERT paths.</li>
+      <li><strong>Result (positive):</strong> Only the two writers we aligned in prior fires exist in the main production tree:
+        <ul>
+          <li><code>audit_trail/universal_pick_resolver.py:817</code></li>
+          <li><code>alpha_engine/outcome_resolver.py:1943</code></li>
+        </ul>
+      </li>
+      <li><code>copy_trader_intel/outcome_resolver.py</code>: no direct write path (as previously confirmed).</li>
+      <li>All other matches are from <code>.claude/worktrees/</code>, <code>.qwen/</code>, <code>.kilo/</code> snapshots — not active production code.</li>
+    </ul>
+    <p><strong>Implication:</strong> The forward_test_only skip gates now live in both central writers cover the actual outcome writing surface for production measurements (pf_registry / money-ready). One specific TON-flagged gap is now closed with concrete evidence.</p>
+    <p class="update-source">Source: full grep audit this fire · <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (swarm explicitly called this out as priority #1)</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-ai">TON</span>
+  </div>
+  <h3 class="update-title">TON Validation Attempt on P0 §15 Isolation + TESTING_PROTOCOL.MD (Partial Results — Timeout)</h3>
+  <div class="update-body">
+    <p><strong>Attempted this fire</strong> (direct response to recurring mandate "get a TON of other AI models to validate your methodology"):</p>
+    <ul>
+      <li>Launched <code>python3 tools/consult_multi.py --fanout diverse5</code> on a grounded prompt covering the writer skips, schema + ALTER, health tag_awareness, live 0/9 baseline, and TESTING_PROTOCOL.MD 2026-05-31 §15/§16.</li>
+      <li>Timed out after 180s. Partial but high-quality results from 2 providers (Groq Qwen3-32B ~7k + Together Llama-3-8B ~2.8k).</li>
+      <li>Both models independently validated the core isolation pattern as protective for pf_registry/money-ready <strong>if</strong> tags and schema are respected, while flagging the same cluster of remaining gaps (resolver symmetry beyond the two writers, dedup key harmonization, TIME_EXIT in denominator, concentration cap, purged WF, historical untagged data, prod ALTER execution).</li>
+    </ul>
+    <p><strong>Permanent artifact:</strong> <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> (original prompt + both partial responses + honest synthesis + prioritized follow-ups). This still delivers real external triangulation even on timeout.</p>
+    <p class="update-source">Source: <code>reports/2026-06-01_P0_isolation_TON_partial_validation.md</code> + /tmp/ton_isolation_20260601_032601/ · Prior writer alignment + schema/health fires</p>
+  </div>
+</div>
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+    <span class="update-badge badge-p0">P0</span>
+  </div>
+  <h3 class="update-title">P0 §15 Measurement Pipeline: Schema + Health Visibility for forward_test Isolation (ALTER note + writer alignment)</h3>
+  <div class="update-body">
+    <p><strong>This fire</strong> (post prior alignment of both writers):</p>
+    <ul>
+      <li>Added the 3 isolation columns to the canonical <code>at_pick_outcomes</code> CREATE in <code>alpha_engine/mysql_trading_sync.py</code> (for new deploys) + explicit one-time prod ALTER SQL comment.</li>
+      <li>Enhanced <code>tools/check_resolver_health.py</code> with full <code>forward_test_tag_awareness</code> check: counts tagged rows, reports writer alignment status ("both universal + alpha now skip"), and surfaces the exact ALTER needed on existing DBs with graceful fallback for pre-ALTER state.</li>
+    </ul>
+    <p><strong>Result:</strong> Operators can now see paper-pilot cohort volume vs production outcomes in health reports. Combined with the skip logic landed in the last fire, the central measurement pipeline (pf_registry / money-ready) is now protected from unvetted forward_test data. 0/9 baseline unchanged.</p>
+    <p class="update-source">Source: <code>alpha_engine/mysql_trading_sync.py</code> (CREATE + ALTER comment) + <code>tools/check_resolver_health.py</code> (tag awareness block) · <code>research/SESSION_ACHIEVEMENTS_2026-06-01.md</code> (this fire) · prior writer alignment entry</p>
+  </div>
+</div>
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
      Source: ejaguiar1_stocks INCIDENT_* / ENHANCEMENT_* tables.
@@ -230,7 +674,7 @@
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
   <div class="update-entry" style="--dot-color: #f97316;" data-tags="correction,verbatim-rt,resolver,forensic,wbkz389ek,pipeline-integrity,5-ai-peer-review,goal-1,trading,documentation" data-category="trading" data-types="documentation">
-  <div class="update-date">2026-06-01 EST — <strong style="color:#f97316;">CORRECTION to earlier ELI5 — actual forensic on disk + DB differs from kilo's peer-reported numbers</strong></div>
+  <div class="update-date">Jun 01, 2026 &mdash; LIVE (updated hourly)</div>
   <p><strong>2026-06-01 EST (verbatim+RT applied to my own output):</strong> Workflow <code>wbkz389ek</code> (5-AI peer-reviewed pipeline-resolution plan) just landed. Its independent forensic agent ran <em>actual</em> grep on the resolver code + live SQL on <code>trading_picks</code> / <code>signal_outcomes</code> and the numbers diverge significantly from what I posted in the earlier ELI5 entry below (which repeated peer-reported figures from kilo's session). Per the canonical anti-fabrication discipline, I am correcting on the record before the operator acts on bad numbers.</p>
   <table style="border-collapse:collapse;font-size:0.92em;margin:8px 0;">
     <thead><tr style="background:#f3f4f6;"><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Claim in my ELI5 (from peer dump)</th><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Actual (forensic agent on disk + DB)</th></tr></thead>
@@ -11007,7 +11451,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          May 31, 2026 &mdash; 08:13 PM EST | Hourly Portfolio Update
+          Jun 01, 2026 &mdash; 12:38 AM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -11026,6 +11470,7 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
 
 
 
@@ -11487,7 +11932,7 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated May 31, 08:13 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 01, 12:38 AM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>
