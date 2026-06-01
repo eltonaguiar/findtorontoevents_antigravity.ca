@@ -832,24 +832,22 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
 
     host = os.environ.get("DB_STOCKS_HOST", os.environ.get("DB_HOST", "mysql.50webs.com"))
     port = int(os.environ.get("DB_STOCKS_PORT", os.environ.get("DB_PORT", "3306")))
-    user = os.environ.get("DB_STOCKS_USER", os.environ.get("AUDIT_DB_USER", ""))
+    user = os.environ.get("DB_STOCKS_USER", os.environ.get("AUDIT_DB_USER", "ejaguiar1_stocks"))
     password = os.environ.get("DB_PASS_STOCKS", os.environ.get("DB_STOCKS_PASSWORD", os.environ.get("AUDIT_DB_PASS", "")))
     database = os.environ.get("DB_STOCKS_NAME", os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"))
 
     UPSERT_SQL = """
         INSERT INTO at_pick_outcomes
-            (pick_id, symbol, direction, source_system, strategy, asset_class,
-             entry_price, take_profit, stop_loss, exit_price,
-             outcome, pnl_pct, opened_at, closed_at)
+            (pick_id, symbol, strategy, asset_class,
+             status, resolution_method, pnl_pct, resolved_at, resolver_version)
         VALUES
-            (%(pick_id)s, %(symbol)s, %(direction)s, %(source_system)s, %(strategy)s, %(asset_class)s,
-             %(entry_price)s, %(take_profit)s, %(stop_loss)s, %(exit_price)s,
-             %(outcome)s, %(pnl_pct)s, %(opened_at)s, %(closed_at)s)
+            (%(pick_id)s, %(symbol)s, %(strategy)s, %(asset_class)s,
+             %(status)s, %(resolution_method)s, %(pnl_pct)s, %(resolved_at)s, %(resolver_version)s)
         ON DUPLICATE KEY UPDATE
-            exit_price  = VALUES(exit_price),
-            outcome     = VALUES(outcome),
-            pnl_pct     = VALUES(pnl_pct),
-            closed_at   = VALUES(closed_at)
+            status            = VALUES(status),
+            resolution_method = VALUES(resolution_method),
+            pnl_pct           = VALUES(pnl_pct),
+            resolved_at       = VALUES(resolved_at)
     """
 
     written = 0
@@ -865,66 +863,56 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
                     symbol = str(pick.get("symbol", pick.get("ticker", "")))[:50]
                     if not symbol:
                         continue
-                    direction = str(pick.get("direction", pick.get("side", "LONG"))).upper()[:10]
-                    source_system = str(pick.get("system", pick.get("source_system", pick.get("source", ""))))[:100]
                     strategy = str(pick.get("strategy", pick.get("algorithm_name", "")))[:100]
                     asset_class = str(pick.get("asset_class", "CRYPTO"))[:20]
 
-                    entry_price = float(pick.get("entry_price", pick.get("entry", 0)) or 0)
-                    tp = float(pick.get("take_profit", pick.get("tp", 0)) or 0)
-                    sl = float(pick.get("stop_loss", pick.get("sl", 0)) or 0)
-                    exit_price = float(pick.get("exit_price", pick.get("exit", pick.get("current_price", 0))) or 0)
-
-                    status = str(pick.get("status", pick.get("outcome", ""))).upper()
-                    if status in ("WON", "WIN", "TP", "TP_HIT", "TAKE_PROFIT"):
-                        outcome = "TP_HIT"
-                    elif status in ("LOST", "LOSS", "SL", "SL_HIT", "STOP_LOSS"):
-                        outcome = "SL_HIT"
-                    elif status in ("EXPIRED", "TIME_EXIT", "TIME", "TIMEOUT"):
-                        outcome = "EXPIRED"
-                    elif status in ("OPEN", "ACTIVE"):
-                        outcome = "OPEN"
+                    # Map exit_reason to at_pick_outcomes status/resolution_method enums
+                    exit_reason = str(pick.get("exit_reason", pick.get("status", ""))).upper()
+                    if exit_reason in ("TP_HIT", "TAKE_PROFIT", "WON", "WIN", "TP"):
+                        status = "WON"
+                        resolution_method = "TP_HIT"
+                    elif exit_reason in ("SL_HIT", "STOP_LOSS", "LOST", "LOSS", "SL"):
+                        status = "LOST"
+                        resolution_method = "SL_HIT"
+                    elif exit_reason in ("TIME_EXIT", "EXPIRED", "TIME", "TIMEOUT", "MAX_HOLD"):
+                        status = "EXPIRED"
+                        resolution_method = "TIME_EXPIRED"
+                    elif exit_reason in ("FLAT", "FORCE_CLOSED", "CLOSED", "RESOLVED"):
+                        status = "FLAT"
+                        resolution_method = "MANUAL"
+                    elif exit_reason in ("OPEN", "ACTIVE"):
+                        status = "OPEN"
+                        resolution_method = None
                     else:
-                        outcome = status or "OPEN"
+                        status = "EXPIRED"
+                        resolution_method = "TIME_EXPIRED"
 
-                    pnl_pct_raw = round(float(pick.get("pnl_pct", pick.get("pnl", 0)) or 0), 4)
-                    # F-1 PnL outlier cap +/-100% (freebuff May-17): CADJPY +8559% inflated FOREX PF 26.57
-                    pnl_pct = max(-100.0, min(100.0, pnl_pct_raw))
+                    pnl_raw = float(pick.get("pnl_pct", pick.get("pnl", 0)) or 0)
+                    pnl_pct = round(max(-100.0, min(100.0, pnl_raw)), 4)
 
-                    # Parse timestamps
-                    def _parse_ts(ts):
-                        if not ts:
-                            return None
-                        try:
-                            if isinstance(ts, str):
-                                return ts.replace("T", " ").replace("Z", "")[:19]
-                            return str(ts)[:19]
-                        except Exception:
-                            return None
-
-                    opened_at = _parse_ts(pick.get("opened_at", pick.get("enter_date", pick.get("timestamp", None))))
-                    closed_at = _parse_ts(pick.get("closed_at", pick.get("exit_date", pick.get("resolved_at", None))))
+                    resolved_at = None
+                    for ts_key in ("resolved_at", "closed_at", "exit_date", "timestamp"):
+                        ts_val = pick.get(ts_key)
+                        if ts_val:
+                            try:
+                                resolved_at = str(ts_val).replace("T", " ").replace("Z", "")[:19]
+                            except Exception:
+                                pass
+                            break
 
                     params = {
                         "symbol": symbol,
-                        "direction": direction,
-                        "source_system": source_system,
                         "strategy": strategy,
                         "asset_class": asset_class,
-                        "entry_price": entry_price,
-                        "take_profit": tp,
-                        "stop_loss": sl,
-                        "exit_price": exit_price,
-                        "outcome": outcome,
+                        "status": status,
+                        "resolution_method": resolution_method,
                         "pnl_pct": pnl_pct,
-                        "opened_at": opened_at,
-                        "closed_at": closed_at,
+                        "resolved_at": resolved_at,
+                        "resolver_version": "universal_v2",
                     }
-                    # BUG-FIX 2026-05-20: add pick_id PK (formerly missing, broke UPSERT)
-                    if "pick_id" not in params or not params.get("pick_id"):
-                        import hashlib
-                        _seed = f"{params.get('symbol','')}|{params.get('opened_at','')}|{params.get('strategy','')}|{params.get('direction','')}"
-                        params["pick_id"] = hashlib.md5(_seed.encode("utf-8")).hexdigest()[:36]
+                    import hashlib
+                    _seed = f"{symbol}|{strategy}|{resolved_at or ''}|{asset_class}"
+                    params["pick_id"] = hashlib.md5(_seed.encode("utf-8")).hexdigest()[:36]
                     cur.execute(UPSERT_SQL, params)
                     written += 1
                 except Exception as e:

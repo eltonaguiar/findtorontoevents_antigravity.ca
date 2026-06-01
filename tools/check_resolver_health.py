@@ -134,15 +134,15 @@ def check_open_picks_count(conn) -> dict:
     }
 
 
-def check_stale_by_asset_class(conn) -> dict:
-    """Count stale OPEN picks by asset class."""
+def check_stale_by_category(conn) -> dict:
+    """Count stale OPEN picks by category (trading_picks uses 'category' not 'asset_class')."""
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT asset_class, COUNT(*) AS cnt, MIN(created_at) AS oldest, "
+            "SELECT category, COUNT(*) AS cnt, MIN(created_at) AS oldest, "
             "MAX(created_at) AS newest "
             "FROM trading_picks "
             "WHERE status = 'OPEN' "
-            "GROUP BY asset_class"
+            "GROUP BY category"
         )
         rows = cur.fetchall()
 
@@ -151,27 +151,24 @@ def check_stale_by_asset_class(conn) -> dict:
     total_stale = 0
 
     for row in rows:
-        ac = (row.get("asset_class") or "UNKNOWN").upper()
+        raw = row.get("category") or "UNKNOWN"
+        ac = str(raw).upper() if raw else "UNKNOWN"
         cnt = int(row["cnt"])
         oldest = row.get("oldest")
         newest = row.get("newest")
 
         max_hours = MAX_HOLD_HOURS_BY_CLASS.get(ac, 48)
-        # Approximate: if newest pick is older than max_hours, all are stale
-        # Otherwise, we need to count individually (expensive for millions)
-        stale_estimate = cnt  # pessimistic: assume all stale if count is huge
-
-        stale_by_class[ac] = {
+        stale_by_class[str(raw)] = {
             "total_open": cnt,
-            "estimated_stale": stale_estimate,
+            "estimated_stale": cnt,
             "max_hold_hours": max_hours,
             "oldest_pick": str(oldest) if oldest else None,
             "newest_pick": str(newest) if newest else None,
         }
-        total_stale += stale_estimate
+        total_stale += cnt
 
     return {
-        "check": "stale_by_asset_class",
+        "check": "stale_by_category",
         "total_stale_estimate": total_stale,
         "by_class": stale_by_class,
         "status": "RED" if total_stale > ALERT_THRESHOLD_DEFAULT else "YELLOW" if total_stale > 0 else "GREEN",
@@ -304,8 +301,8 @@ def run_health_check(alert_threshold: int = ALERT_THRESHOLD_DEFAULT) -> dict[str
         count_check = check_open_picks_count(conn)
         report["checks"]["open_picks_count"] = count_check
 
-        stale_check = check_stale_by_asset_class(conn)
-        report["checks"]["stale_by_asset_class"] = stale_check
+        stale_check = check_stale_by_category(conn)
+        report["checks"]["stale_by_category"] = stale_check
     finally:
         conn.close()
 
