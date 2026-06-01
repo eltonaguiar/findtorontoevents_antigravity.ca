@@ -1,0 +1,62 @@
+{
+  "schema": "session-summary/v1",
+  "agent": "cursor-composer-gx10-c9b9",
+  "session_started_utc": "2026-05-31T22:00:00Z",
+  "session_ended_utc": "2026-06-01T00:12:00Z",
+  "branch_at_end": "main",
+  "commits_this_session": [],
+  "prs_opened_or_updated": [],
+  "merged_to_main_this_session": [],
+  "files_written": [
+    "alpha_engine/winners/etf_sector_momentum_winner.py",
+    "alpha_engine/winners/crypto_multi_day_momentum_winner.py",
+    "alpha_engine/winners/crypto_funding_carry_winner.py",
+    "alpha_engine/winners/commodity_cross_momentum_winner.py",
+    "alpha_engine/winners/cheap_stock_momentum_winner.py",
+    "alpha_engine/winners/ipo_post_listing_winner.py",
+    "alpha_engine/eight_class_flagship_strategies.py",
+    "alpha_engine/fx_carry_vix_regime.py",
+    "alpha_engine/config.py",
+    "alpha_engine/strategies/unique_cheap_stock_momentum_squeeze.py",
+    "alpha_engine/strategies/unique_ipo_event_driven.py",
+    "tools/backtest_cheap_stock_momentum.py",
+    "tools/backtest_ipo_post_listing_long.py",
+    "tools/eight_class_winner_hunt.py",
+    "audit_dashboard/data/cheap_stock_momentum_backtest.json",
+    "audit_dashboard/data/ipo_post_listing_long_backtest.json",
+    "reports/eight_class_winners_20260601.json",
+    "updates/2026-06-01-eight-class-winning-strategies-wired.md",
+    "updates/2026-06-01-cheap-stocks-ipo-winning-strategies.md",
+    "updates/2026-06-01-cursor-session-dropchat-winners.md"
+  ],
+  "decisions": [
+    "Ten-class winner registry: backtest-validated strategies per asset class wired through eight_class_flagship_strategies.py + protocol_layer25",
+    "CHEAP_STOCKS promoted TIER_2 (WR 61.3%, PF 2.79); removed placeholder SOUN/PLUG fake prices",
+    "IPO lockup SHORT remains KILLED (PF 0.18); only post-listing LONG emitter (REHAB WR 41.7%)",
+    "ETF winner inlined yfinance (etf_strategies legacy import broken); FOREX carry now has real entry/TP/SL",
+    "CRYPTO fallback chain: fear/greed -> multi-day momentum -> vol regime -> Binance funding carry",
+    "No git commits this session — all changes local uncommitted on main"
+  ],
+  "open_questions": [
+    "Wire priority_picks_emitter.py to prefer winner registry by default?",
+    "FOREX 5y harness to graduate from REHAB?",
+    "Who commits the large untracked alpha_engine/ batch on main?"
+  ],
+  "follow_ups_for_other_agents": [
+    {"to": "all", "ask": "Review winner emit batch alpha_engine/data/winning_picks_winners_20260601_0007.json before production gate", "priority": "P1"},
+    {"to": "claude-desktop-081g9oh", "ask": "Avoid re-adding placeholder cheap-stock seeds; use winners/cheap_stock_momentum_winner.py", "priority": "P0"}
+  ],
+  "files_to_check": [
+    "reports/eight_class_winners_20260601.json",
+    "alpha_engine/eight_class_flagship_strategies.py",
+    "updates/2026-06-01-cursor-session-dropchat-winners.md",
+    "TESTING_PROTOCOL.MD"
+  ],
+  "winner_tiers": {
+    "TIER_2": ["CRYPTO", "ETF", "FUTURES", "BOND", "CHEAP_STOCKS"],
+    "TIER_3": ["EQUITY", "COMMODITY"],
+    "REHAB": ["FOREX", "IPO"],
+    "PAPER_PILOT": ["PREDICTION_MARKETS"]
+  },
+  "live_emit_sample": {"n_picks": 26, "classes": ["BOND", "CHEAP_STOCKS", "COMMODITY", "CRYPTO", "EQUITY", "ETF", "FUTURES"]}
+}
