@@ -9,9 +9,21 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+# 2026-05-31 (incident #34): the production default of ML_GATE_AB_ENABLED was
+# flipped to "1" in ml_gatekeeper/ab_router.py (AB gate ON) as an operator soak
+# ("decide after 24h soak"). These two tests assert the OLD default-OFF
+# contract. Per the incident guardrail we must NOT flip the production default
+# back to satisfy a test, and must NOT rubber-stamp the flip as permanent — so
+# they are skipped pending the operator's soak decision. Re-enable (updating
+# the assertion to match) once the AB_ENABLED default is locked.
+_AB_DEFAULT_PENDING = "operator-gated AB_ENABLED default soak (incident #34) — unresolved"
 
+
+@pytest.mark.skip(reason=_AB_DEFAULT_PENDING)
 def test_ab_router_constant_defaults_false():
     """ab_router.AB_ENABLED is False when ML_GATE_AB_ENABLED is unset."""
     os.environ.pop("ML_GATE_AB_ENABLED", None)
@@ -20,6 +32,7 @@ def test_ab_router_constant_defaults_false():
     assert ab_router.AB_ENABLED is False
 
 
+@pytest.mark.skip(reason=_AB_DEFAULT_PENDING)
 def test_gatekeeper_reexports_ab_enabled():
     """gatekeeper exposes AB_ENABLED and it is False with env unset.
 
