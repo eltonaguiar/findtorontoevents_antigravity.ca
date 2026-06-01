@@ -269,7 +269,10 @@ CREATE TABLE IF NOT EXISTS at_sqlite_imports (
 -- ── Pick Outcomes ──────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS at_pick_outcomes (
-    pick_id             CHAR(36) PRIMARY KEY,
+    -- pick_id widened to varchar(100) on 2026-06-01 to support composite IDs
+    -- (e.g. genome_revival_battlegro_*) that were silently dropped under
+    -- char(36) by INSERT IGNORE. See reports/2026-06-01_resolver_universe_backfill.md
+    pick_id             VARCHAR(100) PRIMARY KEY,
     symbol              VARCHAR(50),
     strategy            VARCHAR(200),
     asset_class         VARCHAR(20),

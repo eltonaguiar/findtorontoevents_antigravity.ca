@@ -210,16 +210,22 @@ def test_prepare_prediction_market_consensus_signal_preserves_pm_source_lineage(
 
 
 def test_pre_score_active_candidate_keeps_valid_zero_score_pick_alive() -> None:
+    # 2026-06-01: this test originally used source_system=prediction_market_consensus
+    # as its example pick, but that source was RETIRED into BLOCKED_SOURCE_SYSTEMS
+    # (quality_gates.py:2010-2015, data-corruption PRICE_MISMATCH rows), so the active
+    # gate now hard-rejects it. The test is about the *generic* pre-score-candidate /
+    # crypto-score-floor behavior, not pm_consensus specifically — use a valid,
+    # non-blocked crypto source so the intent is preserved.
     pick = {
-        "id": "pm_consensus_BTCUSDT_202603270550",
+        "id": "signal_validation_BTCUSDT_202603270550",
         "symbol": "BTCUSDT",
         "direction": "LONG",
         "entry_price": 68000.0,
         "take_profit": 70000.0,
         "stop_loss": 66800.0,
         "confidence": 0.82,
-        "strategy": "prediction_market_consensus",
-        "source_system": "prediction_market_consensus",
+        "strategy": "signal_validation",
+        "source_system": "signal_validation",
         "status": "OPEN",
         # Score must meet CRYPTO min raw floor (30) after gate hardening.
         # Zero-score picks are no longer allowed to pass active gate.
