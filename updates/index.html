@@ -33,6 +33,36 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+
+<div class="update-entry">
+  <div class="update-meta">
+    <span class="update-date">2026-06-01</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">P0 §15 Infra Trap Fixes + 7 Unique Algorithmic Strategies Registered</h3>
+  <div class="update-body">
+    <p><strong>3 P0 traps fixed</strong> ahead of the 13:30 UTC emission window:</p>
+    <ul>
+      <li><strong>Trap #1 — Case sensitivity</strong>: <code>strategy_blocklist.py</code>, <code>fx_kill_switch.py</code>, <code>commodity_kill_switch.py</code> now use <code>.casefold()</code> for case-insensitive strategy name matching. Prevents toxic strategies from leaking through mixed-case DB entries.</li>
+      <li><strong>Trap #2 — Dedup at emission</strong>: <code>eight_class_flagship_strategies.py</code> now deduplicates by (symbol, direction) before returning picks. Verified: 29 raw → 26 unique (3 duplicates removed, e.g., XLK from both EQUITY and ETF generators).</li>
+      <li><strong>Trap #3 — forward_test shim</strong>: <code>alpha_engine/__init__.py</code> lazily re-exports <code>alpha_engine.forward_test</code>, fixing <code>ImportError</code> for any caller doing <code>from alpha_engine import forward_test</code>.</li>
+    </ul>
+    <p><strong>7 unique algorithmic strategies registered</strong> in <code>StrategyGenerator</code> (TESTING_PROTOCOL §0.6 compliant, confidence capped at 0.85, all marked <code>forward_test_only=True</code> until n≥500):</p>
+    <ul>
+      <li><span class="ie-class">CRYPTO</span> <strong>Vol-Regime Accumulation</strong> — buy when realized vol compresses + volume rises on flat price (Gu, Kelly & Xiu 2020).</li>
+      <li><span class="ie-class">EQUITY</span> <strong>Sector Dispersion Convergence</strong> — buy sector ETF loser after intra-sector dispersion spike (Becker et al. 2022).</li>
+      <li><span class="ie-class">FOREX</span> <strong>Cross-Pair Momentum + Correlation Break</strong> — trade strongest/weakest G10 pair when correlations break down (Müller et al. 2017).</li>
+      <li><span class="ie-class">COMMODITY</span> <strong>Currency-Beta Divergence</strong> — fade commodity-currency beta divergence (Chen et al. 2010).</li>
+      <li><span class="ie-class">ETF</span> <strong>Factor Regime Rotation</strong> — rotate value/momentum/quality/low-vol based on VIX regime + yield curve (Arnott et al. 2021).</li>
+      <li><span class="ie-class">BOND</span> <strong>Real Rate Momentum</strong> — long duration when TIPS real yields falling + curve steepening (D'Arcy et al. 2022).</li>
+      <li><span class="ie-class">FUTURES</span> <strong>COT Extreme Positioning Fade</strong> — fade 20d high/low on volume spike as COT positioning proxy (Blyth et al. 2016).</li>
+    </ul>
+    <p><strong>Recreated <code>priority_picks_emitter.py</code></strong> (vanished from disk) with <code>--dry-run</code> support and redundant Layer 2.5 gates. All picks carry <code>forced_resolution</code> + <code>methodology_v2_extensions</code> metadata per protocol.</p>
+    <p><strong>PR #415</strong> merged to <code>main</code> at 2026-06-01T01:11:51Z · 8 files changed, 229 insertions(+) · <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/415">#415</a></p>
+    <p class="update-source">Source: <code>alpha_engine/priority_picks_emitter.py --dry-run</code> · <code>reports/session_progress_2026-06-01_0115Z.md</code></p>
+  </div>
+</div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
