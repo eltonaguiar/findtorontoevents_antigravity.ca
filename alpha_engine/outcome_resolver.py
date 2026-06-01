@@ -2030,7 +2030,9 @@ def _write_outcomes_to_mysql(resolved_picks: list[dict]) -> int:
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
     for pick in resolved_picks:
-        pick_id = str(pick.get("id", "") or "").strip()
+        # P0 §15 dedup harmonization (TON-validated 2026-06-01): use canonical helper
+        from alpha_engine.dedup import build_canonical_outcomes_pick_id
+        pick_id = build_canonical_outcomes_pick_id(pick)
         if not pick_id:
             continue
 

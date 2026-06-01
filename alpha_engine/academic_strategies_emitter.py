@@ -275,6 +275,9 @@ def generate_academic_picks() -> list[dict[str, Any]]:
             norm["forward_validated"] = False
             norm["paper_pilot"] = True
             norm["academic_source"] = True
+            # P0 §15 dedup harmonization (TON-validated 2026-06-01): inject canonical ID at emission
+            from alpha_engine.dedup import build_canonical_outcomes_pick_id
+            norm.setdefault("id", build_canonical_outcomes_pick_id(norm))
             all_picks.append(norm)
         logger.info("%s: %d picks", strategy_name, len(raw_list))
     return all_picks

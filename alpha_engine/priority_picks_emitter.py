@@ -81,6 +81,10 @@ def emit_picks(
     for p in picks:
         p.setdefault("emitted_at", datetime.now(timezone.utc).isoformat())
         p.setdefault("emitter", "priority_picks_emitter_v1")
+        # P0 §15 dedup harmonization (TON-validated 2026-06-01): inject canonical ID at emission
+        # so downstream writers (and at_pick_outcomes) receive the unified key by construction.
+        from alpha_engine.dedup import build_canonical_outcomes_pick_id
+        p.setdefault("id", build_canonical_outcomes_pick_id(p))
 
     if dry_run:
         logger.info("DRY-RUN: would emit %d picks", len(picks))
