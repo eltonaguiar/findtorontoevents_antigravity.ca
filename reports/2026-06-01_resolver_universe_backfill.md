@@ -60,9 +60,40 @@
 - All inserts used `INSERT IGNORE` — idempotent, no overwrites of the original 402 `universal_v2` rows.
 - All four resolver_version tags preserved for provenance and selective rollback.
 
-## Next layer
+## Swarm cross-review correction (workflow `wko211hah`, 5 reviewers)
 
-1. Patch the live writer so new `TIME_EXIT` rows set `closed_at` directly (eliminates need for `updated_at` fallback going forward).
+A 5-dimension adversarial swarm review caught a **measurement bias** the initial report missed.
+
+### `COALESCE(closed_at, updated_at)` was reverted on 33,498 rows
+
+The swarm's statistical-validity reviewer proved that the 27,291 rows with NULL `closed_at` share only **51 distinct `updated_at` values** — ratio 535:1. The single value `2026-05-31 01:46:49` covers 18,082 rows. That is a **batch-update marker** (upstream housekeeping job touched the table en masse), NOT actual close times.
+
+**Action taken**: `UPDATE at_pick_outcomes SET resolved_at = NULL WHERE resolver_version IN ('backfill_updated_202','backfill_widened_202')`. 33,498 rows now have NULL `resolved_at`.
+
+**Impact**:
+- Non-temporal aggregations (per-class WR / PF / n_decisive) **unchanged** — status and pnl_pct were preserved.
+- Time-bucketed analytics (walk-forward, rolling stats) that filter `WHERE resolved_at IS NOT NULL` will correctly exclude these picks.
+- Temporal-safe row count: 4,386 (402 universal_v2 + 3,984 backfill_2026-06-01 batches, both with real `closed_at`).
+
+### Other swarm findings
+
+| Dimension | Verdict | Action |
+|---|---|---|
+| data-integrity | **CORRECT** | None — status/PnL mapping clean, 0 anomalies |
+| schema-change-impact | SAFE_BUT_NEEDS_FOLLOWUP | PR #425 widens source-of-truth files; 27 rows truncated at exactly len=100 need upstream audit |
+| statistical-validity | **SHOULD_REVERT** | Done — 33,498 rows nulled |
+
+### Open follow-ups from swarm
+
+1. **27 truncated pick_ids at exactly len=100**: composite IDs like `genome_revival_battlegro_btcusdt_long_revival_mutated_crypto_keltn_0218a600a401_2026_03_09t23_21_34_` lost the seconds-fractional suffix. Audit `trading_picks.id` upstream to confirm 100-char prefixes are collision-free.
+2. Schema source-of-truth drift fixed in **PR #425**.
+3. 5,027 `trading_picks` with status='OPEN' correctly absent from apo (live picks). Cross-reference with the "ghost OPEN picks" item before drawing throughput conclusions.
+4. Single TIME_EXIT row with pnl_pct=-99.69% (likely should have been SL_HIT) — upstream resolver labeling concern, not a backfill bug.
+
+## Next layer (post-swarm)
+
+1. Patch the live writer so new `TIME_EXIT` rows set `closed_at` directly (eliminates need for fallback going forward).
 2. Investigate `prediction_market_agents` (PF 32) and `short_dominant_engine` (100% WR) — likely measurement bugs.
-3. Per-class fixed-window WR/PF / DSR / PBO once cohort filters defined.
-4. Wire `audit_trail/universal_pick_resolver.py` to also read from `trading_picks` (single source of truth) so the next live resolver tick doesn't introduce another universe.
+3. Per-class fixed-window WR/PF / DSR / PBO using ONLY the 4,386 temporal-safe rows for time-window stats.
+4. Wire `audit_trail/universal_pick_resolver.py` to also read from `trading_picks` so the next live resolver tick doesn't introduce another universe.
+5. Audit the 27 len=100 pick_ids for collision risk.
