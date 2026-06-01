@@ -226,6 +226,16 @@ except Exception as e:
 
 
 # ---------------------------------------------------------------------------
+# MEME (1/3 wired — prototype)
+# ---------------------------------------------------------------------------
+try:
+    from alpha_engine.meme_momentum_squeeze import generate_meme_momentum_squeeze_picks as _gen_meme
+    _register("meme_momentum_squeeze", "MEME", _gen_meme)
+except Exception as e:
+    logger.debug("meme_momentum_squeeze not available: %s", e)
+
+
+# ---------------------------------------------------------------------------
 # Emitter core
 # ---------------------------------------------------------------------------
 
