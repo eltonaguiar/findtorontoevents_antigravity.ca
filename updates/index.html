@@ -33,6 +33,32 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+<div class="update-entry" style="--dot-color: #f97316;" data-tags="correction,verbatim-rt,resolver,forensic,wbkz389ek,pipeline-integrity,5-ai-peer-review,goal-1,trading,documentation" data-category="trading" data-types="documentation">
+  <div class="update-date">2026-06-01 EST — <strong style="color:#f97316;">CORRECTION to earlier ELI5 — actual forensic on disk + DB differs from kilo's peer-reported numbers</strong></div>
+  <p><strong>2026-06-01 EST (verbatim+RT applied to my own output):</strong> Workflow <code>wbkz389ek</code> (5-AI peer-reviewed pipeline-resolution plan) just landed. Its independent forensic agent ran <em>actual</em> grep on the resolver code + live SQL on <code>trading_picks</code> / <code>signal_outcomes</code> and the numbers diverge significantly from what I posted in the earlier ELI5 entry below (which repeated peer-reported figures from kilo's session). Per the canonical anti-fabrication discipline, I am correcting on the record before the operator acts on bad numbers.</p>
+  <table style="border-collapse:collapse;font-size:0.92em;margin:8px 0;">
+    <thead><tr style="background:#f3f4f6;"><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Claim in my ELI5 (from peer dump)</th><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Actual (forensic agent on disk + DB)</th></tr></thead>
+    <tbody>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">TIME_EXIT 85–97% of resolved trades</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>75.17%</strong> — still high; not catastrophic</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">39% PnL/status mislabel</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>0</strong> mislabeled rows. DB <code>status</code> ↔ <code>pnl_pct</code> are consistent.</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;"><code>signal_outcomes</code> 82 days stale</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>1 day</strong> stale (fresh)</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">Intrabar OHLC resolver MISSING</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>IMPLEMENTED</strong> in <code>alpha_engine/outcome_resolver.py</code> + <code>swing_resolver.py</code></td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">Dedup absent → BTCUSDT LONG = 565 simultaneous picks</td><td style="padding:4px 10px;border:1px solid #ddd;">No GROUP-BY dedup query found in alpha_engine grep → <strong>NOT_REPRODUCIBLE</strong> as a code bug; the 565 figure may be a downstream symptom of a different emission layer.</td></tr>
+      <tr><td style="padding:4px 10px;border:1px solid #ddd;">Severity: P0 across the board</td><td style="padding:4px 10px;border:1px solid #ddd;"><strong>P1</strong> overall per the forensic agent</td></tr>
+    </tbody>
+  </table>
+  <p><strong>What IS confirmed (5 P0/P1 traps, with file:line evidence):</strong></p>
+  <ol>
+    <li><strong>Kill-list case-sensitivity</strong> in <code>alpha_engine/copy_trader_bridge.py</code> — membership check uses raw + lowercased input against a non-normalized set. Mixed-case kill-list entries leak. Fix: trivial (normalize set at module load).</li>
+    <li><strong><code>alpha_engine.forward_test</code> module missing</strong> — Layer 6 runs off <code>sync_forward_test_picks.py</code> band-aid; no actual forward-test generator exists. Forward verdicts are vacuous.</li>
+    <li><strong>Promotion gate Gini threshold 0.40</strong> in <code>alpha_engine/validation/promotion_gate.py:108,191</code> vs measured 0.71 → structurally unpassable; covers &lt;5% of 113 live strategies.</li>
+    <li><strong>DNA mutator disabled</strong> — <code>MUTATION_ENGINE_ENABLED=0</code> default in <code>alpha_engine/production_scanner.py</code>. Mutation pipeline detects losers but generates 0 mutations.</li>
+    <li><strong>next-bar-OPEN fills PARTIAL</strong> — §16 execution-realism gate only half-implemented.</li>
+  </ol>
+  <p><strong>Per-class state (matches <code>money_ready_verdict.json</code>):</strong> CRYPTO n=342 PF 0.88 NOT_READY · EQUITY n=43 PF 0.16 INSUFFICIENT (regime_terminal 41.86% concentration) · FOREX n=29 PF 0.03 INSUFFICIENT · FUTURES n=12 PF 0.54 INSUFFICIENT (91.67% single-source concentration) · COMMODITY/ETF/PENNY sub-n=10. No T2+ edge in any class — but the cause is upstream of resolution (emission/dedup/gating/promotion), <em>not</em> the resolver itself.</p>
+  <p><strong>Updated morning queue for operator:</strong> (1) <strong>4/4 BLOCK on 13:30 UTC emission still holds</strong> — but the binding reason is now "no T2 edge anywhere + 5 confirmed gating bugs," not "resolver lies." (2) Fix the 5 confirmed traps (~6h total dev). (3) Re-run the 113 live strategies through the corrected promotion gate. (4) 30-day edge-hunt focused on the only two classes with usable n: CRYPTO (n=342) and EQUITY (n=43). (5) Hold all post-PR-#307 strategy shipping in a quarantine branch until Phase 1 exits.</p>
+  <p><small>Source of truth: <code>reports/pipeline-resolution-plan-2026-06-01.md</code> (workflow wbkz389ek, 10 agents, 5-AI peer review: Qwen / Grok / Inception / Cerebras / Mimo). The ELI5 entry immediately below this one stands as posted for historical record + transparency, but the table above is the authoritative correction. Lesson: peer-reported numbers (kilo, grok, claude-self) MUST be independently re-verified before going into operator-facing copy.</small></p>
+</div>
 <div class="update-entry" style="--dot-color: #ef4444;" data-tags="resolver-broken,scoreboard,eli5,pipeline-integrity,time-exit,dedup,intrabar-replay,goal-1,trading,documentation" data-category="trading" data-types="documentation">
   <div class="update-date">2026-06-01 EST — <strong style="color:#ef4444;">ELI5: Why "more strategies" isn't the answer — our scoreboard (resolver) is broken</strong></div>
   <p><strong>2026-06-01 EST (ELI5 resolver crisis):</strong> Operator question: "what's the problem we have? more strategies isn't it… our resolver is broken? what does that REALLY mean?" Answer below in plain English plus the technical reasons.</p>
