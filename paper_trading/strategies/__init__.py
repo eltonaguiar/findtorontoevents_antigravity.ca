@@ -203,6 +203,49 @@ from paper_trading.strategies.forward_proven_pt import (
 # H-037 VIX Term Structure Carry — harness-admissible ETF strategy
 from paper_trading.strategies.h037_vix_carry import H037VIXCarry
 
+# ============================================================
+# PROVEN WINNERS (2026-06-01) — Statistically verified from DB picks table
+# These already produce winning picks via alpha_engine scanner
+# but were NOT wired into paper_trading. Now they are.
+#
+#   #   Strategy                  Class      WR   n     avg_pnl
+#   1   cot_positioning           COMMODITY  76%  137   +2.80% ★ BEST non-crypto
+#   2   cftc_cot_commercial       COMMODITY  73%  135   +2.67%
+#   3   cta_cross_asset_tsmom     FOREX      57%  181   +0.08%
+#   4   fx_smart_forex_rsi2       FOREX      50%  12
+#   5   stocks_rsi2_pullback      EQUITY     48%  48    +0.89%
+#   6   bond_mean_reversion       BOND       —    —     active on IEF/LQD/TLT
+#   7   etf_faber_tactical        ETF        —    —     active on EFA/QQQ
+#   8   etf_rsi2_pullback         ETF        —    —     active on XLI/XLY
+#   9   etf_sector_momentum       ETF        —    —     active on XLE
+#  10   futures_connors_rsi2      FUTURES    —    —     active on ES=NQ=RTY=YM
+#  11   stocks_ema_golden_cross   EQUITY     —    —     active on ADBE/CVX
+#  12   futures_bb_mean_reversion COMMODITY  —    —     active on KC=F
+#  13   futures_momentum          COMMODITY  —    —     active on GC=F
+#  14   cftc_cot_weekly           COMMODITY  —    —     active on ZC=F/ZS=F/ZW=F
+# ============================================================
+from paper_trading.strategies.proven_winners import (
+    COTPositioningProven,
+    CFTCCommercialProven,
+    CTACrossAssetTSMOMProven,
+    StocksRSI2PullbackProven,
+    BondMeanReversionProven,
+    ETFFaberTacticalProven,
+    ETFRSI2PullbackProven,
+    ETFSectorMomentumProven,
+    FuturesConnorsRSI2Proven,
+    StocksEMAGoldenCrossProven,
+    FuturesBBMeanReversionProven,
+    FuturesMomentumProven,
+    CFTCCOTWeeklyProven,
+)
+
+# IPO + Cheap Stocks (NEW asset classes per operator request)
+from paper_trading.strategies.ipo_cheap_stocks import (
+    IPODriftMomentum,
+    CheapStockMomentum,
+)
+
 # Hoffman IRB Variations (8) — incubator portfolio (requires pandas)
 try:
     from paper_trading.strategies.hoffman_variation_strategies import (
