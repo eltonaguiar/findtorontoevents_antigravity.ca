@@ -49,6 +49,15 @@ def _common_env(monkeypatch):
     monkeypatch.setenv("NUPL_GATE_ENFORCE", "0")
     monkeypatch.setenv("M044_MIN_AGE_SECONDS", "0")
     monkeypatch.setenv("BOOK_CONFLICT_GATE_DISABLED", "1")
+    # 2026-06-01: three *other* VIX gates were added after these tests and now
+    # hard-reject the ETF pick on the mocked VIX=28 BEFORE the M-098-specific gate
+    # under test is reached, masking it. Disable them here so M-098's shadow/enforce
+    # logic is exercised in isolation. Production keeps all of these ON by default.
+    #   - ETF_VIX_GATE_ENABLED (quality_gates.py:6440, hard ETF reject @ VIX>25)
+    #   - VIX_REGIME_GATE_ENABLED / YC_REGIME_GATE_ENABLED (legacy combined gate)
+    monkeypatch.setenv("ETF_VIX_GATE_ENABLED", "0")
+    monkeypatch.setenv("VIX_REGIME_GATE_ENABLED", "0")
+    monkeypatch.setenv("YC_REGIME_GATE_ENABLED", "0")
 
 
 class TestM098ETFVixGate:
