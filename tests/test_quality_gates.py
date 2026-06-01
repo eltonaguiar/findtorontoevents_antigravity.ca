@@ -210,7 +210,12 @@ def test_active_gate_keeps_large_sample_non_crypto_when_forward_wr_is_good(monke
     assert passes_active_gate(pick) is True
 
 
-def test_smart_gate_rejects_source_less_pick() -> None:
+def test_smart_gate_rejects_source_less_pick(monkeypatch) -> None:
+    # 2026-06-01: M-001 CRYPTO liquid-core gate (CRYPTO_LIQUID_CORE_ENABLED,
+    # default ON, quality_gates.py:6918) rejects non-core alts like FETUSDT before
+    # the gate under test runs. This test is not about liquid-core; disable it so
+    # the intended gate is exercised. Production keeps M-001 ON.
+    monkeypatch.setenv("CRYPTO_LIQUID_CORE_ENABLED", "0")
     pick = _base_pick(
         source_system=None,
         source=None,
@@ -226,9 +231,14 @@ def test_smart_gate_rejects_source_less_pick() -> None:
     assert passes_smart_gate(pick) is False
 
 
-def test_active_gate_rejects_exempt_safety_mode() -> None:
+def test_active_gate_rejects_exempt_safety_mode(monkeypatch) -> None:
     """Blocker 2 defense-in-depth: picks with clone_safety_mode=EXEMPT_FROM_SAFETY_GATES
     must be hard-rejected by passes_active_gate. See reports/HC_GATE_BLOCKER_2_PLACEHOLDER_STATS_DIAGNOSIS_2026_04_22.md."""
+    # 2026-06-01: M-001 CRYPTO liquid-core gate (CRYPTO_LIQUID_CORE_ENABLED,
+    # default ON, quality_gates.py:6918) rejects non-core alts like FETUSDT before
+    # the gate under test runs. This test is not about liquid-core; disable it so
+    # the intended gate is exercised. Production keeps M-001 ON.
+    monkeypatch.setenv("CRYPTO_LIQUID_CORE_ENABLED", "0")
     # Start from a known-passing pick (same pattern as test_smart_gate_accepts_ml_enhanced
     # at line 125), then add ONLY the EXEMPT flag. Everything else stays identical,
     # so any difference in gate outcome is attributable to the EXEMPT check alone.
@@ -316,11 +326,14 @@ def test_smart_score_prefers_audited_pm_consensus_over_raw_kalshi_signal() -> No
     assert calculate_smart_score(consensus) > calculate_smart_score(kalshi)
 
 
-def test_audited_pm_consensus_can_pass_score_floor_with_strong_history() -> None:
-    # PR #644: passes_smart_gate now short-circuits on forward_validated=False
-    # at the top. Mirror real audited PM picks which carry forward_validated=True
-    # plus strong forward sample (history_wr_bayes 0.94 / n=45 already represents
-    # this, but the explicit flag is required by the smart gate).
+def test_retired_pm_consensus_source_is_blocked() -> None:
+    # 2026-06-01 reality update: prediction_market_consensus was RETIRED into
+    # BLOCKED_SOURCE_SYSTEMS (quality_gates.py:2010-2015) — its headline PF 24.5 /
+    # WR 90% (n=89) was inflated by PRICE_MISMATCH rows (SHORT rows tagged
+    # SL_HIT_RESOLVED with POSITIVE pnl = data corruption). The earlier
+    # "can_pass_score_floor" assertion is therefore obsolete; the active gate must
+    # now hard-reject the source even with a strong forward sample. This test guards
+    # that the retirement stays in force.
     pick = _base_pick(
         source_system="prediction_market_consensus",
         strategy="prediction_market_consensus",
@@ -338,8 +351,8 @@ def test_audited_pm_consensus_can_pass_score_floor_with_strong_history() -> None
         pm_source_systems=["copy_trader_polymarket", "kalshi"],
     )
 
-    assert passes_active_gate(pick) is True
-    assert passes_smart_gate(pick) is True
+    assert passes_active_gate(pick) is False
+    assert passes_smart_gate(pick) is False
 
 
 def test_smart_score_penalizes_concentrated_track_records() -> None:
@@ -364,7 +377,12 @@ def test_smart_score_penalizes_concentrated_track_records() -> None:
     assert calculate_smart_score(concentrated) < calculate_smart_score(generic)
 
 
-def test_smart_gate_uses_concentration_adjusted_score_floor() -> None:
+def test_smart_gate_uses_concentration_adjusted_score_floor(monkeypatch) -> None:
+    # 2026-06-01: M-001 CRYPTO liquid-core gate (CRYPTO_LIQUID_CORE_ENABLED,
+    # default ON, quality_gates.py:6918) rejects non-core alts like FETUSDT before
+    # the gate under test runs. This test is not about liquid-core; disable it so
+    # the intended gate is exercised. Production keeps M-001 ON.
+    monkeypatch.setenv("CRYPTO_LIQUID_CORE_ENABLED", "0")
     pick = _base_pick(
         source_system="super_signals",
         strategy="super_signal_trend",
@@ -396,7 +414,12 @@ def test_hf_threshold_a_blocks_smart_gate_when_fwd_lags_bt() -> None:
     assert passes_smart_gate(pick) is False
 
 
-def test_smart_gate_blocks_highly_concentrated_non_verified_strategy() -> None:
+def test_smart_gate_blocks_highly_concentrated_non_verified_strategy(monkeypatch) -> None:
+    # 2026-06-01: M-001 CRYPTO liquid-core gate (CRYPTO_LIQUID_CORE_ENABLED,
+    # default ON, quality_gates.py:6918) rejects non-core alts like FETUSDT before
+    # the gate under test runs. This test is not about liquid-core; disable it so
+    # the intended gate is exercised. Production keeps M-001 ON.
+    monkeypatch.setenv("CRYPTO_LIQUID_CORE_ENABLED", "0")
     # alpha_engine is now restricted by matrix_symbol_gates to USDJPY=X only;
     # use mega_mutation (no matrix restriction) to isolate the concentration gate.
     pick = _base_pick(
