@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from alpha_engine.eight_class_flagship_strategies import generate_all_flagship_picks
+from alpha_engine.academic_strategies_emitter import generate_academic_picks
 
 logger = logging.getLogger(__name__)
 
@@ -46,14 +47,31 @@ def _filter_protocol(picks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return kept
 
 
+def _deduplicate_across_sources(picks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep highest-confidence pick per (symbol, direction) across flagship + academic."""
+    best: dict[tuple[str, str], dict[str, Any]] = {}
+    for p in picks:
+        sym = str(p.get("symbol", "")).strip().upper()
+        direction = str(p.get("direction") or p.get("signal_type") or "LONG").strip().upper()
+        direction = "SHORT" if direction in ("SELL", "SHORT") else "LONG"
+        key = (sym, direction)
+        conf = float(p.get("confidence") or 0)
+        if key not in best or conf > float(best[key].get("confidence") or 0):
+            best[key] = p
+    return list(best.values())
+
+
 def emit_picks(
     output_path: Path | None = None,
     dry_run: bool = False,
 ) -> list[dict[str, Any]]:
     """Generate, dedup, gate, and optionally write priority picks."""
     logger.info("PriorityPicksEmitter starting...")
-    picks = generate_all_flagship_picks()
-    picks = _filter_protocol(picks)
+    flagship = generate_all_flagship_picks()
+    academic = generate_academic_picks()
+    combined = flagship + academic
+    deduped = _deduplicate_across_sources(combined)
+    picks = _filter_protocol(deduped)
 
     if not picks:
         logger.warning("Zero picks survived gating.")
