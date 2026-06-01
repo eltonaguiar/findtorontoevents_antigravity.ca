@@ -1,0 +1,168 @@
+# Academic-strategies daily emission cron.
+#
+# Invokes priority_picks_emitter (which runs the 30+ academic strategy
+# generators + the eight-class flagships), merges the output into
+# active_picks.json so the hourly mysql-trading-sync.yml picks them up,
+# and commits the JSON update.
+#
+# This closes the wire-up gap identified 2026-06-01: all 30+ academic
+# strategies are code-wired but had no production caller (operationally
+# orphans). See reports/2026-06-01_wireup_gap_and_resolver_bugs.md +
+# PR #427 for the source_system tagging + dedup-key fix that make
+# per-strategy attribution possible once these picks start flowing.
+#
+# Cron: 13:00 UTC daily (30 min before the :30 hourly mysql-trading-sync
+# at 13:30 UTC, giving time for the JSON merge + commit to settle).
+# Per-strategy cadence (monthly / weekly / daily) is self-gated inside
+# each strategy module.
+
+name: Academic Strategies Daily
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview picks without merging into active_picks.json"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+concurrency:
+  group: academic-strategies-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  emit-academic-picks:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas pymysql requests
+          # The academic strategies use various data fetchers (yfinance,
+          # ccxt-style binance public, etc.). Keep installs minimal; each
+          # strategy module is wrapped in try/except in the emitter so
+          # missing deps degrade gracefully (logger.debug "not available").
+          pip install yfinance ccxt || true
+
+      - name: Run priority_picks_emitter (writes priority_picks.json)
+        id: emit
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          mkdir -p alpha_engine/data
+          if [ "$DRY_RUN" = "true" ]; then
+            python -m alpha_engine.priority_picks_emitter --dry-run --verbose 2>&1 | tee /tmp/emit.log
+            echo "DRY_RUN — no JSON written"
+            exit 0
+          fi
+          python -m alpha_engine.priority_picks_emitter \
+            --output alpha_engine/data/priority_picks.json \
+            --verbose 2>&1 | tee /tmp/emit.log
+          ls -la alpha_engine/data/priority_picks.json
+
+      - name: Merge priority_picks.json into active_picks.json
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          python3 << 'PYEOF'
+          # Merge priority_picks.json (the academic + flagship output) into
+          # alpha_engine/data/active_picks.json (the file mysql_trading_sync
+          # ingests). Dedup by canonical 'id' so re-runs are idempotent.
+          # If active_picks.json doesn't exist, create it with just the new picks.
+          import json
+          from pathlib import Path
+
+          PRIORITY = Path("alpha_engine/data/priority_picks.json")
+          ACTIVE   = Path("alpha_engine/data/active_picks.json")
+
+          if not PRIORITY.exists():
+              print("priority_picks.json missing — emitter produced no output. Skipping merge.")
+              raise SystemExit(0)
+
+          with open(PRIORITY) as f:
+              new_picks = json.load(f)
+          if not isinstance(new_picks, list):
+              print(f"priority_picks.json wrong shape ({type(new_picks).__name__}). Skipping.")
+              raise SystemExit(0)
+
+          existing = []
+          if ACTIVE.exists():
+              try:
+                  with open(ACTIVE) as f:
+                      existing = json.load(f)
+                  if not isinstance(existing, list):
+                      existing = []
+              except Exception as e:
+                  print(f"active_picks.json unreadable ({e}); rebuilding from scratch.")
+                  existing = []
+
+          # Dedup by canonical pick id. Newer entries from priority_picks.json win.
+          merged = {p["id"]: p for p in existing if isinstance(p, dict) and "id" in p}
+          added = 0
+          for p in new_picks:
+              if isinstance(p, dict) and "id" in p:
+                  if p["id"] not in merged:
+                      added += 1
+                  merged[p["id"]] = p
+
+          final = list(merged.values())
+          ACTIVE.parent.mkdir(parents=True, exist_ok=True)
+          with open(ACTIVE, "w") as f:
+              json.dump(final, f, indent=2, default=str)
+
+          print(f"Merged: existing={len(existing)} new_in_priority={len(new_picks)} added={added} total={len(final)}")
+          PYEOF
+
+      - name: Commit JSON updates
+        if: github.event.inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/priority_picks.json alpha_engine/data/active_picks.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "feat(academic): daily emit + merge into active_picks.json [skip ci]" \
+            -m "Generated by academic-strategies-daily workflow."
+          # Retry push to absorb a peer-agent race.
+          for i in 1 2 3; do
+            if git push; then break; fi
+            git pull --rebase || true
+            sleep 5
+          done
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "=== emit log tail ==="
+          tail -40 /tmp/emit.log 2>/dev/null || echo "(no emit log)"
+          if [ -f alpha_engine/data/priority_picks.json ]; then
+            echo "=== priority_picks.json size ==="
+            wc -c alpha_engine/data/priority_picks.json
+            python3 -c "import json; d=json.load(open('alpha_engine/data/priority_picks.json')); print('n_picks:', len(d)); print('sources:', sorted({p.get('source_system','') for p in d if isinstance(p,dict)})[:20])"
+          fi
