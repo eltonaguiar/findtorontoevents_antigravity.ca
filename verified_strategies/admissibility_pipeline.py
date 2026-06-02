@@ -50,6 +50,57 @@ class PipelineVerdict(Enum):
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
 
 
+# ---------------------------------------------------------------------------
+# ENHANCEMENT_OVERALL #67 — shadow-size promotion ladder.
+# A sleeve that clears the admissibility harness does NOT go straight to full
+# capital. It enters SHADOW at <=0.5% of allocated capital for 4-8 weeks, then
+# may PROMOTE only after its live PF holds within +-10% of the backtest PF for
+# 2 consecutive 4-week windows. This is the canonical capital-scaling policy
+# (Step 10 of the pipeline). Advisory/shadow-first: it returns a plan dict; it
+# never sizes anything by itself.
+# ---------------------------------------------------------------------------
+SHADOW_SIZE_PCT = 0.005            # <=0.5% capital cap during shadow/probation
+SHADOW_MIN_WEEKS = 4
+SHADOW_MAX_WEEKS = 8
+PROMOTE_PF_TOLERANCE = 0.10        # live PF must stay within +-10% of backtest PF
+PROMOTE_CONSECUTIVE_WINDOWS = 2    # consecutive 4-week windows required to promote
+
+
+def shadow_size_plan(cleared_harness: bool, *, forward_weeks: float = 0.0,
+                     backtest_pf: Optional[float] = None,
+                     live_pf: Optional[float] = None,
+                     windows_passed: int = 0) -> Dict:
+    """Capital-scaling recommendation for a sleeve (ENHANCEMENT #67).
+
+    Stages: REJECTED (failed harness) -> SHADOW (<4wk live) -> PROBATION
+    (>=4wk, criteria not yet met) -> PROMOTE (>=2 windows within +-10% PF).
+    Returns a plan dict; sizing layers READ this, it never sizes by itself."""
+    if not cleared_harness:
+        return {"stage": "REJECTED", "capital_fraction": 0.0,
+                "max_capital_pct": 0.0, "forward_weeks": forward_weeks,
+                "windows_passed": windows_passed, "pf_within_tolerance": False,
+                "next_action": "did not clear admissibility harness — no capital"}
+
+    in_tol = (
+        backtest_pf is not None and live_pf is not None and backtest_pf > 0
+        and abs(live_pf - backtest_pf) / backtest_pf <= PROMOTE_PF_TOLERANCE
+    )
+    if forward_weeks < SHADOW_MIN_WEEKS:
+        stage, cap = "SHADOW", SHADOW_SIZE_PCT
+        nxt = f"hold <=0.5% capital for >={SHADOW_MIN_WEEKS} weeks of live-paper"
+    elif windows_passed >= PROMOTE_CONSECUTIVE_WINDOWS and in_tol:
+        stage, cap = "PROMOTE", None
+        nxt = "eligible for graded scaling above shadow (manual sign-off required)"
+    else:
+        stage, cap = "PROBATION", SHADOW_SIZE_PCT
+        nxt = (f"need {PROMOTE_CONSECUTIVE_WINDOWS} consecutive 4-week windows with "
+               f"live PF within +-{int(PROMOTE_PF_TOLERANCE * 100)}% of backtest PF")
+    return {"stage": stage, "capital_fraction": cap,
+            "max_capital_pct": SHADOW_SIZE_PCT * 100,
+            "forward_weeks": forward_weeks, "windows_passed": windows_passed,
+            "pf_within_tolerance": bool(in_tol), "next_action": nxt}
+
+
 @dataclass
 class CostModel:
     """Per-asset-class transaction costs."""
@@ -126,7 +177,8 @@ class PipelineResult:
     concentration: Optional[ConcentrationResult] = None
     overall_verdict: PipelineVerdict = PipelineVerdict.PENDING
     rejection_reason: str = ""
-    
+    shadow_size_plan: Optional[Dict] = None  # ENHANCEMENT #67
+
     def to_dict(self) -> Dict:
         return {
             'strategy_name': self.strategy_name,
@@ -135,6 +187,7 @@ class PipelineResult:
             'stages': {k: v.value for k, v in self.stages.items()},
             'overall_verdict': self.overall_verdict.value,
             'rejection_reason': self.rejection_reason,
+            'shadow_size_plan': self.shadow_size_plan,
         }
 
 
@@ -238,14 +291,19 @@ class AdmissibilityPipeline:
         
         # Step 10: Promotion decision
         result.stages['promotion'] = PipelineVerdict.PENDING
-        
+
         # Overall verdict
         failed_stages = [k for k, v in result.stages.items() if v == PipelineVerdict.FAIL]
         if failed_stages:
             result.overall_verdict = PipelineVerdict.FAIL
             result.rejection_reason = f"Failed stages: {', '.join(failed_stages)}"
+            # ENHANCEMENT #67: failed harness -> no capital.
+            result.shadow_size_plan = shadow_size_plan(False)
         else:
             result.overall_verdict = PipelineVerdict.PASS
+            # ENHANCEMENT #67: a cleared sleeve enters SHADOW at <=0.5% capital —
+            # NOT full size. Forward-paper evidence (Step 9) graduates it later.
+            result.shadow_size_plan = shadow_size_plan(True)
         
         # Save result
         self._save_result(result)
