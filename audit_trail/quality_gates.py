@@ -1722,12 +1722,20 @@ WIN_RATE_TRAP_BLACKLIST = frozenset({
 #   - Active visibility still uses passes_active_gate (e.g. GC=F entry sanity was blocking gold)
 # ETF: same -60 penalty plus **hard ban** in passes_active_gate (PLAN_FIX_LOWPICKSCOUNT Phase 1:
 #   thin closed book, systemic drain — no new ETF actives until forward validation justifies).
-BLOCKED_ASSET_CLASSES: set = {"FOREX"}  # 2026-05-28 Tier-0 freeze: FOREX 90d policy-clean PF 0.39 / WR 15.4% / n=13;
-# 15,720 picks scanned → 0 high-conviction. Bypass route: external MyFXBook replication gate (see Tier 5 fix plan).
-# Mechanism: -60 score penalty + SMART_PICKS_MIN_SCORE_FOREX=40 floor → smart_picks fails. passes_active_gate does
-# NOT read this set, so active book stays visible for audit. Re-evaluate after MyFXBook replication wired.
-# Historical: was {"FUTURES"} until 2026-04-16; -60 penalty caused data starvation, removed. FOREX starvation is
-# the intent of this freeze (per reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #5).
+BLOCKED_ASSET_CLASSES: set = {"FOREX", "COMMODITY", "FUTURES"}
+# FOREX: 2026-05-28 Tier-0 freeze, 90d policy-clean PF 0.39 / WR 15.4% / n=13. 15,720 picks → 0 high-conviction.
+#        Bypass route: external MyFXBook replication gate (Tier 5 fix plan).
+# COMMODITY: 2026-06-02 EAGLE-2 Pillar 1 freeze. Live policy-clean PF 0.31 / WR 11% / n=28; CT=F 57% concentration;
+#        cot_positioning PF dropped 4.6 → 0.51 post-dedup (grok consult 2026-05-25, 75-85% leakage probability).
+#        Bypass: 3-day COT publication lag enforced at signal receipt + CT=F removed from universe + 60d post-fix
+#        live test. See EAGLE2_2026-06-02_CLAUDE_OPUS_4_7.MD Pillar 1 action #2.
+# FUTURES: 2026-06-02 EAGLE-2 Pillar 1 freeze. n=2 is not a class. futures_momentum killed 2026-05-06 (56 closed,
+#        0% WR). Micro-contract slippage not modeled. Bypass: COT lag fix + slippage-adjusted backtest on 2y data
+#        + 50 paper trades OOS. See EAGLE2_2026-06-02_CLAUDE_OPUS_4_7.MD Pillar 1 action #3.
+# Mechanism: -60 score penalty + SMART_PICKS_MIN_SCORE_{CLASS}=40 floor → smart_picks fails. passes_active_gate
+# does NOT read this set, so active book stays visible for audit.
+# Historical: was {"FUTURES"} until 2026-04-16; -60 penalty caused data starvation, removed. Re-frozen 2026-06-02
+# after live policy-clean revealed n=2 with no credible lab strategy.
 
 # Non-crypto raw-score floor bypass: audited *backtest* history is not enough; require
 # a minimum **forward** lane sample so low dashboard scores cannot ride history alone.

@@ -1,32 +1,35 @@
 # 🎛️ Optimization Report
 
-**Generated:** 2026-06-02T11:35:45.114967
+**Generated:** 2026-06-02T17:39:20.034573
 
 ## 📊 Overall Accuracy
-- **Total Signals:** 377
+- **Total Signals:** 380
 - **Accuracy:** 58.7%
 - **Target:** 65.0%
 
 ## 📈 Accuracy by Asset Class
 
 ### Crypto
-- ❌ **BTC-USD**: 53.1% (43 signals)
-- ✅ **ETH-USD**: 66.7% (49 signals)
+- ❌ **BTC-USD**: 53.1% (44 signals)
+- ⚠️ **ETH-USD**: 64.0% (50 signals)
 - ❌ **SOL-USD**: 47.1% (31 signals)
 - ✅ **ADA-USD**: 66.7% (29 signals)
 - ✅ **DOT-USD**: 66.7% (35 signals)
 
 ### Forex
 - ✅ **EUR-USD**: 65.0% (21 signals)
-- ❌ **GBP-USD**: 42.1% (20 signals)
+- ❌ **GBP-USD**: 45.0% (21 signals)
 - ⚠️ **USD-JPY**: 58.8% (17 signals)
 
 ## 🔧 Recent Tweaks
 
-**2026-06-02T11:35:44**
+**2026-06-02T17:39:19**
 - SYMBOL_DISABLE: BTC-USD
   - Reason: Accuracy 53.1% below minimum 55.0%
   - Change: enabled → disabled
+- TIMEFRAME_OPTIMIZATION: ETH-USD
+  - Reason: Accuracy 64.0% below target, best at 48h
+  - Change: default → 48h
 - SYMBOL_DISABLE: SOL-USD
   - Reason: Accuracy 47.1% below minimum 55.0%
   - Change: enabled → disabled
@@ -34,7 +37,7 @@
   - Reason: Accuracy 33.3% below minimum 55.0%
   - Change: enabled → disabled
 - SYMBOL_DISABLE: GBP-USD
-  - Reason: Accuracy 42.1% below minimum 55.0%
+  - Reason: Accuracy 45.0% below minimum 55.0%
   - Change: enabled → disabled
 - TIMEFRAME_OPTIMIZATION: USD-JPY
   - Reason: Accuracy 58.8% below target, best at 48h

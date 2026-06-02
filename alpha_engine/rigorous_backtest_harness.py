@@ -436,7 +436,7 @@ def run_backtest(pnl_series: np.ndarray, asset_class: str,
     Returns comprehensive results dict.
     """
     if n_trials is None:
-        n_trials = DSR_PARAMS['n_trials']
+        n_trials = DSR_PARAMS['n_trials'] or _load_real_n_trials()
     if n_bootstrap is None:
         n_bootstrap = DSR_PARAMS['n_bootstrap']
 

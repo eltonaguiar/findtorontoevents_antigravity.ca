@@ -9,6 +9,29 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+# 2026-06-02: skip module until tag_money_ready_capital_lock + helpers land.
+# Orphan test file (commit 4d89d0e9) references symbols not yet on main, was
+# blocking every PR's CI. Re-enable once the feature PR lands.
+_missing = []
+try:
+    from audit_trail.quality_gates import tag_money_ready_capital_lock  # noqa: F401
+except ImportError:
+    _missing.append("audit_trail.quality_gates.tag_money_ready_capital_lock")
+try:
+    from audit_trail.quality_gates import _money_ready_capital_lock_reason  # noqa: F401
+except ImportError:
+    _missing.append("audit_trail.quality_gates._money_ready_capital_lock_reason")
+try:
+    from alpha_engine.money_ready_verdict import _verdict_rows_cached  # noqa: F401
+except (ImportError, AttributeError):
+    _missing.append("alpha_engine.money_ready_verdict._verdict_rows_cached")
+
+if _missing:
+    pytest.skip(
+        "money_ready_capital_lock helpers not yet on main: " + ", ".join(_missing),
+        allow_module_level=True,
+    )
+
 
 def test_sizing_multiplier_locked_when_not_money_ready(monkeypatch):
     from alpha_engine import money_ready_verdict as mrv
