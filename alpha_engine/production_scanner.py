@@ -310,6 +310,18 @@ try:
     _HAS_HEDGE_FUND_GATE = True
 except ImportError:
     _HAS_HEDGE_FUND_GATE = False
+
+try:
+    from audit_trail.promotion_gate import (
+        PROMOTED_STRATEGIES,
+        admission_reason,
+        is_admissible_for_production,
+    )
+
+    _HAS_PROMOTION_GATE = True
+except ImportError:
+    _HAS_PROMOTION_GATE = False
+
 # Drawdown Tracker -- per-strategy drawdown + loss streak penalties
 try:
     from drawdown_tracker import compute_all_drawdowns
@@ -5597,6 +5609,39 @@ def main():
             active = apply_eagle6_admissibility(active)
         except Exception as _eagle6_err:
             print(f"  [EAGLE-6] Admissibility gate failed (non-fatal, fail-open): {_eagle6_err}")
+
+    if active and _HAS_PROMOTION_GATE:
+        try:
+            _pg_enforce = os.environ.get("PROMOTION_GATE_ENFORCE", "").strip().lower() in (
+                "1",
+                "true",
+                "yes",
+            )
+            _pg_kept: list[dict] = []
+            _pg_denied = 0
+            for _pg_pick in active:
+                _pg_key = str(
+                    _pg_pick.get("source_system") or _pg_pick.get("strategy") or ""
+                ).strip()
+                _pg_ac = str(
+                    _pg_pick.get("asset_class") or _pg_pick.get("category") or ""
+                ).strip()
+                _pg_ok = is_admissible_for_production(_pg_key, _pg_ac)
+                _pg_pick["_promotion_gate_admitted"] = _pg_ok
+                _pg_pick["_promotion_gate_reason"] = admission_reason(_pg_key, _pg_ac)
+                if _pg_ok or not _pg_enforce:
+                    _pg_kept.append(_pg_pick)
+                else:
+                    _pg_denied += 1
+                    _pg_pick["_promotion_gate_rejected"] = _pg_pick["_promotion_gate_reason"]
+                    rejected.append(_pg_pick)
+            print(
+                f"  [PROMOTION GATE] enforce={_pg_enforce} denied={_pg_denied} "
+                f"kept={len(_pg_kept)} allowlist={len(PROMOTED_STRATEGIES)}"
+            )
+            active = _pg_kept
+        except Exception as _pg_err:
+            print(f"  [PROMOTION GATE] Failed (non-fatal, fail-open): {_pg_err}")
 
     # 6f3. Portfolio cap -- hard limit on total active picks
     before_cap = len(active)
