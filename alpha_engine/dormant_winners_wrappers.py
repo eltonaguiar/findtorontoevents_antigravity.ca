@@ -31,20 +31,108 @@ TOP15_USDT_PERPS: List[str] = [
 ]
 
 
+def _interval_to_minutes(interval: str) -> int:
+    """Crude interval -> minutes converter for non-Binance providers."""
+    s = interval.strip().lower()
+    if s.endswith("m"):
+        return int(s[:-1])
+    if s.endswith("h"):
+        return int(s[:-1]) * 60
+    if s.endswith("d"):
+        return int(s[:-1]) * 60 * 24
+    return 60  # default 1h
+
+
+def _kucoin_interval(interval: str) -> str:
+    """Map Binance-style interval to KuCoin's klines `type` param."""
+    table = {"1m":"1min","3m":"3min","5m":"5min","15m":"15min","30m":"30min",
+             "1h":"1hour","2h":"2hour","4h":"4hour","6h":"6hour","8h":"8hour",
+             "12h":"12hour","1d":"1day","1w":"1week"}
+    return table.get(interval, "1hour")
+
+
+def _fetch_klines_cryptocompare(symbol: str, interval: str, limit: int) -> Optional[pd.DataFrame]:
+    """CryptoCompare public histohour/histoday endpoints. No API key needed."""
+    import requests
+    base_sym = symbol.replace("USDT", "").replace("USD", "")
+    quote_sym = "USDT" if symbol.endswith("USDT") else "USD"
+    mins = _interval_to_minutes(interval)
+    # Map to histo endpoint
+    if mins >= 1440:
+        endpoint, agg = "histoday", mins // 1440
+    elif mins >= 60:
+        endpoint, agg = "histohour", mins // 60
+    else:
+        endpoint, agg = "histominute", mins
+    try:
+        r = requests.get(
+            f"https://min-api.cryptocompare.com/data/v2/{endpoint}",
+            params={"fsym": base_sym, "tsym": quote_sym, "limit": limit, "aggregate": agg},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return None
+        data = r.json().get("Data", {}).get("Data", [])
+        if not data:
+            return None
+        df = pd.DataFrame(data)
+        df = df.rename(columns={"time": "open_time", "volumefrom": "volume"})
+        df["open_time"] = df["open_time"] * 1000  # match Binance ms
+        return df[["open_time", "open", "high", "low", "close", "volume"]].dropna()
+    except Exception:
+        return None
+
+
+def _fetch_klines_kucoin(symbol: str, interval: str, limit: int) -> Optional[pd.DataFrame]:
+    """KuCoin public market/candles endpoint."""
+    import requests
+    # KuCoin uses BTC-USDT format
+    base_sym = symbol.replace("USDT", "")
+    pair = f"{base_sym}-USDT"
+    try:
+        r = requests.get(
+            "https://api.kucoin.com/api/v1/market/candles",
+            params={"symbol": pair, "type": _kucoin_interval(interval)},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            return None
+        rows = r.json().get("data") or []
+        if not rows:
+            return None
+        # KuCoin returns newest first; reverse + slice
+        rows = list(reversed(rows))[-limit:]
+        df = pd.DataFrame(rows, columns=["open_time", "open", "close", "high", "low", "volume", "turnover"])
+        for col in ("open", "high", "low", "close", "volume"):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+        df["open_time"] = pd.to_numeric(df["open_time"]) * 1000
+        return df[["open_time", "open", "high", "low", "close", "volume"]].dropna()
+    except Exception:
+        return None
+
+
 def _fetch_klines_binance(symbol: str, interval: str = "1h", limit: int = 200) -> Optional[pd.DataFrame]:
-    """Fetch OHLCV from Binance public REST with multi-mirror failover.
+    """Fetch OHLCV with API failover chain per CLAUDE.md "API Failover Rule":
+
+      Binance mirrors (api, api1, api2, api3) -> CryptoCompare -> KuCoin
+
+    Binance returns HTTP 451 from GitHub Actions / AWS / Azure IPs (geo-block).
+    The 2026-06-02 cron dry-run found every Binance mirror 451'd. This failover
+    chain ensures the strategy receives data from at least one source.
 
     Returns a DataFrame with columns: open_time, open, high, low, close, volume.
     Returns None on total failure (caller skips the symbol).
     """
     import requests  # local import — keeps module importable when offline
 
+    # ----- Try 1: Binance mirrors (fastest when not 451'd) -----
     mirrors = [
         "https://api.binance.com",
         "https://api1.binance.com",
         "https://api2.binance.com",
         "https://api3.binance.com",
     ]
+    saw_451 = False
     for base in mirrors:
         try:
             r = requests.get(
@@ -52,6 +140,11 @@ def _fetch_klines_binance(symbol: str, interval: str = "1h", limit: int = 200) -
                 params={"symbol": symbol, "interval": interval, "limit": limit},
                 timeout=8,
             )
+            if r.status_code == 451:
+                saw_451 = True
+                # All Binance mirrors are geo-blocked from the same egress IP;
+                # skip the remaining mirrors and try a different provider.
+                break
             if r.status_code != 200:
                 continue
             rows = r.json()
@@ -69,6 +162,17 @@ def _fetch_klines_binance(symbol: str, interval: str = "1h", limit: int = 200) -
             return df[["open_time", "open", "high", "low", "close", "volume"]].dropna()
         except Exception:
             continue
+
+    # ----- Try 2: CryptoCompare (no API key, generous public tier) -----
+    df = _fetch_klines_cryptocompare(symbol, interval, limit)
+    if df is not None and not df.empty:
+        return df
+
+    # ----- Try 3: KuCoin (no geo-block from most cloud IPs) -----
+    df = _fetch_klines_kucoin(symbol, interval, limit)
+    if df is not None and not df.empty:
+        return df
+
     return None
 
 
