@@ -1,20 +1,27 @@
-# EAGLE2 swarm session summary page (2026-06-02)
+# EAGLE session report — updates deploy (2026-06-02)
 
-## What shipped
+## What this PR ships
 
-- **HTML:** `updates/eagle2-swarm-session-summary-2026-06-02.html` — findings, accomplishments, best-picks rationale, short/long plans, ELI5 per section.
-- **Updates index:** New card before `AUTO-INJECTED:INCIDENTS-ENHANCEMENTS` linking to the HTML page.
+- **`updates/eagle2-swarm-session-summary-2026-06-02.html`** — findings, achievements, repo tasks, best-picks rationale (detailed), short/long-term plan; ELI5 under every section.
+- **`updates/index.html`** — top card (before incidents block) linking to the HTML report.
 
-## Verification
+## Post-merge deploy (required for live site)
 
-- Open locally: `python3 tools/serve_local.py` → http://localhost:5173/updates/eagle2-swarm-session-summary-2026-06-02.html
-- Deploy (post-merge): `python3 tools/deploy_audit_files.py --only updates` (FTP)
+50webs has no shell — git merge does not update findtorontoevents.ca/updates until FTP:
 
-## PR
+```bash
+python3 tools/deploy_audit_files.py --only updates
+curl -sI -A "Mozilla/5.0" 'https://findtorontoevents.ca/updates/eagle2-swarm-session-summary-2026-06-02.html'
+```
 
-- Branch: `docs/eagle2-updates-entry-deploy-2026-06-02`
-- Ships: `updates/index.html` card (top, before incidents block), summary HTML, consolidated findings HTML, deploy paths in `tools/deploy_audit_files.py`
+## Verify locally
 
-## Key message
+```bash
+python3 tools/serve_local.py
+# http://localhost:5173/updates/eagle2-swarm-session-summary-2026-06-02.html
+```
 
-0/9 money-ready on production `/audit`; paper edge on ai-tournament; first promotion candidate ETF dual momentum (shadow).
+## Live URLs (after deploy)
+
+- https://findtorontoevents.ca/updates/eagle2-swarm-session-summary-2026-06-02.html
+- https://findtorontoevents.ca/updates/index.html
