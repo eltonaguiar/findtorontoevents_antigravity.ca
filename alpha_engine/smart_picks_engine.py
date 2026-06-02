@@ -504,7 +504,7 @@ NON_CRYPTO_POLICY = {
         "allowlist": {
             "cta_tsmom_blend", "forex_rsi2_mean_reversion",
             "forex-rsi-ema-scout", "fx_smart_carry_trade_momentum",
-            "non_crypto_consensus", "regime_terminal",
+            "non_crypto_consensus",
             "myfxbook_retail_contrarian", "ig_contrarian_sentiment",
         },
         "min_trades": 10,
@@ -534,7 +534,7 @@ NON_CRYPTO_POLICY = {
             "cot_positioning", "rs-breakout-scout", "Breakout Momentum", "Classic Momentum",
             "quality-minus-junk", "Bollinger MR", "Meta Learner", "vwap-reversion-scout",
             "rsi-divergence-scout", "markov_zone_transition",
-            "regime_terminal", "non_crypto_consensus", "stocks_ema_golden_cross",
+            "non_crypto_consensus", "stocks_ema_golden_cross",
             "smart_money_consensus", "smart_money_accumulation",
             "donchian-stock-breakout", "price-accel-scout", "vix-mean-rev-scout",
             "keltner-bounce", "gap-and-go-stocks", "golden-cross-stocks",
@@ -2509,6 +2509,35 @@ def run():
         top = _enforce_symbol_cap(top)
         if len(top) != _pre_n:
             log.info("per_symbol_cap: %d -> %d picks", _pre_n, len(top))
+
+    # EAGLE2 Phase 0: per-class single-source concentration cap (default 60%).
+    try:
+        from alpha_engine.eagle2_class_source_cap import enforce_class_single_source_cap
+    except ImportError:
+        try:
+            from eagle2_class_source_cap import enforce_class_single_source_cap
+        except ImportError:
+            enforce_class_single_source_cap = None
+    if enforce_class_single_source_cap is not None:
+        _eagle2_cfg = (_risk_policy.get("eagle2_phase0") or {})
+        _max_src = float(
+            _eagle2_cfg.get("max_class_single_source_share")
+            or (_risk_policy.get("crypto") or {}).get("max_single_source_share_pct")
+            or 0.60
+        )
+        _pre_n = len(top)
+        top, _eagle2_stats = enforce_class_single_source_cap(top, max_share=_max_src)
+        if _eagle2_stats.get("trimmed"):
+            excluded["eagle2_single_source_cap"] = excluded.get("eagle2_single_source_cap", 0) + int(
+                _eagle2_stats["trimmed"]
+            )
+            log.info(
+                "eagle2_class_source_cap: %d -> %d picks (trimmed %d, classes %s)",
+                _pre_n,
+                len(top),
+                _eagle2_stats["trimmed"],
+                _eagle2_stats.get("classes_affected"),
+            )
 
     nc_in_portfolio = sum(1 for p in top if p.get("quarantine") == "non_crypto_pool")
     output = {
