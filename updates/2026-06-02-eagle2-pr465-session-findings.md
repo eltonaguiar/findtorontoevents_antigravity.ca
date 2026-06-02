@@ -85,18 +85,17 @@ Top honest INVERT (still cap-inflated when gross_loss tiny — treat as **resear
 - **Time-stale tool:** `resolve_stale_open_picks.py` only queries `status='OPEN'` → **0** stale after hygiene batch  
 - **Real issue:** volume of unresolved **OPEN** + parallel **`ACTIVE`** cohort (below)
 
-### 4. ACTIVE vs OPEN — dual live cohort (new)
+### 4. ACTIVE vs OPEN — dual live cohort (mitigated 2026-06-02)
 
-`trading_picks` uses two “live” statuses:
+**P0 resolver** closed **3663** past-hold `OPEN`+`ACTIVE` rows to `TIME_EXIT`. Post-hygiene (~23:57Z): **2690** live picks, **0** past hold window in a 10-batch stale pass.
 
-| Status | Count | Notes |
-|--------|------:|-------|
-| **OPEN** | 2465 | Stale resolver target; oldest ~2026-03-20 |
-| **ACTIVE** | 3726 | **Not** scanned by stale resolver; **3467 crypto**; **3471** rows older than 72h |
-| TIME_EXIT | 29206 | Terminal |
-| TP_HIT / LOST / SL_HIT / EXPIRED | … | Terminal |
+| Status | Pre-P0 | Post-P0 (approx.) |
+|--------|--------:|------------------:|
+| **OPEN** | 2465 | ~2432 |
+| **ACTIVE** | 3726 | ~258 |
+| TIME_EXIT | 29206 | ~32813 |
 
-**Implication:** Hygiene tools that only close `OPEN` leave a large **ACTIVE** crypto backlog that still counts toward funnel noise and gate denominators. `mysql_trading_sync.py` defaults new picks to **`ACTIVE`** when status missing.
+**Writer fix (wave 3):** `mysql_trading_sync.pick_to_row` defaults missing status to **`OPEN`**; live `ACTIVE` without terminal `exit_reason` maps to **`OPEN`** on upsert so the dual cohort does not regrow.
 
 ### 5. Money-ready / capital (unchanged)
 
@@ -155,7 +154,7 @@ python3 tools/check_resolver_health.py
 |---|--------|--------|
 | 1 | **ACTIVE aged-pick resolver** — `resolve_stale_open_picks.py` now scans `OPEN`+`ACTIVE` | **DONE** — 3663 TIME_EXIT on 2026-06-02 ([doc](https://findtorontoevents.ca/updates/2026-06-02-active-stale-resolver-p0.md)) |
 | 2 | **Fix health label** — `total_past_hold_window` vs `total_live_picks` | **DONE** — `tools/check_resolver_health.py` |
-| 3 | **Normalize writer default** — audit `mysql_trading_sync.pick_to_row` ACTIVE default | Pending PR |
+| 3 | **Normalize writer default** — `mysql_trading_sync.pick_to_row` OPEN default + live ACTIVE→OPEN | **DONE** — [wave 3 doc](https://findtorontoevents.ca/updates/2026-06-02-resolver-hygiene-wave3.md) |
 
 ### P1 — Verified edge path (shadow only)
 
@@ -177,7 +176,7 @@ python3 tools/check_resolver_health.py
 | # | Action |
 |---|--------|
 | 9 | CI wrapper: `PYTHONPATH=.` for `outcome_resolver` in workflows |
-| 10 | Schedule universal resolver + stale OPEN on staggered cron (file sources vs MySQL) |
+| 10 | Daily cron via `tools/run_daily_resolver_hygiene.sh` | **DONE** — wire on host with `AUDIT_DB_PASS` |
 
 ---
 

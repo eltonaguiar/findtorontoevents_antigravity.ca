@@ -215,7 +215,9 @@ def _safe_float(val):
 
 def pick_to_row(pick):
     """Convert a JSON pick dict to a flat dict matching the DB columns."""
-    raw_status = str(pick.get("status", "ACTIVE") or "ACTIVE").upper()
+    # Default OPEN (not ACTIVE) — 2026-06-02: dual OPEN+ACTIVE live cohort caused
+    # 3.7k ACTIVE rows to bypass stale resolver until pick_hold_windows fix.
+    raw_status = str(pick.get("status", "OPEN") or "OPEN").upper()
     exit_reason = str(pick.get("exit_reason", "") or "").upper()
 
     # PnL sign helper (used by both the CLOSED/FLAT derivation and the
@@ -273,6 +275,11 @@ def pick_to_row(pick):
             status = _STATIC_CANON[raw_status]
         else:
             status = raw_status
+
+    # Live picks: canonicalize ACTIVE → OPEN (avoid dual live cohort in MySQL).
+    _live_exit = {"", "OPEN", "ACTIVE", "PENDING", "LIVE", "NEW"}
+    if status == "ACTIVE" and (exit_reason or "").upper() in _live_exit:
+        status = "OPEN"
 
     # Determine closed_at: use exit_date if present.
     # 2026-05-10: + exit_time fallback. battleground/data/closed_picks.json and
