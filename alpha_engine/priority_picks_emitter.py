@@ -48,13 +48,21 @@ def _filter_protocol(picks: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _deduplicate_across_sources(picks: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Keep highest-confidence pick per (symbol, direction) across flagship + academic."""
-    best: dict[tuple[str, str], dict[str, Any]] = {}
+    """Keep highest-confidence pick per (symbol, direction, strategy).
+
+    2026-06-01 fix: key was previously (symbol, direction) which collapsed
+    every academic strategy emitting the same symbol/direction into a single
+    pick, destroying per-strategy attribution before the picks reached the
+    DB writer. Including `strategy` preserves per-strategy diversity so each
+    of the 30+ academic strategies can be measured independently in pf_registry.
+    """
+    best: dict[tuple[str, str, str], dict[str, Any]] = {}
     for p in picks:
         sym = str(p.get("symbol", "")).strip().upper()
         direction = str(p.get("direction") or p.get("signal_type") or "LONG").strip().upper()
         direction = "SHORT" if direction in ("SELL", "SHORT") else "LONG"
-        key = (sym, direction)
+        strategy = str(p.get("strategy", "")).strip()
+        key = (sym, direction, strategy)
         conf = float(p.get("confidence") or 0)
         if key not in best or conf > float(best[key].get("confidence") or 0):
             best[key] = p
