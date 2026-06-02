@@ -56,3 +56,42 @@ def test_verdict_enforced_downgrades_only_on_explicit_false(monkeypatch):
     # None (insufficient strategies) is fail-open — must not downgrade
     assert m._verdict(200, 0.60, 2.0, {"ok": True}, {"ok": True}, {"ok": True},
                       fdr_gate_ok=None, **common) == "MONEY_READY"
+
+
+# --- ENHANCEMENT #65: single-source-artifact gate ---
+
+def _src_picks(name, src, mean, n, seed):
+    rng = random.Random(seed)
+    return [{"strategy": name, "source_system": src,
+             "pnl_pct": mean + rng.gauss(0, 0.5)} for _ in range(n)]
+
+
+def test_single_source_gate_flags_all_single_source_profitable():
+    # two profitable sleeves, each from one (different) source -> both single-source
+    picks = _src_picks("a", "feedX", 0.5, 30, 1) + _src_picks("b", "feedY", 0.5, 30, 2)
+    g = m._single_source_gate(picks)
+    assert g["ok"] is False
+    assert g["n_profitable_multi_source"] == 0
+    assert g["n_profitable_single_source"] == 2
+
+
+def test_single_source_gate_ok_with_a_multi_source_sleeve():
+    multi = _src_picks("m", "feedX", 0.5, 20, 3) + _src_picks("m", "feedY", 0.5, 20, 4)
+    g = m._single_source_gate(multi)
+    assert g["ok"] is True
+    assert g["n_profitable_multi_source"] >= 1
+
+
+def test_single_source_gate_fail_open_when_no_profitable():
+    g = m._single_source_gate(_src_picks("loser", "feedX", -0.5, 30, 5))
+    assert g["ok"] is None
+
+
+def test_verdict_single_source_enforced_downgrade(monkeypatch):
+    monkeypatch.setattr(m, "_SINGLE_SOURCE_GATE_ENFORCE", True)
+    common = dict(asset_class="CRYPTO", top_symbol_share=0.1, top_source_share=0.1,
+                  mdd_cvar_gate_ok=None)
+    assert m._verdict(200, 0.60, 2.0, {"ok": True}, {"ok": True}, {"ok": True},
+                      single_source_gate_ok=False, **common) == "NOT_READY"
+    assert m._verdict(200, 0.60, 2.0, {"ok": True}, {"ok": True}, {"ok": True},
+                      single_source_gate_ok=True, **common) == "MONEY_READY"
