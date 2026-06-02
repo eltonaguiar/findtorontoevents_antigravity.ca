@@ -163,6 +163,21 @@ _FDR_GATE_ENFORCE: bool = (
     os.environ.get("MONEY_READY_FDR_GATE", "0").strip().lower()
     in ("1", "true", "yes", "on")
 )
+
+# ENHANCEMENT_OVERALL #65 (2026-06-02): hard-reject single-source-artifact edge.
+# The only 2 CRYPTO sleeves with PF>1 (crypto_liquidity_wick_reversal,
+# atr_percentile_gate) are 100% single-source (pf_registry
+# is_single_source_artifact). A class whose ENTIRE profitable edge rests on
+# single-source strategies is a feed idiosyncrasy, not a class-level edge.
+# This gate checks whether any *profitable* strategy (mean pnl>0, n>=
+# MIN_N_STRATEGY) draws from >=2 source_systems. Shadow-first (default OFF):
+# stamps `_single_source_recommend`; set MONEY_READY_SINGLE_SOURCE_GATE=1 to
+# hard-downgrade MONEY_READY -> NOT_READY when every profitable sleeve is
+# single-source.
+_SINGLE_SOURCE_GATE_ENFORCE: bool = (
+    os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "0").strip().lower()
+    in ("1", "true", "yes", "on")
+)
 # M-070: a class whose resolved picks are dominated by ONE symbol is not a
 # class-level edge — it is a single-name bet. When the top symbol exceeds this
 # share of resolved picks, the verdict is capped at WATCH (cannot be
@@ -757,6 +772,55 @@ def _fdr_gate(picks: list[dict]) -> dict[str, Any]:
     }
 
 
+def _single_source_gate(picks: list[dict]) -> dict[str, Any]:
+    """Reject class edge that rests entirely on single-source sleeves (#65).
+
+    For each strategy with n>=MIN_N_STRATEGY, count distinct source_systems and
+    its mean pnl. A *profitable* strategy (mean>0) is an 'artifact' when it
+    draws from exactly one source_system. ok semantics:
+      True  — >=1 profitable strategy is multi-source (real class-level edge)
+      False — >=1 profitable strategy exists and ALL are single-source
+      None  — no profitable strategy / insufficient data (fail-open)"""
+    blocked = _load_blocked()
+    by_strat_pnl: dict[str, list[float]] = defaultdict(list)
+    by_strat_src: dict[str, set] = defaultdict(set)
+    for p in picks:
+        strat = p.get("strategy") or p.get("source_system") or ""
+        if not strat or strat in blocked:
+            continue
+        try:
+            by_strat_pnl[strat].append(float(p.get("pnl_pct") or 0))
+        except (TypeError, ValueError):
+            continue
+        by_strat_src[strat].add(str(p.get("source_system") or "UNKNOWN"))
+
+    profitable_single, profitable_multi = [], []
+    for strat, pnls in by_strat_pnl.items():
+        if len(pnls) < MIN_N_STRATEGY:
+            continue
+        if (sum(pnls) / len(pnls)) <= 0:
+            continue
+        if len(by_strat_src[strat]) <= 1:
+            profitable_single.append(strat)
+        else:
+            profitable_multi.append(strat)
+
+    n_prof = len(profitable_single) + len(profitable_multi)
+    if n_prof == 0:
+        return {"ok": None, "n_profitable": 0, "n_profitable_single_source": 0,
+                "n_profitable_multi_source": 0,
+                "note": f"no profitable strategy with n>={MIN_N_STRATEGY}"}
+    ok = len(profitable_multi) >= 1
+    return {
+        "ok": ok,
+        "n_profitable": n_prof,
+        "n_profitable_single_source": len(profitable_single),
+        "n_profitable_multi_source": len(profitable_multi),
+        "single_source_strategies": sorted(profitable_single)[:10],
+        "note": "" if ok else "all profitable sleeves are single-source (artifact edge)",
+    }
+
+
 # ---------------------------------------------------------------------------
 # Verdict logic
 # ---------------------------------------------------------------------------
@@ -766,7 +830,8 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
              top_source_share: float = 0.0,
              avg_win: float = 0.0, avg_loss: float = 0.0,
              mdd_cvar_gate_ok: bool | None = None,
-             fdr_gate_ok: bool | None = None) -> str:
+             fdr_gate_ok: bool | None = None,
+             single_source_gate_ok: bool | None = None) -> str:
     n_ok = n >= MIN_N_CLASS
     if not n_ok:
         return "INSUFFICIENT_DATA"
@@ -813,6 +878,11 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
         # when fdr_gate_ok is explicitly False (None = insufficient strategies,
         # leaves the verdict untouched). Default OFF (shadow) — no-op when unset.
         if _FDR_GATE_ENFORCE and fdr_gate_ok is False:
+            return "NOT_READY"
+        # ENHANCEMENT #65: single-source-artifact pre-gate. When enforced, a
+        # class whose entire profitable edge is single-source -> NOT_READY.
+        # Monotone-conservative + fail-open (None never blocks). Default OFF.
+        if _SINGLE_SOURCE_GATE_ENFORCE and single_source_gate_ok is False:
             return "NOT_READY"
         return "MONEY_READY"
     # A profit factor below 1.0 means the book loses money gross — never WATCH.
@@ -1008,6 +1078,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         pbo = _pbo_gate(ac_picks)
         spa = _spa_gate(ac_picks)
         fdr = _fdr_gate(ac_picks)
+        single_src = _single_source_gate(ac_picks)
         top_symbol = stats.get("top_symbol", "")
         top_symbol_share = stats.get("top_symbol_share", 0.0)
         top_source = stats.get("top_source", "")
@@ -1024,7 +1095,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                            top_source_share=top_source_share,
                            avg_win=avg_win, avg_loss=avg_loss,
                            mdd_cvar_gate_ok=mdd_cvar.get("gate_ok"),
-                           fdr_gate_ok=fdr.get("ok"))
+                           fdr_gate_ok=fdr.get("ok"),
+                           single_source_gate_ok=single_src.get("ok"))
         wr_floor = MIN_WR_BY_CLASS.get(ac.upper(), MIN_WR)
         exp_gate = _expectancy_gate(wr, avg_win, avg_loss, asset_class=ac)
 
@@ -1091,6 +1163,18 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                     and verdict == "MONEY_READY")
                 else None
             ),
+            # ENHANCEMENT #65: single-source-artifact pre-gate
+            "_single_source_gate_enforce": _SINGLE_SOURCE_GATE_ENFORCE,
+            "single_source_ok": single_src.get("ok"),
+            "n_profitable_multi_source": single_src.get("n_profitable_multi_source", 0),
+            "n_profitable_single_source": single_src.get("n_profitable_single_source", 0),
+            "_single_source_recommend": (
+                "NOT_READY"
+                if (not _SINGLE_SOURCE_GATE_ENFORCE
+                    and single_src.get("ok") is False
+                    and verdict == "MONEY_READY")
+                else None
+            ),
             "verdict": verdict,
             "data_source": data_source,
             "top_symbol": top_symbol,
@@ -1108,7 +1192,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                 )
             ),
             "details": {"dsr": dsr, "pbo": pbo, "spa": spa, "expectancy": exp_gate,
-                        "mdd_cvar": mdd_cvar, "fdr": fdr},
+                        "mdd_cvar": mdd_cvar, "fdr": fdr, "single_source": single_src},
         }
 
     return results
