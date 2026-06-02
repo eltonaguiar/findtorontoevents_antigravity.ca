@@ -268,6 +268,11 @@ def generate_academic_picks() -> list[dict[str, Any]]:
         for raw in raw_list:
             raw.setdefault("asset_class", asset_class)
             raw.setdefault("strategy", strategy_name)
+            # 2026-06-01 wire-up: distinct source_system per strategy so
+            # pf_registry / dashboard can attribute WR/PF per academic strategy.
+            # Without this, all 30+ academic strategies collapse into one
+            # bucket (or NULL) and we cannot tell which is producing edge.
+            raw.setdefault("source_system", f"academic_{strategy_name}")
             norm = normalize_pick_for_emitter(raw)
             if norm is None:
                 continue
