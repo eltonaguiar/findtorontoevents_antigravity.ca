@@ -4279,3 +4279,63 @@ Portfolio Health: 81 portfolios (66 active). The deepseek_v4__aggressive portfol
 - Live PF must stay within ±10% of back‑tested PF
 - Cover ≥ 3 distinct market regimes
 - Re-run block‑bootstrap on live‑paper P&L; 95% CI for PF should not cross 1.0
+
+---
+
+## 2026-06-02 — EAGLE2 Research Findings (SWARM SYNTHESIS)
+
+### LiteLLM Mode Tests (all PASS)
+- `ollama-cloud` ✅ — responds with AI/tech sector ETF strategy insight
+- `ollama-cloud-large` ✅ — responds with diversified tech+healthcare view
+- `ollama-cloud-local` ✅ — responds (Alibaba Cloud model, cautious)
+- 16 total models available on http://localhost:4000/v1
+
+### Statistical Validation Arsenal (CODEBASE-VERIFIED)
+The codebase already has **comprehensive statistical testing** — problem is enforcement, not implementation:
+
+| Test | Implemented? | Primary Location | Status |
+|------|------------|-----------------|--------|
+| Bonferroni | ✅ YES | alpha_engine/stat_tests.py:328 | 10+ implementations |
+| Benjamini-Hochberg FDR | ✅ YES | alpha_engine/statistical_validation_framework.py:628 | Implemented |
+| Deflated Sharpe Ratio | ✅ YES | statistical_validator.py:35-55 | Implemented |
+| Probabilistic Sharpe Ratio | ✅ YES | probabilistic_sharpe_engine.py | Implemented |
+| Monte Carlo (permutation) | ✅ YES | 20+ implementations across codebase | Extensive |
+| Levy-Gaussian MC | ✅ YES | alpha_engine/levy_gaussian_monte_carlo.py | For crypto fat-tail |
+| Bootstrap CI | ✅ YES | statistical_validator.py | Implemented |
+| Walk-Forward | ✅ YES | alpha_engine/walk_forward_backtester.py | Implemented |
+| PBO | 🔶 REFERENCED | M-108 standard | Required but not fully wired |
+
+### Current Edge Status (DEFINITIVE_EDGE_REPORT.md)
+- **Aggregate system: NO edge** — WR 34.9% across 493 trades, p=1.0 vs 50% null
+- **9 statistically significant sources** found out of 29 tested:
+  - `ml_enhanced_BNBUSDT_15m`: 94.1% WR, p=0.000137 ✅
+  - `ml_enhanced_FETUSDT_1d`: 93.8% WR, p=0.000259 ✅
+  - `ml_enhanced_RENDERUSDT_1h`: 87.5% WR, p=0.00209 ✅
+  - `copy_hl_NMTD_25M`: 81.3% WR, p=0.0106 ✅
+
+### Best Picks Per Asset Class (from current system)
+
+| Asset Class | Current Best | PF/WR/Evidence | Money-Ready? |
+|-------------|-------------|----------------|--------------|
+| CRYPTO | BTC/ETH SHORT (tournament 67% WR) | deepseek_v4 PF 3.46 | Paper only |
+| EQUITY | BAC, JPM, MSFT (tournament LONG) | ~64% WR each | NO — production PF=0.33 |
+| ETF | EEM, IWM, GLD (sector momentum) | EAGLE3 ≥60% WR | Paper; dual momentum PF 1.60 |
+| FOREX | NONE — HARD_DISABLED | PF 0.29 | NO |
+| COMMODITY | COT-based (rehabilitation needed) | PF 0.69 | NO |
+| FUTURES | Concentration artifacts | n=13, WR 15.4% | NO |
+| BOND | No live sample | n=0 | NO |
+
+### Backtesting Framework (M-108 Standard — EXISTS)
+- Stage 0: Pre-registration in hypothesis_registry.json
+- Stage 1: Real data only (Binance/yfinance/FRED)
+- Stage 2: Purged walk-forward + per-class costs (10bps crypto, 4bps equities)
+- Stage 3: DSR >= 0.90, PBO <= 0.10, SPA
+- Stage 4: Robustness (block bootstrap + regime)
+- Stage 5: Forward virtual book (n >= 100)
+
+### Action Items
+1. Wire existing statistical tests to ENFORCE at emission time (not just audit)
+2. Enable M-108 in admissibility_pipeline.py as default gate
+3. Run emitter audit to generate kill/monitor lists
+4. Test remaining LiteLLM modes for strategy brainstorming
+5. Prioritize ETF dual momentum + crypto VWAP/Bollinger for shadow-sizing
