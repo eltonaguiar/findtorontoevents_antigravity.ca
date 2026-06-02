@@ -120,23 +120,55 @@
   <div class="eli5"><strong>ELI5</strong>If you try 80 lottery numbers, one will look lucky by accident — we need stricter math before calling it skill.</div>
 </div>
 
+<!-- ─── ACHIEVEMENTS (LIVE) ─── -->
+<h2 id="achievements">2. Achievements shipped (live site)</h2>
+
+<div class="card">
+  <h3>Public documentation on /updates</h3>
+  <ul>
+    <li><a href="/updates/eagle2-swarm-session-summary-2026-06-02.html">This session summary</a> — findings, rationale, plans, ELI5 on every block.</li>
+    <li><a href="/updates/eagle-best-picks-guide-2026-06-02.html">Best picks guide</a> — production vs tournament tables + EAGLE file index.</li>
+    <li><a href="/updates/index.html">Updates index</a> — top card links here (newest-first).</li>
+  </ul>
+  <div class="eli5"><strong>ELI5</strong>We posted a report card and watch list on the website so nobody has to read 60 markdown files to understand what is safe to trade.</div>
+</div>
+
+<div class="card">
+  <h3>Audit honesty banners (deploy via FTP after merge)</h3>
+  <ul>
+    <li><a href="/audit/ai-tournament.html">AI Tournament</a> — capital-lock strip: 0/9 money-ready.</li>
+    <li><a href="/audit/pf.html">pf.html</a> — research-tier strip on portfolio pages.</li>
+    <li><code>verified_edge_status.json</code> — includes <code>best_picks_guide</code> URL.</li>
+  </ul>
+  <div class="eli5"><strong>ELI5</strong>Warning labels on practice-game pages so practice wins are not mistaken for permission to bet real money.</div>
+</div>
+
+<div class="card">
+  <h3>Production gates (code on main)</h3>
+  <ul>
+    <li><strong>EAGLE-4</strong> — CRYPTO LONG→SHORT flip, persona kills, direction kills in <code>production_scanner.py</code>.</li>
+    <li><strong>EAGLE-5</strong> — tournament-validated symbol/persona confidence boosts via <code>eagle_gates.py</code>.</li>
+    <li><strong>Swarm evidence</strong> — <code>reports/best_picks_swarm_review_2026-06-02.json</code> (LiteLLM second check).</li>
+  </ul>
+  <div class="eli5"><strong>ELI5</strong>The pick robot flips bad crypto directions and ignores noisy strategies before picks fight for slots.</div>
+</div>
+
 <!-- ─── ACCOMPLISHED ─── -->
-<h2 id="accomplished">2. Tasks accomplished this session</h2>
+<h2 id="accomplished">3. Tasks accomplished in repo</h2>
 <ul class="tasks">
-  <li><strong>72h EAGLE swarm</strong> — 22 <code>EAGLE*.MD</code> reports reviewed; synthesis in <code>reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md</code> and consolidated peer review.</li>
-  <li><strong>DAILY_IDEAS.MD</strong> — Full EAGLE2 prompt + statistical framework appended on <code>main</code>.</li>
-  <li><strong>GitHub sync</strong> — Rebased and pushed pipeline artifacts (<code>f071b3527</code>).</li>
-  <li><strong><code>tools/run_eagle_suite.py</code></strong> — Daily bundle: money_ready, emitter census, pick pulse, admissibility, strategy admit.</li>
-  <li><strong><code>WALKFORWARD_REPORT.json</code></strong> — Restored sleeve verdicts (ETF DM PASS, VWAP/Bollinger PASS, Donchian FAIL) for <code>strategy_admit</code> gates.</li>
-  <li><strong>H-102 pre-registration</strong> — ETF dual momentum in <code>hypothesis_registry.json</code> (M-107).</li>
-  <li><strong>Strategy admit</strong> — <code>etf_dual_momentum</code> and <code>vwap_reversion</code> → <code>FORWARD_PILOT_ONLY</code> (WF pass, class not money-ready).</li>
-  <li><strong>Best-picks swarm verify</strong> — <code>tools/verify_best_picks_swarm.py</code> + evidence JSON; LiteLLM <code>ollama-cloud-*</code> modes smoke-tested.</li>
-  <li><strong>Operator guides</strong> — <a href="/updates/eagle-best-picks-guide-2026-06-02.html">Best picks guide</a> (companion page).</li>
+  <li><strong>72h EAGLE swarm</strong> — 22+ <code>EAGLE*.MD</code> reports → <code>reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md</code>.</li>
+  <li><strong>DAILY_IDEAS.MD</strong> — EAGLE2 prompt + Bonferroni/DSR framework on <code>main</code>.</li>
+  <li><strong><code>tools/run_eagle_suite.py</code></strong> — daily operator bundle.</li>
+  <li><strong><code>tools/verify_best_picks_swarm.py</code></strong> + <code>tools/generate_eagle_best_picks_guide.py</code>.</li>
+  <li><strong>Walk-forward / admit</strong> — ETF DM + crypto VWAP/Bollinger → <code>FORWARD_PILOT_ONLY</code>.</li>
+  <li><strong>H-102</strong> — ETF dual momentum pre-registered (M-107).</li>
+  <li><strong>ETF paper pilot</strong> — <code>verified_strategies/paper_pilot/etf_dual_momentum_pilot.py</code>.</li>
+  <li><strong><code>deploy_audit_files.py</code></strong> — both HTML guides under <code>--only updates</code>.</li>
 </ul>
-<div class="eli5"><strong>ELI5</strong>We wrote down the plan, checked the math with several AIs, built a daily "health check" button, and labeled which strategies are allowed to graduate — none are fully graduated yet.</div>
+<div class="eli5"><strong>ELI5</strong>We built homework, grading rules, a daily checklist, and warning signs — graduation is still ahead.</div>
 
 <!-- ─── SURFACES ─── -->
-<h2 id="surfaces">3. Where profit lives today (ranked)</h2>
+<h2 id="surfaces">4. Where profit lives today (ranked)</h2>
 <table>
   <tr><th>Rank</th><th>Surface</th><th>Edge?</th><th>Evidence</th></tr>
   <tr><td>1</td><td><a href="/audit/ai-tournament.html">AI tournament</a> + <a href="/audit/pf.html">pf.html</a></td><td><span class="badge paper">Best paper</span></td><td>deepseek_v4 WR 57.7% PF 3.46 n=208; 66/81 portfolios have opens</td></tr>
@@ -339,6 +371,7 @@ python3 tools/strategy_admit.py --strategy vwap_reversion --asset-class CRYPTO
 python3 tools/deploy_audit_files.py --only updates</pre>
 
 <h2>9. Source documents</h2>
+<p class="meta" style="margin-bottom:12px">After merge: run <code>python3 tools/deploy_audit_files.py --only updates</code> to publish on findtorontoevents.ca.</p>
 <ul style="font-size:0.88rem;line-height:1.7">
   <li><code>reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md</code> — multi-model swarm merge</li>
   <li><code>reports/EAGLE_SWARM_CONSOLIDATED_2026-06-02.md</code> — 5-model consensus</li>
