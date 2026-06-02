@@ -75,7 +75,7 @@ CRYPTOCOMPARE_BASE = "https://min-api.cryptocompare.com/data"
 
 HTTP_TIMEOUT = 12
 STALE_DAYS_THRESHOLD = 7
-FOREX_MAX_HOLD_HOURS = 48  # Force-close forex picks after 48h (they move 0.3-0.8%/day; if TP not hit by then, edge is gone)
+FOREX_MAX_HOLD_HOURS = 72  # EAGLE2 2026-06-02: unified with universal_pick_resolver.py & outcome_resolver.py (was 48h)
 
 # ---------------------------------------------------------------------------
 # JSON helpers

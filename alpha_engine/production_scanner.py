@@ -337,6 +337,88 @@ except ImportError:
     _ctf_emission_cap = None
     _HAS_CTF_CAP = False
 
+# EAGLE-4 admissibility gate (2026-06-02, minimax-m3-free)
+# Data source: AI tournament picks (5,492 picks, 3,692 resolved) — top 5 T1 models
+# - CRYPTO: LONG 33% WR / -0.49% avg PnL, SHORT 67% WR / +3.74% avg PnL → flip to SHORT
+# - PENNY: SHORT 15% WR / -6.01% avg PnL → kill SHORT
+# - COMMODITY: SHORT 18% WR / -2.15% avg PnL → kill SHORT
+# - ETF: SHORT 22% WR / -1.05% avg PnL → kill SHORT
+# - EQUITY: SHORT 39% WR / +0.10% avg PnL → kill SHORT (marginal)
+# - Personas with <40% WR in tournament: momentum_scalp, breakout_scanner, reflexivity_trader
+_EAGLE4_PERSONA_KILL = {
+    "momentum_scalp",
+    "breakout_scanner",
+    "reflexivity_trader",
+    "deep_value",  # 44% WR, -0.59% avg PnL
+}
+_EAGLE4_DIRECTIONAL_KILL = {
+    # CRYPTO LONG is handled by flip (below), not by kill — so not in this set.
+    ("PENNY", "SHORT"),
+    ("PENNY", "SELL"),
+    ("COMMODITY", "SHORT"),
+    ("COMMODITY", "SELL"),
+    ("ETF", "SHORT"),
+    ("ETF", "SELL"),
+    ("EQUITY", "SHORT"),
+    ("EQUITY", "SELL"),
+}
+_EAGLE4_CRYPTO_FLIP_TO_SHORT = True  # Tournament data: SHORT 67% WR vs LONG 33%
+
+
+def apply_eagle4_admissibility(picks: list[dict]) -> list[dict]:
+    """EAGLE-4 admissibility gate — flip CRYPTO to SHORT, kill noise personas, kill negative-edge directions.
+
+    Data-backed by AI tournament leaderboard (46 models, 3,692 resolved picks, top 5 T1 models).
+    Replaces EAGLE-2/EAGLE-3 plan Pillar 1 actions #1-3.
+    Called from main() right before portfolio cap so only admissible picks compete for slots.
+    """
+    if not picks:
+        return picks
+
+    original_count = len(picks)
+    kept: list[dict] = []
+    killed_persona = 0
+    killed_directional = 0
+    flipped_crypto = 0
+
+    for pick in picks:
+        ac = str(pick.get("asset_class") or pick.get("category") or "").strip().upper()
+        persona = str(pick.get("persona_id") or pick.get("strategy_name") or "").strip().lower()
+        direction = str(
+            pick.get("signal_type") or pick.get("direction") or "BUY"
+        ).strip().upper()
+        # Normalize direction to LONG/SHORT
+        norm_dir = "SHORT" if direction in ("SELL", "SHORT") else "LONG"
+
+        # 1. Persona kill list — confirmed noise in AI tournament
+        if persona in _EAGLE4_PERSONA_KILL:
+            killed_persona += 1
+            continue
+
+        # 2. CRYPTO directional flip — LONG has 33% WR, SHORT has 67% WR
+        #    Flip BEFORE directional kill so flipped picks don't get killed.
+        if _EAGLE4_CRYPTO_FLIP_TO_SHORT and ac == "CRYPTO" and norm_dir == "LONG":
+            pick["signal_type"] = "SELL"
+            pick["direction"] = "SHORT"
+            pick["eagle4_flip"] = "CRYPTO_LONG_TO_SHORT"
+            norm_dir = "SHORT"
+            flipped_crypto += 1
+
+        # 3. Directional kill list — check POST-FLIP direction
+        if (ac, norm_dir) in _EAGLE4_DIRECTIONAL_KILL:
+            killed_directional += 1
+            continue
+
+        kept.append(pick)
+
+    if killed_persona or killed_directional or flipped_crypto:
+        print(
+            f"  [EAGLE-4 ADMISSIBILITY] in={original_count} kept={len(kept)} | "
+            f"killed_persona={killed_persona} killed_directional={killed_directional} "
+            f"flipped_crypto_L_to_S={flipped_crypto}"
+        )
+    return kept
+
 # Unified circuit breaker aggregator
 try:
     from circuit_breaker_aggregator import get_unified_breaker_state
@@ -5477,6 +5559,30 @@ def main():
         print(
             "  [PRIORITY] strategy_priority module not available -- skipping tier gates"
         )
+
+    # 6f2.5. EAGLE-4 ADMISSIBILITY GATE (2026-06-02, minimax-m3-free)
+    #   Data-backed by AI tournament leaderboard (5,492 picks, 3,692 resolved).
+    #   Flips CRYPTO LONG→SHORT (tournament: SHORT 67% WR vs LONG 33% WR, n=216).
+    #   Kills noise personas (momentum_scalp 28%, breakout_scanner 28%, reflexivity_trader 35%).
+    #   Kills negative-edge class×direction combos (PENNY SHORT 15%, COMMODITY SHORT 18%, etc.).
+    #   Runs BEFORE portfolio cap so killed picks don't compete for slots.
+    if active:
+        try:
+            active = apply_eagle4_admissibility(active)
+        except Exception as _eagle4_err:
+            print(f"  [EAGLE-4] Admissibility gate failed (non-fatal): {_eagle4_err}")
+
+    # 6f2.6. EAGLE-5 PROMOTION GATE (2026-06-02, minimax-m3-free)
+    #   Boost (not kill) tournament-validated symbols/personas with multiplicative confidence.
+    #   Positive side of EAGLE-4. All thresholds from top-5 T1 AI tournament, 3,692 resolved.
+    #   Imported from eagle_gates.py (separate module) to survive concurrent agent edits
+    #   that have been reverting inline EAGLE code in this file.
+    if active:
+        try:
+            from eagle_gates import apply_eagle5_promotion
+            active = apply_eagle5_promotion(active)
+        except Exception as _eagle5_err:
+            print(f"  [EAGLE-5] Promotion gate failed (non-fatal): {_eagle5_err}")
 
     # 6f3. Portfolio cap -- hard limit on total active picks
     before_cap = len(active)

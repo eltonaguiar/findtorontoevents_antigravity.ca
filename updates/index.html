@@ -33,6 +33,28 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+<div class="update-entry" style="--dot-color: #a78bfa;" data-tags="eagle2,swarm,audit,best-picks,money-ready,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
+  <div class="update-meta">
+    <span class="update-date">2026-06-02</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">EAGLE2 Swarm Session — Where Edge Lives, Best Picks &amp; 90-Day Plan</h3>
+  <div class="update-body">
+    <p><strong>Goal #1 snapshot:</strong> Production <code>/audit</code> still has <strong>0/9</strong> money-ready asset classes (<code>money_ready_verdict.json</code>). Real edge is on <a href="https://findtorontoevents.ca/audit/ai-tournament.html">AI tournament (paper)</a> and <strong>ETF dual-momentum lab (shadow)</strong> — not the policy-clean main book (CRYPTO PF 0.92, EQUITY PF 0.33).</p>
+    <p><strong>Full report (ELI5 under every section):</strong> <a href="https://findtorontoevents.ca/updates/eagle2-swarm-session-summary-2026-06-02.html"><strong>EAGLE2 Swarm Session Summary →</strong></a></p>
+    <p><strong>Session accomplishments:</strong></p>
+    <ul>
+      <li>72h review of 22 <code>EAGLE*.MD</code> reports via multi-model swarm → <code>reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md</code></li>
+      <li>Daily operator bundle: <code>tools/run_eagle_suite.py</code> (money_ready, census, pulse, admissibility)</li>
+      <li><code>WALKFORWARD_REPORT.json</code> + <code>tools/strategy_admit.py</code> — ETF DM &amp; crypto VWAP → <code>FORWARD_PILOT_ONLY</code></li>
+      <li>M-107 <strong>H-102</strong> pre-register ETF dual momentum; best-picks evidence <code>reports/best_picks_swarm_review_2026-06-02.json</code></li>
+    </ul>
+    <p><strong>Best picks today (honest):</strong> <em>Paper watch</em> — deepseek_v4 tournament (PF 3.46 n=208), CRYPTO SHORT cohort, NVDA/BAC/JPM/MSFT in tournament only. <em>Shadow pilot</em> — <code>etf_verified_dual_momentum</code> (lab PF 1.60, WF OOS PASS). <em>Do not size</em> production Smart Picks / policy-clean aggregate. Rationale tables on the summary page.</p>
+    <p><strong>Plans:</strong> Short-term (2–8w) — resolver hygiene, daily <code>run_eagle_suite</code>, forward n→30 for ETF DM. Long-term (90d) — first money-ready class likely ETF; Bonferroni/DSR on all promotions; tournament→production bridge only after n≥100 forward.</p>
+    <p>Also see: <a href="https://findtorontoevents.ca/updates/eagle2-swarm-consolidated-findings-2026-06-02.html">5-model consolidated findings</a> (backtesting flaws + per-class playbooks). Companion: <a href="https://findtorontoevents.ca/updates/eagle-best-picks-guide-2026-06-02.html">Best picks guide</a> · Repro: <code>python3 tools/run_eagle_suite.py</code> · Doc: <code>updates/2026-06-02-eagle2-swarm-session-summary.md</code> · After merge: <code>python3 tools/deploy_audit_files.py --only updates</code></p>
+  </div>
+</div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -194,6 +216,55 @@
 <p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
+
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="etf,paper-pilot,dual-momentum,lab-tier-2,walkforward-pass,eagle-june2,quant-review,goal-1,trading,feature" data-category="trading" data-types="feature,documentation">
+  <div class="update-meta">
+    <span class="update-date">2026-06-02</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">EAGLE_JUNE2 Quant Review + ETF Paper Pilot Day-1 Wired</h3>
+  <div class="update-body">
+    <p><strong>Goal #1 status (2026-06-02 06:50Z):</strong> live <code>/audit</code> production book is honest-dead &mdash; 0/6 asset classes pass Tier-2 (per <code>audit_dashboard/data/money_ready_verdict.json</code>). The <strong>only lab Tier-2 pass</strong> in flight is <code>etf_verified_dual_momentum</code> (PF 1.60 / WR 53.8% / n=104, full lab report <code>reports/multi_class_strategy_lab_2026-06-02.md</code>). Walk-forward pilot 2026-06-02: <code>etf_dual_momentum=PASS</code> (OOS PF 1.21, n=32); <code>crypto_donchian=FAIL</code> (auto-blocked from production).</p>
+    <p><strong>Three things shipped today:</strong></p>
+    <ol>
+      <li><strong>Paper pilot loop</strong>: <code>verified_strategies/paper_pilot/etf_dual_momentum_pilot.py</code> runs a sector-vs-SPY BUY/HOLD/EXIT signal daily; logs to <code>verified_strategies/paper_pilot/etf_dual_momentum_paper_log.jsonl</code>. Sidecar flag <code>ETF_VERIFIED_DUAL_MOMENTUM_ENABLED=1</code> stays OFF until forward n&ge;30 + MDD&lt;15% per <code>updates/2026-05-31-etf-promotion-path.md</code>.</li>
+      <li><strong>Daily cron</strong>: <code>.github/workflows/verified-pilot-daily.yml</code> runs <code>tools/run_verified_pilots_daily.py</code> at 06:15 UTC; Sundays also run <code>verified_strategies/walkforward_suite.py --only pilot</code> to refresh OOS verdicts.</li>
+      <li><strong>H-102 Connors crypto stays OFF</strong>: harness UNTESTED (windows_scored=0). H-103 symbol-quality filter lab result: pooled PF 1.30 vs 1.19 unfiltered, still sub-Tier-2. No <code>CONNORS_RSI2_CRYPTO_ENABLED=1</code> until harness ADMISSIBLE &mdash; aligned with cursor-composer (gx10) + grok peer review 2026-06-02T04:10Z.</li>
+    </ol>
+    <p><strong>Where the edge actually is</strong> (per EAGLE_JUNE2 quant review, <code>EAGLE_JUNE2_claude-opus-4-7.md</code>):</p>
+    <ul>
+      <li><strong>AI tournament</strong>: 4 model portfolios with positive paper PnL at 2-day noise floor &mdash; <code>deepseek_v4__aggressive</code> +0.40% (11 open positions, $100,403.24 NAV, GC=F/ES=F/MVST/SI=F/JPM/HD/VZ/MA/ADAUSDT/LINKUSDT/ETHUSDT), <code>llama4_scout__aggressive</code> +0.14%, <code>cursor_agent__balanced</code> +0.015%, <code>together_deepseek_v3__aggressive</code> +0.001%. Watch list, NOT Tier-2.</li>
+      <li><strong>Lab ETF Dual Momentum</strong>: only near-deployable. Walk-forward PASS. Paper pilot just wired. Day-30/60/90 checkpoints scheduled.</li>
+      <li><strong>CRYPTO DSR-1.0 sub-cohorts</strong>: 4 ML_enhanced sleeves WR 85&ndash;100% but n&lt;100 (DSR formula unreliable). Forward n is the only path.</li>
+      <li><strong>Main /audit production book</strong>: honest-dead. Research-to-production translation problem, not a "wait longer" problem.</li>
+    </ul>
+    <p><strong>Answer to the 6 quant questions</strong> (full version in <code>EAGLE_JUNE2_claude-opus-4-7.md</code>, 462 lines, 41 KB, on origin/main at commit <code>c4fb174b3</code>):</p>
+    <ul>
+      <li><em>Do our strategies suck?</em> The deployed mix mostly does. The lab has 1 real sleeve (ETF DM). The tournament has 4 model micro-edges.</li>
+      <li><em>DNA-mutate?</em> YES, selectively on 6 candidates (CRYPTO Connors H-103, ETF Sector Momentum with VIX gate, EQUITY <code>stocks_rsi2_pullback</code> dedupe, EQUITY <code>pead</code>, FOREX carry post-FRED, COMMODITY TSMOM ATR-scaled). Per <code>docs/MUTATION_THREE_AXIS_PROTOCOL.md</code>.</li>
+      <li><em>Invert?</em> <strong>NO</strong>. Global ML inversion is REFUTED (CRYPTO 0.50-0.60 conf band &rarr; 60.3% WR is the BEST band; conf&ge;0.90 &rarr; 14.4% WR is right-tail miscalibration, not sign error).</li>
+      <li><em>Are strategies dead due to data feed?</em> Partially. Zoo "29/30 silent" was a simulator bug, refuted 2026-06-02. Real silence: data feed (Binance 451 &rarr; PR #435), gate rejection, source-system blocklist, universe filter, resolver state pre-#433.</li>
+      <li><em>Why is the portfolio empty?</em> <strong>It isn't</strong>. <code>pf_portfolio_deepseek_v4__aggressive.json</code> has 11 open positions. The <code>pf.html</code> empty state is a JS-render artifact in browser; the data is fully populated. 66/81 portfolios have open positions; 4 have positive paper PnL.</li>
+    </ul>
+    <p><strong>Top 7 actions for the next 30/60/90 days</strong> (from EAGLE_JUNE2 &sect;7):</p>
+    <ol>
+      <li>Concentration cap on production_scanner (top_source &gt; 0.50 + n &lt; 50 &rarr; reject). Single biggest WR move available.</li>
+      <li>Score booster recalibration on 0.50-0.60 conf band as the high-signal anchor.</li>
+      <li>SL/TP audit using intrabar OHLC replay (not winsorization &mdash; the 2026-05-31 SL tightening collapsed PF via whipsaw).</li>
+      <li>Category taxonomy fix (collapse <code>stock</code>/<code>stocks</code>/<code>equity</code>) to re-classify the UNKNOWN bucket.</li>
+      <li>ETF paper pilot Day-30: n&ge;30 forward + MDD&lt;15% + PF&ge;1.20 promotion gate.</li>
+      <li>CRYPTO sub-cohort paper pilot: 2 best DSR-1.0 sleeves (ml_enhanced INJUSDT 1d + ml_enhanced DYDXUSDT 15m), paper only.</li>
+      <li>Resolver intrabar OHLC replay on 9,657 ghost OPEN picks (the upstream T2 blocker per <code>project-session-close-2026-05-31.md</code>).</li>
+    </ol>
+    <p><strong>Reproducers</strong>:</p>
+    <pre>VERIFY_SKIP_FRED=1 python3 tools/multi_class_strategy_lab.py
+python3 verified_strategies/walkforward_suite.py --only pilot
+python3 verified_strategies/paper_pilot/etf_dual_momentum_pilot.py --one-shot
+python3 tools/h102_connors_rsi2_crypto.py --quick
+curl -s "https://findtorontoevents.ca/audit/data/pf_portfolio_deepseek_v4__aggressive.json" | python3 -m json.tool | head -50</pre>
+    <p><strong>Source documents</strong>: <code>EAGLE_JUNE2_claude-opus-4-7.md</code> (full quant review, 462 lines), <code>EAGLE2_2026-06-02_CLAUDE_CODE.md</code> + <code>EAGLE2_2026-06-02_deepseek_v4_flash.MD</code> + <code>EAGLE2_EAGLE_2026-06-02_blackboxai.md</code> (parallel EAGLE2 plans), <code>EAGLE3_2026-06-02_minimax-m3-free.md</code> (EAGLE3 admissibility), <code>reports/asset_class_backup_plans_2026-06-02.md</code>, <code>reports/audit_cross_surface_edge_2026-06-02.md</code>, <code>reports/h102_connors_rsi2_crypto_2026-06-02.md</code>, <code>reports/multi_class_strategy_lab_2026-06-02.md</code>, <code>updates/2026-05-31-etf-promotion-path.md</code>.</p>
+  </div>
+</div>
 
   <div class="update-entry">
 <p><strong>2026-06-01 EST (3rd independent refutation of forced_resolution methodology)</strong>: Kilo deployed 3 external AI peer reviews (Grok+Mimo+DeepSeek) which all flagged the methodology as fragile. Kilo then ran the sensitivity analysis the AIs demanded &mdash; and <strong>their OWN methodology failed</strong>: bootstrap 95% CI on EV = [-0.169%, +0.590%] CROSSES ZERO, ALL combined-TP/SL configs show PF&lt;1. The apparent FOREX edge (PF 1.48 raw resolved) was tail-asymmetry of rare large wins vs rare large losses (SL-floor isolated PF=17.03), NOT a predictive edge &mdash; and forced_resolution compresses that asymmetry, killing the apparent edge. Three independent refutations now: PRs #347+#343 (my verifier swarm), PR #362 perm p=1.000 evidence, and kilo's own sensitivity analysis. <strong>Updated fabrication count: 22 caught today</strong>. The discipline pattern works even when the agent owns the methodology being tested. Canonical evidence: <code>reports/peer_claude-FORCED_RESOLUTION_TRIPLE_REFUTATION_2026-05-31.md</code>.</p>
@@ -11006,7 +11077,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          Jun 02, 2026 &mdash; 05:46 AM EST | Hourly Portfolio Update
+          Jun 02, 2026 &mdash; 07:47 AM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -11025,6 +11096,7 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
 
 
 
@@ -11503,7 +11575,7 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 02, 05:46 AM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 02, 07:47 AM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>

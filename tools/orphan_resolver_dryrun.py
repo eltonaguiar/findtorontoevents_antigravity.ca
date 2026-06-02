@@ -76,7 +76,7 @@ HOLD_HOURS_BY_CLASS = {
     "FUTURES":   96,
     "STOCK":     96,
     "INDEX":     96,
-    "FOREX":    120,
+    "FOREX":    72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "BOND":     120,
 }
 DEFAULT_HOLD_HOURS = 48

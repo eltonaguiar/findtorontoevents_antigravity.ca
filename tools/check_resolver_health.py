@@ -73,7 +73,7 @@ MAX_HOLD_HOURS_BY_CLASS: dict[str, int] = {
     "ETF": 96,
     "COMMODITY": 96,
     "FUTURES": 96,
-    "FOREX": 120,
+    "FOREX": 72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "BOND": 120,
 }
 

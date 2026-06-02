@@ -52,7 +52,7 @@ def test_hold_hours_table_present():
     assert "HOLD_HOURS_BY_CLASS" in src
     # Class-specific entries
     assert "\"CRYPTO\":    24" in src or '"CRYPTO":    24' in src
-    assert "\"FOREX\":    120" in src or '"FOREX":    120' in src
+    assert '"FOREX":    72' in src or '"FOREX":    72' in src
 
 
 def test_midpoint_estimate_used():
