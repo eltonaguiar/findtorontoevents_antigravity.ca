@@ -56,7 +56,26 @@ PROMOTED_STRATEGIES: frozenset = frozenset({
 # Concentration cap — if a single source_system contributes more than this
 # fraction of an asset class's recent picks, no strategy in that class is
 # admissible. Codifies EAGLE-2's "concentration masquerades as edge" rule.
-CONCENTRATION_HHI_CAP: float = 0.30
+#
+# 2026-06-02: tightened 0.30 -> 0.20 per blackboxai EAGLE-2 review (HHI cap 0.20
+# is the institutional standard for aggregate-book concentration). Cross-confirmed
+# by minimax-m3-free (recommended 0.25).
+CONCENTRATION_HHI_CAP: float = 0.20
+
+# Top-K source-system exposure cap (blackboxai EAGLE-2). The top-5 emitters combined
+# must not exceed 35% of an asset class's recent picks. Catches distributed
+# concentration that HHI alone misses (5 emitters at 7% each clears HHI but is
+# over-concentrated).
+TOP_K_EXPOSURE_CAP: float = 0.35
+TOP_K_N: int = 5
+
+# Resolver dispute-rate thresholds (blackboxai EAGLE-2).
+#  - DISPUTE_RATE_ALERT: weekly dispute_rate > 2% triggers alert
+#  - DISPUTE_RATE_PROMOTION_MAX: must be < 1% for admissibility
+#  - DISPUTE_RATE_AUTOFREEZE_SIGMA: > N sigma above trailing 8-week mean auto-freezes
+DISPUTE_RATE_ALERT: float = 0.02
+DISPUTE_RATE_PROMOTION_MAX: float = 0.01
+DISPUTE_RATE_AUTOFREEZE_SIGMA: float = 3.0
 
 # Tracks strategies that were once promoted but had their promotion revoked
 # (e.g. forward PF collapsed). Kept separately so a revoked strategy
@@ -154,4 +173,9 @@ __all__ = [
     "PROMOTED_STRATEGIES",
     "REVOKED_STRATEGIES",
     "CONCENTRATION_HHI_CAP",
+    "TOP_K_EXPOSURE_CAP",
+    "TOP_K_N",
+    "DISPUTE_RATE_ALERT",
+    "DISPUTE_RATE_PROMOTION_MAX",
+    "DISPUTE_RATE_AUTOFREEZE_SIGMA",
 ]
