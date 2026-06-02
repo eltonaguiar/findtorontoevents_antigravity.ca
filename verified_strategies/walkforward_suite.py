@@ -21,16 +21,20 @@ from typing import Dict, List, Optional
 import pandas as pd
 
 from verified_strategies.data_fetcher import fetch_crypto_ohlcv_paginated, fetch_ohlcv
-from verified_strategies.strategies.connors_rsi2 import ConnorsRSI2Strategy, ConnorsRSIConfig
-from verified_strategies.strategies.faber_taa import FaberTAAStrategy
 from verified_strategies.strategies.bollinger_mean_reversion import BollingerMeanReversionStrategy
 from verified_strategies.strategies.bb_squeeze_breakout import BBSqueezeBreakoutStrategy
 from verified_strategies.strategies.vwap_reversion import VWAPReversionStrategy
 from verified_strategies.strategies.dual_momentum_crypto import DualMomentumCryptoStrategy
 from verified_strategies.strategies.funding_rate_mean_reversion import FundingRateMeanReversionStrategy
-from verified_strategies.strategies.crypto_donchian_breakout import CryptoDonchianBreakout
-from verified_strategies.strategies.etf_dual_momentum import ETFDualMomentumStrategy
-from verified_strategies.strategies.equity_momentum_12_1 import EquityCrossSectionalMomentum
+
+
+def _missing_sleeve(strategy: str, module: str) -> Dict:
+    return {
+        "strategy": strategy,
+        "verdict": "SKIP",
+        "n": 0,
+        "note": f"module not in repo: {module} — restore from lab branch or use cached WALKFORWARD_REPORT.json",
+    }
 
 CRYPTO_COMMISSION_RT = 0.0010   # 10 bps round-trip
 EQUITY_COMMISSION_RT = 0.0002   # 2 bps/side -> 4 bps RT (conservative ETF)
@@ -96,6 +100,10 @@ def walk_forward_trades(
 
 
 def run_faber_sleeve() -> Dict:
+    try:
+        from verified_strategies.strategies.faber_taa import FaberTAAStrategy
+    except ImportError:
+        return _missing_sleeve("FaberTAA_sleeve", "verified_strategies.strategies.faber_taa")
     all_trades: List[dict] = []
     for sym in ("SPY", "QQQ", "IWM"):
         df, _ = fetch_ohlcv(sym, 1260)
@@ -109,6 +117,10 @@ def run_faber_sleeve() -> Dict:
 
 
 def run_connors_crypto() -> Dict:
+    try:
+        from verified_strategies.strategies.connors_rsi2 import ConnorsRSI2Strategy, ConnorsRSIConfig
+    except ImportError:
+        return _missing_sleeve("ConnorsRSI2_crypto", "verified_strategies.strategies.connors_rsi2")
     all_trades: List[dict] = []
     cfg = ConnorsRSIConfig(rsi_oversold=10.0, tp_atr_mult=2.0)
     for sym in ("BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT"):
@@ -163,6 +175,10 @@ def run_funding_rate_mr() -> Dict:
 
 def run_crypto_donchian() -> Dict:
     """Lab sleeve: Donchian breakout multi-symbol (Hyro pilot gate)."""
+    try:
+        from verified_strategies.strategies.crypto_donchian_breakout import CryptoDonchianBreakout
+    except ImportError:
+        return _missing_sleeve("CryptoDonchianBreakout", "verified_strategies.strategies.crypto_donchian_breakout")
     return _run_crypto_strategy(
         "CryptoDonchianBreakout",
         CryptoDonchianBreakout(),
@@ -181,6 +197,10 @@ def run_crypto_donchian() -> Dict:
 
 def run_equity_momentum_12_1() -> Dict:
     """Lab SUB_TIER_2: 12-1 momentum on equity universe."""
+    try:
+        from verified_strategies.strategies.equity_momentum_12_1 import EquityCrossSectionalMomentum
+    except ImportError:
+        return _missing_sleeve("EquityMomentum12_1", "verified_strategies.strategies.equity_momentum_12_1")
     symbols = ["SPY", "QQQ", "IWM", "GLD", "XLF", "XLE", "SMH"]
     strat = EquityCrossSectionalMomentum()
     all_trades: List[dict] = []
@@ -197,6 +217,10 @@ def run_equity_momentum_12_1() -> Dict:
 
 def run_etf_dual_momentum() -> Dict:
     """Lab Tier-2 sleeve: sector dual momentum vs SPY."""
+    try:
+        from verified_strategies.strategies.etf_dual_momentum import ETFDualMomentumStrategy
+    except ImportError:
+        return _missing_sleeve("ETFDualMomentum", "verified_strategies.strategies.etf_dual_momentum")
     spy_df, _ = fetch_ohlcv("SPY", 1260)
     if spy_df is None:
         return {"strategy": "ETFDualMomentum", "verdict": "INSUFFICIENT", "n": 0}
@@ -247,6 +271,17 @@ def main() -> None:
         results["etf_dual_momentum"] = run_etf_dual_momentum()
     if args.only in ("all", "eq_12m"):
         results["equity_momentum_12_1"] = run_equity_momentum_12_1()
+    etf = results.get("etf_dual_momentum")
+    if isinstance(etf, dict):
+        oos = etf.get("out_of_sample") or {}
+        results["dual_momentum_etf"] = {
+            "verdict": etf.get("verdict", "UNKNOWN"),
+            "asset_class": "ETF",
+            "pf": oos.get("pf"),
+            "wr": oos.get("wr"),
+            "n": oos.get("n"),
+            "note": "alias for tools/strategy_admit.py etf_dual_momentum",
+        }
     out.write_text(json.dumps(results, indent=2), encoding="utf-8")
     print(json.dumps(results, indent=2))
     print(f"\nSaved {out}")
