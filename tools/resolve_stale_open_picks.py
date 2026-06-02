@@ -68,10 +68,9 @@ def _read_db_password() -> str:
     
     try:
         lines = open("/home/eaguiar2015/dbpasses.txt").read().strip().splitlines()
-        # The password for stocks DB is typically the line matching "stocks"
-        for line in lines:
-            if "stocks" in line.lower():
-                return line.strip()
+        for i, line in enumerate(lines):
+            if line.strip() == "ejaguiar1_stocks" and i + 1 < len(lines):
+                return lines[i + 1].strip()
         return lines[0] if lines else ""
     except FileNotFoundError:
         return ""

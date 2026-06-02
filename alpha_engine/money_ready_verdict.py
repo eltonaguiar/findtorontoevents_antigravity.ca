@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 from collections import defaultdict
@@ -146,6 +147,22 @@ PBO_THRESHOLD = 0.55      # PBO ≤ threshold means edge likely real (low overfi
 MIN_STRATEGIES_FOR_PBO = 5
 SPA_ALPHA = 0.10          # family-wise alpha for SPA (looser than per-strategy 0.05)
 MIN_N_STRATEGY = 20       # minimum per-strategy picks for SPA inclusion
+
+# ENHANCEMENT_OVERALL #64 (2026-06-02): multiple-testing pre-gate.
+# The repo tests ~dozens of strategy x class cells with no per-strategy
+# multiplicity control before promotion — finding 1-2 "PF>1" sleeves at
+# alpha=0.05 across that many cells is chance-level (EAGLE2 synthesis
+# 2026-06-02). This gate runs a per-strategy one-sided test of mean pnl > 0
+# and applies Benjamini-Hochberg FDR (+ reports Bonferroni) across the
+# strategy family. If ZERO strategies survive FDR, the class edge is not
+# multiplicity-robust and cannot be MONEY_READY.
+# Shadow-first (default OFF, mirrors the MDD/ML gates): when off it only
+# stamps `_fdr_recommend`; set MONEY_READY_FDR_GATE=1 to hard-enforce.
+FDR_Q = 0.10              # Benjamini-Hochberg false-discovery-rate level
+_FDR_GATE_ENFORCE: bool = (
+    os.environ.get("MONEY_READY_FDR_GATE", "0").strip().lower()
+    in ("1", "true", "yes", "on")
+)
 # M-070: a class whose resolved picks are dominated by ONE symbol is not a
 # class-level edge — it is a single-name bet. When the top symbol exceeds this
 # share of resolved picks, the verdict is capped at WATCH (cannot be
@@ -667,6 +684,79 @@ def _spa_gate(picks: list[dict]) -> dict[str, Any]:
     }
 
 
+def _one_sided_t_pvalue(pnls: list[float]) -> float | None:
+    """One-sided p-value for H1: mean(pnl) > 0, normal approx of the t-stat.
+
+    Returns None when the sample is too small or has zero variance.
+    n>=MIN_N_STRATEGY (20) makes the normal approximation of Student-t adequate
+    and keeps the gate dependency-free (no scipy)."""
+    arr = [float(p) for p in pnls if p is not None]
+    n = len(arr)
+    if n < MIN_N_STRATEGY:
+        return None
+    mean = sum(arr) / n
+    var = sum((x - mean) ** 2 for x in arr) / (n - 1)
+    if var <= 0:
+        # zero variance: all-positive mean is a (degenerate) certain win, all
+        # non-positive is a certain non-win.
+        return 0.0 if mean > 0 else 1.0
+    t = mean / math.sqrt(var / n)
+    # one-sided upper-tail p of standard normal = 0.5 * erfc(t / sqrt(2))
+    return 0.5 * math.erfc(t / math.sqrt(2.0))
+
+
+def _fdr_gate(picks: list[dict]) -> dict[str, Any]:
+    """Per-strategy multiple-testing pre-gate (ENHANCEMENT_OVERALL #64).
+
+    Tests each eligible strategy (n>=MIN_N_STRATEGY) for mean pnl > 0, then
+    applies Benjamini-Hochberg FDR at FDR_Q across the strategy family. Also
+    reports the Bonferroni survivor count. ok semantics match the other gates:
+      True  — >=1 strategy survives FDR (class edge is multiplicity-robust)
+      False — >=2 strategies tested but 0 survive (chance-level edge)
+      None  — <2 testable strategies (fail-open; never blocks on its own)"""
+    blocked = _load_blocked()
+    by_strat: dict[str, list[float]] = defaultdict(list)
+    for p in picks:
+        strat = p.get("strategy") or p.get("source_system") or ""
+        if not strat or strat in blocked:
+            continue
+        try:
+            by_strat[strat].append(float(p.get("pnl_pct") or 0))
+        except (TypeError, ValueError):
+            pass
+
+    pvals: list[tuple[str, float]] = []
+    for strat, pnls in by_strat.items():
+        pv = _one_sided_t_pvalue(pnls)
+        if pv is not None:
+            pvals.append((strat, pv))
+
+    m = len(pvals)
+    if m < 2:
+        return {"ok": None, "n_tested": m, "n_fdr_pass": 0,
+                "n_bonferroni_pass": 0, "min_p": None, "fdr_q": FDR_Q,
+                "note": f"need >=2 testable strategies (n>={MIN_N_STRATEGY}), got {m}"}
+
+    pvals.sort(key=lambda kv: kv[1])
+    # Benjamini-Hochberg: largest k with p_(k) <= (k/m) * q  (k is 1-indexed)
+    n_fdr_pass = 0
+    for k, (_, pv) in enumerate(pvals, start=1):
+        if pv <= (k / m) * FDR_Q:
+            n_fdr_pass = k
+    bonf_thresh = FDR_Q / m
+    n_bonf_pass = sum(1 for _, pv in pvals if pv <= bonf_thresh)
+    return {
+        "ok": n_fdr_pass >= 1,
+        "n_tested": m,
+        "n_fdr_pass": n_fdr_pass,
+        "n_bonferroni_pass": n_bonf_pass,
+        "min_p": round(pvals[0][1], 5),
+        "fdr_q": FDR_Q,
+        "bonferroni_threshold": round(bonf_thresh, 6),
+        "note": "",
+    }
+
+
 # ---------------------------------------------------------------------------
 # Verdict logic
 # ---------------------------------------------------------------------------
@@ -675,7 +765,8 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
              asset_class: str = "", top_symbol_share: float = 0.0,
              top_source_share: float = 0.0,
              avg_win: float = 0.0, avg_loss: float = 0.0,
-             mdd_cvar_gate_ok: bool | None = None) -> str:
+             mdd_cvar_gate_ok: bool | None = None,
+             fdr_gate_ok: bool | None = None) -> str:
     n_ok = n >= MIN_N_CLASS
     if not n_ok:
         return "INSUFFICIENT_DATA"
@@ -715,6 +806,13 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
         # and only when gate_ok is explicitly False (None = insufficient data,
         # leaves the verdict untouched). Default OFF (shadow) — no-op when unset.
         if _MDD_GATE_ENFORCE and mdd_cvar_gate_ok is False:
+            return "NOT_READY"
+        # ENHANCEMENT #64: multiple-testing pre-gate. When enforced, a class
+        # whose strategy family has ZERO FDR survivors is not multiplicity-
+        # robust -> NOT_READY. Monotone-conservative: only downgrades, and only
+        # when fdr_gate_ok is explicitly False (None = insufficient strategies,
+        # leaves the verdict untouched). Default OFF (shadow) — no-op when unset.
+        if _FDR_GATE_ENFORCE and fdr_gate_ok is False:
             return "NOT_READY"
         return "MONEY_READY"
     # A profit factor below 1.0 means the book loses money gross — never WATCH.
@@ -909,6 +1007,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         dsr = _dsr_gate(returns)
         pbo = _pbo_gate(ac_picks)
         spa = _spa_gate(ac_picks)
+        fdr = _fdr_gate(ac_picks)
         top_symbol = stats.get("top_symbol", "")
         top_symbol_share = stats.get("top_symbol_share", 0.0)
         top_source = stats.get("top_source", "")
@@ -924,7 +1023,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                            top_symbol_share=top_symbol_share,
                            top_source_share=top_source_share,
                            avg_win=avg_win, avg_loss=avg_loss,
-                           mdd_cvar_gate_ok=mdd_cvar.get("gate_ok"))
+                           mdd_cvar_gate_ok=mdd_cvar.get("gate_ok"),
+                           fdr_gate_ok=fdr.get("ok"))
         wr_floor = MIN_WR_BY_CLASS.get(ac.upper(), MIN_WR)
         exp_gate = _expectancy_gate(wr, avg_win, avg_loss, asset_class=ac)
 
@@ -978,6 +1078,19 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                     and verdict == "MONEY_READY")
                 else None
             ),
+            # ENHANCEMENT #64: multiple-testing (Bonferroni/BH-FDR) pre-gate
+            "_fdr_gate_enforce": _FDR_GATE_ENFORCE,
+            "fdr_ok": fdr.get("ok"),
+            "n_fdr_pass": fdr.get("n_fdr_pass", 0),
+            "n_bonferroni_pass": fdr.get("n_bonferroni_pass", 0),
+            "n_fdr_tested": fdr.get("n_tested", 0),
+            "_fdr_recommend": (
+                "NOT_READY"
+                if (not _FDR_GATE_ENFORCE
+                    and fdr.get("ok") is False
+                    and verdict == "MONEY_READY")
+                else None
+            ),
             "verdict": verdict,
             "data_source": data_source,
             "top_symbol": top_symbol,
@@ -995,7 +1108,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                 )
             ),
             "details": {"dsr": dsr, "pbo": pbo, "spa": spa, "expectancy": exp_gate,
-                        "mdd_cvar": mdd_cvar},
+                        "mdd_cvar": mdd_cvar, "fdr": fdr},
         }
 
     return results

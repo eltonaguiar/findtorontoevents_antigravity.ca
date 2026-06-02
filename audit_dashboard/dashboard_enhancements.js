@@ -961,6 +961,8 @@
       if (!resp.ok) return;
       const data = await resp.json();
       const mr = (data.live_money_ready || {});
+      const verifiedLab = (((data.edge_surfaces || {}).verified_lab) || {});
+      const bestPilot = verifiedLab.best_candidate || null;
       const ready = mr.money_ready_classes || [];
       const byClass = mr.by_class || {};
       const rows = Object.keys(byClass).sort().map(function (cls) {
@@ -969,6 +971,17 @@
         const wr = v.wr != null ? (Number(v.wr) <= 1 ? (Number(v.wr) * 100).toFixed(1) : Number(v.wr).toFixed(1)) : '—';
         return '<span style="margin-right:12px"><b>' + htmlEscape(cls) + '</b> PF ' + pf + ' WR ' + wr + '%</span>';
       }).join('');
+      let pilotLine = '';
+      if (bestPilot && bestPilot.label) {
+        const nClosed = bestPilot.forward_n_closed != null ? String(bestPilot.forward_n_closed) : '0';
+        const nTarget = bestPilot.forward_n_target != null ? String(bestPilot.forward_n_target) : '100';
+        const blockers = Array.isArray(bestPilot.blockers) && bestPilot.blockers.length ? bestPilot.blockers.join(', ') : 'forward gate not cleared';
+        const openSymbol = bestPilot.open_symbol ? ' open ' + htmlEscape(String(bestPilot.open_symbol)) : '';
+        pilotLine = '<div style="line-height:1.5;margin-top:6px;color:#ddd6fe"><b>Best forward pilot:</b> ' +
+          htmlEscape(bestPilot.label) + ' — WF ' + htmlEscape(String(bestPilot.lab_verdict || 'unknown')) +
+          ', forward ' + htmlEscape(nClosed) + '/' + htmlEscape(nTarget) + openSymbol +
+          ', blockers: ' + htmlEscape(blockers) + '.</div>';
+      }
       const banner = document.createElement('div');
       banner.id = 'enh-eagle2-policy-strip';
       banner.style.cssText = 'background:#1e1b4b;border:1px solid #6366f1;border-radius:8px;padding:10px 14px;margin:12px 0;font-size:12px;color:#c7d2fe';
@@ -976,7 +989,7 @@
         '<div style="font-weight:700;color:#a5b4fc;margin-bottom:6px">EAGLE2 — Size capital on policy-clean only (' +
         ready.length + '/9 money-ready)</div>' +
         '<div style="line-height:1.6">Tournament &amp; pick_funnel cells are discovery/paper — not sizing surfaces. ' +
-        rows + '</div>';
+        rows + '</div>' + pilotLine;
       const anchor = document.querySelector('.header') || document.querySelector('header') || document.body.firstChild;
       if (anchor && anchor.parentNode) {
         anchor.parentNode.insertBefore(banner, anchor.nextSibling);

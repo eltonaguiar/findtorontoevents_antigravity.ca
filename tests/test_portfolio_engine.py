@@ -142,23 +142,22 @@ def test_trend_filter_short():
 # --------------------------------------------------------------------------- #
 def test_tp_sl_long_pct_floor():
     tp, sl = risk.compute_tp_sl("long", 100.0, CONS)
-    # SL pct_floor -5% -> 95 ; TP pct +8% -> 108
-    assert math.isclose(sl, 95.0)
+    # SL pct_floor -6.5% -> 93.5 ; TP pct +8% -> 108
+    assert math.isclose(sl, 93.5)
     assert math.isclose(tp, 108.0)
 
 
 def test_tp_sl_short_pct_floor():
     tp, sl = risk.compute_tp_sl("short", 100.0, CONS)
     # short SL above entry; TP below entry
-    assert math.isclose(sl, 105.0)
+    assert math.isclose(sl, 106.5)
     assert math.isclose(tp, 92.0)
 
 
 def test_tp_sl_atr_based_sl_and_pct_tp():
-    # BAL: atr_mult 1.5 * 4 = 6 distance -> SL 94. TP pct (15%) takes
-    # precedence over r_multiple -> 115.
+    # BAL: atr_mult 2.0 * 4 = 8 distance -> SL 92. TP pct (15%) -> 115.
     tp, sl = risk.compute_tp_sl("long", 100.0, BAL, atr=4.0)
-    assert math.isclose(sl, 94.0)
+    assert math.isclose(sl, 92.0)
     assert math.isclose(tp, 115.0)
 
 
@@ -306,7 +305,7 @@ def test_evaluate_entry_happy_path_open():
     out = engine.evaluate_entry(pick, _state(), CONS, market)
     assert out["action"] == "open"
     assert out["weight"] > 0 and out["qty"] > 0
-    assert math.isclose(out["sl_price"], 95.0)   # -5%
+    assert math.isclose(out["sl_price"], 93.5)   # -6.5%
     assert math.isclose(out["tp_price"], 108.0)  # +8%
     assert out["position"]["symbol"] == "AAPL"
 
