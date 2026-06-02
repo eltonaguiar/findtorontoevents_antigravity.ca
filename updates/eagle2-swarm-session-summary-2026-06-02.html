@@ -54,7 +54,7 @@
   <a href="/audit/">/audit</a> ·
   <a href="/audit/ai-tournament.html">Tournament</a> ·
   <a href="/audit/research_index.html">Research index</a> ·
-  Git commit <code>f071b3527</code>
+  <a href="/audit/pf.html?key=deepseek_v4__aggressive">PF example</a>
 </p>
 
 <div class="hero">
@@ -74,6 +74,7 @@
     <li><a href="#achievements">Achievements shipped (live site)</a></li>
     <li><a href="#accomplished">Tasks accomplished (repo)</a></li>
     <li><a href="#surfaces">Where profit lives (surface ranking)</a></li>
+    <li><a href="#portfolio-status">Why PF did not mean "empty"</a></li>
     <li><a href="#best-picks">Best picks — detailed rationale</a></li>
     <li><a href="#short-term">Short-term plan (2–8 weeks)</a></li>
     <li><a href="#long-term">Long-term plan (90 days+)</a></li>
@@ -178,6 +179,21 @@
   <tr><td>6</td><td><a href="/audit/">/audit</a> policy-clean</td><td><span class="badge no">No deployable edge</span></td><td>0 money-ready classes</td></tr>
 </table>
 <div class="eli5"><strong>ELI5</strong>The practice games look great; the real game scoreboard is still losing — we're practicing the right plays before putting them in the real game.</div>
+
+<!-- ─── PORTFOLIO STATUS ─── -->
+<h2 id="portfolio-status">4. Why the PF page did not mean "empty portfolio"</h2>
+<div class="card">
+  <h3>Live PF books existed; the empty-state message was the misleading part</h3>
+  <p>The cited example book was <a href="/audit/pf.html?key=deepseek_v4__aggressive"><code>deepseek_v4__aggressive</code></a>. Live investigation found the portfolio system was populated:</p>
+  <table>
+    <tr><th>Check</th><th>Result</th><th>Implication</th></tr>
+    <tr><td>PF roster export</td><td><strong>81</strong> portfolios</td><td>The PF universe was present on the live server.</td></tr>
+    <tr><td>Books with open positions</td><td><strong>66</strong></td><td>The UI was not blank because the system had no active portfolios.</td></tr>
+    <tr><td><code>deepseek_v4__aggressive</code></td><td><strong>11</strong> open names</td><td>The user's example book was alive and non-empty.</td></tr>
+  </table>
+  <p>The real failure mode was ambiguity. When detail JSON lookup failed, the older page implied "first daily run pending" instead of distinguishing a bad <code>?key=</code>, invisible pasted Unicode, stale deploy, or roster/detail mismatch.</p>
+  <div class="eli5"><strong>ELI5</strong>The bookshelf had books on it. The sign on the shelf was wrong and made it look empty.</div>
+</div>
 
 <!-- ─── BEST PICKS ─── -->
 <h2 id="best-picks">5. Best picks — detailed rationale</h2>
