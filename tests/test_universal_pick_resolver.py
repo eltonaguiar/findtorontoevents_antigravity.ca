@@ -75,7 +75,7 @@ def test_extract_pick_fields_populates_asset_class() -> None:
 def test_max_hold_hours_per_asset_class() -> None:
     """CLAUDE_DEBUGGING_GUIDE.MD Step 7: forex/bond need longer windows."""
     assert universal_pick_resolver._max_hold_hours_for({"asset_class": "CRYPTO"}) == 48
-    assert universal_pick_resolver._max_hold_hours_for({"asset_class": "FOREX"}) == 120
+    assert universal_pick_resolver._max_hold_hours_for({"asset_class": "FOREX"}) == 72  # EAGLE2 2026-06-02: unified 120 -> 72
     assert universal_pick_resolver._max_hold_hours_for({"asset_class": "BOND"}) == 120
     assert universal_pick_resolver._max_hold_hours_for({"asset_class": "COMMODITY"}) == 96
     assert universal_pick_resolver._max_hold_hours_for({"asset_class": "ETF"}) == 96
@@ -96,12 +96,12 @@ def test_max_hold_hours_normalizes_aliases() -> None:
     fixed the resolver but didn't add aliased-input tests. This pins the fix.
     """
     # Lowercase canonical name should resolve via normalize_asset_class.
-    assert universal_pick_resolver._max_hold_hours_for({"asset_class": "forex"}) == 120
+    assert universal_pick_resolver._max_hold_hours_for({"asset_class": "forex"}) == 72  # EAGLE2 unified
     assert universal_pick_resolver._max_hold_hours_for({"asset_class": "bond"}) == 120
     # Symbol-driven detection: =X suffix → forex, =F → futures (96h).
-    assert universal_pick_resolver._max_hold_hours_for({"symbol": "EURUSD=X"}) == 120
+    assert universal_pick_resolver._max_hold_hours_for({"symbol": "EURUSD=X"}) == 72  # EAGLE2 unified
     assert universal_pick_resolver._max_hold_hours_for({"symbol": "CL=F"}) == 96
     # 6-char forex pair detected without explicit asset_class.
-    assert universal_pick_resolver._max_hold_hours_for({"symbol": "EURUSD"}) == 120
+    assert universal_pick_resolver._max_hold_hours_for({"symbol": "EURUSD"}) == 72  # EAGLE2 unified
     # Stablecoin → crypto (48h).
     assert universal_pick_resolver._max_hold_hours_for({"symbol": "BTCUSDT"}) == 48
