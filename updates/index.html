@@ -33,6 +33,28 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+<div class="update-entry" style="--dot-color: #60a5fa;" data-tags="eagle4,eagle5,gates,production-scanner,crpyto-flip,persona-kill,symbol-boost,best-picks,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
+  <div class="update-meta">
+    <span class="update-date">2026-06-02</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">EAGLE-4 + EAGLE-5 Gates — Code Diff, Smoke Test, Best Picks &amp; 12-Week Plan</h3>
+  <div class="update-body">
+    <p><strong>Full guide (ELI5 per section, per-pick rationale, 12-week roadmap):</strong> <a href="https://findtorontoevents.ca/updates/eagle4-eagle5-gates-2026-06-02.html"><strong>EAGLE-4 + EAGLE-5 Gates Guide 2026-06-02 →</strong></a></p>
+    <p><strong>What shipped (commits 7510035f1 + 2b4d7ce36 on main):</strong></p>
+    <ul>
+      <li><strong>EAGLE-4 admissibility gate</strong> — kills 4 noise personas (momentum_scalp 28%, breakout_scanner 28%, reflexivity_trader 35%, deep_value 44% WR), kills 8 negative-edge class×direction combos, <strong>flips CRYPTO LONG → SHORT</strong> (SHORT 67% WR vs LONG 33%, n=216). Wired into <code>production_scanner.py</code> section 6f2.5.</li>
+      <li><strong>EAGLE-5 promotion gate</strong> — boosts confidence +20% for 33 tournament-validated symbols (EQUITY 16, ETF 5, PENNY 8, COMMODITY 3, FUTURES 1) and +15% for 16 promoted personas. Multiplicative, capped at 1.0. Wired at 6f2.6.</li>
+      <li><strong>Standalone module <code>alpha_engine/eagle_gates.py</code></strong> — owns EAGLE-4 + EAGLE-5 logic so concurrent edits to the giant scanner file can't silently revert the data-backed gates.</li>
+    </ul>
+    <p><strong>Bug fix:</strong> original EAGLE-4 persona lookup read <code>pick["persona_id"]</code>, but production picks use <code>pick["strategy"]</code>. Fixed: persona field falls back through <code>persona_id → strategy_name → strategy</code>.</p>
+    <p><strong>Smoke test (10 synthetic picks):</strong> 6 kept, 2 persona-killed (AAPL momentum_scalp, GLD breakout_scanner), 2 directional-killed (JPM EQUITY SHORT, GC=F COMMODITY SHORT), 1 CRYPTO flipped (BTC LONG→SHORT), 4 EAGLE-5 boosted, all confidence ≤ 1.0 cap. PASS.</p>
+    <p><strong>Top picks (full rationale on linked page):</strong> <em>Paper watch</em> — CRYPTO SHORT (BTC/ETH), ETF EEM/IWM/GLD, EQUITY BAC/JPM/MSFT/NVDA. <em>Shadow pilot</em> — <code>etf_verified_dual_momentum</code> (only lab Tier-2 pass). <em>Do not size</em> — production /audit Smart Picks (0/9 money-ready).</p>
+    <p><strong>ELI5:</strong> Two new filters at the pick-club door. (1) Bouncer: "bounce losers, flip CRYPTO longs to shorts." (2) VIP host: "give extra confidence to symbols/strategies that have actually won in our tournament." Same robots, same data, just smarter about who's allowed in and how loud they get to talk.</p>
+    <p style="font-size:11px;color:#94a3b8;">Sources: <code>alpha_engine/eagle_gates.py</code>, <code>alpha_engine/production_scanner.py</code> (6f2.5 + 6f2.6), <code>EAGLE4_2026-06-02_minimax-m3-free.MD</code>, <code>EAGLE3_2026-06-02_minimax-m3-free.MD</code>, <code>reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md</code> · minimax-m3-free · Recovery from #447 (PR rebased forward).</p>
+  </div>
+</div>
+
 <div class="update-entry" style="--dot-color: #60a5fa;" data-tags="weekly-filter,money-maker-ready,real-money,eli5,best-picks,commodity,equity,etf,crypto,portfolio-sync,gap-analysis" data-category="trading" data-types="documentation,feature">
   <div class="update-meta">
     <span class="update-date">2026-06-02</span>
