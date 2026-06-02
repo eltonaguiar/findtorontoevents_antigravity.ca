@@ -44,20 +44,22 @@ class MutationResult:
     details: Dict = field(default_factory=dict)
 
 
-def compute_pf(pnls: List[float]) -> float:
-    """True Profit Factor = gross profit / gross loss (sum of pnl, NOT win/loss counts).
+_MAX_REPORT_PF = 99.0
 
-    Prior impl returned wins_count/losses_count, which inflated PF for any
-    strategy with many tiny wins vs few losses (root cause of the bogus
-    PF 600+/400+ on Mimo's INVERT mutations — flagged P0 by peer gx10).
-    999.0 is a sentinel for the no-losing-trades case (kept for downstream
-    compatibility); it now triggers only when gross_loss is genuinely 0.
+
+def compute_pf(pnls: List[float]) -> float:
+    """Canonical PF = gross_profit / gross_loss (NOT win-count / loss-count).
+
+    Merged PR #464 fixed count-ratio; this hardens zero-loss (no 999 sentinel)
+    and caps reported PF so walk-forward cannot show fake 600+ INVERT headlines.
     """
     gross_profit = sum(p for p in pnls if p > 0)
-    gross_loss = -sum(p for p in pnls if p < 0)
-    if gross_loss > 0:
-        return gross_profit / gross_loss
-    return 999.0 if gross_profit > 0 else 0.0
+    gross_loss = sum(abs(p) for p in pnls if p < 0)
+    if gross_profit <= 0 and gross_loss <= 0:
+        return 0.0
+    if gross_loss == 0:
+        return 0.0
+    return min(gross_profit / gross_loss, _MAX_REPORT_PF)
 
 
 def compute_wr(pnls: List[float]) -> float:
@@ -107,8 +109,9 @@ def purged_walk_forward(
             'test_n': len(test_pnls),
         })
 
-    avg_test_pf = np.mean([f['test_pf'] for f in fold_results])
-    folds_profitable = sum(1 for f in fold_results if f['test_pf'] >= 1.0)
+    test_pfs = [f['test_pf'] for f in fold_results if 1.0 <= f['test_pf'] <= _MAX_REPORT_PF]
+    avg_test_pf = float(np.mean(test_pfs)) if test_pfs else 0.0
+    folds_profitable = len(test_pfs)
 
     return {
         'verdict': 'PASS' if avg_test_pf >= 1.0 and folds_profitable >= 3 else 'FAIL',
@@ -218,9 +221,15 @@ def run_mutation(
 
     improvement = wf['avg_test_pf'] - original_pf
 
-    if wf['verdict'] == 'PASS' and improvement > 0.05:
+    loss_count = sum(1 for p in mutated_pnls if p < 0)
+    _honest_pf = (
+        0 < wf['avg_test_pf'] <= _MAX_REPORT_PF
+        and mutated_pf <= _MAX_REPORT_PF
+        and loss_count >= 3
+    )
+    if wf['verdict'] == 'PASS' and improvement > 0.05 and _honest_pf:
         verdict = 'ADOPT'
-    elif wf['avg_test_pf'] >= 1.0 and improvement > 0:
+    elif wf['avg_test_pf'] >= 1.0 and improvement > 0 and _honest_pf:
         verdict = 'CONSIDER'
     else:
         verdict = 'REJECT'

@@ -98,6 +98,27 @@ def main() -> None:
             ac: {"strategy": r["strategy"], "pf": r["stats"]["pf"], "wr": r["stats"]["wr"]}
             for ac, r in lab.get("best_per_class", {}).items()
         }
+    wf = _load(ROOT / "verified_strategies/WALKFORWARD_REPORT.json")
+    if wf:
+        wf_pass = []
+        for key, v in wf.items():
+            if not isinstance(v, dict) or v.get("verdict") != "PASS":
+                continue
+            oos = v.get("out_of_sample") or {}
+            wf_pass.append({
+                "class": v.get("asset_class") or key,
+                "strategy": v.get("strategy") or key,
+                "pf": oos.get("pf"),
+                "wr": oos.get("wr"),
+                "n": oos.get("n"),
+                "verdict": "PASS",
+            })
+        if wf_pass:
+            out["walkforward_pass"] = sorted(
+                wf_pass, key=lambda x: -(float(x.get("pf") or 0)),
+            )[:12]
+            if not out["lab_tier2"]:
+                out["lab_tier2"] = out["walkforward_pass"][:6]
 
     ap_path = ROOT / "alpha_engine/data/active_picks.json"
     if ap_path.exists() and ap_path.stat().st_size < 15_000_000:
