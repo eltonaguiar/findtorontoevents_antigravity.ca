@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-06-02T18:23:26.679318+00:00",
+  "generated_at": "2026-06-02T19:57:51.112256+00:00",
   "generated_date": "2026-06-02",
   "source": "alpha_engine/money_ready_verdict.py --json",
   "classes": {
     "CRYPTO": {
-      "n_resolved": 427,
-      "wr": 0.356,
-      "pf": 0.94,
+      "n_resolved": 351,
+      "wr": 0.3761,
+      "pf": 0.9601,
       "n_ok": true,
       "wr_ok": false,
       "pf_ok": false,
       "dsr_ok": false,
-      "dsr_score": 0.0,
-      "pbo_ok": false,
-      "pbo": 0.8543,
+      "dsr_score": 0.0011,
+      "pbo_ok": true,
+      "pbo": 0.1763,
       "spa_ok": false,
-      "spa_p": 0.194,
+      "spa_p": 0.554,
       "n_spa_pass": 1,
-      "expectancy": -0.005426,
+      "expectancy": -0.004526,
       "expectancy_ok": false,
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
@@ -27,52 +27,85 @@
       "_mdd_gate_enforce": true,
       "mdd": 1.0,
       "mdd_ok": false,
-      "cvar_95": -79.68,
+      "cvar_95": -84.9765,
       "cvar_ok": false,
       "_mdd_cvar_gate_ok": false,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": false,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 5,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": true,
+      "n_profitable_multi_source": 1,
+      "n_profitable_single_source": 3,
+      "_single_source_recommend": null,
       "verdict": "NOT_READY",
       "data_source": "closed_picks",
       "top_symbol": "BTCUSDT",
-      "top_symbol_share": 0.1874,
+      "top_symbol_share": 0.2251,
       "concentration_capped": false,
       "top_source": "UNKNOWN",
-      "top_source_share": 0.4684,
+      "top_source_share": 0.5755,
       "source_concentration_capped": true,
       "details": {
         "dsr": {
           "ok": false,
-          "dsr_score": 0.0,
+          "dsr_score": 0.0011,
           "note": ""
         },
         "pbo": {
-          "ok": false,
-          "pbo": 0.8543,
-          "n_strategies": 7,
+          "ok": true,
+          "pbo": 0.1763,
+          "n_strategies": 5,
           "note": ""
         },
         "spa": {
           "ok": false,
-          "spa_p": 0.194,
+          "spa_p": 0.554,
           "n_spa_pass": 1,
-          "n_strategies_tested": 7,
+          "n_strategies_tested": 5,
           "note": ""
         },
         "expectancy": {
-          "expectancy": -0.005426,
+          "expectancy": -0.004526,
           "expectancy_ok": false,
-          "adj_win": 0.17154,
-          "adj_loss": 0.103253,
+          "adj_win": 0.192794,
+          "adj_loss": 0.123475,
           "slippage_bps": 15.0,
           "note": ""
         },
         "mdd_cvar": {
           "mdd": 1.0,
           "mdd_ok": false,
-          "cvar_95": -79.68,
+          "cvar_95": -84.9765,
           "cvar_ok": false,
           "gate_ok": false,
           "mdd_source": "registry"
+        },
+        "fdr": {
+          "ok": false,
+          "n_tested": 5,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": 0.02958,
+          "fdr_q": 0.1,
+          "bonferroni_threshold": 0.02,
+          "note": ""
+        },
+        "single_source": {
+          "ok": true,
+          "n_profitable": 4,
+          "n_profitable_single_source": 3,
+          "n_profitable_multi_source": 1,
+          "single_source_strategies": [
+            "atr_percentile_gate",
+            "crypto_liquidity_wick_reversal_v1",
+            "luxalgo_confluence"
+          ],
+          "note": ""
         }
       }
     },
@@ -104,6 +137,17 @@
       "cvar_ok": false,
       "_mdd_cvar_gate_ok": false,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "INSUFFICIENT_DATA",
       "data_source": "closed_picks",
       "top_symbol": "USDJPY=X",
@@ -144,6 +188,22 @@
           "cvar_ok": false,
           "gate_ok": false,
           "mdd_source": "registry"
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     },
@@ -169,12 +229,23 @@
       "_ml_enhanced_quarantine_n": 0,
       "_ml_enhanced_quarantine_recommend": null,
       "_mdd_gate_enforce": true,
-      "mdd": 0.8199,
+      "mdd": 0.7931,
       "mdd_ok": false,
       "cvar_95": -34.813,
       "cvar_ok": false,
       "_mdd_cvar_gate_ok": false,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "NOT_READY",
       "data_source": "closed_picks",
       "top_symbol": "INTC",
@@ -209,12 +280,28 @@
           "note": ""
         },
         "mdd_cvar": {
-          "mdd": 0.8199,
+          "mdd": 0.7931,
           "mdd_ok": false,
           "cvar_95": -34.813,
           "cvar_ok": false,
           "gate_ok": false,
           "mdd_source": "registry"
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     },
@@ -246,6 +333,17 @@
       "cvar_ok": null,
       "_mdd_cvar_gate_ok": null,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "INSUFFICIENT_DATA",
       "data_source": "closed_picks",
       "top_symbol": "GC=F",
@@ -286,6 +384,22 @@
           "cvar_ok": null,
           "gate_ok": null,
           "mdd_source": null
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     },
@@ -317,6 +431,17 @@
       "cvar_ok": null,
       "_mdd_cvar_gate_ok": null,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "INSUFFICIENT_DATA",
       "data_source": "closed_picks",
       "top_symbol": "AAPL",
@@ -357,6 +482,22 @@
           "cvar_ok": null,
           "gate_ok": null,
           "mdd_source": null
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     },
@@ -388,6 +529,17 @@
       "cvar_ok": true,
       "_mdd_cvar_gate_ok": true,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "INSUFFICIENT_DATA",
       "data_source": "closed_picks",
       "top_symbol": "CL=F",
@@ -428,16 +580,32 @@
           "cvar_ok": true,
           "gate_ok": true,
           "mdd_source": "registry"
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     },
     "ETF": {
-      "n_resolved": 3,
+      "n_resolved": 2,
       "wr": 1.0,
-      "pf": 0.0,
+      "pf": null,
       "n_ok": false,
       "wr_ok": true,
-      "pf_ok": false,
+      "pf_ok": true,
       "dsr_ok": null,
       "dsr_score": null,
       "pbo_ok": null,
@@ -459,8 +627,19 @@
       "cvar_ok": null,
       "_mdd_cvar_gate_ok": null,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "INSUFFICIENT_DATA",
-      "data_source": "dashboard_fallback",
+      "data_source": "closed_picks",
       "top_symbol": "XLI",
       "top_symbol_share": 0.5,
       "concentration_capped": false,
@@ -496,6 +675,22 @@
           "cvar_ok": null,
           "gate_ok": null,
           "mdd_source": null
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     },
@@ -527,6 +722,17 @@
       "cvar_ok": null,
       "_mdd_cvar_gate_ok": null,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "INSUFFICIENT_DATA",
       "data_source": "closed_picks",
       "top_symbol": "SOFI",
@@ -564,6 +770,22 @@
           "cvar_ok": null,
           "gate_ok": null,
           "mdd_source": null
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     },
@@ -595,6 +817,17 @@
       "cvar_ok": null,
       "_mdd_cvar_gate_ok": null,
       "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 0,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": null,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
       "verdict": "INSUFFICIENT_DATA",
       "data_source": "backfill_no_data",
       "top_symbol": "",
@@ -632,6 +865,22 @@
           "cvar_ok": null,
           "gate_ok": null,
           "mdd_source": null
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 0,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 0"
+        },
+        "single_source": {
+          "ok": null,
+          "n_profitable": 0,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 0,
+          "note": "no profitable strategy with n>=20"
         }
       }
     }
@@ -643,10 +892,15 @@
         "verdict_from": "NOT_READY",
         "verdict_to": "NOT_READY",
         "verdict_changed": false,
-        "wr_delta": -0.0389,
-        "pf_delta": 0.0727,
-        "n_delta": 75,
-        "gate_flips": {}
+        "wr_delta": -0.0188,
+        "pf_delta": 0.0928,
+        "n_delta": -1,
+        "gate_flips": {
+          "pbo_ok": [
+            false,
+            true
+          ]
+        }
       },
       "FOREX": {
         "verdict_from": "INSUFFICIENT_DATA",
@@ -703,8 +957,8 @@
         "verdict_to": "INSUFFICIENT_DATA",
         "verdict_changed": false,
         "wr_delta": 0.5,
-        "pf_delta": -0.476,
-        "n_delta": -1,
+        "pf_delta": null,
+        "n_delta": -2,
         "gate_flips": {}
       },
       "PENNY_STOCK": {
