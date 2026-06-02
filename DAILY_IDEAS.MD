@@ -3891,3 +3891,72 @@ Our /audit production book has no deployable edge. The real edge is in:
 - `EAGLE3_2026-06-02_minimax-m3-free.md` — admissibility gate + CRYPTO LONG→SHORT flip + kill noise personas
 
 **Cross-cutting thread:** the 4 EAGLE plans converge on (a) unified admissibility pipeline, (b) DSR/PBO at production_scanner gate, (c) resolver intrabar as upstream T2 blocker, (d) per-class mutation framework, (e) concentration monitoring.
+
+---
+
+## 2026-06-02 — EAGLE2 Multi-Model Synthesis + Strategy Brainstorm
+
+**Source:** User directive + quant assessment + Mercury 2 analysis  
+**Goal:** Get profitable picks by asset class, identify where most profitable picks live  
+
+### Key Questions to Answer:
+1. More strategies per asset class + better backtesting methodology
+2. More backtests per asset class
+3. Hidden edge research within project
+4. Proven statistical edge (Monte Carlo, Bonferroni, etc.)
+5. Statistical measures for "real money ready" picks
+6. Bare-minimum vs ideal backtesting pipeline
+
+### Statistical Measures for Real-Money-Ready:
+
+| Measure | Threshold | Why |
+|---------|-----------|-----|
+| Sharpe Ratio | ≥ 1.0 after costs | Risk-adjusted return |
+| Profit Factor | ≥ 1.5 (bare) → ≥ 2.0 (ideal) | Gross profit / gross loss |
+| Win Rate | 45-55% acceptable if PF strong | Combined with PF |
+| Max Drawdown | ≤ 20% monthly | Tail risk |
+| Turnover | ≤ 30%/yr equities, ≤ 70%/yr crypto | Cost impact |
+| Slippage | ≤ 5bps equities, ≤ 15bps crypto | Execution quality |
+| Regime Robustness | ±10% across ≥ 3/4 regimes | Consistency |
+| DSR/PBO/SPA | Adjusted p < 0.05 | Multiple testing |
+| HHI | < 0.20 | Source concentration |
+| OOS Decay | PF OOS ≥ 80% IS PF | Overfitting check |
+
+### Bare-Minimum Backtesting:
+1. Data hygiene (clean, deduped)
+2. Pre-register hypothesis
+3. Simple IS/OOS split (70/30)
+4. Flat cost model (5bps)
+5. Basic metrics (PF, Sharpe, WR, MDD)
+6. Bonferroni correction
+
+### Ideal Pipeline:
+1. Data provenance (source_id, fallback, timestamp)
+2. Purged-embargoed walk-forward (30d purge, 10d embargo)
+3. Block bootstrap CI (1000 resamples)
+4. Regime-segmented analysis
+5. Full cost model (per asset class)
+6. DSR/PBO/SPA correction
+7. Shadow-size simulation (0.5% capital, 4-8 weeks)
+8. Automated monitoring dashboard
+
+### Forward-Testing Guidelines:
+- Minimum 30-50 distinct symbols per asset class
+- Duration: 2× longest look-back window
+- Start at ≤ 0.5% capital per strategy
+- Live PF within ±10% of backtest PF
+- Cover ≥ 3 distinct market regimes
+- Block-bootstrap on live P&L (95% CI for PF must not cross 1.0)
+
+### Where Most Profitable Picks Live:
+1. /audit/ai-tournament.html — best paper edge (deepseek_v4, gpt4o, grok3)
+2. /audit/pick_funnel.html — good for discovery, bad for sizing
+3. /audit/ — main production book (currently weak)
+4. /audit/research_index.html — research outputs
+
+### Assets to Investigate:
+- NVDA: Blue-chip compounder, +2285% backtest, Sharpe 2.08
+- BTCUSD: Donchian breakout +371%, MultiTF momentum +269%
+- ETF dual-momentum: Best lab edge, PF 1.22, 54.9% WR
+- macd_rsi_momentum: Walk-forward validated PF 3.33, 65.4% WR daily
+
