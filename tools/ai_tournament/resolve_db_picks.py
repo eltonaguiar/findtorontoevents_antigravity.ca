@@ -155,12 +155,36 @@ def main() -> int:
           f"skipped_not_expired={counts['skip_expired_filter']}")
 
     if args.apply and updates:
-        cur2 = conn.cursor()
-        cur2.executemany(
-            "UPDATE tournament_picks SET status=%s, exit_price=%s, pnl_pct=%s, "
-            "exit_reason=%s, resolved_at=%s WHERE id=%s AND status='OPEN'", updates)
-        conn.commit()
-        print(f"[resolve-db] APPLIED {cur2.rowcount} DB updates.")
+        # Chunked executemany — 50webs MySQL drops the connection on large batches
+        # (observed 2026-06-02 with 820-row payload: pymysql 2013 "Lost connection
+        # to MySQL server during query"). Commit per chunk so a mid-batch drop
+        # doesn't lose previously-resolved picks; reconnect on drop.
+        CHUNK = 50
+        applied = 0
+        for i in range(0, len(updates), CHUNK):
+            batch = updates[i:i + CHUNK]
+            for attempt in (1, 2):
+                try:
+                    cur2 = conn.cursor()
+                    cur2.executemany(
+                        "UPDATE tournament_picks SET status=%s, exit_price=%s, "
+                        "pnl_pct=%s, exit_reason=%s, resolved_at=%s "
+                        "WHERE id=%s AND status='OPEN'", batch)
+                    conn.commit()
+                    applied += cur2.rowcount
+                    break
+                except Exception as e:
+                    print(f"[resolve-db] chunk {i // CHUNK} attempt {attempt} "
+                          f"failed: {e}")
+                    if attempt == 2:
+                        raise
+                    try:
+                        conn.close()
+                    except Exception:
+                        pass
+                    conn = pymysql.connect(**get_stocks_creds())
+        print(f"[resolve-db] APPLIED {applied} DB updates "
+              f"({(len(updates) + CHUNK - 1) // CHUNK} chunks of {CHUNK}).")
     elif updates:
         print(f"[resolve-db] DRY-RUN: {len(updates)} picks would be UPDATEd "
               f"(pass --apply to commit). Sample:")
