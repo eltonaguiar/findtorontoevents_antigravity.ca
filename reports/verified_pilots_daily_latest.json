@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-06-02T12:50:32.155828+00:00",
+  "ok": true,
+  "steps": [
+    {
+      "cmd": [
+        "/usr/bin/python3",
+        "verified_strategies/paper_pilot/etf_dual_momentum_pilot.py",
+        "--one-shot"
+      ],
+      "returncode": 0,
+      "stdout_tail": "ate\": \"2026-06-02\",\n  \"signal\": \"BUY\",\n  \"symbol\": \"XLK\",\n  \"open_position\": {\n    \"symbol\": \"XLK\",\n    \"direction\": \"BUY\",\n    \"entry_price\": 195.75999450683594,\n    \"entry_date\": \"2026-06-02\",\n    \"strategy\": \"etf_verified_dual_momentum\",\n    \"status\": \"OPEN\",\n    \"r12_1m\": 0.7052,\n    \"last_seen\": \"2026-06-02\"\n  },\n  \"returns_top\": [\n    [\n      \"XLK\",\n      0.7052421401393121\n    ],\n    [\n      \"EEM\",\n      0.5767026641230311\n    ],\n    [\n      \"XLE\",\n      0.45074427560725217\n    ],\n    [\n      \"QQQ\",\n      0.43772069609533326\n    ],\n    [\n      \"IWM\",\n      0.424363324749917\n    ]\n  ]\n}\n",
+      "stderr_tail": "indtorontoevents_antigravity.ca/verified_strategies/paper_pilot/etf_dual_momentum_pilot.py:73: FutureWarning: Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead\n  out[sym] = float(s.iloc[-1] / s.iloc[-LOOKBACK_DAYS] - 1.0)\n"
+    },
+    {
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/etf_forward_stats.py",
+        "--write"
+      ],
+      "returncode": 0,
+      "stdout_tail": "\"gates\": [\n      \"n<100\",\n      \"pf<1.5\",\n      \"wr<50%\",\n      \"pf<0.85*oos\"\n    ],\n    \"shadow_gates\": [\n      \"n<30\"\n    ],\n    \"open_position\": {\n      \"symbol\": \"XLK\",\n      \"direction\": \"BUY\",\n      \"entry_price\": 195.75999450683594,\n      \"entry_date\": \"2026-06-02\",\n      \"strategy\": \"etf_verified_dual_momentum\",\n      \"status\": \"OPEN\",\n      \"r12_1m\": 0.7052,\n      \"last_seen\": \"2026-06-02\"\n    },\n    \"signal\": \"BUY\",\n    \"symbol\": \"XLK\"\n  },\n  \"recommend_scanner_enable\": false,\n  \"enable_flag\": \"ETF_VERIFIED_DUAL_MOMENTUM_ENABLED\",\n  \"forward_n_target\": 100,\n  \"shadow_n_target\": 30\n}\n",
+      "stderr_tail": "Wrote /home/eaguiar2015/findtorontoevents_antigravity.ca/reports/etf_forward_stats_latest.json\n"
+    },
+    {
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/crypto_wf_forward_stats.py",
+        "--write"
+      ],
+      "returncode": 0,
+      "stdout_tail": ": 100\n      },\n      \"crypto_verified_bollinger_mr\": {\n        \"n_closed\": 0,\n        \"wins\": 0,\n        \"losses\": 0,\n        \"wr\": 0.0,\n        \"pf\": 0.0,\n        \"mean_pnl_pct\": 0.0,\n        \"promotion_ready\": false,\n        \"gates\": [\n          \"n<100\"\n        ],\n        \"target_n\": 100\n      }\n    }\n  },\n  \"recommend_vwap_enable\": false,\n  \"recommend_bollinger_enable\": false,\n  \"enable_flags\": {\n    \"vwap\": \"CRYPTO_VERIFIED_VWAP_ENABLED=1\",\n    \"bollinger\": \"CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED=1\"\n  },\n  \"note\": \"Production crypto_donchian WF FAIL \\u2014 do not enable donchian scanner.\"\n}\n",
+      "stderr_tail": "Wrote /home/eaguiar2015/findtorontoevents_antigravity.ca/reports/crypto_wf_forward_stats_latest.json\n"
+    },
+    {
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/faber_forward_stats.py",
+        "--write"
+      ],
+      "returncode": 0,
+      "stdout_tail": "{\n  \"timestamp\": \"2026-06-02T12:50:31.981337+00:00\",\n  \"strategy\": \"faber_taa_paper_pilot\",\n  \"n_closed\": 0,\n  \"wr\": 0.0,\n  \"pf\": 0.0,\n  \"open_count\": 0,\n  \"portfolio_value\": null,\n  \"promotion_ready\": false,\n  \"gates\": [\n    \"n=0<100\",\n    \"PF=0.00<1.5\",\n    \"WR=0.0%<50%\"\n  ],\n  \"open_symbols\": [],\n  \"note\": \"0 ETF strategy closes in trading_picks \\u2014 forward pilot only until resolver closes etf_faber_tactical rows.\"\n}\n",
+      "stderr_tail": "Wrote /home/eaguiar2015/findtorontoevents_antigravity.ca/reports/faber_forward_stats_latest.json\n"
+    },
+    {
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/pilot_forward_dashboard.py"
+      ],
+      "returncode": 0,
+      "stdout_tail": " 0.0,\n      \"open_count\": 0,\n      \"portfolio_value\": null,\n      \"promotion_ready\": false,\n      \"gates\": [\n        \"n=0<100\",\n        \"PF=0.00<1.5\",\n        \"WR=0.0%<50%\"\n      ],\n      \"open_symbols\": [],\n      \"note\": \"0 ETF strategy closes in trading_picks \\u2014 forward pilot only until resolver closes etf_faber_tactical rows.\"\n    }\n  },\n  \"money_ready_blockers\": [\n    \"All sleeves require forward virtual n>=100, PF>=1.5, WR>=50%\",\n    \"Lab walk-forward PASS required for crypto/ETF scanner flags\",\n    \"DSR/PBO shadow tier \\u2014 no real-money sizing until forward track validates\"\n  ]\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/strategy_admit.py",
+        "--strategy",
+        "etf_dual_momentum",
+        "--asset-class",
+        "ETF",
+        "--write"
+      ],
+      "returncode": 0,
+      "stdout_tail": "\n  \"hypothesis_preregistered\": true,\n  \"walkforward\": {\n    \"verdict\": \"PASS\",\n    \"pf\": 1.21,\n    \"wr\": null,\n    \"n\": 32,\n    \"artifact\": \"/home/eaguiar2015/findtorontoevents_antigravity.ca/verified_strategies/WALKFORWARD_REPORT.json\"\n  },\n  \"money_ready_class\": {\n    \"verdict\": \"INSUFFICIENT_DATA\",\n    \"sizing_multiplier\": 0.0\n  },\n  \"admit_status\": \"FORWARD_PILOT_ONLY\",\n  \"checks\": {\n    \"m107_preregister\": true,\n    \"walkforward_pass\": true,\n    \"class_money_ready\": false\n  },\n  \"recommendation\": \"Live merge allowed only when walkforward PASS + class MONEY_READY + forward pilot ready.\"\n}\n",
+      "stderr_tail": "Wrote /home/eaguiar2015/findtorontoevents_antigravity.ca/reports/strategy_admit/etf_dual_momentum.json\n"
+    }
+  ]
+}
