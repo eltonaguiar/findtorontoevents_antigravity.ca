@@ -58,3 +58,17 @@ INTC (3), NVDA (3, divisive), TSLA (2), ARKK/AMC/QQQ/TLT (1 each — TLT flagged
 - Single-run snapshot; models have knowledge cutoffs and can be stale on ratings.
 - Reproduce live: verify each top pick against TipRanks Smart Score + Morningstar star/moat before sizing.
 - This is analysis, not financial advice. Per-pick raw votes: `reports/cqp_vote_*.txt`.
+
+## Persisted to database (ejaguiar1_backtests)
+
+Per the EAGLE2 prompt ("strategies documented by asset class"), two additive tables were created
+(no existing data touched → no backup required):
+
+- **`eagle2_methodology`** — 10 rows = 5 asset classes × {QUICK, LONG}, columns:
+  `asset_class, mode, signals, thresholds, sizing, rebalance, avoid_rules, source, version, created_utc`.
+  Source = the 15-round swarm methodology.
+- **`eagle2_consensus_picks`** — `ticker, tier, conviction, cycle, status, method, run_date, created_utc`.
+  Seeded with the interim debate snapshots (`status='interim'`); the final converged basket is written
+  with `status='final'` after the 5-cycle hourly enhancer completes.
+
+Reproduce: `SELECT * FROM eagle2_consensus_picks WHERE status='final' ORDER BY conviction DESC;`
