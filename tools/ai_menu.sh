@@ -21,6 +21,7 @@ set -uo pipefail
 # key | command | description
 TOOLS=(
   "claude|claude|Claude Code (Anthropic agentic CLI)"
+  "command-code|command-code|Command-Code (Claude-Code-style agent)"
   "cursor|cursor-agent|Cursor headless agent"
   "opencode|opencode|OpenCode agentic coding CLI"
   "kilo|kilo|Kilo (OpenCode fork)"
@@ -68,6 +69,7 @@ PROJECT_CMDS=(
 #                       approval-prompting coding agents, or driven by own configs.
 declare -A YOLO_FLAGS=(
   [claude]="--dangerously-skip-permissions"
+  [command-code]="--yolo --skip-onboarding --trust"  # --yolo == --dangerously-skip-permissions
   [cursor]="--force --approve-mcps --trust"
   [agent]="--force --approve-mcps --trust"           # same binary as cursor-agent
   [codex]="--dangerously-bypass-approvals-and-sandbox"
