@@ -33,6 +33,38 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="eagle2,session-summary,root-cause,quant-review,phases-1-5,best-picks,roadmap,eli5,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
+  <div class="update-meta">
+    <span class="update-date">2026-06-02</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">🦅 EAGLE2 Root Cause + 5 Phase Fixes + Best Picks + 12-Week Plan (full ELI5)</h3>
+  <div class="update-body">
+    <p><strong>Full report (tables, ELI5, per-pick rationale):</strong> <a href="/updates/eagle2-session-summary-2026-06-02.html"><strong>EAGLE2 Session Summary →</strong></a></p>
+    <p><strong>What we fixed:</strong> <a href="/audit/">/audit</a> production book had 0 profitable asset classes. Root cause: research→production gap + resolver contamination. <strong>5 phases deployed across 17 files (~3,000 lines, 3 commits):</strong></p>
+    <ol style="font-size:13px;margin:6px 0;padding-left:20px;">
+      <li><strong>FOREX TIME_EXIT unified</strong> — 48h/120h/7d → 72h across all 7 resolvers (fixes label contamination)</li>
+      <li><strong>Provenance tagging</strong> on every resolved pick (_resolver_version, _resolver_source)</li>
+      <li><strong>Unified 10-step admissibility pipeline</strong> replacing 6 fragmented validators</li>
+      <li><strong>Emitter discipline gate</strong> — 25 strategies hard-killed, 8 monitor-only, 42 proven. Gate runs BEFORE quality gates in production_scanner.py.</li>
+      <li><strong>Concentration monitor</strong> + crypto VWAP/Bollinger default-enabled</li>
+    </ol>
+    <p><strong>Best picks per asset class (detailed rationale on HTML):</strong></p>
+    <table style="width:100%;font-size:12px;border-collapse:collapse;margin:8px 0;">
+      <tr style="border-bottom:1px solid rgba(148,163,184,0.2);"><th style="text-align:left;padding:4px;">Asset Class</th><th>Best Pick</th><th>PF/WR</th><th>Status</th></tr>
+      <tr><td style="padding:4px;">CRYPTO</td><td>deepseek_v4 SHORT</td><td>3.46 / 57.7%</td><td style="color:#f59e0b;">PAPER ONLY</td></tr>
+      <tr><td style="padding:4px;">ETF</td><td>ETF Dual Momentum</td><td>1.60 / 53.8%</td><td style="color:#f59e0b;">SHADOW PILOT</td></tr>
+      <tr><td style="padding:4px;">EQUITY</td><td>BAC, JPM, MSFT, NVDA</td><td>~64% paper WR</td><td style="color:#ef4444;">NO (prod PF 0.33)</td></tr>
+      <tr><td style="padding:4px;">FOREX</td><td>—</td><td>—</td><td style="color:#ef4444;">HARD-DISABLED</td></tr>
+      <tr><td style="padding:4px;">COMMODITY</td><td>COT rehab needed</td><td>0.69</td><td style="color:#ef4444;">CONTAMINATED</td></tr>
+    </table>
+    <p><strong>Statistical arsenal:</strong> Bonferroni, Benjamini-Hochberg, DSR, Monte Carlo (20+ implementations), block bootstrap — all in codebase. NOW enforced via <code>admissibility_pipeline.py</code>.</p>
+    <p><strong>LiteLLM:</strong> 3 new modes tested + working (ollama-cloud-large, ollama-cloud, ollama-cloud-local). 16 models total.</p>
+    <p><strong>12-week plan:</strong> Weeks 1-4 (resolver audit + pipeline deploy), 5-9 (WF on ETF/crypto + shadow-size), 10-12 (promote + scale). Target: ≥2 capital-ready sleeves with live PF ≥ 0.5, WR ≥ 55%.</p>
+    <p style="font-size:11px;color:#94a3b8;">17 files · ~3,000 lines · 3 commits · ~/.commandcode/plans/EAGLE2_2026-06-02_deepseek_v4.MD</p>
+  </div>
+</div>
+
 <div class="update-entry" style="--dot-color: #a78bfa;" data-tags="eagle2,swarm,audit,best-picks,money-ready,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
   <div class="update-meta">
     <span class="update-date">2026-06-02</span>
