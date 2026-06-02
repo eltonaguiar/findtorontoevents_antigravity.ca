@@ -23,6 +23,11 @@ ROOT = Path(__file__).resolve().parent.parent
 REPORTS = ROOT / "reports" / "strategy_admit"
 WF_REPORT = ROOT / "verified_strategies" / "WALKFORWARD_REPORT.json"
 HYPOTHESIS = ROOT / "reports" / "hypothesis_registry.json"
+ETF_FORWARD_STATS = [
+    ROOT / "reports" / "etf_forward_stats_latest.json",
+    ROOT / "verified_strategies" / "paper_pilot" / "etf_forward_stats.json",
+]
+PILOT_FORWARD_DASHBOARD = ROOT / "audit_dashboard" / "data" / "pilot_forward_dashboard.json"
 
 # Map CLI names → walkforward report keys
 SLEEVE_ALIASES: Dict[str, str] = {
@@ -97,24 +102,113 @@ def _money_ready_class(asset_class: str) -> Dict[str, Any]:
         return {"verdict": "UNKNOWN", "sizing_multiplier": None}
 
 
+def _forward_pilot(strategy: str, sleeve_key: str, asset_class: str) -> Optional[Dict[str, Any]]:
+    strategy_l = strategy.lower()
+    asset_class_l = asset_class.lower()
+    if asset_class_l != "etf" and strategy_l not in {"etf_dual_momentum", "dual_momentum_etf"}:
+        return None
+
+    for path in ETF_FORWARD_STATS:
+        payload = _load_json(path)
+        if not isinstance(payload, dict):
+            continue
+        forward = payload.get("paper_pilot_forward")
+        if isinstance(forward, dict):
+            return {
+                "available": True,
+                "artifact": str(path),
+                "source": forward.get("source"),
+                "n_closed": forward.get("n_closed"),
+                "wr": forward.get("wr"),
+                "pf": forward.get("pf"),
+                "promotion_ready": bool(forward.get("promotion_ready")),
+                "shadow_checkpoint_ready": bool(forward.get("shadow_checkpoint_ready")),
+                "gates": forward.get("gates") or [],
+                "shadow_gates": forward.get("shadow_gates") or [],
+                "open_position": forward.get("open_position"),
+                "signal": forward.get("signal"),
+                "symbol": forward.get("symbol"),
+            }
+        sleeves = payload.get("sleeves")
+        row = sleeves.get("etf_dual_momentum") if isinstance(sleeves, dict) else None
+        if isinstance(row, dict) and isinstance(row.get("forward"), dict):
+            forward = row["forward"]
+            return {
+                "available": True,
+                "artifact": str(path),
+                "source": forward.get("source"),
+                "n_closed": forward.get("n_closed"),
+                "wr": forward.get("wr"),
+                "pf": forward.get("pf"),
+                "promotion_ready": bool(forward.get("promotion_ready")),
+                "shadow_checkpoint_ready": bool(forward.get("shadow_checkpoint_ready")),
+                "gates": forward.get("gates") or [],
+                "shadow_gates": forward.get("shadow_gates") or [],
+                "open_position": forward.get("open_position"),
+                "signal": forward.get("signal"),
+                "symbol": forward.get("symbol"),
+            }
+    payload = _load_json(PILOT_FORWARD_DASHBOARD)
+    sleeves = payload.get("sleeves") if isinstance(payload, dict) else None
+    row = sleeves.get("etf_dual_momentum") if isinstance(sleeves, dict) else None
+    if isinstance(row, dict) and isinstance(row.get("forward"), dict):
+        forward = row["forward"]
+        return {
+            "available": True,
+            "artifact": str(PILOT_FORWARD_DASHBOARD),
+            "source": forward.get("source"),
+            "n_closed": forward.get("n_closed"),
+            "wr": forward.get("wr"),
+            "pf": forward.get("pf"),
+            "promotion_ready": bool(forward.get("promotion_ready")),
+            "shadow_checkpoint_ready": bool(forward.get("shadow_checkpoint_ready")),
+            "gates": forward.get("gates") or [],
+            "shadow_gates": forward.get("shadow_gates") or [],
+            "open_position": forward.get("open_position"),
+            "signal": forward.get("signal"),
+            "symbol": forward.get("symbol"),
+        }
+    return None
+
+
 def admit(strategy: str, asset_class: str) -> Dict[str, Any]:
     sleeve = SLEEVE_ALIASES.get(strategy.lower(), strategy.lower())
     wf = _wf_verdict(sleeve)
     hyp = _hypothesis_registered(strategy)
     mr = _money_ready_class(asset_class.upper())
+    forward = _forward_pilot(strategy, sleeve, asset_class)
 
     wf_ok = str(wf.get("verdict")).upper() == "PASS"
     mr_ok = str(mr.get("verdict")).upper() == "MONEY_READY"
     hyp_ok = hyp is not None
+    forward_present = bool(forward and forward.get("available"))
+    forward_shadow_ok = bool(forward and forward.get("shadow_checkpoint_ready"))
+    forward_promote_ok = bool(forward and forward.get("promotion_ready"))
 
-    if wf_ok and mr_ok:
+    if wf_ok and mr_ok and forward_promote_ok:
         status = "PROMOTE_LIVE"
-    elif wf_ok:
+    elif wf_ok and forward_present:
         status = "FORWARD_PILOT_ONLY"
     elif str(wf.get("verdict")).upper() == "FAIL":
         status = "REJECT"
     else:
         status = "SHADOW_OR_UNTESTED"
+
+    if status == "PROMOTE_LIVE":
+        recommendation = "All gates green — walk-forward, class money-ready, and forward-pilot promotion thresholds all passed."
+    elif status == "FORWARD_PILOT_ONLY":
+        blockers = []
+        if not mr_ok:
+            blockers.append(f"class verdict={mr.get('verdict')}")
+        if forward and forward.get("gates"):
+            blockers.extend(str(g) for g in (forward.get("gates") or []))
+        if not blockers:
+            blockers.append("forward promotion gate not yet cleared")
+        recommendation = "Keep in forward pilot; do not live-merge yet. Blockers: " + ", ".join(blockers)
+    elif wf_ok:
+        recommendation = "Walk-forward passes, but no forward-pilot artifact is available yet. Keep shadow-only until the pilot starts."
+    else:
+        recommendation = "Live merge allowed only when walkforward PASS + class MONEY_READY + forward pilot ready."
 
     return {
         "schema_version": "1.0",
@@ -126,17 +220,17 @@ def admit(strategy: str, asset_class: str) -> Dict[str, Any]:
         "hypothesis_preregistered": hyp_ok,
         "walkforward": wf,
         "money_ready_class": mr,
+        "forward_pilot": forward,
         "admit_status": status,
         "checks": {
             "m107_preregister": hyp_ok,
             "walkforward_pass": wf_ok,
             "class_money_ready": mr_ok,
+            "forward_pilot_present": forward_present,
+            "forward_shadow_checkpoint": forward_shadow_ok,
+            "forward_promotion_ready": forward_promote_ok,
         },
-        "recommendation": (
-            "Live merge allowed only when walkforward PASS + class MONEY_READY + forward pilot ready."
-            if status != "PROMOTE_LIVE"
-            else "All gates green — still require forward n>=100 before sizing."
-        ),
+        "recommendation": recommendation,
     }
 
 
