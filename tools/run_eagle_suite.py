@@ -5,6 +5,7 @@ Daily EAGLE2 operator bundle — refresh local audit JSON + reports (no FTP, no 
 Usage:
   python3 tools/run_eagle_suite.py
   python3 tools/run_eagle_suite.py --skip-swarm
+  python3 tools/run_eagle_suite.py --skip-pilots
   python3 tools/run_eagle_suite.py --write-admit etf_dual_momentum,CRYPTO:vwap_reversion
 """
 from __future__ import annotations
@@ -34,6 +35,7 @@ def _run(cmd: list[str]) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--skip-swarm", action="store_true")
+    ap.add_argument("--skip-pilots", action="store_true", help="Skip verified paper pilots daily")
     ap.add_argument(
         "--write-admit",
         default="",
@@ -51,6 +53,9 @@ def main(argv: list[str] | None = None) -> int:
         ("strategy_admissibility", [py, "tools/strategy_admissibility_report.py", "--write"]),
     ]:
         steps.append({"step": label, **_run(cmd)})
+
+    if not args.skip_pilots:
+        steps.append({"step": "verified_pilots_daily", **_run([py, "tools/run_verified_pilots_daily.py"])})
 
     if not args.skip_swarm:
         steps.append({"step": "best_picks_verify", **_run([py, "tools/verify_best_picks_swarm.py"])})
