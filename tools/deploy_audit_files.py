@@ -61,7 +61,11 @@ UPLOADS = [
     ("audit_dashboard/portfolio_history.html",               "/findtorontoevents.ca/audit/portfolio_history.html",                "portfolio_history"),
     ("audit_dashboard/data/portfolio_classification.json",   "/findtorontoevents.ca/audit/data/portfolio_classification.json",    "portfolio_history"),
     ("updates/index.html",                                   "/findtorontoevents.ca/updates/index.html",                          "updates"),
+    ("updates/eagle-best-picks-guide-2026-06-02.html",         "/findtorontoevents.ca/updates/eagle-best-picks-guide-2026-06-02.html", "updates"),
+    ("updates/eagle2-swarm-session-summary-2026-06-02.html",   "/findtorontoevents.ca/updates/eagle2-swarm-session-summary-2026-06-02.html", "updates"),
+    ("updates/eagle2-swarm-consolidated-findings-2026-06-02.html", "/findtorontoevents.ca/updates/eagle2-swarm-consolidated-findings-2026-06-02.html", "updates"),
     ("audit_dashboard/ai_leaderboard.html",                  "/findtorontoevents.ca/audit/ai_leaderboard.html",                   "ai_leaderboard"),
+    ("audit_dashboard/data/ai_leaderboard/ai_leaderboard_index.json", "/findtorontoevents.ca/audit/data/ai_leaderboard/ai_leaderboard_index.json", "ai_leaderboard"),
     ("audit_dashboard/data/ma_strategy_leaderboard.json",    "/findtorontoevents.ca/audit/data/ma_strategy_leaderboard.json",     "ai_leaderboard"),
     ("audit_dashboard/data/ma_strategy_signals.json",        "/findtorontoevents.ca/audit/data/ma_strategy_signals.json",         "ai_leaderboard"),
 ]

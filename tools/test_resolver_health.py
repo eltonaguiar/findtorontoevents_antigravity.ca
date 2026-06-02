@@ -76,8 +76,8 @@ class TestMaxHoldHours(unittest.TestCase):
     def test_futures_96h(self):
         self.assertEqual(rsop.MAX_HOLD_HOURS_BY_CLASS["FUTURES"], 96)
 
-    def test_forex_120h(self):
-        self.assertEqual(rsop.MAX_HOLD_HOURS_BY_CLASS["FOREX"], 120)
+    def test_forex_72h(self):
+        self.assertEqual(rsop.MAX_HOLD_HOURS_BY_CLASS["FOREX"], 72)
 
     def test_bond_120h(self):
         self.assertEqual(rsop.MAX_HOLD_HOURS_BY_CLASS["BOND"], 120)

@@ -53,7 +53,7 @@
 </header>
 
 <div id="pf-empty" class="empty" style="display:none">
-  This portfolio has no data yet — first daily run is scheduled 22:00 UTC. Check back after <code>pf_portfolio_&lt;key&gt;.json</code> is written.
+  This portfolio detail export is unavailable right now. Retry from <a href="./ai-tournament.html">AI Tournament</a> or check whether the portfolio key was pasted cleanly.
 </div>
 
 <div id="pf-body" style="display:none">
@@ -130,6 +130,7 @@ function appetiteBadge(a){
   return '<span class="badge b-pending">' + esc(a) + '</span>';
 }
 function safeKey(k){ return String(k || '').replace(/[^A-Za-z0-9_.-]/g, '_'); }
+var __pfRosterPromise = null;
 
 function getKeyParam(){
   try {
@@ -141,6 +142,23 @@ function getKeyParam(){
     var m = (window.location.search || '').match(/[?&]key=([^&]+)/);
     return m ? decodeURIComponent(m[1]).replace(/[\u200B-\u200D\uFEFF\uE000-\uF8FF]/g, '').trim() : '';
   }
+}
+
+function setEmptyState(html, subtitle, key){
+  document.getElementById('pf-body').style.display = 'none';
+  document.getElementById('pf-empty').style.display = 'block';
+  document.getElementById('pf-empty').innerHTML = html;
+  document.getElementById('pf-subtitle').innerHTML = subtitle || (appetiteBadge(null) + ' <span class="small">Detail export unavailable.</span>');
+  document.getElementById('pf-key').textContent = key || '—';
+}
+
+async function getPortfolioRoster(){
+  if (!__pfRosterPromise) {
+    __pfRosterPromise = fetch('./data/pf_portfolios.json?' + Date.now())
+      .then(function(resp){ return resp.ok ? resp.json() : null; })
+      .catch(function(){ return null; });
+  }
+  return __pfRosterPromise;
 }
 
 function renderHeader(detail){
@@ -352,10 +370,11 @@ function renderEvents(detail){
 async function loadPortfolio(){
   var key = getKeyParam();
   if (!key) {
-    document.getElementById('pf-empty').style.display = 'block';
-    document.getElementById('pf-empty').innerHTML = 'Missing <code>?key=&lt;portfolio_key&gt;</code> URL parameter. <a href="./ai-tournament.html">← Back to AI Tournament</a>';
-    document.getElementById('pf-subtitle').textContent = 'No portfolio selected.';
-    document.getElementById('pf-key').textContent = '—';
+    setEmptyState(
+      'Missing <code>?key=&lt;portfolio_key&gt;</code> URL parameter. <a href="./ai-tournament.html">Open the roster</a> and click a portfolio link.',
+      'No portfolio selected.',
+      '—'
+    );
     return;
   }
   document.getElementById('pf-key').textContent = key;
@@ -375,9 +394,35 @@ async function loadPortfolio(){
     renderExposure(detail);
     renderEvents(detail);
   } catch (e) {
-    document.getElementById('pf-body').style.display = 'none';
-    document.getElementById('pf-empty').style.display = 'block';
-    document.getElementById('pf-subtitle').innerHTML = appetiteBadge(null) + ' <span class="small">Pending first daily run.</span>';
+    var roster = await getPortfolioRoster();
+    var match = null;
+    if (roster && roster.portfolios && roster.portfolios.length) {
+      match = roster.portfolios.find(function(p){
+        return String(p.portfolio_key || '') === key || safeKey(p.portfolio_key) === safe;
+      }) || null;
+    }
+    if (match) {
+      var openCount = match.n_open == null ? 'unknown' : String(match.n_open);
+      setEmptyState(
+        'Portfolio <code>' + esc(key) + '</code> exists in the live roster, but its detail export is unavailable. This usually means a stale deploy or a corrupted pasted key. Reopen it from <a href="./ai-tournament.html">AI Tournament</a> and retry. Roster open positions: <strong>' + esc(openCount) + '</strong>.',
+        '<strong>' + esc(match.model_id || '—') + '</strong> · ' + appetiteBadge(match.risk_appetite) + ' · <span class="small">Roster found, detail JSON missing.</span>',
+        key
+      );
+      return;
+    }
+    if (roster && roster.portfolios && roster.portfolios.length) {
+      setEmptyState(
+        'Unknown portfolio key <code>' + esc(key) + '</code>. If this was pasted from chat or an IDE, invisible Unicode may have changed the URL. Open the portfolio from <a href="./ai-tournament.html">AI Tournament</a> to regenerate a clean link.',
+        appetiteBadge(null) + ' <span class="small">Key not found in roster.</span>',
+        key
+      );
+      return;
+    }
+    setEmptyState(
+      'Portfolio exports are unavailable right now. The daily PF job may not have written <code>pf_portfolios.json</code> yet, or the deploy may be stale. Retry after the next refresh window.',
+      appetiteBadge(null) + ' <span class="small">Roster unavailable.</span>',
+      key
+    );
   }
 }
 

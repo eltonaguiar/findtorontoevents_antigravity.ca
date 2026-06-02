@@ -1,320 +1,80 @@
 {
-  "schema": "eagle_suite/v1",
-  "generated_at": "2026-06-02T11:47:28.620100+00:00",
-  "monitor": {
-    "freeze_promotions": true,
-    "alerts": [
-      "SOURCE_CONCENTRATION: kimi_riseoftheclaw = 43.6%",
-      "EXPIRED_POSITIVE_RATE=53.3%",
-      "CLASS_DEGRADED: COMMODITY",
-      "CLASS_DEGRADED: FOREX",
-      "CLASS_DEGRADED: BOND",
-      "FREEZE_PROMOTIONS"
-    ],
-    "source_hhi": 0.23236945451491808,
-    "expired_positive_rate": 0.5333333333333333,
-    "class_health": {
-      "ETF": {
-        "pf": 1.2162162162162162,
-        "wr": 0.5487804878048781,
-        "n": 164,
-        "status": "HEALTHY"
-      },
-      "EQUITY": {
-        "pf": 1.1185185185185185,
-        "wr": 0.527972027972028,
-        "n": 286,
-        "status": "HEALTHY"
-      },
-      "CRYPTO": {
-        "pf": 1.0572450805008944,
-        "wr": 0.5139130434782608,
-        "n": 1150,
-        "status": "HEALTHY"
-      },
-      "COMMODITY": {
-        "pf": 0.125,
-        "wr": 0.1111111111111111,
-        "n": 18,
-        "status": "DEGRADED"
-      },
-      "FOREX": {
-        "pf": 0.5555555555555556,
-        "wr": 0.35714285714285715,
-        "n": 70,
-        "status": "DEGRADED"
-      },
-      "FUTURES": {
-        "pf": 2.0,
-        "wr": 0.6666666666666666,
-        "n": 3,
-        "status": "INSUFFICIENT"
-      },
-      "BOND": {
-        "pf": 0.625,
-        "wr": 0.38461538461538464,
-        "n": 13,
-        "status": "DEGRADED"
-      }
+  "generated_at": "2026-06-02T12:14:44.988426+00:00",
+  "freeze_promotions": true,
+  "money_ready_note": "0/9 classes READY \u2014 do not size CRYPTO/EQUITY/FOREX aggregate",
+  "steps": [
+    {
+      "step": "money_ready",
+      "cmd": [
+        "/usr/bin/python3",
+        "alpha_engine/money_ready_verdict.py",
+        "--json"
+      ],
+      "returncode": 0,
+      "stdout_tail": "source_share\": 0.0,\n    \"source_concentration_capped\": false,\n    \"details\": {\n      \"dsr\": {\n        \"ok\": null,\n        \"note\": \"n=0 too small for DSR\",\n        \"dsr_score\": null\n      },\n      \"pbo\": {\n        \"ok\": null,\n        \"note\": \"need \\u22652 strategies with n\\u226520, got 0\",\n        \"pbo\": null\n      },\n      \"spa\": {\n        \"ok\": null,\n        \"note\": \"no strategies with n\\u226520\",\n        \"spa_p\": null,\n        \"n_spa_pass\": 0\n      },\n      \"expectancy\": {\n        \"expectancy\": null,\n        \"expectancy_ok\": null,\n        \"note\": \"avg_win or avg_loss unavailable (no pick data)\"\n      },\n      \"mdd_cvar\": {\n        \"mdd\": null,\n        \"mdd_ok\": null,\n        \"cvar_95\": null,\n        \"cvar_ok\": null,\n        \"gate_ok\": null,\n        \"mdd_source\": null\n      }\n    }\n  }\n}\n",
+      "stderr_tail": "THRESHOLD FREEZE ACTIVE until 2026-08-18 \u2014 score floors locked. Set THRESHOLD_FREEZE=0 to override (NOT RECOMMENDED).\n"
+    },
+    {
+      "step": "emitter_census",
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/emitter_census.py"
+      ],
+      "returncode": 0,
+      "stdout_tail": "Wrote /home/eaguiar2015/findtorontoevents_antigravity.ca/reports/emitter_census_latest.json\n  BOND: n=6 pf=1.5498 top_src=bond_scanner (100%)\n  COMMODITY: n=38 pf=0.369 top_src=multi_asset_copytrader (61%)\n  CRYPTO: n=168 pf=0.4023 top_src=battleground_luxalgo (43%)\n  EQUITY: n=40 pf=3.1449 top_src=multi_asset_copytrader (55%)\n  ETF: n=2 pf=0.0305 top_src=unknown (100%)\n  FOREX: n=88 pf=2.3178 top_src=multi_asset_copytrader (35%)\n  FUTURES: n=2 pf=2.368 top_src=unknown (100%)\n  STOCKS: n=41 pf=0.8447 top_src=regime_terminal (100%)\n  UNKNOWN: n=40 pf=3.4967 top_src=unknown (95%)\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "pick_quality_pulse",
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/pick_quality_pulse.py"
+      ],
+      "returncode": 0,
+      "stdout_tail": "coin \\u2014 CCI Divergence\"\n    }\n  ],\n  \"nvda_active\": [],\n  \"concentration_alerts\": [\n    {\n      \"class\": \"CRYPTO\",\n      \"level\": \"red\",\n      \"reason\": \"top_source_share=0.55\"\n    },\n    {\n      \"class\": \"UNKNOWN\",\n      \"level\": \"red\",\n      \"reason\": \"top_source_share=0.89\"\n    },\n    {\n      \"class\": \"ETF\",\n      \"level\": \"red\",\n      \"reason\": \"top_source_share=1.00\"\n    },\n    {\n      \"class\": \"COMMODITY\",\n      \"level\": \"red\",\n      \"reason\": \"top_source_share=0.50\"\n    },\n    {\n      \"class\": \"EQUITY\",\n      \"level\": \"red\",\n      \"reason\": \"top_source_share=0.42\"\n    },\n    {\n      \"class\": \"FUTURES\",\n      \"level\": \"red\",\n      \"reason\": \"top_source_share=0.85\"\n    },\n    {\n      \"class\": \"PENNY_STOCK\",\n      \"level\": \"red\",\n      \"reason\": \"top_source_share=1.00\"\n    }\n  ]\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "strategy_admissibility",
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/strategy_admissibility_report.py",
+        "--write"
+      ],
+      "returncode": 0,
+      "stdout_tail": "     \"pf\": 0.5193,\n        \"mdd\": 0.1665,\n        \"verdict\": \"INSUFFICIENT_DATA\",\n        \"top_source\": \"multi_asset_scanner\",\n        \"top_source_share\": 0.8462,\n        \"root_cause\": \"n=13, PF 0.52; futures_connors_rsi2 TIME_EXIT zombie \\u2014 resolver not alpha.\"\n      },\n      \"PENNY_STOCK\": {\n        \"n\": 1,\n        \"wr\": 0.0,\n        \"pf\": 0.0,\n        \"mdd\": null,\n        \"verdict\": \"INSUFFICIENT_DATA\",\n        \"top_source\": \"multi_asset_scanner\",\n        \"top_source_share\": 1.0,\n        \"root_cause\": \"\"\n      },\n      \"BOND\":\n... [truncated stdout; full payload in JSON file]\nWrote /home/eaguiar2015/findtorontoevents_antigravity.ca/audit_dashboard/data/strategy_admissibility.json\nWrote /home/eaguiar2015/findtorontoevents_antigravity.ca/audit_dashboard/data/verified_edge_status.json\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "strategy_admit_etf_dual_momentum",
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/strategy_admit.py",
+        "--strategy",
+        "etf_dual_momentum",
+        "--asset-class",
+        "ETF",
+        "--write"
+      ],
+      "returncode": 0,
+      "stdout_tail": "schema_version\": \"1.0\",\n  \"generated_at\": \"2026-06-02T12:14:44.961181+00:00\",\n  \"strategy\": \"etf_dual_momentum\",\n  \"sleeve_key\": \"dual_momentum_etf\",\n  \"asset_class\": \"ETF\",\n  \"hypothesis_id\": null,\n  \"hypothesis_preregistered\": false,\n  \"walkforward\": {\n    \"verdict\": \"PASS\",\n    \"pf\": 1.21,\n    \"wr\": null,\n    \"n\": 32,\n    \"artifact\": \"/home/eaguiar2015/findtorontoevents_antigravity.ca/verified_strategies/WALKFORWARD_REPORT.json\"\n  },\n  \"money_ready_class\": {\n    \"verdict\": \"INSUFFICIENT_DATA\",\n    \"sizing_multiplier\": 0.0\n  },\n  \"admit_status\": \"FORWARD_PILOT_ONLY\",\n  \"checks\": {\n    \"m107_preregister\": false,\n    \"walkforward_pass\": true,\n    \"class_money_ready\": false\n  },\n  \"recommendation\": \"Live merge allowed only when walkforward PASS + class MONEY_READY + forward pilot ready.\"\n}\n",
+      "stderr_tail": "Wrote /home/eaguiar2015/findtorontoevents_antigravity.ca/reports/strategy_admit/etf_dual_momentum.json\n"
+    },
+    {
+      "step": "strategy_admit_vwap_reversion",
+      "cmd": [
+        "/usr/bin/python3",
+        "tools/strategy_admit.py",
+        "--strategy",
+        "vwap_reversion",
+        "--asset-class",
+        "CRYPTO",
+        "--write"
+      ],
+      "returncode": 0,
+      "stdout_tail": "{\n  \"schema_version\": \"1.0\",\n  \"generated_at\": \"2026-06-02T12:14:44.984048+00:00\",\n  \"strategy\": \"vwap_reversion\",\n  \"sleeve_key\": \"vwap_reversion\",\n  \"asset_class\": \"CRYPTO\",\n  \"hypothesis_id\": null,\n  \"hypothesis_preregistered\": false,\n  \"walkforward\": {\n    \"verdict\": \"PASS\",\n    \"pf\": 1.32,\n    \"wr\": null,\n    \"n\": 516,\n    \"artifact\": \"/home/eaguiar2015/findtorontoevents_antigravity.ca/verified_strategies/WALKFORWARD_REPORT.json\"\n  },\n  \"money_ready_class\": {\n    \"verdict\": \"NOT_READY\",\n    \"sizing_multiplier\": 0.0\n  },\n  \"admit_status\": \"FORWARD_PILOT_ONLY\",\n  \"checks\": {\n    \"m107_preregister\": false,\n    \"walkforward_pass\": true,\n    \"class_money_ready\": false\n  },\n  \"recommendation\": \"Live merge allowed only when walkforward PASS + class MONEY_READY + forward pilot ready.\"\n}\n",
+      "stderr_tail": "Wrote /home/eaguiar2015/findtorontoevents_antigravity.ca/reports/strategy_admit/vwap_reversion.json\n"
     }
-  },
-  "strategy_variants": {
-    "count": 8,
-    "sleeves": {
-      "etf_dual_momentum": {
-        "asset_class": "ETF",
-        "param_grid": {
-          "lookback_months": [
-            9,
-            12,
-            14
-          ],
-          "top_n": [
-            2,
-            3,
-            5
-          ]
-        },
-        "notes": "Only Tier-2 lab PASS (PF~1.6 n=104); forward n still <100",
-        "eagle_source": "EAGLE2 deepseek_v4_flash, Composer"
-      },
-      "faber_taa": {
-        "asset_class": "ETF",
-        "param_grid": {
-          "sma_period": [
-            180,
-            200,
-            220
-          ],
-          "risk_off_weight": [
-            0.0,
-            0.25
-          ]
-        },
-        "notes": "Faber rotation; needs cost-adjusted WF re-run",
-        "eagle_source": "EAGLE2 blackboxai \u00a75.2"
-      },
-      "crypto_donchian": {
-        "asset_class": "CRYPTO",
-        "param_grid": {
-          "channel_days": [
-            18,
-            20,
-            25
-          ],
-          "atr_mult_sl": [
-            1.5,
-            2.0,
-            2.5
-          ]
-        },
-        "notes": "Verified donchian; production opt-in sidecar",
-        "eagle_source": "updates/2026-06-02-verified-strategies-real-ohlcv"
-      },
-      "connors_rsi2": {
-        "asset_class": "CRYPTO",
-        "param_grid": {
-          "rsi_entry": [
-            2,
-            5,
-            7
-          ],
-          "hold_days": [
-            1,
-            2,
-            3
-          ]
-        },
-        "notes": "H-102 lab PF~1.3; mutate RSI threshold before invert",
-        "eagle_source": "reports/h102_connors_rsi2_crypto_2026-06-02"
-      },
-      "equity_momentum_12_1": {
-        "asset_class": "EQUITY",
-        "param_grid": {
-          "skip_months": [
-            1
-          ],
-          "top_n": [
-            5,
-            10,
-            20
-          ]
-        },
-        "notes": "Academic 12-1; equity production still weak \u2014 regime gate first",
-        "eagle_source": "EAGLE per_class_top_strategy 2026-05-27"
-      },
-      "vwap_reversion": {
-        "asset_class": "CRYPTO",
-        "param_grid": {
-          "z_entry": [
-            1.5,
-            2.0,
-            2.5
-          ],
-          "max_hold_bars": [
-            12,
-            24,
-            48
-          ]
-        },
-        "notes": "WF PASS lab; 0 forward closes \u2014 pilot only",
-        "eagle_source": "EAGLE2 GPT5_3_CODEX"
-      },
-      "bollinger_mr": {
-        "asset_class": "CRYPTO",
-        "param_grid": {
-          "bb_period": [
-            18,
-            20,
-            22
-          ],
-          "bb_std": [
-            1.5,
-            2.0,
-            2.5
-          ]
-        },
-        "notes": "WF PASS lab OOS PF~1.67; not merged to production",
-        "eagle_source": "EAGLE2 deepseek_v4_flash"
-      },
-      "cross_asset_mom_vix": {
-        "asset_class": "ETF",
-        "param_grid": {
-          "vix_threshold": [
-            20,
-            25,
-            30
-          ]
-        },
-        "notes": "REJECTED 2026-06-02 \u2014 keep for mutation refutation only",
-        "eagle_source": "updates/2026-06-02-cross-asset-momentum-vt-rejected"
-      }
-    }
-  },
-  "mutation_scan": {
-    "scanned_strategies": 25,
-    "top_results": [
-      {
-        "strategy": "multi_asset_copytrader",
-        "axis": "invert",
-        "verdict": "ADOPT",
-        "original_pf": 0.179,
-        "mutated_pf": 203.8,
-        "improvement": 203.621
-      },
-      {
-        "strategy": "ml_bg_system_f",
-        "axis": "invert",
-        "verdict": "CONSIDER",
-        "original_pf": 0.865,
-        "mutated_pf": 1.448,
-        "improvement": 0.583
-      },
-      {
-        "strategy": "paper_trading",
-        "axis": "invert",
-        "verdict": "ADOPT",
-        "original_pf": 0.875,
-        "mutated_pf": 1.4,
-        "improvement": 0.525
-      },
-      {
-        "strategy": "paper_trading",
-        "axis": "parameter",
-        "verdict": "CONSIDER",
-        "original_pf": 0.875,
-        "mutated_pf": 1.1,
-        "improvement": 0.225
-      },
-      {
-        "strategy": "ml_bg_system_f",
-        "axis": "symbol_rotation",
-        "verdict": "ADOPT",
-        "original_pf": 0.865,
-        "mutated_pf": 1.078,
-        "improvement": 0.213
-      },
-      {
-        "strategy": "multi_asset_copytrader",
-        "axis": "symbol_rotation",
-        "verdict": "REJECT",
-        "original_pf": 0.179,
-        "mutated_pf": 0.283,
-        "improvement": 0.105
-      },
-      {
-        "strategy": "ml_bg_system_f",
-        "axis": "parameter",
-        "verdict": "REJECT",
-        "original_pf": 0.865,
-        "mutated_pf": 0.956,
-        "improvement": 0.091
-      },
-      {
-        "strategy": "multi_asset_copytrader",
-        "axis": "parameter",
-        "verdict": "REJECT",
-        "original_pf": 0.179,
-        "mutated_pf": 0.205,
-        "improvement": 0.026
-      },
-      {
-        "strategy": "multi_asset_copytrader",
-        "axis": "regime_gate",
-        "verdict": "INSUFFICIENT_DATA",
-        "original_pf": 0.179,
-        "mutated_pf": 0,
-        "improvement": 0
-      },
-      {
-        "strategy": "ml_bg_system_f",
-        "axis": "regime_gate",
-        "verdict": "INSUFFICIENT_DATA",
-        "original_pf": 0.865,
-        "mutated_pf": 0,
-        "improvement": 0
-      },
-      {
-        "strategy": "signal_validation",
-        "axis": "invert",
-        "verdict": "REJECT",
-        "original_pf": 0.0,
-        "mutated_pf": 0.0,
-        "improvement": 0.0
-      },
-      {
-        "strategy": "signal_validation",
-        "axis": "symbol_rotation",
-        "verdict": "REJECT",
-        "original_pf": 0.0,
-        "mutated_pf": 0.0,
-        "improvement": 0.0
-      },
-      {
-        "strategy": "signal_validation",
-        "axis": "regime_gate",
-        "verdict": "INSUFFICIENT_DATA",
-        "original_pf": 0.0,
-        "mutated_pf": 0,
-        "improvement": 0
-      },
-      {
-        "strategy": "signal_validation",
-        "axis": "parameter",
-        "verdict": "REJECT",
-        "original_pf": 0.0,
-        "mutated_pf": 0.0,
-        "improvement": 0.0
-      },
-      {
-        "strategy": "paper_trading",
-        "axis": "regime_gate",
-        "verdict": "INSUFFICIENT_DATA",
-        "original_pf": 0.875,
-        "mutated_pf": 0,
-        "improvement": 0
-      }
-    ],
-    "adopt_count": 3
-  }
+  ],
+  "ok": true
 }

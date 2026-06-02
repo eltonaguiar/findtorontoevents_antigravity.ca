@@ -38,9 +38,12 @@ PER_SOURCE_VOLUME_CAP: dict[str, dict[str, float]] = {
     # Soft caps (2%) reduce dilution without hard-blocking — user approval needed for full block.
     "battleground":         {"CRYPTO": 0.02},   # PF 0.65, severe drag
     "copy_trader_highscore":{"CRYPTO": 0.02},   # PF 0.80, WR 30.3%, n=99
-    # regime_terminal: sub-50% WR across CRYPTO/EQUITY/FOREX (2026-05-16 autopsy).
-    # Consolidated from two separate entries — second definition wins in Python dicts.
-    "regime_terminal":      {"CRYPTO": 0.02, "EQUITY": 0.05, "FOREX": 0.05},  # WR 34.3%
+    # EAGLE2 Phase 0 (2026-06-02): hard zero — policy-clean EQUITY PF 0.33, 40% concentration.
+    "regime_terminal":      {"CRYPTO": 0.0, "EQUITY": 0.0, "FOREX": 0.0},
+    # EAGLE2 Phase 0: 14d CRYPTO 66% single-source concentration via incubator_gainer.
+    "incubator_gainer":     {"CRYPTO": 0.0},
+    # Unverified mercury2 path — lab/tournament only until M-108 forward proof.
+    "mercury2_fast":        {"CRYPTO": 0.0},
     # 2026-05-16 CRYPTO+FOREX autopsy: rapid_fire filtered by score>=10 but still PF<1.
     # super_signals bypasses smart_picks_engine (see quality_gates.py:3795) — cap on intake.
     "rapid_fire":           {"CRYPTO": 0.0, "FOREX": 0.0},  # 2026-05-28: KILLED — PF 0.77, -70% PnL. BLACKLISTED.

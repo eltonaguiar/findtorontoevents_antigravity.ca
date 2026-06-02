@@ -1,126 +1,94 @@
 #!/usr/bin/env python3
 """
-EAGLE enhancement suite — one CLI for monitor + variants + mutation scan.
-
-Synthesizes recommendations from EAGLE*.MD* (2026-05-19 → 2026-06-02):
-  - quant_monitor (concentration / resolver / freeze)
-  - strategy_variants registry
-  - mutation_framework on dashboard closed picks
-  - optional strategy_admit for a sleeve
+Daily EAGLE2 operator bundle — refresh local audit JSON + reports (no FTP, no dashboard HTML gen).
 
 Usage:
   python3 tools/run_eagle_suite.py
-  python3 tools/run_eagle_suite.py --admit etf_dual_momentum --asset-class ETF
-  python3 tools/run_eagle_suite.py --write reports/eagle_suite_latest.json
+  python3 tools/run_eagle_suite.py --skip-swarm
+  python3 tools/run_eagle_suite.py --skip-pilots
+  python3 tools/run_eagle_suite.py --write-admit etf_dual_momentum,CRYPTO:vwap_reversion
 """
-
 from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
-from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+OUT = ROOT / "reports" / "eagle_suite_latest.json"
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def run_monitor() -> dict:
-    from verified_strategies.quant_monitor import run_full_monitor
-
-    r = run_full_monitor()
+def _run(cmd: list[str]) -> dict:
+    print("+", " ".join(cmd), flush=True)
+    p = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
     return {
-        "freeze_promotions": r.freeze_promotions,
-        "alerts": r.alerts,
-        "source_hhi": r.concentration.source_hhi,
-        "expired_positive_rate": r.resolver.expired_positive_rate,
-        "class_health": {
-            ac: {"pf": h.pf, "wr": h.wr, "n": h.n, "status": h.status}
-            for ac, h in r.class_health.items()
-        },
+        "cmd": cmd,
+        "returncode": p.returncode,
+        "stdout_tail": (p.stdout or "")[-800:],
+        "stderr_tail": (p.stderr or "")[-400:],
     }
-
-
-def run_variants() -> dict:
-    from verified_strategies.strategy_variants import EAGLE_STRATEGY_VARIANTS, list_variants
-
-    return {
-        "count": len(list_variants()),
-        "sleeves": {
-            k: {
-                "asset_class": v.asset_class,
-                "param_grid": v.param_grid,
-                "notes": v.notes,
-                "eagle_source": v.eagle_source,
-            }
-            for k, v in EAGLE_STRATEGY_VARIANTS.items()
-        },
-    }
-
-
-def run_mutation_scan() -> dict:
-    from verified_strategies.mutation_framework import run_full_mutation_scan
-    from verified_strategies.quant_monitor import load_dashboard
-
-    data = load_dashboard()
-    closed = data.get("picks", {}).get("recent_closed", [])
-    by_strategy: dict = defaultdict(list)
-    for p in closed:
-        key = p.get("source_system") or p.get("strategy") or "unknown"
-        by_strategy[key].append(p)
-
-    results = run_full_mutation_scan(dict(by_strategy), min_n=15, max_pf=1.0)
-    top = [
-        {
-            "strategy": r.strategy_name,
-            "axis": r.axis.value,
-            "verdict": r.verdict,
-            "original_pf": round(r.original_pf, 3),
-            "mutated_pf": round(r.mutated_pf, 3),
-            "improvement": round(r.improvement, 3),
-        }
-        for r in results[:15]
-    ]
-    adopt = [t for t in top if t["verdict"] == "ADOPT"]
-    return {"scanned_strategies": len(by_strategy), "top_results": top, "adopt_count": len(adopt)}
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="EAGLE enhancement suite")
-    ap.add_argument("--admit", help="Run strategy_admit for sleeve name")
-    ap.add_argument("--asset-class", default="ETF")
-    ap.add_argument("--write", help="Write combined JSON report path")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--skip-swarm", action="store_true")
+    ap.add_argument("--skip-pilots", action="store_true", help="Skip verified paper pilots daily")
+    ap.add_argument(
+        "--write-admit",
+        default="",
+        help="Comma pairs strategy:CLASS e.g. etf_dual_momentum:ETF,vwap_reversion:CRYPTO",
+    )
     args = ap.parse_args(argv)
 
+    steps: list[dict] = []
+    py = sys.executable
+
+    for label, cmd in [
+        ("money_ready", [py, "alpha_engine/money_ready_verdict.py", "--json"]),
+        ("emitter_census", [py, "tools/emitter_census.py"]),
+        ("pick_quality_pulse", [py, "tools/pick_quality_pulse.py"]),
+        ("strategy_admissibility", [py, "tools/strategy_admissibility_report.py", "--write"]),
+    ]:
+        steps.append({"step": label, **_run(cmd)})
+
+    if not args.skip_pilots:
+        steps.append({"step": "verified_pilots_daily", **_run([py, "tools/run_verified_pilots_daily.py"])})
+
+    if not args.skip_swarm:
+        steps.append({"step": "best_picks_verify", **_run([py, "tools/verify_best_picks_swarm.py"])})
+        steps.append(
+            {
+                "step": "eagle_swarm_synthesis",
+                **_run([py, "tools/eagle_swarm_synthesis.py", "--models", "hybrid-model"]),
+            }
+        )
+
+    for pair in [x.strip() for x in args.write_admit.split(",") if x.strip()]:
+        if ":" in pair:
+            strat, ac = pair.split(":", 1)
+        else:
+            strat, ac = pair, "CRYPTO"
+        steps.append(
+            {
+                "step": f"strategy_admit_{strat}",
+                **_run([py, "tools/strategy_admit.py", "--strategy", strat.strip(), "--asset-class", ac.strip(), "--write"]),
+            }
+        )
+
     payload = {
-        "schema": "eagle_suite/v1",
-        "generated_at": _now(),
-        "monitor": run_monitor(),
-        "strategy_variants": run_variants(),
-        "mutation_scan": run_mutation_scan(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "freeze_promotions": True,
+        "money_ready_note": "0/9 classes READY — do not size CRYPTO/EQUITY/FOREX aggregate",
+        "steps": steps,
+        "ok": all(s.get("returncode") == 0 for s in steps),
     }
-
-    if args.admit:
-        from tools.strategy_admit import admit
-
-        payload["admit"] = admit(args.admit, args.asset_class)
-
-    text = json.dumps(payload, indent=2)
-    print(text)
-
-    if args.write:
-        out = Path(args.write)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(text + "\n", encoding="utf-8")
-        print(f"Wrote {out}", file=sys.stderr)
-
-    return 1 if payload["monitor"].get("freeze_promotions") else 0
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    print(f"Wrote {OUT} ok={payload['ok']}")
+    return 0 if payload["ok"] else 1
 
 
 if __name__ == "__main__":

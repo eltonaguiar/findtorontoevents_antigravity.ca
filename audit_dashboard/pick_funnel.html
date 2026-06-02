@@ -36,6 +36,7 @@
   .b-meh  { background:#3a3a44; color:#a0a0b0; border:1px solid #6b7280; }
   .b-hc   { background:#1e3a5f; color:#93c5fd; border:1px solid #3b82f6; }
   .b-disp { background:#78350f; color:#fcd34d; border:2px solid #f59e0b; font-size:11px; letter-spacing:0.5px; }
+  .b-disc { background:#422006; color:#fde68a; border:1px solid #eab308; font-size:10px; }
   /* DISPUTED row highlight in nav matrix */
   tr.disputed td { background: rgba(245,158,11,0.08); }
   tr.disputed td:first-child { border-left: 3px solid #f59e0b; }
@@ -89,7 +90,10 @@
 <body>
 <div class="hero">
   <h1>🔬 Pick Funnel · /audit</h1>
-  <p>Every pick scanned → score floor → trust gate → high-conviction → opened → closed → win/loss. Per-class visibility into where edge lives and where money would have been made.</p>
+  <p>Every pick scanned → score floor → trust gate → high-conviction → opened → closed → win/loss.
+  <strong style="color:#fde68a">Discovery only</strong> — green holdout cells are candidates, not capital-ready.
+  Size only from <a href="/audit/data/money_ready_verdict.json" style="color:#93c5fd">money_ready_verdict.json</a> (policy-clean).</p>
+  <div id="pf-mr-banner" class="small" style="margin-top:10px;color:#fca5a5"></div>
   <div style="margin-top:10px;font-size:11px;color:#4b5563" id="generated-at">Loading…</div>
 </div>
 
@@ -626,21 +630,31 @@ function renderNavSurfaceMatrix(mx){
   const el = document.getElementById('nav-surface-matrix');
   if (!el) return;
   if (!mx || !mx.surfaces){ el.innerHTML = '<p class="small" style="color:#ef4444">Nav matrix sidecar missing — run tools/audit_pick_funnel/build_nav_surface_matrix.py.</p>'; return; }
-  const header = `<p class="small">Sidecar generated ${toEST(mx.generated_at)} EST · n_closed=${mx.n_recent_closed} · Bonferroni α=${mx.bonferroni_alpha.toFixed(4)} (8 surfaces). Verdict = <b>edge</b> only if at least one asset-class row passes <i>holdout</i> (PF≥1.2) AND <i>Bonferroni</i>. Tooltips on column headers (i) reuse the glossary above.</p>`;
+  const header = `<p class="small">Sidecar generated ${toEST(mx.generated_at)} EST · n_closed=${mx.n_recent_closed} · Bonferroni α=${mx.bonferroni_alpha.toFixed(4)} (8 surfaces). Surface <b>edge</b> requires holdout PF≥1.2, Bonferroni, no concentration — <b>and</b> class <code>MONEY_READY</code> in policy-clean verdict. <span class="badge b-disc">DISCOVERY</span> = holdout pass only; <span class="badge b-fail">NO SIZE</span> = not money-ready.</p>`;
   const sections = mx.surfaces.map(s=>{
     const vBadge = s.verdict === 'edge'
       ? `<span class="badge b-pass">EDGE in ${s.edge_classes.join(', ')||'—'}</span>`
       : `<span class="badge b-fail">NO EDGE</span>`;
     const rows = s.rows.filter(r=>r.n>0).map(r=>{
-      const isDisputed = r.why_no_edge && r.why_no_edge.toUpperCase().includes('DISPUTED');
-      const rowClass = isDisputed ? 'disputed' : '';
+      const why = r.why_no_edge || '';
+      const isDisputed = why.toUpperCase().includes('DISPUTED');
+      const policyLock = why.includes('policy_clean=') || why.includes('money_ready');
+      const discoveryOnly = !r.is_edge && r.pass_holdout && r.n >= 20;
+      const rowClass = (isDisputed || policyLock) ? 'disputed' : (discoveryOnly ? 'row-demoted' : '');
       const wrCls = r.wr_pct != null ? (r.wr_pct >= 55 ? 'pnl-pos' : (r.wr_pct < 45 ? 'pnl-neg' : 'pnl-neu')) : 'pnl-neu';
       const pfCls = isDisputed ? 'pnl-neu' : ((r.pf !== null && r.pf !== '—' && r.pf !== 'inf' && r.pf < 1.0) ? 'pnl-neg' : (r.pf === 'inf' || (r.pf !== null && r.pf >= 1.5) ? 'pnl-pos' : 'pnl-neu'));
       const hoCls = isDisputed ? 'pnl-neu' : (r.pass_holdout ? 'pnl-pos' : 'pnl-neg');
       const bf  = isDisputed ? '<span class="badge b-disp">DISP</span>' : (r.pass_bonferroni ? '<span class="badge b-pass">SIG</span>' : '<span class="badge b-meh">NS</span>');
-      const ho  = isDisputed ? '<span class="badge b-disp">DISP</span>' : (r.pass_holdout ? '<span class="badge b-pass">PASS</span>' : '<span class="badge b-fail">FAIL</span>');
-      const acLabel = r.asset_class === '_overall' ? '<b>ALL</b>' : r.asset_class;
-      const eli5Why = r.why_no_edge ? `<tr class="eli5-row"><td colspan="9">why_no_edge: ${r.why_no_edge}</td></tr>` : '';
+      let hoBadge;
+      if (isDisputed) hoBadge = '<span class="badge b-disp">DISP</span>';
+      else if (r.is_edge) hoBadge = '<span class="badge b-pass">EDGE</span>';
+      else if (discoveryOnly) hoBadge = '<span class="badge b-disc" title="Holdout passed but class not MONEY_READY — discovery, do not size">DISCOVERY</span>';
+      else if (r.pass_holdout) hoBadge = '<span class="badge b-pass">PASS</span>';
+      else hoBadge = '<span class="badge b-fail">FAIL</span>';
+      const ho = hoBadge;
+      const capBadge = r.is_edge ? '' : (policyLock ? ' <span class="badge b-fail" title="Not money-ready">NO SIZE</span>' : '');
+      const acLabel = (r.asset_class === '_overall' ? '<b>ALL</b>' : r.asset_class) + capBadge;
+      const eli5Why = why ? `<tr class="eli5-row"><td colspan="9">why_no_edge: ${why}</td></tr>` : '';
       return `<tr class="${rowClass}">
         <td>${acLabel}</td>
         <td class="num">${r.n}</td>
@@ -929,6 +943,18 @@ function renderStrategyFunnel(data){
 
 async function loadAll(){
   try {
+    fetch('data/money_ready_verdict.json?cb=' + Date.now())
+      .then(r => r.ok ? r.json() : null)
+      .then(mr => {
+        const el = document.getElementById('pf-mr-banner');
+        if (!el || !mr) return;
+        const classes = mr.classes || mr;
+        const ready = Object.keys(classes).filter(k => classes[k] && classes[k].verdict === 'MONEY_READY');
+        el.textContent = ready.length
+          ? ('Money-ready classes: ' + ready.join(', ') + ' — funnel cells still require holdout + concentration pass.')
+          : ('Money-ready classes: none (policy-clean). Nav matrix green holdout rows are discovery-only until a class is READY.');
+      })
+      .catch(() => {});
     const [today, d90, rej, edges, navmx, stratData] = await Promise.all([
       fetch('data/pick_funnel_today.json').then(r=>r.json()),
       fetch('data/pick_funnel_90d.json').then(r=>r.json()),

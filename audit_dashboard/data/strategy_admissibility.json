@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-02T06:56:22.603028+00:00",
+  "generated_at": "2026-06-02T13:46:36.080763+00:00",
   "methodology_doc": "docs/BACKTEST_ADMISSIBILITY_STANDARD.md",
   "quant_review": "reports/quant_strategy_root_cause_review_2026-06-02.md",
   "executive_answers": {
@@ -17,39 +17,19 @@
     "data_feeds": "Secondary; FRED carry fixed via curl cache; live pain is pick quality + methodology"
   },
   "live_money_ready": {
-    "generated_at": "2026-06-02T06:21:04.746070+00:00",
+    "generated_at": "2026-06-02T12:15:15.935544+00:00",
     "money_ready_classes": [],
     "n_classes": 9,
     "by_class": {
-      "EQUITY": {
-        "n": 52,
-        "wr": 0.2692,
-        "pf": 0.3269,
-        "mdd": 0.63,
-        "verdict": "NOT_READY",
-        "top_source": "regime_terminal",
-        "top_source_share": 0.4038,
-        "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
-      },
       "CRYPTO": {
-        "n": 374,
-        "wr": 0.3556,
-        "pf": 0.8874,
+        "n": 363,
+        "wr": 0.3636,
+        "pf": 0.9501,
         "mdd": 1.0,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.5455,
+        "top_source_share": 0.551,
         "root_cause": "Policy-clean PF 0.89 (n~377): bulk scanner loss-skew; lab VWAP/Bollinger WF PASS but opt-in only. Proven pick_funnel cell (RR1.0-1.5 LONG) is subset \u2014 aggregate loses."
-      },
-      "ETF": {
-        "n": 3,
-        "wr": 0.6667,
-        "pf": 1.4581,
-        "mdd": null,
-        "verdict": "INSUFFICIENT_DATA",
-        "top_source": "UNKNOWN",
-        "top_source_share": 0.6667,
-        "root_cause": "Best lab candidate: dual momentum Tier-2 (PF 1.60, n=104). Live policy-clean n=3 \u2014 need forward n>=100 before merge."
       },
       "UNKNOWN": {
         "n": 9,
@@ -71,6 +51,16 @@
         "top_source_share": 0.3438,
         "root_cause": "PF 0.48, small n: carry lab thin; 14d raw shows high WR / PF 0.10 (EXPIRED mislabel). Not a data-feed outage \u2014 resolver/label issue."
       },
+      "ETF": {
+        "n": 2,
+        "wr": 1.0,
+        "pf": null,
+        "mdd": null,
+        "verdict": "INSUFFICIENT_DATA",
+        "top_source": "UNKNOWN",
+        "top_source_share": 1.0,
+        "root_cause": "Best lab candidate: dual momentum Tier-2 (PF 1.60, n=104). Live policy-clean n=3 \u2014 need forward n>=100 before merge."
+      },
       "COMMODITY": {
         "n": 4,
         "wr": 0.5,
@@ -80,6 +70,16 @@
         "top_source": "UNKNOWN",
         "top_source_share": 0.5,
         "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
+      },
+      "EQUITY": {
+        "n": 48,
+        "wr": 0.2708,
+        "pf": 0.328,
+        "mdd": 0.6058,
+        "verdict": "INSUFFICIENT_DATA",
+        "top_source": "regime_terminal",
+        "top_source_share": 0.4167,
+        "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
       },
       "FUTURES": {
         "n": 13,
@@ -305,16 +305,16 @@
       ],
       "smart_picks_crypto_cell": {
         "asset_class": "CRYPTO",
-        "n": 126,
-        "wr_pct": 62.7,
-        "wr_shrunk_pct": 61.0,
-        "pf": 2.901,
-        "train_pf": 1.909,
-        "holdout_pf": 7.704,
+        "n": 39,
+        "wr_pct": 76.9,
+        "wr_shrunk_pct": 67.8,
+        "pf": 6.428,
+        "train_pf": 5.52,
+        "holdout_pf": 9.444,
         "pass_holdout": true,
         "pass_bonferroni": true,
         "is_edge": false,
-        "why_no_edge": "concentration=single_source_share=67% (mega_mutation) \u2014 cohort dominated by one source, not generalizable"
+        "why_no_edge": "concentration=single_source_share=97% (alpha_engine) \u2014 cohort dominated by one source, not generalizable"
       },
       "proven_cells_crypto": [
         {
@@ -391,6 +391,76 @@
     "verified_lab": {
       "surface": "verified_strategies lab + forward pilots (not on main /audit banner yet)",
       "trust_level": "promotion candidate after forward n>=100",
+      "dashboard_source": "/home/eaguiar2015/.copilot/session-state/f47fdba1-886d-48d4-9faa-f4e811c83ad9/worktrees/etf-promotion-next/audit_dashboard/data/pilot_forward_dashboard.json",
+      "any_promotion_ready": false,
+      "best_candidate": {
+        "sleeve": "etf_dual_momentum",
+        "label": "ETF dual momentum",
+        "asset_class": "ETF",
+        "lab_verdict": "PASS",
+        "lab_pf": 1.212,
+        "lab_n": 32,
+        "forward_n_closed": 0,
+        "forward_n_target": 100,
+        "promotion_ready": false,
+        "blockers": [
+          "n<100"
+        ],
+        "open_symbol": "XLE",
+        "source": "paper_pilot_virtual"
+      },
+      "candidate_sleeves": [
+        {
+          "sleeve": "etf_dual_momentum",
+          "label": "ETF dual momentum",
+          "asset_class": "ETF",
+          "lab_verdict": "PASS",
+          "lab_pf": 1.212,
+          "lab_n": 32,
+          "forward_n_closed": 0,
+          "forward_n_target": 100,
+          "promotion_ready": false,
+          "blockers": [
+            "n<100"
+          ],
+          "open_symbol": "XLE",
+          "source": "paper_pilot_virtual"
+        },
+        {
+          "sleeve": "crypto_wf_hyro",
+          "label": "Crypto VWAP/Bollinger",
+          "asset_class": "CRYPTO",
+          "lab_verdict": "PASS",
+          "lab_pf": null,
+          "lab_n": null,
+          "forward_n_closed": 0,
+          "forward_n_target": 100,
+          "promotion_ready": false,
+          "blockers": [
+            "n<100"
+          ],
+          "open_symbol": null,
+          "source": "paper_pilot_virtual"
+        },
+        {
+          "sleeve": "faber_taa",
+          "label": "Faber TAA",
+          "asset_class": "EQUITY",
+          "lab_verdict": null,
+          "lab_pf": null,
+          "lab_n": null,
+          "forward_n_closed": 0,
+          "forward_n_target": 100,
+          "promotion_ready": false,
+          "blockers": [
+            "n=0<100",
+            "PF=0.00<1.5",
+            "WR=0.0%<50%"
+          ],
+          "open_symbol": "SPY,QQQ",
+          "source": "paper_pilot_virtual"
+        }
+      ],
       "dashboard": {
         "timestamp": "2026-06-02T06:56:22.578729+00:00",
         "forward_n_target": 100,
@@ -521,107 +591,25 @@
         ]
       },
       "walkforward_verdicts": {
-        "mode": "hyro",
-        "equity_momentum_12_1": "FAIL",
-        "crypto_donchian": "FAIL",
-        "etf_dual_momentum": "PASS",
-        "bollinger_mr": "PASS",
+        "schema_version": "1.0",
+        "source": "Restored from reports/EAGLE_JUNE2_GROK.md \u2014 re-run walkforward_suite on 50webs when source returns",
+        "dual_momentum_etf": "PASS",
         "vwap_reversion": "PASS",
-        "dual_momentum": "PASS"
+        "bollinger_mr": "PASS",
+        "crypto_donchian": "FAIL",
+        "equity_momentum_12_1": "FAIL"
       }
     }
   },
   "portfolio_audit": {
-    "source": "live",
-    "total": 81,
-    "with_open": 66,
-    "empty": 15,
+    "source": "local_hint",
+    "total": 0,
+    "with_open": 0,
+    "empty": 0,
     "missing_json": 0,
-    "empty_keys": [
-      "aimlapi_gpt4o__aggressive",
-      "aimlapi_gpt4o__balanced",
-      "aimlapi_gpt4o__conservative",
-      "command_a__aggressive",
-      "command_a__balanced",
-      "command_a__conservative",
-      "deepseek_r1__conservative",
-      "gh_models_gpt4o__aggressive",
-      "gh_models_gpt4o__balanced",
-      "gh_models_gpt4o__conservative",
-      "groq_kimi_k2__aggressive",
-      "groq_kimi_k2__balanced",
-      "groq_kimi_k2__conservative",
-      "nous_hermes_4__aggressive",
-      "nous_hermes_4__balanced"
-    ],
-    "top_open": [
-      {
-        "portfolio_key": "groq_llama_3_70b__aggressive",
-        "open": 21,
-        "model_id": "groq_llama_3_70b",
-        "risk_appetite": "aggressive"
-      },
-      {
-        "portfolio_key": "cerebras_llama4__aggressive",
-        "open": 20,
-        "model_id": "cerebras_llama4",
-        "risk_appetite": "aggressive"
-      },
-      {
-        "portfolio_key": "grok3__aggressive",
-        "open": 16,
-        "model_id": "grok3",
-        "risk_appetite": "aggressive"
-      },
-      {
-        "portfolio_key": "cursor_agent__aggressive",
-        "open": 14,
-        "model_id": "cursor_agent",
-        "risk_appetite": "aggressive"
-      },
-      {
-        "portfolio_key": "cursor_agent__balanced",
-        "open": 14,
-        "model_id": "cursor_agent",
-        "risk_appetite": "balanced"
-      },
-      {
-        "portfolio_key": "deepseek_v3__aggressive",
-        "open": 12,
-        "model_id": "deepseek_v3",
-        "risk_appetite": "aggressive"
-      },
-      {
-        "portfolio_key": "deepseek_v4__balanced",
-        "open": 12,
-        "model_id": "deepseek_v4",
-        "risk_appetite": "balanced"
-      },
-      {
-        "portfolio_key": "gpt5_chat__aggressive",
-        "open": 12,
-        "model_id": "gpt5_chat",
-        "risk_appetite": "aggressive"
-      },
-      {
-        "portfolio_key": "llama4_scout__aggressive",
-        "open": 12,
-        "model_id": "llama4_scout",
-        "risk_appetite": "aggressive"
-      },
-      {
-        "portfolio_key": "deepseek_v4__aggressive",
-        "open": 11,
-        "model_id": "deepseek_v4",
-        "risk_appetite": "aggressive"
-      }
-    ],
-    "generated_at": "2026-06-02T06:27:03.514714+00:00",
-    "pf_html_empty_ui_causes": [
-      "Invisible Unicode in ?key= breaks fetch (fixed in pf.html 2026-06-02)",
-      "15 models seeded but zero tournament picks ingested (command_a, groq_kimi_k2, etc.)",
-      "portfolio_mix__* books are all-closed shadow history \u2014 0 open is expected"
-    ]
+    "empty_keys": [],
+    "top_open": [],
+    "note": "Pass --fetch-live-portfolios to curl findtorontoevents.ca roster"
   },
   "admissibility_pipeline": [
     "M-107 pre-register",

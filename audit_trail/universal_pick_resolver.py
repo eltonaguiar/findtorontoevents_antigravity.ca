@@ -28,6 +28,8 @@ from alpha_engine.asset_class import normalize_asset_class
 from audit_trail.asset_classification import classify_asset
 
 MAX_HOLD_HOURS = 48  # Default auto-expire (CRYPTO; unchanged)
+RESOLVER_VERSION = "universal_v2.1"  # EAGLE2 2026-06-02: provenance tracking
+RESOLVER_SOURCE_ID = "universal_pick_resolver"  # EAGLE2 2026-06-02: source provenance tag
 # 2026-05-03 (CLAUDE_DEBUGGING_GUIDE.MD Step 7): non-crypto markets resolve
 # slower than crypto. 24-48h was biased against forex/bonds (5-14 days to
 # resolve TP/SL). Per-class hold window prevents premature TIME_EXIT closes
@@ -38,7 +40,7 @@ MAX_HOLD_HOURS_BY_CLASS = {
     "ETF": 96,
     "COMMODITY": 96,
     "FUTURES": 96,
-    "FOREX": 120,
+    "FOREX": 72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "BOND": 120,
 }
 
@@ -1054,6 +1056,8 @@ def main():
                         "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "hold_hours": hold_hours,
                         "_note": "no-live-price",
+                        "_resolver_version": RESOLVER_VERSION,
+                        "_resolver_source": RESOLVER_SOURCE_ID,
                     }
                     apply_pnl_clamp_to_pick(resolved)
                     newly_resolved.append(resolved)
@@ -1155,6 +1159,8 @@ def main():
                     "status": "CLOSED",
                     "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "current_price_at_resolve": current_price,
+                    "_resolver_version": RESOLVER_VERSION,
+                    "_resolver_source": RESOLVER_SOURCE_ID,
                 }
                 apply_pnl_clamp_to_pick(resolved)
                 newly_resolved.append(resolved)
@@ -1185,6 +1191,8 @@ def main():
                     "exit_reason": "TIME_EXIT",
                     "status": "CLOSED",
                     "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "_resolver_version": RESOLVER_VERSION,
+                    "_resolver_source": RESOLVER_SOURCE_ID,
                     "hold_hours": round((now - pick_dt).total_seconds() / 3600, 1),
                 }
                 apply_pnl_clamp_to_pick(resolved)

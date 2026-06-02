@@ -1923,7 +1923,9 @@ def is_corrupted_outcome_row(pick: dict) -> bool:
 # DNA mutation, inverse, regime grid, and cross-asset checks (TESTING_PROTOCOL ┬º7). Losers
 # often rehab or invert to winners; hard block only after documented investigation.
 BLOCKED_SOURCE_SYSTEMS = {
-    "mercury2_fast",  # 14 trades, 25% WR, -639% PnL, PF 0.02
+    # EAGLE2 Phase 0 (2026-06-02): false consensus + 14d CRYPTO 66% concentration.
+    "incubator_gainer",
+    "mercury2_fast",  # already scored; reinforce global block (EAGLE2 Phase 0)
     # 2026-04-05: RE-BLOCKED per user data verification (re-audit 2026-04-05):
     # stocks_competition: 33.5% WR, -304.2% cum PnL on n=281 closed - BLEEDING
     # fast_stocks_competition: 14.3% WR, -41.0% cum on n=21
@@ -2528,6 +2530,10 @@ PNL_SANITY_MIN = -50.0  # No active pick should be beyond -50% without SL firing
 # non-crypto books. Keep this narrow so verified PM/pro-trader sources still flow.
 BLOCKED_ASSET_SOURCE_PAIRS = {
     ("FOREX", "signal_validation"),
+    # EAGLE2 Phase 0 (2026-06-02): CRYPTO concentration drag + false consensus.
+    ("CRYPTO", "incubator_gainer"),
+    ("CRYPTO", "regime_terminal"),
+    ("FOREX", "regime_terminal"),
     # 2026-05-28 Tier-0 fix: forex_rsi2_mean_reversion is in BLOCKED_SOURCE_SYSTEMS (WR 7.1% / PF 0.09
     # trailing-14d) but leaks into opened FOREX picks via these aggregator/copy emitters (90d sample:
     # multi_asset_copytrader=104, forex_copy_trader=13). Block at the (class,source) pair level so the
@@ -2783,6 +2789,9 @@ BLOCKED_ASSET_STRATEGY_PAIRS = {
     # regime_terminal EQUITY: n=72, WR=34.7%, PF=1.06. strategy "unknown" dominates.
     # Below 45% WR charter floor. Mutation: no profitable direction/symbol subset found (n=72 satisfies threshold).
     ("EQUITY", "regime_terminal"),
+    # EAGLE2 Phase 0 (2026-06-02): extend regime_terminal block to CRYPTO/FOREX emitters.
+    ("CRYPTO", "regime_terminal"),
+    ("FOREX", "regime_terminal"),
     # skyrocket-breakout-scalper EQUITY: n=14, WR=28.6%, PnL=-7.0% — kimi EQUITY loser.
     ("EQUITY", "skyrocket-breakout-scalper"),
 
