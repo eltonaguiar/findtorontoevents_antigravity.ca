@@ -52,40 +52,11 @@ PROJECT_CMDS=(
 )
 
 # --- Full-autonomy ("YOLO") flag injection -------------------------------------
-# Each coding-agent CLI stops and asks "Do you want to run this command?" by
-# default. To avoid baby-sitting them, we auto-inject that tool's "allow all
-# commands without prompting" flag at launch. Verified per-CLI from `--help`
-# (2026-06-02). Keyed by the menu KEY (not the executable name).
-#
-# Opt OUT of the injection for a single launch with the `--safe` flag:
-#     tools/ai_menu.sh --safe claude
-# or globally for the whole session:
-#     AI_MENU_NO_YOLO=1 tools/ai_menu.sh
-#
-# Tools NOT listed here have no known prompt-bypass launch flag and run as-is:
-#   - opencode / kilo : autonomy is config-based (~/.config/{opencode,kilo}/*.jsonc,
-#                       kept pre-set to "allow"); no launch flag exists.
-#   - continue / hermes / freebuff / browseruse / ollama / freellm : not
-#                       approval-prompting coding agents, or driven by own configs.
-declare -A YOLO_FLAGS=(
-  [claude]="--dangerously-skip-permissions"
-  [command-code]="--yolo --skip-onboarding --trust"  # --yolo == --dangerously-skip-permissions
-  [cursor]="--force --approve-mcps --trust"
-  [agent]="--force --approve-mcps --trust"           # same binary as cursor-agent
-  [codex]="--dangerously-bypass-approvals-and-sandbox"
-  [grok]="--always-approve"
-  [gemini]="--yolo"
-  [qwen]="--yolo"
-  [copilot]="--allow-all"
-  [openclaude]="--dangerously-skip-permissions"      # Claude Code fork
-  [blackbox]="--yolo"                                # Gemini/Qwen-style fork
-  [kimi]="--yolo"
-)
-
-# Honor the global opt-out env var by blanking the map.
-if [[ "${AI_MENU_NO_YOLO:-0}" == "1" ]]; then
-  YOLO_FLAGS=()
-fi
+# Shared map: tools/ai_menu_yolo.inc.sh (also used by agent_run.sh).
+# Opt OUT: tools/ai_menu.sh --safe claude  OR  AI_MENU_NO_YOLO=1 tools/ai_menu.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=ai_menu_yolo.inc.sh
+source "$SCRIPT_DIR/ai_menu_yolo.inc.sh"
 
 C_RESET=$'\033[0m'; C_DIM=$'\033[2m'; C_GREEN=$'\033[32m'; C_RED=$'\033[31m'
 C_BOLD=$'\033[1m'; C_CYAN=$'\033[36m'; C_YELLOW=$'\033[33m'
@@ -98,7 +69,7 @@ print_list() {
   for entry in "${TOOLS[@]}"; do
     IFS='|' read -r key cmd desc <<< "$entry"
     local path; path="$(resolve "$cmd")"
-    local auto=""; [[ -n "${YOLO_FLAGS[$key]:-}" ]] && auto=" ${C_YELLOW}[auto]${C_RESET}"
+    local auto=""; [[ -n "$(ai_menu_yolo_flags "$key")" ]] && auto=" ${C_YELLOW}[auto]${C_RESET}"
     if [[ -n "$path" ]]; then
       printf '%-3s %-12s %s%-9s%s %-40s%b %s%s%s\n' "$i" "$key" "$C_GREEN" "installed" "$C_RESET" "$desc" "$auto" "$C_DIM" "$path" "$C_RESET"
     else
@@ -124,8 +95,8 @@ print_yolo_info() {
   echo "${C_BOLD}Auto-approve (\"YOLO\") flags injected per tool:${C_RESET}"
   echo "${C_DIM}(disable for one launch with --safe, or globally with AI_MENU_NO_YOLO=1)${C_RESET}"
   local k
-  for k in $(printf '%s\n' "${!YOLO_FLAGS[@]}" | sort); do
-    printf '  %-12s %s%s%s\n' "$k" "$C_GREEN" "${YOLO_FLAGS[$k]}" "$C_RESET"
+  for k in $(printf '%s\n' "${!AI_MENU_YOLO_FLAGS[@]}" | sort); do
+    printf '  %-12s %s%s%s\n' "$k" "$C_GREEN" "${AI_MENU_YOLO_FLAGS[$k]}" "$C_RESET"
   done
   echo "${C_DIM}  opencode/kilo  (config-based: ~/.config/{opencode,kilo}/*.jsonc, set to allow)${C_RESET}"
 }
@@ -179,10 +150,12 @@ launch_cmd() {
   if [[ -z "$path" ]]; then
     echo "${C_RED}'$cmd' is not installed on this machine.${C_RESET}" >&2; return 1
   fi
-  # Auto-inject this tool's "allow all commands" flag (unless opted out).
-  local yolo="${YOLO_FLAGS[$key]:-}"
+  local yolo; yolo="$(ai_menu_yolo_flags "$key")"
   if [[ -n "$yolo" ]]; then
+    ai_menu_yolo_env "$key"
     echo "${C_YELLOW}auto-approve: injecting '${yolo}' (use --safe to disable)${C_RESET}"
+    [[ "$key" == copilot && -n "${COPILOT_ALLOW_ALL:-}" ]] && \
+      echo "${C_DIM}  COPILOT_ALLOW_ALL=1${C_RESET}"
   fi
   echo "${C_CYAN}Launching ${C_BOLD}$desc${C_RESET}${C_CYAN} -> $cmd $yolo $*${C_RESET}"
   # shellcheck disable=SC2086  # $yolo is intentionally word-split into separate flags
@@ -192,7 +165,8 @@ launch_cmd() {
 # --- entrypoint ---
 # Consume a leading --safe / --no-yolo to disable auto-approve injection.
 while [[ "${1:-}" == "--safe" || "${1:-}" == "--no-yolo" ]]; do
-  YOLO_FLAGS=(); shift
+  AI_MENU_NO_YOLO=1
+  shift
   echo "${C_DIM}(--safe: auto-approve injection disabled for this launch)${C_RESET}" >&2
 done
 
