@@ -24,6 +24,8 @@
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=ai_menu_yolo.inc.sh
+source "$REPO_ROOT/tools/ai_menu_yolo.inc.sh"
 LOG="/tmp/agent_run.log"
 TIMESTAMP="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
@@ -52,8 +54,14 @@ run_cmd() {
   
   case "$cmd" in
     # --- AI Menu keys ---
-    claude|cursor|opencode|kilo|codex|grok|gemini|qwen|copilot|hermes|blackbox|freebuff|kimi)
-      exec "$cmd" "$@"
+    claude|cursor|command-code|opencode|kilo|codex|grok|gemini|qwen|copilot|openclaude|hermes|blackbox|freebuff|kimi|agent)
+      local yolo; yolo="$(ai_menu_yolo_flags "$cmd")"
+      if [[ -n "$yolo" ]]; then
+        ai_menu_yolo_env "$cmd"
+        log "YOLO: $cmd $yolo $*"
+      fi
+      # shellcheck disable=SC2086
+      exec "$cmd" $yolo "$@"
       ;;
     
     # --- Project commands ---
