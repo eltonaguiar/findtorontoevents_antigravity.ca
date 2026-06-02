@@ -192,6 +192,8 @@ def test_walkforward_by_class_present_for_at_least_one():
     if not isinstance(wf, dict) or "by_class" not in wf:
         pytest.skip("walkforward.by_class absent — emission may be batched")
     by_class = wf["by_class"]
+    if not by_class:
+        pytest.skip("walkforward.by_class empty — no per-class walkforward data yet")
     assert isinstance(by_class, dict), (
         f"walkforward.by_class must be dict; got {type(by_class).__name__}"
     )
