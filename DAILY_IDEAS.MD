@@ -3960,3 +3960,151 @@ Our /audit production book has no deployable edge. The real edge is in:
 - ETF dual-momentum: Best lab edge, PF 1.22, 54.9% WR
 - macd_rsi_momentum: Walk-forward validated PF 3.33, 65.4% WR daily
 
+---
+
+## 2026-06-02 — EAGLE2 Initiative: Convert research edge → capital-ready strategies
+
+sync our project with github, then review all *EAGLE*.MD and run each .MD over the past 72 hours, into an agent swarm for review. Then collectively have them summarized with key insights and strategies, and compare against our current state of strategies/back testing methodologies, stats.  Consider methods such as bonneferi  , but leverage our AIs with the API keys 
+
+The main thing is we are trying to get profitable picks by asset class, and identify where on our website/project has the most profitable picks.
+Most likely findtorontoevents.ca/audit or https://findtorontoevents.ca/audit/ai_leaderboard.html https://findtorontoevents.ca/audit/ai-tournament.html https://findtorontoevents.ca/audit/pick_funnel.html
+
+see also our research here:
+https://findtorontoevents.ca/audit/research_index.html
+
+Then leverage all working API keys/ models and create a brainstorming of strategies, backtesting, have them feed in against our strategies , the strategies should all be documented by asset class in our database ejaguiar1_stocks, or ejaguiar1_backtests identify where. 
+DB passes are in the .txt (dbpasses2.txt)
+
+review C:\Users\zerou\Desktop\dbpasses2.txt and feel free to leverage our Lite LLM Server
+http://localhost:4000/v1 in 20 minutes, test the new modes
+ollama-cloud-large
+ollama-cloud
+ollama-cloud-local
+
+run some testing of the new modes to assist with further brainstorms
+review also these:
+
+### 1. Executive Summary
+Core Issue: The production-ready audit book lacks deployable edge. Research-grade edge exists only in isolated tournament or lab sleeves, not in the live, policy-clean layer.
+Root Causes: Mismatch between research and production standards, over-broad emitter set, concentration artifacts, and resolver/label contamination.
+Goal: Convert verified research edge into stable, capital-ready strategies while tightening data hygiene and validation pipelines.
+
+### 2. Current State (as of 2026-06-02)
+| Asset Class | Live PF/WR | Research Edge | Primary Pain Point |
+|---|---|---|---|
+| CRYPTO | < 0.5 PF, high WR | Sub-cohort edge in tournament models | Selection/gating mismatch, concentration |
+| EQUITY | Negative PF, low WR | None | Weak emitters / failed holdout |
+| ETF | Small sample, modest PF | Dual-momentum promising | Insufficient forward data |
+| FOREX | High WR, terrible PF | Minor edge | Data/resolver errors, mislabeled exits |
+| COMMODITY | Too few clean samples | N/A | Sample size / stability |
+| FUTURES | Concentration-driven spikes | N/A | Artifact risk |
+| BOND | No live sample | N/A | Data gap |
+
+Portfolio Health: 81 portfolios (66 active). The deepseek_v4__aggressive portfolio has 11 open names, confirming the issue is not empty but mis-aligned.
+
+### 3. Key Diagnostic Findings
+- Inconsistent Validation Standards – Lab uses generous splits; production demands policy-clean, walk-forward proof.
+- Emitter Over-Breadth – Too many weak emitters dilute real edge.
+- Concentration Artifacts – Single source dominance inflates surface stats.
+- Resolver/Label Pollution – Disputed cohorts and TIME_EXIT-type mislabels distort PF/WR.
+- Insufficient Forward Sampling – ETF and crypto sub-sleeves lack enough forward data for robust promotion.
+
+### 4. Enhancement Blueprint
+**4.1 Data & Resolver Hygiene** — Audit/purge disputed resolver entries (CRYPTO, FOREX, <1% disputed tags, 2wk); source-provenance tagging every price/label record (source_id + fallback, 3wk); automated duplicate detection on pf_portfolios.json (zero dup IDs, 1wk).
+
+**4.2 Validation Pipeline Standardization**
+| Step | Description | Tooling | Acceptance |
+|---|---|---|---|
+| Pre-registration | Hypothesis logged before backtest | Internal registry (Git) | 100% pre-registered |
+| Purged-Embargoed Walk-Forward | ≥30d purge + 10d embargo per fold | backtest_engine_v2 | Consistent PF/WR (Δ ≤ 0.05) |
+| Cost/Slippage Model | Asset-class cost curves every run | cost_model_lib | Net PF matches live after slippage |
+| Multiple-Testing Correction | DSR/PBO/SPA | stat_corrections | Adjusted p < 0.05 for promoted sleeves |
+| Block Bootstrap | Preserve temporal dependence | bootstrap_block | CIs stable across 1000 resamples |
+| Regime Robustness | Test across trend/vol regimes | regime_classifier | Edge persists in ≥3 of 4 regimes |
+
+**4.3 Emitter & Strategy Discipline** — Emit-culling (keep only OOS PF ≥ 0.6 + WR ≥ 0.55 post-correction); promotion gate (≥2mo forward paper before live sizing); shadow-sizing (≤0.5% capital for 4wk); gradual scaling (only after live PF within 10% of paper PF for 8wk).
+
+**4.4 Targeted Edge Development**
+| Candidate | Rationale | Immediate Action |
+|---|---|---|
+| ETF Dual-Momentum | Best lab edge, low concentration | Forward WF, shadow-size 0.2% |
+| Crypto VWAP/Bollinger WF | Promising sub-cohort edge | Resolve resolver issues, mutation tests |
+| DeepSeek_v4 Tournament Portfolio | Highest tournament PF | Isolate top sleeves, prod-grade validation |
+| GPT-4o & Grok-3 Lab Sleeves | Consistent paper edge | Regime-robustness checks, schedule promotion |
+
+**4.5 Mutation & Inversion** — Mutation: feature-level perturbations (alt vol filters) on failed-but-plausible sleeves; retain if PF improves ≥0.05. Inversion: only on sleeves with explicit OOS proof of negative edge; invert signal + re-validate.
+
+**4.6 Monitoring & Governance**
+| Metric | Frequency | Alert Threshold |
+|---|---|---|
+| Live PF | Daily | < 0.4 for > 5 days |
+| WR | Daily | > 0.7 with PF < 0.4 |
+| Concentration (HHI) | Weekly | > 0.25 |
+| Resolver Dispute Rate | Weekly | > 2% |
+| Regime Drift | Monthly | Edge shift > 15% across regimes |
+
+All metrics feed a Quant Ops Dashboard (Grafana) with automated Slack alerts.
+
+### 5. Timeline (12-Week)
+Wk 1-2 Data/Resolver audit + dup purge · Wk 3-4 Deploy standardized validation pipeline + pre-register hypotheses · Wk 5-6 Purged-embargoed WF on ETF dual-momentum + crypto VWAP/Bollinger · Wk 7 Shadow-size approved sleeves (ETF, Crypto) · Wk 8-9 Mutation testing on failed lab sleeves + inversion candidates · Wk 10 Promote sleeves meeting gate (PF ≥ 0.5, WR ≤ 0.6) · Wk 11-12 Full-size rollout + dashboard update.
+
+### 6. Success Definition (Quarterly)
+- Deployable Edge: ≥2 new capital-ready sleeves with live PF ≥ 0.5 and WR ≤ 0.6.
+- Data Cleanliness: resolver dispute rate < 1% across all live feeds.
+- Concentration: aggregate book HHI < 0.20.
+- Operational Efficiency: end-to-end validation pipeline latency ≤ 5 min/sleeve.
+
+### 7. Risks & Mitigations
+- Unexpected resolver drift (Med/High) → continuous health checks; fallback to backup source.
+- Over-fitting during mutation (Low/Med) → strict OOS holdout; block-bootstrap verification.
+- Regulatory policy change (Low/High) → maintain policy-clean flagging; rapid re-validation.
+- Capital allocation lag (Med/Low) → pre-approved shadow-size budget; automated scaling scripts.
+
+### 8. Governance & Ownership (illustrative roles)
+Data Integrity → resolver audit report + dup-removal script · Backtesting & Validation → standardized pipeline + pre-registration logs · Strategy Promotion → shadow-size schedule + promotion gate checklist · Monitoring → Grafana dashboard + alert routing · Risk Oversight → quarterly risk review + HHI tracking.
+
+_Prepared by Quant Review Team – EAGLE2 Initiative. Date: 2026-06-02._
+
+**Follow-ups:** detailed standardized-validation-pipeline steps + code snippets? · specific metrics/thresholds to monitor concentration + resolver dispute rates in real time? · how to implement mutation testing framework for failed lab sleeves + recommended tools?
+
+### Overall goals
+- **#1** more strategies per asset class + better methodology to ensure effective backtesting per asset class + ability to quickly reach profitable strategies. e.g. if current picks haven't been forward-tested but given current websites/github — what are the best possible picks and why? NVDA? BTCUSD? some safe long-term well-known picks?
+- **#2** more backtests per asset class.
+- **#3** more research/analysis on any hidden edge within our project.
+- **#4** more research on whether we have proven statistical edge — do strategies pass Monte Carlo, Bonferroni correction, statistical methods for "real money" worthy picks?
+- **#5** research: "if you had a prediction system for stocks/crypto/forex/bonds/etfs/commodities/futures — what statistical measures most important to see if picks are real-money-ready, what backtesting is bare minimum, what is ideal, and forward-testing how many picks?"
+- **#6** look into the tables below.
+
+#### Statistical measures separating "real-money-ready" signals from research-only artefacts
+| Measure | Why it matters | Typical threshold |
+|---|---|---|
+| Annualized Sharpe (or IR vs benchmark) | Risk-adjusted return; Sharpe that vanishes after costs = red flag | ≥ 1.0 Sharpe or ≥ 0.8 IR after slippage+costs |
+| Profit-Factor (PF) | Gross profit / gross loss | ≥ 1.5 (min) → ≥ 2.0 (ideal) |
+| Win-Rate (WR) | % winners; pair with PF | 45-55% ok if PF strong; >60% only if PF modest |
+| Max Drawdown (MDD) & Calmar | Tail-risk | MDD ≤ 20% (monthly) or Calmar ≥ 3.0 |
+| Turnover / Trade-Freq | High turnover inflates costs | ≤ 30%/yr eq/ETF; ≤ 70%/yr crypto/FX |
+| Liquidity-Adjusted Slippage | Expected slippage/trade (bps) | ≤ 5 bps large-cap eq/ETF; ≤ 15 bps crypto/FX |
+| Regime-Robustness Score | Consistency across vol/trend regimes | Edge within ±10% across ≥3 of 4 regimes |
+| Multiple-Testing (DSR/PBO/SPA) | Controls data-snooping | Adjusted p < 0.05 after correction |
+| HHI of Source Concentration | Prevents single model/source dominance | HHI < 0.20 aggregate |
+| OOS Decay | IS vs OOS gap; large decay = overfit | PF OOS ≥ 80% IS; Sharpe OOS ≥ 70% IS |
+
+#### Bare-minimum backtesting checklist
+a. Data hygiene — clean policy-approved data; remove dups + disputed resolver entries.
+b. Pre-registration — log hypothesis before any backtest (timestamped).
+c. Split-sample — one IS/OOS split (70/30).
+d. Cost & slippage — flat per-trade cost (~5 bps) + linear slippage.
+e. Basic metrics — PF, Sharpe, WR, MDD, turnover.
+f. Simple multiple-testing guard — Bonferroni (α / N).
+Fail any (PF < 1.5, MDD > 30%) → not ready for capital.
+
+#### Ideal production-grade pipeline
+Data provenance (source_id, fallback, timestamp, version); purged-embargoed walk-forward (30d purge + 10d embargo, 12mo train/3mo test rolling); block-bootstrap CIs (1000 resamples); regime-segmented analysis; full cost model (commissions, market impact, latency); multiple-testing correction (DSR/PBO/SPA); shadow-size sim (≤0.5% capital, 4-8wk live); automated monitoring dashboard; versioned strategy repo (git-tracked, immutable releases).
+
+#### Forward-testing (live-paper) guidelines
+Picks: ≥ 30-50 distinct symbols/signal instances per asset class. Duration: ≥ 2× longest look-back (12mo WF → ≥ 24mo forward). Capital: ≤ 0.5%/strategy; monitor 4-8wk before up-scale. Thresholds: live PF within ±10% backtest PF; Sharpe within ±15%. Regime exposure: ≥ 3 distinct regimes. Statistical validation: re-run block-bootstrap on live-paper P&L; 95% CI for PF must not cross 1.0. Continuous re-registration: any post-forward tweak = new hypothesis → re-backtest.
+
+#### Decision flow
+Pre-register → backtest (purged-embargoed WF + full cost model) → check PF ≥ 1.5, Sharpe ≥ 1.0, MDD ≤ 20%, HHI < 0.20, OOS decay ≤ 20% → if pass, shadow-size live-paper ≥ 30 symbols ≥ 8wk → monitor live PF/WR (≥ 0.9× backtest PF, ≤ 1.1× backtest Sharpe) → promote to real capital only after criteria hold for two consecutive 4-week windows + regime-robustness confirmed.
+
+**Follow-ups:** concrete backtesting template for ETF dual-momentum using ideal pipeline? · most common crypto data-resolver issues + how to systematically clean them? · how many live-paper forward-testing weeks before safe scale to full capital?
