@@ -183,7 +183,10 @@ def compute_class_health(closed: List[Dict]) -> Dict[str, ClassHealthReport]:
         losses = sum(1 for p in pnls if p < 0)
         n = wins + losses
         wr = wins / n if n > 0 else 0
-        pf = wins / losses if losses > 0 else (999 if wins > 0 else 0)
+        # PF = gross profit / gross loss (sum of pnl), NOT win/loss counts — PR #464.
+        gross_profit = sum(p for p in pnls if p > 0)
+        gross_loss = -sum(p for p in pnls if p < 0)
+        pf = gross_profit / gross_loss if gross_loss > 0 else (999 if gross_profit > 0 else 0)
 
         threshold = CLASS_HEALTH.get(ac, CLASS_HEALTH.get('EQUITY'))
         issues = []
@@ -223,7 +226,19 @@ def compute_strategy_culling(systems: List[Dict]) -> Dict[str, str]:
             culling[name] = 'NO_DATA'
             continue
 
-        pf = wins / losses if losses > 0 else 999
+        # Prefer the dashboard's authoritative gross-based profit_factor; fall
+        # back to gross_win/gross_loss. Win/loss COUNT ratio is wrong (PR #464)
+        # and is only a last resort when no pnl-magnitude data is present.
+        pf = sys.get('profit_factor')
+        if pf is None:
+            gross_win = sys.get('gross_win')
+            gross_loss = abs(sys.get('gross_loss') or 0)
+            if gross_win is not None and gross_loss > 0:
+                pf = gross_win / gross_loss
+            elif gross_win and gross_loss == 0:
+                pf = 999
+            else:
+                pf = wins / losses if losses > 0 else 999
 
         if n < 10:
             culling[name] = 'ACCUMULATING'
