@@ -5572,6 +5572,18 @@ def main():
         except Exception as _eagle4_err:
             print(f"  [EAGLE-4] Admissibility gate failed (non-fatal): {_eagle4_err}")
 
+    # 6f2.6. EAGLE-5 PROMOTION GATE (2026-06-02, minimax-m3-free)
+    #   Boost (not kill) tournament-validated symbols/personas with multiplicative confidence.
+    #   Positive side of EAGLE-4. All thresholds from top-5 T1 AI tournament, 3,692 resolved.
+    #   Imported from eagle_gates.py (separate module) to survive concurrent agent edits
+    #   that have been reverting inline EAGLE code in this file.
+    if active:
+        try:
+            from eagle_gates import apply_eagle5_promotion
+            active = apply_eagle5_promotion(active)
+        except Exception as _eagle5_err:
+            print(f"  [EAGLE-5] Promotion gate failed (non-fatal): {_eagle5_err}")
+
     # 6f3. Portfolio cap -- hard limit on total active picks
     before_cap = len(active)
     active = enforce_portfolio_cap(active, [])  # all remaining picks compete for slots
