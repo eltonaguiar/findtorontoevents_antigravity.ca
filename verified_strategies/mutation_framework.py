@@ -45,9 +45,19 @@ class MutationResult:
 
 
 def compute_pf(pnls: List[float]) -> float:
-    wins = sum(1 for p in pnls if p > 0)
-    losses = sum(1 for p in pnls if p < 0)
-    return wins / losses if losses > 0 else (999 if wins > 0 else 0)
+    """True Profit Factor = gross profit / gross loss (sum of pnl, NOT win/loss counts).
+
+    Prior impl returned wins_count/losses_count, which inflated PF for any
+    strategy with many tiny wins vs few losses (root cause of the bogus
+    PF 600+/400+ on Mimo's INVERT mutations — flagged P0 by peer gx10).
+    999.0 is a sentinel for the no-losing-trades case (kept for downstream
+    compatibility); it now triggers only when gross_loss is genuinely 0.
+    """
+    gross_profit = sum(p for p in pnls if p > 0)
+    gross_loss = -sum(p for p in pnls if p < 0)
+    if gross_loss > 0:
+        return gross_profit / gross_loss
+    return 999.0 if gross_profit > 0 else 0.0
 
 
 def compute_wr(pnls: List[float]) -> float:
