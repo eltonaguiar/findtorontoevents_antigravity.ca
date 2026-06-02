@@ -3962,6 +3962,76 @@ Our /audit production book has no deployable edge. The real edge is in:
 
 ---
 
+## 2026-06-02 (re-run) — Full verbatim user prompt + swarm directive
+
+**Workflow:** sync GitHub → review all `EAGLE*.MD*` (72h) → LiteLLM swarm (`ollama-cloud-large`, `ollama-cloud`, `ollama-cloud-local`) → Bonferroni/DSR/PBO vs live state → `reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md`
+
+**Surfaces:** [findtorontoevents.ca/audit](https://findtorontoevents.ca/audit), [ai_leaderboard](https://findtorontoevents.ca/audit/ai_leaderboard.html), [ai-tournament](https://findtorontoevents.ca/audit/ai-tournament.html), [pick_funnel](https://findtorontoevents.ca/audit/pick_funnel.html), [research_index](https://findtorontoevents.ca/audit/research_index.html)
+
+**DB:** `ejaguiar1_stocks`, `ejaguiar1_backtests` — credentials `/home/eaguiar2015/dbpasses.txt`
+
+**LiteLLM:** `http://localhost:4000/v1` — test `ollama-cloud-large`, `ollama-cloud`, `ollama-cloud-local`
+
+### 1. Executive Summary
+- **Core issue:** Production audit book lacks deployable edge; research edge only in tournament/lab sleeves.
+- **Root causes:** Research≠production standards, emitter over-breadth, concentration artifacts, resolver/label contamination.
+- **Goal:** Convert verified research edge to capital-ready strategies; tighten data hygiene + validation.
+
+### 2. Current State (2026-06-02)
+| Asset Class | Live PF/WR | Research Edge | Pain Point |
+|-------------|-----------|---------------|------------|
+| CRYPTO | <0.5 PF, high WR | Tournament sub-cohorts | Gating/concentration mismatch |
+| EQUITY | Negative PF, low WR | None | Weak emitters |
+| ETF | Small n, modest PF | Dual-momentum | Insufficient forward data |
+| FOREX | High WR, terrible PF | Minor | Resolver mislabels |
+| COMMODITY | Too few samples | N/A | Sample size |
+| FUTURES | Concentration spikes | N/A | Artifact risk |
+| BOND | No sample | N/A | Data gap |
+
+81 portfolios (66 active); `deepseek_v4__aggressive` has 11 open — mis-aligned, not empty.
+
+### 3–8. Blueprint (condensed archive)
+- **Hygiene:** disputed purge, provenance tagging, pf_portfolios dedupe.
+- **Validation:** pre-register → purged-embargo WF (30d/10d) → costs → DSR/PBO/SPA → block bootstrap → regime robustness.
+- **Discipline:** OOS PF≥0.6, WR≥0.55; forward paper ≥2mo; shadow ≤0.5%; scale after 8w within ±10% paper PF.
+- **Targets:** ETF dual-momentum shadow; crypto VWAP/Bollinger; isolate deepseek_v4 tournament sleeves.
+- **Monitoring:** daily PF/WR; weekly HHI>0.25, dispute>2%; monthly regime drift >15%.
+- **12-week timeline:** weeks 1–2 hygiene; 3–4 pipeline; 5–6 WF; 7 shadow; 8–9 mutation; 10–12 scale.
+- **Success:** 2 capital-ready sleeves; dispute <1%; HHI <0.20; pipeline ≤5min/sleeve.
+
+### Goals #1–#6 (user)
+1. More strategies/class + better backtest; best picks now (NVDA? BTCUSD? safe long-term?) if not forward-tested.
+2. More backtests per class.
+3. Hidden edge in project.
+4. Monte Carlo, Bonferroni, real-money statistical proof.
+5. Cross-asset prediction system: bare-min vs ideal backtest + forward pick counts.
+6. Concentration + resolver monitoring; mutation framework for failed lab sleeves.
+
+### Statistical measures (real-money-ready)
+| Measure | Threshold |
+|---------|-----------|
+| Sharpe (net) | ≥1.0 bare |
+| PF | ≥1.5 bare, ≥2.0 ideal |
+| WR | 45–55% if PF strong |
+| MDD | ≤20% monthly |
+| HHI | <0.20 |
+| DSR/PBO/SPA | adj p<0.05 |
+| OOS decay | PF OOS ≥80% IS |
+
+**Bare-min:** hygiene, pre-register, 70/30, 5bps costs, PF/Sharpe/WR/MDD, Bonferroni α/N.
+
+**Ideal:** provenance, purged WF, block bootstrap, regimes, full costs, DSR/PBO, shadow 4–8w, Grafana.
+
+**Forward:** 30–50 symbols/class; 2× lookback duration; ≤0.5% start; live PF ±10% backtest; 95% CI PF must not cross 1.0.
+
+**Decision flow:** pre-register → ideal backtest → gates → shadow 8w → two 4w windows → scale.
+
+**Follow-ups:** ETF dual-momentum template; crypto resolver cleaning; weeks before full capital (answer: 8w shadow minimum, 16w safer).
+
+**Re-run artifact:** `python3 tools/eagle_swarm_synthesis.py` → `reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md`
+
+---
+
 ## 2026-06-02 — EAGLE2 Initiative: Convert research edge → capital-ready strategies
 
 sync our project with github, then review all *EAGLE*.MD and run each .MD over the past 72 hours, into an agent swarm for review. Then collectively have them summarized with key insights and strategies, and compare against our current state of strategies/back testing methodologies, stats.  Consider methods such as bonneferi  , but leverage our AIs with the API keys 
