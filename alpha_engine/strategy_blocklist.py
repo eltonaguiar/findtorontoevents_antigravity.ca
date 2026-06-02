@@ -174,6 +174,27 @@ _RETIRED_STRATEGIES = frozenset({
     # every cycle for zero reachable picks. Kill until rewired to HG=F/PL=F.
     # Rollback: set CFTC_COT_KILL_DISABLED=1 to bypass.
     "cftc_cot_commercial_signal",
+    # 2026-06-02: justin_breakout_volume_v2 retired after M-107 mutation hunt
+    # (tools/mutation_hunt_2026-06-01.py + reports/mutation_hunt_2026-06-01.json).
+    # Rigorous backtest: n=12658, WR 64.6%, PF 1.024, PF_LB95 0.982, DSR 0.12.
+    # WR looks great but winners < losers (asymmetric payoff destroys edge).
+    # All 4 mutation axes tested: inversion worse (PF 0.988), cross-asset
+    # skipped (out of budget), parameter grid winners DSR=0 (Bailey-LdP
+    # variance check failed on heavy-tailed n=730), hold-extension marginal
+    # (96h PF 1.014). 0 T3-passing mutations. CLAUDE.md killbox protocol
+    # satisfied. Prior "BT PF 2.5" claim was a measurement artifact — that
+    # PF came from an opportunistic source_table query, not rigorous replay.
+    "justin_breakout_volume_v2",
+    # 2026-06-02: keltner_bounce (baseline mult=2.0) retired after M-107
+    # mutation hunt. Rigorous 1y 1h backtest: n=2661, WR 43.6%, PF 0.995,
+    # PF_LB95 0.934, DSR 0.008. Negative Sharpe -0.126. SL_HIT 1458 vs
+    # TP_HIT 1063 dominates. Prior "BT PF 8.4" claim was a measurement
+    # artifact (opportunistic query). The wider-band mutation
+    # `keltner_bounce_v2_wide` (mult=3.0) DID pass T3 (PF 1.145, DSR 7.88,
+    # n=677) and is wired separately as a paper-pilot strategy via
+    # alpha_engine/dormant_winners_wrappers.py — that variant is NOT
+    # affected by this block (exact-match is_blocked_strategy lookup).
+    "keltner_bounce",
 })
 
 # Composite (system, strategy) pairs that are toxic only in a specific combo.
