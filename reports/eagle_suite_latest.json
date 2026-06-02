@@ -1,0 +1,320 @@
+{
+  "schema": "eagle_suite/v1",
+  "generated_at": "2026-06-02T11:47:28.620100+00:00",
+  "monitor": {
+    "freeze_promotions": true,
+    "alerts": [
+      "SOURCE_CONCENTRATION: kimi_riseoftheclaw = 43.6%",
+      "EXPIRED_POSITIVE_RATE=53.3%",
+      "CLASS_DEGRADED: COMMODITY",
+      "CLASS_DEGRADED: FOREX",
+      "CLASS_DEGRADED: BOND",
+      "FREEZE_PROMOTIONS"
+    ],
+    "source_hhi": 0.23236945451491808,
+    "expired_positive_rate": 0.5333333333333333,
+    "class_health": {
+      "ETF": {
+        "pf": 1.2162162162162162,
+        "wr": 0.5487804878048781,
+        "n": 164,
+        "status": "HEALTHY"
+      },
+      "EQUITY": {
+        "pf": 1.1185185185185185,
+        "wr": 0.527972027972028,
+        "n": 286,
+        "status": "HEALTHY"
+      },
+      "CRYPTO": {
+        "pf": 1.0572450805008944,
+        "wr": 0.5139130434782608,
+        "n": 1150,
+        "status": "HEALTHY"
+      },
+      "COMMODITY": {
+        "pf": 0.125,
+        "wr": 0.1111111111111111,
+        "n": 18,
+        "status": "DEGRADED"
+      },
+      "FOREX": {
+        "pf": 0.5555555555555556,
+        "wr": 0.35714285714285715,
+        "n": 70,
+        "status": "DEGRADED"
+      },
+      "FUTURES": {
+        "pf": 2.0,
+        "wr": 0.6666666666666666,
+        "n": 3,
+        "status": "INSUFFICIENT"
+      },
+      "BOND": {
+        "pf": 0.625,
+        "wr": 0.38461538461538464,
+        "n": 13,
+        "status": "DEGRADED"
+      }
+    }
+  },
+  "strategy_variants": {
+    "count": 8,
+    "sleeves": {
+      "etf_dual_momentum": {
+        "asset_class": "ETF",
+        "param_grid": {
+          "lookback_months": [
+            9,
+            12,
+            14
+          ],
+          "top_n": [
+            2,
+            3,
+            5
+          ]
+        },
+        "notes": "Only Tier-2 lab PASS (PF~1.6 n=104); forward n still <100",
+        "eagle_source": "EAGLE2 deepseek_v4_flash, Composer"
+      },
+      "faber_taa": {
+        "asset_class": "ETF",
+        "param_grid": {
+          "sma_period": [
+            180,
+            200,
+            220
+          ],
+          "risk_off_weight": [
+            0.0,
+            0.25
+          ]
+        },
+        "notes": "Faber rotation; needs cost-adjusted WF re-run",
+        "eagle_source": "EAGLE2 blackboxai \u00a75.2"
+      },
+      "crypto_donchian": {
+        "asset_class": "CRYPTO",
+        "param_grid": {
+          "channel_days": [
+            18,
+            20,
+            25
+          ],
+          "atr_mult_sl": [
+            1.5,
+            2.0,
+            2.5
+          ]
+        },
+        "notes": "Verified donchian; production opt-in sidecar",
+        "eagle_source": "updates/2026-06-02-verified-strategies-real-ohlcv"
+      },
+      "connors_rsi2": {
+        "asset_class": "CRYPTO",
+        "param_grid": {
+          "rsi_entry": [
+            2,
+            5,
+            7
+          ],
+          "hold_days": [
+            1,
+            2,
+            3
+          ]
+        },
+        "notes": "H-102 lab PF~1.3; mutate RSI threshold before invert",
+        "eagle_source": "reports/h102_connors_rsi2_crypto_2026-06-02"
+      },
+      "equity_momentum_12_1": {
+        "asset_class": "EQUITY",
+        "param_grid": {
+          "skip_months": [
+            1
+          ],
+          "top_n": [
+            5,
+            10,
+            20
+          ]
+        },
+        "notes": "Academic 12-1; equity production still weak \u2014 regime gate first",
+        "eagle_source": "EAGLE per_class_top_strategy 2026-05-27"
+      },
+      "vwap_reversion": {
+        "asset_class": "CRYPTO",
+        "param_grid": {
+          "z_entry": [
+            1.5,
+            2.0,
+            2.5
+          ],
+          "max_hold_bars": [
+            12,
+            24,
+            48
+          ]
+        },
+        "notes": "WF PASS lab; 0 forward closes \u2014 pilot only",
+        "eagle_source": "EAGLE2 GPT5_3_CODEX"
+      },
+      "bollinger_mr": {
+        "asset_class": "CRYPTO",
+        "param_grid": {
+          "bb_period": [
+            18,
+            20,
+            22
+          ],
+          "bb_std": [
+            1.5,
+            2.0,
+            2.5
+          ]
+        },
+        "notes": "WF PASS lab OOS PF~1.67; not merged to production",
+        "eagle_source": "EAGLE2 deepseek_v4_flash"
+      },
+      "cross_asset_mom_vix": {
+        "asset_class": "ETF",
+        "param_grid": {
+          "vix_threshold": [
+            20,
+            25,
+            30
+          ]
+        },
+        "notes": "REJECTED 2026-06-02 \u2014 keep for mutation refutation only",
+        "eagle_source": "updates/2026-06-02-cross-asset-momentum-vt-rejected"
+      }
+    }
+  },
+  "mutation_scan": {
+    "scanned_strategies": 25,
+    "top_results": [
+      {
+        "strategy": "multi_asset_copytrader",
+        "axis": "invert",
+        "verdict": "ADOPT",
+        "original_pf": 0.179,
+        "mutated_pf": 203.8,
+        "improvement": 203.621
+      },
+      {
+        "strategy": "ml_bg_system_f",
+        "axis": "invert",
+        "verdict": "CONSIDER",
+        "original_pf": 0.865,
+        "mutated_pf": 1.448,
+        "improvement": 0.583
+      },
+      {
+        "strategy": "paper_trading",
+        "axis": "invert",
+        "verdict": "ADOPT",
+        "original_pf": 0.875,
+        "mutated_pf": 1.4,
+        "improvement": 0.525
+      },
+      {
+        "strategy": "paper_trading",
+        "axis": "parameter",
+        "verdict": "CONSIDER",
+        "original_pf": 0.875,
+        "mutated_pf": 1.1,
+        "improvement": 0.225
+      },
+      {
+        "strategy": "ml_bg_system_f",
+        "axis": "symbol_rotation",
+        "verdict": "ADOPT",
+        "original_pf": 0.865,
+        "mutated_pf": 1.078,
+        "improvement": 0.213
+      },
+      {
+        "strategy": "multi_asset_copytrader",
+        "axis": "symbol_rotation",
+        "verdict": "REJECT",
+        "original_pf": 0.179,
+        "mutated_pf": 0.283,
+        "improvement": 0.105
+      },
+      {
+        "strategy": "ml_bg_system_f",
+        "axis": "parameter",
+        "verdict": "REJECT",
+        "original_pf": 0.865,
+        "mutated_pf": 0.956,
+        "improvement": 0.091
+      },
+      {
+        "strategy": "multi_asset_copytrader",
+        "axis": "parameter",
+        "verdict": "REJECT",
+        "original_pf": 0.179,
+        "mutated_pf": 0.205,
+        "improvement": 0.026
+      },
+      {
+        "strategy": "multi_asset_copytrader",
+        "axis": "regime_gate",
+        "verdict": "INSUFFICIENT_DATA",
+        "original_pf": 0.179,
+        "mutated_pf": 0,
+        "improvement": 0
+      },
+      {
+        "strategy": "ml_bg_system_f",
+        "axis": "regime_gate",
+        "verdict": "INSUFFICIENT_DATA",
+        "original_pf": 0.865,
+        "mutated_pf": 0,
+        "improvement": 0
+      },
+      {
+        "strategy": "signal_validation",
+        "axis": "invert",
+        "verdict": "REJECT",
+        "original_pf": 0.0,
+        "mutated_pf": 0.0,
+        "improvement": 0.0
+      },
+      {
+        "strategy": "signal_validation",
+        "axis": "symbol_rotation",
+        "verdict": "REJECT",
+        "original_pf": 0.0,
+        "mutated_pf": 0.0,
+        "improvement": 0.0
+      },
+      {
+        "strategy": "signal_validation",
+        "axis": "regime_gate",
+        "verdict": "INSUFFICIENT_DATA",
+        "original_pf": 0.0,
+        "mutated_pf": 0,
+        "improvement": 0
+      },
+      {
+        "strategy": "signal_validation",
+        "axis": "parameter",
+        "verdict": "REJECT",
+        "original_pf": 0.0,
+        "mutated_pf": 0.0,
+        "improvement": 0.0
+      },
+      {
+        "strategy": "paper_trading",
+        "axis": "regime_gate",
+        "verdict": "INSUFFICIENT_DATA",
+        "original_pf": 0.875,
+        "mutated_pf": 0,
+        "improvement": 0
+      }
+    ],
+    "adopt_count": 3
+  }
+}
