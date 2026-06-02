@@ -1092,7 +1092,7 @@ function pfRenderRows() {
   var tbody = document.getElementById('pf-tbody');
   if (!tbody) return;
   if (!__pfData || !__pfData.portfolios || !__pfData.portfolios.length) {
-    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#a0a0b0;padding:14px">Pending — first daily run scheduled 22:00 UTC; the table will populate after the cron writes <code>pf_portfolios.json</code>.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#a0a0b0;padding:14px">PF roster unavailable. Either the first daily run has not written <code>pf_portfolios.json</code> yet, or the deploy is stale. Refresh later or reopen a clean portfolio link from this table once the export is live.</td></tr>';
     return;
   }
   // Build provider lookup from serverLeaderboard (if available).
@@ -1175,7 +1175,7 @@ async function loadPortfolios() {
   try {
     var resp = await fetch('./data/pf_portfolios.json?' + Date.now());
     if (!resp.ok) {
-      if (stamp) stamp.innerHTML = 'Pending first daily run — <code>pf_portfolios.json</code> not yet written (scheduled 22:00 UTC).';
+      if (stamp) stamp.innerHTML = 'PF roster unavailable - <code>pf_portfolios.json</code> has not been written yet or the deploy is stale.';
       __pfData = null;
       pfRenderRows();
       return;
@@ -1188,7 +1188,7 @@ async function loadPortfolios() {
     }
     pfRenderRows();
   } catch (e) {
-    if (stamp) stamp.innerHTML = 'Pending first daily run — <code>pf_portfolios.json</code> not yet available.';
+    if (stamp) stamp.innerHTML = 'PF roster unavailable - retry after the next export or refresh if the deploy is stale.';
     __pfData = null;
     pfRenderRows();
   }
