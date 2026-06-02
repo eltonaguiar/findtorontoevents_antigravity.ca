@@ -221,7 +221,7 @@ def run_etf_dual_momentum() -> Dict:
         from verified_strategies.strategies.etf_dual_momentum import ETFDualMomentumStrategy
     except ImportError:
         return _missing_sleeve("ETFDualMomentum", "verified_strategies.strategies.etf_dual_momentum")
-    spy_df, _ = fetch_ohlcv("SPY", 1260)
+    spy_df, _ = fetch_ohlcv("SPY", 2000)
     if spy_df is None:
         return {"strategy": "ETFDualMomentum", "verdict": "INSUFFICIENT", "n": 0}
     _, trades = ETFDualMomentumStrategy().run(spy_df, 100_000.0)
