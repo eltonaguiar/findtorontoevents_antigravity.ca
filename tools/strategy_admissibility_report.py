@@ -29,6 +29,10 @@ from typing import Any, Dict, List, Optional
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "audit_dashboard" / "data"
 REPORTS = ROOT / "reports"
+PILOT_DASHBOARD_PATHS = [
+    REPORTS / "pilot_forward_dashboard.json",
+    DATA / "pilot_forward_dashboard.json",
+]
 
 ROOT_CAUSES: Dict[str, str] = {
     "CRYPTO": (
@@ -74,6 +78,79 @@ def _now() -> str:
 
 def _safe_key(key: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]", "_", key or "")
+
+
+def _load_pilot_dashboard() -> tuple[Dict[str, Any], Optional[str]]:
+    for path in PILOT_DASHBOARD_PATHS:
+        payload = _load(path)
+        if isinstance(payload, dict):
+            return payload, str(path)
+    return {}, None
+
+
+def _candidate_sleeves(dash: Dict[str, Any]) -> List[Dict[str, Any]]:
+    sleeves = dash.get("sleeves")
+    if not isinstance(sleeves, dict):
+        return []
+
+    out: List[Dict[str, Any]] = []
+    etf = sleeves.get("etf_dual_momentum")
+    if isinstance(etf, dict):
+        lab = etf.get("lab_wf") if isinstance(etf.get("lab_wf"), dict) else {}
+        forward = etf.get("forward") if isinstance(etf.get("forward"), dict) else {}
+        open_position = forward.get("open_position") if isinstance(forward.get("open_position"), dict) else {}
+        out.append({
+            "sleeve": "etf_dual_momentum",
+            "label": "ETF dual momentum",
+            "asset_class": "ETF",
+            "lab_verdict": lab.get("verdict"),
+            "lab_pf": lab.get("oos_pf"),
+            "lab_n": lab.get("oos_n"),
+            "forward_n_closed": forward.get("n_closed"),
+            "forward_n_target": dash.get("forward_n_target"),
+            "promotion_ready": bool(forward.get("promotion_ready")),
+            "blockers": forward.get("gates") or [],
+            "open_symbol": open_position.get("symbol") or forward.get("symbol"),
+            "source": forward.get("source"),
+        })
+
+    crypto = sleeves.get("crypto_wf_hyro")
+    if isinstance(crypto, dict):
+        forward = crypto.get("forward") if isinstance(crypto.get("forward"), dict) else {}
+        out.append({
+            "sleeve": "crypto_wf_hyro",
+            "label": "Crypto VWAP/Bollinger",
+            "asset_class": "CRYPTO",
+            "lab_verdict": "PASS",
+            "lab_pf": None,
+            "lab_n": None,
+            "forward_n_closed": forward.get("n_closed"),
+            "forward_n_target": dash.get("forward_n_target"),
+            "promotion_ready": bool(forward.get("promotion_ready")),
+            "blockers": forward.get("gates") or [],
+            "open_symbol": None,
+            "source": forward.get("source"),
+        })
+
+    faber = sleeves.get("faber_taa")
+    if isinstance(faber, dict):
+        open_symbols = faber.get("open_symbols") if isinstance(faber.get("open_symbols"), list) else []
+        out.append({
+            "sleeve": "faber_taa",
+            "label": "Faber TAA",
+            "asset_class": "EQUITY",
+            "lab_verdict": None,
+            "lab_pf": None,
+            "lab_n": None,
+            "forward_n_closed": faber.get("n_closed"),
+            "forward_n_target": dash.get("forward_n_target"),
+            "promotion_ready": bool(faber.get("promotion_ready")),
+            "blockers": faber.get("gates") or [],
+            "open_symbol": ",".join(open_symbols[:2]) if open_symbols else None,
+            "source": "paper_pilot_virtual",
+        })
+
+    return out
 
 
 def audit_live_portfolios(fetch_live: bool) -> Dict[str, Any]:
@@ -257,11 +334,17 @@ def load_pick_funnel_edge() -> Dict[str, Any]:
 
 
 def load_pilot_status() -> Dict[str, Any]:
-    dash = _load(REPORTS / "pilot_forward_dashboard.json") or {}
+    dash, dash_source = _load_pilot_dashboard()
     wf = _load(ROOT / "verified_strategies" / "WALKFORWARD_REPORT.json") or {}
+    candidates = _candidate_sleeves(dash)
+    best_candidate = next((row for row in candidates if row.get("sleeve") == "etf_dual_momentum"), candidates[0] if candidates else None)
     return {
         "surface": "verified_strategies lab + forward pilots (not on main /audit banner yet)",
         "trust_level": "promotion candidate after forward n>=100",
+        "dashboard_source": dash_source,
+        "any_promotion_ready": bool(dash.get("any_promotion_ready")),
+        "best_candidate": best_candidate,
+        "candidate_sleeves": candidates,
         "dashboard": dash,
         "walkforward_verdicts": {
             k: v.get("verdict") if isinstance(v, dict) else v

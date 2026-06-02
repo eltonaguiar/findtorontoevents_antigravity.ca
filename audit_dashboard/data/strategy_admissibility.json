@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-02T12:14:44.926922+00:00",
+  "generated_at": "2026-06-02T13:46:36.080763+00:00",
   "methodology_doc": "docs/BACKTEST_ADMISSIBILITY_STANDARD.md",
   "quant_review": "reports/quant_strategy_root_cause_review_2026-06-02.md",
   "executive_answers": {
@@ -17,18 +17,18 @@
     "data_feeds": "Secondary; FRED carry fixed via curl cache; live pain is pick quality + methodology"
   },
   "live_money_ready": {
-    "generated_at": "2026-06-02T10:19:20.625546+00:00",
+    "generated_at": "2026-06-02T12:15:15.935544+00:00",
     "money_ready_classes": [],
     "n_classes": 9,
     "by_class": {
       "CRYPTO": {
-        "n": 368,
-        "wr": 0.3614,
-        "pf": 0.919,
+        "n": 363,
+        "wr": 0.3636,
+        "pf": 0.9501,
         "mdd": 1.0,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.5489,
+        "top_source_share": 0.551,
         "root_cause": "Policy-clean PF 0.89 (n~377): bulk scanner loss-skew; lab VWAP/Bollinger WF PASS but opt-in only. Proven pick_funnel cell (RR1.0-1.5 LONG) is subset \u2014 aggregate loses."
       },
       "UNKNOWN": {
@@ -52,9 +52,9 @@
         "root_cause": "PF 0.48, small n: carry lab thin; 14d raw shows high WR / PF 0.10 (EXPIRED mislabel). Not a data-feed outage \u2014 resolver/label issue."
       },
       "ETF": {
-        "n": 3,
-        "wr": 0.6667,
-        "pf": 1.4581,
+        "n": 2,
+        "wr": 1.0,
+        "pf": null,
         "mdd": null,
         "verdict": "INSUFFICIENT_DATA",
         "top_source": "UNKNOWN",
@@ -72,11 +72,11 @@
         "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
       },
       "EQUITY": {
-        "n": 52,
-        "wr": 0.2692,
-        "pf": 0.3269,
-        "mdd": 0.6222,
-        "verdict": "NOT_READY",
+        "n": 48,
+        "wr": 0.2708,
+        "pf": 0.328,
+        "mdd": 0.6058,
+        "verdict": "INSUFFICIENT_DATA",
         "top_source": "regime_terminal",
         "top_source_share": 0.4167,
         "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
@@ -391,7 +391,205 @@
     "verified_lab": {
       "surface": "verified_strategies lab + forward pilots (not on main /audit banner yet)",
       "trust_level": "promotion candidate after forward n>=100",
-      "dashboard": {},
+      "dashboard_source": "/home/eaguiar2015/.copilot/session-state/f47fdba1-886d-48d4-9faa-f4e811c83ad9/worktrees/etf-promotion-next/audit_dashboard/data/pilot_forward_dashboard.json",
+      "any_promotion_ready": false,
+      "best_candidate": {
+        "sleeve": "etf_dual_momentum",
+        "label": "ETF dual momentum",
+        "asset_class": "ETF",
+        "lab_verdict": "PASS",
+        "lab_pf": 1.212,
+        "lab_n": 32,
+        "forward_n_closed": 0,
+        "forward_n_target": 100,
+        "promotion_ready": false,
+        "blockers": [
+          "n<100"
+        ],
+        "open_symbol": "XLE",
+        "source": "paper_pilot_virtual"
+      },
+      "candidate_sleeves": [
+        {
+          "sleeve": "etf_dual_momentum",
+          "label": "ETF dual momentum",
+          "asset_class": "ETF",
+          "lab_verdict": "PASS",
+          "lab_pf": 1.212,
+          "lab_n": 32,
+          "forward_n_closed": 0,
+          "forward_n_target": 100,
+          "promotion_ready": false,
+          "blockers": [
+            "n<100"
+          ],
+          "open_symbol": "XLE",
+          "source": "paper_pilot_virtual"
+        },
+        {
+          "sleeve": "crypto_wf_hyro",
+          "label": "Crypto VWAP/Bollinger",
+          "asset_class": "CRYPTO",
+          "lab_verdict": "PASS",
+          "lab_pf": null,
+          "lab_n": null,
+          "forward_n_closed": 0,
+          "forward_n_target": 100,
+          "promotion_ready": false,
+          "blockers": [
+            "n<100"
+          ],
+          "open_symbol": null,
+          "source": "paper_pilot_virtual"
+        },
+        {
+          "sleeve": "faber_taa",
+          "label": "Faber TAA",
+          "asset_class": "EQUITY",
+          "lab_verdict": null,
+          "lab_pf": null,
+          "lab_n": null,
+          "forward_n_closed": 0,
+          "forward_n_target": 100,
+          "promotion_ready": false,
+          "blockers": [
+            "n=0<100",
+            "PF=0.00<1.5",
+            "WR=0.0%<50%"
+          ],
+          "open_symbol": "SPY,QQQ",
+          "source": "paper_pilot_virtual"
+        }
+      ],
+      "dashboard": {
+        "timestamp": "2026-06-02T06:56:22.578729+00:00",
+        "forward_n_target": 100,
+        "any_promotion_ready": false,
+        "sleeves": {
+          "etf_dual_momentum": {
+            "lab_wf": {
+              "verdict": "PASS",
+              "oos_pf": 1.212,
+              "oos_wr": 0.4688,
+              "oos_n": 32,
+              "timestamp": "2026-06-02T06:03:45.603409+00:00"
+            },
+            "forward": {
+              "source": "paper_pilot_virtual",
+              "n_closed": 0,
+              "wr": 0.0,
+              "pf": 0.0,
+              "promotion_ready": false,
+              "gates": [
+                "n<100"
+              ],
+              "open_position": {
+                "symbol": "XLE",
+                "direction": "BUY",
+                "entry_price": 57.29999923706055,
+                "entry_date": "2026-06-02",
+                "strategy": "etf_verified_dual_momentum",
+                "status": "OPEN",
+                "r12_1m": 0.4968,
+                "last_seen": "2026-06-02"
+              },
+              "signal": "BUY",
+              "symbol": "XLE"
+            },
+            "recommend_enable": false,
+            "flag": "ETF_VERIFIED_DUAL_MOMENTUM_ENABLED=1"
+          },
+          "crypto_wf_hyro": {
+            "lab_wf": {
+              "timestamp": "2026-06-02T06:03:45.603409+00:00",
+              "vwap_reversion": {
+                "verdict": "PASS",
+                "oos_pf": 1.323,
+                "oos_sharpe": 3.102,
+                "oos_n": 516
+              },
+              "bollinger_mr": {
+                "verdict": "PASS",
+                "oos_pf": 1.673,
+                "oos_sharpe": 1.376,
+                "oos_n": 38
+              }
+            },
+            "forward": {
+              "source": "paper_pilot_virtual",
+              "n_closed": 0,
+              "wr": 0.0,
+              "pf": 0.0,
+              "promotion_ready": false,
+              "gates": [
+                "n<100"
+              ],
+              "open_count": 5,
+              "forward_by_strategy": {
+                "crypto_verified_vwap": {
+                  "n_closed": 0,
+                  "wins": 0,
+                  "losses": 0,
+                  "wr": 0.0,
+                  "pf": 0.0,
+                  "mean_pnl_pct": 0.0,
+                  "promotion_ready": false,
+                  "gates": [
+                    "n<100"
+                  ],
+                  "target_n": 100
+                },
+                "crypto_verified_bollinger_mr": {
+                  "n_closed": 0,
+                  "wins": 0,
+                  "losses": 0,
+                  "wr": 0.0,
+                  "pf": 0.0,
+                  "mean_pnl_pct": 0.0,
+                  "promotion_ready": false,
+                  "gates": [
+                    "n<100"
+                  ],
+                  "target_n": 100
+                }
+              }
+            },
+            "recommend_vwap": false,
+            "recommend_bollinger": false,
+            "flags": {
+              "vwap": "CRYPTO_VERIFIED_VWAP_ENABLED=1",
+              "bollinger": "CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED=1"
+            }
+          },
+          "faber_taa": {
+            "timestamp": "2026-06-02T06:56:22.573211+00:00",
+            "strategy": "faber_taa_paper_pilot",
+            "n_closed": 0,
+            "wr": 0.0,
+            "pf": 0.0,
+            "open_count": 5,
+            "portfolio_value": 98904.29,
+            "promotion_ready": false,
+            "gates": [
+              "n=0<100",
+              "PF=0.00<1.5",
+              "WR=0.0%<50%"
+            ],
+            "open_symbols": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "EFA",
+              "GLD"
+            ]
+          }
+        },
+        "money_ready_blockers": [
+          "All sleeves require forward virtual n>=100, PF>=1.5, WR>=50%",
+          "Lab walk-forward PASS required for crypto/ETF scanner flags",
+          "DSR/PBO shadow tier \u2014 no real-money sizing until forward track validates"
+        ]
+      },
       "walkforward_verdicts": {
         "schema_version": "1.0",
         "source": "Restored from reports/EAGLE_JUNE2_GROK.md \u2014 re-run walkforward_suite on 50webs when source returns",
