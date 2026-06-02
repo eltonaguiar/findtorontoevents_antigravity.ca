@@ -8,7 +8,12 @@
 ## Verification
 
 - Open locally: `python3 tools/serve_local.py` → http://localhost:5173/updates/eagle2-swarm-session-summary-2026-06-02.html
-- Deploy: `python3 tools/deploy_audit_files.py --only updates` (FTP)
+- Deploy (post-merge): `python3 tools/deploy_audit_files.py --only updates` (FTP)
+
+## PR
+
+- Branch: `docs/eagle2-updates-entry-deploy-2026-06-02`
+- Ships: `updates/index.html` card (top, before incidents block), summary HTML, consolidated findings HTML, deploy paths in `tools/deploy_audit_files.py`
 
 ## Key message
 
