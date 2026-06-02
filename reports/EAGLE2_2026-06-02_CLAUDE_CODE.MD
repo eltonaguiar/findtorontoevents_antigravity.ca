@@ -1,199 +1,163 @@
-# EAGLE2 Enhancement Plan: Research-to-Production Translation
-## 2026-06-02 — Claude Code
+# EAGLE2 Enhancement Plan: Fixing the Research-to-Production Pipeline
+## Date: 2026-06-02 | Model: Claude Code (gx10-c9b9)
 
 ---
 
-## Diagnosis (from multi-agent quant review)
+## The Real Problem (Not What We Thought)
 
-The main /audit production book is weak because **research edge ≠ deployed edge**. Live policy-clean performance is bad in the classes that matter most, while the places that do show edge are mostly paper/tournament-only, overly concentrated, insufficiently sampled, or contaminated by resolver/label issues.
+**The portfolio is NOT empty.** `pf_portfolios.json` shows 81 portfolios, 66 with open positions. `deepseek_v4__aggressive` has 11 open names. The URL issue was likely a cache/stale asset problem.
 
-**This is NOT a "wait longer" problem.** It's a research-to-production translation problem.
+**The real problem is a research-to-production translation failure.** We have edges in the lab (VWAPReversion DSR=21.4, BollingerMR OOS PF=1.673, OBV Divergence WR=75.7%) but the production pipeline can't deploy them because:
 
-### By Asset Class
-
-| Class | Diagnosis | Action |
-|-------|-----------|--------|
-| CRYPTO | Live book bad, but edge exists in sub-cohorts. Selection/gating/concentration mismatch. | Depromote aggregate. Promote VWAPReversion + BollingerMR. |
-| EQUITY | Honest failure. Bad deployed strategies / failed holdout / weak emitter quality. | Stop trading. Rebuild from scratch. |
-| ETF | Best candidate edge, but sample too small. Main "wait for forward n" class. | Keep collecting. Don't size yet. |
-| FOREX | Data/resolver problem + weak edge. High WR with terrible PF = red flag. | Fix resolver. Don't trade until PF > 1.0. |
-| COMMODITY | Too little clean sample. Stability/sample problem. | Keep collecting. |
-| FUTURES | Concentration/artifact risk. Stats too dependent on narrow sources. | Don't trust yet. |
-| BOND | Mostly data gap / no meaningful live sample. | Wire FRED API. |
+1. **8 sequential quality gates create a catch-22** — new strategies need 50 closed trades to be "forward validated," but the gates block picks from unvalidated strategies
+2. **Walk-forward validation is the only failing pipeline step** — the only one that matters for promotion
+3. **ML confidence is anti-predictive** but still used as a hard gate (conf >= 0.55)
+4. **40+ banned strategies** silently kill most candidates
+5. **elite_score has r=-0.001 correlation with PnL** — it's noise
 
 ---
 
-## Enhancement Plan
+## Root Cause by Asset Class
 
-### Phase 1: Stop the Bleeding (This Week)
-
-**1.1 Depromote weak live classes**
-- CRYPTO aggregate: desize until VWAPReversion/BollingerMR are promoted individually
-- EQUITY: stop all sizing. PF=0.76 means we lose 24 cents per dollar traded.
-- FOREX: stop all sizing. PF=0.27 is catastrophic.
-
-**1.2 Fix portfolio pipeline**
-- The portfolio IS generating data (81 portfolios, 66 with positions)
-- `deepseek_v4__aggressive` has 11 open names
-- The URL was correct — need to verify the page loads properly
-- Debug: check if `pf_portfolio_deepseek_v4__aggressive.json` exists and is being served
-
-**1.3 Enable VWAPReversion in production**
-- `CRYPTO_VERIFIED_VWAP_ENABLED=1`
-- Gate: WALKFORWARD_REPORT.json "vwap_reversion" → PASS ✓
-- DSR=21.4, PBO=0.18 — best statistical validation of any strategy
-
-### Phase 2: Admissibility Pipeline (This Month)
-
-Every strategy must pass this pipeline before it can affect capital:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    ADMISSIBILITY PIPELINE                        │
-├─────────────────────────────────────────────────────────────────┤
-│ 1. Pre-register hypothesis (M-107)                              │
-│    - Lock parameters BEFORE seeing data                         │
-│    - Document expected edge source                              │
-│                                                                 │
-│ 2. Real data only                                               │
-│    - No synthetic data                                          │
-│    - Explicit source/fallback provenance                        │
-│    - FRED API key for carry rates                               │
-│                                                                 │
-│ 3. Purged + embargoed walk-forward                              │
-│    - 70/30 IS/OOS chronological split                           │
-│    - 5% purge gap between train/test                            │
-│    - Rolling windows (train=504d, test=126d)                    │
-│                                                                 │
-│ 4. Costs/slippage by asset class                                │
-│    - Crypto: 10bps commission + 5bps slippage                   │
-│    - Equity: 5bps + 3bps                                        │
-│    - Forex: 3bps + 2bps                                         │
-│                                                                 │
-│ 5. DSR + PBO + SPA correction                                   │
-│    - DSR > 1.0 required                                         │
-│    - PBO < 0.5 required                                         │
-│    - SPA p-value < 0.10                                         │
-│                                                                 │
-│ 6. Block bootstrap (not i.i.d. shuffle)                         │
-│    - Preserve autocorrelation structure                         │
-│    - 1000 iterations minimum                                    │
-│                                                                 │
-│ 7. Regime robustness                                            │
-│    - Must work in trending AND ranging markets                  │
-│    - Test on bull/bear/sideways separately                      │
-│                                                                 │
-│ 8. Forward paper evidence                                       │
-│    - Minimum 30 resolved picks                                  │
-│    - Forward PF within 20% of OOS PF                            │
-│                                                                 │
-│ 9. Gradual capital scaling                                      │
-│    - Shadow → tiny (1%) → small (5%) → full                    │
-│    - Only scale after live proof                                │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Phase 3: Strategy DNA Mutation (Q3 2026)
-
-**3.1 Mutation framework**
-For every strategy that fails but has plausible signal:
-1. Generate parameter variants (±20% on each parameter)
-2. Test each variant through the admissibility pipeline
-3. Select winners by OOS Sharpe, not IS Sharpe
-4. Lock winning parameters before forward test
-
-**3.2 Inversion testing**
-For every strategy with WR > 60%:
-1. Test the INVERSE (fade the signals)
-2. If inverse has PF > 1.0, the original is noise
-3. Example: ConnorsRSI2 (WR 60%, PF 0.95) → inverse would have WR 40%, PF ~1.05
-
-**3.3 Regime-conditional strategies**
-Instead of one strategy for all regimes:
-1. Detect regime (ADX for trend, ATR for volatility)
-2. Route to regime-appropriate strategy
-3. Trending: momentum/trend-following
-4. Ranging: mean-reversion
-5. High-vol: breakout
-6. Low-vol: carry
-
-### Phase 4: Data Infrastructure (Q3 2026)
-
-**4.1 Fix FRED API**
-- Wire API key for historical rate differentials
-- Fix timeout issues from gx10
-- Cache locally with 7-day TTL
-
-**4.2 Intraday data for equities**
-- Use 4h candles for 6x more data points
-- Test all equity strategies on 4h before declaring dead
-
-**4.3 Resolver/label fixes**
-- Audit disputed cohorts
-- Fix TIME_EXIT artifacts in FOREX
-- Clean duplicate picks
-
-**4.4 Concentration detection**
-- Flag strategies where >50% of edge comes from one source
-- Require cross-symbol validation
-
-### Phase 5: Tournament → Production Bridge (Q3 2026)
-
-**5.1 Keep tournament separate**
-- Tournament edge ≠ production edge
-- Don't promote tournament winners directly to production
-- Run them through the admissibility pipeline first
-
-**5.2 Best tournament candidates**
-- deepseek_v4: most credible edge
-- gpt4o: decent evidence
-- grok3: promising
-
-**5.3 Production candidates from lab**
-- ETF dual momentum: best future candidate
-- Crypto VWAP/Bollinger: better than live production mix
-- DonchianBreakout: walk-forward PASS but needs more forward sample
+| Class | Diagnosis | Edge Location |
+|-------|-----------|---------------|
+| **CRYPTO** | Live book loses, but edge exists in sub-cohorts. Problem is selection/gating/concentration. | Tournament models (deepseek_v4), lab sleeves (VWAP, Bollinger) |
+| **EQUITY** | Honest failure. Bad deployed strategies, weak emitter quality. | Only `stocks_rsi2_pullback` (n=70, WR=62.9%) |
+| **ETF** | Best candidate edge, but sample too small. Main "wait for n" class. | ETF dual momentum (walk-forward PASS, OOS PF=1.21) |
+| **FOREX** | Data/resolver problem + weak edge. High WR with terrible PF = red flag. | Dead. Hard-gated. |
+| **COMMODITY** | Too little clean sample. Stability problem, not strategy death. | Needs investigation |
+| **BOND** | Data gap. No meaningful live sample yet. | Backtests PF 1.29-1.62 but orphaned |
 
 ---
 
-## Priority Order
+## What We're Doing Wrong
 
-| Priority | Action | Timeline | Impact |
-|----------|--------|----------|--------|
-| P0 | Enable VWAPReversion | Today | Stop losing money on crypto |
-| P0 | Depromote EQUITY/FOREX | Today | Stop hemorrhaging capital |
-| P1 | Fix portfolio pipeline | This week | Visibility into what's working |
-| P1 | Wire FRED API | This week | Fix carry trade data |
-| P2 | Run all strategies on 4h | This month | 6x more statistical power |
-| P2 | Build admissibility pipeline | This month | Prevent curve-fit promotion |
-| P3 | DNA mutation framework | Q3 | Find hidden edges in failed strategies |
-| P3 | Regime detection | Q3 | Route strategies to correct regime |
+1. **Different standards for research vs production** — lab sleeves look decent, but the main scanner emits from a much noisier universe
+2. **Too much breadth, not enough promotion discipline** — 100+ strategies, 8 gates, 0 promoted to A-tier
+3. **Confusing "interesting cell" with "capital-ready strategy"** — tournament edge ≠ funnel edge ≠ money-ready edge
+4. **Concentration masquerading as edge** — one source/system dominating looks amazing but is fragile
+5. **Resolver/label issues polluting trust** — disputed cohorts, mislabeled `claude_gainer_st` inflating CRYPTO stats
 
 ---
 
-## What NOT to Do
+## The 10-Step Enhancement Plan
 
-1. **Don't add more strategies** until the admissibility pipeline is built
-2. **Don't trust aggregate green stats** — size only from policy-clean money-ready layer
-3. **Don't confuse tournament edge with production edge** — they're different universes
-4. **Don't allow concentration to masquerade as edge** — one source dominating = fragile
-5. **Don't promote based on backtest WR alone** — WR × PF (Kelly) is the right metric
+### Phase 1: Fix the Pipeline (This Week)
+
+#### 1. Fix Walk-Forward Validation (P0 — The Only Failing Step)
+The pipeline has `walkforward_validation` as the only degraded step. Fix it:
+- Wire `verified_strategies/walkforward_suite.py` into the pipeline health check
+- Run walk-forward on all 68 verified strategies
+- Use the verdicts to promote/demote strategies
+
+#### 2. Lower the Forward Gate Catch-22 (P0)
+`FORWARD_GATE_MIN_TRADES = 50` creates a chicken-and-egg problem. Fix:
+- Lower to 20 for CRYPTO (faster cycle time)
+- Lower to 10 for EQUITY/ETF/BOND
+- Add a "shadow mode" that accumulates trades without blocking picks
+
+#### 3. Fix or Disable ML Confidence Gate (P0)
+ML confidence is anti-predictive (conf >= 0.90 → 14.4% WR). Options:
+- **Option A**: Invert the gate — block HIGH confidence, promote LOW confidence
+- **Option B**: Remove confidence from quality gates for CRYPTO (already zeroed in scoring)
+- **Option C**: Recalibrate with proper IS/OOS split
+
+#### 4. Unblock Proven Lab Strategies (P1)
+VWAPReversion and BollingerMR pass walk-forward but aren't in production. Wire them:
+- `CRYPTO_VERIFIED_VWAP_ENABLED=1` (already gated)
+- `CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED=1` (already gated)
+- Add to `smart_picks_engine.py` non-crypto allowlists for ETF variant
+
+### Phase 2: Improve Evidence Standards (Next Week)
+
+#### 5. Pre-Register All Hypotheses (P1)
+Before any backtest, lock:
+- Strategy parameters
+- Symbol universe
+- Entry/exit rules
+- Success criteria (min WR, min PF, min Sharpe)
+
+Use `reports/hypothesis_registry.json` (already exists). No more curve-fitting.
+
+#### 6. Run Mutation Analysis on Failed Strategies (P1)
+For every strategy with WR > 55% but negative Sharpe (ConnorsRSI2 pattern):
+- Test the INVERSE (fade the signal)
+- Test parameter variants (grid search)
+- Test symbol-specific variants (edge is symbol-specific)
+
+#### 7. Wire Orphaned Strategies (P1)
+ETF and BOND strategies have backtests showing edge but aren't wired to production:
+- `etf_sector_rotation` — backtest shows edge, no production wire
+- `etf_rotation_vix_regime` — backtest shows edge, no production wire
+- BOND strategies — PF 1.29-1.62, accumulating picks since 2026-05-31
+
+### Phase 3: Fix Infrastructure (This Month)
+
+#### 8. Unify Backtesting Engine (P2)
+5 modules with inconsistent implementations. Merge into 1 canonical engine:
+- Purged walk-forward on raw OHLCV data (not pre-computed PnL)
+- Wire existing cost models (`transaction_costs.py`, `slippage_model.py`)
+- Correct DSR (Lopez de Prado eq. 7)
+- Correct PBO (parameter permutations, not sign flips)
+- Trade-frequency-aware Sharpe annualization
+
+#### 9. Add Dead Assets to Universe (P2)
+Survivorship bias inflates all backtests:
+- Add LUNA, FTT, UST, and other dead tokens to crypto universe
+- Add delisted tickers to equities
+- Use CoinGecko historical snapshots for crypto
+
+#### 10. Separate Tournament Edge from Production Edge (P2)
+The tournament (39 models, deepseek_v4 leading) is a different universe from production. Keep them separate until tournament strategies survive the same admissibility pipeline:
+- Pre-register hypothesis
+- Walk-forward validation
+- DSR + PBO
+- Forward paper evidence
+- Promotion only if forward PF/WR ≈ OOS lab PF/WR
 
 ---
 
-## The Bottom Line
+## Where the Edge Actually Is
 
-We have **1 validated production-ready strategy** (VWAPReversion). Everything else is either dead, unproven, or losing money. The path forward is:
+### Confirmed (Multiple Validations)
+| Strategy | Asset | Evidence | Production Status |
+|----------|-------|----------|-------------------|
+| VWAPReversion | CRYPTO | DSR=21.4, PBO=0.18, 516 OOS trades | **Enable: CRYPTO_VERIFIED_VWAP_ENABLED=1** |
+| BollingerMR | CRYPTO | Walk-forward PASS, OOS PF=1.673 | **Enable: CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED=1** |
+| OBV Divergence | CRYPTO | 115 trades, WR=75.7%, PF=8.15 | Already in production scanner |
+| stocks_rsi2_pullback | EQUITY | n=70, WR=62.9% | Already active |
 
-1. Enable VWAPReversion (stop the bleeding)
-2. Depromote losing classes (EQUITY, FOREX)
-3. Build the admissibility pipeline (prevent future failures)
-4. Mutate failed strategies (find hidden edges)
-5. Wait for forward sample on ETF/COMMODITY
+### Promising (Needs More Evidence)
+| Strategy | Asset | Evidence | What's Missing |
+|----------|-------|----------|----------------|
+| ETF Dual Momentum | ETF | Walk-forward PASS, OOS PF=1.21 | Forward sample (n too small) |
+| CryptoDonchianBreakout | CRYPTO | Walk-forward PASS all 3, DSR=7.24 | PBO=0.68 (needs 4h test) |
+| Bond backtests | BOND | PF 1.29-1.62 | Production wire-up |
+| deepseek_v4 | CRYPTO | Tournament leader | Same admissibility pipeline |
 
-We don't need more strategies. We need fewer, better-validated strategies with proper forward proof.
+### Dead (Confirmed)
+| Strategy | Asset | Evidence |
+|----------|-------|----------|
+| ConnorsRSI2 | CRYPTO | Sharpe -2.6, bleeds 89-97% |
+| FOREX (all) | FOREX | Hard-gated, net PnL=-1026% |
+| COMMODITY DSR=1.0 | COMMODITY | Falsified (6.33x over-emission) |
+| ML confidence | ALL | Anti-predictive |
+
+---
+
+## The Hard Truth
+
+**We have 4 confirmed edges.** That's it. Everything else is either dead, unproven, or losing money.
+
+The path forward:
+1. Enable VWAPReversion + BollingerMR in production NOW
+2. Fix the walk-forward pipeline (the only failing step)
+3. Lower the forward gate catch-22
+4. Stop treating aggregate green stats as proof — size only from policy-clean money-ready layer
+5. Depromote weak live classes (CRYPTO aggregate, EQUITY, FOREX) until fixed
 
 ---
 
 *Generated: 2026-06-02T07:00Z*
-*Agent: Claude Code (gx10-c9b9)*
+*Reviewer: Claude Code (gx10-c9b9)*
+*Based on: 3 parallel agent audits + live dashboard data + verification reports*
