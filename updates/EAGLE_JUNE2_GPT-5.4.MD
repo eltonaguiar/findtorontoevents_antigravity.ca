@@ -154,6 +154,71 @@ Require a forward-paper hurdle before promotion:
 - scale only after live performance remains within acceptable drift bounds
 - depromote quickly when live performance diverges from lab expectations
 
+### Example standardized validation pipeline
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class ValidationResult:
+    hypothesis_id: str
+    asset_class: str
+    oos_pf: float
+    oos_wr: float
+    dsr: float
+    pbo: float
+    forward_n: int
+    promote: bool
+
+
+def run_validation_pipeline(strategy, bars, cost_model, hypothesis_id, asset_class):
+    folds = build_purged_embargoed_walk_forward(
+        bars,
+        train_days=180,
+        test_days=30,
+        purge_days=30,
+        embargo_days=10,
+    )
+    fold_results = []
+    for fold in folds:
+        signal_df = strategy.generate_signals(fold.train, fold.test)
+        net_df = apply_asset_class_costs(signal_df, cost_model, asset_class)
+        fold_results.append(score_fold(net_df))
+
+    summary = summarize_oos(fold_results)
+    dsr = compute_deflated_sharpe(summary.returns)
+    pbo = compute_probability_of_backtest_overfitting(fold_results)
+    forward = load_forward_paper_stats(hypothesis_id)
+    promote = (
+        summary.pf >= 1.50
+        and summary.win_rate >= 0.55
+        and dsr >= 0.95
+        and pbo <= 0.55
+        and forward.n_closed >= 50
+        and forward.pf >= 1.30
+        and abs(forward.pf - summary.pf) <= 0.20
+    )
+    return ValidationResult(
+        hypothesis_id=hypothesis_id,
+        asset_class=asset_class,
+        oos_pf=summary.pf,
+        oos_wr=summary.win_rate,
+        dsr=dsr,
+        pbo=pbo,
+        forward_n=forward.n_closed,
+        promote=promote,
+    )
+```
+
+### Minimal implementation sequence
+
+1. Register the hypothesis in git before the first run.
+2. Build folds with purge and embargo sized to the holding period.
+3. Apply per-class costs before scoring PF/WR.
+4. Compute DSR/PBO on the same OOS fold set.
+5. Compare forward-paper drift against the lab OOS baseline.
+6. Promote only when both the statistical gate and the forward gate pass.
+
 ---
 
 ## 6. Mutation, inversion, or waiting?
@@ -225,7 +290,146 @@ That generic fallback hid the real causes:
 
 ---
 
-## 9. Files changed
+## 9. Real-time monitoring metrics and thresholds
+
+### 9.1 Concentration
+
+Use both simple and exposure-weighted concentration metrics:
+
+| Metric | Definition | Warning | Hard gate |
+| --- | --- | --- | --- |
+| **HHI by source** | Sum of squared source weights in active picks | `> 0.18` | `> 0.25` |
+| **HHI by strategy** | Sum of squared strategy weights in active picks | `> 0.15` | `> 0.22` |
+| **Top-1 source share** | Largest single source share | `> 35%` | `> 50%` |
+| **Top-3 share** | Sum of top 3 source shares | `> 70%` | `> 85%` |
+| **Single-symbol gross exposure** | Largest symbol gross exposure share | `> 8%` | `> 12%` |
+
+Example monitoring query shape:
+
+```python
+def hhi(weights):
+    return sum(w * w for w in weights if w > 0)
+
+
+def compute_source_concentration(active_positions):
+    gross = sum(abs(p["weight"]) for p in active_positions) or 1.0
+    by_source = {}
+    for pos in active_positions:
+        by_source[pos["source_system"]] = by_source.get(pos["source_system"], 0.0) + abs(pos["weight"]) / gross
+    return {
+        "source_hhi": hhi(by_source.values()),
+        "top1_share": max(by_source.values(), default=0.0),
+        "top3_share": sum(sorted(by_source.values(), reverse=True)[:3]),
+    }
+```
+
+### 9.2 Resolver dispute rate
+
+Track dispute rate at both the cohort and asset-class level:
+
+| Metric | Definition | Warning | Hard gate |
+| --- | --- | --- | --- |
+| **Dispute rate** | `disputed_resolutions / closed_picks` | `> 1%` | `> 2%` |
+| **Zero-PnL terminal rate** | closed picks with terminal status and `pnl_pct = 0` | `> 3%` | `> 5%` |
+| **Duplicate timestamp rate** | duplicate `(symbol, source, emitted_at)` groups / raw picks | `> 0.5%` | `> 1%` |
+| **TIME_EXIT skew** | `% of closes by TIME_EXIT with PF collapse` | monitor | hard gate if coupled with PF `< 0.7` |
+
+Example alert logic:
+
+```python
+def resolver_health(closed_rows):
+    total = max(len(closed_rows), 1)
+    disputes = sum(1 for r in closed_rows if r.get("resolver_disputed"))
+    zero_pnl = sum(1 for r in closed_rows if r.get("terminal") and abs(float(r.get("pnl_pct", 0.0))) < 1e-9)
+    return {
+        "dispute_rate": disputes / total,
+        "zero_pnl_terminal_rate": zero_pnl / total,
+        "healthy": disputes / total <= 0.01 and zero_pnl / total <= 0.03,
+    }
+```
+
+### 9.3 Operating policy
+
+1. Warning threshold: flag the dashboard cell amber and block new promotions in that cohort.
+2. Hard-gate threshold: freeze sizing increases and remove the cohort from any "money-ready" narrative.
+3. Three consecutive healthy daily reads are required before re-enabling promotions.
+
+---
+
+## 10. Mutation testing framework
+
+Mutation should be a disciplined search around a plausible sleeve, not a random parameter sweep.
+
+### 10.1 Candidate selection
+
+Only mutate sleeves that satisfy all three:
+
+1. coherent economic story
+2. at least one OOS or forward slice with PF near viability
+3. failure mode is diagnosable (cost sensitivity, regime mismatch, concentration, timing)
+
+### 10.2 Mutation axes
+
+| Axis | Examples |
+| --- | --- |
+| **Entry logic** | tighter signal threshold, confirmation filter, alternate breakout lookback |
+| **Exit logic** | ATR stop, time-stop band, partial take-profit, trailing stop |
+| **Regime filter** | trend filter, vol filter, macro regime allowlist |
+| **Universe filter** | liquidity floor, spread cap, session/time-of-day filter |
+| **Position sizing** | capped Kelly fraction, volatility target, regime position scalar |
+
+### 10.3 Framework
+
+```python
+def mutate_strategy(base_config):
+    for threshold in [0.8, 1.0, 1.2]:
+        for atr_stop in [1.5, 2.0, 2.5]:
+            for regime_gate in ["off", "trend_only", "trend_plus_vol"]:
+                yield {
+                    **base_config,
+                    "signal_threshold": threshold,
+                    "atr_stop": atr_stop,
+                    "regime_gate": regime_gate,
+                }
+
+
+def score_mutations(base_strategy, bars, cost_model, hypothesis_id, asset_class):
+    results = []
+    for config in mutate_strategy(base_strategy.config):
+        candidate = base_strategy.with_config(config)
+        result = run_validation_pipeline(
+            candidate,
+            bars=bars,
+            cost_model=cost_model,
+            hypothesis_id=hypothesis_id,
+            asset_class=asset_class,
+        )
+        if result.oos_pf > 1.0:
+            results.append((config, result))
+    return sorted(results, key=lambda item: (item[1].promote, item[1].oos_pf), reverse=True)
+```
+
+### 10.4 Tooling recommendation
+
+1. **Core research:** Python + pandas/numpy for event alignment and feature generation.
+2. **Optimization control:** Optuna for constrained search spaces, not unconstrained brute force.
+3. **Validation stats:** custom wrappers around DSR/PBO/SPA calculations so every run emits the same schema.
+4. **Experiment tracking:** MLflow or a lightweight sqlite/jsonl registry keyed by hypothesis id.
+5. **Promotion audit trail:** write every mutation result to a single comparable table/json so losers are not forgotten and re-tested as "new."
+
+### 10.5 Acceptance rule
+
+Promote a mutation candidate only if:
+
+- OOS PF improves by at least `0.10`
+- DSR does not degrade
+- forward PF drift stays within `0.20`
+- concentration does not worsen past the warning threshold
+- the mutation still has a coherent thesis you can explain in one sentence
+
+---
+
+## 11. Files changed
 
 - `audit_dashboard/pf.html`
 - `audit_dashboard/ai-tournament.html`
@@ -233,7 +437,7 @@ That generic fallback hid the real causes:
 
 ---
 
-## 10. Verification
+## 12. Verification
 
 - Re-read the PF page fetch path and empty-state flow after the patch.
 - Rechecked the live PF roster and the example `deepseek_v4__aggressive` detail export.
