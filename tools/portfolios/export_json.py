@@ -115,6 +115,36 @@ def build_payloads(conn) -> tuple[dict, dict]:
                 "ORDER BY status, entry_date DESC", (pid,))
             positions = cur.fetchall()
 
+        # ── Mark-to-market open positions with live prices ──
+        from tools.portfolios.engine import mark_position
+        from tools.portfolios.prices import get_close
+
+        for p in positions:
+            entry = _jsonable(p.get("entry_price")) or 0.0
+            p["entry_price"] = entry
+            p["tp_price"] = _jsonable(p.get("tp_price"))
+            p["sl_price"] = _jsonable(p.get("sl_price"))
+            p["weight_pct"] = _jsonable(p.get("weight_at_entry"))  # pf.html reads weight_pct
+
+            if p.get("status") != "open":
+                continue
+
+            sym = p.get("symbol", "")
+            ac = p.get("asset_class", "CRYPTO")
+            current = get_close(sym, ac)
+            if current is None or current <= 0:
+                continue
+
+            qty = float(p.get("qty") or 0.0)
+            if qty <= 0:
+                continue
+
+            marked = mark_position(p, current)
+            p["current_price"] = current
+            p["unrealized_pnl_pct"] = marked.get("unrealized_pnl_pct", 0.0)
+            p["unrealized_pnl_usd"] = marked.get("unrealized_pnl_usd", 0.0)
+            p["market_value_usd"] = marked.get("market_value_usd", 0.0)
+
         latest_nav = navs[-1] if navs else None
         metrics = _row(metrics_row) if metrics_row else {}
         if "exposure_by_class" in metrics:
