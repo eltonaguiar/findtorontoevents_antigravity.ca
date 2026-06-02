@@ -293,14 +293,21 @@ class AdmissibilityPipeline:
         holdout_pnls = pnls[val_end:]
         
         # Compute metrics
-        train_wins = np.sum(train_pnls > 0)
-        train_losses = np.sum(train_pnls < 0)
-        train_pf = train_wins / train_losses if train_losses > 0 else 999
+        # PF = gross profit / gross loss (sum of pnl), NOT win/loss counts.
+        # The count-ratio form inflated PF for many-tiny-wins strategies — the
+        # same P0 bug fixed in mutation_framework.compute_pf (PR #464).
+        train_wins = int(np.sum(train_pnls > 0))
+        train_losses = int(np.sum(train_pnls < 0))
+        train_gp = float(np.sum(train_pnls[train_pnls > 0]))
+        train_gl = float(-np.sum(train_pnls[train_pnls < 0]))
+        train_pf = train_gp / train_gl if train_gl > 0 else (999 if train_gp > 0 else 0)
         train_wr = train_wins / len(train_pnls) if len(train_pnls) > 0 else 0
-        
-        holdout_wins = np.sum(holdout_pnls > 0)
-        holdout_losses = np.sum(holdout_pnls < 0)
-        holdout_pf = holdout_wins / holdout_losses if holdout_losses > 0 else 999
+
+        holdout_wins = int(np.sum(holdout_pnls > 0))
+        holdout_losses = int(np.sum(holdout_pnls < 0))
+        holdout_gp = float(np.sum(holdout_pnls[holdout_pnls > 0]))
+        holdout_gl = float(-np.sum(holdout_pnls[holdout_pnls < 0]))
+        holdout_pf = holdout_gp / holdout_gl if holdout_gl > 0 else (999 if holdout_gp > 0 else 0)
         holdout_wr = holdout_wins / len(holdout_pnls) if len(holdout_pnls) > 0 else 0
         
         # Decay
@@ -468,9 +475,10 @@ class AdmissibilityPipeline:
         regimes_profitable = []
         
         for regime, pnls in regime_pnls.items():
-            wins = sum(1 for p in pnls if p > 0)
-            losses = sum(1 for p in pnls if p < 0)
-            pf = wins / losses if losses > 0 else 999
+            # PF = gross profit / gross loss (not win/loss counts) — see PR #464.
+            gross_profit = sum(p for p in pnls if p > 0)
+            gross_loss = -sum(p for p in pnls if p < 0)
+            pf = gross_profit / gross_loss if gross_loss > 0 else (999 if gross_profit > 0 else 0)
             regime_pf[regime] = pf
             if pf >= 1.0:
                 regimes_profitable.append(regime)
