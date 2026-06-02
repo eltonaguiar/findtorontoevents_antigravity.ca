@@ -1,0 +1,50 @@
+# Daily ETF dual-momentum paper pilot + Sunday walk-forward refresh.
+# Does not touch audit dashboard generators or production scanner flags.
+name: Verified pilot daily
+
+on:
+  schedule:
+    - cron: "15 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install --user pandas numpy yfinance requests
+      - name: Run verified pilots
+        env:
+          VERIFY_SKIP_FRED: "1"
+          VERIFIED_PILOT_WALKFORWARD: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+        run: python3 tools/run_verified_pilots_daily.py
+      - name: Strategy admissibility report
+        run: python3 tools/strategy_admissibility_report.py --write
+      - name: Upload pilot artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-pilot-${{ github.run_id }}
+          path: |
+            verified_strategies/paper_pilot/etf_dual_momentum_paper_log.jsonl
+            verified_strategies/paper_pilot/etf_dual_momentum_state.json
+            verified_strategies/paper_pilot/faber_taa_paper_log.jsonl
+            verified_strategies/paper_pilot/faber_taa_positions.json
+            verified_strategies/paper_pilot/crypto_wf_hyro_paper_log.jsonl
+            verified_strategies/paper_pilot/crypto_wf_hyro_state.json
+            reports/verified_pilots_daily_latest.json
+            reports/pilot_forward_summary.json
+            reports/pilot_forward_dashboard.json
+            reports/crypto_wf_forward_stats_latest.json
+            reports/faber_forward_stats_latest.json
+            reports/etf_forward_stats_latest.json
+            audit_dashboard/data/strategy_admissibility.json
+            audit_dashboard/data/verified_edge_status.json
+            verified_strategies/paper_pilot/etf_forward_stats.json
+            verified_strategies/paper_pilot/etf_dual_momentum_closed.json
+            verified_strategies/WALKFORWARD_REPORT.json
+          if-no-files-found: ignore

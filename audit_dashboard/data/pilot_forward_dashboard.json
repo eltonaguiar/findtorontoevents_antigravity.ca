@@ -1,0 +1,129 @@
+{
+  "timestamp": "2026-06-02T06:56:22.578729+00:00",
+  "forward_n_target": 100,
+  "any_promotion_ready": false,
+  "sleeves": {
+    "etf_dual_momentum": {
+      "lab_wf": {
+        "verdict": "PASS",
+        "oos_pf": 1.212,
+        "oos_wr": 0.4688,
+        "oos_n": 32,
+        "timestamp": "2026-06-02T06:03:45.603409+00:00"
+      },
+      "forward": {
+        "source": "paper_pilot_virtual",
+        "n_closed": 0,
+        "wr": 0.0,
+        "pf": 0.0,
+        "promotion_ready": false,
+        "gates": [
+          "n<100"
+        ],
+        "open_position": {
+          "symbol": "XLE",
+          "direction": "BUY",
+          "entry_price": 57.29999923706055,
+          "entry_date": "2026-06-02",
+          "strategy": "etf_verified_dual_momentum",
+          "status": "OPEN",
+          "r12_1m": 0.4968,
+          "last_seen": "2026-06-02"
+        },
+        "signal": "BUY",
+        "symbol": "XLE"
+      },
+      "recommend_enable": false,
+      "flag": "ETF_VERIFIED_DUAL_MOMENTUM_ENABLED=1"
+    },
+    "crypto_wf_hyro": {
+      "lab_wf": {
+        "timestamp": "2026-06-02T06:03:45.603409+00:00",
+        "vwap_reversion": {
+          "verdict": "PASS",
+          "oos_pf": 1.323,
+          "oos_sharpe": 3.102,
+          "oos_n": 516
+        },
+        "bollinger_mr": {
+          "verdict": "PASS",
+          "oos_pf": 1.673,
+          "oos_sharpe": 1.376,
+          "oos_n": 38
+        }
+      },
+      "forward": {
+        "source": "paper_pilot_virtual",
+        "n_closed": 0,
+        "wr": 0.0,
+        "pf": 0.0,
+        "promotion_ready": false,
+        "gates": [
+          "n<100"
+        ],
+        "open_count": 5,
+        "forward_by_strategy": {
+          "crypto_verified_vwap": {
+            "n_closed": 0,
+            "wins": 0,
+            "losses": 0,
+            "wr": 0.0,
+            "pf": 0.0,
+            "mean_pnl_pct": 0.0,
+            "promotion_ready": false,
+            "gates": [
+              "n<100"
+            ],
+            "target_n": 100
+          },
+          "crypto_verified_bollinger_mr": {
+            "n_closed": 0,
+            "wins": 0,
+            "losses": 0,
+            "wr": 0.0,
+            "pf": 0.0,
+            "mean_pnl_pct": 0.0,
+            "promotion_ready": false,
+            "gates": [
+              "n<100"
+            ],
+            "target_n": 100
+          }
+        }
+      },
+      "recommend_vwap": false,
+      "recommend_bollinger": false,
+      "flags": {
+        "vwap": "CRYPTO_VERIFIED_VWAP_ENABLED=1",
+        "bollinger": "CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED=1"
+      }
+    },
+    "faber_taa": {
+      "timestamp": "2026-06-02T06:56:22.573211+00:00",
+      "strategy": "faber_taa_paper_pilot",
+      "n_closed": 0,
+      "wr": 0.0,
+      "pf": 0.0,
+      "open_count": 5,
+      "portfolio_value": 98904.29,
+      "promotion_ready": false,
+      "gates": [
+        "n=0<100",
+        "PF=0.00<1.5",
+        "WR=0.0%<50%"
+      ],
+      "open_symbols": [
+        "SPY",
+        "QQQ",
+        "IWM",
+        "EFA",
+        "GLD"
+      ]
+    }
+  },
+  "money_ready_blockers": [
+    "All sleeves require forward virtual n>=100, PF>=1.5, WR>=50%",
+    "Lab walk-forward PASS required for crypto/ETF scanner flags",
+    "DSR/PBO shadow tier \u2014 no real-money sizing until forward track validates"
+  ]
+}

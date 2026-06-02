@@ -134,10 +134,12 @@ function safeKey(k){ return String(k || '').replace(/[^A-Za-z0-9_.-]/g, '_'); }
 function getKeyParam(){
   try {
     var u = new URL(window.location.href);
-    return u.searchParams.get('key') || '';
+    var raw = u.searchParams.get('key') || '';
+    // Strip invisible Unicode pasted from chat/IDE — breaks pf_portfolio JSON fetch
+    return raw.replace(/[\u200B-\u200D\uFEFF\uE000-\uF8FF]/g, '').trim();
   } catch (e) {
     var m = (window.location.search || '').match(/[?&]key=([^&]+)/);
-    return m ? decodeURIComponent(m[1]) : '';
+    return m ? decodeURIComponent(m[1]).replace(/[\u200B-\u200D\uFEFF\uE000-\uF8FF]/g, '').trim() : '';
   }
 }
 
