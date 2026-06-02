@@ -4181,17 +4181,101 @@ Pre-register → backtest (purged-embargoed WF + full cost model) → check PF �
 
 ---
 
-## 2026-06-02 (session 3) — Swarm re-execution log
+## 2026-06-02 EAGLE2 Initiative — Strategy Audit & AI Swarm Brainstorm
 
-**User re-request:** append prompt + GitHub sync + 72h EAGLE swarm + LiteLLM brainstorm + DB (`ejaguiar1_stocks` / `ejaguiar1_backtests`).
+### Objective
+Save the below prompt to DAILY_IDEAS.MD (appending it) to main branch.
 
-**Executed:**
-- `git pull --rebase origin main` — synced
-- LiteLLM `ollama-cloud-large`, `ollama-cloud`, `ollama-cloud-local` — all **OK** via `http://localhost:4000/v1`
-- `python3 tools/eagle_swarm_synthesis.py` — **20** EAGLE files (72h) → `reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md`
+Sync our project with github, then review all *EAGLE*.MD and run each .MD over the past 72 hours, into an agent swarm for review. Then collectively have them summarized with key insights and strategies, and compare against our current state of strategies/back testing methodologies, stats. Consider methods such as bonneferi, but leverage our AIs with the API keys.
 
-**Canonical answers (unchanged from synthesis):**
-- **Profit surface:** ai-tournament (paper) > pick_funnel (discovery) > /audit production (no money-ready)
-- **Best picks now:** BTC/ETH SHORT (tournament), EEM/IWM/GLD + dual-momentum ETF (shadow), BAC/JPM/MSFT/NVDA (paper/monitor only)
-- **Bonferroni:** α_adj ≈ 0.05/N_emitters; use DSR/PBO for promotion not raw funnel cells
-- **Forward weeks before scale:** ≥8 shadow, two 4-week windows, n≥30–50 per sleeve
+The main thing is we are trying to get profitable picks by asset class, and identify where on our website/project has the most profitable picks.
+Most likely findtorontoevents.ca/audit or https://findtorontoevents.ca/audit/ai_leaderboard.html https://findtorontoevents.ca/audit/ai-tournament.html https://findtorontoevents.ca/audit/pick_funnel.html
+
+see also our research here:
+https://findtorontoevents.ca/audit/research_index.html
+
+Then leverage all working API keys/ models and create a brainstorming of strategies, backtesting, have them feed in against our strategies, the strategies should all be documented by asset class in our database ejaguiar1_stocks, or ejaguiar1_backtests identify where.
+DB passes are in the .txt (/home/eaguiar2015/dbpasses.txt)
+
+review /home/eaguiar2015/dbpasses.txt and feel free to leverage our Lite LLM Server
+http://localhost:4000/v1 in 20 minutes, test the new modes
+ollama-cloud-large
+ollama-cloud
+ollama-cloud-local
+
+run some testing of the new modes to assist with further brainstorms
+
+### Executive Summary
+Core Issue: The production‑ready audit book lacks deployable edge. Research‑grade edge exists only in isolated tournament or lab sleeves, not in the live, policy‑clean layer.
+Root Causes: Mismatch between research and production standards, over‑broad emitter set, concentration artifacts, and resolver/label contamination.
+Goal: Convert verified research edge into stable, capital‑ready strategies while tightening data hygiene and validation pipelines.
+
+### Current State (as of 2026‑06‑02)
+| Asset Class | Live PF/WR | Research Edge | Primary Pain Point |
+|---|---|---|---|
+| CRYPTO | < 0.5 PF, high WR | Sub‑cohort edge in tournament models | Selection/gating mismatch, concentration |
+| EQUITY | Negative PF, low WR | None | Weak emitters / failed holdout |
+| ETF | Small sample, modest PF | Dual‑momentum promising | Insufficient forward data |
+| FOREX | High WR, terrible PF | Minor edge | Data/resolver errors, mislabeled exits |
+| COMMODITY | Too few clean samples | N/A | Sample size / stability |
+| FUTURES | Concentration‑driven spikes | N/A | Artifact risk |
+| BOND | No live sample | N/A | Data gap |
+
+Portfolio Health: 81 portfolios (66 active). The deepseek_v4__aggressive portfolio has 11 open names, confirming the issue is not empty but mis‑aligned.
+
+### Key Diagnostic Findings
+- Inconsistent Validation Standards – Lab uses generous splits; production demands policy‑clean, walk‑forward proof.
+- Emitter Over‑Breadth – Too many weak emitters dilute real edge.
+- Concentration Artifacts – Single source dominance inflates surface stats.
+- Resolver/Label Pollution – Disputed cohorts and TIME_EXIT‑type mislabels distort PF/WR.
+- Insufficient Forward Sampling – ETF and crypto sub‑sleeves lack enough forward data for robust promotion.
+
+### Enhancement Blueprint
+#### Data & Resolver Hygiene
+- Audit and purge disputed resolver entries (CRYPTO, FOREX) — Target: < 1% disputed tags
+- Implement source‑provenance tagging for every price/label record — Target: 100% records have source_id
+- Deploy automated duplicate detection on pf_portfolios.json — Target: Zero duplicate portfolio IDs
+
+#### Validation Pipeline Standardization
+- Pre‑registration: Hypothesis logged before backtest
+- Purged‑Embargoed Walk‑Forward: ≥ 30 day purge + 10 day embargo per fold
+- Cost/Slippage Model: Asset‑class‑specific cost curves in every run
+- Multiple‑Testing Correction: DSR / PBO / SPA corrections applied
+- Block Bootstrap: Preserve temporal dependence (1000 resamples)
+- Regime Robustness: Edge persists in ≥ 3 of 4 regimes
+
+#### Targeted Edge Development
+- ETF Dual‑Momentum: Best lab edge, low concentration → Build forward walk‑forward, shadow‑size 0.2%
+- Crypto VWAP/Bollinger Walk‑Forward: Promising sub‑cohort edge → Resolve resolver issues, mutation tests
+- DeepSeek_v4 Tournament Portfolio: Highest tournament PF → Isolate top sleeves, production validation
+- GPT‑4o & Grok‑3 Lab Sleeves: Consistent paper edge → Regime‑robustness checks
+
+### Overall Goals
+1. More strategies per asset class, better backtesting methodology for each asset class, faster path to profitable strategies
+2. More backtests per asset class
+3. More research and analysis on hidden edge within project
+4. Research on statistical edge — do strategies pass monte carlo, bonferroni correction, statistical methods for "real money" worthy picks?
+5. Research on prediction system statistical measures for "real money ready"
+6. Statistical measures that separate "real‑money‑ready" signals from research‑only artefacts
+
+### Statistical Measures for Production Readiness
+| Measure | Threshold |
+|---|---|
+| Annualized Sharpe Ratio | ≥ 1.0 (Sharpe) or ≥ 0.8 (IR) after slippage |
+| Profit‑Factor (PF) | ≥ 1.5 (bare minimum) → ≥ 2.0 (ideal) |
+| Win‑Rate (WR) | 45‑55% acceptable if PF strong |
+| Maximum Drawdown (MDD) | ≤ 20% (monthly) or Calmar ≥ 3.0 |
+| Turnover | ≤ 30%/yr equities/ETFs; ≤ 70%/yr crypto/FX |
+| Liquidity‑Adjusted Slippage | ≤ 5 bps large‑cap; ≤ 15 bps crypto/FX |
+| Regime‑Robustness Score | PF/Sharpe within ±10% across ≥ 3 of 4 regimes |
+| Multiple‑Testing (DSR/PBO/SPA) | Adjusted p‑value < 0.05 |
+| HHI Source Concentration | < 0.20 for aggregate portfolio |
+| OOS Decay | PF OOS ≥ 80% of IS PF; Sharpe OOS ≥ 70% of IS Sharpe |
+
+### Forward‑Testing Guidelines
+- Minimum 30‑50 distinct symbols per asset class
+- Duration ≥ 2× longest look‑back window
+- Start with ≤ 0.5% capital per strategy; monitor 4‑8 weeks
+- Live PF must stay within ±10% of back‑tested PF
+- Cover ≥ 3 distinct market regimes
+- Re-run block‑bootstrap on live‑paper P&L; 95% CI for PF should not cross 1.0
