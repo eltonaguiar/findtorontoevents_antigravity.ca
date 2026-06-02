@@ -195,6 +195,38 @@ _RETIRED_STRATEGIES = frozenset({
     # alpha_engine/dormant_winners_wrappers.py — that variant is NOT
     # affected by this block (exact-match is_blocked_strategy lookup).
     "keltner_bounce",
+    # 2026-06-02: mega_mutation retired after forward-edge audit + sign-coherence
+    # check found 141 rows with stored pnl_pct signs opposite to recomputed
+    # (entry/exit/direction). The reported "CRYPTO T2 edge" (forward PF 3.33,
+    # WR 65.4%, n=283) was a measurement artifact: after recomputing pnl from
+    # prices, true cohort is PF 0.67, WR 36.8%, avg pnl -0.94%.
+    # Evidence:
+    #   - reports/sign_coherence_2026-06-02.json (367 total flips, mega 141)
+    #   - audit_trail/sign_coherence_check.py (PR #431, read-only diagnostic)
+    # The strategy is emitter-only (alpha_engine/isolated_signal_integrator.py
+    # reads genome/data/mega_mutation_picks.json upstream). No backtest replay
+    # path exists, so the bug cannot be fixed at the strategy level — must
+    # be fixed at the genome -> trading_picks ingest path. Hard-retire until
+    # the upstream JSON ingest writes correctly-signed pnl_pct.
+    "mega_mutation",
+    # 2026-06-02: genome_mega_mutation is the production source_system the
+    # isolated_signal_integrator stamps onto the mega_mutation upstream JSON.
+    # Same root cause as the bare 'mega_mutation' tag — block both names so
+    # neither slip through is_blocked_strategy lookups.
+    "genome_mega_mutation",
+    # 2026-06-02: kimi_signal_tracking re-retired after sign-coherence check
+    # found 142 sign-flipped rows — the WORST OFFENDER in the 367-flip
+    # dataset (38.7% of all flips). Previously blocked then UNBLOCKED on
+    # 2026-05-16 (per audit_trail/quality_gates.py:1926 comment claiming
+    # "n=22, WR=18.2%, PF=0.20 (old)"), but the unblock did NOT address the
+    # sign-flip root cause — it just used the apparent post-fix WR as
+    # justification. With sign-flips, true PF is 0.48 / WR 22.9%, not the
+    # forward-reported PF 2.46 / WR 72.7%. No new emissions since 2026-03-29
+    # so this is defense-in-depth against accidental re-activation; the
+    # composite (kimi_signal_tracking, default) block at line 210 remains
+    # in force but only catches the FOREX-on-default-strategy combo. This
+    # entry catches the bare strategy name lookup.
+    "kimi_signal_tracking",
 })
 
 # Composite (system, strategy) pairs that are toxic only in a specific combo.
