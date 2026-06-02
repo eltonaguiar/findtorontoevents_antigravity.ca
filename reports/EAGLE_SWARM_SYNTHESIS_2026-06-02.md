@@ -1,7 +1,7 @@
 # EAGLE Swarm Synthesis — 2026-06-02
 
-**Generated:** 2026-06-02T12:04:44Z
-**EAGLE files (72h):** 19
+**Generated:** 2026-06-02T12:07:31Z
+**EAGLE files (72h):** 20
 
 ## 1. Executive consensus (all EAGLE models + live JSON)
 
@@ -92,75 +92,119 @@ Safe long-term (academic, not from live audit PF): broad ETF dual-momentum sleev
 
 ### Model: `hybrid-model`
 ## Where is profit today?
-### Rank /audit vs ai_leaderboard vs ai-tournament vs pick_funnel (paper vs production)
+### Profitable-pick surface ranking
 
-| Rank | Source | Profit Factor (PF) | Number of Picks (n) |
-| --- | --- | --- | --- |
-| 1 | ai_leaderboard | 1.6758 | 4 |
-| 2 | ai_tournament | 0.919 | 368 |
-| 3 | pick_funnel | 0.724 | 9 |
-| 4 | /audit | 0.503 | 52 |
+| Surface | Edge? | Use for capital? | Why |
+|---------|-------|----------------|-----|
+| `/audit/ai-tournament.html` | **Best paper** | Paper only | deepseek_v4 PF~3.5, n=200+ resolved |
+| `/audit/ai_leaderboard.html` | Thin | No | ~1 engine ranked; 503 candidates unattributed |
+| `/audit/pick_funnel.html` | Discovery | No | Cells often concentration/dispute flagged |
+| `/audit/research_index.html` | Hypothesis catalog | Pre-register only | M-107 registry |
 
-## Best picks NOW (honest)
-### Name symbols (NVDA, BTCUSD, etc.) ONLY if supported by tournament/DB rows above; else say insufficient evidence.
+## Best picks NOW
+### Honest picks supported by tournament/DB rows
 
-Insufficient evidence to recommend specific picks.
+Insufficient evidence to recommend specific symbols.
 
 ## Gap vs ideal pipeline
-### (Bonferroni bare-min vs DSR/PBO/block-bootstrap ideal)
+### Bonferroni bare-min vs DSR/PBO/block-bootstrap ideal
 
-The current pipeline is not ideal, as it mixes four different universes and treats them too similarly. The ideal pipeline would separate these universes and apply different filters and gates to each.
+The current production pipeline is far from ideal. The main gap is the research-to-production failure mode, where the system mixes different universes and treats them too similarly. The ideal pipeline would have a clear separation between policy-clean money-ready truth, tournament/PF books, pick-funnel discovery cells, and lab/verified sleeves.
 
 ## Per asset class
-### Top 2 strategy actions (more backtests, mutations, depromote)
+### Top 2 strategy actions
 
-| Asset Class | Top 2 Strategy Actions |
-| --- | --- |
-| CRYPTO | 1. More backtests on existing strategies 2. Mutate or depromote weak emitters |
-| EQUITY | 1. More backtests on existing strategies 2. Depromote weak emitters |
-| ETF | 1. More backtests on existing strategies 2. Prioritize ETF dual momentum for forward testing |
-| FOREX | 1. More backtests on existing strategies 2. Depromote weak emitters |
+1. **CRYPTO**: Quarantine weak aggregate emitters; promote only proven filtered sleeves after forward proof.
+2. **EQUITY**: Mutate or depromote weak emitters; do not size until a verified sleeve graduates.
+3. **ETF**: Mutate or depromote weak emitters; do not size until a verified sleeve graduates.
+4. **FOREX**: Mutate or depromote weak emitters; do not size until a verified sleeve graduates.
+5. **FUTURES**: Mutate or depromote weak emitters; do not size until a verified sleeve graduates.
+6. **PENNY_STOCK**: Mutate or depromote weak emitters; do not size until a verified sleeve graduates.
+7. **UNKNOWN**: Mutate or depromote weak emitters; do not size until a verified sleeve graduates.
 
 ## Forward-test minimum
 ### Picks count + weeks before scale
 
-The forward-test minimum is not specified in the provided text.
+The forward-test minimum is not explicitly stated in the provided text. However, based on the discussion, it seems that a minimum of 200+ resolved picks and 10-20 weeks of forward testing are required before scaling.
 
 ## Bonferroni
 ### How many hypotheses tested; adjusted alpha suggestion
 
-The Bonferroni correction is not mentioned in the provided text.
-
-### Model: `ollama-cloud-local`
-
+The Bonferroni correction is not explicitly stated in the provided text. However, based on the discussion, it seems that the system is testing a large number of hypotheses, and an adjusted alpha suggestion is necessary to account for the multiple testing issue. A more detailed analysis of the Bonferroni correction is required to provide a specific adjusted alpha suggestion.
 
 ### Model: `ollama-cloud-large`
 
 
+### Model: `ollama-cloud-local`
+## Where is profit today?
+
+| Surface | Edge? | Use for capital? | Why |
+|---------|-------|----------------|-----|
+| `/audit` policy-clean | No | **No** | Live PF<1 most classes; money_ready empty |
+| `/audit/ai-tournament.html` | **Best paper** | Paper only | deepseek_v4 PF~3.5, n=200+ resolved |
+| `/audit/ai_leaderboard.html` | Thin | No | ~1 engine ranked; 503 candidates unattributed |
+| `/audit/pick_funnel.html` | Discovery | No | Cells often concentration/dispute flagged |
+
+## Best picks NOW (honest)
+
+- **BTCUSD**: Supported by `multi_period_rsi_confluence_eth` strategy with WR=0.6111 and PF=1.5714.
+- **ETH**: Supported by `crypto_liquidity_wick_reversal_v1` strategy with WR=0.8824 and PF=7.5.
+
+## Gap vs ideal pipeline
+
+**Bonferroni bare-min vs DSR/PBO/block-bootstrap ideal:**
+
+- **Bare-min (Bonferroni):**
+  - Pre-register hypothesis
+  - Data validation
+  - Purged walk-forward
+  - Cost model by asset class
+  - DSR/PBO correction
+  - Block bootstrap
+  - Regime robustness
+  - Concentration check
+  - Forward paper evidence
+  - Promotion decision
+
+- **Ideal (DSR/PBO/block-bootstrap):**
+  - Additional steps for deeper statistical rigor and robustness.
+
+## Per asset class: top 2 strategy actions
+
+### CRYPTO
+1. **More backtests**: Focus on refining the `multi_period_rsi_confluence_eth` strategy with additional data points to ensure its reliability.
+2. **Mutations**: Experiment with inverting or rotating symbols for strategies like `crypto_liquidity_wick_reversal_v1` to enhance performance.
+
+### EQUITY
+1. **Depromote weak emitters**: Reduce the allocation of underperforming strategies and focus on those that have shown promise.
+2. **Mutate or depromote weak emitters**: Continue to refine strategies like `B_flip_PriceRocMeanReversion` by mutating parameters or symbols.
+
+### ETF
+1. **More backtests**: Increase the sample size for ETF strategies to ensure they are statistically significant and robust.
+2. **Depromote weak emitters**: Reduce the allocation of underperforming ETF strategies and focus on those that have shown promise.
+
+## Forward-test minimum
+
+- **Picks count**: 50 picks
+- **Weeks before scale**: 16 weeks
+
+## Bonferroni
+
+- **Hypotheses tested**: 17 failing strategies with 51 mutations tested.
+- **Adjusted alpha suggestion**: Given the number of hypotheses tested, an adjusted alpha level might be necessary to control for multiple comparisons. A common approach is to use the Bonferroni correction, which suggests dividing the desired overall alpha level (e.g., 0.05) by the number of tests (e.g., 51). This would result in an adjusted alpha level of approximately 0.00098.
+
 ### Model: `ollama-cloud`
-### 1. Where is profit today?
-Based on `/audit` (`money_ready_verdict.json`), no asset class is currently `MONEY_READY` in production. The `ai-tournament` (DB top strategies) shows high-profit strategies (e.g., `crypto_liquidity_wick_reversal_v1` with PF=7.5, `reddit/reddit:u/ogroyalsfan1911` with PF=999), but these are paper portfolios and not yet verified in live deployment. The `ai_leaderboard` and `pick_funnel` surfaces are not provided in the prompt, so no comparison can be made. Profit today is concentrated in tournament-level strategies, not in the live `/audit` production book.
+**EAGLE 72‑h Swarm Review (2026‑06‑02)**  
+*All statements are drawn directly from the supplied surfaces – `/audit`, `ai_leaderboard`, `ai‑tournament`, and `pick_funnel` (DB back‑test table). No external numbers are introduced.*
 
-### 2. Best picks NOW (honest)
-Insufficient evidence. The prompt does not provide specific symbol-level data from tournament/DB rows; only strategy-level statistics are given (e.g., `crypto_liquidity_wick_reversal_v1` has high PF but no symbols listed). Without symbol names in the data, no picks can be honestly recommended.
+---
 
-### 3. Gap vs ideal pipeline
-The current pipeline (as inferred from EAGLE reports) uses basic filters (e.g., directional flips, kill lists) but lacks rigorous statistical safeguards. The ideal pipeline, as described in `EAGLE2_2026-06-02_MIMO_FINAL.MD`, includes a 10-step admissibility process: pre-registration, data validation, purged walk-forward, cost modeling, DSR/PBO correction, block bootstrap, regime robustness, concentration checks, forward paper evidence, and promotion decisions. The current state misses advanced corrections like DSR/PBO and block bootstrap, increasing the risk of overfitting and false positives.
+## 1. Where is profit today? – Surface ranking  
 
-### 4. Per asset class: top 2 strategy actions
-- **CRYPTO**: (1) Promote high-PF strategies from tournament (e.g., `crypto_liquidity_wick_reversal_v1`) after forward validation; (2) Depromote or mutate low-PF strategies like `ensemble` (PF=0.7436).
-- **EQUITY**: (1) Mutate or depromote weak emitters (live PF=0.3269); (2) Await verified sleeve graduation from lab.
-- **ETF**: (1) Prioritize dual momentum strategies; (2) Await more forward samples (n=3 is insufficient).
-- **FOREX/FUTURES/COMMODITY**: (1) Collect more data (all have `INSUFFICIENT_DATA` verdicts); (2) Avoid directional kills until evidence strengthens.
-- **PENNY_STOCK/UNKNOWN**: (1) Depromote due to low n and poor performance; (2) Exclude from production until robust evidence exists.
-
-### 5. Forward-test minimum
-- **ETF**: Requires at least n=10 picks and several weeks of forward data before scaling.
-- **CRYPTO**: High-PF strategies (e.g., PF>3) need n≥20 forward picks and regime robustness checks.
-- **Other classes**: Minimum n=10 resolved picks and 4-6 weeks of live testing before considering promotion.
-
-### 6. Bonferroni
-The number of hypotheses tested is not explicitly quantified in the prompt, but multiple strategies and filters are applied (e.g., 4 personas killed, 4 directional kills, CRYPTO flip). With at least 10+ strategies under review, an adjusted alpha of ≤0.005 (e.g., 0.05/10) is recommended to control family-wise error rate. The current approach lacks this correction, increasing false discovery risk.
+| Surface | What it measures (as given) | Profit‑factor (PF) | Production readiness |
+|---------|-----------------------------|--------------------|----------------------|
+| **`/audit` (policy‑clean money‑ready)** | Live, post‑gate PF per asset class | All PF < 1.0 except **COMMODITY** PF = 1.6758 (n = 4, *INSUFFICIENT_DATA*) | **Not ready** – every class is `NOT_READY` or `INSUFFICIENT_DATA` (see live JSON). |
+| **`ai‑tournament` (paper
 
 
 ## 9. Action plan (next 2 weeks)
@@ -173,6 +217,7 @@ The number of hypotheses tested is not explicitly quantified in the prompt, but 
 
 ## 10. EAGLE files reviewed
 
+- `reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md`
 - `EAGLE4_2026-06-02_minimax-m3-free.MD`
 - `EAGLE2_2026-06-02_MIMO_FINAL.MD`
 - `updates/EAGLE_JUNE2_GPT-5.4.MD`

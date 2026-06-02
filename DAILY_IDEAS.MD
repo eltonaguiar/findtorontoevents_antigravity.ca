@@ -4178,3 +4178,20 @@ Picks: ≥ 30-50 distinct symbols/signal instances per asset class. Duration: �
 Pre-register → backtest (purged-embargoed WF + full cost model) → check PF ≥ 1.5, Sharpe ≥ 1.0, MDD ≤ 20%, HHI < 0.20, OOS decay ≤ 20% → if pass, shadow-size live-paper ≥ 30 symbols ≥ 8wk → monitor live PF/WR (≥ 0.9× backtest PF, ≤ 1.1× backtest Sharpe) → promote to real capital only after criteria hold for two consecutive 4-week windows + regime-robustness confirmed.
 
 **Follow-ups:** concrete backtesting template for ETF dual-momentum using ideal pipeline? · most common crypto data-resolver issues + how to systematically clean them? · how many live-paper forward-testing weeks before safe scale to full capital?
+
+---
+
+## 2026-06-02 (session 3) — Swarm re-execution log
+
+**User re-request:** append prompt + GitHub sync + 72h EAGLE swarm + LiteLLM brainstorm + DB (`ejaguiar1_stocks` / `ejaguiar1_backtests`).
+
+**Executed:**
+- `git pull --rebase origin main` — synced
+- LiteLLM `ollama-cloud-large`, `ollama-cloud`, `ollama-cloud-local` — all **OK** via `http://localhost:4000/v1`
+- `python3 tools/eagle_swarm_synthesis.py` — **20** EAGLE files (72h) → `reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md`
+
+**Canonical answers (unchanged from synthesis):**
+- **Profit surface:** ai-tournament (paper) > pick_funnel (discovery) > /audit production (no money-ready)
+- **Best picks now:** BTC/ETH SHORT (tournament), EEM/IWM/GLD + dual-momentum ETF (shadow), BAC/JPM/MSFT/NVDA (paper/monitor only)
+- **Bonferroni:** α_adj ≈ 0.05/N_emitters; use DSR/PBO for promotion not raw funnel cells
+- **Forward weeks before scale:** ≥8 shadow, two 4-week windows, n≥30–50 per sleeve
