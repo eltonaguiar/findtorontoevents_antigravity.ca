@@ -1,0 +1,208 @@
+{
+  "generated_at": "2026-06-02T12:13:10.824691+00:00",
+  "sources": [
+    "audit_dashboard/data/money_ready_verdict.json",
+    "audit_dashboard/data/ai_tournament_leaderboard.json",
+    "EAGLE3_2026-06-02_minimax-m3-free.MD",
+    "reports/multi_class_strategy_lab_2026-06-02.md",
+    "audit_dashboard/data/ai_tournament_picks_latest.json"
+  ],
+  "money_ready": {
+    "path": "audit_dashboard/data/money_ready_verdict.json",
+    "generated_at": "2026-06-02T10:19:20.625546+00:00",
+    "money_ready_count": 0,
+    "classes": {
+      "CRYPTO": {
+        "n_resolved": 368,
+        "wr": 0.3614,
+        "pf": 0.919,
+        "verdict": "NOT_READY"
+      },
+      "UNKNOWN": {
+        "n_resolved": 9,
+        "wr": 0.6667,
+        "pf": 0.724,
+        "verdict": "INSUFFICIENT_DATA"
+      },
+      "FOREX": {
+        "n_resolved": 32,
+        "wr": 0.2812,
+        "pf": 0.4812,
+        "verdict": "INSUFFICIENT_DATA"
+      },
+      "ETF": {
+        "n_resolved": 3,
+        "wr": 0.6667,
+        "pf": 1.4581,
+        "verdict": "INSUFFICIENT_DATA"
+      },
+      "COMMODITY": {
+        "n_resolved": 4,
+        "wr": 0.5,
+        "pf": 1.6758,
+        "verdict": "INSUFFICIENT_DATA"
+      },
+      "EQUITY": {
+        "n_resolved": 52,
+        "wr": 0.2692,
+        "pf": 0.3269,
+        "verdict": "NOT_READY"
+      },
+      "FUTURES": {
+        "n_resolved": 13,
+        "wr": 0.1538,
+        "pf": 0.5193,
+        "verdict": "INSUFFICIENT_DATA"
+      },
+      "PENNY_STOCK": {
+        "n_resolved": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "verdict": "INSUFFICIENT_DATA"
+      },
+      "BOND": {
+        "n_resolved": 0,
+        "wr": 0.0,
+        "pf": 0.0,
+        "verdict": "INSUFFICIENT_DATA"
+      }
+    }
+  },
+  "tournament_leaderboard": {
+    "path": "audit_dashboard/data/ai_tournament_leaderboard.json",
+    "generated_at": "2026-06-01T14:25:56.258832+00:00",
+    "min_n_to_rank": 30,
+    "top_models": [
+      {
+        "model_id": "deepseek_v4",
+        "n_resolved": 208,
+        "wr": 0.5769,
+        "pf": 3.457,
+        "tier": "T1",
+        "rank": 1
+      },
+      {
+        "model_id": "gpt4o",
+        "n_resolved": 134,
+        "wr": 0.597,
+        "pf": 3.139,
+        "tier": "T1",
+        "rank": 2
+      },
+      {
+        "model_id": "deepseek_r1",
+        "n_resolved": 132,
+        "wr": 0.6288,
+        "pf": 2.933,
+        "tier": "T1",
+        "rank": 3
+      },
+      {
+        "model_id": "grok3",
+        "n_resolved": 303,
+        "wr": 0.5578,
+        "pf": 2.286,
+        "tier": "T1",
+        "rank": 4
+      },
+      {
+        "model_id": "claude_haiku_4_5",
+        "n_resolved": 74,
+        "wr": 0.6622,
+        "pf": 2.709,
+        "tier": "T1",
+        "rank": 5
+      },
+      {
+        "model_id": "gpt5_mini",
+        "n_resolved": 72,
+        "wr": 0.625,
+        "pf": 2.292,
+        "tier": "T1",
+        "rank": 6
+      }
+    ]
+  },
+  "eagle3_directional": {
+    "path": "EAGLE3_2026-06-02_minimax-m3-free.MD",
+    "rows": [
+      {
+        "asset_class": "CRYPTO",
+        "direction": "LONG",
+        "wr": 0.33,
+        "n": 216,
+        "note": "production bug \u2014 scanner emits LONG"
+      },
+      {
+        "asset_class": "CRYPTO",
+        "direction": "SHORT",
+        "wr": 0.67,
+        "n": 216,
+        "note": "tournament edge \u2014 flip target"
+      },
+      {
+        "asset_class": "EQUITY",
+        "direction": "LONG",
+        "wr": 0.75,
+        "n": null,
+        "note": "LONG-only per EAGLE3"
+      },
+      {
+        "asset_class": "ETF",
+        "direction": "LONG",
+        "wr": 0.88,
+        "n": null,
+        "note": "LONG-only per EAGLE3"
+      }
+    ],
+    "symbol_whitelist": [
+      {
+        "asset_class": "ETF",
+        "symbols": [
+          "EEM",
+          "IWM",
+          "GLD"
+        ],
+        "note": "EEM 93%, IWM 75%, GLD 68% WR in EAGLE3"
+      },
+      {
+        "asset_class": "EQUITY",
+        "symbols": [
+          "BAC",
+          "JPM",
+          "MSFT",
+          "NVDA"
+        ],
+        "note": "LONG bias tournament whitelist"
+      },
+      {
+        "asset_class": "CRYPTO",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "note": "SHORT-only after flip"
+      }
+    ]
+  },
+  "lab_sleeve": {
+    "strategy_id": "etf_verified_dual_momentum",
+    "lab_pf": 1.6,
+    "lab_wr": 0.538,
+    "lab_n": 104,
+    "wf_oos_pf": 1.21,
+    "wf_oos_n": 32,
+    "wf_verdict": "PASS",
+    "live_etf_n": 3,
+    "tier": "SHADOW_PAPER_ONLY",
+    "source": "reports/multi_class_strategy_lab_2026-06-02.md"
+  },
+  "tournament_picks_export": {
+    "path": "audit_dashboard/data/ai_tournament_picks_latest.json",
+    "total_picks": 5492,
+    "resolved_in_export": 0,
+    "note": "Export has null outcomes \u2014 use leaderboard + EAGLE3 for symbol/direction stats"
+  },
+  "swarm_review_markdown": "# Verdict Table\n\n| Claim | Verdict | Evidence Block |\n| --- | --- | --- |\n| deepseek_v4 / gpt4o tournament models | REJECT | tournament_leaderboard |\n| CRYPTO SHORT direction | WEAK | eagle3_directional |\n| ETF symbols EEM, IWM, GLD | SUPPORT | eagle3_directional |\n| EQUITY symbols BAC, JPM, MSFT, NVDA | REJECT | eagle3_directional |\n| ETF dual momentum lab | SUPPORT | lab_sleeve |\n| Production /audit | SUPPORT | money_ready |\n\n# Stats Explained\n\n- **WR (Win Rate)**: The percentage of times a model or strategy wins in a tournament or simulation.\n- **PF (Profit Factor)**: A measure of a strategy's profitability, calculated as the ratio of total profits to total losses.\n- **n_resolved**: The number of resolved picks or outcomes for a model or strategy.\n- **verdict**: A summary of the model or strategy's performance, such as \"NOT_READY\" or \"INSUFFICIENT_DATA\".\n\n# ELI5 Feedback Points\n\n### 1. deepseek_v4 / gpt4o tournament models\n\n*   REJECT because the leaderboard only shows the watch-only performance of the models, not their actual tournament performance.\n    *   Evidence: \"paper watch only (leaderboard)\" in the claim, and the leaderboard data in `tournament_leaderboard`.\n\n### 2. CRYPTO SHORT direction\n\n*   WEAK because the win rate of 67% is high, but the note mentions a \"tournament edge\" and a \"flip target\", which suggests that the strategy may not be reliable in production.\n    *   Evidence: \"tournament edge \u2014 flip target\" in the note of the CRYPTO SHORT row in `eagle3_directional`.\n\n### 3. ETF symbols EEM, IWM, GLD\n\n*   SUPPORT because the note mentions that these symbols have high win rates in EAGLE3 (93%, 75%, and 68% respectively).\n    *   Evidence: \"EEM 93%, IWM 75%, GLD 68% WR in EAGLE3\" in the note of the ETF symbol whitelist in `eagle3_directional`.\n\n### 4. EQUITY symbols BAC, JPM, MSFT, NVDA\n\n*   REJECT because the production EQUITY PF is 0.33, which is low, and the note mentions a \"production bug\" that emits LONG.\n    *   Evidence: \"production EQUITY PF 0.33 FAIL\" in the claim, and the EQUITY row in `eagle3_directional`.\n\n### 5. ETF dual momentum lab\n\n*   SUPPORT because the lab PF is 1.6, which is high, and the WF OOS PF is 1.21, which is also high.\n    *   Evidence: \"lab_pf: 1.6\" and \"wf_oos_pf: 1.21\" in `lab_sleeve`.\n\n### 6. Production /audit\n\n*   SUPPORT because the money_ready count is 0, which means that all classes are NOT_READY, and the CRYPTO NOT_READY PF is 0.92, which is high.\n    *   Evidence: \"money_ready_count: 0\" in `money_ready`, and the CRYPTO row in `money_ready`.",
+  "swarm_ok": true
+}
