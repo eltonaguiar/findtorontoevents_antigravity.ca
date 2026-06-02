@@ -66,6 +66,19 @@ try:
 except Exception as e:
     logger.debug("crypto_liquidation_fade not available: %s", e)
 
+# Mutation-validated paper-pilot strategy (M-107 mutation hunt 2026-06-01).
+# Baseline keltner_bounce failed T3 (PF 0.995 NO_EDGE). The wider-band
+# variant (EMA=20, ATR=10, mult=3.0) passes T3 in the 1y rigorous backtest:
+# PF 1.145, WR 46.4%, n=677, DSR 7.88, PF_LB95 1.10.
+# Tagged source_system='academic_keltner_bounce_v2_wide' by the emitter
+# loop so pf_registry attributes per-strategy. Paper-pilot only — 30+ day
+# rolling proof + PF_LB > 1.05 on rolling 60d required before sizing.
+try:
+    from alpha_engine.dormant_winners_wrappers import generate_keltner_bounce_v2_wide_picks as _gen_keltner_v2
+    _register("keltner_bounce_v2_wide", "CRYPTO", _gen_keltner_v2)
+except Exception as e:
+    logger.debug("keltner_bounce_v2_wide not available: %s", e)
+
 
 # ---------------------------------------------------------------------------
 # EQUITY (5/5 wired)
