@@ -1,6 +1,6 @@
 # EAGLE Swarm Synthesis — 2026-06-02
 
-**Generated:** 2026-06-02T12:02:00Z
+**Generated:** 2026-06-02T12:04:44Z
 **EAGLE files (72h):** 19
 
 ## 1. Executive consensus (all EAGLE models + live JSON)
@@ -90,128 +90,77 @@ Safe long-term (academic, not from live audit PF): broad ETF dual-momentum sleev
 
 ## 8. Per-model swarm insights
 
-### Model: `ollama-cloud`
-
-
 ### Model: `hybrid-model`
-### 1. Where is profit today?
-Profitability is currently segmented by data source, with a clear hierarchy between research and production:
-*   **`ai-tournament` / `ai_leaderboard`**: Highest performance. Tournament models (e.g., `deepseek_v4`) demonstrate superior edge compared to the main production book.
-*   **`pick_funnel`**: High-discovery utility, but prone to concentration risks and requires rigorous holdout validation.
-*   **`/audit` (`money_ready_verdict.json`)**: Lowest performance. The aggregate production book is currently `NOT_READY` across major classes (CRYPTO PF 0.919, EQUITY PF 0.3269). 
-*   **Conclusion**: Profit exists in isolated lab sleeves and tournament-proven strategies, but the current production aggregate is failing to capture this edge due to poor gating and concentration.
-
-### 2. Best picks NOW
-Based on `at_signal_outcomes` (n≥10), the following strategies show statistically significant edge:
-*   **`reddit/reddit:u/ogroyalsfan1911`**: WR 1.0, PF 999 (n=89).
-*   **`macd_rsi_confluence`**: WR 1.0, PF 999 (n=56).
-*   **`crypto_liquidity_wick_reversal_v1`**: WR 0.8824, PF 7.5 (n=1666).
-*   **`volume_spike_breakout`**: WR 0.9437, PF 16.75 (n=71).
-*   **`drawdown_recovery_rsi_xrp`**: WR 0.9899, PF 98.0 (n=198).
-*   *Note*: Specific symbols (e.g., BTCUSD, NVDA) are not explicitly listed in the provided DB rows; strategy-level performance is the current primary indicator.
-
-### 3. Gap vs. Ideal Pipeline
-The current system operates on basic admissibility gates (e.g., `money_ready_verdict.json`), which is insufficient. The gap to the ideal pipeline includes:
-*   **Current**: Simple WR/PF thresholds and basic persona/directional kill lists.
-*   **Ideal**: Integration of DSR/PBO (Probability of Backtest Overfitting) correction, block-bootstrapping for regime robustness, and cost-model-adjusted performance metrics. The current pipeline lacks the formal statistical rigor to distinguish between luck and persistent alpha.
-
-### 4. Per Asset Class: Strategy Actions
-*   **CRYPTO**: 
-    1. Quarantine weak aggregate emitters (e.g., `macd_crossover`). 
-    2. Promote high-PF sleeves (`crypto_liquidity_wick_reversal_v1`, `multi_period_rsi_confluence_eth`) after forward-proof.
-*   **EQUITY**: 
-    1. Depromote weak emitters (PF 0.3269). 
-    2. Mutate existing strategies using the `mutation_framework` (e.g., `betting-against-beta` inversion).
-*   **ETF**: 
-    1. Prioritize dual momentum strategies. 
-    2. Wait for forward `n` to exceed the `INSUFFICIENT_DATA` threshold.
-
-### 5. Forward-test Minimum
-*   **Picks Count**: Minimum `n=100` resolved trades per strategy to move from "lab" to "production-ready."
-*   **Duration**: Minimum 2 weeks of forward paper-trading performance to validate regime robustness before scaling capital allocation.
-
-### 6. Bonferroni / Hypothesis Testing
-*   **Hypotheses Tested**: The system currently evaluates hundreds of strategies (e.g., `n=43,408` for unknown crypto strategies). 
-*   **Adjusted Alpha**: Given the high volume of tests, the current alpha threshold is likely too permissive. A Bonferroni-corrected alpha (α/m) is required to prevent false discovery. Suggest tightening the significance threshold to `p < 0.001` for any strategy promotion to account for the massive multiple-testing burden in the `pick_funnel`.
-
-### Model: `ollama-cloud-local`
 ## Where is profit today?
+### Rank /audit vs ai_leaderboard vs ai-tournament vs pick_funnel (paper vs production)
 
-### /audit vs ai_leaderboard vs ai-tournament vs pick_funnel (paper vs production)
+| Rank | Source | Profit Factor (PF) | Number of Picks (n) |
+| --- | --- | --- | --- |
+| 1 | ai_leaderboard | 1.6758 | 4 |
+| 2 | ai_tournament | 0.919 | 368 |
+| 3 | pick_funnel | 0.724 | 9 |
+| 4 | /audit | 0.503 | 52 |
 
-- **/audit**: 
-  - CRYPTO: n=374, WR=35.6%, PF=0.89, verdict=NOT_READY
-  - EQUITY: n=52, WR=26.9%, PF=0.33, verdict=NOT_READY
-  - ETF: n=3, WR=66.7%, PF=1.46, verdict=INSUFFICIENT_DATA
+## Best picks NOW (honest)
+### Name symbols (NVDA, BTCUSD, etc.) ONLY if supported by tournament/DB rows above; else say insufficient evidence.
 
-- **ai_leaderboard**: 
-  - CRYPTO: Top strategies show mixed performance with varying WR and PF.
-  - EQUITY: No top strategies listed.
-
-- **ai-tournament**: 
-  - CRYPTO: Strategies like `crypto_liquidity_wick_reversal_v1` have high WR (88.24%) and PF (7.5).
-  - EQUITY: Strategy `reddit/reddit:u/ogroyalsfan1911` has a perfect WR (1.0) but very low n.
-
-- **pick_funnel**: 
-  - CRYPTO: Strategies like `multi_period_rsi_confluence_eth` have high WR and PF.
-  - EQUITY: Strategy `luxalgo_confluence` shows moderate WR and PF.
-
-### Best picks NOW (honest)
-
-- **CRYPTO**: BTCUSD, ETHUSD
-- **EQUITY**: NVDA
-- **ETF**: SPY
+Insufficient evidence to recommend specific picks.
 
 ## Gap vs ideal pipeline
+### (Bonferroni bare-min vs DSR/PBO/block-bootstrap ideal)
 
-The current pipeline lacks several key components of the ideal DSR/PBO/block-bootstrap approach:
+The current pipeline is not ideal, as it mixes four different universes and treats them too similarly. The ideal pipeline would separate these universes and apply different filters and gates to each.
 
-1. **Bonferroni bare-min**:
-   - Pre-register hypothesis.
-   - Data validation.
-   - Purged walk-forward (not simple split).
-   - Cost model by asset class.
-   - DSR/PBO correction.
-   - Block bootstrap.
-   - Regime robustness.
-   - Concentration check.
-   - Forward paper evidence.
-   - Promotion decision.
+## Per asset class
+### Top 2 strategy actions (more backtests, mutations, depromote)
 
-2. **DSR/PBO/block-bootstrap ideal**:
-   - Comprehensive hypothesis testing and validation.
-   - Robust forward testing with multiple methodologies.
-   - Detailed cost analysis and regime adjustments.
-   - Advanced statistical corrections for data snooping bias.
-
-## Per asset class: top 2 strategy actions
-
-### CRYPTO
-1. **More backtests**: Focus on strategies like `crypto_liquidity_wick_reversal_v1` and `drawdown_recovery_rsi_eth`.
-2. **Mutations**: Experiment with variations of high-WR strategies to improve PF.
-
-### EQUITY
-1. **Depromote weak emitters**: Strategies with low WR and PF should be deprioritized.
-2. **More backtests**: Conduct additional backtests for promising strategies like `luxalgo_confluence`.
-
-### ETF
-1. **Wait for forward n**: Increase the sample size to ensure statistical significance.
-2. **Prioritize ETF dual momentum**: Focus on strategies that combine momentum with other factors.
+| Asset Class | Top 2 Strategy Actions |
+| --- | --- |
+| CRYPTO | 1. More backtests on existing strategies 2. Mutate or depromote weak emitters |
+| EQUITY | 1. More backtests on existing strategies 2. Depromote weak emitters |
+| ETF | 1. More backtests on existing strategies 2. Prioritize ETF dual momentum for forward testing |
+| FOREX | 1. More backtests on existing strategies 2. Depromote weak emitters |
 
 ## Forward-test minimum
+### Picks count + weeks before scale
 
-- **Picks count**: At least 50 picks per asset class.
-- **Weeks before scale**: Minimum of 16 weeks for thorough forward testing.
+The forward-test minimum is not specified in the provided text.
 
 ## Bonferroni
+### How many hypotheses tested; adjusted alpha suggestion
 
-- **Hypotheses tested**: The number of hypotheses tested should be limited to ensure statistical validity.
-- **Adjusted alpha suggestion**: Use a Bonferroni correction to adjust the significance level based on the number of hypotheses tested. For example, if 10 hypotheses are tested, use an adjusted alpha of 0.05/10 = 0.005.
+The Bonferroni correction is not mentioned in the provided text.
 
-This approach ensures that only statistically significant results are considered for production deployment, reducing the risk of data snooping bias and improving the overall robustness of the strategy pipeline.
+### Model: `ollama-cloud-local`
+
 
 ### Model: `ollama-cloud-large`
 
+
+### Model: `ollama-cloud`
+### 1. Where is profit today?
+Based on `/audit` (`money_ready_verdict.json`), no asset class is currently `MONEY_READY` in production. The `ai-tournament` (DB top strategies) shows high-profit strategies (e.g., `crypto_liquidity_wick_reversal_v1` with PF=7.5, `reddit/reddit:u/ogroyalsfan1911` with PF=999), but these are paper portfolios and not yet verified in live deployment. The `ai_leaderboard` and `pick_funnel` surfaces are not provided in the prompt, so no comparison can be made. Profit today is concentrated in tournament-level strategies, not in the live `/audit` production book.
+
+### 2. Best picks NOW (honest)
+Insufficient evidence. The prompt does not provide specific symbol-level data from tournament/DB rows; only strategy-level statistics are given (e.g., `crypto_liquidity_wick_reversal_v1` has high PF but no symbols listed). Without symbol names in the data, no picks can be honestly recommended.
+
+### 3. Gap vs ideal pipeline
+The current pipeline (as inferred from EAGLE reports) uses basic filters (e.g., directional flips, kill lists) but lacks rigorous statistical safeguards. The ideal pipeline, as described in `EAGLE2_2026-06-02_MIMO_FINAL.MD`, includes a 10-step admissibility process: pre-registration, data validation, purged walk-forward, cost modeling, DSR/PBO correction, block bootstrap, regime robustness, concentration checks, forward paper evidence, and promotion decisions. The current state misses advanced corrections like DSR/PBO and block bootstrap, increasing the risk of overfitting and false positives.
+
+### 4. Per asset class: top 2 strategy actions
+- **CRYPTO**: (1) Promote high-PF strategies from tournament (e.g., `crypto_liquidity_wick_reversal_v1`) after forward validation; (2) Depromote or mutate low-PF strategies like `ensemble` (PF=0.7436).
+- **EQUITY**: (1) Mutate or depromote weak emitters (live PF=0.3269); (2) Await verified sleeve graduation from lab.
+- **ETF**: (1) Prioritize dual momentum strategies; (2) Await more forward samples (n=3 is insufficient).
+- **FOREX/FUTURES/COMMODITY**: (1) Collect more data (all have `INSUFFICIENT_DATA` verdicts); (2) Avoid directional kills until evidence strengthens.
+- **PENNY_STOCK/UNKNOWN**: (1) Depromote due to low n and poor performance; (2) Exclude from production until robust evidence exists.
+
+### 5. Forward-test minimum
+- **ETF**: Requires at least n=10 picks and several weeks of forward data before scaling.
+- **CRYPTO**: High-PF strategies (e.g., PF>3) need n≥20 forward picks and regime robustness checks.
+- **Other classes**: Minimum n=10 resolved picks and 4-6 weeks of live testing before considering promotion.
+
+### 6. Bonferroni
+The number of hypotheses tested is not explicitly quantified in the prompt, but multiple strategies and filters are applied (e.g., 4 personas killed, 4 directional kills, CRYPTO flip). With at least 10+ strategies under review, an adjusted alpha of ≤0.005 (e.g., 0.05/10) is recommended to control family-wise error rate. The current approach lacks this correction, increasing false discovery risk.
 
 
 ## 9. Action plan (next 2 weeks)
