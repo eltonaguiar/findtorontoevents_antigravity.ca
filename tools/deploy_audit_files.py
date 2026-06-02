@@ -62,6 +62,7 @@ UPLOADS = [
     ("audit_dashboard/data/portfolio_classification.json",   "/findtorontoevents.ca/audit/data/portfolio_classification.json",    "portfolio_history"),
     ("updates/index.html",                                   "/findtorontoevents.ca/updates/index.html",                          "updates"),
     ("audit_dashboard/ai_leaderboard.html",                  "/findtorontoevents.ca/audit/ai_leaderboard.html",                   "ai_leaderboard"),
+    ("audit_dashboard/data/ai_leaderboard/ai_leaderboard_index.json", "/findtorontoevents.ca/audit/data/ai_leaderboard/ai_leaderboard_index.json", "ai_leaderboard"),
     ("audit_dashboard/data/ma_strategy_leaderboard.json",    "/findtorontoevents.ca/audit/data/ma_strategy_leaderboard.json",     "ai_leaderboard"),
     ("audit_dashboard/data/ma_strategy_signals.json",        "/findtorontoevents.ca/audit/data/ma_strategy_signals.json",         "ai_leaderboard"),
 ]
