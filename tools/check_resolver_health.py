@@ -73,7 +73,7 @@ MAX_HOLD_HOURS_BY_CLASS: dict[str, int] = {
     "ETF": 96,
     "COMMODITY": 96,
     "FUTURES": 96,
-    "FOREX": 120,
+    "FOREX": 72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "BOND": 120,
 }
 
@@ -303,44 +303,46 @@ def run_health_check(alert_threshold: int = ALERT_THRESHOLD_DEFAULT) -> dict[str
 
         stale_check = check_stale_by_category(conn)
         report["checks"]["stale_by_category"] = stale_check
+
+        tag_check = {"check": "forward_test_tag_awareness", "status": "GREEN"}
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT
+                        COUNT(*) AS total,
+                        SUM(CASE WHEN COALESCE(forward_test_only, 0) = 1 THEN 1 ELSE 0 END) AS ft_only_count,
+                        SUM(CASE WHEN COALESCE(_gated_forward_test_isolated, 0) = 1 THEN 1 ELSE 0 END) AS gated_isolated
+                    FROM at_pick_outcomes
+                """)
+                row = cur.fetchone() or {}
+                if isinstance(row, dict):
+                    total = int(row.get("total") or 0)
+                    ft_only = int(row.get("ft_only_count") or 0)
+                    gated = int(row.get("gated_isolated") or 0)
+                else:
+                    total = int(row[0] or 0)
+                    ft_only = int(row[1] or 0)
+                    gated = int(row[2] or 0)
+                tag_check.update({
+                    "total_outcomes": total,
+                    "forward_test_only_count": ft_only,
+                    "gated_isolated_count": gated,
+                    "writer_alignment": "both universal + alpha now skip forward_test_only cohort (2026-06-01)",
+                })
+        except Exception as exc:
+            tag_check.update({
+                "status": "YELLOW",
+                "error": str(exc)[:180],
+                "note": "Run tools/ensure_forward_test_outcome_columns.py --execute if columns missing.",
+            })
+        report["checks"]["forward_test_tag_awareness"] = tag_check
+        if tag_check.get("status") == "YELLOW":
+            report["overall"]["checks_yellow"] += 1
     finally:
         conn.close()
 
-    # Last resolver run (no DB needed)
     resolver_check = check_last_resolver_run()
     report["checks"]["last_resolver_run"] = resolver_check
-
-    # P0 §15 forward_test_tag_awareness + isolation health (this fire, post writer alignment):
-    # Surfaces paper-pilot cohort volume now that both universal and alpha outcome writers
-    # explicitly skip forward_test_only picks (see 2026-06-01 alignment fires).
-    # Safe query with fallback for pre-ALTER prod DBs. Includes one-time ALTER SQL note.
-    tag_check = {"check": "forward_test_tag_awareness", "status": "GREEN"}
-    try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT
-                    COUNT(*) AS total,
-                    SUM(CASE WHEN COALESCE(forward_test_only, 0) = 1 THEN 1 ELSE 0 END) AS forward_test_only,
-                    SUM(CASE WHEN COALESCE(_gated_forward_test_isolated, 0) = 1 THEN 1 ELSE 0 END) AS gated_isolated
-                FROM at_pick_outcomes
-            """)
-            row = cur.fetchone() or (0, 0, 0)
-            tag_check.update({
-                "total_outcomes": int(row[0] or 0),
-                "forward_test_only_count": int(row[1] or 0),
-                "gated_isolated_count": int(row[2] or 0),
-                "writer_alignment": "both universal + alpha now skip forward_test_only cohort (2026-06-01)",
-                "note": "0 historical tags expected pre-2026-06-01. Prod requires one-time ALTER: ALTER TABLE at_pick_outcomes ADD COLUMN forward_test_only BOOLEAN DEFAULT FALSE, ADD COLUMN forward_validated BOOLEAN DEFAULT FALSE, ADD COLUMN _gated_forward_test_isolated BOOLEAN DEFAULT FALSE;"
-            })
-    except Exception as exc:
-        tag_check.update({
-            "status": "YELLOW",
-            "error": str(exc)[:180],
-            "note": "Columns missing (pre-ALTER). Run the ALTER above on ejaguiar1_stocks, then re-deploy writers + this health check. See alpha_engine/mysql_trading_sync.py for exact SQL + comment."
-        })
-    report["checks"]["forward_test_tag_awareness"] = tag_check
-    if tag_check.get("status") == "YELLOW":
-        report["overall"]["checks_yellow"] += 1
 
     # Overall status
     report["overall"]["checks_run"] = len(report["checks"])

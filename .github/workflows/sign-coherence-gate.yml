@@ -1,0 +1,126 @@
+# Sign-coherence nightly integrity gate.
+#
+# Runs `audit_trail/sign_coherence_check.py` against ejaguiar1_stocks
+# nightly. Fails the workflow if the sign-flip count grows above the
+# documented baseline, signalling that the resolver corruption class is
+# regressing — a new strategy has started writing wrong-sign pnl_pct or
+# the existing purge has unwound.
+#
+# Baseline: 367 sign-flips discovered 2026-06-02 (PR #431
+# audit_trail/sign_coherence_check.py + reports/sign_coherence_2026-06-02.json).
+# After operator runs the staged purge (PR #433
+# audit_trail/sign_flip_purge.py --apply), the expected count is 0.
+# Threshold lives in SIGN_FLIP_BASELINE env var so the gate can be
+# adjusted post-purge without a code change.
+
+name: Sign-Coherence Gate
+
+on:
+  schedule:
+    - cron: "0 4 * * *"  # 04:00 UTC daily — off-peak for our runner queue
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: "Override baseline (max flips allowed)"
+        required: false
+        default: "367"
+
+concurrency:
+  group: sign-coherence-gate
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install MySQL connector
+        run: |
+          python -m pip install --upgrade pip
+          pip install mysql-connector-python
+
+      - name: Run sign-coherence scan
+        id: scan
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          DB_NAME: ejaguiar1_stocks
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          OUTPATH="reports/sign_coherence_$(date -u +%Y-%m-%d).json"
+          python3 -m audit_trail.sign_coherence_check --json "$OUTPATH" 2>&1 | tee /tmp/scan.log
+          echo "json_path=$OUTPATH" >> "$GITHUB_OUTPUT"
+          # Extract just the flip count for the gate decision
+          FLIPS=$(python3 -c "
+          import json
+          d = json.load(open('$OUTPATH'))
+          print(d.get('n_sign_flips', 0))
+          ")
+          echo "flips=$FLIPS" >> "$GITHUB_OUTPUT"
+          echo "Found $FLIPS sign-flips"
+
+      - name: Gate decision
+        env:
+          FLIPS: ${{ steps.scan.outputs.flips }}
+          BASELINE: ${{ github.event.inputs.baseline || vars.SIGN_FLIP_BASELINE || '367' }}
+        run: |
+          set -euo pipefail
+          echo "Sign-flips found: $FLIPS"
+          echo "Baseline (max allowed): $BASELINE"
+          if [ "$FLIPS" -gt "$BASELINE" ]; then
+            echo "::error::Sign-flip count regressed: $FLIPS > $BASELINE baseline. The resolver corruption is growing."
+            echo "::error::Review the JSON report committed today and identify the new source_system producing wrong-sign pnl_pct."
+            exit 1
+          elif [ "$FLIPS" -gt 0 ]; then
+            echo "::warning::Sign-flip count $FLIPS (≤ baseline $BASELINE). Run audit_trail/sign_flip_purge.py --apply to reduce."
+          else
+            echo "Sign-coherence clean ($FLIPS flips). Resolver healthy."
+          fi
+
+      - name: Commit JSON report
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f "${{ steps.scan.outputs.json_path }}" ]; then
+            git add "${{ steps.scan.outputs.json_path }}"
+            if ! git diff --cached --quiet; then
+              git commit -m "audit: sign-coherence nightly snapshot [skip ci]"
+              for i in 1 2 3; do
+                if git push; then break; fi
+                git pull --rebase || true
+                sleep 5
+              done
+            fi
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Sign-Coherence Gate" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---:|" >> $GITHUB_STEP_SUMMARY
+          echo "| Sign-flips found | ${{ steps.scan.outputs.flips }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Baseline (max allowed) | ${{ github.event.inputs.baseline || vars.SIGN_FLIP_BASELINE || '367' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "JSON snapshot committed to ${{ steps.scan.outputs.json_path }}" >> $GITHUB_STEP_SUMMARY

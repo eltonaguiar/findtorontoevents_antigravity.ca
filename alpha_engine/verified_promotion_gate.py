@@ -13,7 +13,10 @@ from typing import Any, Dict, Optional
 
 _ROOT = Path(__file__).resolve().parent.parent
 _ETF_STATS = _ROOT / "reports" / "etf_forward_stats_latest.json"
-_PILOT_DASH = _ROOT / "reports" / "pilot_forward_dashboard.json"
+_PILOT_DASH_PATHS = [
+    _ROOT / "reports" / "pilot_forward_dashboard.json",
+    _ROOT / "audit_dashboard" / "data" / "pilot_forward_dashboard.json",
+]
 _WF_REPORT = _ROOT / "verified_strategies" / "WALKFORWARD_REPORT.json"
 _H102_GLOB = "h102_connors_rsi2_crypto_*.md"
 
@@ -29,7 +32,27 @@ def _load_json(path: Path) -> Optional[Dict[str, Any]]:
 
 
 def etf_forward_report() -> Dict[str, Any]:
-    return _load_json(_ETF_STATS) or {}
+    report = _load_json(_ETF_STATS) or {}
+    if report:
+        return report
+    dash = pilot_dashboard_report()
+    sleeves = dash.get("sleeves") if isinstance(dash, dict) else None
+    etf = sleeves.get("etf_dual_momentum") if isinstance(sleeves, dict) else None
+    if isinstance(etf, dict):
+        return {
+            "timestamp": dash.get("timestamp"),
+            "paper_pilot_forward": etf.get("forward") or {},
+            "recommend_scanner_enable": bool((etf.get("forward") or {}).get("promotion_ready")),
+        }
+    return {}
+
+
+def pilot_dashboard_report() -> Dict[str, Any]:
+    for path in _PILOT_DASH_PATHS:
+        payload = _load_json(path)
+        if payload:
+            return payload
+    return {}
 
 
 def etf_scanner_merge_allowed() -> bool:
@@ -106,16 +129,20 @@ def connors_harness_admissible() -> bool:
 def build_edge_status() -> Dict[str, Any]:
     """Dashboard + deploy payload for verified pilot strip."""
     etf = etf_forward_report()
-    dash = _load_json(_PILOT_DASH) or {}
+    dash = pilot_dashboard_report()
     wf = _load_json(_WF_REPORT) or {}
 
-    def _wf_verdict(key: str) -> Optional[str]:
-        block = wf.get(key)
-        if isinstance(block, dict):
-            return block.get("verdict")
+    def _wf_verdict(*keys: str) -> Optional[str]:
+        for key in keys:
+            block = wf.get(key)
+            if isinstance(block, dict):
+                return block.get("verdict")
         return None
 
-    pilot = etf.get("paper_pilot_forward") or {}
+    sleeves = dash.get("sleeves") if isinstance(dash, dict) else {}
+    etf_dash = sleeves.get("etf_dual_momentum") if isinstance(sleeves, dict) else {}
+    etf_dash_forward = etf_dash.get("forward") if isinstance(etf_dash, dict) and isinstance(etf_dash.get("forward"), dict) else {}
+    pilot = etf.get("paper_pilot_forward") or etf_dash_forward or {}
     return {
         "timestamp": etf.get("timestamp") or dash.get("timestamp"),
         "trust_hierarchy": [
@@ -126,9 +153,18 @@ def build_edge_status() -> Dict[str, Any]:
         ],
         "live_money_ready": "0/6 classes Tier-2 — see money_ready_verdict.json",
         "lab_tier2_sleeve": "ETF dual momentum (MULTI_CLASS_LAB PASS)",
+        "best_forward_candidate": {
+            "sleeve": "etf_verified_dual_momentum",
+            "lab_wf": _wf_verdict("dual_momentum_etf", "etf_dual_momentum"),
+            "forward_n": pilot.get("n_closed", 0),
+            "forward_target_n": dash.get("forward_n_target"),
+            "promotion_ready": pilot.get("promotion_ready", False),
+            "blockers": pilot.get("gates", []),
+            "open_symbol": (pilot.get("open_position") or {}).get("symbol") or pilot.get("symbol"),
+        },
         "sleeves": {
             "etf_verified_dual_momentum": {
-                "lab_wf": _wf_verdict("etf_dual_momentum"),
+                "lab_wf": _wf_verdict("dual_momentum_etf", "etf_dual_momentum"),
                 "forward_n": pilot.get("n_closed", 0),
                 "promotion_ready": pilot.get("promotion_ready", False),
                 "recommend_merge": etf_scanner_merge_allowed(),

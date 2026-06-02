@@ -64,6 +64,7 @@ _FALLBACK: dict[str, Any] = {
         "enable_goldmine_floor_v2": False,
         "disable_non_crypto_ml_null_penalty_v2": False,
         "enable_concentration_probation_v2": False,
+        "eagle2_phase0_stop_bleed": False,
     },
     "concentration_controls": {
         "mode": "tag",

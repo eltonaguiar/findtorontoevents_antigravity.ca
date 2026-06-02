@@ -1722,12 +1722,20 @@ WIN_RATE_TRAP_BLACKLIST = frozenset({
 #   - Active visibility still uses passes_active_gate (e.g. GC=F entry sanity was blocking gold)
 # ETF: same -60 penalty plus **hard ban** in passes_active_gate (PLAN_FIX_LOWPICKSCOUNT Phase 1:
 #   thin closed book, systemic drain — no new ETF actives until forward validation justifies).
-BLOCKED_ASSET_CLASSES: set = {"FOREX"}  # 2026-05-28 Tier-0 freeze: FOREX 90d policy-clean PF 0.39 / WR 15.4% / n=13;
-# 15,720 picks scanned → 0 high-conviction. Bypass route: external MyFXBook replication gate (see Tier 5 fix plan).
-# Mechanism: -60 score penalty + SMART_PICKS_MIN_SCORE_FOREX=40 floor → smart_picks fails. passes_active_gate does
-# NOT read this set, so active book stays visible for audit. Re-evaluate after MyFXBook replication wired.
-# Historical: was {"FUTURES"} until 2026-04-16; -60 penalty caused data starvation, removed. FOREX starvation is
-# the intent of this freeze (per reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md action #5).
+BLOCKED_ASSET_CLASSES: set = {"FOREX", "COMMODITY", "FUTURES"}
+# FOREX: 2026-05-28 Tier-0 freeze, 90d policy-clean PF 0.39 / WR 15.4% / n=13. 15,720 picks → 0 high-conviction.
+#        Bypass route: external MyFXBook replication gate (Tier 5 fix plan).
+# COMMODITY: 2026-06-02 EAGLE-2 Pillar 1 freeze. Live policy-clean PF 0.31 / WR 11% / n=28; CT=F 57% concentration;
+#        cot_positioning PF dropped 4.6 → 0.51 post-dedup (grok consult 2026-05-25, 75-85% leakage probability).
+#        Bypass: 3-day COT publication lag enforced at signal receipt + CT=F removed from universe + 60d post-fix
+#        live test. See EAGLE2_2026-06-02_CLAUDE_OPUS_4_7.MD Pillar 1 action #2.
+# FUTURES: 2026-06-02 EAGLE-2 Pillar 1 freeze. n=2 is not a class. futures_momentum killed 2026-05-06 (56 closed,
+#        0% WR). Micro-contract slippage not modeled. Bypass: COT lag fix + slippage-adjusted backtest on 2y data
+#        + 50 paper trades OOS. See EAGLE2_2026-06-02_CLAUDE_OPUS_4_7.MD Pillar 1 action #3.
+# Mechanism: -60 score penalty + SMART_PICKS_MIN_SCORE_{CLASS}=40 floor → smart_picks fails. passes_active_gate
+# does NOT read this set, so active book stays visible for audit.
+# Historical: was {"FUTURES"} until 2026-04-16; -60 penalty caused data starvation, removed. Re-frozen 2026-06-02
+# after live policy-clean revealed n=2 with no credible lab strategy.
 
 # Non-crypto raw-score floor bypass: audited *backtest* history is not enough; require
 # a minimum **forward** lane sample so low dashboard scores cannot ride history alone.
@@ -1915,7 +1923,9 @@ def is_corrupted_outcome_row(pick: dict) -> bool:
 # DNA mutation, inverse, regime grid, and cross-asset checks (TESTING_PROTOCOL ┬º7). Losers
 # often rehab or invert to winners; hard block only after documented investigation.
 BLOCKED_SOURCE_SYSTEMS = {
-    "mercury2_fast",  # 14 trades, 25% WR, -639% PnL, PF 0.02
+    # EAGLE2 Phase 0 (2026-06-02): false consensus + 14d CRYPTO 66% concentration.
+    "incubator_gainer",
+    "mercury2_fast",  # already scored; reinforce global block (EAGLE2 Phase 0)
     # 2026-04-05: RE-BLOCKED per user data verification (re-audit 2026-04-05):
     # stocks_competition: 33.5% WR, -304.2% cum PnL on n=281 closed - BLEEDING
     # fast_stocks_competition: 14.3% WR, -41.0% cum on n=21
@@ -2520,6 +2530,10 @@ PNL_SANITY_MIN = -50.0  # No active pick should be beyond -50% without SL firing
 # non-crypto books. Keep this narrow so verified PM/pro-trader sources still flow.
 BLOCKED_ASSET_SOURCE_PAIRS = {
     ("FOREX", "signal_validation"),
+    # EAGLE2 Phase 0 (2026-06-02): CRYPTO concentration drag + false consensus.
+    ("CRYPTO", "incubator_gainer"),
+    ("CRYPTO", "regime_terminal"),
+    ("FOREX", "regime_terminal"),
     # 2026-05-28 Tier-0 fix: forex_rsi2_mean_reversion is in BLOCKED_SOURCE_SYSTEMS (WR 7.1% / PF 0.09
     # trailing-14d) but leaks into opened FOREX picks via these aggregator/copy emitters (90d sample:
     # multi_asset_copytrader=104, forex_copy_trader=13). Block at the (class,source) pair level so the
@@ -2775,6 +2789,9 @@ BLOCKED_ASSET_STRATEGY_PAIRS = {
     # regime_terminal EQUITY: n=72, WR=34.7%, PF=1.06. strategy "unknown" dominates.
     # Below 45% WR charter floor. Mutation: no profitable direction/symbol subset found (n=72 satisfies threshold).
     ("EQUITY", "regime_terminal"),
+    # EAGLE2 Phase 0 (2026-06-02): extend regime_terminal block to CRYPTO/FOREX emitters.
+    ("CRYPTO", "regime_terminal"),
+    ("FOREX", "regime_terminal"),
     # skyrocket-breakout-scalper EQUITY: n=14, WR=28.6%, PnL=-7.0% — kimi EQUITY loser.
     ("EQUITY", "skyrocket-breakout-scalper"),
 

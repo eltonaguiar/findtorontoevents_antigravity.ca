@@ -251,7 +251,7 @@ NON_CRYPTO_MAX_HOLD_HOURS_BY_CLASS = {
     "FUTURES":   96,
     "STOCK":     96,
     "INDEX":     96,
-    "FOREX":    120,
+    "FOREX":    72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "BOND":     120,
 }
 NON_CRYPTO_MAX_HOLD_HOURS_DEFAULT = 96
@@ -870,6 +870,10 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
     # Determine the best exit price to use
     effective_exit = None
     exit_reason = pick.get("exit_reason", "")
+    # 2026-06-02 fix: capture original exit_reason/status BEFORE live_price/OHLC
+    # paths overwrite them. The v2.3 EXPIRED guard below uses these originals.
+    _orig_exit_reason = str(exit_reason or "").upper()
+    _orig_status = str(pick.get("status", "") or "").upper()
 
     # If exit_price meaningfully differs from entry, use it
     if exit_p > 0 and entry > 0 and abs(exit_p - entry) / entry > 0.00001:
@@ -1086,10 +1090,17 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
     # v2.3 (2026-05-27): EXPIRED/TIME_EXIT/MAX_HOLD picks must be labeled
     # as EXPIRED regardless of PnL sign — intraday drift should not convert
     # an expired pick into a WON. See reports/2026-05-25_crypto_78pct_wr_verification.md
-    if exit_reason and any(
+    # 2026-06-02 fix: ALSO check _orig_status/_orig_exit_reason (captured before
+    # live_price overwrites exit_reason to TP_HIT_RESOLVED/PRICE_RESOLVED, and
+    # before OHLC path overwrites to TP_HIT_REPLAY/SL_HIT_REPLAY).
+    _expired_original = (
+        _orig_status == "EXPIRED"
+        or any(_orig_exit_reason.startswith(p) for p in ("EXPIRED", "TIME_EXIT", "MAX_HOLD"))
+    )
+    if _expired_original or (exit_reason and any(
         str(exit_reason).upper().startswith(prefix)
         for prefix in ("EXPIRED", "TIME_EXIT", "MAX_HOLD")
-    ):
+    )):
         outcome = "EXPIRED"
         pick["_resolver_subversion"] = "v2.3"
 
