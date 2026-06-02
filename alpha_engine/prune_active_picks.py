@@ -30,7 +30,7 @@ MAX_HOLD_HOURS: dict[str, int] = {
     "CRYPTO":    48,
     "EQUITY":    120,
     "STOCKS":    120,
-    "FOREX":     120,
+    "FOREX":     72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "COMMODITY": 336,   # 14 days
     "ETF":       120,
     "BOND":      240,
