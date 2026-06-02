@@ -54,3 +54,15 @@ Broadcast sent via `192.168.2.32:8788` (PR465 merge summary).
 | Resolver `last_pick_resolved_at` | GREEN (~12 min ago after run) |
 
 Live doc: https://findtorontoevents.ca/updates/2026-06-02-pr465-merged-post-steps.md
+
+## Wave 2 ops (~19:04 UTC)
+
+| Job | Result |
+|-----|--------|
+| `backfill_source_system_from_strategy.py` | 0 rows (already clean) |
+| `outcome_resolver.py --mysql` | 3 non-crypto bar-replay (FOREX TP×2, COMMODITY SL×1); use `PYTHONPATH=.` |
+| `run_eagle_suite.py` | ok=True; money_ready 0/9 freeze active |
+| MySQL `trading_picks` | OPEN **2465** (commodity 771, equity 765, crypto 432); ACTIVE **3726** separate |
+| `resolve_stale_open_picks` | 0 time-stale in 10×500 batches (hold-window rules) |
+
+**Note:** `check_resolver_health` YELLOW `stale_by_category` counts *all* OPEN rows as `estimated_stale` — not time-expired picks. Real backlog is OPEN volume + ACTIVE status hygiene, not the health label alone.
