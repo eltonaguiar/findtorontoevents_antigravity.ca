@@ -5584,6 +5584,20 @@ def main():
         except Exception as _eagle5_err:
             print(f"  [EAGLE-5] Promotion gate failed (non-fatal): {_eagle5_err}")
 
+    # 6f2.7. EAGLE-6 ADMISSIBILITY GATE (2026-06-02, minimax-m3-free, v1)
+    #   Global per-strategy statistical hard gates:
+    #   - DSR noise kill (Harvey-Liu multiple-testing correction, 27 noise strategies)
+    #   - Insufficient-n kill (< 30 resolved trades)
+    #   - HHI concentration kill (> 0.20 share from a single strategy)
+    #   v2 (planned) will add PBO<0.5 + walk-forward OOS PF>=0.8xIS PF once data pipeline stabilises.
+    #   Fail-open if DSR data is missing.
+    if active:
+        try:
+            from eagle_gates import apply_eagle6_admissibility
+            active = apply_eagle6_admissibility(active)
+        except Exception as _eagle6_err:
+            print(f"  [EAGLE-6] Admissibility gate failed (non-fatal, fail-open): {_eagle6_err}")
+
     # 6f3. Portfolio cap -- hard limit on total active picks
     before_cap = len(active)
     active = enforce_portfolio_cap(active, [])  # all remaining picks compete for slots
