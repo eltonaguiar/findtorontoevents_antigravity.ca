@@ -19,6 +19,7 @@ _PILOT_DASH_PATHS = [
 ]
 _WF_REPORT = _ROOT / "verified_strategies" / "WALKFORWARD_REPORT.json"
 _H102_GLOB = "h102_connors_rsi2_crypto_*.md"
+_ETF_ADMIT_REPORT = _ROOT / "reports" / "strategy_admit" / "etf_dual_momentum.json"
 
 
 def _load_json(path: Path) -> Optional[Dict[str, Any]]:
@@ -29,6 +30,12 @@ def _load_json(path: Path) -> Optional[Dict[str, Any]]:
         return data if isinstance(data, dict) else None
     except (json.JSONDecodeError, OSError):
         return None
+
+
+def _prefer(primary: Dict[str, Any], fallback: Dict[str, Any], key: str) -> Any:
+    if key in primary:
+        return primary.get(key)
+    return fallback.get(key)
 
 
 def etf_forward_report() -> Dict[str, Any]:
@@ -142,6 +149,8 @@ def build_edge_status() -> Dict[str, Any]:
     sleeves = dash.get("sleeves") if isinstance(dash, dict) else {}
     etf_dash = sleeves.get("etf_dual_momentum") if isinstance(sleeves, dict) else {}
     etf_dash_forward = etf_dash.get("forward") if isinstance(etf_dash, dict) and isinstance(etf_dash.get("forward"), dict) else {}
+    etf_admit = _load_json(_ETF_ADMIT_REPORT) or {}
+    admit_forward = etf_admit.get("forward_pilot") if isinstance(etf_admit.get("forward_pilot"), dict) else {}
     pilot = etf.get("paper_pilot_forward") or etf_dash_forward or {}
     return {
         "timestamp": etf.get("timestamp") or dash.get("timestamp"),
@@ -159,7 +168,9 @@ def build_edge_status() -> Dict[str, Any]:
             "forward_n": pilot.get("n_closed", 0),
             "forward_target_n": dash.get("forward_n_target"),
             "promotion_ready": pilot.get("promotion_ready", False),
+            "shadow_checkpoint_ready": _prefer(pilot, admit_forward, "shadow_checkpoint_ready"),
             "blockers": pilot.get("gates", []),
+            "shadow_blockers": _prefer(pilot, admit_forward, "shadow_gates") or [],
             "open_symbol": (pilot.get("open_position") or {}).get("symbol") or pilot.get("symbol"),
         },
         "sleeves": {
@@ -167,6 +178,8 @@ def build_edge_status() -> Dict[str, Any]:
                 "lab_wf": _wf_verdict("dual_momentum_etf", "etf_dual_momentum"),
                 "forward_n": pilot.get("n_closed", 0),
                 "promotion_ready": pilot.get("promotion_ready", False),
+                "shadow_checkpoint_ready": _prefer(pilot, admit_forward, "shadow_checkpoint_ready"),
+                "shadow_blockers": _prefer(pilot, admit_forward, "shadow_gates") or [],
                 "recommend_merge": etf_scanner_merge_allowed(),
                 "env_flag": "ETF_VERIFIED_DUAL_MOMENTUM_ENABLED",
                 "scanner_mode": (
@@ -195,4 +208,25 @@ def build_edge_status() -> Dict[str, Any]:
             "CRYPTO Smart Picks / Verified Alpha / HC / ELITE (claude_gainer_st concentration)",
         ],
         "report": "reports/quant_strategy_root_cause_review_2026-06-02.md",
+        "strategy_admissibility": "strategy_admissibility.json",
+        "portfolio_audit": {
+            "source": "local_hint",
+            "total": 0,
+            "with_open": 0,
+            "empty": 0,
+            "missing_json": 0,
+            "empty_keys": [],
+            "top_open": [],
+            "note": "Pass --fetch-live-portfolios to curl findtorontoevents.ca roster",
+        },
+        "edge_surfaces_summary": {
+            "audit_main": {
+                "url": "https://findtorontoevents.ca/audit/",
+                "trust": "ONLY surface for real-money sizing",
+                "money_ready_count": 0,
+                "summary": "0/9 classes money-ready on policy-clean net",
+            },
+            "tournament_best": "deepseek_v4 (pf_ci_lo~2.5, n~208) — tournament paper edge, NOT money-ready production",
+            "pick_funnel_nav_all_no_edge": True,
+        },
     }

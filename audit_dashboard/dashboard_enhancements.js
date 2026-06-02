@@ -976,11 +976,19 @@
         const nClosed = bestPilot.forward_n_closed != null ? String(bestPilot.forward_n_closed) : '0';
         const nTarget = bestPilot.forward_n_target != null ? String(bestPilot.forward_n_target) : '100';
         const blockers = Array.isArray(bestPilot.blockers) && bestPilot.blockers.length ? bestPilot.blockers.join(', ') : 'forward gate not cleared';
+        const shadowReady = bestPilot.shadow_checkpoint_ready === true;
+        const shadowKnown = bestPilot.shadow_checkpoint_ready === true || bestPilot.shadow_checkpoint_ready === false;
+        const shadowBlockers = Array.isArray(bestPilot.shadow_blockers) && bestPilot.shadow_blockers.length
+          ? ' [' + bestPilot.shadow_blockers.join(', ') + ']'
+          : '';
         const openSymbol = bestPilot.open_symbol ? ' open ' + htmlEscape(String(bestPilot.open_symbol)) : '';
+        const shadowState = shadowKnown
+          ? ', shadow checkpoint ' + (shadowReady ? 'ready' : 'pending') + htmlEscape(shadowBlockers)
+          : '';
         pilotLine = '<div style="line-height:1.5;margin-top:6px;color:#ddd6fe"><b>Best forward pilot:</b> ' +
           htmlEscape(bestPilot.label) + ' — WF ' + htmlEscape(String(bestPilot.lab_verdict || 'unknown')) +
           ', forward ' + htmlEscape(nClosed) + '/' + htmlEscape(nTarget) + openSymbol +
-          ', blockers: ' + htmlEscape(blockers) + '.</div>';
+          shadowState + ', blockers: ' + htmlEscape(blockers) + '.</div>';
       }
       const banner = document.createElement('div');
       banner.id = 'enh-eagle2-policy-strip';
