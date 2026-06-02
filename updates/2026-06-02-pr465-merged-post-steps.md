@@ -42,3 +42,15 @@ python3 tools/etf_forward_stats.py --write
 ## Cross-PC
 
 Broadcast sent via `192.168.2.32:8788` (PR465 merge summary).
+
+## Ops completed (2026-06-02 ~19:02 UTC)
+
+| Job | Result |
+|-----|--------|
+| `universal_pick_resolver.py` | **+123** newly resolved (TP 75 / SL 37 / EXP 11); 565 active checked |
+| `resolve_stale_open_picks.py` | **24** MySQL stale rows closed; OPEN count **2465** |
+| `run_mutation_scan_honest.py` | 5 INVERT adopt/consider (unchanged) |
+| `run_verified_pilots_daily.py` | ok=True |
+| Resolver `last_pick_resolved_at` | GREEN (~12 min ago after run) |
+
+Live doc: https://findtorontoevents.ca/updates/2026-06-02-pr465-merged-post-steps.md
