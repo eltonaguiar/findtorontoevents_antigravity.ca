@@ -151,11 +151,11 @@ python3 tools/check_resolver_health.py
 
 ### P0 — Data hygiene (blocks trustworthy /audit)
 
-| # | Action | Owner / tool |
-|---|--------|----------------|
-| 1 | **ACTIVE aged-pick resolver** — extend `resolve_stale_open_picks.py` (or sibling) to process `status IN ('OPEN','ACTIVE')` with same `MAX_HOLD_HOURS_BY_CLASS` | New PR; test on dry-run first |
-| 2 | **Normalize writer default** — audit `mysql_trading_sync.pick_to_row` ACTIVE default vs resolver terminal set | `alpha_engine/mysql_trading_sync.py` |
-| 3 | **Fix health label** — rename `estimated_stale` → `total_open` in `check_stale_by_category` to stop false YELLOW | `tools/check_resolver_health.py` |
+| # | Action | Status |
+|---|--------|--------|
+| 1 | **ACTIVE aged-pick resolver** — `resolve_stale_open_picks.py` now scans `OPEN`+`ACTIVE` | **DONE** — 3663 TIME_EXIT on 2026-06-02 ([doc](https://findtorontoevents.ca/updates/2026-06-02-active-stale-resolver-p0.md)) |
+| 2 | **Fix health label** — `total_past_hold_window` vs `total_live_picks` | **DONE** — `tools/check_resolver_health.py` |
+| 3 | **Normalize writer default** — audit `mysql_trading_sync.pick_to_row` ACTIVE default | Pending PR |
 
 ### P1 — Verified edge path (shadow only)
 
