@@ -33,6 +33,21 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+<div class="update-entry" style="--dot-color: #a78bfa;" data-tags="pr465,mutation-pf,promotion-gate,eagle2,verified-pilots,goal-1" data-category="trading" data-types="fix,documentation">
+  <div class="update-meta">
+    <span class="update-date">2026-06-02</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">PR #465 merged — honest mutation PF + promotion gate shadow on production scanner</h3>
+  <div class="update-body">
+    <p><strong>Merge:</strong> <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/465">PR #465</a> → main <code>4e2887f9e</code>. Caps fake INVERT profit factors (no 999 sentinel), requires ≥3 losing trades for ADOPT/CONSIDER, and stamps <code>_promotion_gate_*</code> metadata in <code>production_scanner</code> after EAGLE-6.</p>
+    <p><strong>Honest scan (MySQL closed rows):</strong> 2298 trades / 35 strategies → <strong>5</strong> INVERT adopt/consider (was 14 with broken math). Reproducer: <code>python3 tools/run_mutation_scan_honest.py</code> → <code>reports/mutation_scan_honest_latest.json</code>.</p>
+    <p><strong>Capital gates unchanged:</strong> <code>PROMOTED_STRATEGIES</code> still <strong>empty</strong> — do <em>not</em> set <code>PROMOTION_GATE_ENFORCE=1</code> until a strategy is admitted. ETF dual momentum forward <code>n_closed=0</code> (XLK OPEN; shadow target 30).</p>
+    <p><strong>Verified pilots daily:</strong> <code>python3 tools/run_verified_pilots_daily.py</code> refreshes ETF/crypto/faber forward stats + <a href="/audit/">pilot dashboard</a> payloads.</p>
+    <p style="font-size:11px;color:#94a3b8;">Doc: <code>updates/2026-06-02-pr465-merged-post-steps.md</code> · INCIDENT_OVERALL#78 (mutation PF P0) RESOLVED in DB · Paper-pilot / shadow only.</p>
+  </div>
+</div>
+
 <div class="update-entry" style="--dot-color: #60a5fa;" data-tags="eagle4,eagle5,gates,production-scanner,crpyto-flip,persona-kill,symbol-boost,best-picks,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
   <div class="update-meta">
     <span class="update-date">2026-06-02</span>
