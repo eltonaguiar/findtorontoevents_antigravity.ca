@@ -33,6 +33,59 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+<div class="update-entry" style="--dot-color: #60a5fa;" data-tags="eagle4,eagle5,gates,production-scanner,crpyto-flip,persona-kill,symbol-boost,best-picks,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
+  <div class="update-meta">
+    <span class="update-date">2026-06-02</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">EAGLE-4 + EAGLE-5 Gates Shipped — Code Diff &amp; What It Does (minimax-m3-free)</h3>
+  <div class="update-body">
+    <p><strong>Companion to the session report below.</strong> This entry is the engineer's view: <em>what code shipped, what bug was found and fixed, and what the smoke test produced</em>. <strong>Full page with ELI5 under every section, full rationale on every best pick, and a 12-week short/long-term plan:</strong> <a href="https://findtorontoevents.ca/updates/eagle4-eagle5-gates-2026-06-02.html"><strong>EAGLE-4 + EAGLE-5 Gates Guide 2026-06-02 →</strong></a></p>
+    <p><strong>What shipped (commit <code>7510035f1</code> on <code>origin/main</code>):</strong></p>
+    <ul>
+      <li><strong>EAGLE-4 admissibility gate</strong> — kills 4 noise personas (momentum_scalp 28%, breakout_scanner 28%, reflexivity_trader 35%, deep_value 44% WR), kills 8 negative-edge class×direction combos (PENNY/COMMODITY/ETF/EQUITY × SHORT/SELL), and <strong>flips CRYPTO LONG → SHORT</strong> (tournament data: SHORT 67% WR vs LONG 33% WR, n=216). Wired into <code>production_scanner.py</code> main() at section 6f2.5.</li>
+      <li><strong>EAGLE-5 promotion gate</strong> — boosts confidence +20% for 33 tournament-validated symbols (EQUITY 16, ETF 5, PENNY 8, COMMODITY 3, FUTURES 1) and +15% for 16 promoted personas. Multiplicative, capped at 1.0. Wired at section 6f2.6, right after EAGLE-4.</li>
+      <li><strong>Standalone module <code>alpha_engine/eagle_gates.py</code></strong> — owns EAGLE-4 + EAGLE-5 logic so concurrent agent edits to the giant scanner file can't silently revert the data-backed gates. The scanner only imports from this small file.</li>
+    </ul>
+    <p><strong>Bug fix (important):</strong> the original EAGLE-4 persona lookup read <code>pick["persona_id"]</code> / <code>pick["strategy_name"]</code>, but production picks actually use <code>pick["strategy"]</code>. Without the fix, the persona kill silently no-op'd on every real pick. Now fixed — persona field falls back through <code>persona_id → strategy_name → strategy</code>.</p>
+    <p><strong>Smoke test result (10 synthetic picks):</strong> 6 kept, 2 persona-killed (AAPL momentum_scalp, GLD breakout_scanner), 2 directional-killed (JPM EQUITY SHORT, GC=F COMMODITY SHORT), 1 CRYPTO flipped (BTC LONG→SHORT), 4 EAGLE-5 boosted (MSFT, KULR, EEM, BAC), all confidence ≤ 1.0 cap. PASS.</p>
+    <p><strong>Top picks from this work (full rationale on linked page):</strong> <em>Paper watch</em> — CRYPTO SHORT (BTC/ETH, the EAGLE-4 flip), ETF EEM/IWM/GLD (EAGLE-5 whitelist), EQUITY BAC/JPM/MSFT/NVDA (EAGLE-5 whitelist). <em>Shadow pilot</em> — <code>etf_verified_dual_momentum</code> (only lab Tier-2 pass). <em>Do not size</em> — production /audit Smart Picks (0/9 money-ready).</p>
+    <p><strong>ELI5:</strong> Two new filters were added to the pick-club door. (1) Bouncer: "bounce losers, flip CRYPTO longs to shorts." (2) VIP host: "give extra confidence to the symbols and strategies that have actually won in our tournament." Same robots, same data, just smarter about who's allowed in and how loud they get to talk.</p>
+    <p><strong>Plans (full 12-week roadmap on linked page):</strong> <em>Short-term (this + next week)</em> — verify EAGLE-4/5 in live runs, run Bonferroni α/N audit (N≈80 emitters → α_adj ≈ 0.000625), build EAGLE-6 admissibility with DSR/PBO/walk-forward hard gates, forward-test top 5 symbols (BTC SHORT, ETH SHORT, EEM LONG, MSFT LONG, KULR LONG). <em>Long-term (12 weeks)</em> — pipeline latency ≤ 5min/sleeve, shadow-size ETF + Crypto at ≤0.5% capital, promote 2+ sleeves to MONEY_READY, HHI aggregate &lt; 0.20, resolver dispute rate &lt; 1%.</p>
+    <p><strong>Sources:</strong> <code>alpha_engine/eagle_gates.py</code>, <code>alpha_engine/production_scanner.py</code> (sections 6f2.5 + 6f2.6), <code>EAGLE4_2026-06-02_minimax-m3-free.MD</code>, <code>EAGLE3_2026-06-02_minimax-m3-free.MD</code>, <code>reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md</code>. Repro: <code>python3 -c "import sys; sys.path.insert(0, 'alpha_engine'); from eagle_gates import apply_eagle4_admissibility, apply_eagle5_promotion; print('OK')"</code>.</p>
+  </div>
+</div>
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="eagle2,session-summary,root-cause,quant-review,phases-1-5,best-picks,roadmap,eli5,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
+  <div class="update-meta">
+    <span class="update-date">2026-06-02</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">🦅 EAGLE2 Root Cause + 5 Phase Fixes + Best Picks + 12-Week Plan (full ELI5)</h3>
+  <div class="update-body">
+    <p><strong>Full report (tables, ELI5, per-pick rationale):</strong> <a href="/updates/eagle2-session-summary-2026-06-02.html"><strong>EAGLE2 Session Summary →</strong></a></p>
+    <p><strong>What we fixed:</strong> <a href="/audit/">/audit</a> production book had 0 profitable asset classes. Root cause: research→production gap + resolver contamination. <strong>5 phases deployed across 17 files (~3,000 lines):</strong></p>
+    <ol style="font-size:13px;margin:6px 0;padding-left:20px;">
+      <li><strong>FOREX TIME_EXIT unified</strong> — 48h/120h/7d → 72h across all 7 resolvers</li>
+      <li><strong>Provenance tagging</strong> on every resolved pick (_resolver_version, _resolver_source)</li>
+      <li><strong>Unified 10-step admissibility pipeline</strong> replacing 6 fragmented validators</li>
+      <li><strong>Emitter discipline gate</strong> — 25 killed, 8 monitor-only, 42 proven</li>
+      <li><strong>Concentration monitor</strong> + crypto VWAP/Bollinger default-enabled</li>
+    </ol>
+    <p><strong>Best picks (detailed rationale on HTML):</strong></p>
+    <table style="width:100%;font-size:12px;border-collapse:collapse;margin:8px 0;">
+      <tr style="border-bottom:1px solid rgba(148,163,184,0.2);"><th style="text-align:left;padding:4px;">Asset Class</th><th>Best Pick</th><th>PF/WR</th><th>Status</th></tr>
+      <tr><td style="padding:4px;">CRYPTO</td><td>deepseek_v4 SHORT</td><td>3.46 / 57.7%</td><td style="color:#f59e0b;">PAPER ONLY</td></tr>
+      <tr><td style="padding:4px;">ETF</td><td>ETF Dual Momentum</td><td>1.60 / 53.8%</td><td style="color:#f59e0b;">SHADOW PILOT</td></tr>
+      <tr><td style="padding:4px;">EQUITY</td><td>BAC, JPM, MSFT, NVDA</td><td>~64% paper WR</td><td style="color:#ef4444;">NO (prod PF 0.33)</td></tr>
+      <tr><td style="padding:4px;">FOREX</td><td>—</td><td>—</td><td style="color:#ef4444;">HARD-DISABLED</td></tr>
+    </table>
+    <p><strong>Stats:</strong> Bonferroni, DSR, Monte Carlo (20+), block bootstrap — all in codebase, now enforced via admissibility pipeline. LiteLLM: 16 models (3 new tested + working).</p>
+    <p><strong>12-week roadmap:</strong> Weeks 1-4 (resolver audit + pipeline deploy), 5-9 (WF on ETF/crypto + shadow-size), 10-12 (promote + scale). Target: ≥2 capital-ready sleeves with live PF ≥ 0.5, WR ≥ 55%.</p>
+    <p style="font-size:11px;color:#94a3b8;">17 files · ~3,000 lines · 3 commits · Full plan: ~/.commandcode/plans/EAGLE2_2026-06-02_deepseek_v4.MD</p>
+  </div>
+</div>
+
+
 <div class="update-entry" style="--dot-color: #a78bfa;" data-tags="eagle2,session-report,findings,achievements,best-picks,roadmap,eli5,goal-1,trading,documentation" data-category="trading" data-types="documentation,feature">
   <div class="update-meta">
     <span class="update-date">2026-06-02</span>
