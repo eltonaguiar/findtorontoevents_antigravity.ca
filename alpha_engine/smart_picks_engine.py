@@ -513,7 +513,12 @@ NON_CRYPTO_POLICY = {
         "min_score": 40,
         "min_rr": 1.00,
         "min_conf": 0.50,
-        "max_conf": 0.95,
+        # 2026-06-02 EAGLE-3: max_conf 0.95 -> 0.85. Peer evidence
+        # (reports/EAGLE_JUNE2_CLAUDE_CODE.MD): conf 0.50-0.60 -> 60.3% WR,
+        # conf >= 0.90 -> 14.4% WR. ML confidence is anti-predictive in this
+        # bucket; lowering the cap kills the worst slice without raising the
+        # floor. Reversible. Re-evaluate after 14d forward.
+        "max_conf": 0.85,
         "allowed_trust": {"PROVEN", "RELIABLE", "DEVELOPING"},
     },
     "equity": {
@@ -546,7 +551,12 @@ NON_CRYPTO_POLICY = {
         "min_score": 50,
         "min_rr": 1.00,
         "min_conf": 0.50,
-        "max_conf": 0.95,
+        # 2026-06-02 EAGLE-3: max_conf 0.95 -> 0.85. Peer evidence
+        # (reports/EAGLE_JUNE2_CLAUDE_CODE.MD): conf 0.50-0.60 -> 60.3% WR,
+        # conf >= 0.90 -> 14.4% WR. ML confidence is anti-predictive in this
+        # bucket; lowering the cap kills the worst slice without raising the
+        # floor. Reversible. Re-evaluate after 14d forward.
+        "max_conf": 0.85,
         "allowed_trust": {"PROVEN", "RELIABLE", "DEVELOPING"},
     },
     "commodity": {
@@ -564,7 +574,12 @@ NON_CRYPTO_POLICY = {
         "min_score": 40,
         "min_rr": 1.00,
         "min_conf": 0.50,
-        "max_conf": 0.95,
+        # 2026-06-02 EAGLE-3: max_conf 0.95 -> 0.85. Peer evidence
+        # (reports/EAGLE_JUNE2_CLAUDE_CODE.MD): conf 0.50-0.60 -> 60.3% WR,
+        # conf >= 0.90 -> 14.4% WR. ML confidence is anti-predictive in this
+        # bucket; lowering the cap kills the worst slice without raising the
+        # floor. Reversible. Re-evaluate after 14d forward.
+        "max_conf": 0.85,
         "allowed_trust": {"PROVEN", "RELIABLE", "DEVELOPING"},
     },
     "etf": {
@@ -576,7 +591,12 @@ NON_CRYPTO_POLICY = {
         "min_score": 40,
         "min_rr": 1.00,
         "min_conf": 0.50,
-        "max_conf": 0.95,
+        # 2026-06-02 EAGLE-3: max_conf 0.95 -> 0.85. Peer evidence
+        # (reports/EAGLE_JUNE2_CLAUDE_CODE.MD): conf 0.50-0.60 -> 60.3% WR,
+        # conf >= 0.90 -> 14.4% WR. ML confidence is anti-predictive in this
+        # bucket; lowering the cap kills the worst slice without raising the
+        # floor. Reversible. Re-evaluate after 14d forward.
+        "max_conf": 0.85,
         "allowed_trust": {"PROVEN", "RELIABLE", "DEVELOPING"},
     },
     "bond": {
@@ -587,7 +607,12 @@ NON_CRYPTO_POLICY = {
         "min_score": 40,
         "min_rr": 1.00,
         "min_conf": 0.50,
-        "max_conf": 0.95,
+        # 2026-06-02 EAGLE-3: max_conf 0.95 -> 0.85. Peer evidence
+        # (reports/EAGLE_JUNE2_CLAUDE_CODE.MD): conf 0.50-0.60 -> 60.3% WR,
+        # conf >= 0.90 -> 14.4% WR. ML confidence is anti-predictive in this
+        # bucket; lowering the cap kills the worst slice without raising the
+        # floor. Reversible. Re-evaluate after 14d forward.
+        "max_conf": 0.85,
         "allowed_trust": {"PROVEN", "RELIABLE", "DEVELOPING"},
     },
     "futures": {
@@ -598,7 +623,12 @@ NON_CRYPTO_POLICY = {
         "min_score": 40,
         "min_rr": 1.00,
         "min_conf": 0.50,
-        "max_conf": 0.95,
+        # 2026-06-02 EAGLE-3: max_conf 0.95 -> 0.85. Peer evidence
+        # (reports/EAGLE_JUNE2_CLAUDE_CODE.MD): conf 0.50-0.60 -> 60.3% WR,
+        # conf >= 0.90 -> 14.4% WR. ML confidence is anti-predictive in this
+        # bucket; lowering the cap kills the worst slice without raising the
+        # floor. Reversible. Re-evaluate after 14d forward.
+        "max_conf": 0.85,
         "allowed_trust": {"PROVEN", "RELIABLE", "DEVELOPING"},
     },
 }
