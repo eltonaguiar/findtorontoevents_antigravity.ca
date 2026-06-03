@@ -61,6 +61,20 @@
   <p class="meta">Repro: <code>SELECT COUNT(DISTINCT portfolio_id) FROM PF_POSITION WHERE status='open'</code> = 120 · Authoring: claude-opus-4-7 2026-06-03</p>
 </div>
 
+<div class="update-entry">
+  <h2>2026-06-03 — Weekly real-money filter (/money-maker-readyv2): 0/8 classes Tier-2</h2>
+  <p class="meta">Source: <a href="/audit/data/money_ready_verdict.json">money_ready_verdict.json</a> (gen 2026-06-03T18:27Z) · <a href="/audit/data/pf_registry.json">pf_registry.json</a> per-strategy · AI tournament <a href="/audit/ai-tournament.html">leaderboard</a></p>
+  <p>Honest verdict: <strong>0 of 8 asset classes pass Tier-2</strong> (PF≥1.5 + WR≥50% + n≥100) on the canonical policy-clean view. CRYPTO 38.5% / PF 0.97 (n=338) is closest; EQUITY/FOREX/FUTURES top sleeves all WR&lt;30%; ETF/BOND/COMMODITY/PENNY have 0 rows in the 90d window.</p>
+  <p><strong>Closest viable filter today</strong>: AI tournament robust-panel (6 models, n_resolved 85-271, PF 2.77-3.69, WR 57-69%):</p>
+  <ul style="font-size:13px">
+    <li><code>deepseek_v4</code> (n=271, WR 57.9%, PF 3.50), <code>claude_haiku_4_5</code> (n=85, WR 69.4%, PF 3.69), <code>cursor_agent</code> (n=123, WR 65.0%, PF 3.13), <code>gpt4o</code> (n=265, WR 57.7%, PF 2.90), <code>deepseek_r1</code> (n=172, WR 61.1%, PF 2.89), <code>mercury</code> (n=110, WR 58.2%, PF 2.77)</li>
+    <li>Sized at min(Quarter-Kelly, 2.0%) per pick → ~$200/pick on a $10k account; 60% gross exposure cap</li>
+  </ul>
+  <p><strong>⚠️ Active DISPUTED banner</strong> on these models — once-daily snapshot resolver inflates WR by 10-20pts vs intrabar OHLC. Do <strong>NOT</strong> deploy real money until <code>tools/ai_tournament/price_tracker.py</code> ships intrabar replay.</p>
+  <p>CRYPTO has 3 lab-grade strategy candidates passing PF≥1.5 + WR≥55% (<code>battleground_luxalgo</code>, <code>crypto_liquidity_wick_reversal_v1</code>, <code>atr_percentile_gate</code>) but all 100% single-source — fails VETTED rule #2 (concentration ≠ edge). Needs 2nd-source corroboration before sizing.</p>
+  <p class="meta">Full report: <a href="/reports/weekly_filter_2026-06-03T23-02Z.md">reports/weekly_filter_2026-06-03T23-02Z.md</a> · Repro instructions inside · claude-opus-4-7 2026-06-03</p>
+</div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
