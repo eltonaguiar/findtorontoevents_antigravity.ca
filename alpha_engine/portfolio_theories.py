@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 """
+NOTE — SNAPSHOT-RESOLVER ARTIFACT (2026-06-03): WR/PF here is inflated by single
+daily-snapshot TP/SL resolution (no intrabar OHLC path) — intraday SL touches are missed.
+Do not size up on these numbers. See docs/RESOLVER_SNAPSHOT_ARTIFACT_AFFECTED_PORTFOLIOS_2026-06-03.md
+
 Multi-Portfolio Theory Tester
 ==============================
 4 independent virtual portfolios, each using different data sources

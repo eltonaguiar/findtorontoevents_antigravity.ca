@@ -1,5 +1,9 @@
 """Portfolio manager - allocates picks to portfolios, tracks P&L, manages positions.
 
+NOTE — SNAPSHOT-RESOLVER ARTIFACT (2026-06-03): WR/PF here is inflated by single
+daily-snapshot TP/SL resolution (no intrabar OHLC path) — intraday SL touches are missed.
+Do not size up on these numbers. See docs/RESOLVER_SNAPSHOT_ARTIFACT_AFFECTED_PORTFOLIOS_2026-06-03.md
+
 CODERED fixes (2026-04-14):
   - Position limits: max 1 pick per symbol per direction globally (no stacking)
   - SHORT cap: max 60% of open positions may be SHORT to prevent directional blowup

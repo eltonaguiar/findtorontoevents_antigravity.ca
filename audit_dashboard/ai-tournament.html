@@ -179,6 +179,15 @@
   <button class="time-tab" data-window="3d">3D <span class="count" id="count-3d"></span></button>
   <button class="time-tab" data-window="today">Today <span class="count" id="count-today"></span></button>
 </div>
+<div id="resolver-artifact-banner" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.45);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:12px;line-height:1.6;color:#fecaca">
+  <strong style="color:#fca5a5">⚠ DATA QUALITY — WIN RATES UNVERIFIED (audit 2026-06-03).</strong>
+  Outcomes on this page are resolved by a <strong>once-daily spot-price snapshot</strong> with no intrabar high/low path
+  (<code>tools/ai_tournament/price_tracker.py:resolve_pick</code>), so intraday stop-loss touches are missed and win rate is inflated.
+  Models place take-profit ~2.2–2.4× farther than stop-loss, so an unbiased path-aware resolver would yield WR <em>well below 50%</em> — not the
+  73–91% shown (LONG picks 87% vs SHORT 33% over a 4–14-day window = regime drift, not edge). Resolved samples are <strong>&lt;100 and 4–14 days old</strong>;
+  PF lower-bounds hit a bootstrap 10.0 floor. <strong>Treat the Tier-1 badges, ranks and PF here as UNPROVEN</strong> until intrabar OHLC resolution + n≥100 land.
+  Full audit: <code>reports/ai_tournament_winrate_audit_2026-06-03.md</code>.
+</div>
 <table class="lb" id="leaderboard">
   <thead>
     <tr>
@@ -684,7 +693,7 @@ function renderLeaderboard(models, opts) {
     const rankNum = (m.rank != null) ? m.rank : (i + 1);
     tbody.innerHTML += `<tr>
       <td class="rank">#${rankNum}</td>
-      <td class="model-name">${esc(m.model_id)}</td>
+      <td class="model-name"><a href="./model.html?id=${encodeURIComponent(m.model_id)}" title="Drill down to all picks, per-asset-class and per-persona breakdown for ${esc(m.model_id)}">${esc(m.model_id)}</a></td>
       <td><span class="provider">${esc(m.provider)}</span></td>
       <td class="num ${wrClass}">${wrDisplay}</td>
       <td class="num small">${hasWr ? `[${(m.wr_ci_lo*100).toFixed(1)}%, ${(m.wr_ci_hi*100).toFixed(1)}%]` : '—'}</td>
@@ -701,7 +710,7 @@ function renderLeaderboard(models, opts) {
     const totalN = models.filter(x => x.rank_eligible).length;
     tbody.innerHTML += `<tr style="opacity:0.5">
       <td class="rank">—</td>
-      <td class="model-name">${esc(m.model_id)}</td>
+      <td class="model-name"><a href="./model.html?id=${encodeURIComponent(m.model_id)}" title="Drill down to all picks, per-asset-class and per-persona breakdown for ${esc(m.model_id)}">${esc(m.model_id)}</a></td>
       <td><span class="provider">${esc(m.provider)}</span></td>
       <td class="num pnl-neu" colspan="6">n=${m.n_resolved} / need 30 to rank</td>
       <td><span class="badge b-pending">BUILDING</span></td>

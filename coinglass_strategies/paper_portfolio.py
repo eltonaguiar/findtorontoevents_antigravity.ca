@@ -1,4 +1,9 @@
-"""Paper portfolio manager — $10K virtual equity, ATR-based sizing."""
+"""Paper portfolio manager — $10K virtual equity, ATR-based sizing.
+
+NOTE — SNAPSHOT-RESOLVER ARTIFACT (2026-06-03): WR/PF here is inflated by single
+daily-snapshot TP/SL resolution (no intrabar OHLC path) — intraday SL touches are missed.
+Do not size up on these numbers. See docs/RESOLVER_SNAPSHOT_ARTIFACT_AFFECTED_PORTFOLIOS_2026-06-03.md
+"""
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List

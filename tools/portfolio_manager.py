@@ -2,6 +2,10 @@
 """
 Portfolio Manager for KIMI Rise of the Claw.
 
+NOTE — SNAPSHOT-RESOLVER ARTIFACT (2026-06-03): WR/PF here is inflated by single
+daily-snapshot TP/SL resolution (no intrabar OHLC path) — intraday SL touches are missed.
+Do not size up on these numbers. See docs/RESOLVER_SNAPSHOT_ARTIFACT_AFFECTED_PORTFOLIOS_2026-06-03.md
+
 Tracks positions, executes paper trades, manages risk limits, persists state.
 
 Features:

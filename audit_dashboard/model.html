@@ -64,6 +64,15 @@
 <h1 id="model-title">Model drill-down</h1>
 <div class="small" id="model-meta">Loading…</div>
 
+<div id="resolver-artifact-banner" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.45);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:12px;line-height:1.6;color:#fecaca">
+  <strong style="color:#fca5a5">⚠ WIN RATE UNVERIFIED (audit 2026-06-03).</strong>
+  These outcomes are resolved by a <strong>once-daily spot-price snapshot</strong> with no intrabar high/low path
+  (<code>tools/ai_tournament/price_tracker.py:resolve_pick</code>): intraday stop-loss touches are missed, so the win rate is inflated.
+  Take-profit is set ~2.2–2.4× farther than stop-loss, so an unbiased path-aware resolver would yield WR <em>well below 50%</em>.
+  Sample is &lt;100 resolved and only 4–14 days old. <strong>Treat the WR/PF/tier here as UNPROVEN</strong> until intrabar OHLC
+  resolution + n≥100 land. Full audit: <code>reports/ai_tournament_winrate_audit_2026-06-03.md</code>.
+</div>
+
 <div class="summary-grid" id="summary-grid"></div>
 
 <h2>Performance by asset class</h2>

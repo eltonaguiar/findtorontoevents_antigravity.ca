@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+NOTE — SNAPSHOT-RESOLVER ARTIFACT (2026-06-03): WR/PF here is inflated by single
+daily-snapshot TP/SL resolution (no intrabar OHLC path) — intraday SL touches are missed.
+Do not size up on these numbers. See docs/RESOLVER_SNAPSHOT_ARTIFACT_AFFECTED_PORTFOLIOS_2026-06-03.md
+
 Traditional Asset Test Portfolios (5-8)
 ========================================
 Portfolio 5: Forex Carry — JPY crosses with momentum/volatility gates

@@ -1,5 +1,11 @@
 """EOD orchestrator for the AI-model paper portfolios (Phase 3).
 
+NOTE — SNAPSHOT-RESOLVER ARTIFACT + TOURNAMENT-SOURCED (2026-06-03): this portfolio
+consumes AI-tournament picks and resolves via daily-close TP/SL with no intrabar OHLC
+path, so its WR/PF is inflated (intraday SL touches missed). Do not size up on these
+numbers. See docs/RESOLVER_SNAPSHOT_ARTIFACT_AFFECTED_PORTFOLIOS_2026-06-03.md
+
+
 Pipeline (docs/DESIGN_AI_MODEL_HEDGE_FUND_PORTFOLIOS_2026-05-29.md §5/§7):
 
   1. Load active portfolios from PF_PORTFOLIO. If empty, SEED them: for each

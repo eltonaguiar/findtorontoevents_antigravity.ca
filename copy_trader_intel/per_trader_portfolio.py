@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 """
+NOTE — SNAPSHOT-RESOLVER ARTIFACT (2026-06-03): exit prices/WR here come from single
+daily-snapshot marks (no intrabar OHLC path) and inherit upstream copy-trader resolution,
+so WR/PF is inflated. Do not size up. See docs/RESOLVER_SNAPSHOT_ARTIFACT_AFFECTED_PORTFOLIOS_2026-06-03.md
+
 Per-Trader Portfolio Simulation
 ================================
 Loads qualified traders and their active picks, then simulates a $500 portfolio
