@@ -59,7 +59,7 @@ EAGLE-6 v1's HHI (`_compute_source_hhi` in `alpha_engine/eagle_gates.py`) is com
 
 ## Reproduce
 ```bash
-DB_PASS_STOCKS=stocks1234560 python3 tools/build_windowed_hhi_results.py
+DB_PASS_STOCKS=$DB_PASS_STOCKS python3 tools/build_windowed_hhi_results.py
 # -> PASS=0 BORDERLINE=0 FAIL=17 INSUFFICIENT=2 -> tools/windowed_hhi_results.json
 ```
 
