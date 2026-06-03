@@ -542,9 +542,11 @@ def run_portfolio(db: DB, pf: dict, picks: list[dict], profiles: dict,
             sp["asset_class"], 0.0) + abs(float(sp.get("weight_at_entry") or 0.0)) * 100.0
     db.execute(
         "INSERT INTO PF_DAILY_METRICS (portfolio_id, asof_date, sharpe_30d, "
-        "max_dd, pf_to_date, wr_to_date, exposure_by_class) VALUES (?,?,?,?,?,?,?)",
-        (pid, asof, m["sharpe_30d"], m["max_dd"], m["pf_to_date"],
-         m["wr_to_date"], json.dumps(exposure_by_class)))
+        "sortino_30d, max_dd, cagr, pf_to_date, wr_to_date, exposure_by_class) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (pid, asof, m["sharpe_30d"], m["sortino_30d"], m["max_dd"],
+         m["cagr"], m["pf_to_date"], m["wr_to_date"],
+         json.dumps(exposure_by_class)))
 
     db.commit()
 

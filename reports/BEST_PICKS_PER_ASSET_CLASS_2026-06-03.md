@@ -1,4 +1,4 @@
-# Best Picks Per Asset Class — Live Snapshot 2026-06-03
+# Best Picks Per Asset Class — Live Snapshot 2026-06-03 (v2)
 
 **Source**: live MySQL `trading_picks` table, 90-day window, n≥30, PnL-based WR/PF (sidesteps the EXPIRED-mislabel incident).
 **Reporter**: claude-opus-4-7
@@ -12,7 +12,22 @@ Per CLAUDE.md canonical truth (`money_ready_verdict.json` post-M-067 policy-clea
 
 ---
 
-## Table — top survivors by Profit Factor
+## Promotion Gate Status — ENFORCED
+
+`PROMOTED_STRATEGIES` in `audit_trail/promotion_gate.py` is **empty** (deny-by-default by design). With the gate now hardcoded to always enforce (this session), **all 36 active picks would be blocked from emission** — zero picks reach `active_picks.json` when the scanner runs with the gate enforced.
+
+This is **correct behavior**: no strategy has completed the full admission cycle (walk-forward PASS + 30-day shadow paper + DSR/PBO thresholds + sign-coherence check + concentration HHI < 0.20). The system works as designed — a false negative costs nothing (strategy stays paper-only); a false positive costs real money.
+
+### Current promotion candidates
+
+| # | Strategy | Asset Class | Status | Day Count | Promotion Blockers |
+|---|----------|-------------|--------|-----------|-------------------|
+| **#1** | `etf_verified_dual_momentum` | ETF | FORWARD_PILOT_ONLY | 2 (open since 2026-06-02) | n<100, pf<1.5, wr<50%, pf<0.85*oos |
+| **#2** | `macd_rsi_m048` | CRYPTO | SHADOW | 8 of 30 | day_count < 30, pf unavailable (DB unreachable) |
+
+---
+
+## Table — top survivors by Profit Factor (pre-gate enforcement)
 
 | ★/◐ | Asset Class | Source/Strategy | n | WR | PF | AvgPnL% | Last close | Credibility caveat |
 |---|---|---|---|---|---|---|---|---|
