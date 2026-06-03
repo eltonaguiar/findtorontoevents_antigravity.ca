@@ -275,11 +275,13 @@ class Test384_ReviewDoc:
 # ---------------------------------------------------------------------------
 
 class TestClosedPRsStayClosed:
-    """#340 (mistitled) and #363 (circular EV antipattern) must be CLOSED, not
-    merged. If GitHub state is unreachable, skip."""
+    """#363 (circular EV antipattern) must stay CLOSED, not merged.
+
+    PR #340 is no longer a valid sentinel for this rule: the current GitHub PR
+    number is a later docs-only PR that was intentionally merged.
+    """
 
     @pytest.mark.parametrize("pr,reason", [
-        (340, "title/diff mismatch — claimed workflows but had none"),
         (363, "circular EV antipattern — synthesized quotes devigged as books"),
     ])
     def test_pr_closed_without_merge(self, pr, reason):

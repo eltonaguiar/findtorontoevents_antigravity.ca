@@ -35,7 +35,6 @@ pytest tests/test_pr_triage_2026_04_25_merge_success.py::Test391_CIStashFix -v
 | #387 | All 3 cap locations widened | `Test387_ForexCaps` | `0.015` / `0.008` (or `1.5%` / `0.8%`) appear in config.py; old `0.0075` not adjacent to `forex` keyword |
 | #388 | MLS excluded | `Test388_MLSExclusion` | `soccer_usa_mls` in `sports_picks.php` near an exclusion keyword |
 | #384 | #381 closure noted | `Test384_ReviewDoc` | doc text contains "PR #381 was subsequently closed" |
-| #340 | Stayed closed, not merged | `TestClosedPRsStayClosed` | `mergedAt is None`, state is terminal |
 | #363 | Stayed closed, not merged | `TestClosedPRsStayClosed` | `mergedAt is None`, state is terminal |
 | #383 | Still open OR events.json restored | `TestBlockedPRsStillOpen` | if merged, both events.json files >100KB |
 | #344 | Still open OR CI clean | `TestBlockedPRsStillOpen` | sanity state check |
@@ -61,8 +60,12 @@ The historical bug pattern: TP/SL caps live in 3 places, and the **tightest** of
 ### #388 — exclusion-not-inclusion
 Naive substring match (`if 'soccer_usa_mls' in source`) doesn't tell us whether MLS is being excluded or included. The test scans for the token within 200 characters of any exclusion keyword (`exclud`, `skip`, `block`, `void`) — that's tolerant to refactors but catches an accidental flip from exclude-list to include-list.
 
-### Closed PRs (#340, #363)
-These should never merge. The test asserts `mergedAt is None`. If a future agent re-opens and merges either, the test goes red and the rationale is in the test docstring.
+### Closed PRs (#363)
+`#363` should never merge. The test asserts `mergedAt is None`.
+
+`#340` is no longer a reliable sentinel for this section because the current PR
+number on GitHub is a later docs-only PR that was intentionally merged. The
+test now tracks only the still-valid blocked PR.
 
 ### Blocked PRs (#383, #344)
 The dangerous case is `#383 merges`. The test handles that gracefully: if it did merge, it must have come with the events.json restoration we suggested in the blocker comment. The `>100KB` byte threshold catches "merged with the deletion still present" (the deletion would zero out the files).
