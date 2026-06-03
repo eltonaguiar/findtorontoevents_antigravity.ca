@@ -30,20 +30,21 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# 2026-06-03 P0 fix: mark-to-market imports hoisted to module scope.
-# Previous in-loop imports `from tools.portfolios.engine import mark_position`
-# failed with ModuleNotFoundError when this file ran as
-# `python tools/portfolios/export_json.py` because sys.path got
-# the script's directory, not the repo root. The exception was
-# silently caught by `continue-on-error: true` on the daily workflow,
-# so every portfolio JSON shipped without current_price /
-# unrealized_pnl_pct populated, leaving the pf.html drill columns
-# blank on the live site. Relative imports resolve at module load
-# regardless of how Python is invoked.
-from .engine import mark_position  # noqa: E402
-from .prices import get_close  # noqa: E402
-
+# 2026-06-03 P0 fix (v2): inject repo root into sys.path so absolute imports
+# resolve when this file is run as `python tools/portfolios/export_json.py`
+# (the daily GHA workflow). v1 tried relative imports (`from .engine`) but
+# those require `python -m tools.portfolios.export_json`; under direct script
+# invocation the module has no parent package and raises
+# `ImportError: attempted relative import with no known parent package`.
+# This made the export step crash at module-load time, the FTP step then
+# uploaded the previous (stale) JSON, and pf.html drill columns
+# (Weight %, TP, Current $, Unrealized %) stayed blank on the live site.
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.portfolios.engine import mark_position  # noqa: E402
+from tools.portfolios.prices import get_close  # noqa: E402
 DATA_DIR = REPO_ROOT / "audit_dashboard" / "data"
 
 
