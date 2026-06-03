@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -28,7 +29,7 @@ def test_hc_filter_has_dsr_gate_wiring():
 
 def test_multi_asset_cot_verifier_dry_run():
     proc = subprocess.run(
-        ["python", "tools/verify_multi_asset_cot_db.py", "--dry-run"],
+        [sys.executable, "tools/verify_multi_asset_cot_db.py", "--dry-run"],
         cwd=ROOT,
         check=True,
         capture_output=True,

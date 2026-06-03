@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -13,7 +14,7 @@ def test_supplemental_prework_audit_generates_report():
         out_path.unlink()
 
     proc = subprocess.run(
-        ["python", "tools/supplemental_prework_audit.py", "--out", out_rel],
+        [sys.executable, "tools/supplemental_prework_audit.py", "--out", out_rel],
         cwd=ROOT,
         check=True,
         capture_output=True,
