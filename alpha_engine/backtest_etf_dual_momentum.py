@@ -235,8 +235,12 @@ def dual_momentum_signals(
     """
     positions = pd.DataFrame(0, index=prices.index, columns=prices.columns, dtype=float)
 
-    # Monthly rebalancing points
-    month_ends = prices.resample("ME").last().index
+    # Monthly rebalancing points. "ME" is the pandas >=2.2 month-end alias;
+    # fall back to "M" on older pandas (CI may run pandas <2.2).
+    try:
+        month_ends = prices.resample("ME").last().index
+    except ValueError:
+        month_ends = prices.resample("M").last().index
 
     for rebalance_date in month_ends:
         # Find the last available price before or on rebalance_date
