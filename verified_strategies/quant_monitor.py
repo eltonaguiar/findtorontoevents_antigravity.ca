@@ -153,8 +153,11 @@ def compute_resolver_health(closed: List[Dict]) -> ResolverReport:
     time_exits = sum(1 for p in closed if p.get('exit_reason') == 'TIME_EXIT')
 
     alerts = []
-    if expired_pos_rate > RESOLVER_THRESHOLDS['expired_positive_rate_max']:
-        alerts.append(f"EXPIRED_POSITIVE_RATE={expired_pos_rate:.1%} — possible mislabeling")
+    # EXPIRED with positive PnL is normal (price drifted up) — alert only if marked WON
+    expired_as_won = sum(1 for p in expired if p.get('status') == 'WON')
+    expired_won_rate = expired_as_won / len(expired) if expired else 0
+    if expired_won_rate > 0.05:
+        alerts.append(f"EXPIRED_AS_WON={expired_won_rate:.1%} — EXPIRED picks incorrectly marked WON")
     if unknown / total > RESOLVER_THRESHOLDS['unknown_exit_rate_max']:
         alerts.append(f"UNKNOWN_EXIT_RATE={unknown/total:.1%}")
 
