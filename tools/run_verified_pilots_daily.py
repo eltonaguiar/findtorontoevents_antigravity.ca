@@ -33,9 +33,13 @@ def main() -> int:
         # Flips SHADOW -> READY_REVIEW when PF>=1.5 + WR>=0.55 + n>=30 +
         # PF drift <=30% from lab.
         _run([py, "verified_strategies/paper_pilot/macd_rsi_m048_pilot.py", "--one-shot"]),
+        # PR #482 bootstrap forward-test (virtual book; no production enable)
+        _run([py, "verified_strategies/paper_pilot/b_flip_price_roc_forward_pilot.py"]),
+        _run([py, "verified_strategies/paper_pilot/inverse_ml_btc_forward_pilot.py"]),
         _run([py, "tools/etf_forward_stats.py", "--write"]),
         _run([py, "tools/crypto_wf_forward_stats.py", "--write"]),
         _run([py, "tools/faber_forward_stats.py", "--write"]),
+        _run([py, "tools/bootstrap_forward_stats.py", "--write"]),
         _run([py, "tools/pilot_forward_dashboard.py"]),
         _run([py, "tools/strategy_admit.py", "--strategy", "etf_dual_momentum", "--asset-class", "ETF", "--write"]),
     ]
