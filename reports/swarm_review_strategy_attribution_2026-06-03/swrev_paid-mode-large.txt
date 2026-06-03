@@ -1,0 +1,11 @@
+**R1:** Drop it. “Excess over average-agent on same symbol” measures dispersion, not alpha—it’s a zero-sum relative ranking within a noisy crowd. Without a risk model, you’re just picking the least-bad noise trader. Fatal flaw: no economic interpretation.
+
+**R2:** Fatally biased. Batch-stamped `resolved_at` destroys temporal alignment. You cannot regress on BTC/SPY without knowing the exact hold window—you’ll misattribute timing luck as alpha. The 44% signal_ts recovery doesn’t fix this; it’s a data-snooping minefield.
+
+**R3:** BH-FDR is too weak for this context—you have ~50 strategies with high correlation (same symbols, overlapping windows). Use Bonferroni or a step-down procedure (Holm) to avoid false positives from correlated tests.
+
+**R4:** Yes, circular. Bootstrap-CI on the same data that generated the shortlist is double-dipping. The real test must be forward-only (e.g., time-series split or holdout period). Without it, you have no out-of-sample evidence.
+
+**R5:** STOP. The data infrastructure is broken (batch timestamps, partial signal_ts, no production pipeline). Building strategy archetypes on this garbage will compound errors. Fix data ingestion and timestamp granularity first.
+
+**Verdict: STOP.** Single most important fix: **reject any method that relies on `resolved_at` as a proxy for trade timing—implement true trade-level timestamps before any attribution analysis.**

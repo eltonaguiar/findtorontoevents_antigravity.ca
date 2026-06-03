@@ -1,0 +1,16 @@
+This strategy-level edge hunt is a reasonable pivot after model-level attribution failed, but it's fraught with peril.
+
+**Fatal Flaws:**
+
+*   **R2: Symbol-level benchmark is fatally biased.** Batch-stamped `resolved_at` and partial `signal_ts` mean you cannot accurately align strategy returns with benchmark regressions over *specific hold windows*. This will lead to significant look-ahead bias or missed opportunities, invalidating `REAL-MARKET`.
+*   **R4: Bootstrap-CI on same data is circular.** Re-testing survivors on the same data used for selection is a classic overfitting pitfall. It inflates confidence in spurious signals.
+
+**Open Questions:**
+
+*   **R1: Crowd-proxy measures dispersion, not alpha.** "Excess over average-agent" on the same symbol is a weak benchmark. It captures how much a strategy deviates from the mean, which could be due to luck, not skill. **Drop it.**
+*   **R3: BH-FDR is appropriate**, but only if the underlying alpha signals are truly independent, which is unlikely for strategies targeting similar markets.
+*   **R5: Strategy-level re-audit is a stopgap.** The real need is to build *new, distinct per-class strategy archetypes* with robust, forward-looking validation.
+
+**Verdict: REVISE.**
+
+**Most Important Fix:** Implement a strict **forward-only validation** for *all* shortlisted strategies. Do not re-test on historical data used for selection. This requires a separate, unseen dataset or a robust out-of-sample testing methodology.

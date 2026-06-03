@@ -1,0 +1,13 @@
+**Verdict: REVISE**
+
+**Fatal Flaws and Open Questions:**
+
+1. **R1: "Excess over average-agent on same symbol" (crowd-proxy) is not a sound alpha benchmark**: This metric measures dispersion rather than alpha. It's possible that strategies with high returns are also those with high volatility, not necessarily alpha. Consider using a more robust benchmark, such as the market return or a benchmark that accounts for risk.
+2. **R2: Symbol-level benchmark (ignoring exact hold window) is fatally biased**: With batch-stamped resolved_at and partial signal_ts, the hold-window alignment for benchmark (b) is indeed shaky. This could lead to biased results. Consider using a more robust benchmark that accounts for the exact hold window or using a different benchmark altogether.
+3. **R3: BH-FDR across strategies is not the right multiple-testing control**: BH-FDR is typically used for multiple testing within a single experiment. In this case, you're testing multiple strategies, which is a different type of multiple testing. Consider using a different multiple-testing control, such as the Benjamini-Hochberg procedure for multiple testing across experiments.
+4. **R4: Re-testing the bootstrap-CI shortlist on the SAME data it was selected from is circular**: This is indeed circular and could lead to overfitting. Consider using a forward-only test, where you hold out a portion of the data for testing and use the remaining data for training and selection.
+5. **R5: Strategy-level re-audit is not the right next step**: While re-auditing strategies can be useful, it's not the most important next step. Consider building new per-class strategy archetypes instead, which could provide more insight into the underlying factors driving performance.
+
+**Single Most Important Fix:**
+
+**R2: Use a more robust benchmark that accounts for the exact hold window or use a different benchmark altogether**. This is the most critical issue, as the current benchmark is fatally biased due to the batch-stamped resolved_at and partial signal_ts.

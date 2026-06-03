@@ -1,0 +1,20 @@
+You are a skeptical quant reviewer. Critique this PROPOSED approach before I implement it. Be concrete; flag fatal flaws; answer the open questions. <=220 words.
+
+CONTEXT: A trading project's AI-tournament "edge" already FAILED leakage-free model-level attribution (deepseek_v4 alpha t=1.74, crowd_beta 0.49; only tiny-n flukes passed). money_ready=[] (no class production-ready). Now proposing a STRATEGY-level attribution edge-hunt.
+
+PROPOSED METHOD:
+1. Group closed picks by strategy (not model). Sources: closed_picks.json (1054) + tournament picks (5036 resolved).
+2. Two benchmarks: (a) CROWD-PROXY = mean return of all strategies on the same symbol; strategy alpha = excess over crowd on its own symbols. (b) REAL-MARKET = regress strategy returns on asset-class index (CRYPTO->BTC, EQUITY->SPY) over each pick's hold window.
+3. Gate (#111): alpha>0 AND t>=2.0 AND info-ratio(alpha/resid_std)>=0.10, require n>=100/strategy.
+4. Cross-check survivors vs bootstrap-CI (lower bound>1) + single-source-artifact flag.
+5. Apply BH-FDR multiple-testing across ~50 strategies tested.
+
+DATA CONSTRAINTS: resolved_at is BATCH-stamped (only ~4 distinct days for 5k picks) -> no real daily time series. signal_ts ~44% recoverable overall (100% for CRYPTO via backfill). So hold-window alignment for benchmark (b) is shaky.
+
+ANSWER THESE:
+R1: Is "excess over average-agent on same symbol" (crowd-proxy) a sound alpha benchmark, or does it just measure dispersion? Trust it or drop it?
+R2: With batch-stamped resolved_at + partial signal_ts, is symbol-level benchmark (ignoring exact hold window) good enough or fatally biased?
+R3: Is BH-FDR across strategies the right multiple-testing control here?
+R4: Re-testing the bootstrap-CI shortlist on the SAME data it was selected from — is that circular? Should the real test be forward-only?
+R5: Is strategy-level re-audit the right next step, or should effort go to building NEW per-class strategy archetypes instead?
+Give a GO / REVISE / STOP verdict with the single most important fix.
