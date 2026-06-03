@@ -43,6 +43,7 @@ def scan_ledger(picks: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Pure, read-only scan. Returns a report dict (never mutates `picks`)."""
     never_closed, mislabels, missing_prov = [], [], []
     dup_groups: Dict[tuple, int] = defaultdict(int)
+    n_no_signal_ts = 0   # rows that can't be dup-checked (no signal timestamp)
 
     for i, row in enumerate(picks):
         status = str(_f(row, "status", "state", default="")).upper()
@@ -69,12 +70,17 @@ def scan_ledger(picks: List[Dict[str, Any]]) -> Dict[str, Any]:
         if not _f(row, "source_system", "source_id", "source"):
             missing_prov.append(i)
 
-        # 2. duplicate key
-        key = (_f(row, "symbol", "ticker", default=""),
-               _f(row, "signal_ts", "signal_time", "ts", default=""),
-               _f(row, "strategy", "source_system", default=""))
-        if key != ("", "", ""):
-            dup_groups[key] += 1
+        # 2. duplicate key — ONLY when signal_ts is present. Without a real
+        #    timestamp, (symbol, '', strategy) collapses every signal for a
+        #    symbol/strategy into one "duplicate" group (false positives), so
+        #    we skip those rows and count them separately for transparency.
+        sym = _f(row, "symbol", "ticker", default="")
+        sig_ts = _f(row, "signal_ts", "signal_time", "ts", default="")
+        strat = _f(row, "strategy", "source_system", default="")
+        if sym and sig_ts:
+            dup_groups[(sym, sig_ts, strat)] += 1
+        else:
+            n_no_signal_ts += 1
 
     dup_keys = {k: c for k, c in dup_groups.items() if c > 1}
     n_dup_rows = sum(c for c in dup_keys.values())
@@ -85,6 +91,7 @@ def scan_ledger(picks: List[Dict[str, Any]]) -> Dict[str, Any]:
         "never_closed": len(never_closed),
         "duplicate_groups": len(dup_keys),
         "duplicate_rows": n_dup_rows,
+        "rows_without_signal_ts": n_no_signal_ts,
         "mislabels": len(mislabels),
         "missing_provenance": len(missing_prov),
         "suspect_pct": round(
