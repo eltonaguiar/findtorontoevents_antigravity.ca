@@ -146,15 +146,17 @@ def count_live_picks(conn) -> int:
         return int(row["cnt"]) if row else 0
 
 
-def find_live_picks_batch(conn, batch_size: int) -> list[dict[str, Any]]:
-    """Fetch oldest live picks (OPEN or ACTIVE) for hold-window filtering."""
+def find_live_picks_batch(
+    conn, batch_size: int, offset: int = 0
+) -> list[dict[str, Any]]:
+    """Fetch live picks (OPEN or ACTIVE) oldest-first with OFFSET pagination."""
     with conn.cursor() as cur:
         cur.execute(
             "SELECT id, symbol, category, strategy, direction, status, "
             "entry_price, take_profit, stop_loss, created_at "
             f"FROM trading_picks WHERE status IN ({_LIVE_STATUS_SQL}) "
-            "ORDER BY created_at ASC LIMIT %s",
-            (batch_size,),
+            "ORDER BY created_at ASC LIMIT %s OFFSET %s",
+            (batch_size, offset),
         )
         return cur.fetchall()
 
@@ -239,13 +241,12 @@ def resolve_stale_open_picks(
             return summary
 
         batches_done = 0
-        empty_streak = 0  # consecutive batches with 0 stale picks — exit after threshold
-        MAX_EMPTY_STREAK = 10  # stop scanning when this many consecutive batches have no stale picks
+        scan_offset = 0  # paginate through full live set (fix: don't stop at oldest 500 only)
 
         while True:
-            picks = find_live_picks_batch(conn, batch_size)
+            picks = find_live_picks_batch(conn, batch_size, scan_offset)
             if not picks:
-                log.info("No more OPEN/ACTIVE picks to check.")
+                log.info("No more OPEN/ACTIVE picks to check (offset=%d).", scan_offset)
                 break
 
             batches_done += 1
@@ -266,17 +267,19 @@ def resolve_stale_open_picks(
                 summary["by_status"][st]["stale"] += 1
 
             if not stale_picks:
-                empty_streak += 1
-                if empty_streak >= MAX_EMPTY_STREAK:
+                scan_offset += len(picks)
+                if scan_offset >= summary["total_live_picks"]:
                     log.info(
-                        "Stopped: %d consecutive batches with 0 stale picks (checked %d total batches).",
-                        MAX_EMPTY_STREAK, batches_done,
+                        "Full live set scanned (%d picks); 0 stale in final window.",
+                        summary["total_live_picks"],
                     )
                     break
-
                 log.info(
-                    "Batch %d: %d live picks checked, 0 stale (streak=%d/%d).",
-                    batches_done, len(picks), empty_streak, MAX_EMPTY_STREAK,
+                    "Batch %d: %d live picks checked, 0 stale (offset now %d / %d).",
+                    batches_done,
+                    len(picks),
+                    scan_offset,
+                    summary["total_live_picks"],
                 )
                 continue
 
@@ -322,6 +325,8 @@ def resolve_stale_open_picks(
                     "Batch %d: %d picks resolved via bulk update (cumulative: %d).",
                     batches_done, total_updated, summary["total_resolved"],
                 )
+                # Re-scan from oldest after removals (counts/shape changed).
+                scan_offset = 0
             else:
                 # DRY_RUN: just count
                 for p in stale_picks:
@@ -336,8 +341,10 @@ def resolve_stale_open_picks(
                     "Batch %d [DRY_RUN]: %d stale picks would be resolved.",
                     batches_done, len(stale_picks),
                 )
+                scan_offset = 0
 
         summary["batches_processed"] = batches_done
+        summary["scan_offset_final"] = scan_offset
 
     finally:
         conn.close()

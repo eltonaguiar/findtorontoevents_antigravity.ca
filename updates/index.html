@@ -33,6 +33,18 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+<div class="update-entry" style="--dot-color: #f87171;" data-tags="resolver,p0,pagination,open-active,goal-1" data-category="trading" data-types="bugfix">
+  <div class="update-meta">
+    <span class="update-date">2026-06-03</span>
+    <span class="update-badge badge-trading">Trading</span>
+  </div>
+  <h3 class="update-title">P0 Fix — Stale Resolver Scanned Only Oldest 500 Live Picks</h3>
+  <div class="update-body">
+    <p><strong>Doc:</strong> <a href="/updates/2026-06-03-stale-resolver-pagination-fix.md"><strong>Pagination fix →</strong></a></p>
+    <p><strong>Bug:</strong> <code>resolve_stale_open_picks</code> stopped after 10 empty batches on the same oldest 500 rows — health showed <strong>192</strong> past hold while tool reported <strong>0</strong> stale.</p>
+    <p><strong>Fix:</strong> SQL <code>OFFSET</code> pagination through full live set. Execute pass resolved <strong>192</strong> (CRYPTO 176). Health <code>past_hold_window</code> now aligns.</p>
+  </div>
+</div>
 <div class="update-entry" style="--dot-color: #60a5fa;" data-tags="resolver,ci,github-actions,outcome-resolver,goal-1" data-category="trading" data-types="documentation">
   <div class="update-meta">
     <span class="update-date">2026-06-02</span>
