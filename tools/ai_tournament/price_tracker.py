@@ -120,7 +120,14 @@ def fetch_price_crypto(symbol: str) -> float | None:
 
 def fetch_price_equity(symbol: str) -> float | None:
     """yfinance → Alpha Vantage failover for equity/ETF/commodity/bond prices."""
-    clean = symbol.replace("=X", "")  # keep =F: yfinance requires it for futures/commodities (GC=F etc.)
+    # Strip writer artifacts ('$AGBA' -> 'AGBA') and convert Yahoo class-share
+    # separator ('BRK.B' -> 'BRK-B'). Keep =F for futures/commodities; drop =X
+    # (FX) since this path is equity/ETF only. Without this, ~470 price calls
+    # per run fail on BRK.B + $-prefixed tickers, contributing to the 20-min
+    # workflow timeout on ai-tournament-price-tracker.yml.
+    clean = symbol.lstrip("$").replace("=X", "")
+    if "." in clean and not clean.endswith("=F"):
+        clean = clean.replace(".", "-")
     try:
         ticker = yf.Ticker(clean)
         hist = ticker.history(period="2d")
