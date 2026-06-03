@@ -22,7 +22,10 @@ PILOT_DIR = Path(__file__).resolve().parent
 LOG_PATH = PILOT_DIR / "b_flip_price_roc_paper_log.jsonl"
 STATE_PATH = PILOT_DIR / "b_flip_price_roc_state.json"
 STRATEGY_ID = "B_flip_PriceRocMeanReversion"
-SYMBOL = "BTCUSDT"
+UNIVERSE = [
+    "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT",
+    "DOGEUSDT", "ADAUSDT", "AVAXUSDT", "LINKUSDT", "FETUSDT",
+]
 INTERVAL = "1h"
 TP_ATR = 2.0
 SL_ATR = 1.5
@@ -83,7 +86,7 @@ def _indicators(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def _short_entry_on_last_bar(df: pd.DataFrame) -> dict | None:
+def _short_entry_on_last_bar(df: pd.DataFrame, symbol: str) -> dict | None:
     df = _indicators(df)
     row = df.iloc[-2]
     if any(pd.isna(row[c]) for c in ("roc_5", "ema_20", "atr_14", "median_vol_50")):
