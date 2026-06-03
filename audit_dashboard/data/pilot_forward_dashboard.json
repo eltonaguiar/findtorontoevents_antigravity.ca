@@ -1,15 +1,14 @@
 {
-  "timestamp": "2026-06-02T06:56:22.578729+00:00",
+  "timestamp": "2026-06-03T14:23:52.412407+00:00",
   "forward_n_target": 100,
   "any_promotion_ready": false,
   "sleeves": {
     "etf_dual_momentum": {
       "lab_wf": {
         "verdict": "PASS",
-        "oos_pf": 1.212,
-        "oos_wr": 0.4688,
-        "oos_n": 32,
-        "timestamp": "2026-06-02T06:03:45.603409+00:00"
+        "oos_pf": 2.746,
+        "oos_n": 11,
+        "artifact": "/home/eaguiar2015/findtorontoevents_antigravity.ca/verified_strategies/WALKFORWARD_REPORT.json"
       },
       "forward": {
         "source": "paper_pilot_virtual",
@@ -17,38 +16,43 @@
         "wr": 0.0,
         "pf": 0.0,
         "promotion_ready": false,
+        "shadow_checkpoint_ready": false,
         "gates": [
-          "n<100"
+          "n<100",
+          "pf<1.5",
+          "wr<50%",
+          "pf<0.85*oos"
+        ],
+        "shadow_gates": [
+          "n<30"
         ],
         "open_position": {
-          "symbol": "XLE",
+          "symbol": "XLK",
           "direction": "BUY",
-          "entry_price": 57.29999923706055,
+          "entry_price": 195.75999450683594,
           "entry_date": "2026-06-02",
           "strategy": "etf_verified_dual_momentum",
           "status": "OPEN",
-          "r12_1m": 0.4968,
+          "r12_1m": 0.7052,
           "last_seen": "2026-06-02"
         },
         "signal": "BUY",
-        "symbol": "XLE"
+        "symbol": "XLK"
       },
       "recommend_enable": false,
-      "flag": "ETF_VERIFIED_DUAL_MOMENTUM_ENABLED=1"
+      "flag": "ETF_VERIFIED_DUAL_MOMENTUM_ENABLED"
     },
     "crypto_wf_hyro": {
       "lab_wf": {
-        "timestamp": "2026-06-02T06:03:45.603409+00:00",
+        "timestamp": null,
         "vwap_reversion": {
           "verdict": "PASS",
-          "oos_pf": 1.323,
-          "oos_sharpe": 3.102,
+          "oos_pf": 1.32,
           "oos_n": 516
         },
         "bollinger_mr": {
           "verdict": "PASS",
-          "oos_pf": 1.673,
-          "oos_sharpe": 1.376,
+          "oos_pf": 1.67,
           "oos_n": 38
         }
       },
@@ -61,7 +65,7 @@
         "gates": [
           "n<100"
         ],
-        "open_count": 5,
+        "open_count": 0,
         "forward_by_strategy": {
           "crypto_verified_vwap": {
             "n_closed": 0,
@@ -99,27 +103,165 @@
       }
     },
     "faber_taa": {
-      "timestamp": "2026-06-02T06:56:22.573211+00:00",
+      "timestamp": "2026-06-03T14:23:52.222596+00:00",
       "strategy": "faber_taa_paper_pilot",
       "n_closed": 0,
       "wr": 0.0,
       "pf": 0.0,
-      "open_count": 5,
-      "portfolio_value": 98904.29,
+      "open_count": 0,
+      "portfolio_value": null,
       "promotion_ready": false,
       "gates": [
         "n=0<100",
         "PF=0.00<1.5",
         "WR=0.0%<50%"
       ],
-      "open_symbols": [
-        "SPY",
-        "QQQ",
-        "IWM",
-        "EFA",
-        "GLD"
-      ]
+      "open_symbols": [],
+      "note": "0 ETF strategy closes in trading_picks \u2014 forward pilot only until resolver closes etf_faber_tactical rows."
+    },
+    "bootstrap_b_flip": {
+      "lab_bootstrap": {
+        "verdict": "BOOTSTRAP_PASS",
+        "is_pf": 35.91,
+        "is_n": 157,
+        "pf_lo_95": 21.21,
+        "note": "PR #482 legit \u2014 forward virtual only"
+      },
+      "forward": {
+        "source": "paper_pilot_virtual",
+        "strategy_id": "B_flip_PriceRocMeanReversion",
+        "n_closed": 0,
+        "wr": 0.0,
+        "pf": 0.0,
+        "mean_pnl_pct": 0.0,
+        "promotion_ready": false,
+        "shadow_checkpoint_ready": false,
+        "gates": [
+          "n<100",
+          "pf<1.5",
+          "wr<50%",
+          "pf<0.85*oos"
+        ],
+        "shadow_gates": [
+          "n<30"
+        ],
+        "open_position": null
+      },
+      "open_position": null,
+      "recommend_enable": false,
+      "flag": "B_FLIP_PRICEROC_ENABLED"
+    },
+    "bootstrap_inverse_ml_btc": {
+      "lab_bootstrap": {
+        "verdict": "BOOTSTRAP_PASS",
+        "is_pf": 34.46,
+        "is_n": 65,
+        "pf_lo_95": 15.97,
+        "note": "PR #482 legit \u2014 forward virtual only"
+      },
+      "forward": {
+        "source": "paper_pilot_virtual",
+        "strategy_id": "inverse_ml_enhanced_BTCUSDT_15m_D",
+        "n_closed": 0,
+        "wr": 0.0,
+        "pf": 0.0,
+        "mean_pnl_pct": 0.0,
+        "promotion_ready": false,
+        "shadow_checkpoint_ready": false,
+        "gates": [
+          "n<100",
+          "pf<1.5",
+          "wr<50%",
+          "pf<0.85*oos"
+        ],
+        "shadow_gates": [
+          "n<30"
+        ],
+        "open_position": null
+      },
+      "open_position": null,
+      "recommend_enable": false,
+      "flag": "INVERSE_ML_BTC_15M_ENABLED"
     }
+  },
+  "bootstrap_forward": {
+    "timestamp": "2026-06-03T14:23:52.407143+00:00",
+    "forward_n_target": 100,
+    "any_promotion_ready": false,
+    "sleeves": {
+      "b_flip_price_roc": {
+        "lab_bootstrap": {
+          "verdict": "BOOTSTRAP_PASS",
+          "is_pf": 35.91,
+          "is_n": 157,
+          "pf_lo_95": 21.21,
+          "note": "PR #482 legit \u2014 forward virtual only"
+        },
+        "forward": {
+          "source": "paper_pilot_virtual",
+          "strategy_id": "B_flip_PriceRocMeanReversion",
+          "n_closed": 0,
+          "wr": 0.0,
+          "pf": 0.0,
+          "mean_pnl_pct": 0.0,
+          "promotion_ready": false,
+          "shadow_checkpoint_ready": false,
+          "gates": [
+            "n<100",
+            "pf<1.5",
+            "wr<50%",
+            "pf<0.85*oos"
+          ],
+          "shadow_gates": [
+            "n<30"
+          ],
+          "open_position": null
+        },
+        "open_position": null,
+        "recommend_enable": false,
+        "flag": "B_FLIP_PRICEROC_ENABLED"
+      },
+      "inverse_ml_btc_15m": {
+        "lab_bootstrap": {
+          "verdict": "BOOTSTRAP_PASS",
+          "is_pf": 34.46,
+          "is_n": 65,
+          "pf_lo_95": 15.97,
+          "note": "PR #482 legit \u2014 forward virtual only"
+        },
+        "forward": {
+          "source": "paper_pilot_virtual",
+          "strategy_id": "inverse_ml_enhanced_BTCUSDT_15m_D",
+          "n_closed": 0,
+          "wr": 0.0,
+          "pf": 0.0,
+          "mean_pnl_pct": 0.0,
+          "promotion_ready": false,
+          "shadow_checkpoint_ready": false,
+          "gates": [
+            "n<100",
+            "pf<1.5",
+            "wr<50%",
+            "pf<0.85*oos"
+          ],
+          "shadow_gates": [
+            "n<30"
+          ],
+          "open_position": null
+        },
+        "open_position": null,
+        "recommend_enable": false,
+        "flag": "INVERSE_ML_BTC_15M_ENABLED"
+      }
+    },
+    "blocked_from_production": [
+      "money_ready_verdict freeze_promotions",
+      "no scanner env flags until forward n>=100"
+    ],
+    "refs": [
+      "updates/2026-06-02-suspicious-pass-investigation.md",
+      "PR #482"
+    ]
   },
   "money_ready_blockers": [
     "All sleeves require forward virtual n>=100, PF>=1.5, WR>=50%",

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-02T18:15:43.308374+00:00",
+  "generated_at": "2026-06-03T14:23:52.508885+00:00",
   "strategy": "etf_dual_momentum",
   "sleeve_key": "dual_momentum_etf",
   "asset_class": "ETF",
@@ -19,7 +19,7 @@
   },
   "forward_pilot": {
     "available": true,
-    "artifact": "/home/eaguiar2015/findtorontoevents_antigravity.ca/audit_dashboard/data/pilot_forward_dashboard.json",
+    "artifact": "/home/eaguiar2015/findtorontoevents_antigravity.ca/reports/etf_forward_stats_latest.json",
     "source": "paper_pilot_virtual",
     "n_closed": 0,
     "wr": 0.0,
@@ -27,21 +27,26 @@
     "promotion_ready": false,
     "shadow_checkpoint_ready": false,
     "gates": [
-      "n<100"
+      "n<100",
+      "pf<1.5",
+      "wr<50%",
+      "pf<0.85*oos"
     ],
-    "shadow_gates": [],
+    "shadow_gates": [
+      "n<30"
+    ],
     "open_position": {
-      "symbol": "XLE",
+      "symbol": "XLK",
       "direction": "BUY",
-      "entry_price": 57.29999923706055,
+      "entry_price": 195.75999450683594,
       "entry_date": "2026-06-02",
       "strategy": "etf_verified_dual_momentum",
       "status": "OPEN",
-      "r12_1m": 0.4968,
+      "r12_1m": 0.7052,
       "last_seen": "2026-06-02"
     },
     "signal": "BUY",
-    "symbol": "XLE"
+    "symbol": "XLK"
   },
   "admit_status": "FORWARD_PILOT_ONLY",
   "checks": {
@@ -52,5 +57,5 @@
     "forward_shadow_checkpoint": false,
     "forward_promotion_ready": false
   },
-  "recommendation": "Keep in forward pilot; do not live-merge yet. Blockers: class verdict=INSUFFICIENT_DATA, n<100"
+  "recommendation": "Keep in forward pilot; do not live-merge yet. Blockers: class verdict=INSUFFICIENT_DATA, n<100, pf<1.5, wr<50%, pf<0.85*oos"
 }

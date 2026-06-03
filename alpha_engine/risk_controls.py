@@ -702,3 +702,93 @@ def run_all_risk_controls(
         print(f"  [RISK CONTROLS] Master function failed (safe fallback): {e}")
 
     return active_picks, report
+
+
+# ===================================================================
+# 5. CORRELATION-AWARE POSITION SIZER (Phase 3)
+# ===================================================================
+
+# Pre-computed correlation clusters from correlation_analyzer.py
+# (Used as a fallback if live matrix is unavailable)
+CORRELATION_CLUSTERS = {
+    "CRYPTO_RISK": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "AVAXUSDT"],
+    "TECH_EQUITY": ["QQQ", "NVDA", "AAPL", "SPY"],
+    "G10_FX": ["EURUSD=X", "GBPUSD=X", "AUDUSD=X"],
+    "ENERGY": ["CL=F", "XLE"],
+    "PRECIOUS_METALS": ["GC=F", "SI=F"],
+}
+
+# Asset class mapping for cluster assignment
+SYMBOL_TO_CLUSTER = {}
+for cluster, symbols in CORRELATION_CLUSTERS.items():
+    for sym in symbols:
+        SYMBOL_TO_CLUSTER[sym.upper()] = cluster
+
+
+def _get_cluster(symbol: str) -> str:
+    """Maps a symbol to its correlation cluster."""
+    # Normalize: BTCUSDT -> BTCUSDT, BTC-USD -> BTC-USD
+    norm_sym = symbol.upper()
+    # Check direct match first (e.g., BTCUSDT)
+    if norm_sym in SYMBOL_TO_CLUSTER:
+        return SYMBOL_TO_CLUSTER[norm_sym]
+    # Check normalized match (e.g., BTC-USD)
+    norm_sym = norm_sym.replace("USDT", "-USD").replace("USD", "-USD")
+    return SYMBOL_TO_CLUSTER.get(norm_sym, "UNCATEGORIZED")
+
+
+def calculate_correlation_penalty(
+    new_pick: dict, active_picks: list[dict], base_size: float
+) -> float:
+    """
+    Calculates a correlation-adjusted position size.
+
+    Logic:
+    1. Determine the cluster of the new pick.
+    2. Count how many active picks are in the same cluster.
+    3. Apply a penalty multiplier based on cluster concentration.
+       - 0 in cluster: 1.0x (Full size)
+       - 1 in cluster: 0.7x (Moderate penalty)
+       - 2+ in cluster: 0.4x (High penalty)
+    """
+    try:
+        new_sym = new_pick.get("symbol", "")
+        new_cluster = _get_cluster(new_sym)
+
+        if new_cluster == "UNCATEGORIZED":
+            return base_size  # No penalty if we don't know the cluster
+
+        # FIX 2026-06-03: the production caller (production_scanner.py 6j step)
+        # iterates `for p in active: calculate_correlation_penalty(p, active, ...)`
+        # — so `active_picks` contains the new pick itself. The previous
+        # cluster_count therefore included self, applying a one-tier-too-harsh
+        # penalty (solo pick in a cluster got 0.7x instead of 1.0x). Exclude
+        # the candidate by object identity OR matching symbol+id, which is
+        # safe whether the caller pre-filters or not.
+        new_id = new_pick.get("id")
+        cluster_count = 0
+        for p in active_picks:
+            if p is new_pick:
+                continue
+            if new_id is not None and p.get("id") == new_id:
+                continue
+            if _get_cluster(p.get("symbol", "")) == new_cluster:
+                cluster_count += 1
+
+        if cluster_count == 0:
+            multiplier = 1.0
+        elif cluster_count == 1:
+            multiplier = 0.7
+        else:
+            multiplier = 0.4
+
+        adjusted_size = base_size * multiplier
+        if multiplier < 1.0:
+            print(
+                f"  [CORR_SIZER] {new_sym} in {new_cluster} ({cluster_count} existing) -> Size {base_size:.2f} -> {adjusted_size:.2f}"
+            )
+        return adjusted_size
+
+    except Exception as e:
+        print(f"  [CORR_SIZER] Error calculating penalty: {e}. Returning base size.")
+        return base_size

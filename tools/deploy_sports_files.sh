@@ -9,9 +9,10 @@
 # ship if anything is red.
 #
 # USAGE
-#   tools/deploy_sports_files.sh                # diff + upload + verify
-#   tools/deploy_sports_files.sh --dry-run      # show what would upload
-#   tools/deploy_sports_files.sh --force        # skip pre-deploy smoke
+#   tools/deploy_sports_files.sh                        # diff + upload + verify
+#   tools/deploy_sports_files.sh --dry-run              # show what would upload
+#   tools/deploy_sports_files.sh --force                # skip pre-deploy smoke
+#   tools/deploy_sports_files.sh --include-env --force  # refresh live-monitor/api/.env too
 #
 # REQUIRES
 #   - git, curl, sha256sum (Git Bash on Windows ships these)
@@ -22,10 +23,12 @@ set -uo pipefail
 
 DRY_RUN=0
 FORCE=0
+INCLUDE_ENV=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=1 ;;
     --force) FORCE=1 ;;
+    --include-env) INCLUDE_ENV=1 ;;
     *) echo "Unknown arg: $arg" >&2; exit 2 ;;
   esac
 done
@@ -89,6 +92,38 @@ fi
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
+ENV_UPLOAD_LOCAL=""
+ENV_UPLOAD_REMOTE="live-monitor/api/.env"
+if [ "$INCLUDE_ENV" -eq 1 ]; then
+  if [ -f "live-monitor/api/.env" ]; then
+    ENV_UPLOAD_LOCAL="$TMPDIR/live-monitor-api.env"
+    cp "live-monitor/api/.env" "$ENV_UPLOAD_LOCAL"
+  else
+    if [ -z "${DB_STOCKS_PASSWORD:-}" ] || [ -z "${DB_SPORTS_PASSWORD:-}" ]; then
+      echo "--include-env requires live-monitor/api/.env or both DB_STOCKS_PASSWORD + DB_SPORTS_PASSWORD in env." >&2
+      exit 2
+    fi
+    ENV_UPLOAD_LOCAL="$TMPDIR/live-monitor-api.env"
+    python3 - "$ENV_UPLOAD_LOCAL" "${DB_STOCKS_PASSWORD}" "${DB_SPORTS_PASSWORD}" <<'PY'
+from pathlib import Path
+import sys
+
+out = Path(sys.argv[1])
+stocks_pw = sys.argv[2]
+sports_pw = sys.argv[3]
+
+def q(v):
+    return '"' + v.replace('\\', '\\\\').replace('"', '\\"') + '"'
+
+out.write_text(
+    "DB_STOCKS_PASSWORD=" + q(stocks_pw) + "\n" +
+    "DB_SPORTS_PASSWORD=" + q(sports_pw) + "\n",
+    encoding="utf-8",
+)
+PY
+  fi
+fi
+
 CHANGED=()
 for f in "${SPORTS_FILES[@]}"; do
   [ -f "$f" ] || continue
@@ -116,6 +151,9 @@ fi
 echo
 echo "=== Files to deploy (${#CHANGED[@]}) ==="
 printf '  %s\n' "${CHANGED[@]}"
+if [ "$INCLUDE_ENV" -eq 1 ]; then
+  echo "  $ENV_UPLOAD_REMOTE (credential refresh)"
+fi
 
 if [ "$DRY_RUN" -eq 1 ]; then
   echo "--dry-run: skipping upload."
@@ -134,6 +172,14 @@ for f in "${CHANGED[@]}"; do
     FAILED=$((FAILED + 1))
   fi
 done
+if [ "$INCLUDE_ENV" -eq 1 ]; then
+  if curl --silent --show-error --max-time 60 --user "$FTP_USER:$FTP_PASS" -T "$ENV_UPLOAD_LOCAL" "ftp://$FTP_HOST$REMOTE_BASE/$ENV_UPLOAD_REMOTE"; then
+    echo "  OK $ENV_UPLOAD_REMOTE"
+  else
+    echo "  FAIL $ENV_UPLOAD_REMOTE" >&2
+    FAILED=$((FAILED + 1))
+  fi
+fi
 if [ "$FAILED" -gt 0 ]; then
   echo "$FAILED file(s) failed to upload." >&2
   exit 4

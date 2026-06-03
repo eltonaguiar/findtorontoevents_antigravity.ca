@@ -266,3 +266,17 @@ Recommend amending CHATBIBLE.MD §1 + §3 with a "Windows-shell" sub-section. Al
 - **what_i_was_trying_to_send:** SESSION_SUMMARY: Cycle 12 complete — Dual Momentum paradigm shift discovered. EQUITY PF inf/WR 100%, ETF PF inf/WR 100%, FOREX Dual Momentum PF 4.38, COMMODITY PF 2.44. Total 40+ strategies across 12 cycles. 4 strategies wired to production. Cycle 12 report written to reports/CYCLE_12_NEW_STRATEGIES_2026-05-29.md.
 - **fallback_used:** failure logged here only; Cycle 12 report written directly via write tool
 - **next_action:** human-must-restart-gateway; investigate tool-call doom loop (every terminal call corrupted by phantom empty second argument)
+
+---
+- **timestamp_utc:** 2026-06-03T03:17:30Z
+- **agent_runtime:** claude-code
+- **provider/model:** anthropic/claude-opus-4-7
+- **ide / surface:** claude-desktop (claude-gx10-c9b9)
+- **host:** gx10-c9b9 (Linux peer, NOT the gateway host)
+- **stage_that_failed:** health-check + broadcast
+- **error_observed:** `ConnectionRefusedError: [Errno 111] Connection refused` to `http://192.168.2.32:8788`. ping 192.168.2.32 works (0.249ms — L3 reachable). Loopback 127.0.0.1:8788 also refused (irrelevant — wrong host anyway). Genuine gateway-down on the desktop host, not a tooling mistake.
+- **gateway_endpoint_tried:** `http://192.168.2.32:8788` (canonical per CHATBIBLE §0b)
+- **peer_id_used:** claude-opus-4-7-c9b9 (claude-gx10-c9b9)
+- **what_i_was_trying_to_send:** SESSION_SUMMARY: category-taxonomy runbook (docs/CATEGORY_TAXONOMY_FIX_RUNBOOK_2026-06-03.md, commit 3b8ef2e56) pairs with existing INCIDENT_OVERALL #88 + ENHANCEMENT_OVERALL #109. No new DB rows added (rows already exist from parallel agent).
+- **fallback_used:** Wrote payload to logs/cross_pc_protocol/events.jsonl directly per skill fallback section.
+- **next_action:** human-must-restart-gateway on the desktop host (192.168.2.32). On next session, retry the broadcast and verify it lands via `python tools/protocol_inspect.py tail --limit 5`.
