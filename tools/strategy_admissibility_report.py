@@ -88,6 +88,18 @@ def _load_pilot_dashboard() -> tuple[Dict[str, Any], Optional[str]]:
     return {}, None
 
 
+def _load_strategy_admit_forward(strategy: str) -> Dict[str, Any]:
+    payload = _load(REPORTS / "strategy_admit" / f"{strategy}.json")
+    forward = payload.get("forward_pilot") if isinstance(payload, dict) else None
+    return forward if isinstance(forward, dict) else {}
+
+
+def _prefer_field(primary: Dict[str, Any], fallback: Dict[str, Any], key: str) -> Any:
+    if key in primary:
+        return primary.get(key)
+    return fallback.get(key)
+
+
 def _candidate_sleeves(dash: Dict[str, Any]) -> List[Dict[str, Any]]:
     sleeves = dash.get("sleeves")
     if not isinstance(sleeves, dict):
@@ -98,6 +110,7 @@ def _candidate_sleeves(dash: Dict[str, Any]) -> List[Dict[str, Any]]:
     if isinstance(etf, dict):
         lab = etf.get("lab_wf") if isinstance(etf.get("lab_wf"), dict) else {}
         forward = etf.get("forward") if isinstance(etf.get("forward"), dict) else {}
+        admit_forward = _load_strategy_admit_forward("etf_dual_momentum")
         open_position = forward.get("open_position") if isinstance(forward.get("open_position"), dict) else {}
         out.append({
             "sleeve": "etf_dual_momentum",
@@ -109,7 +122,9 @@ def _candidate_sleeves(dash: Dict[str, Any]) -> List[Dict[str, Any]]:
             "forward_n_closed": forward.get("n_closed"),
             "forward_n_target": dash.get("forward_n_target"),
             "promotion_ready": bool(forward.get("promotion_ready")),
+            "shadow_checkpoint_ready": _prefer_field(forward, admit_forward, "shadow_checkpoint_ready"),
             "blockers": forward.get("gates") or [],
+            "shadow_blockers": _prefer_field(forward, admit_forward, "shadow_gates") or [],
             "open_symbol": open_position.get("symbol") or forward.get("symbol"),
             "source": forward.get("source"),
         })
@@ -117,6 +132,7 @@ def _candidate_sleeves(dash: Dict[str, Any]) -> List[Dict[str, Any]]:
     crypto = sleeves.get("crypto_wf_hyro")
     if isinstance(crypto, dict):
         forward = crypto.get("forward") if isinstance(crypto.get("forward"), dict) else {}
+        admit_forward = _load_strategy_admit_forward("crypto_wf_hyro")
         out.append({
             "sleeve": "crypto_wf_hyro",
             "label": "Crypto VWAP/Bollinger",
@@ -127,13 +143,16 @@ def _candidate_sleeves(dash: Dict[str, Any]) -> List[Dict[str, Any]]:
             "forward_n_closed": forward.get("n_closed"),
             "forward_n_target": dash.get("forward_n_target"),
             "promotion_ready": bool(forward.get("promotion_ready")),
+            "shadow_checkpoint_ready": _prefer_field(forward, admit_forward, "shadow_checkpoint_ready"),
             "blockers": forward.get("gates") or [],
+            "shadow_blockers": _prefer_field(forward, admit_forward, "shadow_gates") or [],
             "open_symbol": None,
             "source": forward.get("source"),
         })
 
     faber = sleeves.get("faber_taa")
     if isinstance(faber, dict):
+        admit_forward = _load_strategy_admit_forward("faber_taa")
         open_symbols = faber.get("open_symbols") if isinstance(faber.get("open_symbols"), list) else []
         out.append({
             "sleeve": "faber_taa",
@@ -145,7 +164,9 @@ def _candidate_sleeves(dash: Dict[str, Any]) -> List[Dict[str, Any]]:
             "forward_n_closed": faber.get("n_closed"),
             "forward_n_target": dash.get("forward_n_target"),
             "promotion_ready": bool(faber.get("promotion_ready")),
+            "shadow_checkpoint_ready": _prefer_field(faber, admit_forward, "shadow_checkpoint_ready"),
             "blockers": faber.get("gates") or [],
+            "shadow_blockers": _prefer_field(faber, admit_forward, "shadow_gates") or [],
             "open_symbol": ",".join(open_symbols[:2]) if open_symbols else None,
             "source": "paper_pilot_virtual",
         })
