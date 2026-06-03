@@ -35,7 +35,13 @@ def monthly_closes(daily: pd.DataFrame) -> pd.Series:
     """Month-end close series from a daily OHLC frame (index=date, col 'close')."""
     s = daily["close"].copy()
     s.index = pd.to_datetime(s.index)
-    return s.resample("ME").last().dropna()
+    # "ME" (month-end) is the pandas >=2.2 alias; fall back to "M" on older
+    # pandas (CI runs an unpinned, sometimes <2.2 pandas) — matches the
+    # try/except pattern in tools/backtest_etf_economic.py.
+    try:
+        return s.resample("ME").last().dropna()
+    except ValueError:
+        return s.resample("M").last().dropna()
 
 
 def _lookback_return(closes: pd.Series, asof: pd.Timestamp, months: int) -> Optional[float]:
