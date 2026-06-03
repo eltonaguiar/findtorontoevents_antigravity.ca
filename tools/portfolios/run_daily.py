@@ -259,8 +259,21 @@ def _norm_dir(d: str) -> str:
     return "short" if d in ("short", "sell") else "long"
 
 
+# Vendor-route aliases for portfolios whose model_id is a re-branding of an
+# upstream pick-emitter (same base model, different vendor route). The
+# leaderboard shows them as separate entries to track per-route reliability,
+# but they share the underlying picks. 2026-06-03: aimlapi_gpt4o and
+# gh_models_gpt4o both emit nothing under their own ID — they pull from
+# `gpt4o` (the canonical OpenAI gpt-4o emitter, 406 picks/day).
+MODEL_PICK_ALIASES: dict[str, str] = {
+    "aimlapi_gpt4o": "gpt4o",
+    "gh_models_gpt4o": "gpt4o",
+}
+
+
 def model_picks(picks: list[dict], model_id: str) -> list[dict]:
-    out = [p for p in picks if (p.get("model_id") == model_id
+    target = MODEL_PICK_ALIASES.get(model_id, model_id)
+    out = [p for p in picks if (p.get("model_id") == target
                                 and str(p.get("status", "")).upper() == "OPEN")]
     # newest-first by submitted_at
     out.sort(key=lambda p: p.get("submitted_at", ""), reverse=True)

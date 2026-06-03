@@ -120,14 +120,7 @@ def fetch_price_crypto(symbol: str) -> float | None:
 
 def fetch_price_equity(symbol: str) -> float | None:
     """yfinance → Alpha Vantage failover for equity/ETF/commodity/bond prices."""
-    # Strip writer artifacts ('$AGBA' -> 'AGBA') and convert Yahoo class-share
-    # separator ('BRK.B' -> 'BRK-B'). Keep =F for futures/commodities; drop =X
-    # (FX) since this path is equity/ETF only. Without this, ~470 price calls
-    # per run fail on BRK.B + $-prefixed tickers, contributing to the 20-min
-    # workflow timeout on ai-tournament-price-tracker.yml.
-    clean = symbol.lstrip("$").replace("=X", "")
-    if "." in clean and not clean.endswith("=F"):
-        clean = clean.replace(".", "-")
+    clean = _sanitize_yf_symbol(symbol)
     try:
         ticker = yf.Ticker(clean)
         hist = ticker.history(period="2d")
@@ -214,8 +207,138 @@ def apply_slippage(price: float, direction: str, asset_class: str, is_tp: bool) 
         return price * (1 + slip) if not is_tp else price * (1 + slip)
 
 
-def resolve_pick(pick: dict[str, Any], current_price: float) -> dict[str, Any]:
-    """Determine if a pick has resolved (TP/SL hit or expiry)."""
+def _sanitize_yf_symbol(symbol: str) -> str:
+    """Normalise a symbol for yfinance lookups.
+
+    Strips writer-artifact $-prefixes, converts Yahoo class-share separators
+    (``BRK.B`` → ``BRK-B``), drops ``=X`` FX suffixes, and preserves ``=F``
+    futures suffixes.  Without this, ~470 price calls per run fail on BRK.B
+    + $-prefixed tickers, contributing to the 20-min workflow timeout on
+    ai-tournament-price-tracker.yml.
+    """
+    clean = symbol.lstrip("$").replace("=X", "")
+    if "." in clean and not clean.endswith("=F"):
+        clean = clean.replace(".", "-")
+    return clean
+
+
+def _scan_bars_for_touch(
+    bars: list[dict], direction: str, tp: float, sl: float
+) -> dict[str, Any] | None:
+    """Walk daily OHLC bars from entry forward; return first TP or SL touch.
+
+    SL is checked first (conservative — assumes worst-case fill when both
+    barriers could be hit in the same bar). Gap-through: if a bar opens past
+    the level, fills at the open price rather than the nominal barrier.
+
+    Returns {"price": <fill>, "reason": "TP_HIT_REPLAY"|"SL_HIT_REPLAY",
+             "bar_date": "YYYY-MM-DD", "gapped": bool} or None.
+    """
+    if not bars or not (tp > 0 or sl > 0):
+        return None
+    is_long = str(direction or "").upper() in ("LONG",)
+    for bar in bars:
+        try:
+            hi = float(bar.get("high", 0) or 0)
+            lo = float(bar.get("low", 0) or 0)
+            op = float(bar.get("open", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        if hi <= 0 or lo <= 0:
+            continue
+        if is_long:
+            if sl > 0 and lo <= sl:
+                gapped = op > 0 and op <= sl
+                return {"price": op if gapped else sl,
+                        "reason": "SL_HIT_REPLAY",
+                        "bar_date": bar.get("date", ""), "gapped": gapped}
+            if tp > 0 and hi >= tp:
+                gapped = op > 0 and op >= tp
+                return {"price": op if gapped else tp,
+                        "reason": "TP_HIT_REPLAY",
+                        "bar_date": bar.get("date", ""), "gapped": gapped}
+        else:  # SHORT
+            if sl > 0 and hi >= sl:
+                gapped = op > 0 and op >= sl
+                return {"price": op if gapped else sl,
+                        "reason": "SL_HIT_REPLAY",
+                        "bar_date": bar.get("date", ""), "gapped": gapped}
+            if tp > 0 and lo <= tp:
+                gapped = op > 0 and op <= tp
+                return {"price": op if gapped else tp,
+                        "reason": "TP_HIT_REPLAY",
+                        "bar_date": bar.get("date", ""), "gapped": gapped}
+    return None
+
+
+def _yf_symbol_for(pick: dict[str, Any]) -> str:
+    """Return the yfinance-ready symbol for a pick."""
+    sym = pick.get("symbol", "")
+    ac = (pick.get("asset_class") or "").upper()
+    if ac == "FOREX":
+        clean = sym.upper().replace("=X", "")
+        return FOREX_YFINANCE_SUFFIX.get(clean, f"{clean}=X")
+    return _sanitize_yf_symbol(sym)
+
+
+def fetch_ohlc_window(pick: dict[str, Any]) -> list[dict]:
+    """Fetch daily OHLC bars from entry date through today via yfinance.
+
+    Returns [{"date":"YYYY-MM-DD", "open":.., "high":.., "low":.., "close":..}, ...]
+    or an empty list on any failure (caller falls back to single-spot resolution).
+    """
+    yf_sym = _yf_symbol_for(pick)
+    try:
+        submitted_at = datetime.fromisoformat(
+            pick["submitted_at"].replace("Z", "+00:00")
+        )
+    except (KeyError, ValueError):
+        return []
+    start = submitted_at - timedelta(days=1)
+    end = datetime.now(timezone.utc) + timedelta(days=1)
+    try:
+        ticker = yf.Ticker(yf_sym)
+        hist = ticker.history(start=start.strftime("%Y-%m-%d"),
+                              end=end.strftime("%Y-%m-%d"),
+                              interval="1d", auto_adjust=False)
+    except Exception:
+        return []
+    if hist is None or hist.empty:
+        return []
+    bars: list[dict] = []
+    cutoff = submitted_at.strftime("%Y-%m-%d")
+    try:
+        for ts, row in hist.iterrows():
+            try:
+                hi = float(row["High"])
+                lo = float(row["Low"])
+                op = float(row["Open"])
+                cl = float(row["Close"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            date_str = ts.strftime("%Y-%m-%d") if hasattr(ts, "strftime") else str(ts)
+            if date_str < cutoff:
+                continue
+            bars.append({"date": date_str, "open": op, "high": hi,
+                         "low": lo, "close": cl})
+    except Exception:
+        return []
+    return bars
+
+
+def resolve_pick(
+    pick: dict[str, Any],
+    current_price: float,
+    ohlc_bars: list[dict] | None = None,
+) -> dict[str, Any]:
+    """Determine if a pick has resolved (TP/SL hit or expiry).
+
+    When ``ohlc_bars`` is provided (non-empty list of daily OHLC bars from
+    entry through today), walks the bars for an intrabar TP/SL touch using
+    the conservative SL-first rule. This replaces the legacy single-spot
+    snapshot that missed intraday SL touches and inflated WR to 80-90%.
+    Falls back to single-spot resolution when OHLC data is unavailable.
+    """
     p = pick.copy()
     entry = float(p["entry_price"])
     tp = float(p["take_profit"])
@@ -226,12 +349,41 @@ def resolve_pick(pick: dict[str, Any], current_price: float) -> dict[str, Any]:
     window_days = RESOLUTION_WINDOWS_DAYS.get(asset_class, 30)
     expiry_dt = submitted_at + timedelta(days=window_days)
     now = datetime.now(timezone.utc)
-
     direction_mult = 1.0 if direction == "LONG" else -1.0
 
-    # Check TP hit
+    # ── Intrabar OHLC path replay (v2) ──
+    if ohlc_bars:
+        hit = _scan_bars_for_touch(ohlc_bars, direction, tp, sl)
+        if hit:
+            fill = apply_slippage(hit["price"], direction, asset_class,
+                                  is_tp=hit["reason"].startswith("TP"))
+            pnl = (fill - entry) / entry * direction_mult * 100
+            status = "WIN" if hit["reason"].startswith("TP") else "LOSS"
+            p.update({"status": status, "exit_price": fill,
+                       "pnl_pct": round(pnl, 4),
+                       "resolved_at": now.isoformat(),
+                       "exit_reason": hit["reason"],
+                       "_replay_bar_date": hit.get("bar_date", ""),
+                       "_replay_gapped": hit.get("gapped", False)})
+            return p
+        # No touch in OHLC window. If the pick has aged past its resolution
+        # window, close at the LAST bar's close (real time-exit PnL).
+        if now >= expiry_dt and ohlc_bars:
+            last_close = ohlc_bars[-1].get("close", 0)
+            if last_close and last_close > 0:
+                fill = apply_slippage(last_close, direction, asset_class,
+                                      is_tp=False)
+                pnl = (fill - entry) / entry * direction_mult * 100
+                status = "WIN" if pnl > 0 else "LOSS"
+                p.update({"status": status, "exit_price": fill,
+                           "pnl_pct": round(pnl, 4),
+                           "resolved_at": now.isoformat(),
+                           "exit_reason": "TIME_EXIT_REPLAY",
+                           "_replay_bar_date": ohlc_bars[-1].get("date", "")})
+                return p
+
+    # ── Legacy single-spot snapshot (fallback) ──
     tp_hit = (current_price >= tp) if direction == "LONG" else (current_price <= tp)
-    # Check SL hit
     sl_hit = (current_price <= sl) if direction == "LONG" else (current_price >= sl)
 
     if tp_hit:
@@ -245,16 +397,15 @@ def resolve_pick(pick: dict[str, Any], current_price: float) -> dict[str, Any]:
         p.update({"status": "LOSS", "exit_price": fill, "pnl_pct": round(pnl, 4),
                    "resolved_at": now.isoformat(), "exit_reason": "SL_HIT"})
     elif now >= expiry_dt:
-        # Closing price at expiry (not mid-price)
         fill = apply_slippage(current_price, direction, asset_class, is_tp=False)
         pnl = (fill - entry) / entry * direction_mult * 100
         status = "WIN" if pnl > 0 else "LOSS"
         p.update({"status": status, "exit_price": fill, "pnl_pct": round(pnl, 4),
                    "resolved_at": now.isoformat(), "exit_reason": "EXPIRY"})
     else:
-        # Still open — update current price
         unrealized = (current_price - entry) / entry * direction_mult * 100
-        p.update({"current_price": current_price, "unrealized_pnl_pct": round(unrealized, 4)})
+        p.update({"current_price": current_price,
+                   "unrealized_pnl_pct": round(unrealized, 4)})
 
     return p
 
@@ -321,6 +472,22 @@ def main() -> None:
     open_picks = [p for p in picks if p.get("status") == "OPEN"]
     print(f"[ai-tournament] {len(picks)} total picks, {len(open_picks)} open")
 
+    # Pre-fetch OHLC windows for open picks (one yfinance call per unique
+    # symbol; skips CRYPTO which uses Binance spot API without OHLC).
+    ohlc_cache: dict[str, list[dict]] = {}
+    symbols_seen: set[str] = set()
+    for pick in open_picks:
+        sym = pick.get("symbol", "")
+        if sym and sym not in symbols_seen:
+            symbols_seen.add(sym)
+            ac = (pick.get("asset_class") or "").upper()
+            if ac != "CRYPTO":
+                try:
+                    ohlc_cache[sym] = fetch_ohlc_window(pick)
+                except Exception:
+                    ohlc_cache[sym] = []
+                time.sleep(0.1)  # rate-limit yfinance calls
+
     updated = []
     for pick in picks:
         if pick.get("status") != "OPEN":
@@ -337,12 +504,14 @@ def main() -> None:
             continue
 
         log_price(symbol, price, asset_class, date_str)
-        resolved_pick = resolve_pick(pick, price)
+        resolved_pick = resolve_pick(pick, price, ohlc_bars=ohlc_cache.get(symbol))
         updated.append(resolved_pick)
 
         status = resolved_pick.get("status", "OPEN")
         pnl = resolved_pick.get("pnl_pct")
-        print(f"  [{status:4s}] {symbol:12s} ${price:.4f} pnl={pnl}")
+        replay = resolved_pick.get("_replay_bar_date", "")
+        tag = f" replay={replay}" if replay else ""
+        print(f"  [{status:4s}] {symbol:12s} ${price:.4f} pnl={pnl}{tag}")
         time.sleep(0.2)  # avoid rate limits
 
     # Write per-day snapshot only. LATEST_PICKS is intentionally NOT written

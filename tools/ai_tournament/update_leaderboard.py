@@ -52,20 +52,32 @@ def bootstrap_pf_ci(
     if not pnls:
         return (0.0, 0.0)
 
-    def compute_pf(sample: list[float]) -> float:
-        wins = sum(v for v in sample if v > 0)
+    # Log-space PF estimator with pseudo-loss regularisation.
+    # When a bootstrap resample contains zero real losses, the raw PF is
+    # undefined (division by zero).  Adding a small pseudo-loss — half the
+    # mean absolute P&L — to every sample's loss total prevents infinite PF
+    # while barely affecting normal resamples.  The regularisation naturally
+    # shrinks harder in small-n / high-PF edge cases where it is needed most.
+    _PSEUDO_LOSS_FACTOR = 0.5   # fraction of mean_abs_pnl added as pseudo-loss
+    _MIN_SAFE_WINS   = 0.001    # floor for log(wins) so we never feed log(0)
+    mean_abs = sum(abs(v) for v in pnls) / len(pnls)
+    pseudo_loss = mean_abs * _PSEUDO_LOSS_FACTOR
+
+    def _log_pf(sample: list[float]) -> float:
+        """Return log-PF for the sample.  Never +inf because pseudo_loss > 0."""
+        wins   = sum(v for v in sample if v > 0)
         losses = abs(sum(v for v in sample if v < 0))
-        return wins / losses if losses > 0 else (10.0 if wins > 0 else 1.0)
+        return math.log(max(wins, _MIN_SAFE_WINS)) - math.log(losses + pseudo_loss)
 
     boot_pfs = []
     for _ in range(n_boot):
         sample = random.choices(pnls, k=len(pnls))
-        boot_pfs.append(compute_pf(sample))
+        boot_pfs.append(_log_pf(sample))
 
     boot_pfs.sort()
     lo_idx = int(alpha / 2 * n_boot)
     hi_idx = int((1 - alpha / 2) * n_boot)
-    return (boot_pfs[lo_idx], boot_pfs[min(hi_idx, n_boot - 1)])
+    return (math.exp(boot_pfs[lo_idx]), math.exp(boot_pfs[min(hi_idx, n_boot - 1)]))
 
 
 def tier(wr: float, pf: float) -> str:
