@@ -115,9 +115,23 @@ jobs:
             python alpha_engine/prune_active_picks.py
           fi
 
+      # 2026-06-02 wave 3: close OPEN+ACTIVE rows past per-class hold window (idempotent).
+      - name: MySQL stale live picks (OPEN+ACTIVE hold window)
+        if: ${{ inputs.dry_run != 'true' }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_PASS_STOCKS: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+        run: |
+          echo "::group::stale OPEN+ACTIVE resolver"
+          python tools/resolve_stale_open_picks.py --execute --batch-size 500 --max-batches 30
+          echo "::endgroup::"
+
       - name: Run Outcome Resolver
         env:
           PYTHONPATH: ${{ github.workspace }}
+          DB_PASS_STOCKS: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          PICK_OUTCOMES_MYSQL_ENABLED: ${{ inputs.dry_run != 'true' && '1' || '0' }}
         run: |
           echo "============================================"
           echo "  OUTCOME RESOLVER - Validate Closed Picks"
@@ -126,7 +140,7 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             python alpha_engine/outcome_resolver.py --dry-run
           else
-            python alpha_engine/outcome_resolver.py
+            python alpha_engine/outcome_resolver.py --mysql
           fi
 
       # INC #10 fix (2026-05-26): mirror resolved outcomes into MySQL at_signal_outcomes

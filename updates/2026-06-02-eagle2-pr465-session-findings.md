@@ -175,7 +175,7 @@ python3 tools/check_resolver_health.py
 
 | # | Action |
 |---|--------|
-| 9 | CI wrapper: `PYTHONPATH=.` for `outcome_resolver` in workflows |
+| 9 | CI: `PYTHONPATH` + stale OPEN+ACTIVE + `--mysql` in `outcome-resolver.yml` | **DONE** — [CI hygiene doc](https://findtorontoevents.ca/updates/2026-06-02-resolver-ci-hygiene.md) |
 | 10 | Daily cron via `tools/run_daily_resolver_hygiene.sh` | **DONE** — wire on host with `AUDIT_DB_PASS` |
 
 ---
