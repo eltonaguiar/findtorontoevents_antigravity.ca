@@ -108,6 +108,35 @@ class StrategyVerificationEngine:
         self.confidence_level = confidence_level
         self.backtest_engine = SimpleBacktester()
     
+    @staticmethod
+    def _block_bootstrap(pnls: np.ndarray, block_size: int) -> np.ndarray:
+        """Block bootstrap preserving temporal dependence.
+        
+        Splits the trade sequence into overlapping blocks and resamples with
+        replacement.  This keeps serial correlation within blocks intact,
+        which is critical for trend-following strategies where consecutive
+        wins/losses carry signal.
+        
+        For mean-reversion strategies the block size can be small (2-5)
+        without much harm; for momentum/trend it should be large enough to
+        capture the holding-period autocorrelation.
+        
+        Returns a 1-D numpy array of length len(pnls).
+        """
+        n = len(pnls)
+        if block_size <= 1 or n <= block_size:
+            return np.random.choice(pnls, size=n, replace=True)
+        
+        blocks = [pnls[i:i + block_size] for i in range(0, n, block_size)]
+        if len(blocks) == 1:
+            return np.random.choice(pnls, size=n, replace=True)
+        
+        pieces = []
+        while sum(len(p) for p in pieces) < n:
+            idx = np.random.choice(len(blocks))
+            pieces.append(blocks[idx])
+        return np.concatenate(pieces)[:n]
+    
     def verify_strategy(self, strategy, market_data: pd.DataFrame, 
                        asset_class: str = "UNKNOWN") -> PerformanceMetrics:
         """
@@ -240,11 +269,12 @@ class StrategyVerificationEngine:
         mc_sharpes = []
         mc_win_rates = []
         
+        n = len(pnls)
+        block_size = max(2, min(n // 5, 20))
+        
         for _ in range(self.mc_iterations):
-            # Resample with replacement
-            resampled = np.random.choice(pnls, size=len(pnls), replace=True)
+            resampled = self._block_bootstrap(pnls, block_size)
             
-            # Calculate metrics on resampled data
             mc_sharpe = np.mean(resampled) / np.std(resampled) if np.std(resampled) > 0 else 0
             mc_win_rate = np.sum(resampled > 0) / len(resampled)
             
@@ -254,7 +284,6 @@ class StrategyVerificationEngine:
         mc_sharpes = np.array(mc_sharpes)
         mc_win_rates = np.array(mc_win_rates)
         
-        # P-value: probability of observing this Sharpe by chance
         p_value = np.sum(mc_sharpes >= original_sharpe) / self.mc_iterations
         
         return {
