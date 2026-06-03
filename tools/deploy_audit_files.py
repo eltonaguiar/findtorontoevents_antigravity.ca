@@ -72,6 +72,7 @@ UPLOADS = [
     ("updates/2026-06-02-resolver-ci-hygiene.md",             "/findtorontoevents.ca/updates/2026-06-02-resolver-ci-hygiene.md", "updates"),
     ("updates/2026-06-03-stale-resolver-pagination-fix.md",    "/findtorontoevents.ca/updates/2026-06-03-stale-resolver-pagination-fix.md", "updates"),
     ("updates/2026-06-03-bootstrap-forward-paper-pilots.md",   "/findtorontoevents.ca/updates/2026-06-03-bootstrap-forward-paper-pilots.md", "updates"),
+    ("updates/2026-06-03-outcome-resolver-max-batches.md",     "/findtorontoevents.ca/updates/2026-06-03-outcome-resolver-max-batches.md", "updates"),
     ("audit_dashboard/ai_leaderboard.html",                  "/findtorontoevents.ca/audit/ai_leaderboard.html",                   "ai_leaderboard"),
     ("audit_dashboard/data/ai_leaderboard/ai_leaderboard_index.json", "/findtorontoevents.ca/audit/data/ai_leaderboard/ai_leaderboard_index.json", "ai_leaderboard"),
     ("audit_dashboard/data/ma_strategy_leaderboard.json",    "/findtorontoevents.ca/audit/data/ma_strategy_leaderboard.json",     "ai_leaderboard"),
