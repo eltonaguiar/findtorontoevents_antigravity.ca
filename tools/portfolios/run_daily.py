@@ -365,8 +365,40 @@ def compute_metrics(db: DB, portfolio_id: int) -> dict:
     n_win = sum(1 for c in closed if float(c.get("realized_pnl_usd") or 0.0) > 0)
     wr = (n_win / n_closed) if n_closed else None
 
+    # CAGR — annualized geometric NAV growth (EAGLE-3 action #7).
+    # Schema columns PF_DAILY_METRICS.cagr + .sortino_30d existed but were
+    # never populated, leaving CAGR + SORTINO 30D cells on /audit/pf.html
+    # drill pages blank.
+    cagr = None
+    if nav_series and len(nav_series) >= 2:
+        n_days = len(nav_series)
+        start = nav_series[0]
+        end = nav_series[-1]
+        if start > 0 and end > 0:
+            try:
+                cagr = ((end / start) ** (252.0 / n_days) - 1.0) * 100.0
+            except (OverflowError, ZeroDivisionError):
+                cagr = None
+
+    # Sortino 30D — like Sharpe but only penalizes downside deviation
+    # (MAR=0). Same window as sharpe_30d above.
+    sortino = None
+    if len(rets) >= 2:
+        downside = [r for r in rets if r < 0]
+        if downside:
+            mean_r = sum(rets) / len(rets)
+            d_var = sum(r * r for r in downside) / len(downside)
+            d_sd = math.sqrt(d_var)
+            if d_sd > 0:
+                sortino = (mean_r / d_sd) * math.sqrt(252)
+        elif rets:
+            # No downside days in window -> sortino is mathematically
+            # infinite; sentinel so downstream consumers can distinguish
+            # "no losing days" from "no data".
+            sortino = 999.0
+
     return {"sharpe_30d": sharpe, "max_dd": max_dd, "pf_to_date": pf,
-            "wr_to_date": wr}
+            "wr_to_date": wr, "cagr": cagr, "sortino_30d": sortino}
 
 
 # --------------------------------------------------------------------------- #
