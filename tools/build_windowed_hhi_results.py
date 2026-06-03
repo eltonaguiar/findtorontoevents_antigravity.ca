@@ -13,7 +13,7 @@ window of last K picks, where HHI = sum( (count_per_source / K)^2 ). Verdict:
 - INSUFFICIENT if total n < window
 
 Usage:
-    DB_PASS_STOCKS=stocks1234560 python3 tools/build_windowed_hhi_results.py
+    DB_PASS_STOCKS=$DB_PASS_STOCKS python3 tools/build_windowed_hhi_results.py
 
 Output: tools/windowed_hhi_results.json
 """
