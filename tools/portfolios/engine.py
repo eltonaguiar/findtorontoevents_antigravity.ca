@@ -172,7 +172,15 @@ def mark_position(position: dict, current_price: float) -> dict:
     "market_value_usd"}``. PnL sign respects direction (short profits when
     price falls). Percentages are in % (e.g. 5.0 == +5%).
     """
-    entry = position.get("entry_price")
+    # 2026-06-03 P0 fix: entry_price comes back from MySQL as `Decimal`, but
+    # current_price is a `float` (from prices.get_close). Python's `-` operator
+    # raises TypeError on mixed float/Decimal. This crashed run_daily.py on the
+    # first portfolio with positions, blocking the entire daily lifecycle —
+    # 44 new portfolios (kimi_k2_6, mistral_large, qwen3_5_plus, etc. seeded
+    # 2026-06-01..06-03) never got positions inserted because the writer died
+    # at line 183 before reaching them. PF_NAV_SNAPSHOT max stuck at 2026-05-31.
+    entry_raw = position.get("entry_price")
+    entry = float(entry_raw) if entry_raw is not None else None
     qty = float(position.get("qty") or 0.0)
     long_side = risk._is_long(position.get("direction"))
 
@@ -180,6 +188,7 @@ def mark_position(position: dict, current_price: float) -> dict:
         return {"current_price": current_price, "unrealized_pnl_pct": 0.0,
                 "unrealized_pnl_usd": 0.0, "market_value_usd": 0.0}
 
+    current_price = float(current_price)
     raw_pct = (current_price - entry) / entry
     pnl_pct = raw_pct if long_side else -raw_pct
     # USD PnL: per-unit price move * qty, sign-adjusted for direction.
