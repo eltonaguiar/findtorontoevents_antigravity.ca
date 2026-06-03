@@ -13,9 +13,10 @@ LOG="${LOG_DIR}/run_${STAMP}.log"
 {
   echo "=== resolver hygiene ${STAMP} ==="
   "$PY" audit_trail/universal_pick_resolver.py
-  "$PY" tools/resolve_stale_open_picks.py --execute --batch-size 500 --max-batches 30
+  # Full live-set scan (OFFSET pagination; do not cap with max-batches)
+  "$PY" tools/resolve_stale_open_picks.py --execute --batch-size 500
   PYTHONPATH="$ROOT" "$PY" alpha_engine/outcome_resolver.py --mysql
-  "$PY" tools/check_resolver_health.py --json | tail -20
+  "$PY" tools/check_resolver_health.py 2>&1 | tail -25
   "$PY" tools/run_verified_pilots_daily.py
 } >>"$LOG" 2>&1
 echo "Wrote $LOG"

@@ -2,7 +2,8 @@
 # Install daily resolver hygiene crontab line (idempotent check).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-LINE="15 6 * * * cd ${ROOT} && AUDIT_DB_PASS=\${AUDIT_DB_PASS:-\${DB_PASS_STOCKS}} ./tools/run_daily_resolver_hygiene.sh >> ${ROOT}/logs/resolver_hygiene/cron.log 2>&1"
+# Set AUDIT_DB_PASS in user crontab or ~/.profile; line below passes through if exported.
+LINE="15 6 * * * cd ${ROOT} && export AUDIT_DB_PASS=\${AUDIT_DB_PASS:-\${DB_PASS_STOCKS:-stocks}} PYTHONPATH=${ROOT} && ./tools/run_daily_resolver_hygiene.sh >> ${ROOT}/logs/resolver_hygiene/cron.log 2>&1"
 MARKER="# findtorontoevents resolver hygiene"
 
 if [[ "${1:-}" == "--print" ]]; then

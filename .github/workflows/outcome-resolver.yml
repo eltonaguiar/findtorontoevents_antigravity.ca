@@ -124,7 +124,7 @@ jobs:
           DB_PASS_STOCKS: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
         run: |
           echo "::group::stale OPEN+ACTIVE resolver"
-          python tools/resolve_stale_open_picks.py --execute --batch-size 500 --max-batches 30
+          python tools/resolve_stale_open_picks.py --execute --batch-size 500
           echo "::endgroup::"
 
       - name: Run Outcome Resolver
