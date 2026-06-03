@@ -1722,9 +1722,13 @@ WIN_RATE_TRAP_BLACKLIST = frozenset({
 #   - Active visibility still uses passes_active_gate (e.g. GC=F entry sanity was blocking gold)
 # ETF: same -60 penalty plus **hard ban** in passes_active_gate (PLAN_FIX_LOWPICKSCOUNT Phase 1:
 #   thin closed book, systemic drain — no new ETF actives until forward validation justifies).
-BLOCKED_ASSET_CLASSES: set = {"FOREX", "COMMODITY", "FUTURES"}
+BLOCKED_ASSET_CLASSES: set = {"FOREX", "COMMODITY", "FUTURES", "BOND"}
 # FOREX: 2026-05-28 Tier-0 freeze, 90d policy-clean PF 0.39 / WR 15.4% / n=13. 15,720 picks → 0 high-conviction.
 #        Bypass route: external MyFXBook replication gate (Tier 5 fix plan).
+# BOND: 2026-06-03 freeze. Live PF 0.37 (CLASS_DEGRADED per quant_monitor 2026-06-03), money_ready_verdict.json
+#        2026-05-24 records n=8 INSUFF-N / PF 0. EAGLE_JUNE2 + mimo session-summary item #4 (depromote until
+#        admissibility pipeline passes). Bypass: paper-only 60d on HYG/LQD credit-spread strategies +
+#        bond_credit_mom lab-side validation (currently PF 1.41 in lab, not live).
 # COMMODITY: 2026-06-02 EAGLE-2 Pillar 1 freeze. Live policy-clean PF 0.31 / WR 11% / n=28; CT=F 57% concentration;
 #        cot_positioning PF dropped 4.6 → 0.51 post-dedup (grok consult 2026-05-25, 75-85% leakage probability).
 #        Bypass: 3-day COT publication lag enforced at signal receipt + CT=F removed from universe + 60d post-fix
