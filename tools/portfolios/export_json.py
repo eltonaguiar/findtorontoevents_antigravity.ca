@@ -30,6 +30,19 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# 2026-06-03 P0 fix: mark-to-market imports hoisted to module scope.
+# Previous in-loop imports `from tools.portfolios.engine import mark_position`
+# failed with ModuleNotFoundError when this file ran as
+# `python tools/portfolios/export_json.py` because sys.path got
+# the script's directory, not the repo root. The exception was
+# silently caught by `continue-on-error: true` on the daily workflow,
+# so every portfolio JSON shipped without current_price /
+# unrealized_pnl_pct populated, leaving the pf.html drill columns
+# blank on the live site. Relative imports resolve at module load
+# regardless of how Python is invoked.
+from .engine import mark_position  # noqa: E402
+from .prices import get_close  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = REPO_ROOT / "audit_dashboard" / "data"
 
