@@ -63,7 +63,7 @@ Add a **sustained_pf** metric: median PF over 10 random sub-resamples (each subs
 
 ## Reproduce
 ```bash
-DB_PASS_STOCKS=stocks1234560 python3 -c "
+DB_PASS_STOCKS=$DB_PASS_STOCKS python3 -c "
 import os, pymysql
 conn = pymysql.connect(host='mysql.50webs.com', user='ejaguiar1_stocks', password=os.environ['DB_PASS_STOCKS'], database='ejaguiar1_stocks', port=3306)
 c = conn.cursor()
