@@ -758,8 +758,20 @@ def calculate_correlation_penalty(
         if new_cluster == "UNCATEGORIZED":
             return base_size  # No penalty if we don't know the cluster
 
+        # FIX 2026-06-03: the production caller (production_scanner.py 6j step)
+        # iterates `for p in active: calculate_correlation_penalty(p, active, ...)`
+        # — so `active_picks` contains the new pick itself. The previous
+        # cluster_count therefore included self, applying a one-tier-too-harsh
+        # penalty (solo pick in a cluster got 0.7x instead of 1.0x). Exclude
+        # the candidate by object identity OR matching symbol+id, which is
+        # safe whether the caller pre-filters or not.
+        new_id = new_pick.get("id")
         cluster_count = 0
         for p in active_picks:
+            if p is new_pick:
+                continue
+            if new_id is not None and p.get("id") == new_id:
+                continue
             if _get_cluster(p.get("symbol", "")) == new_cluster:
                 cluster_count += 1
 
