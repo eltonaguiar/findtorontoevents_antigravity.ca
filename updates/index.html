@@ -48,6 +48,19 @@
   </ul>
   <p class="meta">Doc: <a href="/updates/2026-06-03-bootstrap-forward-paper-pilots.md">2026-06-03-bootstrap-forward-paper-pilots.md</a> · Repro: <code>python3 tools/run_verified_pilots_daily.py</code></p>
 </div>
+<div class="update-entry">
+  <h2>2026-06-03 — AI tournament portfolios: 54 empty → 0 empty</h2>
+  <p class="meta">PRs #503 / #507 / #510 · 1,050 open positions across 120/120 portfolios · CAGR/Sortino/MaxDD/PF now populated</p>
+  <p>The <a href="/audit/ai-tournament.html">/audit/ai-tournament.html</a> per-model portfolio drill (<a href="/audit/pf.html?key=deepseek_v4__aggressive">pf.html</a>) was missing positions on 54 of 120 portfolios for 3+ days and the <code>Weight%/TP/Current$/Unrealized%/CAGR/Sortino</code> columns were blank. Three independent bugs combined:</p>
+  <ul>
+    <li><strong>PR #503</strong> — <code>engine.mark_position</code> raised <code>TypeError: float - Decimal</code> on the first portfolio with positions, silently masked by <code>continue-on-error: true</code> → <code>PF_NAV_SNAPSHOT</code> stuck at 2026-05-31 → 44 newly-seeded portfolios never ran the daily lifecycle. Fix: cast <code>entry_price</code> Decimal→float at <code>engine.py:183</code>.</li>
+    <li><strong>PR #507</strong> — <code>aimlapi_gpt4o</code> and <code>gh_models_gpt4o</code> portfolios exist but their model_id is a vendor-route rebrand of <code>gpt4o</code> (406 picks/day). Fix: <code>MODEL_PICK_ALIASES</code> map in <code>run_daily.py</code>.</li>
+    <li><strong>PR #510</strong> — <code>model_picks()</code> sliced [:25] BEFORE the risk-profile allowlist filter; <code>gemini_2_5_flash__conservative</code>'s 25 newest picks happened to be PENNY/COMMODITY/CRYPTO (all excluded by conservative's <code>[BOND,ETF,EQUITY,FOREX]</code> allowlist) → 0 positions. Fix: filter by allowlist BEFORE the 25-cap.</li>
+  </ul>
+  <p>Also shipped: <code>"Last mark"</code> → <code>"Last updated"</code> label, <code>Trail</code> badge for trail-only aggressive positions (replaces the confusing <code>—</code>), and <code>db-password-leak-guard.yml</code> CI forward-fence for INCIDENT #89.</p>
+  <p class="meta">Repro: <code>SELECT COUNT(DISTINCT portfolio_id) FROM PF_POSITION WHERE status='open'</code> = 120 · Authoring: claude-opus-4-7 2026-06-03</p>
+</div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
