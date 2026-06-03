@@ -28,6 +28,10 @@ jobs:
         # 2026-06-01: per-step cap so a stalled FTP upload fails fast instead of
         # burning the job's 90-min wall (the tdotevent.ca 50webs target hung for the
         # full 90m on 8/12 recent runs). See triage report.
+        # 2026-06-03: the source FTP tree also contains heavyweight non-site ballast
+        # (backup snapshots and dependency folders like node_modules). Exclude those
+        # so the mirror job stays focused on live site payloads and finishes inside
+        # the 15-minute download budget.
         timeout-minutes: 15
         env:
           SRC_HOST: ${{ secrets.FTP_HOST }}
@@ -51,6 +55,8 @@ jobs:
             --use-cache \
             --no-perms \
             --parallel=4 \
+            --exclude='^backups/' \
+            --exclude='(^|/)node_modules/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
@@ -103,6 +109,8 @@ jobs:
             --use-cache \
             --no-perms \
             --parallel=4 \
+            --exclude='^backups/' \
+            --exclude='(^|/)node_modules/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
@@ -141,6 +149,8 @@ jobs:
             --use-cache \
             --no-perms \
             --parallel=4 \
+            --exclude='^backups/' \
+            --exclude='(^|/)node_modules/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
@@ -226,4 +236,3 @@ jobs:
           echo "| **Completed** | $(date -u '+%Y-%m-%d %H:%M:%S UTC') |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "> Runs every 6 hours. Excludes db_config.php, .env, .htpasswd from overwrite." >> $GITHUB_STEP_SUMMARY
-
