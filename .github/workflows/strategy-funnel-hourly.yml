@@ -20,6 +20,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -126,5 +127,17 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore(audit): refresh strategy_funnel_data.json [skip ci]"
-            git push
+            pushed=0
+            for i in 1 2 3 4 5; do
+              if git pull --rebase --autostash origin main \
+                 && git push origin HEAD:main; then
+                echo "Push succeeded on attempt $i"
+                pushed=1
+                break
+              fi
+              echo "Push attempt $i/5 lost the race — retrying"
+              git rebase --abort 2>/dev/null || true
+              sleep $((i * 5))
+            done
+            [ "$pushed" = 1 ] || { echo "::error::push failed after 5 attempts"; exit 1; }
           fi
