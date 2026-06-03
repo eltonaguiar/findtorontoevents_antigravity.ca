@@ -6,7 +6,7 @@ Verdict: PASS if lower CI bound > 1.0 (i.e., even in the worst-case
 resample, PF stays above 1.0). This is stricter than WF OOS ratio.
 
 Usage:
-    DB_PASS_STOCKS=stocks1234560 python3 tools/build_bootstrap_ci_results.py
+    DB_PASS_STOCKS=$DB_PASS_STOCKS python3 tools/build_bootstrap_ci_results.py
 
 Output: tools/bootstrap_ci_results.json
 """

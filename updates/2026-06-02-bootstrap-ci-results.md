@@ -62,8 +62,8 @@ These have IS_PF in [30, 310] which is implausibly high — either lucky regime,
 
 ## Reproduce
 ```bash
-DB_PASS_STOCKS=stocks1234560 python3 tools/build_walkforward_oos_results.py  # first, populates WF OOS
-DB_PASS_STOCKS=stocks1234560 python3 tools/build_bootstrap_ci_results.py     # then this
+DB_PASS_STOCKS=$DB_PASS_STOCKS python3 tools/build_walkforward_oos_results.py  # first, populates WF OOS
+DB_PASS_STOCKS=$DB_PASS_STOCKS python3 tools/build_bootstrap_ci_results.py     # then this
 # -> PASS=9 BORDERLINE=6 FAIL=4 INSUFFICIENT=0 -> tools/bootstrap_ci_results.json
 ```
 
