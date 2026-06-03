@@ -5612,11 +5612,6 @@ def main():
 
     if active and _HAS_PROMOTION_GATE:
         try:
-            _pg_enforce = os.environ.get("PROMOTION_GATE_ENFORCE", "").strip().lower() in (
-                "1",
-                "true",
-                "yes",
-            )
             _pg_kept: list[dict] = []
             _pg_denied = 0
             for _pg_pick in active:
@@ -5629,14 +5624,14 @@ def main():
                 _pg_ok = is_admissible_for_production(_pg_key, _pg_ac)
                 _pg_pick["_promotion_gate_admitted"] = _pg_ok
                 _pg_pick["_promotion_gate_reason"] = admission_reason(_pg_key, _pg_ac)
-                if _pg_ok or not _pg_enforce:
+                if _pg_ok:
                     _pg_kept.append(_pg_pick)
                 else:
                     _pg_denied += 1
                     _pg_pick["_promotion_gate_rejected"] = _pg_pick["_promotion_gate_reason"]
                     rejected.append(_pg_pick)
             print(
-                f"  [PROMOTION GATE] enforce={_pg_enforce} denied={_pg_denied} "
+                f"  [PROMOTION GATE] enforced=True denied={_pg_denied} "
                 f"kept={len(_pg_kept)} allowlist={len(PROMOTED_STRATEGIES)}"
             )
             active = _pg_kept
