@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-03T14:22:48.802533+00:00",
+  "generated_at": "2026-06-03T22:23:28.029928+00:00",
   "methodology_doc": "docs/BACKTEST_ADMISSIBILITY_STANDARD.md",
   "quant_review": "reports/quant_strategy_root_cause_review_2026-06-02.md",
   "executive_answers": {
@@ -17,48 +17,38 @@
     "data_feeds": "Secondary; FRED carry fixed via curl cache; live pain is pick quality + methodology"
   },
   "live_money_ready": {
-    "generated_at": "2026-06-03T12:26:48.665747+00:00",
+    "generated_at": "2026-06-03T18:27:50.225175+00:00",
     "money_ready_classes": [],
     "n_classes": 9,
     "by_class": {
+      "EQUITY": {
+        "n": 51,
+        "wr": 0.2941,
+        "pf": 0.3419,
+        "mdd": 0.7842,
+        "verdict": "NOT_READY",
+        "top_source": "regime_terminal",
+        "top_source_share": 0.3725,
+        "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
+      },
       "CRYPTO": {
-        "n": 339,
-        "wr": 0.3835,
-        "pf": 0.9696,
+        "n": 338,
+        "wr": 0.3846,
+        "pf": 0.9666,
         "mdd": 1.0,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.6077,
+        "top_source_share": 0.6065,
         "root_cause": "Policy-clean PF 0.89 (n~377): bulk scanner loss-skew; lab VWAP/Bollinger WF PASS but opt-in only. Proven pick_funnel cell (RR1.0-1.5 LONG) is subset \u2014 aggregate loses."
       },
-      "EQUITY": {
-        "n": 52,
-        "wr": 0.3269,
-        "pf": 0.3558,
-        "mdd": 0.7924,
-        "verdict": "NOT_READY",
-        "top_source": "regime_terminal",
-        "top_source_share": 0.3654,
-        "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
-      },
-      "COMMODITY": {
-        "n": 5,
-        "wr": 0.8,
-        "pf": 23.6647,
-        "mdd": null,
-        "verdict": "INSUFFICIENT_DATA",
-        "top_source": "cftc_socrata",
-        "top_source_share": 0.4,
-        "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
-      },
       "FOREX": {
-        "n": 31,
-        "wr": 0.2258,
-        "pf": 0.4676,
-        "mdd": 0.8244,
+        "n": 30,
+        "wr": 0.2333,
+        "pf": 0.4683,
+        "mdd": 0.824,
         "verdict": "INSUFFICIENT_DATA",
         "top_source": "multi_asset_scanner",
-        "top_source_share": 0.3548,
+        "top_source_share": 0.3793,
         "root_cause": "PF 0.48, small n: carry lab thin; 14d raw shows high WR / PF 0.10 (EXPIRED mislabel). Not a data-feed outage \u2014 resolver/label issue."
       },
       "UNKNOWN": {
@@ -90,6 +80,16 @@
         "top_source": "UNKNOWN",
         "top_source_share": 1.0,
         "root_cause": "Best lab candidate: dual momentum Tier-2 (PF 1.60, n=104). Live policy-clean n=3 \u2014 need forward n>=100 before merge."
+      },
+      "COMMODITY": {
+        "n": 4,
+        "wr": 0.75,
+        "pf": 19.115,
+        "mdd": null,
+        "verdict": "INSUFFICIENT_DATA",
+        "top_source": "UNKNOWN",
+        "top_source_share": 0.6667,
+        "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
       },
       "PENNY_STOCK": {
         "n": 1,
@@ -486,7 +486,7 @@
     "verified_lab": {
       "surface": "verified_strategies lab + forward pilots (not on main /audit banner yet)",
       "trust_level": "promotion candidate after forward n>=100",
-      "dashboard_source": "/home/eaguiar2015/findtorontoevents_antigravity.ca/audit_dashboard/data/pilot_forward_dashboard.json",
+      "dashboard_source": "/home/eaguiar2015/findtorontoevents_antigravity.ca/reports/pilot_forward_dashboard.json",
       "any_promotion_ready": false,
       "best_candidate": {
         "sleeve": "etf_dual_momentum",
@@ -575,7 +575,7 @@
         }
       ],
       "dashboard": {
-        "timestamp": "2026-06-03T14:19:04.797362+00:00",
+        "timestamp": "2026-06-03T22:09:29.603071+00:00",
         "forward_n_target": 100,
         "any_promotion_ready": false,
         "sleeves": {
@@ -679,7 +679,7 @@
             }
           },
           "faber_taa": {
-            "timestamp": "2026-06-03T14:19:04.608749+00:00",
+            "timestamp": "2026-06-03T22:09:29.491340+00:00",
             "strategy": "faber_taa_paper_pilot",
             "n_closed": 0,
             "wr": 0.0,
@@ -706,10 +706,10 @@
             "forward": {
               "source": "paper_pilot_virtual",
               "strategy_id": "B_flip_PriceRocMeanReversion",
-              "n_closed": 0,
+              "n_closed": 1,
               "wr": 0.0,
               "pf": 0.0,
-              "mean_pnl_pct": 0.0,
+              "mean_pnl_pct": -0.0226,
               "promotion_ready": false,
               "shadow_checkpoint_ready": false,
               "gates": [
@@ -738,17 +738,14 @@
             "forward": {
               "source": "paper_pilot_virtual",
               "strategy_id": "inverse_ml_enhanced_BTCUSDT_15m_D",
-              "n_closed": 0,
-              "wr": 0.0,
-              "pf": 0.0,
-              "mean_pnl_pct": 0.0,
+              "n_closed": 1,
+              "wr": 1.0,
+              "pf": 999.0,
+              "mean_pnl_pct": 0.0025,
               "promotion_ready": false,
               "shadow_checkpoint_ready": false,
               "gates": [
-                "n<100",
-                "pf<1.5",
-                "wr<50%",
-                "pf<0.85*oos"
+                "n<100"
               ],
               "shadow_gates": [
                 "n<30"
@@ -761,7 +758,7 @@
           }
         },
         "bootstrap_forward": {
-          "timestamp": "2026-06-03T14:19:04.791210+00:00",
+          "timestamp": "2026-06-03T22:09:29.599179+00:00",
           "forward_n_target": 100,
           "any_promotion_ready": false,
           "sleeves": {
@@ -776,10 +773,10 @@
               "forward": {
                 "source": "paper_pilot_virtual",
                 "strategy_id": "B_flip_PriceRocMeanReversion",
-                "n_closed": 0,
+                "n_closed": 1,
                 "wr": 0.0,
                 "pf": 0.0,
-                "mean_pnl_pct": 0.0,
+                "mean_pnl_pct": -0.0226,
                 "promotion_ready": false,
                 "shadow_checkpoint_ready": false,
                 "gates": [
@@ -808,17 +805,14 @@
               "forward": {
                 "source": "paper_pilot_virtual",
                 "strategy_id": "inverse_ml_enhanced_BTCUSDT_15m_D",
-                "n_closed": 0,
-                "wr": 0.0,
-                "pf": 0.0,
-                "mean_pnl_pct": 0.0,
+                "n_closed": 1,
+                "wr": 1.0,
+                "pf": 999.0,
+                "mean_pnl_pct": 0.0025,
                 "promotion_ready": false,
                 "shadow_checkpoint_ready": false,
                 "gates": [
-                  "n<100",
-                  "pf<1.5",
-                  "wr<50%",
-                  "pf<0.85*oos"
+                  "n<100"
                 ],
                 "shadow_gates": [
                   "n<30"
