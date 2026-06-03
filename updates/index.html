@@ -34,10 +34,15 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 <div class="update-entry">
+  <h3>2026-06-03 — Outcome resolver: bounded stale-pick batches</h3>
+  <p>Hourly <code>outcome-resolver</code> and <code>run_daily_resolver_hygiene.sh</code> now cap stale OPEN+ACTIVE closes with <code>--max-batches 30</code> (~15k rows/run) so full 3k+ live scans do not hit the 10h harness kill.</p>
+  <p class="meta">Doc: <a href="/updates/2026-06-03-outcome-resolver-max-batches.md">2026-06-03-outcome-resolver-max-batches.md</a> · Repro: <code>gh workflow run outcome-resolver.yml</code></p>
+</div>
+<div class="update-entry">
   <h3>2026-06-03 — Bootstrap forward paper pilots (B_flip + inverse_ml BTC)</h3>
   <p><strong>Goal #1:</strong> PR #482 legit strategies now have virtual forward books — no production scanner flags until forward <code>n&gt;=100</code>.</p>
   <ul>
-    <li><code>B_flip_PriceRocMeanReversion</code> — inverted PriceRoc on BTCUSDT 1h</li>
+    <li><code>B_flip_PriceRocMeanReversion</code> — inverted PriceRoc, 10-symbol universe (1 open leg)</li>
     <li><code>inverse_ml_enhanced_BTCUSDT_15m_D</code> — ml_strategy_reviver inverse SHORT</li>
     <li>Live JSON: <a href="/audit/data/bootstrap_forward_stats.json">bootstrap_forward_stats.json</a> · dashboard: <a href="/audit/data/pilot_forward_dashboard.json">pilot_forward_dashboard.json</a></li>
   </ul>

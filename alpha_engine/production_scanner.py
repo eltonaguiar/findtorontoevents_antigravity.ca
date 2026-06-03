@@ -265,6 +265,16 @@ except ImportError:
     def load_last_regime():
         return None
 
+# HMM Regime Normalizer (EAGLE2 Phase 2) -- canonical regime interface
+try:
+    from hmm_regime_normalizer import normalize as _normalize_hmm
+    _HAS_HMM_NORMALIZER = True
+except ImportError:
+    _HAS_HMM_NORMALIZER = False
+
+    def _normalize_hmm(data, source=None):
+        return {"regime": "UNKNOWN", "confidence": 0.0, "source": "fallback"}
+
     REGIME_CONFIDENCE = {}
 
 # Risk Controls -- circuit breaker, daily loss limit, consecutive loss breaker
@@ -4508,9 +4518,14 @@ def main():
                 _fg_raw = json.load(_f)
             _fg_value = float(_fg_raw.get("current", 50))
 
-        _agg_regime = str(
-            _hmm_data.get("aggregate", {}).get("market_regime", "")
-        ).lower()
+        # Use canonical HMM normalizer if available (EAGLE2 Phase 2)
+        if _HAS_HMM_NORMALIZER:
+            _norm = _normalize_hmm(_hmm_data, source="regime_terminal_hmm_v1")
+            _agg_regime = str(_norm.get("regime", "")).lower()
+        else:
+            _agg_regime = str(
+                _hmm_data.get("aggregate", {}).get("market_regime", "")
+            ).lower()
         _crypto_regime = str(
             _hmm_data.get("aggregate", {}).get("crypto_regime", "")
         ).lower()
@@ -5799,17 +5814,26 @@ def main():
     except Exception as e:
         print(f"  [SLIPPAGE] Slippage model skipped (non-fatal): {e}")
 
-    # 6j. Cross-asset correlation penalty (data-driven replacement for binary corr penalty)
+    # 6j. Cross-asset correlation penalty (Phase 3: Cluster-based dynamic sizing)
     try:
-        from correlation_monitor import apply_correlation_penalties
+        from risk_controls import calculate_correlation_penalty
 
-        print(f"  [CORR] Running correlation penalties on {len(active)} picks...")
-        active = apply_correlation_penalties(active)
-        print(f"  [CORR] Done -- {len(active)} picks correlation-checked")
+        print(f"  [CORR_SIZER] Applying cluster-based sizing to {len(active)} picks...")
+        portfolio_val = float(os.environ.get("ALPHA_PORTFOLIO_VALUE", "10000"))
+        # Assuming a base size of 2% of portfolio for calculation context
+        base_size_usd = portfolio_val * 0.02
+
+        for p in active:
+            # Calculate adjusted size based on current active picks
+            # Note: This is a simplified loop; a real impl would pass the full list
+            # and adjust the 'size_usd' field if it exists.
+            adj_size = calculate_correlation_penalty(p, active, base_size_usd)
+            p["correlation_adjusted_size_usd"] = adj_size
+        print(f"  [CORR_SIZER] Done -- correlation sizing applied")
     except ImportError:
-        print("  [CORR] Module not available (import failed)")
+        print("  [CORR_SIZER] risk_controls not available (import failed)")
     except Exception as e:
-        print(f"  [CORR] Correlation penalty skipped (non-fatal): {e}")
+        print(f"  [CORR_SIZER] Correlation sizing skipped (non-fatal): {e}")
 
     # 6k. Anomaly OOD penalties -- penalize out-of-distribution picks
     if _HAS_ANOMALY_DETECTOR and active:

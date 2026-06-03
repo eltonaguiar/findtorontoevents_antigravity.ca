@@ -100,7 +100,7 @@ def _short_entry_on_last_bar(df: pd.DataFrame, symbol: str) -> dict | None:
     entry = float(row["close"])
     atr = float(row["atr_14"])
     return {
-        "symbol": SYMBOL,
+        "symbol": symbol,
         "direction": "SELL",
         "entry_price": entry,
         "take_profit": entry - atr * TP_ATR,
@@ -134,16 +134,16 @@ def run_daily_tick() -> dict:
     state = _load_state()
     state["day_count"] = int(state.get("day_count") or 0) + 1
 
-    df = _klines_df(SYMBOL, INTERVAL)
-    if df is None:
-        state["note"] = "klines_unavailable"
-        _save_state(state)
-        return state
-
-    last_px = float(df["close"].iloc[-1])
     open_pos = state.get("open_position")
+    held_sym = (open_pos or {}).get("symbol") or UNIVERSE[0]
 
     if open_pos and open_pos.get("status") == "OPEN":
+        df = _klines_df(held_sym, INTERVAL)
+        if df is None:
+            state["note"] = f"klines_unavailable:{held_sym}"
+            _save_state(state)
+            return state
+        last_px = float(df["close"].iloc[-1])
         outcome = _resolve_short(open_pos, last_px, today)
         if outcome:
             entry = float(open_pos["entry_price"])
@@ -152,7 +152,7 @@ def run_daily_tick() -> dict:
                 {
                     "event": "CLOSE",
                     "strategy": STRATEGY_ID,
-                    "symbol": SYMBOL,
+                    "symbol": held_sym,
                     "direction": "SELL",
                     "entry_price": entry,
                     "exit_price": last_px,
@@ -166,8 +166,15 @@ def run_daily_tick() -> dict:
             open_pos["last_seen"] = today
             open_pos["mark_price"] = last_px
             state["open_position"] = open_pos
-    elif not open_pos:
-        sig = _short_entry_on_last_bar(df)
+    else:
+        sig = None
+        for sym in UNIVERSE:
+            sym_df = _klines_df(sym, INTERVAL)
+            if sym_df is None:
+                continue
+            sig = _short_entry_on_last_bar(sym_df, sym)
+            if sig:
+                break
         if sig:
             state["open_position"] = {
                 **sig,
@@ -176,6 +183,8 @@ def run_daily_tick() -> dict:
                 "entry_date": today,
             }
             _append_log({"event": "OPEN", "strategy": STRATEGY_ID, **sig, "opened_at": today})
+        else:
+            state["note"] = "no_entry_signal"
 
     from verified_strategies.paper_pilot.pilot_forward_summary import forward_block
 
