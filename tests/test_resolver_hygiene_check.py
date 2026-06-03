@@ -43,6 +43,18 @@ def test_duplicates_counted():
     assert r["duplicate_rows"] == 3
 
 
+def test_no_signal_ts_not_counted_as_duplicate():
+    # 5 separate signals for same symbol/strategy but NO signal_ts -> must NOT
+    # be flagged as duplicates (real-ledger false-positive fix).
+    picks = [{"symbol": "JUPUSDT", "strategy": "luxalgo_confluence", "status": "CLOSED",
+              "outcome": "WON", "pnl_pct": 1.0, "close_ts": "c", "source_system": "lux"}
+             for _ in range(5)]
+    r = rh.scan_ledger(picks)
+    assert r["duplicate_groups"] == 0
+    assert r["duplicate_rows"] == 0
+    assert r["rows_without_signal_ts"] == 5
+
+
 def test_missing_provenance_flagged():
     picks = [{"symbol": "X", "signal_ts": "t", "strategy": "s", "status": "CLOSED",
               "outcome": "WON", "pnl_pct": 1.0, "close_ts": "c"}]  # no source_*
