@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-tools/resolve_stale_open_picks.py — Batch-resolve stale OPEN picks in MySQL
+tools/resolve_stale_open_picks.py — Batch-resolve stale live picks in MySQL
 =============================================================================
 
-Connects to the ejaguiar1_stocks MySQL database, finds OPEN picks whose age
-exceeds the per-asset-class MAX_HOLD_HOURS threshold, and batch-resolves them
-as TIME_EXIT with flat PnL.
+Connects to the ejaguiar1_stocks MySQL database, finds OPEN and ACTIVE picks
+whose age exceeds the per-category MAX_HOLD_HOURS threshold, and batch-resolves
+them as TIME_EXIT with flat PnL.
 
 Hold windows match audit_trail/universal_pick_resolver.py:
   CRYPTO            48h
@@ -41,7 +41,14 @@ import os
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
+
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from tools.pick_hold_windows import LIVE_PICK_STATUSES, is_past_max_hold
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -90,19 +97,7 @@ DB_PASS = (
 )
 DB_NAME = os.getenv("AUDIT_DB_NAME", os.getenv("DB_NAME", "ejaguiar1_stocks"))
 
-# ---------------------------------------------------------------------------
-# Constants — mirrors universal_pick_resolver.py MAX_HOLD_HOURS_BY_CLASS
-# ---------------------------------------------------------------------------
-MAX_HOLD_HOURS_BY_CLASS: dict[str, int] = {
-    "CRYPTO": 48,
-    "EQUITY": 96,
-    "ETF": 96,
-    "COMMODITY": 96,
-    "FUTURES": 96,
-    "FOREX": 72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
-    "BOND": 120,
-}
-DEFAULT_MAX_HOLD_HOURS = 48
+_LIVE_STATUS_SQL = ", ".join("'%s'" % s for s in LIVE_PICK_STATUSES)
 
 # ---------------------------------------------------------------------------
 # Dependencies check
@@ -136,100 +131,37 @@ def _connect():
     )
 
 
-def _hold_hours_for(category: str) -> int:
-    """Return the per-category TIME_EXIT window in hours."""
-    c = (category or "").strip().lower()
-    # Map categories to asset-class-like hold windows
-    mapping = {
-        "crypto": 48,
-        "meme": 48,
-        "equity": 96,
-        "equities": 96,
-        "stock": 96,
-        "stocks": 96,
-        "penny": 72,
-        "pennystock": 72,
-        "etf": 96,
-        "commodity": 96,
-        "commodities": 96,
-        "futures": 96,
-        "forex": 120,
-        "bond": 120,
-        "bonds": 120,
-        "index": 96,
-    }
-    return mapping.get(c, DEFAULT_MAX_HOLD_HOURS)
-
-
 # ---------------------------------------------------------------------------
 # Core resolution logic
 # ---------------------------------------------------------------------------
 
-def count_open_picks(conn) -> int:
-    """Return total OPEN picks count."""
+def count_live_picks(conn) -> int:
+    """Return total OPEN + ACTIVE picks count."""
     with conn.cursor() as cur:
-        cur.execute("SELECT COUNT(*) AS cnt FROM trading_picks WHERE status = 'OPEN'")
+        cur.execute(
+            f"SELECT COUNT(*) AS cnt FROM trading_picks "
+            f"WHERE status IN ({_LIVE_STATUS_SQL})"
+        )
         row = cur.fetchone()
         return int(row["cnt"]) if row else 0
 
 
-def find_stale_picks(conn, batch_size: int) -> list[dict[str, Any]]:
-    """
-    Find OPEN picks older than their asset class MAX_HOLD_HOURS.
-
-    Uses a SQL query that checks each pick's submitted_at/created_at against
-    the per-class threshold via INTERVAL HOUR clauses.
-
-    Returns list of pick dicts.
-    """
-    # We query all OPEN picks with their category and timestamp, then
-    # filter in Python for the per-class threshold (simpler than a massive
-    # UNION of per-class queries).
+def find_live_picks_batch(conn, batch_size: int) -> list[dict[str, Any]]:
+    """Fetch oldest live picks (OPEN or ACTIVE) for hold-window filtering."""
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id, symbol, category, strategy, direction, "
-            "entry_price, take_profit, stop_loss, "
-            "created_at "
-            "FROM trading_picks "
-            "WHERE status = 'OPEN' "
-            "ORDER BY created_at ASC "
-            "LIMIT %s",
+            "SELECT id, symbol, category, strategy, direction, status, "
+            "entry_price, take_profit, stop_loss, created_at "
+            f"FROM trading_picks WHERE status IN ({_LIVE_STATUS_SQL}) "
+            "ORDER BY created_at ASC LIMIT %s",
             (batch_size,),
         )
         return cur.fetchall()
 
 
-def _pick_age_hours(pick: dict) -> float | None:
-    """Return age of pick in hours, or None if timestamp is missing."""
-    # Prefer submitted_at, fall back to created_at
-    ts = pick.get("submitted_at") or pick.get("created_at")
-    if ts is None:
-        return None
-    if isinstance(ts, datetime):
-        if ts.tzinfo is None:
-            ts = ts.replace(tzinfo=timezone.utc)
-        age = datetime.now(timezone.utc) - ts
-        return age.total_seconds() / 3600.0
-    if isinstance(ts, str):
-        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ",
-                    "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S.%fZ"):
-            try:
-                dt = datetime.strptime(ts[:26], fmt.replace("%f", "").replace("Z", "").rstrip(" "))
-                dt = dt.replace(tzinfo=timezone.utc)
-                age = datetime.now(timezone.utc) - dt
-                return age.total_seconds() / 3600.0
-            except ValueError:
-                continue
-    return None
-
-
 def is_stale(pick: dict) -> bool:
-    """Check if a pick is stale (older than its asset class hold window)."""
-    age_hours = _pick_age_hours(pick)
-    if age_hours is None:
-        return False
-    max_hours = _hold_hours_for(pick.get("category", ""))
-    return age_hours > max_hours
+    """Check if a pick is past its category max-hold window."""
+    return is_past_max_hold(pick)
 
 
 def _compute_pnl(pick: dict, current_price: float | None = None) -> float:
@@ -259,7 +191,7 @@ def resolve_stale_open_picks(
     max_batches: int | None = None,
 ) -> dict:
     """
-    Find and batch-resolve stale OPEN picks.
+    Find and batch-resolve stale OPEN/ACTIVE picks.
 
     Parameters
     ----------
@@ -279,7 +211,9 @@ def resolve_stale_open_picks(
         "started_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "mode": "EXECUTE" if execute else "DRY_RUN",
         "batch_size": batch_size,
-        "total_open_picks": 0,
+        "total_live_picks": 0,
+        "total_open_picks": 0,  # alias for dashboards expecting this key
+        "by_status": defaultdict(lambda: {"stale": 0, "resolved": 0}),
         "batches_processed": 0,
         "total_stale_found": 0,
         "total_resolved": 0,
@@ -291,11 +225,16 @@ def resolve_stale_open_picks(
 
     conn = _connect()
     try:
-        summary["total_open_picks"] = count_open_picks(conn)
-        log.info("Total OPEN picks: %d", summary["total_open_picks"])
+        summary["total_live_picks"] = count_live_picks(conn)
+        summary["total_open_picks"] = summary["total_live_picks"]
+        log.info(
+            "Total live picks (OPEN+ACTIVE): %d  statuses=%s",
+            summary["total_live_picks"],
+            LIVE_PICK_STATUSES,
+        )
 
-        if summary["total_open_picks"] == 0:
-            log.info("No OPEN picks -- nothing to resolve.")
+        if summary["total_live_picks"] == 0:
+            log.info("No OPEN/ACTIVE picks -- nothing to resolve.")
             summary["completed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             return summary
 
@@ -304,9 +243,9 @@ def resolve_stale_open_picks(
         MAX_EMPTY_STREAK = 10  # stop scanning when this many consecutive batches have no stale picks
 
         while True:
-            picks = find_stale_picks(conn, batch_size)
+            picks = find_live_picks_batch(conn, batch_size)
             if not picks:
-                log.info("No more OPEN picks to check.")
+                log.info("No more OPEN/ACTIVE picks to check.")
                 break
 
             batches_done += 1
@@ -321,8 +260,10 @@ def resolve_stale_open_picks(
             for p in stale_picks:
                 ac = (p.get("category") or "UNKNOWN").upper()
                 strat = (p.get("strategy") or "unknown")[:100]
+                st = (p.get("status") or "UNKNOWN").upper()
                 summary["by_asset_class"][ac]["stale"] += 1
                 summary["by_strategy"][strat]["stale"] += 1
+                summary["by_status"][st]["stale"] += 1
 
             if not stale_picks:
                 empty_streak += 1
@@ -334,13 +275,13 @@ def resolve_stale_open_picks(
                     break
 
                 log.info(
-                    "Batch %d: %d OPEN picks checked, 0 stale (streak=%d/%d).",
+                    "Batch %d: %d live picks checked, 0 stale (streak=%d/%d).",
                     batches_done, len(picks), empty_streak, MAX_EMPTY_STREAK,
                 )
                 continue
 
             log.info(
-                "Batch %d: %d OPEN picks, %d stale (>%d asset classes).",
+                "Batch %d: %d live picks, %d stale (>%d categories).",
                 batches_done, len(picks), len(stale_picks),
                 len({(p.get("category") or "UNKNOWN").upper() for p in stale_picks}),
             )
@@ -372,8 +313,10 @@ def resolve_stale_open_picks(
                 for p in stale_picks:
                     ac = (p.get("category") or "UNKNOWN").upper()
                     strat = (p.get("strategy") or "unknown")[:100]
+                    st = (p.get("status") or "UNKNOWN").upper()
                     summary["by_asset_class"][ac]["resolved"] += 1
                     summary["by_strategy"][strat]["resolved"] += 1
+                    summary["by_status"][st]["resolved"] += 1
 
                 log.info(
                     "Batch %d: %d picks resolved via bulk update (cumulative: %d).",
@@ -384,8 +327,10 @@ def resolve_stale_open_picks(
                 for p in stale_picks:
                     ac = (p.get("category") or "UNKNOWN").upper()
                     strat = (p.get("strategy") or "unknown")[:100]
+                    st = (p.get("status") or "UNKNOWN").upper()
                     summary["by_asset_class"][ac]["resolved"] += 1
                     summary["by_strategy"][strat]["resolved"] += 1
+                    summary["by_status"][st]["resolved"] += 1
 
                 log.info(
                     "Batch %d [DRY_RUN]: %d stale picks would be resolved.",
@@ -408,19 +353,25 @@ def resolve_stale_open_picks(
 def print_summary(summary: dict) -> None:
     """Print human-readable summary."""
     print("\n" + "=" * 70)
-    print("STALE OPEN PICKS RESOLVER -- Summary")
+    print("STALE LIVE PICKS RESOLVER (OPEN+ACTIVE) -- Summary")
     print("=" * 70)
     print(f"  Mode:             {summary['mode']}")
     print(f"  Started:          {summary['started_at']}")
     print(f"  Completed:        {summary['completed_at']}")
     print(f"  Batch size:       {summary['batch_size']}")
-    print(f"  Total OPEN picks: {summary['total_open_picks']}")
+    print(f"  Total live picks: {summary.get('total_live_picks', summary['total_open_picks'])}")
     print(f"  Batches:          {summary['batches_processed']}")
     print(f"  Stale found:      {summary['total_stale_found']}")
     print(f"  Resolved:         {summary['total_resolved']}")
     print(f"  Errors:           {summary['errors']}")
 
-    # By asset class
+    by_st = dict(summary.get("by_status") or {})
+    if by_st:
+        print("\n  By Status:")
+        for st in sorted(by_st):
+            s = by_st[st]
+            print(f"    {st:12s}  stale={s['stale']:>8d}  resolved={s['resolved']:>8d}")
+
     by_ac = dict(summary["by_asset_class"])
     if by_ac:
         print("\n  By Asset Class:")
@@ -445,7 +396,7 @@ def print_summary(summary: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Resolve stale OPEN picks in MySQL trading_picks table",
+        description="Resolve stale OPEN/ACTIVE picks in MySQL trading_picks table",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -481,12 +432,12 @@ def main() -> None:
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    log.info("=== Stale Open Picks Resolver ===")
+    log.info("=== Stale Live Picks Resolver (OPEN+ACTIVE) ===")
     log.info("Mode: %s | batch_size=%d | max_batches=%s",
              "EXECUTE" if args.execute else "DRY_RUN",
              args.batch_size, args.max_batches)
     log.info("DB: %s@%s:%s/%s", DB_USER, DB_HOST, DB_PORT, DB_NAME)
-    log.info("Hold windows: %s", MAX_HOLD_HOURS_BY_CLASS)
+    log.info("Hold windows module: tools.pick_hold_windows")
 
     summary = resolve_stale_open_picks(
         execute=args.execute,
@@ -499,6 +450,7 @@ def main() -> None:
         out = dict(summary)
         out["by_asset_class"] = dict(out["by_asset_class"])
         out["by_strategy"] = dict(out["by_strategy"])
+        out["by_status"] = dict(out.get("by_status") or {})
         print(json.dumps(out, indent=2, default=str))
     else:
         print_summary(summary)

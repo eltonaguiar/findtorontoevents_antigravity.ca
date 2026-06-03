@@ -82,7 +82,13 @@ try:
     ROOT = Path(__file__).resolve().parent.parent
 except NameError:
     ROOT = Path.cwd()
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.pick_hold_windows import LIVE_PICK_STATUSES, hold_hours_for, is_past_max_hold
+
 RESOLVED_FILE = ROOT / "audit_trail" / "data" / "universal_resolved_picks.json"
+_LIVE_STATUS_SQL = ", ".join("'%s'" % s for s in LIVE_PICK_STATUSES)
 
 # ---------------------------------------------------------------------------
 # Dependencies
@@ -119,59 +125,98 @@ def _connect():
 # ---------------------------------------------------------------------------
 
 def check_open_picks_count(conn) -> dict:
-    """Count total OPEN picks and compare against alert threshold."""
+    """Count OPEN and OPEN+ACTIVE live picks."""
     with conn.cursor() as cur:
         cur.execute("SELECT COUNT(*) AS cnt FROM trading_picks WHERE status = 'OPEN'")
-        row = cur.fetchone()
-        total = int(row["cnt"]) if row else 0
+        open_only = int(cur.fetchone()["cnt"])
+        cur.execute(
+            f"SELECT COUNT(*) AS cnt FROM trading_picks WHERE status IN ({_LIVE_STATUS_SQL})"
+        )
+        live_total = int(cur.fetchone()["cnt"])
 
+    status = "RED" if live_total > ALERT_THRESHOLD_DEFAULT else "GREEN"
     return {
         "check": "open_picks_count",
-        "value": total,
+        "value": open_only,
+        "live_open_active": live_total,
+        "live_statuses": list(LIVE_PICK_STATUSES),
         "alert_threshold": ALERT_THRESHOLD_DEFAULT,
-        "status": "RED" if total > ALERT_THRESHOLD_DEFAULT else "GREEN",
-        "message": f"{total:,} OPEN picks" + (f" (EXCEEDS {ALERT_THRESHOLD_DEFAULT:,} threshold)" if total > ALERT_THRESHOLD_DEFAULT else ""),
+        "status": status,
+        "message": (
+            f"{open_only:,} OPEN, {live_total:,} live (OPEN+ACTIVE)"
+            + (
+                f" (EXCEEDS {ALERT_THRESHOLD_DEFAULT:,} threshold)"
+                if live_total > ALERT_THRESHOLD_DEFAULT
+                else ""
+            )
+        ),
     }
 
 
 def check_stale_by_category(conn) -> dict:
-    """Count stale OPEN picks by category (trading_picks uses 'category' not 'asset_class')."""
+    """Count live picks past max-hold by category (OPEN + ACTIVE)."""
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT category, COUNT(*) AS cnt, MIN(created_at) AS oldest, "
-            "MAX(created_at) AS newest "
-            "FROM trading_picks "
-            "WHERE status = 'OPEN' "
-            "GROUP BY category"
+            "SELECT category, status, created_at FROM trading_picks "
+            f"WHERE status IN ({_LIVE_STATUS_SQL})"
         )
         rows = cur.fetchall()
 
-    now_utc = datetime.now(timezone.utc)
     stale_by_class: dict[str, dict] = {}
-    total_stale = 0
+    total_live = 0
+    total_past_hold = 0
+    by_status: dict[str, int] = {"OPEN": 0, "ACTIVE": 0}
+    past_hold_by_status: dict[str, int] = {"OPEN": 0, "ACTIVE": 0}
 
     for row in rows:
-        raw = row.get("category") or "UNKNOWN"
-        ac = str(raw).upper() if raw else "UNKNOWN"
-        cnt = int(row["cnt"])
-        oldest = row.get("oldest")
-        newest = row.get("newest")
+        raw_cat = row.get("category") or "UNKNOWN"
+        cat_key = str(raw_cat)
+        st = (row.get("status") or "").upper()
+        total_live += 1
+        by_status[st] = by_status.get(st, 0) + 1
 
-        max_hours = MAX_HOLD_HOURS_BY_CLASS.get(ac, 48)
-        stale_by_class[str(raw)] = {
-            "total_open": cnt,
-            "estimated_stale": cnt,
-            "max_hold_hours": max_hours,
-            "oldest_pick": str(oldest) if oldest else None,
-            "newest_pick": str(newest) if newest else None,
-        }
-        total_stale += cnt
+        bucket = stale_by_class.setdefault(
+            cat_key,
+            {
+                "total_live": 0,
+                "past_hold_window": 0,
+                "max_hold_hours": hold_hours_for(cat_key),
+                "oldest_pick": None,
+                "newest_pick": None,
+            },
+        )
+        bucket["total_live"] += 1
+        ts = row.get("created_at")
+        if ts is not None:
+            ts_s = str(ts)
+            if bucket["oldest_pick"] is None or ts_s < bucket["oldest_pick"]:
+                bucket["oldest_pick"] = ts_s
+            if bucket["newest_pick"] is None or ts_s > bucket["newest_pick"]:
+                bucket["newest_pick"] = ts_s
+
+        if is_past_max_hold(row):
+            total_past_hold += 1
+            bucket["past_hold_window"] += 1
+            past_hold_by_status[st] = past_hold_by_status.get(st, 0) + 1
+
+    if total_past_hold > 0:
+        status = "RED" if total_past_hold > 5000 else "YELLOW"
+    else:
+        status = "GREEN"
 
     return {
         "check": "stale_by_category",
-        "total_stale_estimate": total_stale,
+        "total_live_picks": total_live,
+        "total_past_hold_window": total_past_hold,
+        "total_stale_estimate": total_past_hold,
+        "by_status_live": by_status,
+        "by_status_past_hold": past_hold_by_status,
         "by_class": stale_by_class,
-        "status": "RED" if total_stale > ALERT_THRESHOLD_DEFAULT else "YELLOW" if total_stale > 0 else "GREEN",
+        "status": status,
+        "message": (
+            f"{total_past_hold:,} past max-hold of {total_live:,} live picks "
+            f"(OPEN+ACTIVE)"
+        ),
     }
 
 
