@@ -1,0 +1,11 @@
+**R1:** Drop it. "Excess over crowd on same symbol" measures dispersion, not alpha. The crowd proxy is a cross-sectional average of strategies that likely share overlapping signals—this is a peer-relative rank metric, not a risk-adjusted benchmark. Fatal flaw: no market beta adjustment.
+
+**R2:** Fatally biased. Batch-stamped `resolved_at` with ~4 distinct days means you cannot align hold windows to market returns. Regressing on BTC/SPY over a misaligned window introduces look-ahead and stale-beta errors. The partial `signal_ts` recovery is insufficient to fix this.
+
+**R3:** BH-FDR is appropriate for ~50 independent tests, but your strategies are highly correlated (same symbols, same batch times). This inflates false discovery rate. Use a dependence-adjusted procedure (e.g., Benjamini-Yekutieli) or cluster-based correction.
+
+**R4:** Circular. Bootstrapping on the same data used for selection gives overoptimistic confidence intervals. The real test must be forward-only (out-of-sample) or at minimum a time-series split.
+
+**R5:** STOP. Strategy-level re-audit on this data is a dead end. Build new per-class archetypes with clean time-series (daily bars, not batch stamps) and a proper backtest framework.
+
+**Verdict: STOP.** Single most important fix: **abandon this dataset**—batch-stamped `resolved_at` makes any time-series benchmark invalid.

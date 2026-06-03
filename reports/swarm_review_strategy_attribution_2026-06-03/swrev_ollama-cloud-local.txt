@@ -1,0 +1,14 @@
+GO
+
+**R1:** The "excess over average-agent on same symbol" (crowd-proxy) is a reasonable benchmark for alpha as it captures performance relative to a diversified group of strategies, which can provide insights into whether a strategy outperforms the market consensus. However, it should be complemented with other metrics to ensure robustness.
+
+**R2:** Given the batch-stamped resolved_at and partial signal_ts, using symbol-level benchmarks while ignoring exact hold windows introduces some bias, but this approach is still valid if you have enough data points per symbol to mitigate noise. It's important to document this limitation in your analysis.
+
+**R3:** BH-FDR (Benjamini-Hochberg False Discovery Rate) is a suitable multiple-testing control method for comparing strategies, as it helps manage the false discovery rate across many tests while maintaining statistical power.
+
+**R4:** Re-testing the bootstrap-CI shortlist on the same data it was selected from can introduce bias, but if you have a sufficiently large dataset and use appropriate resampling techniques, this approach is acceptable. Consider implementing forward-only testing to further reduce bias.
+
+**R5:** Strategy-level re-audit is a reasonable next step, as it allows for deeper insights into individual strategy performance. However, building new per-class strategy archetypes could also be valuable if you aim to improve overall model robustness and generalization.
+
+**Single Most Important Fix:**
+Implement forward-only testing for the bootstrap-CI shortlist to avoid circular reasoning and ensure that your results are not biased by reusing the same data for both selection and validation.
