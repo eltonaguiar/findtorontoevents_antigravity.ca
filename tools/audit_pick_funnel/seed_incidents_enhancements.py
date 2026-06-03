@@ -112,6 +112,12 @@ INCIDENTS = [
      "Per the mutation-three-axis protocol: cut volume share, mutate, or kill. Required to lift the CRYPTO class PF above the T2 threshold.",
      "audit_dashboard/data/edge_decay_heatmap.json", None, None, "claude/edge_stability"),
 
+    ("CRYPTO", "claude_ml_moderate_mut bootstrap PASS is single-row JUPUSDT outlier (945x)",
+     "PR #481/#482 bootstrap CI: IS_PF=310.77 on n=67 but pf_lo_95=1.31. One row (id=214622) JUPUSDT pnl_pct=76573 drives gross-profit sum; without it PF collapses. Do not promote to live or forward-pilot until sustained_pf / pf_lo_95>=1.5 on clean sample.",
+     "P1", "OPEN", "verified_strategies/claude_ml_moderate_mut / bootstrap CI gate",
+     "Block promotion; add sustained_pf resample metric (see updates/2026-06-02-suspicious-pass-investigation.md). B_flip and inverse_ml_enhanced_BTCUSDT_15m_D are legit forward-test candidates instead.",
+     "updates/2026-06-02-suspicious-pass-investigation.md", None, None, "grok-2026-06-03"),
+
     ("FOREX", "forex_carry.py exists in repo but is NOT in allowlist",
      "alpha_engine/new_strategies/forex_carry.py implements G10 interest-rate differential carry with claimed 55-60% WR / PF 1.2-1.5 but is not registered in non_crypto_policy.NON_CRYPTO_STRATEGY_POLICY so it never emits picks.",
      "P1", "OPEN", "alpha_engine/non_crypto_policy.py allowlist",

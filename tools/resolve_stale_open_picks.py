@@ -14,11 +14,12 @@ Hold windows match audit_trail/universal_pick_resolver.py:
 
 Usage
 -----
-    # Preview only (default)
-    python tools/resolve_stale_open_picks.py
+    # Preview only (default) — ALWAYS use --max-batches for dry-run; full scan
+    # over 3k+ live picks can run for hours on remote MySQL.
+    python tools/resolve_stale_open_picks.py --batch-size 500 --max-batches 10
 
-    # Execute updates
-    python tools/resolve_stale_open_picks.py --execute
+    # Execute updates (daily hygiene uses --max-batches 30)
+    python tools/resolve_stale_open_picks.py --execute --batch-size 500 --max-batches 30
 
     # Custom batch size
     python tools/resolve_stale_open_picks.py --execute --batch-size 5000
