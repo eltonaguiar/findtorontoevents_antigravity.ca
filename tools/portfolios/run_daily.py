@@ -271,10 +271,28 @@ MODEL_PICK_ALIASES: dict[str, str] = {
 }
 
 
-def model_picks(picks: list[dict], model_id: str) -> list[dict]:
+def model_picks(picks: list[dict], model_id: str,
+                allowed_classes: set | None = None) -> list[dict]:
+    """Return up to MAX_INGEST_PER_MODEL newest OPEN picks for this model.
+
+    2026-06-03 fix: previously sliced [:MAX_INGEST_PER_MODEL] BEFORE the
+    risk-profile asset-class allowlist was applied downstream. Result: a
+    portfolio with a narrow allowlist (e.g. conservative=[BOND,ETF,EQUITY,FOREX])
+    could get all 25 newest picks rejected as `class_not_allowed` while
+    older eligible picks were never considered.
+    Example: gemini_2_5_flash__conservative — 39 OPEN picks total of which
+    16 were allowlist-eligible (10 EQUITY + 3 BOND + 2 ETF + 1 FOREX), but
+    the 25 newest were all PENNY/COMMODITY/CRYPTO → 0 positions opened.
+    Pass `allowed_classes` (the appetite's asset_class_allowlist) to filter
+    BEFORE slicing so the 25-cap is spent on candidates that have a chance.
+    """
     target = MODEL_PICK_ALIASES.get(model_id, model_id)
     out = [p for p in picks if (p.get("model_id") == target
                                 and str(p.get("status", "")).upper() == "OPEN")]
+    if allowed_classes:
+        allowed_upper = {str(c).upper() for c in allowed_classes}
+        out = [p for p in out
+               if str(p.get("asset_class", "")).upper() in allowed_upper]
     # newest-first by submitted_at
     out.sort(key=lambda p: p.get("submitted_at", ""), reverse=True)
     return out[:MAX_INGEST_PER_MODEL]
@@ -464,7 +482,9 @@ def run_portfolio(db: DB, pf: dict, picks: list[dict], profiles: dict,
 
     # collect symbols we'll need marks for (open positions + candidate picks)
     opens = open_positions(db, pid)
-    cand_picks = [] if frozen else model_picks(picks, pf["model_id"])
+    _allowed_classes = appetite.get("asset_class_allowlist") or None
+    cand_picks = [] if frozen else model_picks(
+        picks, pf["model_id"], allowed_classes=_allowed_classes)
 
     # ---- (b) mark + exit existing open positions ----
     marks: dict = {}
