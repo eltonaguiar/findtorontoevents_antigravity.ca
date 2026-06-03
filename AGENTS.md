@@ -48,6 +48,29 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - **Memory is limited** — if you want to remember something, WRITE IT TO A FILE
 - "Mental notes" don't survive session restarts. Files do.
 - When someone says "remember this" → update `memory/YYYY-MM-DD.md` or relevant file
+
+### Python Import Gotcha — Relative vs Direct Script Invocation
+
+When a Python file inside a package is run as a script via `python path/to/file.py` (not `python -m package.file`), it has no parent package — so `from .submodule import X` raises `ImportError: attempted relative import with no known parent package`.
+
+**How to apply:** For any Python script invoked directly (CI jobs, cron, GHA workflows that do `python tools/foo/bar.py`):
+
+```python
+# At top, BEFORE the package imports:
+import sys
+from pathlib import Path
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent  # adjust depth
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.foo.engine import thing  # absolute import — works under both
+                                    # `python tools/foo/bar.py` AND
+                                    # `python -m tools.foo.bar`
+```
+
+Trust-but-verify: when an agent gives an import-style recommendation, smoke-test the exact invocation pattern the production workflow uses (`python tools/portfolios/export_json.py --help`), not just `python -c "import tools.portfolios.export_json"`.
+
+Related: [[feedback-silent-file-revert-pattern-2026-06-01]] — separate but compounding hazard in this codebase.
 - When you learn a lesson → update AGENTS.md, TOOLS.md, or the relevant skill
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝
