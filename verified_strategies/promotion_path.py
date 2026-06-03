@@ -31,6 +31,7 @@ from admissibility_pipeline import (
     CostModel,
     shadow_size_plan,
 )
+from return_attribution import attribution_gate
 
 # Tournament PF and production policy-clean PF for the SAME sleeve should not
 # diverge by more than this fraction once both use purged-embargoed labels +
@@ -74,10 +75,14 @@ def reconcile_scoreboards(sleeve: str, tournament_pf: Optional[float],
 
 def canonical_promotion(strategy_name: str, asset_class: str,
                         equity_curve, trades: List[Dict],
-                        output_dir: str = "reports/admissibility") -> Dict[str, Any]:
+                        output_dir: str = "reports/admissibility",
+                        sleeve_returns: Optional[List[float]] = None,
+                        market_returns: Optional[List[float]] = None,
+                        style_returns: Optional[List[float]] = None) -> Dict[str, Any]:
     """The ONE promotion path: run the admissibility harness, attach the
-    shadow-size plan, return a single canonical verdict dict. Anything that
-    would size capital must route through here — no second path."""
+    shadow-size plan + (if a benchmark is supplied) the #111 return-attribution
+    leg, and return a single canonical verdict dict. Anything that would size
+    capital must route through here — no second path."""
     pipeline = AdmissibilityPipeline(output_dir=output_dir)
     result = pipeline.run_pipeline(strategy_name, asset_class, equity_curve, trades)
     out = result.to_dict()
@@ -85,6 +90,11 @@ def canonical_promotion(strategy_name: str, asset_class: str,
     if out.get("shadow_size_plan") is None:
         out["shadow_size_plan"] = shadow_size_plan(
             out.get("overall_verdict") == "PASS")
+    # ENHANCEMENT #111: attribution leg — is the edge alpha, or just beta/style?
+    # Advisory (shadow): attached when a market benchmark is provided; it does
+    # not change overall_verdict on its own.
+    if market_returns is not None and sleeve_returns is not None:
+        out["attribution"] = attribution_gate(sleeve_returns, market_returns, style_returns)
     out["promotion_path"] = "canonical"
     return out
 
