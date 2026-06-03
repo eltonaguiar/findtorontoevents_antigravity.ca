@@ -169,8 +169,14 @@ def build(picks_path: Path,
         horizon = horizon_for(p.get("timeframe"))
         pnl = float(outcome.get("pnl_pct") or 0.0) if resolved else None
 
+        seen_engines: set[tuple[str, str]] = set()
         for mc in p.get("models_consulted", []):
             engine = str(mc.get("underlying_model") or "unknown")
+            pid = str(p.get("pick_id", ""))
+            dedup_key = (pid, engine)
+            if dedup_key in seen_engines:
+                continue
+            seen_engines.add(dedup_key)
             e = engines.setdefault(engine, {
                 "overall": _blank_cell(),
                 "by_class": {},

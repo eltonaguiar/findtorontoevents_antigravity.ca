@@ -28,6 +28,7 @@ READ-ONLY unless --apply is passed. Never prints credentials.
 from __future__ import annotations
 import argparse
 import sys
+import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -39,7 +40,7 @@ for _p in list(_REPO.parents) + [Path("/home/eaguiar2015/findtorontoevents_antig
             sys.path.insert(0, str(_p))
         break
 from tools.ai_tournament.price_tracker import (  # noqa: E402
-    resolve_pick, fetch_price, RESOLUTION_WINDOWS_DAYS,
+    resolve_pick, fetch_price, fetch_ohlc_window, RESOLUTION_WINDOWS_DAYS,
 )
 from tools.db_env import get_stocks_creds  # noqa: E402
 import pymysql  # noqa: E402
@@ -123,13 +124,41 @@ def main() -> int:
           f"({'expired-only' if args.expired_only else 'all'}; "
           f"{'APPLY' if args.apply else 'DRY-RUN'})")
 
-    counts = {"WIN": 0, "LOSS": 0, "still_open": 0, "skip_expired_filter": 0,
+    # ── Apply --expired-only filter before OHLC pre-fetch ──
+    if args.expired_only:
+        filtered = [r for r in rows if _is_expired(r["asset_class"], r["submitted_at"])]
+        counts_skip = len(rows) - len(filtered)
+    else:
+        filtered = rows
+        counts_skip = 0
+
+    # ── Pre-fetch OHLC windows for unique symbols ──
+    ohlc_cache: dict[str, list[dict]] = {}
+    symbols_seen: set[str] = set()
+    for r in filtered:
+        sym = r.get("symbol", "")
+        if sym and sym not in symbols_seen:
+            symbols_seen.add(sym)
+            ac = (r.get("asset_class") or "EQUITY").upper()
+            if ac == "CRYPTO":
+                ohlc_cache[sym] = []
+                continue
+            try:
+                ohlc_cache[sym] = fetch_ohlc_window({
+                    "symbol": sym,
+                    "asset_class": ac,
+                    "submitted_at": _iso_aware(r["submitted_at"]),
+                })
+            except Exception:
+                ohlc_cache[sym] = []
+            time.sleep(0.1)
+    print(f"[resolve-db] OHLC pre-fetched for {len(ohlc_cache)} symbols "
+          f"({sum(1 for v in ohlc_cache.values() if v)} with bars)")
+
+    counts = {"WIN": 0, "LOSS": 0, "still_open": 0, "skip_expired_filter": counts_skip,
               "price_fail": 0}
     updates: list[tuple] = []
-    for r in rows:
-        if args.expired_only and not _is_expired(r["asset_class"], r["submitted_at"]):
-            counts["skip_expired_filter"] += 1
-            continue
+    for r in filtered:
         pick = {
             "entry_price": r["entry_price"], "take_profit": r["take_profit"],
             "stop_loss": r["stop_loss"], "direction": r.get("direction") or "LONG",
@@ -140,9 +169,14 @@ def main() -> int:
         price = _fetch_price(pick)
         if price is None:
             counts["price_fail"] += 1
+            print(f"  [SKIP] {pick['symbol']:12s} — price fetch failed")
             continue
-        out = resolve_pick(pick, price)
+        out = resolve_pick(pick, price, ohlc_bars=ohlc_cache.get(pick["symbol"]))
         st = out.get("status", "OPEN")
+        replay = out.get("_replay_bar_date", "")
+        tag = f" replay={replay}" if replay else ""
+        pnl_str = f"{out['pnl_pct']:.2f}%" if out.get('pnl_pct') is not None else "—"
+        print(f"  [{st:4s}] {pick['symbol']:12s} ${price:.4f} pnl={pnl_str}{tag}")
         if st in ("WIN", "LOSS"):
             counts[st] += 1
             updates.append((st, out.get("exit_price"), out.get("pnl_pct"),
