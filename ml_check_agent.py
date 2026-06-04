@@ -26,7 +26,7 @@ def monitor_v_pick():
                 active = scanner_data.get("active_picks", [])
                 for pick in active:
                     if pick.get("symbol") == "V":
-                        pnl = pick.get("unrealized_pnl_pct", 0)
+                        pnl = pick.get("unrealized_pnl_pct") or 0  # 2026-06-04 INCIDENT #89-sibling: coalesce explicit None
                         logging.info(f"Scanner Pick V current PnL: {pnl}%")
                         if pnl <= -2.0:
                             logging.warning(f"CRITICAL WARNING: V is below -2.0% warning zone! ({pnl}%)")
@@ -37,7 +37,7 @@ def monitor_v_pick():
                 inst_picks = json.load(f)
                 for pick in inst_picks:
                     if pick.get("symbol") == "V":
-                        pnl = pick.get("unrealized_pnl_pct", 0)
+                        pnl = pick.get("unrealized_pnl_pct") or 0  # 2026-06-04 INCIDENT #89-sibling: coalesce explicit None
                         logging.info(f"Institutional Pick V current PnL: {pnl}%")
                         if pnl <= -2.0:
                             logging.warning(f"CRITICAL WARNING: V is below -2.0% warning zone! ({pnl}%)")

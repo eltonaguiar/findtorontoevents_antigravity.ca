@@ -100,7 +100,7 @@ class EnhancedAuditDashboard:
                     data = json.load(f)
                 picks = data if isinstance(data, list) else data.get('picks', [])
 
-                total_pnl = sum(p.get('unrealized_pnl_pct', p.get('pnl_pct', 0)) for p in picks if isinstance(p, dict))
+                total_pnl = sum((p.get('unrealized_pnl_pct') if p.get('unrealized_pnl_pct') is not None else p.get('pnl_pct')) or 0 for p in picks if isinstance(p, dict))  # 2026-06-04: coalesce explicit None
 
                 self.systems_data[name] = {
                     'total_pnl': total_pnl,
