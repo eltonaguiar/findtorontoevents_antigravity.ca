@@ -577,6 +577,20 @@
       return;
     }
     const checks = (payload && payload.checks) || {};
+    // 2026-06-04: render timestamps as human-readable EST/EDT, not raw ISO
+    // (was "2026-06-04T15:43:20.828520+00:00"). Reuse window._fmtEST when present.
+    var _fmtEST = window._fmtEST || function (iso) {
+      if (!iso) return 'unknown';
+      try {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return String(iso);
+        var s = d.toLocaleString('en-CA', { timeZone: 'America/Toronto',
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', hour12: false });
+        var m = d.getUTCMonth() + 1;
+        return s.replace(',', '') + ' ' + ((m > 3 && m < 11) ? 'EDT' : 'EST');
+      } catch (e) { return String(iso); }
+    };
 
     // helper: extract data + tier; degrade gracefully if check failed
     function pick(name) {
@@ -652,7 +666,7 @@
 
     let html = '<div class="enh-section" id="enh-db-health">';
     html += '<h3>DB Health <span style="font-size:11px;color:#888;font-weight:400;">— ' +
-            htmlEscape(payload.generated_at || '') + '</span></h3>';
+            htmlEscape(_fmtEST(payload.generated_at)) + '</span></h3>';
     html += '<div class="enh-grid">';
     for (const c of cards) {
       html += '<div class="enh-card">';
@@ -677,7 +691,7 @@
       var _ghostLive = (ghosts && ghosts.total_ghost_rows != null) ? Number(ghosts.total_ghost_rows).toLocaleString() : 'n/a';
       html += '<div style="margin-top:10px;padding:12px;background:#3b0d0d;border-left:4px solid #ef4444;border-radius:4px;font-size:13px;line-height:1.6;">';
       html += '<strong style="color:#fca5a5;font-size:14px;">&#x26A0; DATA INTEGRITY FAILURE &mdash; DO NOT TRADE ON THESE NUMBERS</strong><br>';
-      html += '<span style="color:#fecaca;">The DB Health checks above are RED on metrics generated <code>' + htmlEscape(payload.generated_at || 'unknown') + '</code> (live, not stale). ' +
+      html += '<span style="color:#fecaca;">The DB Health checks above are RED on metrics generated <code>' + htmlEscape(_fmtEST(payload.generated_at)) + '</code> (live, not stale). ' +
               'Failing checks: <strong>' + htmlEscape(_redList) + '</strong>. ' +
               'Ghost rows: ' + htmlEscape(_ghostLive) + '. ' +
               'Downstream panels (Top-N backtest, asset-class WR/PF, smart-picks scoring) read from the same DB and inherit this corruption.</span><br>';
@@ -692,7 +706,7 @@
       var _runN = payload.overall.checks_run != null ? payload.overall.checks_run : '?';
       html += '<div style="margin-top:10px;padding:12px;background:#3a2a0a;border-left:4px solid #f59e0b;border-radius:4px;font-size:13px;line-height:1.6;">';
       html += '<strong style="color:#fde68a;font-size:14px;">&#x26A0; DB HEALTH HARNESS DEGRADED &mdash; verdict may be incomplete</strong><br>';
-      html += '<span style="color:#fef3c7;">' + htmlEscape(String(_failedN)) + ' of ' + htmlEscape(String(_runN)) + ' checks errored or failed threshold on <code>' + htmlEscape(payload.generated_at || 'unknown') + '</code>. ' +
+      html += '<span style="color:#fef3c7;">' + htmlEscape(String(_failedN)) + ' of ' + htmlEscape(String(_runN)) + ' checks errored or failed threshold on <code>' + htmlEscape(_fmtEST(payload.generated_at)) + '</code>. ' +
               'The "any_red" gate only inspects checks that returned successfully, so a fully-broken harness can report green by exclusion. Treat the verdict above as provisional until the harness is healthy.</span>';
       html += '</div>';
     }
@@ -755,7 +769,7 @@
             'If you had bought the top-' + (payload.top_n || 10) + ' ranked ' +
             htmlEscape(payload.asset_class || 'EQUITY') + ' picks by score on each day, ' +
             'this is the realized P&amp;L per window. <strong style="color:#f39c12">Hindsight only — validates the score ranker, does NOT prove forward edge.</strong> ' +
-            (payload.generated_at ? '<span style="color:#94a3b8">Generated ' + htmlEscape(payload.generated_at.slice(0,16).replace('T',' ')) + 'Z.</span>' : '') +
+            (payload.generated_at ? '<span style="color:#94a3b8">Generated ' + htmlEscape(_fmtEST(payload.generated_at)) + '.</span>' : '') +
             '</div>';
     html += '<div class="enh-grid">';
     for (const [key, label] of order) {
