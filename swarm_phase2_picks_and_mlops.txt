@@ -1,0 +1,70 @@
+findtorontoevents.ca/audit pipeline. Status 2026-06-04 22:50 UTC.
+
+CONTEXT:
+- 7 audit rounds shipped, 4154 MISPRICED_ENTRY rows cleaned
+- INCIDENT #94 fixed (TIME_EXIT pnl=0 on 33172 rows backfilled)
+- INCIDENT #91 writer-side fix shipped (NULL opened_at -> closed_at fallback). ~40K legacy duplicate rows still in at_signal_outcomes — caller code that aggregates raw rows over-reports n by ~5-43x per strategy. Deduped queries below.
+- mlflow 3.13 + statsmodels 0.14.6 just installed (local SQLite, no cloud).
+- 6 verified-strategy sleeves now logged to mlflow.db with WR/PF/cumPnL/max-DD + ADF stationarity test.
+
+CURRENT EDGE PER ASSET CLASS (tournament_picks post 7 rounds, deduped, status IN ('WIN','LOSS')):
+
+| Class | n | WR | PF | Verdict |
+|---|---|---|---|---|
+| COMMODITY | 243 | 53.5% | 1.79 | T2 PASS — only solid class |
+| ETF | 216 | 57.4% | 1.33 | Sub-T2 PF |
+| FUTURES | 20 | 50.0% | 1.35 | Small-n T2-shaped |
+| CRYPTO | 428 | 46.7% | 1.07 | Sub-50% |
+| BOND | 314 | 51.3% | 0.69 | Losing edge |
+| FOREX | 189 | 54.5% | 0.56 | Confirmed losing (real, not artifact) |
+| EQUITY | 266 | 38.3% | 0.94 | No-edge post R5 cleanup |
+| PENNY | 45 | 42.2% | 0.85 | Sub-50% |
+
+CONSENSUS SIGNALS — AI-tournament multi-model agreement on EQUITY/ETF (>=3 models agree on direction):
+
+CLOSED HISTORY (tournament picks post-clean, may still have minor duplication):
+- QQQ LONG: 23 distinct models, n=38, WR 84.8%, avg +2.18% — strongest consensus
+- SPY LONG: 14 models in OPEN, n=110 closed at WR 82.9%, avg +1.24% — large-sample consistency
+- MU LONG: 14 models, n=14, WR 64.3%, avg +3.39% — small n but clean
+- TLT LONG: 19 models, n=27, WR 22.2%, avg -1.82% — bearish bond signal MISREAD
+- IWM SHORT: 15 models, n=22, WR 11.1%, avg -1.73% — anti-consensus has been wrong
+- NVDA SHORT: 17 models, n=32, WR 36.7%, avg +0.12% — bearish NVDA bet has been wrong
+- META LONG: 19 models, n=32, WR 41.4%, avg +0.62% — mixed
+- EEM LONG: 16 models — all OPEN, no closed history
+
+CURRENTLY-OPEN CONSENSUS LONG PICKS (today 2026-06-04 ~13:30 UTC):
+- IWM LONG @ avg $228.29 (17 models)
+- EEM LONG @ avg $42.92 (16 models)
+- SPY LONG @ avg $610.21 (14 models)
+- GLD LONG @ avg $220.03 (12 models)
+- MSFT LONG @ avg $394.52 (9 models)
+- JPM LONG @ avg $194.21 (7 models)
+- AAPL LONG @ avg $288.45 (6 models)
+- MA LONG @ avg $462.55 (6 models)
+
+SPECIFIC TICKERS (no edge or no data):
+- NVDA: LONG 30% / SHORT 37% — no edge either side
+- INTC, TSLA, GOOGL: 0% WR / 0 avg — likely TIME_EXIT pnl=0 pre-backfill, retry after rebuild
+- AMD LONG: 30.8% (bearish)
+
+VERIFIED REAL-EDGE SLEEVE (post all cleanups): luxalgo_confluence CRYPTO n=381 (unique, no dup inflation), WR 64.4%, PF 2.36, avg +2.13%
+
+QUESTIONS for swarm:
+
+(A) ML STACK ROADMAP: Now that mlflow + statsmodels are local-SQLite-installed, what's the highest-leverage 1-week plan? Concrete next 3 commits.
+
+(B) SAFEST LONG-TERM CONSENSUS BETS RIGHT NOW: Given the 84.8% QQQ LONG / 82.9% SPY LONG WR history AND today's still-open consensus (IWM/EEM/SPY/GLD/MSFT/JPM/AAPL/MA all LONG), rank the safest-bet long-term equity/ETF picks for an operator who wants honest hedge-fund-grade picks. Caveat: must survive INCIDENT #91 dedup adjustment. Are the SPY/QQQ 82-85% claims still valid after applying 5x dup-deflation?
+
+(C) NVDA + INTC SPECIFIC: Operator asked. NVDA has no clean edge (LONG 30%, SHORT 37%) — what would change that? INTC 0/0 is data-quality issue — how to surface real signal?
+
+(D) PROPHET / ARIMA / time-series follow-up: With statsmodels installed, what's the fastest way to add a 30-day forecast confidence band per consensus-LONG ticker that operators could actually trade on?
+
+Output a JSON object with shape:
+{
+  "ml_roadmap_next_3_commits": ["commit_1_title", "commit_2_title", "commit_3_title"],
+  "safest_long_term_picks": [{"sym":"X","rationale":"...","caveat":"..."}],
+  "nvda_intc_verdict": {"nvda": "...", "intc": "..."},
+  "time_series_quickwin": "one-sentence plan",
+  "your_top_recommendation": "one action for next 15 min"
+}
+No prose around the JSON.
