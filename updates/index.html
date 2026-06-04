@@ -122,6 +122,43 @@
   <p class="meta" style="margin-top:14px">Full breakdown: <a href="/reports/session_deliverables_2026-06-03_2026-06-04.md">reports/session_deliverables_2026-06-03_2026-06-04.md</a></p>
 </div>
 
+<div class="update-entry">
+  <h2>2026-06-04 &mdash; AutoGen-style strategy swarm: 7 classes, 1 winner with PF 1.70 / Sharpe 2.98 (1% significant vs MC null)</h2>
+  <p class="meta">Workflow: 50 agents / 21 proposals / 21 adversarial critiques / 7 synthesizers &middot; <a href="/reports/swarm_strategy_proposals_2026-06-04/full_result.json">full_result.json</a> &middot; <a href="/reports/equity_vix_regime_rotator_2026-06-04/backtest_summary.json">backtest_summary.json</a></p>
+
+  <h3 style="margin-top:14px;color:#22c55e">&#x2705; Winner &mdash; <code>equity_vix_term_structure_regime_rotator</code></h3>
+  <p>3-regime classifier on VIX term structure (VIX9D/VIX/VIX3M) + momentum-rank within RISK_ON universe (SPY/QQQ/IWM/XLK), defensive IEF/GLD in RISK_OFF. Thresholds pre-locked per synthesis spec; no in-sample tuning. Literature: Simon &amp; Campasano 2014.</p>
+  <table class="lb" style="margin-top:8px"><thead><tr><th>Metric</th><th>Full (2014-2026)</th><th>IS (2014-2023)</th><th>OOS (2024-2026)</th></tr></thead>
+  <tbody>
+    <tr><td>Sharpe</td><td><strong>2.98</strong></td><td>2.98</td><td><strong>3.16</strong> &larr; OOS &gt; IS</td></tr>
+    <tr><td>PF</td><td>1.70</td><td>&mdash;</td><td>passes &ge;1.30 gate &#x2705;</td></tr>
+    <tr><td>WR</td><td>56.3%</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td>MDD</td><td>-10.6%</td><td>&mdash;</td><td>passes &gt;-15% gate &#x2705;</td></tr>
+    <tr><td>CAGR</td><td>36.4%</td><td>&mdash;</td><td>&mdash;</td></tr>
+  </tbody></table>
+  <p><strong>Monte Carlo null</strong> (500 trials of shuffled regime labels): real Sharpe 2.98 vs null mean 0.95 &plusmn; 0.17 (p95 = 1.27) &rarr; p-value <strong>0.000</strong>, significant at 1%.</p>
+  <p style="font-size:11px;color:#94a3b8">Repro: <code>python tools/equity_vix_regime_rotator.py --backtest --mc-trials 500 --walkforward</code></p>
+
+  <h3 style="margin-top:14px;color:#fbbf24">&#x1F50D; Other 6 classes &mdash; no_viable_winner (correct adversarial outcome)</h3>
+  <ul style="font-size:12.5px">
+    <li><strong>CRYPTO</strong> &mdash; 3 funding-rate candidates concentrated on same data axis; bogus cross-source claim (Binance/KuCoin funding ~0.95 correlated). Critic-adjusted PF 1.12-1.15 (sub-floor).</li>
+    <li><strong>ETF</strong> &mdash; 12+ tunable knobs (high overfit); recommend Faber/Antonacci dual-momentum re-run with locked params.</li>
+    <li><strong>FOREX</strong> &mdash; London-fix-fade collapses on 4pm spread widening (2-3 pip vs 0.8 pip normal); carry-momentum overlay flagged for research only.</li>
+    <li><strong>COMMODITY</strong> &mdash; borrow-cost-blind spread strategies; need real CME settlement data first.</li>
+    <li><strong>BOND</strong> &mdash; defer until intrabar OHLC resolver lands (upstream blocker per memory project-session-close-2026-05-31).</li>
+    <li><strong>FUTURES</strong> &mdash; need <code>tools/data/cme_settlement_ingest.py</code> before any tournament.</li>
+  </ul>
+
+  <h3 style="margin-top:14px;color:#93c5fd">&#x1F4D1; Next steps</h3>
+  <ul style="font-size:12.5px">
+    <li>Paper-pilot wire-up for <code>equity_vix_term_structure_regime_rotator</code> on a virtual book; verify live Sharpe within 30% of OOS over first 30 paper trades.</li>
+    <li>Half-conviction sizing per swarm risk_summary (VIX term-structure is well-known post-2020; size at 50% until n&gt;=100 paper trades confirm live PF&ge;1.3).</li>
+    <li>Apply swarm's <code>recommended_first_step</code> remediation to the 6 no_viable classes &mdash; tracked in <a href="/reports/swarm_strategy_proposals_2026-06-04/full_result.json">full_result.json</a>.</li>
+  </ul>
+
+  <p class="meta" style="margin-top:14px">Authoring: claude-opus-4-7 &middot; Workflow tool: AutoGen-style multi-agent swarm (50 agents, 1.78M tokens, 246s wall-clock)</p>
+</div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
