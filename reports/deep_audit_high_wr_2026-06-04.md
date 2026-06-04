@@ -66,3 +66,40 @@ Re-audit: **235 of 498 COMMODITY/FUTURES picks mispriced** (47% rate). Same patt
 ## Timestamp format gap (operator ask)
 
 Most JSON `generated_at` fields use UTC ISO 8601 (`2026-06-04T15:57:10+00:00`). Only `incidents_enhancements_feed.json` uses EST format (`2026-06-04 05:52 EDT`). Recommend extending the EST renderer to other dashboard JSONs in a follow-up PR.
+
+## Real-edge survivors (post all cleanups, dedup-verified)
+
+After 6 rounds + 7 outlier flags + dup-ratio check, the strategies that hold up:
+
+| Strategy | Class | n (unique) | WR | PF | Dup ratio |
+|---|---|---:|---:|---:|---:|
+| **luxalgo_confluence** | CRYPTO | 381 | 64.4% | **2.36** | 1.0x (clean) |
+| rapid_momentum_filter_mut | CRYPTO | 52 | 61.1% | 1.55 | 1.0x |
+| cvd_divergence | CRYPTO | 52 | 68.4% | 1.47 | 1.0x |
+| rsi_vwap_contrarian | CRYPTO | 42 | 61.5% | 1.41 | 1.0x |
+
+### Need dedup before trust
+
+| Strategy | raw | unique | ratio |
+|---|---:|---:|---:|
+| cta_golden_cross ETF | 102 | 16 | 6.4x |
+| regime_accumulation EQUITY | 485 | 78 | 6.2x |
+| smart_money_accumulation EQUITY | 174 | 43 | 4.0x |
+| stocks_rsi2_pullback EQUITY | 790 | 140 | 5.6x — INCIDENT #96 |
+
+### Debunked
+
+- `stocks_rsi2_pullback` previously claimed "WR 62.9% / +0.78%" → actual WR 33.9% / avg -0.007% (slightly losing). INCIDENT #96 filed.
+- `claude_ml_moderate_mut` claimed avg +2129% → +4.98% post-outlier-clean
+- `gemini_2_5_flash` COMMODITY 94.1% → all 16 wins were stale-quote NG=F/CL=F LONGs
+
+### Standout finding
+
+**`luxalgo_confluence` CRYPTO** is the most defensible real-edge sleeve identified this session:
+- n=381 (well above institutional 100 floor)
+- WR 64.4%, PF 2.36 — Tier 2 PASS  
+- Clean (1.0x dup ratio, 17 symbols)
+- Average pnl +2.13% per trade
+- Earlier inflated by 1 ARBUSDT $0.000757 entry outlier — cleaned to current honest figures
+
+Promote-candidate for live-capital paper-pilot tracking (still needs 4-week paper period + Sharpe verification).
