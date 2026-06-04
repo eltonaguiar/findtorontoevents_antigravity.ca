@@ -180,14 +180,11 @@
   <button class="time-tab" data-window="today">Today <span class="count" id="count-today"></span></button>
 </div>
 <div id="resolver-artifact-banner" style="background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.45);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:12px;line-height:1.6;color:#fcd34d">
-  <strong style="color:#fbbf24">⚠ DATA QUALITY — INTRABAR LIVE 2026-06-04, RANK STILL BUILDING.</strong>
-  CRYPTO intrabar OHLC replay went live 2026-06-04T02:01Z (Binance &rarr; CoinGecko &rarr; KuCoin Tier-3 failover; daily-bar TP/SL replay with SL-first conservative ordering and gap-through fills).
-  Non-CRYPTO classes are at 100% replay coverage; CRYPTO is at 88.9% (16/18) as of first measurement and rising.
-  Pre-fix legacy resolutions in this leaderboard are <strong>still spot-snapshot-resolved</strong> and inflate WR by ~10&ndash;20pts vs intrabar truth (LONG 87% vs SHORT 33% over a 4&ndash;14d window = regime drift, not edge).
-  As new closes flow through the replay-aware resolver, the leaderboard will regress to honest WR/PF values.
-  <strong>Treat the current Tier-1 badges as UNPROVEN until ~7 days of replay-resolved closes (n&ge;100 post-fix) accumulate;</strong> the actual edge ranking may shift materially.
-  Fix chain: PRs <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/512" style="color:#93c5fd">#512</a> + <code>f273b6db57</code> + <code>893c660c10</code> + <code>4fd7cb4c69</code>.
-  Background: <code>reports/ai_tournament_winrate_audit_2026-06-03.md</code>.
+  <strong style="color:#fbbf24">⚠ DATA QUALITY — TWO CLEANUPS LANDED 2026-06-04; RANK STILL BUILDING.</strong>
+  <div style="margin-top:6px"><strong>(1) Intrabar OHLC replay</strong> live 02:01Z &mdash; daily-bar TP/SL replay (SL-first conservative ordering, gap-through fills), Binance &rarr; CoinGecko &rarr; KuCoin Tier-3 for CRYPTO. Non-CRYPTO 100% replay coverage; CRYPTO ~89% and rising.</div>
+  <div style="margin-top:4px"><strong>(2) Mispriced-entry audit</strong> &mdash; 914 picks marked <code>MISPRICED_ENTRY</code> after entry_price was found to drift &gt;25% from market at submission (corporate actions like LODE 1:10 split, futures contract rolls, stale AI training data). Excluded from WR/PF aggregates via <code>is_resolution_trustworthy</code>. Models like <code>fireworks_qwen</code> dropped from 92.1% &rarr; correctly-de-ranked BUILDING (n&lt;30 post-cleanup).</div>
+  <div style="margin-top:6px"><strong>Treat the current Tier-1 badges as UNPROVEN until ~7 days of replay-resolved + drift-checked closes (n&ge;100 post-fix) accumulate.</strong> Honest top WRs post-cleanup are now ~57-71% (was 86-92%) &mdash; still above 50% baseline, but the rank ordering may continue to shift as more inflated entries get caught.</div>
+  <div style="margin-top:6px;font-size:11px;opacity:0.85">Fix chain: PRs <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/512" style="color:#93c5fd">#512</a> + <code>f273b6db57</code> + <code>893c660c10</code> + <code>4fd7cb4c69</code> (intrabar) + <code>71062a7462</code> (drift-guard) + <code>5853ca6c3b</code> (audit). Audit reports: <a href="/reports/fireworks_qwen_audit_2026-06-04/per_pick_audit.json" style="color:#93c5fd">fireworks_qwen</a> &middot; <a href="/reports/db_wide_mispriced_audit_2026-06-04/summary.json" style="color:#93c5fd">DB-wide</a>.</div>
 </div>
 <table class="lb" id="leaderboard">
   <thead>
