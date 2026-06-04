@@ -159,6 +159,48 @@
   <p class="meta" style="margin-top:14px">Authoring: claude-opus-4-7 &middot; Workflow tool: AutoGen-style multi-agent swarm (50 agents, 1.78M tokens, 246s wall-clock)</p>
 </div>
 
+<div class="update-entry">
+  <h2>2026-06-04 &mdash; Reverse-split + stale-price audit: 553/969 (57.1%) tournament picks marked MISPRICED_ENTRY</h2>
+  <p class="meta">Operator catch &mdash; LODE pick claiming +1373% PnL flagged as suspicious. Root-caused to AI models trained on pre-corporate-action prices.</p>
+
+  <h3 style="margin-top:14px;color:#ef4444">&#x1F50D; What was found</h3>
+  <ul>
+    <li><strong>LODE pick (id=31490)</strong>: entry $0.2786 &rarr; exit $4.1059 = +1373% &mdash; LODE did a <strong>1-for-10 reverse split in Feb 2025</strong>. AI model used pre-split price; live LODE is at $4.10. Intrabar replay matched against post-split bars =&gt; false win.</li>
+    <li><strong>Per-pick programmatic audit</strong> against yfinance close at submission_at on top 15 models (excl CRYPTO/FOREX): <strong>553 of 969 picks (57.1%)</strong> had entry_price drift &gt;25% from market.</li>
+    <li>Root causes: (a) AI training data 2-3+ years stale, (b) corporate actions (LODE 1:10, NFLX 1:10, FFIE 1:40, WKHS 1:20), (c) futures contract rolls (CT=F entry $9.97 vs $77.19), (d) dividend-adjusted ETFs.</li>
+  </ul>
+
+  <h3 style="margin-top:14px;color:#22c55e">&#x2705; What was fixed</h3>
+  <ul>
+    <li><strong>Drift-guard in resolver</strong> (<code>tools/ai_tournament/price_tracker.py</code>): if entry_price drifts &gt; <code>RESOLVER_MAX_ENTRY_DRIFT_PCT</code> (default 25%) from first OHLC bar's open, mark <code>MISPRICED_ENTRY</code>, set pnl=null, exit_reason=<code>MISPRICED_ENTRY_REJECTED</code>. Automatic; catches ANY stale-data pattern.</li>
+    <li><strong>Leaderboard exclusion</strong>: <code>is_resolution_trustworthy()</code> now excludes <code>MISPRICED_ENTRY</code> from WR/PF aggregates.</li>
+    <li><strong>DB backfill</strong>: 553 rows marked MISPRICED_ENTRY across top 15 models.</li>
+    <li><strong>Peer agent's <code>audit_trail/reverse_split_symbols.py</code></strong> integrated as explicit registry for known reverse-split symbols (LODE/FFIE/WKHS seeded; drift-guard catches unknown ones automatically).</li>
+  </ul>
+
+  <h3 style="margin-top:14px;color:#fbbf24">&#x1F4CA; Leaderboard truth-restoration</h3>
+  <table class="lb" style="margin-top:6px;font-size:12px"><thead><tr><th>Model</th><th>WR before</th><th>WR after audit</th><th>n_mispriced</th></tr></thead>
+  <tbody>
+    <tr><td>fireworks_qwen</td><td>92.1%</td><td><strong>18.4%</strong></td><td>30</td></tr>
+    <tr><td>gemini_25_pro</td><td>87.5%</td><td><strong>9.3%</strong></td><td>34</td></tr>
+    <tr><td>gpt4o</td><td>57.7%</td><td><strong>6.7%</strong></td><td>10</td></tr>
+    <tr><td>claude_opus</td><td>84.4%</td><td><strong>14.7%</strong></td><td>26</td></tr>
+    <tr><td>deepseek_v4</td><td>57.9%</td><td><strong>22.1%</strong></td><td>161</td></tr>
+    <tr><td>cursor_agent</td><td>64.2%</td><td><strong>40.7%</strong></td><td>37</td></tr>
+    <tr><td>claude_haiku_4_5</td><td>67.0%</td><td><strong>44.9%</strong></td><td>36</td></tr>
+  </tbody></table>
+  <p>The "robust panel" recommendation in the prior <a href="/reports/weekly_filter_2026-06-03T23-02Z.md">weekly_filter</a> report is now <strong>retracted</strong> &mdash; those Sharpe-2.9-PF-2.9 figures were built on pre-cleanup inflated stats. Real WR is around 20-45% for top models; AI-tournament-as-edge is sub-Tier-2.</p>
+
+  <h3 style="margin-top:14px;color:#93c5fd">&#x1F50D; Apply lessons elsewhere</h3>
+  <ul>
+    <li><code>trading_picks</code> (main DB): audited for same pattern. 151 picks with |pnl|&gt;25% but mostly legitimate CRYPTO big-losses (TRXUSDT -78%, APEUSDT -88%) &mdash; NOT mispriced entries. No backfill needed there.</li>
+    <li><code>/audit/pf.html</code> portfolio drill: unaffected. Portfolio entries are mark-to-market with current price, not pre-submitted prices.</li>
+    <li><code>tools/daily_top_picks_filter.py</code>: now filters out MISPRICED_ENTRY models implicitly via the n_resolved drop. Re-running will surface different top picks.</li>
+  </ul>
+
+  <p class="meta" style="margin-top:14px">Reports: <a href="/reports/fireworks_qwen_audit_2026-06-04/per_pick_audit.json">fireworks_qwen_audit</a> &middot; <a href="/reports/db_wide_mispriced_audit_2026-06-04/summary.json">db_wide_audit summary</a> &middot; commit 5853ca6c3b</p>
+</div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
