@@ -1,0 +1,70 @@
+name: Daily Top-Picks Filter
+
+# Regenerates audit_dashboard/data/daily_top_picks_filter.json every 4 hours
+# from the AI tournament robust panel (deepseek_v4 + claude_haiku_4_5 +
+# cursor_agent + gpt4o + deepseek_r1 + mercury). FTP-deploys so the live
+# /audit/data/ endpoint always serves a recent picklist.
+#
+# Tool: tools/daily_top_picks_filter.py (added 2026-06-04, commit 0f6f3af03e).
+# See reports/weekly_filter_2026-06-03T23-02Z.md for the underlying
+# /money-maker-readyv2 rationale.
+
+on:
+  schedule:
+    - cron: "23 */4 * * *"  # every 4 hours at :23 (offset from busy :00/:15/:30 minutes)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install pymysql
+
+      - name: Regenerate filter
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+        run: |
+          python tools/daily_top_picks_filter.py \
+            --top 10 \
+            --kelly-cap 0.02 \
+            --out audit_dashboard/data/daily_top_picks_filter.json
+
+      - name: FTP deploy
+        env:
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER || 'ftps2.50webs.com' }}
+        run: |
+          if [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning::FTP creds not set — skipping deploy. Local file is still updated."
+            exit 0
+          fi
+          python tools/deploy_audit_files.py --only audit_data 2>&1 | grep -E "daily_top_picks|OK.*daily" || true
+
+      - name: Commit JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/daily_top_picks_filter.json
+          git diff --staged --quiet && echo "no changes" && exit 0
+          git commit -m "data(filter): regen daily_top_picks_filter $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin main && exit 0
+            sleep 15
+          done
+          echo "::warning::push lost race after 5 retries; data is on disk + FTP'd"
+          exit 0
