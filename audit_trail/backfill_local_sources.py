@@ -190,6 +190,12 @@ def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
                    pnl_pct, source_system, strategy, opened_at, closed_at,
                    row_asset_class=None):
     try:
+        # idx_dedup UNIQUE(symbol,direction,source_system,opened_at) only fires
+        # when opened_at is non-NULL. JSON picks without timestamp/created_at
+        # used to leak opened_at=NULL → 8-43x row duplication per pick
+        # (INCIDENT_OVERALL #91, 2026-06-04). Fall back to closed_at so the
+        # unique constraint always has a non-NULL value to dedup against.
+        safe_opened = safe_ts(opened_at) or safe_ts(closed_at)
         cur.execute(
             "INSERT IGNORE INTO at_signal_outcomes "
             "(symbol, direction, entry_price, take_profit, stop_loss, exit_price, "
@@ -199,7 +205,7 @@ def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
              safe_float(sl), safe_float(exit_price), outcome,
              safe_float(pnl_pct), source_system, strategy,
              derive_asset_class(symbol, row_asset_class),
-             safe_ts(opened_at), safe_ts(closed_at))
+             safe_opened, safe_ts(closed_at))
         )
         return cur.rowcount
     except Exception:
