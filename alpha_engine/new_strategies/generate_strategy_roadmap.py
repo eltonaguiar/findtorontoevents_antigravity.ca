@@ -12,15 +12,27 @@ with purged walk-forward, DSR, PBO, and cost modeling.
 
 import pymysql
 import json
+import sys
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 
-STOCKS_PW = "stocks1234560"
+# 2026-06-04 INCIDENT #89 scrub: switched from hardcoded literal to the
+# canonical tools.db_env.get_stocks_creds() helper. The hardcoded fallback
+# was the well-known convention literal — gitignored per ~/dbpasses.txt, but the
+# literal in code was a P0 leak. The helper resolves from env vars in
+# priority order (DB_PASS_STOCKS → MYSQL_PASSWORD → legacy aliases) and
+# raises if none are set, so misconfigured runs fail loud instead of
+# silently using the convention.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+from tools.db_env import get_stocks_creds  # noqa: E402
+
 
 def get_connection():
+    creds = get_stocks_creds()
     return pymysql.connect(
-        host='mysql.50webs.com', port=3306,
-        user='ejaguiar1_stocks', password=STOCKS_PW,
-        database='ejaguiar1_stocks', charset='utf8mb4',
+        **creds, charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
 

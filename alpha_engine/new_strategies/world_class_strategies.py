@@ -98,11 +98,18 @@ STRATEGIES = {
 
 def load_picks_by_class(asset_class):
     """Load all resolved picks for a given asset class from trading_picks."""
-    pw = os.environ.get('DB_PASS_STOCKS', 'stocks1234560')
+    # 2026-06-04 INCIDENT #89 scrub: was os.environ.get('DB_PASS_STOCKS', '<literal>')
+    # with the convention literal baked in. Now uses the canonical helper which
+    # raises if no creds are resolvable.
+    import sys as _sys
+    from pathlib import Path as _Path
+    _root = _Path(__file__).resolve().parents[2]
+    if str(_root) not in _sys.path:
+        _sys.path.insert(0, str(_root))
+    from tools.db_env import get_stocks_creds
+    creds = get_stocks_creds()
     conn = pymysql.connect(
-        host='mysql.50webs.com', port=3306,
-        user='ejaguiar1_stocks', password=pw,
-        database='ejaguiar1_stocks', charset='utf8mb4',
+        **creds, charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
     cur = conn.cursor()
