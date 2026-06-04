@@ -361,6 +361,46 @@ def _fetch_ohlc_crypto_binance(symbol: str, start_iso: str) -> list[dict]:
                     return bars
     except Exception:
         pass
+    # Tier 3: KuCoin klines (1day). Often unblocked from GHA runners when
+    # Binance returns 451 and CoinGecko hits 429. Verified 2026-06-04 from
+    # GHA-equivalent: KuCoin returned 200 + 5 valid daily bars for BTC-USDT.
+    # NOTE: KuCoin row order is [time, OPEN, CLOSE, HIGH, LOW, vol, turnover]
+    # — not OHLC. Easy to invert. startAt/endAt are UNIX SECONDS.
+    try:
+        kc_pair = f"{base}-USDT"
+        start_s = start_ms // 1000
+        end_s = int(datetime.now(timezone.utc).timestamp())
+        r = requests.get(
+            "https://api.kucoin.com/api/v1/market/candles",
+            params={"symbol": kc_pair, "type": "1day",
+                    "startAt": start_s, "endAt": end_s},
+            timeout=10,
+        )
+        if r.status_code == 200:
+            j = r.json()
+            data = j.get("data") if isinstance(j, dict) else None
+            if isinstance(data, list) and data:
+                bars = []
+                for row in data:
+                    try:
+                        ts_s = int(row[0])
+                        op = float(row[1]); cl = float(row[2])
+                        hi = float(row[3]); lo = float(row[4])
+                        date_str = datetime.fromtimestamp(
+                            ts_s, tz=timezone.utc
+                        ).strftime("%Y-%m-%d")
+                        bars.append({"date": date_str,
+                                     "open": op, "high": hi,
+                                     "low": lo, "close": cl})
+                    except (TypeError, ValueError, IndexError):
+                        continue
+                # KuCoin returns newest-first; sort ascending so the bar-scan
+                # walks forward correctly from entry.
+                bars.sort(key=lambda b: b["date"])
+                if bars:
+                    return bars
+    except Exception:
+        pass
     return []
 
 
