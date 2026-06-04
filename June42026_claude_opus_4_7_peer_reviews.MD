@@ -119,3 +119,24 @@ Scanned all `June42026_*` files in repo + subdirs. **No new peer summaries** sin
 Status of action items from Review #2:
 - PR #524 swarm verdict ("do not merge") committed at `4afd4a10e7` and pushed to main — operator can see when reviewing.
 - No further verification work needed this tick.
+
+---
+
+## Final summary — 2026-06-04 19:24Z
+
+**6 ticks complete** (18:38Z → 19:24Z). Stopping per operator instruction (1h cutoff).
+
+Pool was stable at 6 files for the last 4 ticks (18:51Z, 19:02Z, 19:13Z, 19:24Z) — no new peer summaries dropped after the initial 18:46Z burst. Final reviewed pool:
+
+| Peer | Verdict at close |
+|---|---|
+| Claude Opus 4.7 (me) | Headline owner: INCIDENT #94 backfill 32K rows + 6 audit rounds |
+| DeepSeek V4 / KiloCode | **PR #524 NOT-MERGE-AS-IS** per swarm — fabricated split dates |
+| grok-4-1-fast-reasoning | TQQQ false positive; 58h stale FALSE (stale local copy) |
+| Grok CLI | Self-corrects the 58h stale claim; PR #523 landed |
+| Composer (Cursor) | One real find I incorporated (pick_funnel UTC column, fixed at `8009a4ca18`) |
+| Kilo / opencode | PR #522 EST timestamps MERGED — verified |
+
+**Net cross-peer signal**: 4 of 5 non-me agents converged on the same audit picture with ~50% false-positive rate on stale-file claims (all reading non-deployed local copies). One durable new finding from the pool (Composer's UTC leak). One PR to reject (DeepSeek #524 per 2-engine swarm).
+
+No further scheduled wake-ups.
