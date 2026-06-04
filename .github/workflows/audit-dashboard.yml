@@ -121,7 +121,7 @@ jobs:
         run: |
           pip install pymysql -q
           python -m audit_trail.universal_pick_resolver
-        timeout-minutes: 20  # 2026-04-16: was 8 — resolver was hitting step cap under load
+        timeout-minutes: 40  # 2026-06-04: 20 was hitting cap (run 26928553028) blocking dashboard regen; doubled while keeping fail-hard semantics
         continue-on-error: false  # 2026-05-20: was true — Kimi-flagged silent fail; f1370a3 resolver fix requires fail-hard to surface errors
         env:
           PICK_OUTCOMES_MYSQL_ENABLED: '1'
