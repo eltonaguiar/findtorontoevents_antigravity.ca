@@ -48,6 +48,10 @@ UPLOADS = [
     ("audit_dashboard/data/ai_tournament_model_diagnostics.json", "/findtorontoevents.ca/audit/data/ai_tournament_model_diagnostics.json", "ai_tournament"),
     ("audit_dashboard/pf.html",                              "/findtorontoevents.ca/audit/pf.html",                               "ai_portfolios"),
     ("audit_dashboard/data/pf_portfolios.json",              "/findtorontoevents.ca/audit/data/pf_portfolios.json",               "ai_portfolios"),
+    # 2026-06-04: daily top-picks filter from AI tournament robust panel
+    # (deepseek_v4 + claude_haiku_4_5 + cursor_agent + gpt4o + deepseek_r1 +
+    # mercury). Output of tools/daily_top_picks_filter.py.
+    ("audit_dashboard/data/daily_top_picks_filter.json",     "/findtorontoevents.ca/audit/data/daily_top_picks_filter.json",      "ai_portfolios"),
     ("audit_dashboard/data/verified_edge_status.json",       "/findtorontoevents.ca/audit/data/verified_edge_status.json",        "ai_portfolios"),
     ("audit_dashboard/data/strategy_admissibility.json",     "/findtorontoevents.ca/audit/data/strategy_admissibility.json",    "ai_portfolios"),
     ("audit_dashboard/data/pilot_forward_dashboard.json",    "/findtorontoevents.ca/audit/data/pilot_forward_dashboard.json",     "ai_portfolios"),
