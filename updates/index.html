@@ -34,41 +34,6 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
-<div class="update-entry">
-  <h2>Jun 4, 2026 - AI Tournament Mispriced-Entry Audit (4 rounds, 2,987 cleaned)</h2>
-  <p class="timestamp">Posted: June 4, 2026 - 03:35 EDT</p>
-  <p><strong>TL;DR.</strong> Operator caught the LODE +1373% pick on Jun 3 as suspicious - turned out to be Comstock Inc's 1-for-10 reverse split that AI models trained pre-split kept quoting. Cross-checked the entire AI-tournament DB. <strong>~68% of pre-cleanup resolved picks had &gt;25% entry-price drift</strong> from real market open. All 2,987 marked <code>MISPRICED_ENTRY</code> and excluded from leaderboard math.</p>
-  <h3>Per-class audit results (4 rounds)</h3>
-  <table>
-    <tr><th>Class</th><th>Audited</th><th>Mispriced</th><th>Rate</th><th>Honest WR / PF</th></tr>
-    <tr><td>EQUITY</td><td>~2,700</td><td>~1,800</td><td>67%</td><td>50.9% / 1.65</td></tr>
-    <tr><td>CRYPTO</td><td>884</td><td>548</td><td>62%</td><td>47.4% / 1.32 (was 41.4%)</td></tr>
-    <tr><td>COMMODITY</td><td>~250</td><td>~120</td><td>48%</td><td>55.2% / 2.17 (T2)</td></tr>
-    <tr><td>ETF</td><td>~200</td><td>~80</td><td>40%</td><td>58.2% / 1.53 (T2)</td></tr>
-    <tr><td>BOND</td><td>~350</td><td>~75</td><td>21%</td><td>54.0% / 1.38</td></tr>
-    <tr><td>FOREX</td><td>380</td><td><strong>0</strong></td><td><strong>0%</strong></td><td>52.4% / 0.62 (real loss)</td></tr>
-    <tr><td>TOTAL</td><td>~4,400</td><td>2,987</td><td>~68%</td><td>-</td></tr>
-  </table>
-  <h3>Key findings</h3>
-  <ul>
-    <li><strong>FOREX losing edge is real</strong>, not an artifact - models quote current rates accurately within 25% drift but generate genuine no-edge direction calls. Deprioritize for paper pilots.</li>
-    <li><strong>EQUITY/CRYPTO inflation root cause</strong>: AI models trained on pre-reverse-split or pre-2025 price windows quote stale prices (LODE pre-split $0.40 instead of $4, BTC at $30K instead of $65K).</li>
-    <li><strong>claude_haiku_4_5 holds #1</strong>: 71.2% WR / PF 3.90 even after aggressive cleanup. Confirmed real edge.</li>
-    <li><strong>grok3 dropped out of top 12</strong> - had multiple AMD-priced-at-2024-low type errors.</li>
-    <li>Original audit had a <code>LIMIT 1000</code> SQL cutoff that missed 60% of candidates - round 2 broadened to ALL resolved picks.</li>
-  </ul>
-  <h3>Code / data deltas (all merged to main)</h3>
-  <ul>
-    <li><code>tools/ai_tournament/price_tracker.py</code> - drift-guard at resolve_pick now marks &gt;25% entry drift as MISPRICED_ENTRY before resolution math runs (prevents future inflations).</li>
-    <li><code>tools/ai_tournament/normalize.py::is_resolution_trustworthy</code> - excludes MISPRICED rows from WR/PF aggregation.</li>
-    <li><code>audit_dashboard/model.html</code> - new MISPRICED tile in summary header (amber warning).</li>
-    <li><code>audit_dashboard/ai-tournament.html</code> - DISPUTED banner expanded with audit context.</li>
-    <li><code>audit_trail/reverse_split_symbols.py</code> - peer-shipped registry (LODE/FFIE/WKHS) for future inline filtering.</li>
-    <li>17 null-coalesce sites fixed across <code>price_tracker.py</code>, <code>dashboard_generator.py</code> et al (<code>p.get('pnl_pct', 0)</code> returned None when key was present-but-None, crashing abs/sum downstream).</li>
-  </ul>
-  <p>Full audit report: <code>reports/db_wide_mispriced_audit_2026-06-04/wider_audit_summary.md</code>. Commits: <code>bc6d507429</code> (round 2), <code>bc702f96e4</code> (round 3 CRYPTO), <code>4bb66c6564</code> (round 4 FOREX).</p>
-</div>
-
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -101,7 +66,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-06-04 02:08 EDT · <strong>71 open incidents</strong> (27 P0 · 33 P1) · <strong>119 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-06-04 05:52 EDT · <strong>68 open incidents</strong> (19 P0 · 36 P1) · <strong>119 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -116,9 +81,9 @@
     <tbody>
       <tr>
         <td class="cls">OVERALL</td>
-        <td>38</td>
-        <td class="p0">17</td>
-        <td class="top-issue">Live DB password stocks1234560 hardcoded repo-wide (rotate + scrub)</td>
+        <td>35</td>
+        <td class="p0">9</td>
+        <td class="top-issue">alpha_engine writes 8-43x duplicate rows to at_signal_outcomes</td>
         <td>82</td>
         <td class="top-issue">Walk-forward validated macd_rsi_m048 strategy (PF 3.33, 75.4% WR)</td>
       </tr>
@@ -191,20 +156,16 @@
 
 <h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
   <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>alpha_engine writes 8-43x duplicate rows to at_signal_outcomes</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/backfill_local_sources.py:194,295,380 + tools/repair_data_integrity.py:278</code> · reporter: claude /loop 2026-06-04 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>Live DB password stocks1234560 hardcoded repo-wide (rotate + scrub)</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>multiple (SKILL.md, alpha_engine/forward_test.py, rigorous_backtest_harness.py, +)</code> · reporter: claude-opus-4-8 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
     <span class="ie-class">CRYPTO</span> <strong>CRYPTO directional bug: LONG 33% WR vs SHORT 67% WR in AI tournament</strong>
     <div class="ie-card-meta">P0 · IN_PROGRESS · component: <code>alpha_engine/production_scanner.py</code> · reporter: mimo-v2.5-pro · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>EXPIRED mislabel: 53.3% of EXPIRED picks have positive PnL (resolver mislabeling WINs as EXPIRED)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/universal_pick_resolver.py + audit_trail/outcome_resolver.py bar-replay</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>Orphan test file blocking all PR CI: test_money_ready_capital_lock referenced symbols not on main</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>tests/test_money_ready_capital_lock.py</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>money_ready=[] — no asset class passes production gate (2026-06-02)</strong>
@@ -223,12 +184,16 @@
     <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/active_picks_sync.py (proposed) + forward_validator.validate_picks()</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>56,559 ghost rows in trading_picks (top cohort: 20,474 identical MATICUSDT entries)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks ghost-row write path</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>ML calibration system-wide inverted</strong>
+    <div class="ie-card-meta">P0 · TRIAGED · component: <code>smart_picks_engine.py / score derivation</code> · reporter: kimi/multiple · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>WON status rows show avg pnl_pct = -41.1%</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>trading_picks.status=&#39;WON&#39; rows</code> · reporter: qwen-code · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+    <span class="ie-class">OVERALL</span> <strong>COT paper pilot over-emission</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>cot_paper_pilot.py / cot_positioning strategy</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">Stocks</span> <strong>EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3)</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes, alpha_engine/equity strategies</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
 <h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
   <div class="enhancement-card ie-card">
@@ -256,6 +221,41 @@
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
   <div class="update-entry">
+  <h2>Jun 4, 2026 - AI Tournament Mispriced-Entry Audit (4 rounds, 2,987 cleaned)</h2>
+  <p class="timestamp">Posted: June 4, 2026 - 03:35 EDT</p>
+  <p><strong>TL;DR.</strong> Operator caught the LODE +1373% pick on Jun 3 as suspicious - turned out to be Comstock Inc's 1-for-10 reverse split that AI models trained pre-split kept quoting. Cross-checked the entire AI-tournament DB. <strong>~68% of pre-cleanup resolved picks had &gt;25% entry-price drift</strong> from real market open. All 2,987 marked <code>MISPRICED_ENTRY</code> and excluded from leaderboard math.</p>
+  <h3>Per-class audit results (4 rounds)</h3>
+  <table>
+    <tr><th>Class</th><th>Audited</th><th>Mispriced</th><th>Rate</th><th>Honest WR / PF</th></tr>
+    <tr><td>EQUITY</td><td>~2,700</td><td>~1,800</td><td>67%</td><td>50.9% / 1.65</td></tr>
+    <tr><td>CRYPTO</td><td>884</td><td>548</td><td>62%</td><td>47.4% / 1.32 (was 41.4%)</td></tr>
+    <tr><td>COMMODITY</td><td>~250</td><td>~120</td><td>48%</td><td>55.2% / 2.17 (T2)</td></tr>
+    <tr><td>ETF</td><td>~200</td><td>~80</td><td>40%</td><td>58.2% / 1.53 (T2)</td></tr>
+    <tr><td>BOND</td><td>~350</td><td>~75</td><td>21%</td><td>54.0% / 1.38</td></tr>
+    <tr><td>FOREX</td><td>380</td><td><strong>0</strong></td><td><strong>0%</strong></td><td>52.4% / 0.62 (real loss)</td></tr>
+    <tr><td>TOTAL</td><td>~4,400</td><td>2,987</td><td>~68%</td><td>-</td></tr>
+  </table>
+  <h3>Key findings</h3>
+  <ul>
+    <li><strong>FOREX losing edge is real</strong>, not an artifact - models quote current rates accurately within 25% drift but generate genuine no-edge direction calls. Deprioritize for paper pilots.</li>
+    <li><strong>EQUITY/CRYPTO inflation root cause</strong>: AI models trained on pre-reverse-split or pre-2025 price windows quote stale prices (LODE pre-split $0.40 instead of $4, BTC at $30K instead of $65K).</li>
+    <li><strong>claude_haiku_4_5 holds #1</strong>: 71.2% WR / PF 3.90 even after aggressive cleanup. Confirmed real edge.</li>
+    <li><strong>grok3 dropped out of top 12</strong> - had multiple AMD-priced-at-2024-low type errors.</li>
+    <li>Original audit had a <code>LIMIT 1000</code> SQL cutoff that missed 60% of candidates - round 2 broadened to ALL resolved picks.</li>
+  </ul>
+  <h3>Code / data deltas (all merged to main)</h3>
+  <ul>
+    <li><code>tools/ai_tournament/price_tracker.py</code> - drift-guard at resolve_pick now marks &gt;25% entry drift as MISPRICED_ENTRY before resolution math runs (prevents future inflations).</li>
+    <li><code>tools/ai_tournament/normalize.py::is_resolution_trustworthy</code> - excludes MISPRICED rows from WR/PF aggregation.</li>
+    <li><code>audit_dashboard/model.html</code> - new MISPRICED tile in summary header (amber warning).</li>
+    <li><code>audit_dashboard/ai-tournament.html</code> - DISPUTED banner expanded with audit context.</li>
+    <li><code>audit_trail/reverse_split_symbols.py</code> - peer-shipped registry (LODE/FFIE/WKHS) for future inline filtering.</li>
+    <li>17 null-coalesce sites fixed across <code>price_tracker.py</code>, <code>dashboard_generator.py</code> et al (<code>p.get('pnl_pct', 0)</code> returned None when key was present-but-None, crashing abs/sum downstream).</li>
+  </ul>
+  <p>Full audit report: <code>reports/db_wide_mispriced_audit_2026-06-04/wider_audit_summary.md</code>. Commits: <code>bc6d507429</code> (round 2), <code>bc702f96e4</code> (round 3 CRYPTO), <code>4bb66c6564</code> (round 4 FOREX).</p>
+</div>
+
+<div class="update-entry">
   <h3>2026-06-03 — Outcome resolver: bounded stale-pick batches</h3>
   <p>Hourly <code>outcome-resolver</code> and <code>run_daily_resolver_hygiene.sh</code> now cap stale OPEN+ACTIVE closes with <code>--max-batches 30</code> (~15k rows/run) so full 3k+ live scans do not hit the 10h harness kill.</p>
   <p class="meta">Doc: <a href="/updates/2026-06-03-outcome-resolver-max-batches.md">2026-06-03-outcome-resolver-max-batches.md</a> · Repro: <code>gh workflow run outcome-resolver.yml</code></p>
@@ -11536,7 +11536,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          Jun 04, 2026 &mdash; 03:58 AM EST | Hourly Portfolio Update
+          Jun 04, 2026 &mdash; 05:36 AM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -11555,6 +11555,7 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
 
 
 
@@ -12058,7 +12059,7 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 04, 03:58 AM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 04, 05:36 AM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>
