@@ -157,6 +157,12 @@ function fwdStatus(p){
   if(p.status === 'EXPIRED'){
     return {label: 'FLAT — window expired', cls:'pnl-neu'};
   }
+  if(p.status === 'MISPRICED_ENTRY'){
+    // 2026-06-04 audit: pick's entry_price drifted >25% from actual market
+    // price at submission (corporate action, reverse split, contract roll,
+    // or stale AI training data). Excluded from leaderboard aggregates.
+    return {label: '⚠ MISPRICED — entry stale (audit 2026-06-04)', cls:'pnl-neu'};
+  }
   // OPEN
   const cur = parseFloat(p.current_price);
   const entry = parseFloat(p.entry_price);
