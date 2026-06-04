@@ -35,6 +35,37 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
 <div class="update-entry">
+  <h2>Jun 4, 2026 - VERIFIED STRATEGIES UNLOCK: 32,473 rows backfilled, forward n jumps from 5 to 258</h2>
+  <p class="timestamp">Posted: June 4, 2026 - 09:10 EDT</p>
+  <p><strong>Headline</strong>: A systemic bug (<code>INCIDENT_OVERALL #94</code>) was writing <code>pnl_pct=0</code> on 99.9% of TIME_EXIT closures (33,172 / 33,213 rows) because <code>alpha_engine/mysql_trading_sync.py</code> read <code>exit_price</code> but the portfolio trackers wrote <code>close_price</code>. JSON-key mismatch. The bug hid all forward-test data for verified paper-pilot strategies.</p>
+  <h3>Fix shipped + backfill ran</h3>
+  <ul>
+    <li><code>commit c7cfa69b2d</code>: <code>mysql_trading_sync.py</code> now falls back to <code>close_price</code>/<code>closePrice</code> when <code>exit_price</code> is missing.</li>
+    <li><code>commit 575b5b6153</code>: One-shot backfill (<code>tools/backfill_time_exit_pnl.py</code>) fetched market prices at close-time via yfinance/Binance fallback chain, recomputed pnl for 32,473 rows.</li>
+    <li>Post-state: 31,990 rows now have real pnl (was 0). 1,326 remain pnl=0 (delisted symbols, no data). 6 null.</li>
+    <li>TIME_EXIT decisive subset: <strong>avg +0.039% / 53.5% positive</strong> — strategies had slight hidden edge all along.</li>
+  </ul>
+  <h3>Verified-strategy forward performance (real numbers, finally)</h3>
+  <table>
+    <tr><th>Strategy</th><th>n</th><th>WR</th><th>avg pnl</th><th>PF</th><th>Verdict</th></tr>
+    <tr><td><strong>inverse_ml_enhanced_ADAUSDT_15m_D</strong></td><td>36</td><td>55.6%</td><td>+0.112%</td><td><strong>1.73</strong></td><td><strong>T2 candidate (promote)</strong></td></tr>
+    <tr><td>etf_dual_momentum</td><td>25</td><td>52.0%</td><td>+0.136%</td><td>1.47</td><td>T2-shaped (watch)</td></tr>
+    <tr><td>inverse_ml_enhanced_BTCUSDT_15m_D</td><td>52</td><td>55.8%</td><td>+0.007%</td><td>1.09</td><td>T3 positive but tiny</td></tr>
+    <tr><td>B_flip_PriceRocMeanReversion</td><td>39</td><td>53.8%</td><td>+0.010%</td><td>1.08</td><td>T3</td></tr>
+    <tr><td>inverse_ml_enhanced_RENDERUSDT_1h_D</td><td>54</td><td>42.6%</td><td>-0.009%</td><td>0.95</td><td>No-edge</td></tr>
+    <tr><td><strong>inverse_ml_enhanced_RENDERUSDT_4h_D</strong></td><td>52</td><td>50.0%</td><td>-1.73%</td><td><strong>0.12</strong></td><td><strong>KILL (dead)</strong></td></tr>
+  </table>
+  <h3>Actions filed</h3>
+  <ul>
+    <li><strong>ENHANCEMENT #117</strong>: Promote <code>inverse_ml_enhanced_ADAUSDT_15m_D</code> to next-stage validation. Best PF (1.73) among verified. Still needs n&gt;=100 before live capital.</li>
+    <li><strong>ENHANCEMENT #116</strong>: Kill <code>inverse_ml_enhanced_RENDERUSDT_4h_D</code>. PF 0.12 means $1 won per $8 lost. Net -1.73% per trade.</li>
+    <li>INCIDENT #94 <strong>RESOLVED</strong>.</li>
+  </ul>
+  <p><strong>Why this matters</strong>: For months the bootstrap-forward promotion gate reported <code>b_flip n=2</code> and <code>inverse_ml_btc n=3</code> (decisive only). The real forward-test n was 25-54 per strategy but hidden behind <code>pnl=0</code>. <strong>The promotion-gate path was structurally broken</strong>, not a strategy-rarity problem. We now have actual forward-test signal to allocate real capital against (after more n).</p>
+  <p>Full report: <code>reports/verified_strategies_unlock_2026-06-04.md</code>.</p>
+</div>
+
+<div class="update-entry">
   <h2>Jun 4, 2026 - AI Tournament Audit Round 5: per-class drift thresholds (3,865 total cleaned)</h2>
   <p class="timestamp">Posted: June 4, 2026 - 06:35 EDT</p>
   <p><strong>Follow-up to the 4-round audit below.</strong> Round 4 ended with claude_haiku_4_5 ranked #1 at 71.4% WR. Then grok3 ETF flagged 10/10 wins — entries IWM $220 vs market $235, SPY $570 vs $595. These were 5-10% drift (under the 25% threshold) but still trivial guaranteed-TP artifacts.</p>
