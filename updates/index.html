@@ -36,8 +36,13 @@
 
 <div class="update-entry">
   <h2>Jun 4, 2026 - Persona-Level Edge Discovery via MLflow + Statsmodels (ELI5)</h2>
-  <p class="timestamp">Posted: June 4, 2026 - 19:30 EDT</p>
-  <p><strong>TL;DR.</strong> We scanned the AI tournament personas (the &ldquo;trader personalities&rdquo; that 23+ LLM models adopt when picking trades) and found that the <em>persona</em> matters more than the <em>model</em>. The strongest single signal in the entire dataset: <code>cta_trend</code> persona on COMMODITY positions &mdash; <strong>86.7% win rate on 15 trades, +7.15% avg profit, +107% cumulative</strong>.</p>
+  <p class="timestamp">Posted: June 4, 2026 - 19:30 EDT &middot; <strong>UPDATED 23:30 EDT</strong> with bias scrutiny results.</p>
+
+  <div style="background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.45);padding:10px 14px;border-radius:6px;margin:10px 0">
+    <strong style="color:#fca5a5">23:30 EDT UPDATE &mdash; BIAS SCRUTINY RESULTS</strong>: A follow-up 4-engine swarm (DeepSeek + xAI + vllm-large + ollama-large, all <strong>unanimous</strong>) plus an automated bias-detector tool (<code>tools/mlflow_bias_detector.py</code>) revealed that the original &ldquo;real edge&rdquo; claims below are <strong>NOT durable edges</strong>. Skip to the <a href="#bias-scrutiny-2026-06-04">Bias Scrutiny section</a> at the bottom for the corrected verdict before acting on anything.
+  </div>
+
+  <p><strong>TL;DR (corrected).</strong> The strongest tournament signal &mdash; <code>cta_trend</code> persona on COMMODITY at <strong>86.7% WR</strong> &mdash; turned out to be a 2-week NG=F (nat gas) + CL=F (crude oil) rally during May 23 - June 3, 2026, executed by the DeepSeek model family. <strong>Yes, you would have been profitable IF you had been long during that exact window.</strong> No, this is not a durable persona edge. The numbers below stand as a snapshot but they describe a lucky window, not a repeatable strategy.</p>
 
   <h3>ELI5: What's an AI persona, and why does it matter?</h3>
   <p>When operator asks the AI tournament for stock picks, we don't just say &ldquo;hey ChatGPT, pick stocks.&rdquo; We tell each model to <em>role-play as a specific kind of trader</em>. Same model, different persona = totally different picks.</p>
@@ -131,6 +136,62 @@
     <li>Implement Deflated Sharpe Ratio (Lopez de Prado AFML eq 14.5) via statsmodels for institutional-readiness gate.</li>
   </ul>
   <p>Full report: <code>reports/mlflow_persona_edge_2026-06-04.md</code> &middot; Scripts: <code>tools/mlflow_persona_edge_scan.py</code>, <code>tools/forecast_consensus_picks.py</code>, <code>tools/mlflow_verified_strategies_log.py</code>. Local install (no cloud): <code>pip install mlflow statsmodels</code>.</p>
+
+  <h3 id="bias-scrutiny-2026-06-04" style="color:#fca5a5;border-top:2px solid rgba(239,68,68,0.45);padding-top:10px;margin-top:20px">23:30 EDT &mdash; Bias Scrutiny Update</h3>
+
+  <p>Operator rule, set this evening: <strong>&ldquo;Anytime we see WR &gt; 70% (even WR &gt; 60%) we need to deep dive.&rdquo;</strong> We encoded this rule as <code>tools/mlflow_bias_detector.py</code> and ran it across every persona &times; class cell.</p>
+
+  <h4>Direct answer to the operator's question</h4>
+  <p><strong>&ldquo;If I invested in <code>cta_trend</code> commodities, would I have been profitable?&rdquo;</strong></p>
+  <p><strong>Yes &mdash; but only during May 23 - June 3, 2026, and only by going LONG NG=F (natural gas) and CL=F (crude oil).</strong></p>
+  <ul>
+    <li><strong>Which commodity?</strong> Both. 8 of 15 picks were NG=F (nat gas), 7 of 15 were CL=F (crude oil). Zero other commodities (no GC=F gold, no ZC=F corn, no SI=F silver, etc.).</li>
+    <li><strong>Why the wins?</strong> Late May 2026 saw a coincident rally driven by (a) <strong>OPEC+ supply cuts</strong> bumping crude from ~$78 to ~$90, and (b) <strong>summer cooling demand</strong> bumping nat gas from ~$2.85 to ~$3.30. AI models that submitted LONG picks before the rally rode it up to TP_HIT.</li>
+    <li><strong>Why NOT a durable edge?</strong> The win rate is 100% explained by a 2-week directional rally in 2 specific commodities, with 12 of 15 picks coming from the DeepSeek model family alone. Outside this window, with no rally and no model-family clustering, the edge would likely revert to ~50% (coin-flip).</li>
+    <li><strong>Stale-quote suspicion:</strong> The NG=F entries at $2.85 vs actual spot ~$3.00 are 4-8% below market &mdash; below our COMMODITY 12% drift threshold but still suspicious. Future cleanups may flag these retroactively.</li>
+  </ul>
+
+  <h4>Swarm verdict on the 4 strongest cells (4 engines unanimous)</h4>
+  <table>
+    <tr><th>Cell</th><th>Original claim</th><th>Verdict</th><th>Why</th></tr>
+    <tr><td><code>cta_trend</code> &times; COMMODITY</td><td>86.7% WR, +7.15% avg, n=15</td><td><span style="color:#ef4444;font-weight:600">WINDOW_ARTIFACT</span></td><td>Stale entry prices 4-8% below market; deepseek family monoculture (12/15); 11-day rally window; 2 symbols only</td></tr>
+    <tr><td><code>macro_hedge</code> &times; COMMODITY</td><td>77.8% WR, +5.21% avg, n=18</td><td><span style="color:#fbbf24;font-weight:600">OVERSTATED via TP_HIT_REPLAY</span></td><td>33% of fills are intrabar OHLC wick-replays that wouldn't fill a real-time market order</td></tr>
+    <tr><td><code>trend_continuation</code> &times; ETF</td><td>76.0% WR, +1.80% avg, n=25</td><td><span style="color:#fbbf24;font-weight:600">N INFLATED by duplicates</span></td><td>True n=18-19 after deduping INCIDENT #91-style rows (TLT/QQQ/IWM appear 2x same model same date)</td></tr>
+    <tr><td><code>momentum_momentum</code> &times; EQUITY</td><td>91.7% WR, +9.5% avg, n=12 *</td><td><span style="color:#fbbf24;font-weight:600">UNVERIFIED</span></td><td>Model family bias + window clustering + 50% TP_HIT_REPLAY share; below n&ge;15 cutoff</td></tr>
+  </table>
+
+  <h4>How the bias detector works (ELI5)</h4>
+  <p><code>tools/mlflow_bias_detector.py</code> computes 6 statistical signals per persona &times; class cell:</p>
+  <ol>
+    <li><strong>Symbol HHI</strong>: Herfindahl-Hirschman concentration on which symbols got picked. 1.0 = single symbol carrying the whole signal; 0.1 = highly diverse. cta_trend scored 0.50 (2 symbols).</li>
+    <li><strong>Model-family HHI</strong>: same metric on model families (e.g., all of deepseek_v3/v4/r1 grouped). cta_trend scored <strong>0.88</strong> (deepseek monoculture).</li>
+    <li><strong>Time-window HHI</strong>: fraction of trades clustered into the densest rolling 14-day window. All current cells score 1.0 because the entire tournament dataset is only ~14 days old &mdash; so this signal is currently uninformative.</li>
+    <li><strong>TP_HIT_REPLAY share</strong>: % of fills that were inferred from intrabar OHLC scans rather than live spot. macro_hedge scored 33% (suspicious).</li>
+    <li><strong>Chi-square on symbol wins</strong>: are all symbols winning at the same rate, or is one symbol carrying everyone else?</li>
+    <li><strong>ADF p-value on cumulative pnl</strong>: distinguishes durable trend from lucky-window noise.</li>
+  </ol>
+  <p>Composite <strong>bias_score</strong> is a weighted sum (0 = clean, 1 = heavy bias). Threshold &gt;0.50 = auto-flag <strong>WINDOW_ARTIFACT</strong>. cta_trend hit 0.53. Everything else is flagged but below threshold, awaiting more data.</p>
+
+  <h4>What MLflow + statsmodels are doing FOR us (deeper apps)</h4>
+  <ol>
+    <li><strong>statsmodels ADF + ARIMA</strong> as durability tests. A persona with ADF p &lt; 0.05 on cumulative pnl is mean-reverting (likely lucky-window); ADF p &gt; 0.99 is trending durably (real edge if other bias signals are clean).</li>
+    <li><strong>scipy chi-square</strong> on symbol-level wins. If the chi-square p is tiny, one symbol is carrying all the wins (case in cta_trend: NG=F and CL=F both contributed, but no diverse mix).</li>
+    <li><strong>MLflow auto-logging</strong>: every persona &times; class cell that exceeds WR &gt; 60% gets a bias_score logged automatically. Future deep-dive triggered by query: <code>mlflow.search_runs(filter_string=&quot;metrics.wr &gt; 0.6 AND metrics.bias_score &lt; 0.3&quot;)</code> &mdash; that filter would have surfaced trend_continuation &times; ETF as the cleanest WR&gt;60% cell (but only after fixing the dup issue).</li>
+  </ol>
+
+  <h4>Corrected operator playbook</h4>
+  <ul>
+    <li><span style="color:#ef4444">DO NOT</span> trade <code>cta_trend</code> commodities as a forward edge. The historical 86.7% is a lucky-window artifact.</li>
+    <li><span style="color:#fbbf24">CAUTION</span> on <code>macro_hedge</code>: the 33% TP_HIT_REPLAY share inflates WR. Re-verify after operator-side resolver swap to real-time fills.</li>
+    <li><span style="color:#fbbf24">CAUTION</span> on <code>trend_continuation</code>: dedup the rows; true WR is closer to 65-67% on n=18-19. Still positive but smaller.</li>
+    <li><span style="color:#86efac">WATCH</span> <code>momentum_momentum</code> &times; EQUITY when n reaches 30. Could be real or window-luck; can't tell from n=12.</li>
+    <li><strong>NEW RULE wired into pipeline</strong>: every WR &gt; 60% cell now gets auto-scrutinized and a bias_score logged to <code>mlflow.db</code>. Operator can grep WR&gt;0.7 cells and instantly see which are flagged WINDOW_ARTIFACT.</li>
+  </ul>
+
+  <h4>The lesson</h4>
+  <p>The original entry above wasn't wrong about the numbers &mdash; it was wrong about <strong>what those numbers mean</strong>. A 14-day-old tournament during a coincident commodity rally will <strong>always</strong> produce some persona at &gt;80% WR. Without bias-scrutiny tooling, those are exactly the picks an operator would chase &mdash; right before reverting to the mean. With the bias detector now wired in, future false-edge claims should auto-flag before they hit a published report.</p>
+
+  <p style="font-size:11px;color:#94a3b8;margin-top:10px"><strong>Files shipped 23:30 EDT</strong>: <code>tools/mlflow_bias_detector.py</code> (auto-scrutiny harness, scipy + statsmodels + mlflow). Run: <code>python3 tools/mlflow_bias_detector.py</code>. Inspect: <code>mlflow ui --backend-store-uri sqlite:///mlflow.db</code> &rarr; experiment <code>persona_bias_detection_2026-06-04</code>.</p>
 </div>
 
 <div class="update-entry">

@@ -1,0 +1,54 @@
+Bias/contamination audit of 3 persona x asset_class "real edges" from findtorontoevents.ca/audit tournament_picks. Raw per-pick data follows. Be skeptical.
+
+PERSONA SIGNAL #1: cta_trend x COMMODITY (claimed 86.7% WR, +7.15% avg, n=15)
+- Symbol concentration: NG=F (8 of 15), CL=F (7 of 15). ZERO other commodities.
+- Model concentration: 4 unique models, deepseek family (deepseek_v3 + deepseek_v4 + deepseek_r1) submitted 12 of 15.
+- Time window: 2026-05-23 to 2026-06-03 (11 calendar days).
+- All NG=F LONGs entered at $2.85-3.00, exited $3.10-3.30 (+9-14% pnl). All CL=F LONGs entered $78-82, exited $83-95 (+6-8% pnl).
+- 2 losers: NG=F SHORT at $2.80 stopped at $3.00 (-7%); CL=F SHORT at $80 stopped at $82 (-2.55%).
+- Reasoning: actual NG=F nat gas spot was around $3.00-3.30 in late May 2026; actual CL=F crude was $85-90. Entries at $2.85 NG / $78 CL are 4-8% below market.
+
+PERSONA SIGNAL #2: macro_hedge x COMMODITY (77.8% WR, +5.21% avg, n=18)
+- Symbol concentration: CL=F (13 of 18), NG=F (4 of 18), ZS=F soybean (1 of 18).
+- Time window: 2026-05-30 to 2026-06-04 (5 days).
+- 13/14 wins are CL=F LONG entered $78-86, exited $84-95.
+- Multiple TP_HIT_REPLAY (intrabar TP fill detected via OHLC replay, not real-time fill).
+
+PERSONA SIGNAL #3: trend_continuation x ETF (76.0% WR, +1.80% avg, n=25)
+- Symbol concentration: QQQ (8), TLT (7), SPY (6), IWM (4) = 25/25 on broad-index ETFs only.
+- Time window: 2026-05-22 to 2026-06-03 (12 days).
+- DUPLICATE ROWS DETECTED (INCIDENT #91-style):
+  * TLT SHORT entry=88.85 exit=84.652 pnl=4.72% appears 2x (kimi_direct + mistral_small same date 2026-05-22)
+  * QQQ LONG entry=706.710 exit=736.262 pnl=4.18% appears 2x (same model kimi_direct same date)
+  * IWM LONG entry=280.060 exit=289.755 pnl=3.46% appears 2x (same model mistral_large same date)
+  * QQQ SHORT entry=697.180 exit=720.740 pnl=-3.38% appears 2x (same model pollinations_open same date)
+- True unique pick count ~18-20 not 25.
+- Mixed direction in same model: kimi_direct went LONG QQQ at $706 AND SHORT QQQ at $716 (-2.6% SL) within 2 days.
+
+QUESTIONS:
+
+Q1. Is cta_trend x COMMODITY a durable persona edge, or coincident 2-week NG=F/CL=F rally with deepseek-family bullish bias?
+
+Q2. Is the operator's hypothetical "if I invested in cta_trend commodities" profitable in forward / out-of-sample, or only because we happened to sample during a rally?
+
+Q3. The NG=F entries at $2.85 when actual spot was ~$3.00 — is this sub-12% (COMMODITY drift threshold) stale-quote contamination similar to what R5/R6 cleanup already caught?
+
+Q4. macro_hedge x COMMODITY shows TP_HIT_REPLAY pattern (intrabar OHLC scan, not real-time fill). Could this be overstating WR because the resolver scans for ANY intrabar TP hit including 5-second wicks that wouldn't fill a real order?
+
+Q5. trend_continuation x ETF has duplicate rows. After dedup, what's the true WR? Should we use n=18-20 or n=25?
+
+Q6. Operator wants to know: if invested cta_trend commodities, which commodity, why, and is the edge real?
+
+Output JSON:
+{
+  "cta_trend_verdict": "real_edge|window_artifact|stale_data|mixed",
+  "cta_trend_why": "...",
+  "operator_question_profitable": "yes_during_rally|yes_forward|no",
+  "specific_commodity_that_drove_wins": "NG=F|CL=F|both",
+  "why_that_commodity_rallied": "...",
+  "macro_hedge_verdict": "...",
+  "trend_continuation_real_n_after_dedup": NUMBER,
+  "is_this_a_durable_edge_or_a_lucky_window": "...",
+  "operator_action_recommendation": "..."
+}
+Be skeptical. JSON only.
