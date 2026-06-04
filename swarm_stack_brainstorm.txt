@@ -1,0 +1,20 @@
+findtorontoevents.ca/audit pipeline. Production trading-audit dashboard with 4154 MISPRICED_ENTRY cleaned, INCIDENT #94 fixed, luxalgo_confluence verified n=381 PF 2.36 CRYPTO edge. Bottlenecks: forward-test sample size (need n>=100 per strategy), TIME_EXIT bias (TP/SL too wide), drift detection (per-class thresholds shipped), reverse-split contamination (registry + drift), duplicate-row inflation (INCIDENT #91 fix shipped).
+
+CURRENT STACK:
+HAVE: pandas 2.2.3, numpy 2.4.6, sklearn 1.8.0, xgboost 3.2.0, Docker 29.2.1, pymysql, yfinance, requests
+MISSING: torch, tensorflow, prophet, statsmodels, mlflow, lightgbm, catboost, transformers, faiss, kubectl, langchain, llama_index
+
+EXISTING USAGE patterns in repo: alpha_engine/ml_engine_v2.py, alpha_engine/bayesian_regime_reference.py, alpha_engine/pca_factor_model.py, alpha_engine/statistical_validation_framework.py, alpha_engine/cointegration_pairs.py.
+
+QUESTION: Rank these 6 candidate tool additions by ROI for the next session, given the bottlenecks above. For each, state (a) install effort 1-5, (b) maintenance burden 1-5, (c) concrete first use-case in our pipeline, (d) why-not (downside).
+
+1. statsmodels — ARIMA / cointegration / Granger causality on returns
+2. Prophet — time-series forecasting per asset class
+3. lightgbm — XGBoost alternative; faster training on small n
+4. mlflow — experiment tracking for the 81+ tracked strategies
+5. PyTorch (CPU) — transformer-based regime classifier on OHLCV
+6. RAG over our /audit/incidents.html corpus — answer "what edges have been falsified?" via vector search of reports/ + updates/
+
+Be concise. JSON output with shape:
+{"ranked": [{"name":"X","roi":"high|med|low","install_effort":1-5,"first_use":"..."}], "top_pick":"X", "why":"..."}
+No prose around the JSON.
