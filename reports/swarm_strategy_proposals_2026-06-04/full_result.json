@@ -1,0 +1,311 @@
+{
+  "grounding": {
+    "classes": [
+      {
+        "asset_class": "CRYPTO",
+        "n_resolved": 338,
+        "wr_pct": 39.05,
+        "pf": 0.9736,
+        "verdict": "NOT_READY",
+        "policy_frozen": false,
+        "top_existing_strategies": [
+          {
+            "name": "battleground_luxalgo",
+            "wr_pct": 59,
+            "pf": 1.73,
+            "n": 39,
+            "source_concentration_pct": 100,
+            "weakness": "100% single-source (battleground_luxalgo only) \u2014 no cross-source replication, fragile to that one feed going offline"
+          },
+          {
+            "name": "crypto_liquidity_wick_reversal_v1",
+            "wr_pct": 60,
+            "pf": 1.55,
+            "n": 30,
+            "source_concentration_pct": 100,
+            "weakness": "100% from battleground emitter; small n=30 below Tier-2 n>=100 threshold"
+          },
+          {
+            "name": "atr_percentile_gate",
+            "wr_pct": 58.6,
+            "pf": 1.1,
+            "n": 29,
+            "source_concentration_pct": 100,
+            "weakness": "PF barely above 1 after net costs and single-sourced; high WR but minimal edge per trade"
+          }
+        ],
+        "gating_gaps": "Class-level PF 0.97 and WR 39% fail pf_ok/wr_ok; MDD 100% and CVaR -85% blow MDD/CVaR gates; DSR 0.023 fails; expectancy negative \u2014 top strategies are profitable but all 100% single-source and individually n<50, so aggregating still leaves the class sub-Tier-2."
+      },
+      {
+        "asset_class": "EQUITY",
+        "n_resolved": 48,
+        "wr_pct": 29.17,
+        "pf": 0.3633,
+        "verdict": "INSUFFICIENT_DATA",
+        "policy_frozen": false,
+        "top_existing_strategies": [
+          {
+            "name": "regime_terminal",
+            "wr_pct": 23.8,
+            "pf": 0.55,
+            "n": 21,
+            "source_concentration_pct": 100,
+            "weakness": "PF<1 and WR<25% \u2014 net-losing single-source strategy, no live edge"
+          },
+          {
+            "name": "multi_asset_copytrader",
+            "wr_pct": 9.1,
+            "pf": 0.21,
+            "n": 11,
+            "source_concentration_pct": 100,
+            "weakness": "9% WR is catastrophic; single-source copy-trader feed with structural bias"
+          }
+        ],
+        "gating_gaps": "n_resolved=48 fails n_ok threshold; both n>=10 strategies have PF<1 and WR<30%; no profitable single- or multi-source strategy on file; MDD 77% and CVaR -32% \u2014 equity pipeline has neither volume nor edge for Tier-2."
+      },
+      {
+        "asset_class": "ETF",
+        "n_resolved": 8,
+        "wr_pct": 100,
+        "pf": 0,
+        "verdict": "INSUFFICIENT_DATA",
+        "policy_frozen": false,
+        "top_existing_strategies": [
+          {
+            "name": "cta_golden_cross",
+            "wr_pct": 100,
+            "pf": 0,
+            "n": 5,
+            "source_concentration_pct": 100,
+            "weakness": "n=5 well below n>=10 filter; PF undefined (all wins, no losses) so cannot validate edge \u2014 pure small-sample artifact"
+          },
+          {
+            "name": "cta_donchian_55",
+            "wr_pct": 100,
+            "pf": 0,
+            "n": 2,
+            "source_concentration_pct": 100,
+            "weakness": "n=2 \u2014 statistically meaningless, 100% from file:alpha_engine single source"
+          },
+          {
+            "name": "etf_rsi2_pullback",
+            "wr_pct": 100,
+            "pf": 0,
+            "n": 1,
+            "source_concentration_pct": 100,
+            "weakness": "n=1 single closed trade; cannot infer any edge or PF"
+          }
+        ],
+        "gating_gaps": "n_resolved=8 (below n_ok); class-level PF null/undefined (no losing trades); top_source_share 1.0 \u2014 ETF cohort is pure small-sample noise from one alpha_engine emitter, lab Tier-2 candidate etf_verified_dual_momentum (PF 1.60) not yet showing in policy-clean live registry."
+      },
+      {
+        "asset_class": "FOREX",
+        "n_resolved": 28,
+        "wr_pct": 14.29,
+        "pf": 0.4588,
+        "verdict": "INSUFFICIENT_DATA",
+        "policy_frozen": true,
+        "top_existing_strategies": [
+          {
+            "name": "multi_asset_scanner",
+            "wr_pct": 9.1,
+            "pf": 0.21,
+            "n": 11,
+            "source_concentration_pct": 100,
+            "weakness": "9% WR / PF 0.21 \u2014 single-source scanner that loses ~5x more than it wins; only n>=10 FOREX strategy and it's net-negative"
+          }
+        ],
+        "gating_gaps": "n_resolved=28 fails n_ok; class WR 14% / PF 0.46 / expectancy -0.68% all negative; only qualifying strategy is the multi_asset_scanner which itself is PF 0.21; policy_frozen flag set \u2014 class is paused with no profitable replicated strategy on file."
+      },
+      {
+        "asset_class": "COMMODITY",
+        "n_resolved": 3,
+        "wr_pct": 66.67,
+        "pf": 14.5617,
+        "verdict": "INSUFFICIENT_DATA",
+        "policy_frozen": true,
+        "top_existing_strategies": [
+          {
+            "name": "commodity_tsmom_12m",
+            "wr_pct": 0,
+            "pf": 0,
+            "n": 1,
+            "source_concentration_pct": 100,
+            "weakness": "n=1, single loss \u2014 TSMOM 12m has no live evidence"
+          },
+          {
+            "name": "cta_golden_cross",
+            "wr_pct": 100,
+            "pf": 0,
+            "n": 1,
+            "source_concentration_pct": 100,
+            "weakness": "n=1 single win; PF undefined \u2014 no statistical content"
+          },
+          {
+            "name": "regime_terminal",
+            "wr_pct": 100,
+            "pf": 0,
+            "n": 1,
+            "source_concentration_pct": 100,
+            "weakness": "n=1 from single-source regime_terminal; cannot infer edge"
+          }
+        ],
+        "gating_gaps": "n_resolved=3 \u2014 far below n_ok; class-level PF 14.56 is a 3-trade outlier (1 win on SI=F dominates 66.7% symbol share); no strategy has n>=10; policy_frozen with effectively zero closed-trade evidence."
+      },
+      {
+        "asset_class": "BOND",
+        "n_resolved": 0,
+        "wr_pct": 0,
+        "pf": 0,
+        "verdict": "INSUFFICIENT_DATA",
+        "policy_frozen": true,
+        "top_existing_strategies": [],
+        "gating_gaps": "Zero resolved trades in policy-clean cohort; data_source=backfill_no_data; no strategies registered for BOND in policy-clean-net registry \u2014 class has no live pipeline producing closed picks."
+      },
+      {
+        "asset_class": "FUTURES",
+        "n_resolved": 15,
+        "wr_pct": 13.33,
+        "pf": 0.4665,
+        "verdict": "INSUFFICIENT_DATA",
+        "policy_frozen": true,
+        "top_existing_strategies": [
+          {
+            "name": "multi_asset_scanner",
+            "wr_pct": 9.1,
+            "pf": 0.48,
+            "n": 11,
+            "source_concentration_pct": 100,
+            "weakness": "9% WR / PF 0.48 \u2014 same losing scanner pattern as FOREX; CL=F-heavy (top_symbol_share 0.27) and 73% of class flow from this one source"
+          }
+        ],
+        "gating_gaps": "n_resolved=15 below n_ok; class WR 13% / PF 0.47 / expectancy -0.83% all negative; the lone n>=10 strategy is the net-losing multi_asset_scanner; MDD/CVaR gates pass only because sample is tiny; policy_frozen and no replicated edge."
+      }
+    ]
+  },
+  "total_proposals": 21,
+  "survived_critique": 21,
+  "winners": [
+    {
+      "asset_class": "CRYPTO",
+      "winning_strategy": "no_viable_winner",
+      "why_winner": "All three candidates fail the realistic PF >= 1.3 floor (1.15 / 1.15 / 1.12). Candidates 2 and 3 are flagged HIGH overfit risk with parameter counts (5+5+regime-kill on #2; HMM+6 per-regime thresholds on #3) that exceed defensible degrees of freedom on a 10-20 symbol universe. Candidate 1's headline novelty \u2014 cross-exchange funding agreement to break src_conc=100% \u2014 was explicitly called theater by the critic (Binance/KuCoin funding ~0.95 correlated by construction), so it does NOT solve the stated gating gap. All three lean on funding-rate signals in the post-ETF compressed-funding regime that Candidate 2 itself flags as needing quarterly recalibration. Promoting any of them to paper-pilot would consume scarce forward-n capacity already bottlenecked behind ETF dual-momentum reaching n>=100, with high probability of confirming sub-Tier-2 performance. Per repo Goal #1 (Tier-2 floor PF>1.5) and STRATEGY_INVESTIGATION_BEFORE_KILL protocol, send back for revision rather than crown a marginal winner.",
+      "expected_pf_range": "1.05-1.20 (all candidates, sub-floor)",
+      "expected_wr_range": "44-49% (all candidates)",
+      "recommended_first_step": "Do NOT wire any of the three to paper-pilot. Instead: (a) require Candidate 1 author to replace the bogus Binance+KuCoin funding-agreement guard with a TRUE independent second-source signal (e.g. Coinglass aggregated OI delta OR Deribit DVOL skew) and re-run a pre-registered 70/30 OOS split via `verified_strategies/strategy_verification_engine.py` on 10 symbols over 2024-2025 with 6bp+funding-accrual costs; (b) require Candidates 2 and 3 to cut parameter count by half (drop the BTC.D gate + cross-exchange basis gate on #2; drop the HMM weekly refit + funding-flip override on #3) and re-submit with pre-registered OOS partition and walk-forward report before any backtest is run. Track all three in `reports/hypothesis_registry.json` per rule M-107.",
+      "backtest_difficulty": "high",
+      "risk_summary": "Funding-rate-based strategies are crowded post-ETF; all three candidates concentrate on the same data axis with critic-adjusted PFs in a tight 1.12-1.15 band, suggesting common-mode failure risk. Candidate 1's anti-fragility claim is mechanically false (funding feeds are ~0.95 correlated). Candidates 2 and 3 carry HIGH overfit risk per critic. Wiring any of these to paper-pilot would block scarce forward-n capacity needed for ETF dual-momentum to reach the n>=100 Tier-2 gate."
+    },
+    {
+      "asset_class": "EQUITY",
+      "winning_strategy": "equity_vix_term_structure_regime_rotator",
+      "why_winner": "Only candidate combining (a) literature-backed exogenous edge (Simon & Campasano 2014 VIX term-structure / vol-risk-premium anomaly) rather than parameter-mined price patterns, (b) multi-source by construction (4 equity ETFs + 2 defensive ETFs + 3 VIX-curve inputs) which structurally kills the src_conc=100% gate that's blocking current EQUITY T2 pass, (c) explicit defensive RISK_OFF sleeve (IEF+GLD) that caps MDD \u2014 critical given EQUITY MDD is the binding T2 constraint, (d) medium overfit risk vs candidate #1's high, and (e) implementable today with yfinance (^VIX9D, ^VIX, ^VXV all available). Candidate #1 (zscore meanrev) was rejected for high overfit + 8 tunable thresholds + critic PF 1.2. Candidate #2 (52w breakout) was rejected because survivorship bias is acknowledged but not enforceable without Norgate/Sharadar PIT data this repo lacks, and critic PF 1.15 is the lowest. Caveat: critic PF 1.25 is below the 1.3 minimum \u2014 winner is provisional and must clear PF>=1.3 on the first 90-day walk-forward with pre-locked thresholds, otherwise demote to no_viable_winner.",
+      "expected_pf_range": "1.20-1.45",
+      "expected_wr_range": "42-50%",
+      "recommended_first_step": "Write tools/equity_vix_regime_rotator.py implementing the 3-regime classifier (RISK_ON/RISK_OFF/NEUTRAL) on yfinance ^VIX9D/^VIX/^VXV + SPY/QQQ/IWM/XLK/IEF/GLD daily closes, with thresholds (0.92/1.05/20/28/ADX12) HARDCODED and locked, then run via verified_strategies/strategy_verification_engine.py over a 2014-2023 in-sample / 2024-2026 out-of-sample walk-forward split; require OOS PF>=1.3 AND MDD<15% AND regime-flip-lag PnL audit before any paper-pilot wire-up. Kill if OOS PF<1.3.",
+      "risk_summary": "Primary risks: (1) 2022-style correlated bond+equity drawdown breaks IEF defensive leg \u2014 mitigate by adding BIL cash branch when bond 60d momentum negative; (2) VIX term-structure whipsaw at fast regime transitions (Feb 2018, Mar 2020) \u2014 defensive sleeve enters AFTER drawdown, must measure regime-flip lag PnL in backtest; (3) Parameter stack on 10y sample with only ~3-4 true regime cycles invites threshold overfit \u2014 lock thresholds pre-period in walk-forward; (4) Crowded trade \u2014 VIX term-structure is well-known so edge may be smaller post-2020; size at half conviction until n>=100 closed paper trades confirm live PF>=1.3.",
+      "backtest_difficulty": "medium"
+    },
+    {
+      "asset_class": "ETF",
+      "winning_strategy": "no_viable_winner",
+      "why_winner": "None of the three candidates clear the required bar of critic-realistic PF >= 1.3. Candidate 1 (vix_gated_keltner) lands at PF 1.25 with 12+ tunable knobs (high overfit) AND a critic-confirmed signal-count collapse (<10/yr across 20 ETFs \u2192 n>=100 takes 5+ years, violating Goal #1's need for trustworthy sample size on a 24-month horizon). Candidate 2 (breadth_thrust_rotation) lands at PF 1.25 / WR 46% \u2014 borderline-but-fails the PF floor, plus the critic flagged the 4w mean-reversion overlay (0.2 weight) as likely noise and the 0.5/0.3/0.2 composite weights as unjustified free parameters; cross-sectional momentum on sector SPDRs is also the most front-run trade on the street since 2020, so the 1.25 estimate is itself optimistic before slippage. Candidate 3 (vix_regime_dual_momo) is the worst of the three at PF 1.15 \u2014 well below floor \u2014 and the critic explicitly called it \"not novel\" (Faber/ReSolve well-trodden) with parameter sprawl. Promoting any of these would repeat the exact failure mode in memory `project-money-ready-2026-05-31.md` (money-ready bottleneck is plumbing/edge-quality, not adding more sub-T2 strategies) and `project-etf-pilot-day1-2026-06-02.md` (only one ETF strategy currently clears Tier-2 at PF 1.60; adding PF~1.2 noise dilutes the pilot). Per CLAUDE.md Goal #1, Tier-2 minimum is PF>1.5 \u2014 even the optimistic proposed PFs (1.55-1.70) are at-the-line, and the critic-adjusted reality is solidly sub-T2.",
+      "expected_pf_range": "1.15-1.25 (all candidates sub-T2)",
+      "expected_wr_range": "46-55%",
+      "risk_summary": "Promoting a sub-PF-1.3 ETF strategy adds source-diversity theatre without real edge and will burn the n-budget on the live pilot. Candidate 1 fails on signal-count feasibility (12+ knobs, <10 signals/yr). Candidate 2 fails on alpha-decay (crowded sector rotation, 80bps slippage collapses to PF 1.2). Candidate 3 fails on novelty (Faber-clone) and PF floor (1.15). The right next move is to strengthen the one working ETF edge (etf_verified_dual_momentum PF 1.60) and harvest forward n via the paper pilot already wired, not to wire a fourth sub-T2 emitter.",
+      "backtest_difficulty": "medium",
+      "recommended_first_step": "Do NOT promote any of these three. Instead: (a) re-run candidate 2 (breadth_thrust_rotation) with parameters LOCKED to literature (Faber 10-month absolute momentum + Antonacci dual-momentum top-3 of {XLK,XLF,XLE,XLV,XLI,XLY,XLP,XLU,XLB,XLRE,XLC,QQQ,IWM,EFA,EEM}, no composite-weight tuning, no 4w overlay) via `verified_strategies/strategy_verification_engine.py` with a pre-registered 70/30 walk-forward OOS split on 2010-2024 daily data; only if OOS PF >= 1.4 with n>=80 trades AND single-source HHI<0.30, file a hypothesis-registry entry per skill `hypothesis-registry` (rule M-107) and propose as candidate 4. In parallel, focus capacity on Day-30 checkpoint of the existing etf_verified_dual_momentum pilot (per memory `project-etf-pilot-day1-2026-06-02`), which is the only ETF Tier-2 edge currently wired."
+    },
+    {
+      "asset_class": "FOREX",
+      "winning_strategy": "no_viable_winner",
+      "why_winner": "No candidate clears the PF>=1.3 realistic minimum after critic adjustment. #1 (london_fix_fade) collapses to PF 1.05 because retail spread widening during the 4pm fix (2-3 pip effective vs 0.8 pip normal on EURUSD) eats a +0.6 ATR target \u2014 execution cost is structurally larger than the edge. #3 (triaxis_router) lands at PF 1.05 with HIGH overfit (six hand-tuned thresholds across three axes on a class that only mustered n=28 historically) and regime-whipsaw will turn the kill-switch into a paper-cutter. #2 (carry_momentum_weekly) is the strongest of the three at PF 1.15 / WR 46% \u2014 academically replicable (AQR Asness \"Value and Momentum Everywhere\"), weekly horizon sidesteps the intrabar resolver contamination that has been the documented FOREX failure mode, dollar-neutral cross-sectional basket immune to the DXY-trend regime that broke multi_asset_scanner, and the freeze-relevant risk-off + VIX>30 gates are sensible. But 1.15 is still below the T2 floor (PF 1.5) and below the minimum bar (1.3). Given (a) FOREX is currently FAILing at PF 0.55 with n=53, (b) the Major Goal #1 banner requires hedge-fund-tier numbers, and (c) the policy_freeze exists precisely because we keep wiring sub-edge FX strategies, shipping any of these to live sizing would repeat the failure pattern. Recommendation: pilot #2 as a research candidate ONLY (paper, no size) with the FRED yield-lag fix baked into the data pipeline before any backtest is considered admissible.",
+      "expected_pf_range": "1.05-1.20 (all three candidates, sub-threshold)",
+      "expected_wr_range": "40-48% (all three candidates)",
+      "recommended_first_step": "Build fx_carry_momentum_overlay_weekly as a RESEARCH candidate (not a paper-pilot wire-up): write tools/fx_carry_momentum_research.py that (1) pulls weekly Friday-NY closes for the 8-pair universe from yfinance, (2) pulls 2Y yields from FRED with EXPLICIT per-country release-lag alignment (yield-as-of-(t - max_release_lag_country), not yield-as-of-Friday-close) \u2014 this is the leakage fix the critic flagged, (3) runs a 2005-2026 walk-forward via verified_strategies/strategy_verification_engine.py with 13 expanding-window folds, (4) reports PF/WR/Sharpe/MaxDD per fold AND a per-fold stability metric for the carry-momentum threshold. Gate: only promote to paper-pilot if walk-forward median PF >= 1.4 net of 2bp round-trip cost AND threshold stability is within +/-15% across folds. Register the hypothesis in reports/hypothesis_registry.json under M-107 BEFORE running the backtest. Do NOT wire any of the three candidates into smart_picks/active gating until a research-grade T2 number is reproduced out-of-sample.",
+      "backtest_difficulty": "high",
+      "risk_summary": "All three FOREX candidates fail the PF>=1.3 realistic bar after the critic's adjustments. Core failure modes are structural to retail FX: (a) execution costs (1-2 pip spreads + fix-window widening) eat small mean-reversion edges; (b) regime-router overfit risk is high when prior n=28; (c) carry-momentum has decayed since 2010 crowding and is exposed to carry-unwind tail events (Aug 2024 JPY unwind cost similar books ~12% in a week, the 4-week kill switch lags). FOREX is currently FAIL at PF 0.55 in the policy-clean cohort and the freeze exists because we keep wiring sub-edge strategies \u2014 promoting any of these would repeat that pattern."
+    },
+    {
+      "asset_class": "COMMODITY",
+      "winning_strategy": "no_viable_winner",
+      "why_winner": "All three candidates fail the hard gate of realistic PF >= 1.3. The critic's adjusted PF for all three is 1.15, which is below the required threshold and within noise of break-even after realistic commodity-specific frictions (borrow costs on short ETF legs, roll-yield decay, slippage on softs, deferred-contract data gaps via yfinance). Candidate 1 (cointegration reversion) has the most defensible mechanism but its realistic PF 1.15 already prices in borrow/slippage erosion of 25-35%, leaving no margin if ag-pair borrow proves prohibitive. Candidate 2 (term-structure carry) has a documented silent-degradation failure mode \u2014 yfinance deferred contracts unreliable, collapsing it to a TSMOM clone with n<100. Candidate 3 (HMM regime) is explicitly flagged high-overfit with 7-parameter stack on ~30-80 trades/yr \u2014 DoF/sample ratio is structurally bad and realistic WR 36% on a regime strategy is suspicious. Per CLAUDE.md M-107, we pre-register only strategies with realistic PF>=1.3; promoting any of these would repeat the SI=F / CT=F concentration-failure pattern that froze the class. Recommend running a smaller targeted experiment on Candidate 1 with hardened filters before re-proposing.",
+      "expected_pf_range": "1.05-1.20",
+      "expected_wr_range": "40-50%",
+      "recommended_first_step": "Before committing to a paper-pilot, run a feasibility probe for Candidate 1: write tools/commodity_coint_spread_probe.py to backtest the energy+metals subset only (CL/USO, GC/GLD, HG/CPER \u2014 drop ags entirely pending borrow confirmation) over 2018-2026 via verified_strategies/strategy_verification_engine.py with Engle-Granger + half-life(5-30d) filter, back-adjusted continuous futures, 5d-pre/post first-notice blackout, and realistic short-leg slippage of 8bp + 5% annualized borrow. Only if probe shows OOS PF>=1.4 with n>=80 on the 3-pair subset, escalate to paper pilot. Otherwise mark COMMODITY as \"no admissible strategy this cycle\" and reroute capacity to EQUITY/ETF where realistic edges exist.",
+      "risk_summary": "Forcing a winner here would repeat the documented COMMODITY freeze pattern (PF 0.31 / WR 11% / n=28, CT=F 57% concentration). All three candidates have realistic PF at the noise floor (1.15) where small unmodeled costs flip them negative. Cointegration regime breaks (USO 2026 negative-oil precedent), term-structure data gaps, and HMM posterior degeneracy are all live failure modes. Prefer a sub-universe probe over a full paper pilot.",
+      "backtest_difficulty": "high"
+    },
+    {
+      "asset_class": "BOND",
+      "winning_strategy": "no_viable_winner",
+      "why_winner": "All three candidates fail the minimum bar of realistic PF >= 1.3 under critic adjustment \u2014 every one lands at PF ~1.15, which is below the required threshold and well inside the noise band for a class with n=0 history and known resolver contamination. Beyond the PF shortfall: (1) bond_duration_residual_mean_reversion has a structural flaw \u2014 applying DGS10 duration-residuals to credit-driven LQD/HYG systematically biases eR and reproduces the exact failure mode that killed prior BOND attempts; net margin per win (~20-40bps) is too thin for honest slippage. (2) bond_yield_curve_slope_momentum is flagged HIGH overfit with a heavy parameter stack (63d/20d ROC, \u00b15bp/\u00b110bp slope thresholds, vol filter, VIX gates, 2/4 ATR, weekly rerank) on only ~4 distinct rate regimes since 2010 and a 9-ETF universe \u2014 the hand-tuned slope-bucket routing is unlikely to survive walk-forward, and realistic WR 42% on a momentum spec already sits at the low end of plausible. (3) bond_hmm_macro_regime_rotation is HIGH overfit with a 4-state HMM + 5 features + weekly refit producing only 8-15 trades/yr/sleeve, plus FRED vintage/revision leakage that will inflate backtest WR by 3-5pp vs live; n>=100 milestone takes ~7 years. Given BOND is already policy-frozen (n=0, no live pipeline) and the broader repo has an unresolved intrabar resolver contamination issue (per project memory), greenlighting any of these would generate yet another artifact-prone INSUFFICIENT_DATA sleeve rather than a real edge. Better to defer until the resolver is fixed and to seed BOND with a simpler, lower-parameter signal (e.g. plain 12-1 absolute momentum on TLT/IEF/HYG/TIP/BIL with a single VIX>35 cash gate) that has fewer DoF and can clear the PF 1.3 bar honestly.",
+      "expected_pf_range": "1.10-1.20",
+      "expected_wr_range": "42-49%",
+      "backtest_difficulty": "high",
+      "risk_summary": "All three candidates fail PF>=1.3 minimum after critic adjustment. Two are HIGH overfit. Resolver contamination (intrabar replay missing) means any BOND pipeline launched today will produce the same false-WR artifact already documented for AI-tournament. FRED vintage/revision leakage and small effective universe (~9 ETFs) compound the statistical fragility. Recommend NOT registering any of these as the seed strategy.",
+      "recommended_first_step": "Defer registration. Instead: (a) fix the intrabar OHLC resolver upstream (the known T2 blocker per memory project-session-close-2026-05-31), then (b) draft a minimal-DoF seed strategy `tools/bond_simple_12_1_absmom.py` \u2014 12-1 month absolute momentum on {TLT, IEF, HYG, TIP, BIL} with single VIX>35 -> BIL gate, monthly rebalance, no HMM/slope-bucket/duration-residual \u2014 and run a 10-symbol 5-year walk-forward via `verified_strategies/strategy_verification_engine.py` to establish a clean PF/WR baseline before considering any of the three submitted candidates."
+    },
+    {
+      "asset_class": "FUTURES",
+      "winning_strategy": "no_viable_winner",
+      "why_winner": "All three candidates fail the realistic PF >= 1.3 bar after adversarial critique: gap_fade (PF 1.15), carry-momentum (PF 1.10), regime-switch (PF 1.05). The common root cause is data-feed fragility \u2014 yfinance continuous front-month (=F) tickers do not provide a clean F2 series, month-coded contracts (CLM26, ZCN26) are sparse/stale especially for ags and FX, and ETF proxies (USO/GLD/UNG) carry their own contango drag that biases the slope estimator. Since term-structure is the SOLE source of novelty distinguishing each candidate from the incumbent losing multi_asset_scanner, when the carry/slope leg silently degrades the strategy collapses back to a plain momentum or gap scanner \u2014 which is exactly the pattern already failing in production (9% WR, 100% src_conc on CL=F). Candidate #2 (carry+momentum) has the strongest academic backing (Moskowitz/Pedersen, Koijen) and lowest overfit, but at PF 1.10 net of slippage it does not justify lifting the freeze. Candidate #3 has 9 tunable knobs on n<100 \u2014 overfit too high. Candidate #1 is closest to viable (PF 1.15, hard intraday exits genuinely address the overnight-gap kill mode) but still under the bar. Recommendation: solve the data problem first (CME settlement-file ingest for true F1/F2 OHLC, or Norgate continuous adjusted series) before re-tournamenting FUTURES; without a reliable curve feed no term-structure strategy can be honestly backtested.",
+      "expected_pf_range": "1.05-1.15 (all below freeze-lift bar)",
+      "expected_wr_range": "38-48%",
+      "recommended_first_step": "Before re-running a FUTURES tournament: ship `tools/data/cme_settlement_ingest.py` to pull official CME daily settlement files (or wire Norgate/CSI continuous-adjusted series) into a new `futures_curve` table providing clean F1/F2/F3 OHLC + days-to-expiry per symbol per day. Then re-run candidate #1 (gap_fade_term_structure) as the lowest-overfit, most-implementable option via `verified_strategies/strategy_verification_engine.py` on the 10-symbol universe with a 90-day OOS walk-forward, and only consider lifting the FUTURES freeze if real-data PF >= 1.3 and src_conc <= 0.30.",
+      "backtest_difficulty": "high",
+      "risk_summary": "Primary risk is data-feed integrity: yfinance cannot deliver a clean futures curve, so any term-structure-conditioned strategy backtests will be optimistic on the symbols where F2 is missing/sparse (8/10 for #1, 3/4 sectors for #2, 4/4 complexes for #3 since ETF proxies bias the slope). Secondary risk is roll-day artifacts on the F1 continuous series itself, which manufactured the losses in the incumbent multi_asset_scanner and will recur unless explicitly detected. Tertiary risk is n-accumulation cadence: weekly rebalancing or STAND-DOWN regimes mean ~6 months of forward paper before n>=100 per M-107, so even a winning candidate cannot lift the FUTURES freeze quickly."
+    }
+  ],
+  "summary_table": [
+    {
+      "class": "CRYPTO",
+      "winner": "no_viable_winner",
+      "pf_range": "1.05-1.20 (all candidates, sub-floor)",
+      "wr_range": "44-49% (all candidates)",
+      "first_step": "Do NOT wire any of the three to paper-pilot. Instead: (a) require Candidate 1 author to replace the bogus Binance+KuCoin funding-agreement guard with a TRUE independent second-source signal (e.g. Coinglass aggregated OI delta OR Deribit DVOL skew) and re-run a pre-registered 70/30 OOS split via `verified_strategies/strategy_verification_engine.py` on 10 symbols over 2024-2025 with 6bp+funding-accrual costs; (b) require Candidates 2 and 3 to cut parameter count by half (drop the BTC.D gate + cross-exchange basis gate on #2; drop the HMM weekly refit + funding-flip override on #3) and re-submit with pre-registered OOS partition and walk-forward report before any backtest is run. Track all three in `reports/hypothesis_registry.json` per rule M-107."
+    },
+    {
+      "class": "EQUITY",
+      "winner": "equity_vix_term_structure_regime_rotator",
+      "pf_range": "1.20-1.45",
+      "wr_range": "42-50%",
+      "first_step": "Write tools/equity_vix_regime_rotator.py implementing the 3-regime classifier (RISK_ON/RISK_OFF/NEUTRAL) on yfinance ^VIX9D/^VIX/^VXV + SPY/QQQ/IWM/XLK/IEF/GLD daily closes, with thresholds (0.92/1.05/20/28/ADX12) HARDCODED and locked, then run via verified_strategies/strategy_verification_engine.py over a 2014-2023 in-sample / 2024-2026 out-of-sample walk-forward split; require OOS PF>=1.3 AND MDD<15% AND regime-flip-lag PnL audit before any paper-pilot wire-up. Kill if OOS PF<1.3."
+    },
+    {
+      "class": "ETF",
+      "winner": "no_viable_winner",
+      "pf_range": "1.15-1.25 (all candidates sub-T2)",
+      "wr_range": "46-55%",
+      "first_step": "Do NOT promote any of these three. Instead: (a) re-run candidate 2 (breadth_thrust_rotation) with parameters LOCKED to literature (Faber 10-month absolute momentum + Antonacci dual-momentum top-3 of {XLK,XLF,XLE,XLV,XLI,XLY,XLP,XLU,XLB,XLRE,XLC,QQQ,IWM,EFA,EEM}, no composite-weight tuning, no 4w overlay) via `verified_strategies/strategy_verification_engine.py` with a pre-registered 70/30 walk-forward OOS split on 2010-2024 daily data; only if OOS PF >= 1.4 with n>=80 trades AND single-source HHI<0.30, file a hypothesis-registry entry per skill `hypothesis-registry` (rule M-107) and propose as candidate 4. In parallel, focus capacity on Day-30 checkpoint of the existing etf_verified_dual_momentum pilot (per memory `project-etf-pilot-day1-2026-06-02`), which is the only ETF Tier-2 edge currently wired."
+    },
+    {
+      "class": "FOREX",
+      "winner": "no_viable_winner",
+      "pf_range": "1.05-1.20 (all three candidates, sub-threshold)",
+      "wr_range": "40-48% (all three candidates)",
+      "first_step": "Build fx_carry_momentum_overlay_weekly as a RESEARCH candidate (not a paper-pilot wire-up): write tools/fx_carry_momentum_research.py that (1) pulls weekly Friday-NY closes for the 8-pair universe from yfinance, (2) pulls 2Y yields from FRED with EXPLICIT per-country release-lag alignment (yield-as-of-(t - max_release_lag_country), not yield-as-of-Friday-close) \u2014 this is the leakage fix the critic flagged, (3) runs a 2005-2026 walk-forward via verified_strategies/strategy_verification_engine.py with 13 expanding-window folds, (4) reports PF/WR/Sharpe/MaxDD per fold AND a per-fold stability metric for the carry-momentum threshold. Gate: only promote to paper-pilot if walk-forward median PF >= 1.4 net of 2bp round-trip cost AND threshold stability is within +/-15% across folds. Register the hypothesis in reports/hypothesis_registry.json under M-107 BEFORE running the backtest. Do NOT wire any of the three candidates into smart_picks/active gating until a research-grade T2 number is reproduced out-of-sample."
+    },
+    {
+      "class": "COMMODITY",
+      "winner": "no_viable_winner",
+      "pf_range": "1.05-1.20",
+      "wr_range": "40-50%",
+      "first_step": "Before committing to a paper-pilot, run a feasibility probe for Candidate 1: write tools/commodity_coint_spread_probe.py to backtest the energy+metals subset only (CL/USO, GC/GLD, HG/CPER \u2014 drop ags entirely pending borrow confirmation) over 2018-2026 via verified_strategies/strategy_verification_engine.py with Engle-Granger + half-life(5-30d) filter, back-adjusted continuous futures, 5d-pre/post first-notice blackout, and realistic short-leg slippage of 8bp + 5% annualized borrow. Only if probe shows OOS PF>=1.4 with n>=80 on the 3-pair subset, escalate to paper pilot. Otherwise mark COMMODITY as \"no admissible strategy this cycle\" and reroute capacity to EQUITY/ETF where realistic edges exist."
+    },
+    {
+      "class": "BOND",
+      "winner": "no_viable_winner",
+      "pf_range": "1.10-1.20",
+      "wr_range": "42-49%",
+      "first_step": "Defer registration. Instead: (a) fix the intrabar OHLC resolver upstream (the known T2 blocker per memory project-session-close-2026-05-31), then (b) draft a minimal-DoF seed strategy `tools/bond_simple_12_1_absmom.py` \u2014 12-1 month absolute momentum on {TLT, IEF, HYG, TIP, BIL} with single VIX>35 -> BIL gate, monthly rebalance, no HMM/slope-bucket/duration-residual \u2014 and run a 10-symbol 5-year walk-forward via `verified_strategies/strategy_verification_engine.py` to establish a clean PF/WR baseline before considering any of the three submitted candidates."
+    },
+    {
+      "class": "FUTURES",
+      "winner": "no_viable_winner",
+      "pf_range": "1.05-1.15 (all below freeze-lift bar)",
+      "wr_range": "38-48%",
+      "first_step": "Before re-running a FUTURES tournament: ship `tools/data/cme_settlement_ingest.py` to pull official CME daily settlement files (or wire Norgate/CSI continuous-adjusted series) into a new `futures_curve` table providing clean F1/F2/F3 OHLC + days-to-expiry per symbol per day. Then re-run candidate #1 (gap_fade_term_structure) as the lowest-overfit, most-implementable option via `verified_strategies/strategy_verification_engine.py` on the 10-symbol universe with a 90-day OOS walk-forward, and only consider lifting the FUTURES freeze if real-data PF >= 1.3 and src_conc <= 0.30."
+    }
+  ]
+}
