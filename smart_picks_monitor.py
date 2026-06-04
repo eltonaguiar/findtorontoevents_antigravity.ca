@@ -48,8 +48,8 @@ def run_monitor():
     excluded = result.get("excluded_reasons", {})
     
     # Compute stats
-    wins = sum(1 for p in picks if p.get("pnl_pct", 0) > 0)
-    losses = sum(1 for p in picks if p.get("pnl_pct", 0) < 0)
+    wins = sum(1 for p in picks if (p.get("pnl_pct") or 0) > 0)
+    losses = sum(1 for p in picks if (p.get("pnl_pct") or 0) < 0)
     flat = sum(1 for p in picks if p.get("pnl_pct", 0) == 0)
     total_pnl = sum(p.get("pnl_pct", 0) for p in picks)
     avg_score = sum(p.get("smart_score", 0) for p in picks) / len(picks) if picks else 0

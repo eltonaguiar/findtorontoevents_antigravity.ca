@@ -528,7 +528,7 @@ class AdaptivePortfolioManager:
         """Compute win rate from a list of trade dicts."""
         if not trades:
             return 0.0
-        wins = sum(1 for t in trades if t.get('pnl', 0) > 0)
+        wins = sum(1 for t in trades if (t.get('pnl') or 0) > 0)
         return wins / len(trades)
 
     def _compute_sharpe(self, trades: list, annualize_factor: float = 252) -> float:

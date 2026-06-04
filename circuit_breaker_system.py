@@ -71,7 +71,7 @@ class CircuitBreakerSystem:
         
         # Check 3: Consecutive losses
         recent_trades = portfolio.get('recent_trades', [])
-        losses = sum(1 for t in recent_trades[-10:] if t.get('pnl', 0) < 0)
+        losses = sum(1 for t in recent_trades[-10:] if (t.get('pnl') or 0) < 0)
         if losses >= self.limits['consecutive_losses']:
             self.state['position_size_multiplier'] = 0.5  # Reduce size
             alerts.append({
