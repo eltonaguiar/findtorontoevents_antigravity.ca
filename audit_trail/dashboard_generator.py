@@ -10265,7 +10265,15 @@ def collect_system_stats(active, closed, all_closed=None):
             # Add unrealized PNL for active picks (cap outliers from bad entry prices)
             # Exclude suspicious-entry picks from portfolio PnL aggregation
             if not pick.get("_suspicious_entry"):
-                unrealized = pick.get("unrealized_pnl_pct", pick.get("pnl_pct", 0))
+                # 2026-06-04: pick.get(k, default) only returns default when k is
+                # ABSENT. If k is present with explicit None (mark-to-market couldn't
+                # fetch a price), .get returns None and abs(None) crashes the whole
+                # dashboard generator (run 26926526506). Coalesce.
+                unrealized = pick.get("unrealized_pnl_pct")
+                if unrealized is None:
+                    unrealized = pick.get("pnl_pct")
+                if unrealized is None:
+                    unrealized = 0.0
                 if abs(unrealized) > 500:
                     unrealized = 500.0 if unrealized > 0 else -500.0
                 s["unrealized_pnl"] += unrealized
