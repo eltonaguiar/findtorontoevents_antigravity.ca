@@ -31,6 +31,24 @@ LAB = {
         "pf_lo_95": 15.97,
         "note": "PR #482 legit — forward virtual only",
     },
+    # Added 2026-06-04 post INCIDENT #94 backfill — sleeves whose forward
+    # data was previously invisible due to TIME_EXIT pnl=0 bug.
+    "inverse_ml_enhanced_ADAUSDT_15m_D": {
+        "verdict": "FORWARD_TRACK",
+        "note": "PF 1.73 / WR 55.6% / n=36 post-backfill — strongest verified-strategy candidate. ENHANCEMENT #117 promote.",
+    },
+    "inverse_ml_enhanced_RENDERUSDT_1h_D": {
+        "verdict": "FORWARD_TRACK",
+        "note": "PF 0.95 / WR 42.6% / n=54 post-backfill — no-edge",
+    },
+    "inverse_ml_enhanced_RENDERUSDT_4h_D": {
+        "verdict": "KILL_CANDIDATE",
+        "note": "PF 0.12 / avg -1.73% / n=52 post-backfill — dead strategy. ENHANCEMENT #116 kill.",
+    },
+    "etf_dual_momentum": {
+        "verdict": "FORWARD_TRACK",
+        "note": "PF 1.47 / WR 52.0% / n=25 post-backfill — T2-shaped, watch list",
+    },
 }
 
 
@@ -124,6 +142,22 @@ def build_report() -> dict:
             "flag": "INVERSE_ML_BTC_15M_ENABLED",
         },
     }
+    # Additional sleeves unlocked post INCIDENT #94 backfill (2026-06-04).
+    # These don't have state.json files; surface DB stats directly.
+    for sleeve_id, strategy_id in (
+        ("inverse_ml_ada_15m", "inverse_ml_enhanced_ADAUSDT_15m_D"),
+        ("inverse_ml_render_1h", "inverse_ml_enhanced_RENDERUSDT_1h_D"),
+        ("inverse_ml_render_4h", "inverse_ml_enhanced_RENDERUSDT_4h_D"),
+        ("etf_dual_momentum", "etf_dual_momentum"),
+    ):
+        db_stats = _db_forward_stats(strategy_id)
+        if db_stats:
+            sleeves[sleeve_id] = {
+                "lab_bootstrap": LAB.get(strategy_id, {"verdict": "FORWARD_TRACK"}),
+                "forward": db_stats,
+                "recommend_enable": False,
+                "flag": f"{sleeve_id.upper()}_ENABLED",
+            }
     any_ready = any(
         (s.get("forward") or {}).get("promotion_ready") for s in sleeves.values()
     )
