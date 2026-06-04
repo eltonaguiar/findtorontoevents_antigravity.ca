@@ -48,7 +48,7 @@ def _connect_stocks():
     return mysql.connector.connect(
         host=os.environ.get("DB_HOST", "mysql.50webs.com"),
         user=os.environ.get("DB_USER", "ejaguiar1_stocks"),
-        password=os.environ.get("DB_PASS") or os.environ.get("AUDIT_DB_PASS") or "stocks1234560",
+        password=os.environ.get("DB_PASS") or os.environ.get("AUDIT_DB_PASS") or "",  # 2026-06-04 INCIDENT #89 scrub: removed convention literal fallback
         database=os.environ.get("DB_NAME", "ejaguiar1_stocks"),
         connection_timeout=15,
     )
