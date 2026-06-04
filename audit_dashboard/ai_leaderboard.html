@@ -44,6 +44,7 @@
   </div>
   <div id="meta" class="small" style="margin-top:8px"></div>
   <div id="updated-est" class="small" style="color:#60a5fa;margin-top:4px"></div>
+  <div id="stale-warn" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.45);border-radius:8px;font-size:12px;color:#fde68a"></div>
 </header>
 
 <!-- NAV -->
@@ -105,11 +106,19 @@ fetch('data/ai_leaderboard/ai_leaderboard_index.json?cb=' + Date.now())
     // Also show a human-friendly updated label after the meta line
     const dtEl = document.getElementById('updated-est');
     if (dtEl && idx.as_of) {
-      dtEl.textContent = new Date(idx.as_of).toLocaleString('en-US', {
+      dtEl.textContent = 'Last updated: ' + new Date(idx.as_of).toLocaleString('en-US', {
         timeZone: 'America/New_York',
-        month: 'short', day: 'numeric',
+        month: 'short', day: 'numeric', year: 'numeric',
         hour: 'numeric', minute: '2-digit', hour12: true
-      }) + ' ET';
+      }) + ' EST';
+    }
+    const staleEl = document.getElementById('stale-warn');
+    if (staleEl && idx.as_of) {
+      const ageH = (Date.now() - new Date(idx.as_of).getTime()) / 3600000;
+      if (ageH > 24) {
+        staleEl.style.display = 'block';
+        staleEl.innerHTML = '⚠ Leaderboard data is <b>' + ageH.toFixed(0) + 'h old</b>. Run <code>python tools/ai_attribution/build_ai_leaderboard.py</code> and redeploy <code>audit_dashboard/data/ai_leaderboard/</code>.';
+      }
     }
     const engines = idx.engines || [];
     if (!engines.length) {

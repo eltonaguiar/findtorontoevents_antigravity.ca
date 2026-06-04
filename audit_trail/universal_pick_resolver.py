@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT))
 from audit_trail.pnl_ingest_sanity import apply_pnl_clamp_to_pick
 from alpha_engine.asset_class import normalize_asset_class
 from audit_trail.asset_classification import classify_asset
+from audit_trail.reverse_split_symbols import should_adjust_for_split
 
 MAX_HOLD_HOURS = 48  # Default auto-expire (CRYPTO; unchanged)
 RESOLVER_VERSION = "universal_v2.1"  # EAGLE2 2026-06-02: provenance tracking
@@ -1127,6 +1128,47 @@ def main():
             if not pick["entry_price"] or pick["entry_price"] == 0:
                 stats[system_name]["no_entry"] += 1
                 continue
+
+            # ── Reverse-split entry-price adjustment ─────────────────
+            # When a stock has undergone a reverse split (e.g. LODE 1-for-10),
+            # picks submitted with pre-split prices must be scaled up to match
+            # post-split yfinance OHLC, otherwise TP/SL checks and PnL are
+            # computed on incompatible scales.
+            # Two adjustment paths:
+            #   1. Date guard: pick submitted BEFORE split → always adjust
+            #   2. Price heuristic: pick submitted AFTER split but entry_price * factor
+            #      ≈ current_price → the model used stale pre-split data → adjust anyway
+            _pick_ts = pick.get("timestamp", "")
+            _should_adj, _factor = should_adjust_for_split(
+                pick.get("symbol", ""), _pick_ts)
+            # Price-range fallback: if date guard says don't adjust, check whether
+            # entry_price * factor matches the current market price.
+            # If so, the entry is pre-split despite the post-split submission date.
+            if not _should_adj and _factor and pick["entry_price"] > 0 and current_price > 0:
+                _adjusted_candidate = pick["entry_price"] * _factor
+                _ratio = _adjusted_candidate / current_price if current_price else 999
+                # Wide bounds (0.3–2.0) to catch PENNY stocks that appreciated post-split
+                if 0.3 <= _ratio <= 2.0:
+                    _should_adj = True
+                    log.info("  reverse-split-HEURISTIC %s: entry $%s x%d=$%s ≈ price $%s -> adjusting",
+                             pick["symbol"], pick["entry_price"], _factor,
+                             _adjusted_candidate, current_price)
+            if _should_adj and _factor and pick["entry_price"] > 0:
+                _old_entry = pick["entry_price"]
+                pick["entry_price"] = round(
+                    _old_entry * _factor, 8)
+                if pick.get("take_profit"):
+                    pick["take_profit"] = round(
+                        pick["take_profit"] * _factor, 8)
+                if pick.get("stop_loss"):
+                    pick["stop_loss"] = round(
+                        pick["stop_loss"] * _factor, 8)
+                pick["_reverse_split_adjusted"] = True
+                pick["_split_factor"] = _factor
+                log.info("  reverse-split %s: entry $%s -> $%s"
+                         " (x%d, pre-split pick)",
+                         pick["symbol"], _old_entry,
+                         pick["entry_price"], _factor)
 
             # Auto-compute missing TP/SL with improved defaults (3% TP / 1.5% SL = 2:1 R:R)
             entry = pick["entry_price"]
