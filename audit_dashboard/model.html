@@ -231,6 +231,11 @@ function renderAll(){
   // Summary
   const resolved = allPicks.filter(p => p.status==='WIN' || p.status==='LOSS' || p.status==='EXPIRED');
   const open = allPicks.filter(p => p.status==='OPEN');
+  // 2026-06-04: surface MISPRICED_ENTRY count. These are picks where the AI
+  // submitted entry_price drifted >25% from market at submission (corporate
+  // actions like LODE 1:10 split, futures contract rolls, stale training
+  // data). Excluded from WR/PF aggregates.
+  const mispriced = allPicks.filter(p => p.status==='MISPRICED_ENTRY');
   const wins = resolved.filter(p => p.status==='WIN' || (realizedPnl(p)||0) > 0).length;
   const losses = resolved.length - wins;
   const wr = resolved.length ? (wins/resolved.length*100) : null;
@@ -250,6 +255,7 @@ function renderAll(){
     <div class="stat-card"><div class="v ${wrClass}">${wr==null?'—':wr.toFixed(1)+'%'}</div><div class="l">Win rate</div></div>
     <div class="stat-card"><div class="v">${wins}/${losses}</div><div class="l">W / L</div></div>
     <div class="stat-card"><div class="v ${pnlClass(avgPnl)}">${avgPnl==null?'—':fmtPct(avgPnl)}</div><div class="l">Avg PnL</div></div>
+    ${mispriced.length > 0 ? `<div class="stat-card" title="2026-06-04 audit: picks where entry_price drifted >25% from market at submission. Excluded from WR/PF aggregates per is_resolution_trustworthy(). Common causes: corporate actions (e.g. LODE 1:10 reverse split), futures contract rolls, stale AI training data." style="background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.45)"><div class="v" style="color:#fbbf24">${mispriced.length}</div><div class="l">&#x26A0; MISPRICED (excluded)</div></div>` : ''}
   `;
 
   // By asset class
