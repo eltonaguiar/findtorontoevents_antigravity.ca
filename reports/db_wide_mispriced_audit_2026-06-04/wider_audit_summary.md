@@ -36,3 +36,31 @@ After noticing `grok3 EQUITY` still had AMD picks at entry $158 vs actual market
 - 25% drift threshold may still miss subtle inflations (e.g. AMD pick with entry $445 — within yfinance daily range $443-460 around May 21). Lower threshold = more catch but more false positives.
 - CRYPTO/FOREX excluded from this audit (different price-fetch path; CRYPTO uses Binance via api_failover, FOREX uses currency-pair APIs)
 - Some entries are actually correct but yfinance auto-adjusted prices differ from the AI's raw quoted price
+
+## Round 3 — CRYPTO via Binance (added 2026-06-04 07:23 UTC)
+
+| Pass | Audited | Mispriced |
+|---|---:|---:|
+| Round 1 (top-15 LIMIT 1000) | 969 | 553 |
+| Round 2 (ALL non-CRYPTO/FOREX) | 3,453 | +1,525 |
+| **Round 3 (CRYPTO via Binance)** | **884** | **+548** |
+| **Cumulative** | — | **2,987** |
+
+**Method:** fixed symbol-normalization bug (`replace('USD','')` corrupted `BTCUSDT`→`BTCTUSDT`); decoupled MySQL connection from Binance HTTP loop (prior run timed out the DB after 60min idle). 1h klines window ±2h around submission hour.
+
+**62% mispriced rate** on the CRYPTO subset confirms the underlying issue: AI models hallucinate stale-training-window crypto prices (e.g., quoting BTC at $30K when market is $65K). Same root cause as the LODE reverse-split inflation.
+
+## Honest per-class panel (post all 3 rounds)
+
+| Class | n | WR | PF | Verdict |
+|---|---:|---:|---:|---|
+| EQUITY | 686 | 50.9% | 1.65 | Tier-2 candidate |
+| BOND | 489 | 54.0% | 1.38 | Sub-T2 PF |
+| CRYPTO | 405 | 47.4% | 1.32 | Sub-T2 WR — was 41.4% pre-cleanup |
+| FOREX | 380 | 52.4% | 0.62 | **Losing edge** — PF<1 even cleaned |
+| COMMODITY | 364 | 55.2% | 2.17 | T2 PASS |
+| ETF | 299 | 58.2% | 1.53 | T2 PASS |
+| FUTURES | 56 | 66.1% | 3.07 | Small-n T1-shaped |
+| PENNY | 33 | 48.5% | 1.48 | Insuff-n |
+
+**FOREX PF 0.62 is now confirmed-not-an-artifact** — even after aggressive mispricing cleanup, the asset class shows negative edge. Should be deprioritized for paper pilots.
