@@ -220,19 +220,15 @@
         "current_price": 1.1902
       },
       "enhanced_scoring": {
-        "enhanced_score": 65,
+        "enhanced_score": 76,
         "breakdown": {
           "base": 85,
-          "rsi_oversold": -7,
-          "bb_oversold": -3,
-          "ml_edge_blend": -10,
+          "ml_edge_blend": -9,
           "ml_blend_weights": "85%/15%"
         },
-        "validation": "moderate",
+        "validation": "high_conviction",
         "notes": [],
         "warnings": [
-          "RSI oversold - possible bounce",
-          "Price at lower Bollinger Band",
           "ML cross-strategy match: using cci_divergence ranking for squeeze_breakout/XRPUSDT",
           "ML optimizer: F \u2014 weak edge (5.9)"
         ]
@@ -247,14 +243,13 @@
         "avg_bars_held": 15.5
       },
       "short_term_entry": {
-        "entry_quality": 82,
+        "entry_quality": 77,
         "actionable": true,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
           "macd_support",
           "atr_in_tradeable_band",
-          "volume_confirmation",
           "backtest_wr_support"
         ]
       },
@@ -269,18 +264,18 @@
       "ml_rank": 2
     },
     {
-      "id": "hyro-v2-btc-cci",
-      "rank": 1,
+      "id": "hyro-v2-sol-multiema",
+      "rank": 5,
       "asset_class": "CRYPTO",
-      "label": "Bitcoin \u2014 CCI Divergence",
-      "symbol_hint": "BTCUSDT",
+      "label": "Solana \u2014 Multi-EMA Stack + ADX",
+      "symbol_hint": "SOLUSDT",
       "direction": "BOTH",
-      "confidence_pct": 92,
+      "confidence_pct": 88,
       "timeframe": "1H",
-      "strategy": "cci_divergence",
-      "backtest_grade": "A+",
-      "backtest_stats": "+$1125 PnL, PF 2.15, 52% WR, $263 max DD, 54 trades/6mo",
-      "thesis": "Best backtest passer. CCI(20) crosses above -100 = long; crosses below +100 = short. Highest profit factor of all tested strategies. Moderate DD leaves $237 buffer from $500 limit.",
+      "strategy": "ema_pullback_adx",
+      "backtest_grade": "A",
+      "backtest_stats": "+$601 PnL, PF 1.89, 49% WR, $172 max DD, 35 trades/6mo",
+      "thesis": "Lowest DD of ANY passer ($172 \u2014 leaves $328 buffer). EMA 21 > EMA 55 in uptrend + pullback to fast EMA + ADX>20 confirms strength. Highest win rate (49%) reduces psychological pressure.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -289,8 +284,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR below entry (long) or above entry (short). Must be live within 5 min.",
-      "take_profit_plan": "TP = 2\u00d7 risk. Book profits at target \u2014 trailing DD punishes round-trips.",
+      "stop_plan": "SL = 1.4\u00d7 ATR. ADX filter + EMA alignment = high-probability entries.",
+      "take_profit_plan": "TP = 2.2\u00d7 risk. Fewer trades (35/6mo) but highest quality.",
       "technical_indicators": {
         "rsi": 16.12,
         "macd": {
@@ -320,7 +315,7 @@
       "enhanced_scoring": {
         "enhanced_score": 60,
         "breakdown": {
-          "base": 92,
+          "base": 88,
           "rsi_oversold": -7,
           "bb_oversold": -3,
           "ml_edge_blend": -22,
@@ -339,9 +334,9 @@
         "win_rate": 71.9,
         "avg_pnl": 1.35,
         "total_trades": 160,
-        "wins": 115,
-        "losses": 45,
-        "avg_bars_held": 18.8
+        "wins": 100,
+        "losses": 60,
+        "avg_bars_held": 15.8
       },
       "short_term_entry": {
         "entry_quality": 77,
@@ -753,8 +748,8 @@
   "ml_integrated": true,
   "enhancement_summary": {
     "total_picks": 7,
-    "high_conviction": 0,
-    "moderate": 7,
+    "high_conviction": 2,
+    "moderate": 5,
     "low_confidence": 0,
     "actionable_short_term": 7,
     "ml_boosted": 7

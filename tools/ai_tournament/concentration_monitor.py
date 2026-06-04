@@ -1,8 +1,16 @@
 """Diversification and concentration monitor for tournament picks."""
 import pymysql, json
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
-conn = pymysql.connect(host='mysql.50webs.com', user='ejaguiar1_stocks', password='stocks1234560', database='ejaguiar1_stocks', port=3306, connect_timeout=15)
+# 2026-06-04 INCIDENT #89 scrub: canonical helper instead of hardcoded literal.
+_root = Path(__file__).resolve().parents[2]
+if str(_root) not in sys.path:
+    sys.path.insert(0, str(_root))
+from tools.db_env import get_stocks_creds  # noqa: E402
+
+conn = pymysql.connect(**get_stocks_creds(), connect_timeout=15)
 cur = conn.cursor()
 
 # Per asset class concentration

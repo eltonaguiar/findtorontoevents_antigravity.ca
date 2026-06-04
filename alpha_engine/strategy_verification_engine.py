@@ -113,7 +113,7 @@ def load_pick_data(asset_class: str = None, source: str = 'db') -> list[dict]:
 def _load_from_db(asset_class: str = None) -> list[dict]:
     try:
         import pymysql
-        pw = os.environ.get('DB_PASS_STOCKS', 'stocks1234560')
+        pw = os.environ.get('DB_PASS_STOCKS', '') or os.environ.get('MYSQL_PASSWORD', '')  # 2026-06-04 INCIDENT #89 scrub: removed convention literal fallback
         conn = pymysql.connect(
             host='mysql.50webs.com', port=3306,
             user='ejaguiar1_stocks', password=pw,

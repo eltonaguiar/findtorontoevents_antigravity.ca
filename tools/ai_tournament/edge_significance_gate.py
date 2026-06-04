@@ -10,7 +10,7 @@ import pymysql, json, math, os
 from datetime import datetime, timezone
 from collections import defaultdict
 
-conn = pymysql.connect(host='mysql.50webs.com', user='ejaguiar1_stocks', password='stocks1234560', database='ejaguiar1_stocks', port=3306, connect_timeout=15)
+conn = pymysql.connect(host='mysql.50webs.com', user='ejaguiar1_stocks', password=os.environ.get('DB_PASS_STOCKS','') or os.environ.get('MYSQL_PASSWORD',''), database='ejaguiar1_stocks', port=3306, connect_timeout=15)
 cur = conn.cursor()
 
 # Get per-persona-x-class resolved picks

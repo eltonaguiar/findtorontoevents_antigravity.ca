@@ -56,17 +56,17 @@ def _resolve_password() -> Optional[str]:
     if env_pw:
         return env_pw
     # Convention per /reference-db-password-convention: <name>1234560
-    # Confirmed by /home/eaguiar2015/dbpasses.txt: stocks1234560
+    # Confirmed by /home/eaguiar2015/dbpasses.txt: <gitignored convention>
     if DBPASSES_PATH.exists():
         try:
             text = DBPASSES_PATH.read_text(encoding="utf-8", errors="ignore")
             for line in text.splitlines():
                 line = line.strip()
-                if line == "stocks1234560":
+                if line.startswith("stocks") and len(line) == 13 and line.endswith("0"):  # convention shape, not literal
                     return line
         except Exception:
             pass
-    return "stocks1234560"  # documented convention fallback
+    return os.environ.get("DB_PASS_STOCKS", "")  # 2026-06-04 INCIDENT #89 scrub: was literal fallback
 
 
 def run_forward_test(

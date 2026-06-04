@@ -1,0 +1,52 @@
+name: macd_rsi_m048 Shadow Generator
+
+# Runs MACDRSIMomentumStrategy on the top-10 CRYPTO universe daily, writes
+# would-be picks to verified_strategies/paper_pilot/macd_rsi_m048_shadow_picks.jsonl.
+# SHADOW MODE ONLY — does not write to trading_picks or affect live audit.
+# Closes the emission gap for the EAGLE-3 second promotion candidate
+# (per verified_strategies/paper_pilot/macd_rsi_m048_pilot.py header).
+
+on:
+  schedule:
+    - cron: "37 23 * * *"  # 23:37 UTC daily (post-Binance daily close)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  shadow-emit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt || pip install pandas requests yfinance
+
+      - name: Run shadow scan
+        run: python verified_strategies/paper_pilot/macd_rsi_m048_shadow_generator.py --once
+
+      - name: Commit shadow log + state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add verified_strategies/paper_pilot/macd_rsi_m048_shadow_picks.jsonl \
+                  verified_strategies/paper_pilot/macd_rsi_m048_state.json || true
+          if git diff --staged --quiet; then
+            echo "no shadow updates today — strategy emitted 0 picks"
+            exit 0
+          fi
+          git commit -m "shadow(macd_rsi_m048): daily emission $(date -u +%Y-%m-%d) [skip ci]"
+          # rebase + push, retry once on race
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && break
+            sleep 5
+          done

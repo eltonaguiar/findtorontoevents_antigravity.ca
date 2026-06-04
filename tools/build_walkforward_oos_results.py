@@ -6,7 +6,7 @@ with per-strategy IS-PF, OOS-PF, OOS-Sharpe, decay, and the EAGLE-6 v2 verdict
 (OOS_PF >= 0.8 * IS_PF for PASS).
 
 Usage:
-    DB_PASS_STOCKS=stocks1234560 python3 tools/build_walkforward_oos_results.py
+    DB_PASS_STOCKS=<from-dbpasses.txt> python3 tools/build_walkforward_oos_results.py
 
 Output: tools/walkforward_oos_results.json
 """

@@ -281,19 +281,156 @@ def _yf_symbol_for(pick: dict[str, Any]) -> str:
     return _sanitize_yf_symbol(sym)
 
 
-def fetch_ohlc_window(pick: dict[str, Any]) -> list[dict]:
-    """Fetch daily OHLC bars from entry date through today via yfinance.
+def _fetch_ohlc_crypto_binance(symbol: str, start_iso: str) -> list[dict]:
+    """Daily Binance klines for crypto, from start_iso forward. Used to give CRYPTO
+    intrabar TP/SL replay coverage (yfinance has no Binance klines, so without this
+    every CRYPTO resolution falls back to the once-daily spot snapshot — 100% spot
+    coverage measured 2026-06-03 vs 13-23% for non-crypto classes).
 
-    Returns [{"date":"YYYY-MM-DD", "open":.., "high":.., "low":.., "close":..}, ...]
-    or an empty list on any failure (caller falls back to single-spot resolution).
+    Failover chain identical to fetch_price_crypto: Binance mirrors → CoinGecko OHLC
+    (5-day window only) → KuCoin (recent daily). Returns [] on any total failure.
     """
-    yf_sym = _yf_symbol_for(pick)
+    base = symbol.upper().replace("USDT", "").replace("USD", "")
+    pair = f"{base}USDT"
+    try:
+        start_dt = datetime.fromisoformat(start_iso.replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return []
+    start_ms = int(start_dt.timestamp() * 1000)
+    # Binance mirrors — 3-host failover per CLAUDE.md API Failover Rule
+    binance_key = os.environ.get("BINANCE_API_KEY", "")
+    headers = {"X-MBX-APIKEY": binance_key} if binance_key else {}
+    for host in ("api", "api1", "api2", "api3"):
+        try:
+            r = requests.get(
+                f"https://{host}.binance.com/api/v3/klines",
+                params={"symbol": pair, "interval": "1d",
+                        "startTime": start_ms, "limit": 90},
+                headers=headers, timeout=10,
+            )
+            if r.status_code != 200:
+                continue
+            klines = r.json()
+            if not isinstance(klines, list) or not klines:
+                continue
+            bars = []
+            for k in klines:
+                try:
+                    # Binance kline: [open_time, O, H, L, C, V, close_time, ...]
+                    ts_ms = int(k[0])
+                    date_str = datetime.fromtimestamp(
+                        ts_ms / 1000, tz=timezone.utc
+                    ).strftime("%Y-%m-%d")
+                    bars.append({
+                        "date": date_str,
+                        "open": float(k[1]), "high": float(k[2]),
+                        "low": float(k[3]), "close": float(k[4]),
+                    })
+                except (TypeError, ValueError, IndexError):
+                    continue
+            if bars:
+                return bars
+        except Exception:
+            continue
+    # Tier 2: CoinGecko OHLC (5-day window, daily)
+    try:
+        cg_id = COINGECKO_IDS.get(base, base.lower())
+        r = requests.get(
+            f"https://api.coingecko.com/api/v3/coins/{cg_id}/ohlc",
+            params={"vs_currency": "usd", "days": "30"},
+            timeout=10,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            if isinstance(data, list) and data:
+                bars = []
+                for row in data:
+                    try:
+                        ts_ms, op, hi, lo, cl = row
+                        if int(ts_ms) < start_ms:
+                            continue
+                        date_str = datetime.fromtimestamp(
+                            int(ts_ms) / 1000, tz=timezone.utc
+                        ).strftime("%Y-%m-%d")
+                        bars.append({"date": date_str,
+                                     "open": float(op), "high": float(hi),
+                                     "low": float(lo), "close": float(cl)})
+                    except (TypeError, ValueError):
+                        continue
+                if bars:
+                    return bars
+    except Exception:
+        pass
+    # Tier 3: KuCoin klines (1day). Often unblocked from GHA runners when
+    # Binance returns 451 and CoinGecko hits 429. Verified 2026-06-04 from
+    # GHA-equivalent: KuCoin returned 200 + 5 valid daily bars for BTC-USDT.
+    # NOTE: KuCoin row order is [time, OPEN, CLOSE, HIGH, LOW, vol, turnover]
+    # — not OHLC. Easy to invert. startAt/endAt are UNIX SECONDS.
+    try:
+        kc_pair = f"{base}-USDT"
+        start_s = start_ms // 1000
+        end_s = int(datetime.now(timezone.utc).timestamp())
+        r = requests.get(
+            "https://api.kucoin.com/api/v1/market/candles",
+            params={"symbol": kc_pair, "type": "1day",
+                    "startAt": start_s, "endAt": end_s},
+            timeout=10,
+        )
+        if r.status_code == 200:
+            j = r.json()
+            data = j.get("data") if isinstance(j, dict) else None
+            if isinstance(data, list) and data:
+                bars = []
+                for row in data:
+                    try:
+                        ts_s = int(row[0])
+                        op = float(row[1]); cl = float(row[2])
+                        hi = float(row[3]); lo = float(row[4])
+                        date_str = datetime.fromtimestamp(
+                            ts_s, tz=timezone.utc
+                        ).strftime("%Y-%m-%d")
+                        bars.append({"date": date_str,
+                                     "open": op, "high": hi,
+                                     "low": lo, "close": cl})
+                    except (TypeError, ValueError, IndexError):
+                        continue
+                # KuCoin returns newest-first; sort ascending so the bar-scan
+                # walks forward correctly from entry.
+                bars.sort(key=lambda b: b["date"])
+                if bars:
+                    return bars
+    except Exception:
+        pass
+    return []
+
+
+def fetch_ohlc_window(pick: dict[str, Any]) -> list[dict]:
+    """Fetch daily OHLC bars from entry date through today.
+
+    Routes by asset_class: CRYPTO → Binance/CoinGecko (yfinance has no crypto
+    klines), all others → yfinance. Returns [] on any failure (caller falls
+    back to single-spot resolution).
+    """
     try:
         submitted_at = datetime.fromisoformat(
             pick["submitted_at"].replace("Z", "+00:00")
         )
     except (KeyError, ValueError):
         return []
+
+    # 2026-06-04 fix: CRYPTO via Binance klines, not yfinance. Without this,
+    # 100% of CRYPTO resolutions fell back to spot-snapshot (594/594 in last
+    # 7d as of 2026-06-03), creating the resolver-artifact bias documented in
+    # the DISPUTED banner on /audit/ai-tournament.html. Wiring Binance klines
+    # for CRYPTO is the single highest-impact fix for institutional-grade
+    # WR/PF on the tournament page (CRYPTO is 15% of total resolution volume).
+    if (pick.get("asset_class") or "").upper() == "CRYPTO":
+        return _fetch_ohlc_crypto_binance(
+            pick.get("symbol", ""),
+            pick.get("submitted_at", ""),
+        )
+
+    yf_sym = _yf_symbol_for(pick)
     start = submitted_at - timedelta(days=1)
     end = datetime.now(timezone.utc) + timedelta(days=1)
     try:
@@ -472,21 +609,25 @@ def main() -> None:
     open_picks = [p for p in picks if p.get("status") == "OPEN"]
     print(f"[ai-tournament] {len(picks)} total picks, {len(open_picks)} open")
 
-    # Pre-fetch OHLC windows for open picks (one yfinance call per unique
-    # symbol; skips CRYPTO which uses Binance spot API without OHLC).
+    # Pre-fetch OHLC windows for open picks (one source-routed call per
+    # unique symbol). 2026-06-04: removed the `if ac != "CRYPTO"` guard —
+    # the original comment ("CRYPTO uses Binance spot API without OHLC") is
+    # stale since PR #512 wired Binance klines + CoinGecko + KuCoin OHLC
+    # for CRYPTO via _fetch_ohlc_crypto_binance. Without removing this
+    # guard, the daily resolver fell back to spot-snapshot for every
+    # CRYPTO close — measured 0% CRYPTO REPLAY coverage on 2026-06-04 vs
+    # 100% for non-crypto classes.
     ohlc_cache: dict[str, list[dict]] = {}
     symbols_seen: set[str] = set()
     for pick in open_picks:
         sym = pick.get("symbol", "")
         if sym and sym not in symbols_seen:
             symbols_seen.add(sym)
-            ac = (pick.get("asset_class") or "").upper()
-            if ac != "CRYPTO":
-                try:
-                    ohlc_cache[sym] = fetch_ohlc_window(pick)
-                except Exception:
-                    ohlc_cache[sym] = []
-                time.sleep(0.1)  # rate-limit yfinance calls
+            try:
+                ohlc_cache[sym] = fetch_ohlc_window(pick)
+            except Exception:
+                ohlc_cache[sym] = []
+            time.sleep(0.1)  # rate-limit upstream calls
 
     updated = []
     for pick in picks:
