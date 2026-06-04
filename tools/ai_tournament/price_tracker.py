@@ -609,21 +609,25 @@ def main() -> None:
     open_picks = [p for p in picks if p.get("status") == "OPEN"]
     print(f"[ai-tournament] {len(picks)} total picks, {len(open_picks)} open")
 
-    # Pre-fetch OHLC windows for open picks (one yfinance call per unique
-    # symbol; skips CRYPTO which uses Binance spot API without OHLC).
+    # Pre-fetch OHLC windows for open picks (one source-routed call per
+    # unique symbol). 2026-06-04: removed the `if ac != "CRYPTO"` guard —
+    # the original comment ("CRYPTO uses Binance spot API without OHLC") is
+    # stale since PR #512 wired Binance klines + CoinGecko + KuCoin OHLC
+    # for CRYPTO via _fetch_ohlc_crypto_binance. Without removing this
+    # guard, the daily resolver fell back to spot-snapshot for every
+    # CRYPTO close — measured 0% CRYPTO REPLAY coverage on 2026-06-04 vs
+    # 100% for non-crypto classes.
     ohlc_cache: dict[str, list[dict]] = {}
     symbols_seen: set[str] = set()
     for pick in open_picks:
         sym = pick.get("symbol", "")
         if sym and sym not in symbols_seen:
             symbols_seen.add(sym)
-            ac = (pick.get("asset_class") or "").upper()
-            if ac != "CRYPTO":
-                try:
-                    ohlc_cache[sym] = fetch_ohlc_window(pick)
-                except Exception:
-                    ohlc_cache[sym] = []
-                time.sleep(0.1)  # rate-limit yfinance calls
+            try:
+                ohlc_cache[sym] = fetch_ohlc_window(pick)
+            except Exception:
+                ohlc_cache[sym] = []
+            time.sleep(0.1)  # rate-limit upstream calls
 
     updated = []
     for pick in picks:
