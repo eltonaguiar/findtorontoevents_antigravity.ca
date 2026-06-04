@@ -37,3 +37,42 @@ If we wanted to weight model-blend submissions toward best-risk-adjusted edge to
 - All others: down-weighted or excluded
 
 Do NOT size live capital until n>=100 per model and an additional 2-week paper-pilot.
+
+---
+
+## Post-Round-5 robust verification (updated 2026-06-04 ~10:30 UTC)
+
+After per-class drift thresholds caught 868 additional sub-25% drift artifacts, the leaderboard reshuffled.
+
+| Model | n | WR | w/l | cumPnL | MDD | Ret/MDD | Winning classes |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **kimi_direct** | 54 | **68.5%** | 1.32x | 88.1% | -12.2% | **7.2** | **4** |
+| **gemini_2_5_flash** | 58 | 62.1% | **1.97x** | **138.2%** | -19.3% | 7.2 | 3 |
+| llm7_qwen | 40 | 67.5% | 1.01x | 48.8% | -12.1% | 4.1 | 4 |
+| claude_haiku_4_5 | 39 | 66.7% | 1.09x | 52.3% | -14.2% | 3.7 | 4 |
+| grok3 | 74 | 50.0% | 1.90x | 160.2% | -31.2% | 5.1 | 2 |
+| deepseek_r1 | 69 | 53.6% | 1.43x | 78.2% | -17.9% | 4.4 | 3 |
+
+### Two co-leaders, different styles
+
+- **kimi_direct** — broad-diversified leader. Highest WR (68.5%), best Ret/MDD tied, 4 asset classes profitable. Lower variance.
+- **gemini_2_5_flash** — high-conviction leader. Best w/l ratio (1.97x), highest cumPnL (138.2%), but concentrated in 3 classes.
+
+### claude_haiku_4_5 revised
+
+Previously claimed Ret/MDD 10.9 with broadest diversification. **Post-R5**: Ret/MDD 3.7 (a third). The "broadest diversification" claim held — still 4 winning classes — but the drawdown profile and cumulative returns were inflated by stale-quote ETF/EQUITY/BOND wins. Real edge present but smaller than reported.
+
+### grok3 reality check
+
+WR now 50.0% (was 55.1%) — essentially coin-flip on direction. cumPnL stays high (160.2%) only because of asymmetric w/l ratio (1.90x). Win-class count: 2. Not a model-portfolio candidate without veto rules per class.
+
+### Recommended live-allocation weights (post-R5)
+
+- **kimi_direct: 35%** (broad + best Ret/MDD)
+- **gemini_2_5_flash: 25%** (concentrated upside, requires class-vetoes)
+- **llm7_qwen: 15%** (diversified, low return)
+- **claude_haiku_4_5: 15%** (diversified, real but smaller edge)
+- **deepseek_r1: 10%** (n=69 gives stat-confidence; modest edge)
+- All others: 0% (insufficient n or sub-50% WR)
+
+**Still pre-institutional** — all models have n<100. Need 2-3 more weeks of forward picks before allocating real capital.
