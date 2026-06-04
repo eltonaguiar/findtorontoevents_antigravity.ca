@@ -488,6 +488,34 @@ def resolve_pick(
     now = datetime.now(timezone.utc)
     direction_mult = 1.0 if direction == "LONG" else -1.0
 
+    # ── Mispriced-entry drift guard (2026-06-04) ──────────────────────
+    # AI models occasionally submit picks with pre-corporate-action prices
+    # (LODE 1-for-10 split Feb 2025: entry $0.27 vs live $4.10 → 1373% false
+    # win after replay). Also affects futures contract rolls (SI=F, GC=F,
+    # CT=F, NG=F) and dividend-adjusted ETFs. If the first OHLC bar's open
+    # is more than MAX_DRIFT_PCT away from entry_price, the entry is stale
+    # — refuse to resolve as WIN/LOSS and mark MISPRICED_ENTRY for exclusion
+    # from leaderboard aggregates. Measured 2026-06-04: 134 of 5677 closes
+    # have |pnl|>100% (almost all this pattern).
+    MAX_ENTRY_DRIFT_PCT = float(
+        os.environ.get("RESOLVER_MAX_ENTRY_DRIFT_PCT", "50.0")
+    )
+    if ohlc_bars and entry > 0:
+        first_open = float(ohlc_bars[0].get("open", 0) or 0)
+        if first_open > 0:
+            drift = abs(first_open - entry) / entry * 100
+            if drift > MAX_ENTRY_DRIFT_PCT:
+                p.update({
+                    "status": "MISPRICED_ENTRY",
+                    "exit_price": first_open,
+                    "pnl_pct": None,
+                    "resolved_at": now.isoformat(),
+                    "exit_reason": "MISPRICED_ENTRY_REJECTED",
+                    "_drift_pct": round(drift, 2),
+                    "_market_at_submission": round(first_open, 4),
+                })
+                return p
+
     # ── Intrabar OHLC path replay (v2) ──
     if ohlc_bars:
         hit = _scan_bars_for_touch(ohlc_bars, direction, tp, sl)
