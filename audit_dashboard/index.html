@@ -985,8 +985,16 @@ a:hover { text-decoration: underline; }
             var n  = (c.n_resolved != null) ? c.n_resolved : '?';
             var raw = c.verdict || 'INSUFFICIENT_DATA';
             var ready = /(^|_)READY$|PASS/.test(raw) && !/NOT_READY|INSUFFICIENT/.test(raw);
+            // 2026-06-04: render the new `policy_frozen` flag (PR 648f2a19a2) as a
+            // separate badge so the operator can distinguish operator-imposed class
+            // freezes (FOREX/COMMODITY/BOND/FUTURES — lift via operator decision,
+            // data exists but is filtered) from genuinely data-thin classes (lift
+            // via more picks). Both currently show INSUFFICIENT_DATA which conflates
+            // the two failure modes.
+            var frozen = c.policy_frozen === true;
+            var frozenBadge = frozen ? ' <span title="In BLOCKED_ASSET_CLASSES — class is operator-frozen; picks exist but are policy-excluded. Lift via operator decision (external replication / source rehab), not more picks." style="background:rgba(96,165,250,0.18);color:#7dd3fc;border:1px solid rgba(96,165,250,0.45);padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:0.4px">&#x1F9CA; FROZEN</span>' : '';
             span.innerHTML = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
-              '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span> ' +
+              '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + ' ' +
               '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' policy-clean resolved)</span>';
           });
           var asof = document.getElementById('major-goal-asof');
