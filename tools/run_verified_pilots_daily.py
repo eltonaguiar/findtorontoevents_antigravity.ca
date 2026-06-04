@@ -33,6 +33,12 @@ def main() -> int:
         # Flips SHADOW -> READY_REVIEW when PF>=1.5 + WR>=0.55 + n>=30 +
         # PF drift <=30% from lab.
         _run([py, "verified_strategies/paper_pilot/macd_rsi_m048_pilot.py", "--one-shot"]),
+        # 2026-06-04 swarm winner (50-agent AutoGen-style multi-class strategy
+        # swarm; only candidate clearing the PF>=1.3 floor). Lab OOS Sharpe
+        # 3.16, PF 1.70, WR 56.3%, MDD -10.6%; MC null p=0.000 significant at
+        # 1% (vs shuffled-regime null Sharpe 0.95±0.17). 30d shadow → half-
+        # conviction live sizing if forward Sharpe within 30% of OOS.
+        _run([py, "verified_strategies/paper_pilot/equity_vix_regime_rotator_pilot.py", "--one-shot"]),
         # PR #482 bootstrap forward-test (virtual book; no production enable)
         _run([py, "verified_strategies/paper_pilot/b_flip_price_roc_forward_pilot.py"]),
         _run([py, "verified_strategies/paper_pilot/inverse_ml_btc_forward_pilot.py"]),
