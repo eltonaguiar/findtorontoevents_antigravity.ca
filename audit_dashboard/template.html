@@ -6175,6 +6175,18 @@ function renderNonCryptoPanel() {
   closedPicks = closedPicks.filter(function(p) { return !_isCorruptedRow(p); });
   activePicks = activePicks.filter(function(p) { return !_isCorruptedRow(p); });
 
+  // 2026-06-04 force-closed / failed-resolution filter (always on). 176 non-crypto
+  // "closed" rows are price-fetch FAILURES stamped entry==exit / pnl=0 with
+  // exit_reason FORCE_CLOSED_TOXIC (113) or RESOLVE_FAILED_MAX_RETRIES (60), mostly
+  // from multi_asset_copytrader + forex_copy_trader. They are NOT resolved trades and
+  // were polluting WR denominators (raw FOREX 4% vs true ~39% once excluded). Drop
+  // them from all non-crypto WR/PnL counts. Root cause (resolver stamping fetch
+  // failures as flat closes) tracked as a separate INCIDENT.
+  closedPicks = closedPicks.filter(function(p) {
+    var _er = String(p.exit_reason || '').toUpperCase();
+    return _er !== 'FORCE_CLOSED_TOXIC' && _er !== 'RESOLVE_FAILED_MAX_RETRIES';
+  });
+
   // 2026-04-11 kill-list filter — exclude picks from now-killed strategies
   // so the displayed stats reflect forward-looking risk, not historical
   // drain already fixed by the bans.
