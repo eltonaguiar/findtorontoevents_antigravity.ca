@@ -1,0 +1,17 @@
+Reviewing PR #524 of findtorontoevents_antigravity.ca (branch audit-fixes-2026-06-04, commit b2802b99b3). Changes audit_trail/reverse_split_symbols.py from single-tuple to list-of-tuples for cumulative reverse splits.
+
+PR CLAIMS (need independent verification):
+1. WKHS had 3 cumulative reverse splits: 1:20 (Jun 2024), 8:100 (Mar 2025), 1:12 (Dec 2025). Cumulative factor 3000x.
+2. FFIE had 3 splits: 1:80 (Aug 2023), 1:3 (Mar 2024), 1:40 (Aug 2024). Cumulative 9600x.
+3. HOLO had 3 splits: 1:10 (Feb 2024), 1:20 (Oct 2024), 1:40 (Apr 2025). Cumulative 8000x.
+4. LODE 1:10 split actually happened Feb 25 2025 (not Feb 5 as in current main).
+
+Other agents already shipped per-class drift thresholds (ETF 7%, EQUITY 10%, BOND 5%, FOREX 3%, COMMODITY 12%, FUTURES 12%, PENNY 25%) in tools/ai_tournament/price_tracker.py which catch stale prices WITHOUT relying on the registry. 4154 MISPRICED_ENTRY rows excluded.
+
+QUESTIONS:
+1. Are the 6 split dates plausible from training data? Any obvious fabrications?
+2. Given drift-based detection works, what marginal benefit does the registry overhaul give?
+3. Is dict[str,tuple] -> dict[str,list[tuple]] a clean win or premature complexity for n=6 symbols?
+4. What other reverse-split equities should be added (NFLX, GE etc.)?
+
+Be skeptical — DeepSeek V4 has known issues fabricating historical facts. Cite sources or flag as unverifiable. Be brief (under 600 words).
