@@ -162,6 +162,13 @@ def force_close_toxic_picks(active_picks_path=None, closed_picks_path=None):
         pick["pnl_pct"] = 0.0
         pick["pnl_dollar"] = 0.0
         pick["status"] = "CLOSED"
+        # 2026-06-04 (INCIDENT #95): admin force-close of a killed strategy's open
+        # pick at break-even — NOT a real trade outcome. Stamp an explicit canonical
+        # flag so every WR/PF aggregator can exclude it (dashboard already filters by
+        # exit_reason per PR #521; money_ready_verdict excludes via the WON/LOST
+        # status gate). Prevents these flat rows being miscounted as losses.
+        pick["_wr_excluded"] = True
+        pick["_wr_excluded_reason"] = "force_closed_toxic_admin"
 
     closed_picks = []
     if closed_picks_path.exists():
