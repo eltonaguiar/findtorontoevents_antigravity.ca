@@ -5,7 +5,7 @@ strategies with n>=30 closed picks, then runs cpcv_pbo() from
 alpha_engine.anti_overfit_validator on the candidate set.
 
 Repro:
-  DB_PASS_STOCKS=stocks1234560 python3 tools/build_cpcv_pbo_results.py
+  DB_PASS_STOCKS=<from-dbpasses.txt> python3 tools/build_cpcv_pbo_results.py
 """
 from __future__ import annotations
 

@@ -14,7 +14,7 @@ Usage:
 Environment (same convention as tools/ai_tournament/ingest_to_db.py):
     DB_HOST_STOCKS    MySQL host     (default: mysql.50webs.com)
     DB_USER_STOCKS    Username       (default: ejaguiar1_stocks)
-    DB_PASS_STOCKS    MySQL password (default: stocks1234560)
+    DB_PASS_STOCKS    MySQL password (default: <from-dbpasses.txt>)
     DB_NAME_STOCKS    Database name  (default: ejaguiar1_stocks)
 """
 from __future__ import annotations

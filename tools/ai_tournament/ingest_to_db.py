@@ -9,7 +9,7 @@ Usage:
     python tools/ai_tournament/ingest_to_db.py --dry-run # log only, no writes
 
 Environment:
-    DB_PASS_STOCKS    MySQL password (default: stocks1234560)
+    DB_PASS_STOCKS    MySQL password (default: <from-dbpasses.txt>)
     DB_HOST_STOCKS    MySQL host     (default: mysql.50webs.com)
     DB_NAME_STOCKS    Database name  (default: ejaguiar1_stocks)
     DB_USER_STOCKS    Username       (default: ejaguiar1_stocks)
@@ -215,7 +215,7 @@ def main() -> None:
     rows, insert_sql, source = build_upsert_sql(picks)
     print(f"[ingest] {len(rows)} rows to upsert into tournament_picks")
 
-    db_pass = get_env_or_default("DB_PASS_STOCKS", "stocks1234560")
+    db_pass = get_env_or_default("DB_PASS_STOCKS", "<from-dbpasses.txt>")
     db_host = get_env_or_default("DB_HOST_STOCKS", "mysql.50webs.com")
     db_name = get_env_or_default("DB_NAME_STOCKS", "ejaguiar1_stocks")
     db_user = get_env_or_default("DB_USER_STOCKS", "ejaguiar1_stocks")
