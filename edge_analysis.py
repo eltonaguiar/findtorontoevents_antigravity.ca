@@ -75,7 +75,7 @@ def analyze_edge():
     print("\n  Performance by Exit Reason:")
     for reason, picks in sorted(by_exit.items(), key=lambda x: len(x[1]), reverse=True):
         avg_pnl = statistics.mean([p.get('pnl_pct', 0) for p in picks]) if picks else 0
-        win_rate = sum(1 for p in picks if p.get('pnl_pct', 0) > 0) / len(picks) * 100 if picks else 0
+        win_rate = sum(1 for p in picks if (p.get('pnl_pct') or 0) > 0) / len(picks) * 100 if picks else 0
         print(f"    {reason}: {len(picks)} picks, Avg PnL={avg_pnl:+.3f}%, WR={win_rate:.1f}%")
     
     # By asset class
@@ -97,8 +97,8 @@ def analyze_edge():
         longs = [p for p in picks if p.get('direction', '').upper() == 'LONG' or p.get('signal_type', '').upper() == 'LONG']
         shorts = [p for p in picks if p.get('direction', '').upper() == 'SHORT' or p.get('signal_type', '').upper() == 'SHORT']
         
-        long_wr = sum(1 for p in longs if p.get('pnl_pct', 0) > 0) / len(longs) * 100 if longs else 0
-        short_wr = sum(1 for p in shorts if p.get('pnl_pct', 0) > 0) / len(shorts) * 100 if shorts else 0
+        long_wr = sum(1 for p in longs if (p.get('pnl_pct') or 0) > 0) / len(longs) * 100 if longs else 0
+        short_wr = sum(1 for p in shorts if (p.get('pnl_pct') or 0) > 0) / len(shorts) * 100 if shorts else 0
         
         print(f"\n    {asset}: {len(picks)} picks")
         print(f"      Avg PnL: {avg_pnl:+.3f}%")
@@ -115,7 +115,7 @@ def analyze_edge():
         print(f"      By Mode:")
         for mode, mode_picks in sorted(by_mode.items(), key=lambda x: len(x[1]), reverse=True):
             mode_pnl = statistics.mean([p.get('pnl_pct', 0) for p in mode_picks])
-            mode_wr = sum(1 for p in mode_picks if p.get('pnl_pct', 0) > 0) / len(mode_picks) * 100
+            mode_wr = sum(1 for p in mode_picks if (p.get('pnl_pct') or 0) > 0) / len(mode_picks) * 100
             print(f"        {mode}: {len(mode_picks)} picks, {mode_pnl:+.3f}%, WR={mode_wr:.1f}%")
     
     # By source system

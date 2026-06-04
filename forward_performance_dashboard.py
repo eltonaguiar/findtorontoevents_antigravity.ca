@@ -199,7 +199,7 @@ class ForwardPerformanceDashboard:
         
         # Calculate overall stats
         with_forward = [c for c in comparisons if c['forward'].get('has_data')]
-        making_money = [c for c in with_forward if c['forward'].get('total_pnl', 0) > 0]
+        making_money = [c for c in with_forward if (c['forward'].get('total_pnl') or 0) > 0]
         
         total_realized = sum(c['forward'].get('realized_pnl', 0) for c in with_forward)
         total_unrealized = sum(c['forward'].get('unrealized_pnl', 0) for c in with_forward)

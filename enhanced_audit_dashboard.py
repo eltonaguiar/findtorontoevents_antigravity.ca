@@ -24,7 +24,7 @@ class EnhancedAuditDashboard:
             with open('battleground/data/closed_picks.json', 'r') as f:
                 picks = json.load(f)
             total_pnl = sum(p.get('pnl_pct', 0) for p in picks if isinstance(p, dict))
-            winners = sum(1 for p in picks if isinstance(p, dict) and p.get('pnl_pct', 0) > 0)
+            winners = sum(1 for p in picks if isinstance(p, dict) and (p.get('pnl_pct') or 0) > 0)
             win_rate = winners / len(picks) * 100 if picks else 0
 
             self.systems_data['Battleground'] = {
