@@ -179,14 +179,15 @@
   <button class="time-tab" data-window="3d">3D <span class="count" id="count-3d"></span></button>
   <button class="time-tab" data-window="today">Today <span class="count" id="count-today"></span></button>
 </div>
-<div id="resolver-artifact-banner" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.45);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:12px;line-height:1.6;color:#fecaca">
-  <strong style="color:#fca5a5">⚠ DATA QUALITY — WIN RATES UNVERIFIED (audit 2026-06-03).</strong>
-  Outcomes on this page are resolved by a <strong>once-daily spot-price snapshot</strong> with no intrabar high/low path
-  (<code>tools/ai_tournament/price_tracker.py:resolve_pick</code>), so intraday stop-loss touches are missed and win rate is inflated.
-  Models place take-profit ~2.2–2.4× farther than stop-loss, so an unbiased path-aware resolver would yield WR <em>well below 50%</em> — not the
-  73–91% shown (LONG picks 87% vs SHORT 33% over a 4–14-day window = regime drift, not edge). Resolved samples are <strong>&lt;100 and 4–14 days old</strong>;
-  PF lower-bounds hit a bootstrap 10.0 floor. <strong>Treat the Tier-1 badges, ranks and PF here as UNPROVEN</strong> until intrabar OHLC resolution + n≥100 land.
-  Full audit: <code>reports/ai_tournament_winrate_audit_2026-06-03.md</code>.
+<div id="resolver-artifact-banner" style="background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.45);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:12px;line-height:1.6;color:#fcd34d">
+  <strong style="color:#fbbf24">⚠ DATA QUALITY — INTRABAR LIVE 2026-06-04, RANK STILL BUILDING.</strong>
+  CRYPTO intrabar OHLC replay went live 2026-06-04T02:01Z (Binance &rarr; CoinGecko &rarr; KuCoin Tier-3 failover; daily-bar TP/SL replay with SL-first conservative ordering and gap-through fills).
+  Non-CRYPTO classes are at 100% replay coverage; CRYPTO is at 88.9% (16/18) as of first measurement and rising.
+  Pre-fix legacy resolutions in this leaderboard are <strong>still spot-snapshot-resolved</strong> and inflate WR by ~10&ndash;20pts vs intrabar truth (LONG 87% vs SHORT 33% over a 4&ndash;14d window = regime drift, not edge).
+  As new closes flow through the replay-aware resolver, the leaderboard will regress to honest WR/PF values.
+  <strong>Treat the current Tier-1 badges as UNPROVEN until ~7 days of replay-resolved closes (n&ge;100 post-fix) accumulate;</strong> the actual edge ranking may shift materially.
+  Fix chain: PRs <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/512" style="color:#93c5fd">#512</a> + <code>f273b6db57</code> + <code>893c660c10</code> + <code>4fd7cb4c69</code>.
+  Background: <code>reports/ai_tournament_winrate_audit_2026-06-03.md</code>.
 </div>
 <table class="lb" id="leaderboard">
   <thead>
