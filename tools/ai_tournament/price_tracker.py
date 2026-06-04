@@ -34,6 +34,11 @@ import requests
 import yfinance as yf
 
 REPO_ROOT = Path(__file__).parent.parent.parent
+
+# Reverse-split registry: adjust pre-split entry prices to post-split equivalents
+# so the drift guard and PnL math operate on the same scale as yfinance OHLC.
+sys.path.insert(0, str(REPO_ROOT))
+from audit_trail.reverse_split_symbols import should_adjust_for_split
 PICKS_DIR = REPO_ROOT / "data" / "ai_tournament"
 PRICE_LOG_DIR = PICKS_DIR / "price_log"
 LATEST_PICKS = REPO_ROOT / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
@@ -501,11 +506,68 @@ def resolve_pick(
     # is unambiguously stale (grok3 ETF audit 2026-06-04 found IWM $220 vs $235,
     # SPY $570 vs $595 — sub-25% drift but trivial guaranteed-TP artifacts).
     # CRYPTO/PENNY can have legit 25%+ intraday swings so keep wide.
-    _DRIFT_BY_CLASS = {"ETF": 7.0, "EQUITY": 10.0, "BOND": 5.0, "FOREX": 3.0}
+    # COMMODITY (NG=F, CL=F, GC=F, etc.) typically moves 2-5% daily; 12% catches
+    # stale-quote artifacts (gemini_2_5_flash audit 2026-06-04 found NG=F entries
+    # $2.65 vs market $3.00, CL=F entries $77 vs market $85 — sub-25% drift but
+    # trivial guaranteed-TP wins). FUTURES same vol profile as COMMODITY.
+    _DRIFT_BY_CLASS = {"ETF": 7.0, "EQUITY": 10.0, "BOND": 5.0, "FOREX": 3.0,
+                       "COMMODITY": 12.0, "FUTURES": 12.0, "PENNY": 25.0}
     MAX_ENTRY_DRIFT_PCT = float(
         os.environ.get("RESOLVER_MAX_ENTRY_DRIFT_PCT", "50.0")
     )
     class_threshold = _DRIFT_BY_CLASS.get(asset_class, MAX_ENTRY_DRIFT_PCT)
+
+    # ── Reverse-split entry-price adjustment (2026-06-04) ──────────────
+    # LODE 1-for-10 reverse split Feb 2025: AI models submitted picks with
+    # pre-split prices ($0.27) but yfinance returns post-split OHLC ($3.92).
+    # Without adjustment, the drift guard fires at 1251% and the resolver
+    # sets exit_price = first_open (~$4.10) as MISPRICED_ENTRY — OR worse,
+    # pre-guard versions resolved as WIN with +1373% phantom PnL.
+    # Reverse-split entry-price adjustment (2026-06-04) ──────────────
+    # LODE 1-for-10 reverse split Feb 2025: AI models submitted picks with
+    # pre-split prices ($0.27) but yfinance returns post-split OHLC ($3.92).
+    # Two adjustment paths:
+    #   1. Date guard: pick submitted BEFORE split → always adjust
+    #   2. Price heuristic: pick submitted AFTER split but entry_price * factor
+    #      ≈ first_open → the model used stale pre-split data → adjust anyway
+    #      (prevents MISPRICED_ENTRY false rejection for pre-split prices
+    #      submitted post-split)
+    _pick_ts = p.get("submitted_at", p.get("timestamp", ""))
+    _should_adj, _factor = should_adjust_for_split(
+        p.get("symbol", ""), _pick_ts)
+    # Price-range fallback: if date guard says don't adjust, check whether
+    # entry_price * factor matches the current market price (first OHLC open).
+    # If so, the entry is pre-split despite the post-split submission date.
+    if not _should_adj and _factor and entry > 0 and ohlc_bars:
+        _first_open = float(ohlc_bars[0].get("open", 0) or 0)
+        if _first_open > 0:
+            _adjusted_candidate = entry * _factor
+            _ratio = _adjusted_candidate / _first_open if _first_open else 999
+            # If adjusted entry is within range of market price, it's pre-split
+            # Wide bounds (0.3–2.0) to catch PENNY stocks that appreciated post-split
+            if 0.3 <= _ratio <= 2.0:
+                _should_adj = True
+                print(f"  [SPLIT-HEURISTIC] {p.get('symbol','?')}: entry ${entry:.4f}"
+                      f" x{_factor}=${_adjusted_candidate:.4f} ≈ open ${_first_open:.4f}"
+                      f" -> adjusting (post-split submission, pre-split price)")
+    if _should_adj and _factor and entry > 0:
+        adjusted_entry = entry * _factor
+        adjusted_tp = tp * _factor if tp else 0
+        adjusted_sl = sl * _factor if sl else 0
+        print(f"  [SPLIT] {p.get('symbol','?')}: entry ${entry:.4f} -> ${adjusted_entry:.4f}"
+              f" (x{_factor}, pre-split pick)")
+        p["_reverse_split_adjusted"] = True
+        p["_original_entry"] = entry
+        p["_split_factor"] = _factor
+        entry = adjusted_entry
+        tp = adjusted_tp
+        sl = adjusted_sl
+        p["entry_price"] = entry
+        if tp:
+            p["take_profit"] = tp
+        if sl:
+            p["stop_loss"] = sl
+
     if ohlc_bars and entry > 0:
         first_open = float(ohlc_bars[0].get("open", 0) or 0)
         if first_open > 0:
