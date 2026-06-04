@@ -1,0 +1,36 @@
+You are reviewing the open task backlog distilled from 11 peer-agent .MD reports written today (2026-06-04) on findtorontoevents_antigravity.ca. The audit work has already shipped 7 cleanup rounds (4,154 MISPRICED_ENTRY rows), an INCIDENT #94 backfill (32K rows), per-class drift thresholds, and one verified real-edge sleeve (luxalgo_confluence CRYPTO n=381 PF 2.36).
+
+These items remain open. Rank them by impact-per-risk and flag anything risky for autonomous execution.
+
+OPEN ITEMS:
+
+1. PR #524 — DeepSeek V4 / KiloCode "reverse-split registry overhaul" with cumulative split tracking. Earlier swarm (DeepSeek+xAI) flagged most of the historical split dates as fabricated (WKHS 8:100 Mar 2025 unverifiable, WKHS 1:12 Dec 2025 future-dated, FFIE 1:40 Aug 2024 unverifiable, HOLO 1:40 Apr 2025 likely fake). LODE Feb 25 2025 plausible. Per-class drift thresholds (already shipped) catch stale prices without the registry.
+
+2. INCIDENT #91 (alpha_engine writes 8-43x duplicate rows). Writer-side fix shipped (audit_trail/backfill_local_sources.py NULL->closed_at fallback). 0/606 new rows leak NULL now. Operator-window cleanup of ~40K legacy duplicates remaining. Optional idx_dedup_close secondary UNIQUE index on (symbol,strategy,entry_price,closed_at,source_system).
+
+3. INCIDENT #89 — DB password "stocks1234560" hardcoded in 100+ repo files. Rotation requires coordinated repo scrub + 50webs cPanel change + GHA secret update. Operator-only.
+
+4. ENHANCEMENT #116 KILL inverse_ml_enhanced_RENDERUSDT_4h_D — confirmed PF 0.12 / avg -1.73% over n=52 unique trades. Strategy genuinely losing.
+
+5. ENHANCEMENT #117 PROMOTE inverse_ml_enhanced_ADAUSDT_15m_D — PF 1.73 / WR 55.6% / avg +0.11% over n=36 unique trades. Best forward-test performer post INCIDENT #94 backfill. Needs n>=100 before live capital.
+
+6. ENHANCEMENT #118 CRYPTO LONG flip bypass — _EAGLE4_CRYPTO_FLIP_TO_SHORT works in production_scanner.py but 10 emitter paths bypass it (ml_crypto_predictor 230, copy_trader_polymarket 172, luxalgo_filters 116, alpha_engine_fast 116, prediction_market_agents 106, alpha_engine 87, ml_strategy_reviver 84, quan_engine 29, genome_mutations 26, battleground_luxalgo 25). 991 LONG/BUY CRYPTO picks last 7d. Risky autonomous fix; could be added at mysql_trading_sync.py upsert layer for centralized catch.
+
+7. ENHANCEMENT #115 TP/SL calibration on verified strategies — b_flip 40/40 TIME_EXIT (zero decisive), inverse_ml_RENDERUSDT_1h 57/57 TIME_EXIT. TP/SL distances wider than typical excursion period. Partial obsoletion post-backfill but still ongoing.
+
+8. Add GE 1:8 Aug 2021 to audit_trail/reverse_split_symbols.py — swarm-verified real reverse split, missing from registry. Small low-risk add.
+
+9. nav_surface_edge_matrix.json vs DB ground truth disagreement — Smart Picks CRYPTO 81.9% n=72 PF 7.7 on matrix vs DB n=0. Already DISPUTED on /audit/pick_funnel.html (banner from c1b977997). Needs reconciliation: align matrix builder with smart_picks_db_stats or flag conflict programmatically.
+
+10. CLAUDE.md stocks_rsi2_pullback edge claim — confirmed stale (INCIDENT #96). Was n=70 WR 62.9% +0.78%; actual n=140 WR 33.9% avg -0.007% post-dedup. Template.html updated DISPUTED banner shipped today.
+
+YOUR TASK: Output a JSON object with this shape:
+{
+  "priority_order": ["item_id_first", "item_id_second", ...],
+  "autonomous_safe": [list of item ids safe for an AI agent to ship alone],
+  "operator_required": [list of item ids requiring human approval],
+  "risks_flagged": {"item_id": "one-line risk"},
+  "your_top_recommendation": "one-sentence action for the next 15 minutes"
+}
+
+Be brief. JSON only. No prose around it.

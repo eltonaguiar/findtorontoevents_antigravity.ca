@@ -28,6 +28,11 @@ REVERSE_SPLIT_SYMBOLS: dict[str, tuple[str, str]] = {
     "KULR": ("1-for-8", "2025-06-23"),
     "HOLO": ("1-for-40", "2025-04-21"),  # cumulative: 1-for-10 (2024-02) + 1-for-20 (2024-10) + 1-for-40 (2025-04)
     "GSAT": ("1-for-15", "2025-02-11"),
+    # Added 2026-06-04 — local-model swarm (vllm-large + vllm-fast + ollama-large +
+    # ollama-fast via litellm proxy :4000) all agreed this is the safest autonomous
+    # add. Earlier external-engine swarm (DeepSeek + xAI) independently verified
+    # the split as real and missing from the registry.
+    "GE": ("1-for-8", "2021-08-02"),  # GE Industrial 1:8 post GE Vernova spin-off planning
     # Excluded: SQQQ/SOXS/LABD (inverse ETF structural decay, not corporate splits)
     # Excluded: CLSK (2019), MARA (2013-2019) — old splits, low stale-data risk
 }
