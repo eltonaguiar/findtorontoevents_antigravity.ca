@@ -497,14 +497,20 @@ def resolve_pick(
     # — refuse to resolve as WIN/LOSS and mark MISPRICED_ENTRY for exclusion
     # from leaderboard aggregates. Measured 2026-06-04: 134 of 5677 closes
     # have |pnl|>100% (almost all this pattern).
+    # Per-class thresholds: large-cap ETF/EQUITY are low-vol and a 5-10% drift
+    # is unambiguously stale (grok3 ETF audit 2026-06-04 found IWM $220 vs $235,
+    # SPY $570 vs $595 — sub-25% drift but trivial guaranteed-TP artifacts).
+    # CRYPTO/PENNY can have legit 25%+ intraday swings so keep wide.
+    _DRIFT_BY_CLASS = {"ETF": 7.0, "EQUITY": 10.0, "BOND": 5.0, "FOREX": 3.0}
     MAX_ENTRY_DRIFT_PCT = float(
         os.environ.get("RESOLVER_MAX_ENTRY_DRIFT_PCT", "50.0")
     )
+    class_threshold = _DRIFT_BY_CLASS.get(asset_class, MAX_ENTRY_DRIFT_PCT)
     if ohlc_bars and entry > 0:
         first_open = float(ohlc_bars[0].get("open", 0) or 0)
         if first_open > 0:
             drift = abs(first_open - entry) / entry * 100
-            if drift > MAX_ENTRY_DRIFT_PCT:
+            if drift > class_threshold:
                 p.update({
                     "status": "MISPRICED_ENTRY",
                     "exit_price": first_open,
