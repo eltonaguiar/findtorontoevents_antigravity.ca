@@ -906,7 +906,7 @@ a:hover { text-decoration: underline; }
     <span data-mg-class="COMMODITY"><strong style="color:#ef4444">COMMODITY</strong> &mdash; FAIL+INSUFF-N (policy-clean n=3 only; FUTURES proxy n=11 WR 9.09% PF 0.475). <strong style="color:#fca5a5">CT=F DSR=1.0 was FALSIFIED 2026-05-13</strong> (6.33&times; over-emission); pilot now <code>SHADOW_INSUFFICIENT_N</code> dsr=null.</span>
     <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; BLOCKED (PR #6 consolidation 2026-05-31: all FOREX strategies blocked except cta_cross_asset_tsmom SHORT). Policy-clean net PF 0.29 / WR 46.1% / PnL -1026% (raw resolved cohort PF 9.67 is outlier-skewed; 7.6% WR on 12,673 resolved). Hard disable default ON in <code>non_crypto_policy.py</code>. forex_carry added to allowlist on probation. <code>recent_exits.json</code> cleaned of stale entries.</span>
     <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; ACCUMULATING (at_raw_picks: 78 rows, up from 2). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols. First production emissions detected 2026-05-31.</span>
-    <span id="major-goal-asof" style="color:#a5b4fc">Static data updated 2026-05-31 &mdash; source: <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, swarm audit <code>reports/ASSET_CLASS_EDGE_FIX_PLAN_2026-05-27.md</code>. DB health: ghost rows 0, status mismatch 0, non-canonical statuses 0, backup tables removed. PR #6 FOREX consolidation shipped. JS banner auto-updates on page load.</span>
+    <span id="major-goal-asof" style="color:#a5b4fc">Per-class status below is static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code> and <code>pf_registry.by_asset_class_policy_clean_net</code>. DB health: ghost rows 0, status mismatch 0, non-canonical statuses 0. PR #6 FOREX consolidation shipped.</span>
   </div>
   <!-- DISPUTED BANNER (Tier-0 fix 2026-05-28) — propagated from pick_funnel.html so /audit
        headline cannot be cited without the disclosure. Conditioned on money_ready_verdict
@@ -6175,6 +6175,18 @@ function renderNonCryptoPanel() {
   closedPicks = closedPicks.filter(function(p) { return !_isCorruptedRow(p); });
   activePicks = activePicks.filter(function(p) { return !_isCorruptedRow(p); });
 
+  // 2026-06-04 force-closed / failed-resolution filter (always on). 176 non-crypto
+  // "closed" rows are price-fetch FAILURES stamped entry==exit / pnl=0 with
+  // exit_reason FORCE_CLOSED_TOXIC (113) or RESOLVE_FAILED_MAX_RETRIES (60), mostly
+  // from multi_asset_copytrader + forex_copy_trader. They are NOT resolved trades and
+  // were polluting WR denominators (raw FOREX 4% vs true ~39% once excluded). Drop
+  // them from all non-crypto WR/PnL counts. Root cause (resolver stamping fetch
+  // failures as flat closes) tracked as a separate INCIDENT.
+  closedPicks = closedPicks.filter(function(p) {
+    var _er = String(p.exit_reason || '').toUpperCase();
+    return _er !== 'FORCE_CLOSED_TOXIC' && _er !== 'RESOLVE_FAILED_MAX_RETRIES';
+  });
+
   // 2026-04-11 kill-list filter — exclude picks from now-killed strategies
   // so the displayed stats reflect forward-looking risk, not historical
   // drain already fixed by the bans.
@@ -6438,7 +6450,15 @@ function renderNonCryptoPanel() {
   if (_NC_EXCLUDE_KILLED || _recentN_NC_Agg > 0) {
     var ncWins = 0, ncLosses = 0, ncFlat = 0;
     ncPnl = 0;
-    var aggClosed = closedPicks;
+    // BUGFIX (2026-06-04): filter to non-crypto BEFORE applying the recency cap.
+    // closedPicks is the shared crypto+non-crypto recent_closed pool; crypto
+    // closes vastly outnumber/out-recency non-crypto, so _applyRecentN on the
+    // mixed pool left ~1 non-crypto pick -> bogus "100% WR / 1 closed" banner.
+    // Mirror the per-card order (filter category first, then cap). See line ~6254.
+    var aggClosed = closedPicks.filter(function(p) {
+      var _ac = String(p.asset_class || p.category || '').toUpperCase();
+      return _ac !== 'CRYPTO' && _ac !== 'SPORTS' && isNonCryptoPickUnified(p);
+    });
     if (_recentN_NC_Agg > 0) {
       aggClosed = _applyRecentN(aggClosed, _recentN_NC_Agg);
     }
@@ -8147,6 +8167,7 @@ function _picksTableInner(picks, cols) {
         // Use absolute URL and lower?case symbol for navigation
         const url = `https://findtorontoevents.ca/symbol/${encodeURIComponent(v.toLowerCase())}`;
         const memeWarn = isMeme(v) ? ' <span title="Meme coin - high volatility, wider swings, less predictable. Use tighter position sizing." style="cursor:help;font-size:10px;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b55;border-radius:3px;padding:0 3px;margin-left:2px;white-space:nowrap">MEME</span>' : '';
+        const rsWarn = (p.reverse_split_affected || isReverseSplitSymbol(v)) ? ' <span title="' + (p.reverse_split_note || 'Reverse split: pre-split entry vs post-split price. Exclude from aggregate WR/PnL unless entry was adjusted.') + '" style="cursor:help;font-size:10px;background:#dc262622;color:#fca5a5;border:1px solid #dc2626;border-radius:3px;padding:0 3px;margin-left:2px;white-space:nowrap">RSPLIT</span>' : '';
         
         const assetTip = `Asset Class: ${p.asset_class || 'UNKNOWN'}`;
         
@@ -8185,7 +8206,7 @@ function _picksTableInner(picks, cols) {
             symWrBadge = ` <span title="${v} ${(p.direction||'LONG').toUpperCase()}: ${_sd.wr}% WR on ${_sd.trades} closed trades (avg ${_sd.avg_pnl >= 0 ? '+' : ''}${_sd.avg_pnl}%)" style="cursor:help;font-size:9px;background:${_wrBg};color:${_wrColor};border:1px solid ${_wrColor}44;border-radius:3px;padding:0 3px;margin-left:2px;white-space:nowrap;font-weight:600">${_sd.wr}%</span>`;
           }
         }
-        return `<td><a href="javascript:void(0)" onclick="openSymModal('${v}')" title="${assetTip}" style="text-decoration: underline dotted;cursor:pointer">${v}</a>${dupIcon}${acMini}${symWrBadge}${memeWarn}${liqWarn}</td>`;
+        return `<td><a href="javascript:void(0)" onclick="openSymModal('${v}')" title="${assetTip}" style="text-decoration: underline dotted;cursor:pointer">${v}</a>${dupIcon}${acMini}${symWrBadge}${memeWarn}${rsWarn}${liqWarn}</td>`;
       }
       if (c.key === '_closed_delta_trust_score') {
         const atS = p.at_issue_trust_score != null ? Number(p.at_issue_trust_score) : null;
@@ -9232,6 +9253,13 @@ function sysLink(name) {
 // ?? BLOCKED_SYSTEMS: Statistically proven losers (10+ trades, negative PnL, PF < 1.0) ??
 // These systems are HARD-BLOCKED - their picks are completely hidden from all views.
 // Added Mar 13 2026 based on full system audit.
+// Reverse-split equity tickers — pre-split entry vs post-split price corrupts PnL/WR.
+// Keep in sync with audit_trail/reverse_split_symbols.py
+const REVERSE_SPLIT_SYMBOLS = new Set(['LODE','FFIE','WKHS','KULR','HOLO','GSAT']);
+function isReverseSplitSymbol(sym) {
+  return REVERSE_SPLIT_SYMBOLS.has(String(sym || '').toUpperCase().replace(/-USD$/,'').replace(/USDT$/,''));
+}
+
 const BLOCKED_SYSTEMS = new Set([
   'mercury2_fast',          // 14 trades, 25% WR, -639% PnL, PF 0.02
   // 'stocks_competition',     // UNBLOCKED 2026-04-04: 19.6% WR was crypto-skewed; stocks-only WR is 48.3%
@@ -10896,8 +10924,16 @@ function renderOverview() {
       const wr = st.win_rate != null ? fmt(Math.min(100,st.win_rate),1)+'%' : '\u2014';
       const wrColor = (st.win_rate||0) >= 50 ? 'var(--green)' : 'var(--red)';
       const pnl = st.total_pnl_pct != null ? fmtPct(st.total_pnl_pct) : '\u2014';
+      const resolved = st.resolved || st.closed_picks || 0;
+      let wrBadge = '';
+      if ((st.win_rate||0) >= 80 && resolved < 30) {
+        wrBadge = ' <span title="WR>=80% on n<' + resolved + ' — small-sample skew; do not size up" style="font-size:9px;color:#fbbf24;border:1px solid #fbbf2444;border-radius:3px;padding:0 3px">SMALL-n</span>';
+      }
+      if (String(st.dsr_verdict||'').toUpperCase().indexOf('OVERFIT') >= 0) {
+        wrBadge += ' <span title="DSR verdict: ' + st.dsr_verdict + ' — raw WR is not publishable edge" style="font-size:9px;color:#f97316;border:1px solid #f9731644;border-radius:3px;padding:0 3px">OVERFIT</span>';
+      }
       h += '<tr style="border-top:1px solid rgba(255,255,255,0.05)">';
-      h += '<td style="padding:2px 6px;color:var(--text-bright)">' + (st.name||'').replace(/_/g,' ') + '</td>';
+      h += '<td style="padding:2px 6px;color:var(--text-bright)">' + (st.name||'').replace(/_/g,' ') + wrBadge + '</td>';
       h += '<td class="num">' + (st.active_picks||0) + '</td>';
       h += '<td class="num">' + (st.closed_picks||0) + '</td>';
       h += '<td class="num" style="color:' + wrColor + '">' + wr + '</td>';
