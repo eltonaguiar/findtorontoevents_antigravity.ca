@@ -697,8 +697,11 @@ def main() -> None:
     snapshot_file = PICKS_DIR / f"picks_{date_str}.json"
     snapshot_file.write_text(json.dumps(updated, indent=2))
 
-    resolved = [p for p in updated if p.get("status") != "OPEN"]
-    wins = [p for p in resolved if p.get("pnl_pct", 0) > 0]
+    resolved = [p for p in updated if p.get("status") not in ("OPEN", "MISPRICED_ENTRY")]
+    # 2026-06-04 null-coalesce: MISPRICED_ENTRY picks have pnl_pct=None per the
+    # drift-guard. .get(key, default) returns None when key is present with
+    # explicit None — explicit check needed.
+    wins = [p for p in resolved if (p.get("pnl_pct") or 0) > 0]
     print(f"[ai-tournament] done. resolved={len(resolved)} wins={len(wins)} "
           f"wr={len(wins)/max(len(resolved),1):.1%}")
 
