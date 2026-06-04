@@ -82,7 +82,13 @@ jobs:
           git add audit_dashboard/data/ai_tournament_picks_latest.json 2>/dev/null || true
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore(tournament): daily price update $(date -u +%Y-%m-%d) [skip ci]"
-          git pull --rebase origin main
-          git push
+          # 2026-06-04: race-retry loop. Auto-data commits land on main every
+          # minute from parallel scanners; a single pull+push routinely loses.
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 15
+          done
+          echo "::warning::push failed after 5 retries — data still wrote to DB; will reconcile next run"
+          exit 0
 
 # re-registered 2026-05-23 after stripped-history reset (4aaa6ff848f)
