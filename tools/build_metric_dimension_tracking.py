@@ -9,7 +9,7 @@ import pymysql
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict, Counter
 
-STOCKS_PW = "stocks1234560"
+STOCKS_PW = os.environ.get('DB_PASS_STOCKS','') or os.environ.get('MYSQL_PASSWORD','')
 REPO = "/home/eaguiar2015/findtorontoevents_antigravity.ca"
 
 def get_conn():

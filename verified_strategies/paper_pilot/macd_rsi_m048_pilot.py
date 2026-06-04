@@ -97,7 +97,7 @@ def _query_live_stats(window_days: int = 30) -> dict:
         import pymysql
 
         import os
-        pw = os.environ.get("DB_PASS_STOCKS", "stocks1234560")
+        pw = os.environ.get("DB_PASS_STOCKS", "") or os.environ.get("MYSQL_PASSWORD", "")
         conn = pymysql.connect(
             host="mysql.50webs.com", user="ejaguiar1_stocks",
             password=pw, database="ejaguiar1_stocks",

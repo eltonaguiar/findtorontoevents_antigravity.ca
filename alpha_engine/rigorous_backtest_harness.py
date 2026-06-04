@@ -106,7 +106,7 @@ def _load_from_db(asset_class: str = None) -> list[dict]:
     """Load from ejaguiar1_stocks.trading_picks via pymysql."""
     try:
         import pymysql
-        pw = os.environ.get('DB_PASS_STOCKS', 'stocks1234560')
+        pw = os.environ.get('DB_PASS_STOCKS', '') or os.environ.get('MYSQL_PASSWORD', '')
         conn = pymysql.connect(
             host='mysql.50webs.com', port=3306,
             user='ejaguiar1_stocks', password=pw,

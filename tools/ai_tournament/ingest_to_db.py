@@ -88,7 +88,7 @@ def enrich_confidence_with_persona_wr(picks: list[dict]) -> None:
         conn = pymysql.connect(
             host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
             user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
-            password=os.environ.get("DB_PASS_STOCKS", "stocks1234560"),
+            password=os.environ.get("DB_PASS_STOCKS", "") or os.environ.get("MYSQL_PASSWORD", ""),
             database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
             port=3306, connect_timeout=5)
         cur = conn.cursor()

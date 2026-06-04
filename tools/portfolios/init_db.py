@@ -73,7 +73,7 @@ def main(argv: list[str]) -> int:
 
     db_host = os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com")
     db_user = os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks")
-    db_pass = os.environ.get("DB_PASS_STOCKS", "stocks1234560")
+    db_pass = os.environ.get("DB_PASS_STOCKS", "") or os.environ.get("MYSQL_PASSWORD", "")
     db_name = os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks")
 
     print(f"[init_db] APPLY: connecting to {db_host}/{db_name} as {db_user}")

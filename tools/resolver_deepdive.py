@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 conn = mysql.connector.connect(
     host='mysql.50webs.com',
     user='ejaguiar1_stocks',
-    password='stocks1234560',
+    password=os.environ.get('DB_PASS_STOCKS','') or os.environ.get('MYSQL_PASSWORD',''),
     database='ejaguiar1_stocks'
 )
 cur = conn.cursor()
