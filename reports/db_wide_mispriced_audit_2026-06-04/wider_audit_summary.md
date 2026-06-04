@@ -91,3 +91,43 @@ After noticing `grok3 EQUITY` still had AMD picks at entry $158 vs actual market
 | **TOTAL** | **~4,400** | **2,987** | **~68%** |
 
 **~68% of pre-cleanup resolved picks had >25% entry-price drift** — primarily AI models quoting stale-training-window prices for equity (LODE-pre-split type errors) and crypto (BTC at $30K when market is $65K). Forex models quote current rates accurately but lose money on direction.
+
+## Round 5 — per-class drift thresholds (added 2026-06-04 10:15 UTC)
+
+After grok3 ETF audit revealed 10/10 wins were 5-10% drift (sub the 25% threshold), per-class thresholds were shipped:
+- **ETF 7%, EQUITY 10%, BOND 5%, FOREX 3%** (low-vol classes)
+- CRYPTO/PENNY keep 25% (legit intraday volatility)
+
+Re-audit on 1,844 ETF/EQUITY/BOND/FOREX candidates: **868 additional mispriced caught (47% rate)**. Cumulative MISPRICED now **3,865**.
+
+## Post-Round-5 honest leaderboard (n>=20)
+
+| Rank | Model | n | WR | PF | Notes |
+|---|---|---:|---:|---:|---|
+| 1 | **kimi_direct** | 54 | 68.5% | 2.87 | New #1 |
+| 2 | llm7_qwen | 40 | 67.5% | 2.10 | |
+| 3 | claude_haiku_4_5 | 39 | 66.7% | 2.18 | Was #1 pre-R5; had 59 MISPRICED (60% rate) |
+| 4 | gemini_2_5_flash | 58 | 62.1% | **3.23** | Best PF |
+| 5 | minimax_m2_5 | 49 | 61.2% | 1.33 | |
+
+## Per-class verdict (post-R5)
+
+| Class | n | WR | PF | Status |
+|---|---:|---:|---:|---|
+| COMMODITY | 364 | 55.2% | 2.17 | T2 PASS |
+| ETF | 216 | 57.4% | 1.33 | Sub-T2 PF |
+| BOND | 311 | 51.4% | 0.69 | **Losing** edge |
+| EQUITY | 260 | 38.8% | 0.99 | **No-edge** post-clean |
+| FOREX | 189 | 54.5% | 0.56 | Confirmed losing (R4 0/380, R5 added 189 via 3% threshold catching mild drift) |
+| CRYPTO | 418 | 47.1% | 1.25 | Sub-50% WR |
+| FUTURES | 56 | 66.1% | 3.07 | Small-n T1-shaped |
+
+## Net takeaway
+
+The original 25% drift threshold was **catastrophically loose** for low-vol asset classes. After per-class tightening:
+- EQUITY edge collapsed from 50.9% / PF 1.65 → 38.8% / PF 0.99 (no-edge)
+- claude_haiku_4_5 lost its "broadest diversification" claim — many EQUITY/BOND wins were stale quotes
+- FOREX remains a confirmed losing class
+- COMMODITY/FUTURES are the cleanest T2 candidates
+
+**Recommend re-running robust-metric verification (Sharpe/MDD) after the rebuild completes**.
