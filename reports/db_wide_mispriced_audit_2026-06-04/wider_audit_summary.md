@@ -64,3 +64,30 @@ After noticing `grok3 EQUITY` still had AMD picks at entry $158 vs actual market
 | PENNY | 33 | 48.5% | 1.48 | Insuff-n |
 
 **FOREX PF 0.62 is now confirmed-not-an-artifact** — even after aggressive mispricing cleanup, the asset class shows negative edge. Should be deprioritized for paper pilots.
+
+## Round 4 — FOREX via yfinance (added 2026-06-04 07:32 UTC)
+
+| Class | Audited | Mispriced | Rate |
+|---|---:|---:|---:|
+| FOREX | 380 | **0** | **0%** |
+
+**Cumulative MISPRICED: 2,987 (unchanged).**
+
+**FOREX is clean** — every resolved FOREX entry was within 25% of yfinance market open. The negative edge (PF 0.62, WR 52.4%) is **NOT a mispricing artifact** — it's genuine bad forecasting by AI models on currency direction calls.
+
+**Implication**: FOREX should be **deprioritized for paper pilots** and AI-tournament forex submissions should be down-weighted. The asset class has genuine no-edge signal in the current model fleet.
+
+## Complete audit summary across all rounds
+
+| Class | Audited | Mispriced | Rate |
+|---|---:|---:|---:|
+| EQUITY (R1-2) | ~2700 | ~1800 | 67% |
+| COMMODITY (R1-2) | ~250 | ~120 | 48% |
+| ETF (R1-2) | ~200 | ~80 | 40% |
+| BOND (R1-2) | ~350 | ~75 | 21% |
+| FUTURES/PENNY (R1-2) | ~80 | <10 | <12% |
+| CRYPTO (R3) | 884 | 548 | 62% |
+| FOREX (R4) | 380 | **0** | **0%** |
+| **TOTAL** | **~4,400** | **2,987** | **~68%** |
+
+**~68% of pre-cleanup resolved picks had >25% entry-price drift** — primarily AI models quoting stale-training-window prices for equity (LODE-pre-split type errors) and crypto (BTC at $30K when market is $65K). Forex models quote current rates accurately but lose money on direction.
