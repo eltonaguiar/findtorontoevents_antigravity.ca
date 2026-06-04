@@ -615,7 +615,7 @@ def _update_stats(portfolio: dict) -> None:
     s["win_rate"] = round(s["wins"] / max(len(closed), 1) * 100, 1)
     s["total_pnl_pct"] = round(sum(p.get("realized_pnl_pct", 0) for p in closed), 2)
     profit = sum(p.get("profit", 0) for p in closed)
-    unrealized = sum(pos.get("position_value", 500) * (pos.get("unrealized_pnl_pct", 0) / 100)
+    unrealized = sum(pos.get("position_value", 500) * ((pos.get("unrealized_pnl_pct") or 0) / 100)  # 2026-06-04 null-coalesce
                      for pos in portfolio.get("active_positions", []))
     eq = VIRTUAL_CAPITAL + profit + unrealized
     s["current_equity"] = round(eq, 2)

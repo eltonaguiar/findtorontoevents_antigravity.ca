@@ -472,7 +472,7 @@ def update_stats(portfolio: dict) -> None:
     # Equity calculation
     total_profit = sum(p.get("profit", 0) for p in closed)
     unrealized = sum(
-        pos.get("position_value", 500) * (pos.get("unrealized_pnl_pct", 0) / 100)
+        pos.get("position_value", 500) * ((pos.get("unrealized_pnl_pct") or 0) / 100)  # 2026-06-04 null-coalesce
         for pos in portfolio.get("active_positions", [])
     )
     equity = VIRTUAL_CAPITAL + total_profit + unrealized

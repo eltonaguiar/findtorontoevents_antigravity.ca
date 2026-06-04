@@ -537,7 +537,9 @@ def _compute_continuation_probability_heuristic(features: dict) -> float:
 
     # Feature 7: Hold days (longer holds that are still winning = stronger)
     hold_days = features.get("hold_days", 0)
-    if hold_days >= 3 and features.get("unrealized_pnl_pct", 0) > 0.03:
+    # 2026-06-04 null-coalesce: features.get(k, 0) returns None when key is
+    # present with explicit None (mark-to-market failure); comparison crashes.
+    if hold_days >= 3 and (features.get("unrealized_pnl_pct") or 0) > 0.03:
         prob += 0.05
     elif hold_days == 0:
         prob -= 0.03  # too fresh, could be noise
