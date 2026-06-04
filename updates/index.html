@@ -35,6 +35,105 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
 <div class="update-entry">
+  <h2>Jun 4, 2026 - Persona-Level Edge Discovery via MLflow + Statsmodels (ELI5)</h2>
+  <p class="timestamp">Posted: June 4, 2026 - 19:30 EDT</p>
+  <p><strong>TL;DR.</strong> We scanned the AI tournament personas (the &ldquo;trader personalities&rdquo; that 23+ LLM models adopt when picking trades) and found that the <em>persona</em> matters more than the <em>model</em>. The strongest single signal in the entire dataset: <code>cta_trend</code> persona on COMMODITY positions &mdash; <strong>86.7% win rate on 15 trades, +7.15% avg profit, +107% cumulative</strong>.</p>
+
+  <h3>ELI5: What's an AI persona, and why does it matter?</h3>
+  <p>When operator asks the AI tournament for stock picks, we don't just say &ldquo;hey ChatGPT, pick stocks.&rdquo; We tell each model to <em>role-play as a specific kind of trader</em>. Same model, different persona = totally different picks.</p>
+  <ul>
+    <li>Think of it like the same chef cooking <em>French</em> vs <em>Thai</em> vs <em>BBQ</em> &mdash; same hands, completely different recipes.</li>
+    <li>23 different LLMs (Claude, GPT-5, DeepSeek, Grok, Kimi, etc.) each get the same persona prompt and submit picks independently.</li>
+    <li>We then track which personas are right most often. The good ones become our &ldquo;real edge&rdquo; sleeves.</li>
+  </ul>
+
+  <h3>What does each persona actually mean? (Plain English)</h3>
+  <table>
+    <tr><th>Persona</th><th>ELI5</th><th>Real strategy reference</th></tr>
+    <tr><td><code><strong>cta_trend</strong></code></td><td>Trend-rider on commodities. Buy when oil/gas/gold has been going up for 3-12 months, sell when it's been falling. Doesn't care about news, just price direction.</td><td>Renaissance, Two Sigma, Man AHL "CTA" funds</td></tr>
+    <tr><td><code><strong>macro_hedge</strong></code></td><td>Bets on big-picture themes. "Inflation is coming &rarr; buy commodities, short bonds." Uses futures/ETFs to express the macro view.</td><td>Bridgewater Pure Alpha, Soros' Quantum Fund</td></tr>
+    <tr><td><code><strong>trend_continuation</strong></code></td><td>"The trend is your friend." Buys pullbacks in stocks already in uptrend (above 50-day moving average + briefly oversold).</td><td>Linda Raschke, classic trend-following manuals</td></tr>
+    <tr><td><code><strong>momentum_breakout</strong></code></td><td>Buys stocks the moment they hit a new 20/50/100-day high on heavy volume. Cuts losses fast if it's a fakeout.</td><td>Donchian channels, William O'Neil's CAN SLIM</td></tr>
+    <tr><td><code><strong>deep_value</strong></code></td><td>Benjamin Graham-style: only buys when a stock costs less than its tangible assets (literal cash + real estate + factories minus debt).</td><td>Warren Buffett early years, Walter Schloss</td></tr>
+    <tr><td><code><strong>gamma_raid</strong></code></td><td>Hunts penny-stock pumps. Buys when retail-meme-flow detected (options volume + social-media spike), exits in 1-3 days.</td><td>Reddit WSB-era playbook</td></tr>
+    <tr><td><code><strong>momentum_momentum</strong></code></td><td>Buys stocks where momentum is itself <em>accelerating</em> (2nd derivative). Catches the inflection point before the herd notices.</td><td>Jegadeesh-Titman cross-sectional momentum, super-charged</td></tr>
+    <tr><td><code>vol_arb</code></td><td>Profits from differences between implied and realized volatility. Sells overpriced options.</td><td>Susquehanna, market makers</td></tr>
+    <tr><td><code>oversold_bounce</code></td><td>Buys after deep drops, banking on the snap-back. Connors RSI-2 / mean-reversion family.</td><td>Larry Connors, Linda Raschke</td></tr>
+    <tr><td><code>reflexivity_trader</code></td><td>Soros-style. Bets that price moves themselves cause more buying/selling (self-fulfilling feedback loop). Reads crowd psychology.</td><td>Soros' Theory of Reflexivity</td></tr>
+    <tr><td><code>flight_to_safety</code></td><td>Buys bonds/gold when markets get scared. <strong>Currently a known anti-edge in our data</strong> (only 10.5% WR on BOND picks).</td><td>Classic 60/40 defensive rotation</td></tr>
+    <tr><td><code>microcap_momentum</code></td><td>Like momentum_breakout but on penny stocks. <strong>Anti-edge in our data</strong>: 31.6% WR, -4.4% avg.</td><td>Penny-stock pump-and-dump traps</td></tr>
+  </table>
+
+  <h3>What did the data say? (post-cleanup, deduped)</h3>
+  <table>
+    <tr><th>Rank</th><th>Persona</th><th>Asset class</th><th>n trades</th><th>Win rate</th><th>Avg profit</th><th>Cumulative</th><th>Max drawdown</th></tr>
+    <tr><td><strong>1</strong></td><td><code>cta_trend</code></td><td>COMMODITY</td><td>15</td><td><strong>86.7%</strong></td><td><strong>+7.15%</strong></td><td><strong>+107.2%</strong></td><td>-7.2%</td></tr>
+    <tr><td>2</td><td><code>macro_hedge</code></td><td>COMMODITY</td><td>18</td><td>77.8%</td><td>+5.21%</td><td>+93.8%</td><td>-7.6%</td></tr>
+    <tr><td>3</td><td><code>gamma_raid</code></td><td>PENNY</td><td>18</td><td>61.1%</td><td>+4.57%</td><td>+82.3%</td><td>-50.7% &#9888;</td></tr>
+    <tr><td>4</td><td><code>trend_continuation</code></td><td>ETF</td><td>25</td><td>76.0%</td><td>+1.80%</td><td>+45.0%</td><td>-6.0%</td></tr>
+    <tr><td>5</td><td><code>momentum_breakout</code></td><td>CRYPTO</td><td>25</td><td>60.0%</td><td>+2.07%</td><td>+51.7%</td><td>-11.9%</td></tr>
+    <tr><td>6</td><td><code>deep_value</code></td><td>ETF</td><td>26</td><td>61.5%</td><td>+0.57%</td><td>+14.8%</td><td>-7.8%</td></tr>
+    <tr><td>&#11088;</td><td><code>momentum_momentum</code></td><td>EQUITY</td><td>12*</td><td><strong>91.7%</strong></td><td><strong>+9.50%</strong></td><td>+114.0%</td><td>-5.3%</td></tr>
+  </table>
+  <p class="small">*n=12 is below our usual n&ge;15 threshold but the signal is so strong (91.7% win rate, 22.4 profit factor) it's worth flagging early. Treat as a watch-list, not confirmed edge.</p>
+
+  <h3>How do we know these are real?</h3>
+  <p>Because we did a 7-round audit cleanup first. <strong>&ldquo;R7&rdquo; = Round 7</strong> of mispriced-entry removal:</p>
+  <ol>
+    <li><strong>R1</strong>: Original 25% drift threshold. AI quoted LODE at $0.27 when market was $4.10 post-reverse-split. 553 picks flagged.</li>
+    <li><strong>R2</strong>: Wider sweep across all non-CRYPTO classes. +1,525 caught.</li>
+    <li><strong>R3</strong>: CRYPTO via Binance API. +548.</li>
+    <li><strong>R4</strong>: FOREX (clean - 0/380 mispriced - meaning forex models quote rates correctly, they just can't predict direction).</li>
+    <li><strong>R5</strong>: Per-class drift thresholds (ETF 7%, EQUITY 10%, BOND 5%, FOREX 3%) &mdash; tightened because low-vol ETFs don't have 25% intraday swings. +868 caught.</li>
+    <li><strong>R6</strong>: COMMODITY/FUTURES per-class 12%. +235 stale NG=F/CL=F LONGs caught.</li>
+    <li><strong>R7</strong>: After peer review from Zoo, Composer, Nemotron parallel agents, flagged 17 OPEN reverse-split picks (KULR/HOLO/GSAT) before they could resolve as inflated wins.</li>
+  </ol>
+  <p>Total: <strong>4,154 MISPRICED_ENTRY</strong> rows excluded from leaderboard math. The remaining numbers above are what survived 7 rounds of skeptical audit.</p>
+
+  <h3>What's MLflow and statsmodels? (ELI5)</h3>
+  <ul>
+    <li><strong>MLflow</strong> = a free, local journal for machine-learning experiments. Like a lab notebook that auto-saves every "I tried X, here's the result." Runs from a SQLite file (<code>mlflow.db</code>, ~800 KB), no cloud, no signup. View at <code>http://localhost:5000</code>.</li>
+    <li><strong>statsmodels</strong> = a Python library with classic statistics tools: ARIMA forecasting, Dickey-Fuller stationarity tests, cointegration tests. The math you'd find in a graduate-level econometrics textbook.</li>
+  </ul>
+
+  <h3>What does &ldquo;ADF p-value&rdquo; mean in the table?</h3>
+  <p>It's the Augmented Dickey-Fuller test on the persona's cumulative-pnl curve. Plain English:</p>
+  <ul>
+    <li><strong>ADF p &lt; 0.05 = MEAN_REVERT</strong>: the persona's wins and losses cancel out over time. If it's been losing, it's likely about to win back. Size <em>up</em> after losses.</li>
+    <li><strong>ADF p &gt; 0.5 = TRENDING</strong>: the persona's cumulative pnl keeps drifting in one direction. If it's been winning, it'll likely keep winning (durable edge). If losing, kill it.</li>
+    <li>5 of our 6 standouts have ADF p &gt; 0.99 = strongly trending UP = durable real edge.</li>
+  </ul>
+
+  <h3>Concrete operator playbook</h3>
+  <ol>
+    <li><strong>PROCEED</strong> with picks tagged <code>cta_trend</code> on COMMODITY symbols (oil, gas, gold, grains). Strongest signal in the entire dataset.</li>
+    <li><strong>PROCEED</strong> with <code>macro_hedge</code> on COMMODITY. Confirms the COMMODITY-class edge is real.</li>
+    <li><strong>PROCEED with caution</strong> on <code>trend_continuation</code> ETF picks. Real edge but smaller (+1.8% avg).</li>
+    <li><strong>SIZE SMALLER</strong> on <code>gamma_raid</code> PENNY picks. Real edge (61% WR / +4.57% avg) but -50.7% max drawdown means be ready for big single-pick losses.</li>
+    <li><strong>WATCH (not promote)</strong> the <code>momentum_momentum</code> × EQUITY signal until n &ge; 30.</li>
+    <li><strong>AVOID</strong> <code>flight_to_safety</code> × BOND (10.5% WR), <code>microcap_momentum</code> × PENNY (31.6%), <code>momentum_scalp</code> × CRYPTO (36.4%).</li>
+  </ol>
+
+  <h3>What's logged where</h3>
+  <p>All 70 runs are inspectable locally:</p>
+  <pre style="background:#0f172a;padding:8px;border-radius:4px;color:#e2e8f0;font-size:11px">mlflow ui --backend-store-uri sqlite:///mlflow.db
+# then open http://localhost:5000</pre>
+  <ul>
+    <li><code>verified_strategies_post_incident_94</code>: 6 runs (paper-pilot strategies)</li>
+    <li><code>forecast_consensus_picks_2026-06-04</code>: 9 runs (ARIMA 30-day bands per consensus ticker)</li>
+    <li><code>persona_edge_scan_2026-06-04</code>: 55 runs (every persona &times; class cell with n&ge;10)</li>
+  </ul>
+
+  <h3>Next steps</h3>
+  <ul>
+    <li>Wire <code>tools/ai_tournament/ingest_to_db.py</code> to auto-log every new tournament submission to MLflow with persona + asset class for full provenance.</li>
+    <li>Run ARIMA forecast bands on every active alpha_engine strategy &mdash; surface bottom-quartile as kill candidates.</li>
+    <li>Implement Deflated Sharpe Ratio (Lopez de Prado AFML eq 14.5) via statsmodels for institutional-readiness gate.</li>
+  </ul>
+  <p>Full report: <code>reports/mlflow_persona_edge_2026-06-04.md</code> &middot; Scripts: <code>tools/mlflow_persona_edge_scan.py</code>, <code>tools/forecast_consensus_picks.py</code>, <code>tools/mlflow_verified_strategies_log.py</code>. Local install (no cloud): <code>pip install mlflow statsmodels</code>.</p>
+</div>
+
+<div class="update-entry">
   <h2>Jun 4, 2026 - VERIFIED STRATEGIES UNLOCK: 32,473 rows backfilled, forward n jumps from 5 to 258</h2>
   <p class="timestamp">Posted: June 4, 2026 - 09:10 EDT</p>
   <p><strong>Headline</strong>: A systemic bug (<code>INCIDENT_OVERALL #94</code>) was writing <code>pnl_pct=0</code> on 99.9% of TIME_EXIT closures (33,172 / 33,213 rows) because <code>alpha_engine/mysql_trading_sync.py</code> read <code>exit_price</code> but the portfolio trackers wrote <code>close_price</code>. JSON-key mismatch. The bug hid all forward-test data for verified paper-pilot strategies.</p>
@@ -11604,7 +11703,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          Jun 04, 2026 &mdash; 05:53 PM EST | Hourly Portfolio Update
+          Jun 04, 2026 &mdash; 06:49 PM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -11623,6 +11722,7 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
 
 
 
@@ -12135,7 +12235,7 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 04, 05:53 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 04, 06:49 PM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>

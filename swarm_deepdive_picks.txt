@@ -1,0 +1,61 @@
+Deep-dive cross-check of 4 strongest tournament-pick consensus signals. Data source: tournament_picks table in ejaguiar1_stocks, post 7 audit-cleanup rounds (4154 MISPRICED_ENTRY rows excluded). Tournament_picks dedup-ratio = 1.00x (verified — no INCIDENT #91 dup inflation in this table).
+
+SIGNAL #1: QQQ LONG
+- n_closed (WIN+LOSS): 33 unique
+- WR: 84.8% (28 wins / 5 losses)
+- avg pnl: +2.51%
+- distinct LLM models that picked it: 23
+- still-OPEN today (2026-06-04 ~13:30Z): 5 models LONG (no avg-entry available)
+- ARIMA(1,1,1) 30d log-close forecast: mean = $740.75 vs last = $740.61 (essentially flat); 95% CI [$645, $850]
+
+SIGNAL #2: SPY LONG
+- n_closed: 35 unique
+- WR: 82.9% (29 wins / 6 losses)
+- avg pnl: +1.56%
+- distinct models: 14 (also 14 OPEN today @ avg $610.21)
+- ARIMA 30d: mean $756.71 vs last $757.09; 95% CI [$678, $845]
+
+SIGNAL #3: IWM LONG
+- n_closed: 34 unique
+- WR: 79.4% (27 wins / 7 losses)
+- avg pnl: +1.45%
+- distinct models: 17 OPEN @ avg $228.29
+- ARIMA 30d: mean $291.60 vs last $292.01; 95% CI [$256, $332]
+
+SIGNAL #4 (NEW DISCOVERY — DIRECTIONAL INVERSION): MSFT SHORT
+- n_closed: 17 unique
+- WR: 70.6% (12 wins / 5 losses)
+- avg pnl: +3.6%
+- distinct models: 12 picked SHORT
+- BUT 9 different models are CURRENTLY OPEN LONG @ avg $394.52 — the MSFT LONG cohort empirically loses (WR 42.9%, avg -0.49%, n=49)
+- MSFT current spot: $428.05 per yfinance
+- ARIMA 30d: mean $427.98 vs last $428.05; 95% CI [$353, $519]
+
+REJECTED SIGNALS (operator should NOT follow):
+- MSFT LONG: 9 models OPEN LONG today, but 42.9% closed WR — empirically wrong
+- NVDA: 30% LONG, 37% SHORT — no directional edge
+- AAPL SHORT: 18.8% WR (n=16) — anti-consensus has been very wrong
+- META LONG: 41.4% WR (n=29) — no edge
+
+OPERATOR-FACING QUESTIONS:
+
+Q1. For each of the 4 strongest picks, what's the most likely failure mode / what could make the historical WR not reproduce going forward? Identify any structural reason these would degrade.
+
+Q2. Is the MSFT SHORT signal (70.6% WR) credible vs the SHORT-bias hypothesis that single-asset shorts often have inflated WR in calm markets? Note: tournament_picks COMMODITY/FUTURES already had the per-class drift threshold catch stale SHORTs (NG=F, CL=F). Is MSFT SHORT subject to similar contamination?
+
+Q3. Given operator wants "safest possible consensus bets for long-term picks", which of (QQQ, SPY, IWM, MSFT-SHORT) is the WORST risk-adjusted choice and why?
+
+Q4. Should we run a verified subset rebuild of tournament_picks using the deduped at_signal_outcomes view (after INCIDENT #91 row dedup) before sizing positions, or are tournament_picks numbers already trustworthy? Note: the 1.00x ratio check showed no duplication in tournament_picks itself.
+
+Q5. What's the single fastest experiment to confirm or reject each signal — e.g., paper-trade for N days at quarter-Kelly sizing, then promote if WR survives?
+
+Output JSON:
+{
+  "signal_verdicts": [{"sym":"QQQ_LONG","verdict":"PROCEED|WATCH|REJECT","top_risk":"...","confidence_1to10":N}],
+  "msft_short_credible": "yes|no|partial — why",
+  "worst_risk_adjusted": "X — why",
+  "rebuild_recommendation": "DO|SKIP — why",
+  "fastest_validation_experiment": "...",
+  "your_top_recommendation": "single action for next 15 min"
+}
+Be skeptical. JSON only.
