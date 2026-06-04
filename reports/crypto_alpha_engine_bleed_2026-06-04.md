@@ -32,3 +32,33 @@ The bleed coincides with crypto market regime change in May — possible that al
 - If 7d drops back below 35%, suggests bleed wasn't regime-driven and alpha_engine CRYPTO logic needs review.
 
 Generated 2026-06-04 by claude during /loop session.
+
+## CRITICAL — duplicate-row inflation in at_signal_outcomes (added 08:50 UTC)
+
+Sample query revealed `at_signal_outcomes` has massive row-duplication for alpha_engine picks. Dedup by `(symbol, opened_at|closed_at, strategy, entry_price)`:
+
+| Class | raw_n | unique_n | dup_ratio |
+|---|---:|---:|---:|
+| CRYPTO | 12,617 | 291 | **43.36x** |
+| EQUITY | 567 | 36 | 15.75x |
+| FOREX | 100 | 12 | 8.33x |
+| MEMECOIN | 68 | 9 | 7.56x |
+
+### Implications
+- The bleed-window CRYPTO "12,617 picks" is really **~291 unique picks** at 23.5% WR — still confirms a real bleed but on much smaller n than appeared.
+- Dashboard `money_ready_verdict` n_resolved figures already dedup (ETF n=8 / 100% WR / INSUFFICIENT_DATA), so user-facing surfaces are protected.
+- Raw `at_signal_outcomes` rows are NOT safe for ad-hoc analysis without dedup.
+
+### Same pattern as the LODE/AI-tournament cleanup
+This is the third manifestation of the duplicate-pick leakage signal:
+1. AI tournament (now cleaned): mispriced entries — 2,987 fixed
+2. CLAUDE.md note (May): "1864 duplicate signal-ts groups" in pick_funnel CRYPTO Smart Picks
+3. **Today (alpha_engine `at_signal_outcomes`)**: 7-43x duplication across all live asset classes
+
+### Action
+- Open INCIDENT_OVERALL P0: alpha_engine bot writes same row 8-43x to `at_signal_outcomes`. Need either UNIQUE constraint on `(symbol,opened_at,strategy,direction)` or fix the bot's write logic.
+- Until fixed, every analytic against `at_signal_outcomes` must dedup or it will inflate `n` and mask real edge.
+
+## Apparent ETF/FOREX 100%/94% WR was duplication artifact
+
+Earlier extreme reads (alpha_engine ETF 100% / n=142 @ 48h; FOREX 94% / n=100 @ bleed-window) are **NOT real edges** — they collapsed to ~15-25 unique picks after dedup. The raw row counts were duplicated wins of the same SPY/QQQ/USDCAD pick.
