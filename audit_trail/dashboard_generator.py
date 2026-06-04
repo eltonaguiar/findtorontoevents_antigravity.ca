@@ -53,6 +53,38 @@ except Exception:  # pragma: no cover - optional import
 
 from audit_trail.pnl_ingest_sanity import clamp_pnl_pct_for_pick
 
+try:
+    from audit_trail.reverse_split_symbols import (
+        get_reverse_split_info,
+        is_reverse_split_affected,
+    )
+except Exception:  # pragma: no cover
+    def is_reverse_split_affected(symbol: str) -> bool:  # type: ignore
+        return False
+
+    def get_reverse_split_info(symbol: str):  # type: ignore
+        return None
+
+
+def _annotate_reverse_split_pick(pick: dict) -> dict:
+    """Stamp reverse-split metadata on a pick for dashboard badges/filters."""
+    sym = str(pick.get("symbol") or "").strip().upper()
+    if not sym or not is_reverse_split_affected(sym):
+        return pick
+    out = dict(pick)
+    out["reverse_split_affected"] = 1
+    info = get_reverse_split_info(sym)
+    if info:
+        out["reverse_split_ratio"] = info[0]
+        out["reverse_split_date"] = info[1]
+    if out.get("_reverse_split_adjusted"):
+        out["reverse_split_note"] = "Entry/TP/SL adjusted for split ratio"
+    else:
+        out["reverse_split_note"] = (
+            "Pre-split entry vs post-split price — exclude from aggregate WR/PnL"
+        )
+    return out
+
 # Cross-AI PR review (2026-04-28) HIGH cleanup item: the canonical
 # BOND_SYMBOLS / ETF_SYMBOLS frozensets were being re-imported on every
 # call to _derive_asset_class (via inline `from ... import` inside the
@@ -5505,6 +5537,8 @@ def _build_strategy_symbol_track_stats(closed_picks: list) -> dict:
     """
     stats: dict[str, dict] = {}
     for pick in closed_picks:
+        if pick.get("reverse_split_affected") and not pick.get("_reverse_split_adjusted"):
+            continue
         strat = pick.get("strategy", "")
         sym = _normalize_symbol(pick.get("symbol", ""))
         if not strat or not sym:
@@ -6843,7 +6877,9 @@ def _build_recent_closed_picks(
     # of "0 of 3,500 picks have WIN/LOSS outcomes" in recent_closed.
     return sorted(
         [
-            {**p, "_outcome": (p.get("_outcome") or p.get("status") or "").upper()}
+            _annotate_reverse_split_pick(
+                {**p, "_outcome": (p.get("_outcome") or p.get("status") or "").upper()}
+            )
             for p in recent_closed[:max_picks]
         ],
         key=lambda x: x.get("timestamp", ""),
@@ -16604,8 +16640,10 @@ def generate():
             # QUALITY GATES APPLIED (2026-03-26):
             # - Active Picks: tradeable (entry>0), not stale, not killed strategy
             # - Smart Picks: top quartile score, confidence sweet spot, R:R >= 1.5
-            "active": final_active_picks,
-            "recent_closed": [_slim_closed_pick(p) for p in recent_closed],
+            "active": [_annotate_reverse_split_pick(p) for p in final_active_picks],
+            "recent_closed": [
+                _slim_closed_pick(_annotate_reverse_split_pick(p)) for p in recent_closed
+            ],
         },
         "portfolios": portfolios,
         "performance": {

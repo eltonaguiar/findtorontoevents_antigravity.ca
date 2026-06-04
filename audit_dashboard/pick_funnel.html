@@ -995,14 +995,14 @@ function renderClickFunnel(){
   const last20 = arr.slice(-20).reverse();
   const summary = Object.entries(counts).map(([b,c])=>`<code>${b}</code> &times; ${c}`).join(' &middot; ');
   const rows = last20.map(e=>{
-    const ts = (e.ts||'').replace('T',' ').slice(0,19);
+    const ts = toEST(e.ts);
     const syms = (e.top_3_symbols||[]).join(', ') || '<span class="small">—</span>';
     const af = e.asset_class_filter || '<span class="small">all</span>';
     return `<tr><td>${ts}</td><td><code>${e.buttonId}</code></td><td>${af}</td><td class="num">${e.visible_picks_count||0}</td><td>${syms}</td></tr>`;
   }).join('');
   host.innerHTML =
     `<div style="margin-bottom:8px"><b>Clicks per button:</b> ${summary} &middot; <b>total:</b> ${arr.length}</div>` +
-    `<table class="lb"><thead><tr><th>When (UTC)</th><th>Button</th><th>Asset filter</th><th class="num">Visible picks</th><th>Top 3 symbols</th></tr></thead><tbody>${rows}</tbody></table>` +
+    `<table class="lb"><thead><tr><th>When (EST)</th><th>Button</th><th>Asset filter</th><th class="num">Visible picks</th><th>Top 3 symbols</th></tr></thead><tbody>${rows}</tbody></table>` +
     `<div style="margin-top:8px"><button class="eli5-btn" id="cf-clear">Clear local click log</button> <span class="small">Local to this browser only.</span></div>`;
   const btn = document.getElementById('cf-clear');
   if (btn) btn.addEventListener('click', function(){
