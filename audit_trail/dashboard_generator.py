@@ -14527,7 +14527,7 @@ def generate():
     # (last 100 trades) compound OR per-day geomean × 252 annualization.
     # Until then, the metric should be read with the disclaimer:
     #   "fictitious sequential reinvestment of 1 unit on every trade"
-    _MAX_PNL_COMPOUND = 2
+    _MAX_PNL_COMPOUND = 10  # bumped from 2% (2026-06-04): 2% destroyed edge at scale; 10% loss-protective
     total_pnl_pct_compounded_ew = _compound_equal_weight_capped_sequence(
         resolved_closed, float(_MAX_PNL_COMPOUND)
     )
@@ -16522,9 +16522,9 @@ def generate():
             # figures. Compounded equal-weight is the mathematically correct figure
             # (-100% floor = full account drawdown). Raw sum retained below for
             # transparency/debugging as total_pnl_pct_sum_raw.
-            "total_pnl_pct": total_pnl_pct_compounded_ew,
+            "total_pnl_pct": total_pnl_pct_compounded_rolling_100,  # rolling-100 (replaced deprecated EW compound 2026-06-04)
             "total_pnl_pct_sum_raw": total_pnl,  # deprecated, retained for debugging
-            "total_pnl_pct_compounded_ew": total_pnl_pct_compounded_ew,
+            "total_pnl_pct_compounded_ew": total_pnl_pct_compounded_ew,  # deprecated — kept for back-compat
             # T1.4 redesign (2026-05-09): bounded headline replacements for the
             # unbounded full-ledger EW compound. Rolling = last 100 trades only;
             # geomean_annualized = ((1 + mu_d/100)^252 - 1) * 100 from daily means.

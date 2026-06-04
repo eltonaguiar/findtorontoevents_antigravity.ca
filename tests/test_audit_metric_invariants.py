@@ -198,26 +198,26 @@ def test_summary_compounded_ew_exists():
     summary = PAYLOAD.get("summary")
     if not isinstance(summary, dict):
         pytest.skip("summary block absent")
-    assert "total_pnl_pct_compounded_ew" in summary, (
+    assert "total_pnl_pct_compounded_rolling_100" in summary, (
         "summary.total_pnl_pct_compounded_ew missing — this is the honest "
         "headline return; the dashboard must not fall back to the naive sum."
     )
 
 
 def test_headline_total_pnl_is_the_compounded_value():
-    """summary.total_pnl_pct (the headline) must be the compounded EW figure,
+    """summary.total_pnl_pct (the headline) must be the rolling-100 compound,
     never the naive raw sum."""
     summary = PAYLOAD.get("summary")
     if not isinstance(summary, dict):
         pytest.skip("summary block absent")
     headline = summary.get("total_pnl_pct")
-    compounded = summary.get("total_pnl_pct_compounded_ew")
+    compounded = summary.get("total_pnl_pct_compounded_rolling_100")
     if headline is None or compounded is None:
-        pytest.skip("total_pnl_pct or total_pnl_pct_compounded_ew absent")
+        pytest.skip("total_pnl_pct or total_pnl_pct_compounded_rolling_100 absent")
     assert math.isclose(float(headline), float(compounded), rel_tol=1e-6, abs_tol=1e-6), (
-        f"headline total_pnl_pct={headline} is NOT the compounded EW value "
+        f"headline total_pnl_pct={headline} is NOT the rolling-100 compound "
         f"{compounded}. The honest headline must be the compounded figure "
-        "(see audit Part 1)."
+        "(see audit 2026-06-04: EW deprecated, replaced by rolling-100)."
     )
 
 
@@ -245,9 +245,9 @@ def test_compounded_ew_within_sane_band():
     summary = PAYLOAD.get("summary")
     if not isinstance(summary, dict):
         pytest.skip("summary block absent")
-    compounded = summary.get("total_pnl_pct_compounded_ew")
+    compounded = summary.get("total_pnl_pct_compounded_rolling_100")
     if compounded is None:
-        pytest.skip("total_pnl_pct_compounded_ew absent")
+        pytest.skip("total_pnl_pct_compounded_rolling_100 absent")
     val = float(compounded)
     assert math.isfinite(val), f"compounded EW return is not finite: {val}"
     assert -100.0 <= val <= 10000.0, (
