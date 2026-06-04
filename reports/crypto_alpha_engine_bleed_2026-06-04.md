@@ -62,3 +62,24 @@ This is the third manifestation of the duplicate-pick leakage signal:
 ## Apparent ETF/FOREX 100%/94% WR was duplication artifact
 
 Earlier extreme reads (alpha_engine ETF 100% / n=142 @ 48h; FOREX 94% / n=100 @ bleed-window) are **NOT real edges** — they collapsed to ~15-25 unique picks after dedup. The raw row counts were duplicated wins of the same SPY/QQQ/USDCAD pick.
+
+## Root cause confirmed — INCIDENT_OVERALL.id=91
+
+- `at_signal_outcomes` has UNIQUE INDEX `idx_dedup` on `(symbol, direction, source_system, opened_at)`.
+- **98.2% of alpha_engine rows write `opened_at=NULL`** (40,016 of 40,743). MySQL treats NULL as distinct from itself, so the unique constraint never fires.
+- Top duplicate group (last 24h): **PLTR regime_accumulation @ entry=156.54 closed 2026-06-03 14:05:08 = 11 duplicate rows.**
+
+### Writers identified (need fix)
+- `audit_trail/backfill_local_sources.py:194` (INSERT IGNORE INTO at_signal_outcomes — IGNORE doesn't help when unique-index can't match due to NULL)
+- `audit_trail/backfill_local_sources.py:295,380` (also insert closed picks)
+- `tools/repair_data_integrity.py:278`
+
+### Recommended fix (operator approval needed before DDL)
+Add a SECOND unique index that dedupes at close-time regardless of opened_at:
+```sql
+CREATE UNIQUE INDEX idx_dedup_close
+  ON at_signal_outcomes (symbol, strategy, entry_price, closed_at, source_system);
+```
+This is additive (no writer changes), catches the actual duplicate pattern (same close-time = same fill), and won't break existing flows because the current 8-43x duplicates would all collapse to 1 row apiece via the writer's `INSERT IGNORE`.
+
+**DO NOT RUN this DDL without operator approval** — it will fail mid-creation if duplicates already exist (which they do). Sequence: dedup existing dups → add index → done. That's a maintenance window operation.
