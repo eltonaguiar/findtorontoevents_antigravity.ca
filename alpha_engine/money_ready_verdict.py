@@ -208,6 +208,22 @@ MAX_SYMBOL_CONCENTRATION_BY_CLASS: dict[str, float] = {
 # so downstream consumers never assume a class is absent. Ref: action #9.
 CANONICAL_ASSET_CLASSES = ("CRYPTO", "EQUITY", "COMMODITY", "ETF", "FOREX", "BOND", "FUTURES")
 
+
+def _is_class_policy_frozen(asset_class: str) -> bool:
+    """Return True if asset_class is in BLOCKED_ASSET_CLASSES from quality_gates.
+
+    Used to stamp `policy_frozen=true` on the verdict so the dashboard can
+    distinguish operator-imposed class freezes (lift via operator decision)
+    from genuinely data-thin classes (lift via more picks). Both classes
+    surface as INSUFFICIENT_DATA today which is misleading.
+    """
+    try:
+        from audit_trail.quality_gates import BLOCKED_ASSET_CLASSES
+        return (asset_class or "").upper() in BLOCKED_ASSET_CLASSES
+    except Exception:
+        return False
+
+
 MAX_SOURCE_CONCENTRATION = 0.40
 MAX_SOURCE_CONCENTRATION_BY_CLASS: dict[str, float] = {
     # COMMODITY 0.60: CT=F edge is genuinely concentrated in one
@@ -1176,6 +1192,15 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                 else None
             ),
             "verdict": verdict,
+            # 2026-06-04: surface BLOCKED_ASSET_CLASSES freeze status so the
+            # dashboard can distinguish "policy-blocked" classes (FOREX,
+            # COMMODITY, BOND, FUTURES — frozen by design until external
+            # replication / source rehab) from "data-thin" classes (genuinely
+            # n<MIN_N_CLASS). Both currently surface as INSUFFICIENT_DATA which
+            # is technically correct but misleads operators into thinking
+            # the fix is "collect more picks" when it's actually "operator
+            # decision to lift freeze". Add the flag without changing verdict.
+            "policy_frozen": _is_class_policy_frozen(ac),
             "data_source": data_source,
             "top_symbol": top_symbol,
             "top_symbol_share": round(top_symbol_share, 4),
