@@ -1,10 +1,10 @@
 ##  Battle Test Report
 
-**Last Run:** 2026-06-04 09:14:53 UTC
+**Last Run:** 2026-06-04 11:01:31 UTC
 
 ### Summary
 - **Prices Fetched:** 7
-- **Signals Generated:** 5
+- **Signals Generated:** 6
 - **Survivors:** 8
 - **Eliminated:** 7
 
@@ -12,11 +12,12 @@
 
 | Symbol | Strategy | Signal | Entry | TP | SL | Confidence |
 |--------|----------|--------|-------|-------|-------|------------|
-| ETH | Funding_Rate_Arbitrage | SHORT | $1760.1800 | $1707.3746 | $1795.3836 | 100% |
-| DOGE | Funding_Rate_Arbitrage | SHORT | $0.0880 | $0.0854 | $0.0898 | 100% |
-| AVAX | Funding_Rate_Arbitrage | SHORT | $7.7200 | $7.4884 | $7.8744 | 100% |
-| LINK | Funding_Rate_Arbitrage | LONG | $7.9700 | $8.2091 | $7.8106 | 100% |
-| ADA | Flash_Crash_Reversal | LONG | $0.1914 | $0.2010 | $0.1819 | 75% |
+| ETH | Funding_Rate_Arbitrage | SHORT | $1735.1100 | $1683.0567 | $1769.8122 | 100% |
+| DOGE | Funding_Rate_Arbitrage | SHORT | $0.0870 | $0.0844 | $0.0887 | 100% |
+| AVAX | Funding_Rate_Arbitrage | SHORT | $7.5600 | $7.3332 | $7.7112 | 100% |
+| LINK | Funding_Rate_Arbitrage | LONG | $7.8300 | $8.0649 | $7.6734 | 100% |
+| BONK | Flash_Crash_Reversal | LONG | $0.0000 | $0.0000 | $0.0000 | 73% |
+| ADA | Flash_Crash_Reversal | LONG | $0.1877 | $0.1971 | $0.1783 | 91% |
 
 ###  Survivors (Battle-Tested)
 - **Funding Rate Arbitrage** (Grade: A, Score: 88)
