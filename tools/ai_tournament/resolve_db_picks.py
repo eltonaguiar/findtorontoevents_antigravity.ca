@@ -133,6 +133,11 @@ def main() -> int:
         counts_skip = 0
 
     # ── Pre-fetch OHLC windows for unique symbols ──
+    # 2026-06-04: removed sibling `if ac == "CRYPTO": ohlc_cache[sym] = []`
+    # guard. fetch_ohlc_window now routes CRYPTO to Binance/CoinGecko/KuCoin
+    # (PR #512 + f273b6db57). The matching guard at price_tracker.py:621 was
+    # removed in 893c660c10; this completes the pair so the DB resolver
+    # actually uses intrabar OHLC for CRYPTO instead of forcing spot fallback.
     ohlc_cache: dict[str, list[dict]] = {}
     symbols_seen: set[str] = set()
     for r in filtered:
@@ -140,9 +145,6 @@ def main() -> int:
         if sym and sym not in symbols_seen:
             symbols_seen.add(sym)
             ac = (r.get("asset_class") or "EQUITY").upper()
-            if ac == "CRYPTO":
-                ohlc_cache[sym] = []
-                continue
             try:
                 ohlc_cache[sym] = fetch_ohlc_window({
                     "symbol": sym,
