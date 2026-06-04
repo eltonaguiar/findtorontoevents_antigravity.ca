@@ -111,5 +111,18 @@ def is_tpsl_violation(p: dict) -> bool:
 
 
 def is_resolution_trustworthy(p: dict) -> bool:
-    """A resolved pick whose WIN/LOSS can be trusted for leaderboard stats."""
+    """A resolved pick whose WIN/LOSS can be trusted for leaderboard stats.
+
+    2026-06-04: Picks with status='MISPRICED_ENTRY' are excluded — these are
+    picks whose entry_price drifted >25% from the actual market price at
+    submission (corporate action / reverse split / contract roll / stale
+    AI training data). 553 of 969 audited tournament picks (57.1%) on the
+    top 15 models were mispriced this way. Including them produces the
+    inflated 87-92% WR figures the audit page showed pre-cleanup. See
+    reports/db_wide_mispriced_audit_2026-06-04/summary.json for the audit
+    output.
+    """
+    status = str(p.get("status") or "").upper()
+    if status == "MISPRICED_ENTRY":
+        return False
     return not (is_timestamp_anomaly(p) or is_tpsl_violation(p))
