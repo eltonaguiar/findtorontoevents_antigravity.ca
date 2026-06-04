@@ -297,9 +297,17 @@ def pick_to_row(pick):
         )
 
     # Persist explicit exit price for closed picks when available.
+    # alpha_engine portfolio_tracker_*.py writes pos["close_price"] (not
+    # "exit_price") on TIME_EXIT closures. Without this alias, 33,172 of
+    # 33,213 TIME_EXIT rows landed with exit_price=entry_price and pnl_pct=0
+    # (INCIDENT_OVERALL #94, 2026-06-04). Add close_price/closePrice fallbacks.
     exit_price = pick.get("exit_price")
     if exit_price is None:
         exit_price = pick.get("exitPrice")
+    if exit_price is None:
+        exit_price = pick.get("close_price")
+    if exit_price is None:
+        exit_price = pick.get("closePrice")
     exit_price = _safe_float(exit_price)
 
     # pnl_pct can be in different fields
