@@ -49,14 +49,62 @@ DEFAULT_KELLY_CAP_PCT = 0.02
 # Snapshot per audit_dashboard/data/ai_tournament_leaderboard.json. Each
 # entry: {model_id: (n_resolved, wr_pct, pf, kelly_cap_pct_implied)}.
 # Implied Kelly is from PF/WR assuming avg_loss=2% (typical SL distance).
-ROBUST_PANEL = {
-    "deepseek_v4":      {"n": 271, "wr": 0.579, "pf": 3.50, "raw_kelly": 0.1035},
-    "claude_haiku_4_5": {"n": 85,  "wr": 0.694, "pf": 3.69, "raw_kelly": 0.1265},
-    "cursor_agent":     {"n": 123, "wr": 0.650, "pf": 3.13, "raw_kelly": 0.1107},
-    "gpt4o":            {"n": 265, "wr": 0.577, "pf": 2.90, "raw_kelly": 0.0947},
-    "deepseek_r1":      {"n": 172, "wr": 0.611, "pf": 2.89, "raw_kelly": 0.0999},
-    "mercury":          {"n": 110, "wr": 0.582, "pf": 2.77, "raw_kelly": 0.0930},
-}
+# 2026-06-04 cleanup: ROBUST_PANEL is now derived DYNAMICALLY from the live
+# leaderboard (audit_dashboard/data/ai_tournament_leaderboard.json). The
+# previous hardcoded panel (deepseek_v4/claude_haiku_4_5/cursor_agent/gpt4o/
+# deepseek_r1/mercury) was selected pre-MISPRICED-cleanup using inflated stats
+# from the spot-snapshot resolver + AI-stale-price-data. Post-cleanup (914
+# tournament picks excluded as MISPRICED_ENTRY), those models' stats are
+# materially different — most lost ranking. Pulling from leaderboard means
+# the panel updates automatically as new MISPRICED detections accrue.
+PANEL_MIN_N = 50           # statistical confidence floor
+PANEL_MIN_WR = 0.50        # honest WR floor
+PANEL_MIN_PF = 1.50        # honest PF floor
+PANEL_MAX_PF = 10.0        # exclude resolver outliers
+PANEL_SIZE = 8             # top-N by score
+
+
+def _load_robust_panel() -> dict:
+    """Dynamically derive the panel from the live leaderboard."""
+    leaderboard_path = (Path(__file__).resolve().parents[1]
+                        / "audit_dashboard" / "data"
+                        / "ai_tournament_leaderboard.json")
+    try:
+        data = json.loads(leaderboard_path.read_text(encoding="utf-8"))
+    except Exception:
+        # Fallback: empty panel — caller should error out cleanly
+        return {}
+    rows = data if isinstance(data, list) else (
+        data.get("models") or data.get("leaderboard") or []
+    )
+    candidates = []
+    for m in rows:
+        if not isinstance(m, dict):
+            continue
+        n = m.get("n_resolved", 0) or 0
+        wr = m.get("wr", 0) or 0
+        pf = m.get("pf", 0) or 0
+        if n < PANEL_MIN_N or wr < PANEL_MIN_WR:
+            continue
+        if pf < PANEL_MIN_PF or pf > PANEL_MAX_PF:
+            continue
+        candidates.append((m.get("score", 0) or 0, m.get("model_id"), n, wr, pf))
+    candidates.sort(reverse=True)
+    panel = {}
+    for _, mid, n, wr, pf in candidates[:PANEL_SIZE]:
+        # Implied Quarter-Kelly assuming avg_loss=2% SL distance
+        avg_loss = 0.02
+        avg_win = pf * (1 - wr) * avg_loss / wr if wr > 0 else 0
+        raw_kelly = 0.25 * (wr * avg_win - (1 - wr) * avg_loss) / max(avg_win, 0.001)
+        panel[mid] = {"n": int(n), "wr": round(wr, 3), "pf": round(pf, 2),
+                      "raw_kelly": round(max(0, raw_kelly), 4)}
+    return panel
+
+
+ROBUST_PANEL = _load_robust_panel()
+if not ROBUST_PANEL:
+    print("WARN: could not derive ROBUST_PANEL from leaderboard; "
+          "no picks will be returned", file=sys.stderr)
 
 # Confidence string → numeric weight for ranking
 CONFIDENCE_WEIGHT = {"HIGH": 1.0, "MEDIUM": 0.7, "LOW": 0.4}
