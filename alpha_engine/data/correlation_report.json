@@ -1,41 +1,41 @@
 {
-  "generated_at": "2026-06-04T01:30:28.711495+00:00",
+  "generated_at": "2026-06-04T07:55:13.534059+00:00",
   "rolling_window_days": 30,
   "correlation_matrix": {
     "BTCUSDT": {
       "BTCUSDT": 1.0,
-      "ETHUSDT": 0.8874,
-      "AVAXUSDT": 0.8361,
-      "BNBUSDT": 0.6805,
-      "SUIUSDT": 0.5898
+      "ETHUSDT": 0.8809,
+      "AVAXUSDT": 0.8231,
+      "BNBUSDT": 0.6595,
+      "SOLUSDT": 0.8527
     },
     "ETHUSDT": {
-      "BTCUSDT": 0.8874,
+      "BTCUSDT": 0.8809,
       "ETHUSDT": 1.0,
-      "AVAXUSDT": 0.8942,
-      "BNBUSDT": 0.6123,
-      "SUIUSDT": 0.6551
+      "AVAXUSDT": 0.8934,
+      "BNBUSDT": 0.6103,
+      "SOLUSDT": 0.856
     },
     "AVAXUSDT": {
-      "BTCUSDT": 0.8361,
-      "ETHUSDT": 0.8942,
+      "BTCUSDT": 0.8231,
+      "ETHUSDT": 0.8934,
       "AVAXUSDT": 1.0,
-      "BNBUSDT": 0.6402,
-      "SUIUSDT": 0.7141
+      "BNBUSDT": 0.6419,
+      "SOLUSDT": 0.9349
     },
     "BNBUSDT": {
-      "BTCUSDT": 0.6805,
-      "ETHUSDT": 0.6123,
-      "AVAXUSDT": 0.6402,
+      "BTCUSDT": 0.6595,
+      "ETHUSDT": 0.6103,
+      "AVAXUSDT": 0.6419,
       "BNBUSDT": 1.0,
-      "SUIUSDT": 0.3841
+      "SOLUSDT": 0.6539
     },
-    "SUIUSDT": {
-      "BTCUSDT": 0.5898,
-      "ETHUSDT": 0.6551,
-      "AVAXUSDT": 0.7141,
-      "BNBUSDT": 0.3841,
-      "SUIUSDT": 1.0
+    "SOLUSDT": {
+      "BTCUSDT": 0.8527,
+      "ETHUSDT": 0.856,
+      "AVAXUSDT": 0.9349,
+      "BNBUSDT": 0.6539,
+      "SOLUSDT": 1.0
     }
   },
   "symbols": [
@@ -43,30 +43,64 @@
     "ETHUSDT",
     "AVAXUSDT",
     "BNBUSDT",
-    "SUIUSDT"
+    "SOLUSDT"
   ],
   "diversification": {
-    "avg_pairwise_correlation": 0.6894,
-    "diversification_score": 2.7,
-    "risk_level": "MODERATE",
+    "avg_pairwise_correlation": 0.7807,
+    "diversification_score": 0.0,
+    "risk_level": "HIGH_RISK",
     "crypto_symbol_count": 5,
     "pair_count": 10
   },
   "cross_asset_correlations": {
     "btc_vs_spy": null,
     "btc_vs_dxy": null,
-    "btc_vs_eth": 0.8874
+    "btc_vs_eth": 0.8809
   },
-  "alerts": [],
-  "alert_count": 0,
-  "high_severity_alerts": 0,
-  "diversification_history": [
+  "alerts": [
     {
-      "timestamp": "2026-05-27T19:03:48.536355+00:00",
-      "score": 69.4,
-      "avg_corr": 0.4225,
-      "risk_level": "MODERATE"
-    },
+      "type": "HIGH_CORRELATION_CLUSTER",
+      "severity": "HIGH",
+      "pair_count": 6,
+      "threshold": 5,
+      "top_pairs": [
+        {
+          "a": "AVAXUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.9349
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "AVAXUSDT",
+          "corr": 0.8934
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "ETHUSDT",
+          "corr": 0.8809
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.856
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.8527
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "AVAXUSDT",
+          "corr": 0.8231
+        }
+      ],
+      "message": "6 pairs with correlation > 0.8 (threshold: 5)"
+    }
+  ],
+  "alert_count": 1,
+  "high_severity_alerts": 1,
+  "diversification_history": [
     {
       "timestamp": "2026-05-28T01:11:27.936427+00:00",
       "score": 59.2,
@@ -240,6 +274,12 @@
       "score": 2.7,
       "avg_corr": 0.6894,
       "risk_level": "MODERATE"
+    },
+    {
+      "timestamp": "2026-06-04T07:55:13.534059+00:00",
+      "score": 0.0,
+      "avg_corr": 0.7807,
+      "risk_level": "HIGH_RISK"
     }
   ]
 }
