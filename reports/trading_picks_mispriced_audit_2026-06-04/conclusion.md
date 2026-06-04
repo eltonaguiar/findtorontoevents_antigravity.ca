@@ -1,0 +1,1 @@
+trading_picks is essentially clean — only 3 mispriced candidates (of 10 audited with |pnl|>15%). Most |pnl|>15% rows are legitimate (TRXUSDT -78% from real volatility, etc.). Different ingestion path from tournament_picks (production_scanner pulls live prices via api_failover.py at signal time) means no AI-stale-training-data bug.
