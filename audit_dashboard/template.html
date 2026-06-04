@@ -6438,7 +6438,15 @@ function renderNonCryptoPanel() {
   if (_NC_EXCLUDE_KILLED || _recentN_NC_Agg > 0) {
     var ncWins = 0, ncLosses = 0, ncFlat = 0;
     ncPnl = 0;
-    var aggClosed = closedPicks;
+    // BUGFIX (2026-06-04): filter to non-crypto BEFORE applying the recency cap.
+    // closedPicks is the shared crypto+non-crypto recent_closed pool; crypto
+    // closes vastly outnumber/out-recency non-crypto, so _applyRecentN on the
+    // mixed pool left ~1 non-crypto pick -> bogus "100% WR / 1 closed" banner.
+    // Mirror the per-card order (filter category first, then cap). See line ~6254.
+    var aggClosed = closedPicks.filter(function(p) {
+      var _ac = String(p.asset_class || p.category || '').toUpperCase();
+      return _ac !== 'CRYPTO' && _ac !== 'SPORTS' && isNonCryptoPickUnified(p);
+    });
     if (_recentN_NC_Agg > 0) {
       aggClosed = _applyRecentN(aggClosed, _recentN_NC_Agg);
     }
