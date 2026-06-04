@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import sys
+import time
 import urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -547,20 +548,21 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
         if not high or not low:
             continue
 
+        # SL-first conservative ordering (mirrors tournament's _scan_bars_for_touch).
         if direction == "LONG":
-            if tp and high >= tp:
-                pnl = round((tp - entry) / entry * 100, 2) if entry else 0
-                return ("TP_HIT", tp, pnl)
             if sl and low <= sl:
                 pnl = round((sl - entry) / entry * 100, 2) if entry else 0
                 return ("SL_HIT", sl, pnl)
-        else:  # SHORT
-            if tp and low <= tp:
-                pnl = round((entry - tp) / entry * 100, 2) if entry else 0
+            if tp and high >= tp:
+                pnl = round((tp - entry) / entry * 100, 2) if entry else 0
                 return ("TP_HIT", tp, pnl)
+        else:  # SHORT
             if sl and high >= sl:
                 pnl = round((entry - sl) / entry * 100, 2) if entry else 0
                 return ("SL_HIT", sl, pnl)
+            if tp and low <= tp:
+                pnl = round((entry - tp) / entry * 100, 2) if entry else 0
+                return ("TP_HIT", tp, pnl)
 
     return None
 
@@ -969,6 +971,56 @@ def main():
         yf_prices = _fetch_yfinance_prices(list(non_crypto_syms))
         prices.update(yf_prices)
 
+    # Pre-fetch intrabar OHLC for ALL symbols (unified cache).
+    ohlc_bars_cache: dict[str, list[dict]] = {}
+    all_syms_ohlc: set[tuple[str, bool]] = set()
+    for _, rel_path in SYSTEM_SOURCES:
+        fpath = ROOT / rel_path
+        if not fpath.exists():
+            continue
+        raw_data = _load_json_source(fpath, rel_path)
+        if raw_data is None:
+            continue
+        try:
+            if isinstance(raw_data, list):
+                pl = raw_data
+            elif isinstance(raw_data, dict):
+                pl = (raw_data.get("active_picks") or raw_data.get("picks") or
+                      raw_data.get("signals") or raw_data.get("open_picks") or
+                      raw_data.get("activePicks") or [])
+                if not isinstance(pl, list):
+                    pl = []
+            else:
+                continue
+            for rp in pl:
+                if not isinstance(rp, dict):
+                    continue
+                sym = rp.get("symbol", rp.get("pair", rp.get("ticker", "")))
+                if not sym:
+                    continue
+                norm = _normalize_symbol(sym)
+                is_nc = _is_non_crypto_symbol(norm)
+                all_syms_ohlc.add((norm, is_nc))
+        except Exception:
+            pass
+    if all_syms_ohlc:
+        nc_count = sum(1 for _, is_nc in all_syms_ohlc if is_nc)
+        c_count = len(all_syms_ohlc) - nc_count
+        log.info("Pre-fetching intrabar OHLC: %d non-crypto + %d crypto symbols", nc_count, c_count)
+        for norm_sym, is_nc in sorted(all_syms_ohlc, key=lambda x: x[0]):
+            try:
+                if is_nc:
+                    bars = _fetch_yfinance_ohlcv(norm_sym, period="5d", interval="1h")
+                else:
+                    bars = _fetch_binance_klines_ohlcv(norm_sym, interval="1h", limit=48)
+                if bars:
+                    ohlc_bars_cache[norm_sym] = bars
+            except Exception as e:
+                log.debug("OHLC pre-fetch failed for %s: %s", norm_sym, e)
+            time.sleep(0.1)
+        n_cached = sum(1 for v in ohlc_bars_cache.values() if v)
+        log.info("Intrabar OHLC cached for %d/%d symbols", n_cached, len(all_syms_ohlc))
+
     if not prices:
         log.error("No prices available from any API — aborting")
         return
@@ -1131,15 +1183,13 @@ def main():
                     else:
                         pick["stop_loss"] = round(entry * 1.02, 8)
 
-            # Check TP/SL — use intrabar OHLC for non-crypto, close price for crypto
+            # Check TP/SL — unified intrabar OHLC replay for ALL symbols
             result = None
-            if _is_non_crypto_symbol(norm_sym) or _is_non_crypto_symbol(orig_sym):
-                # Try intrabar OHLC first (catches wicks that hit TP/SL)
-                intrabar_bars = _fetch_yfinance_ohlcv(norm_sym, period="5d", interval="1h")
-                if intrabar_bars:
-                    result = _check_tp_sl_intrabar(pick, intrabar_bars)
-                    if result:
-                        log.debug("  intrabar hit for %s %s", norm_sym, pick["direction"])
+            intrabar_bars = ohlc_bars_cache.get(norm_sym, [])
+            if intrabar_bars:
+                result = _check_tp_sl_intrabar(pick, intrabar_bars)
+                if result:
+                    log.debug("  intrabar hit for %s %s", norm_sym, pick["direction"])
             # Fallback to close-price check
             if result is None:
                 result = check_tp_sl(pick, current_price)
