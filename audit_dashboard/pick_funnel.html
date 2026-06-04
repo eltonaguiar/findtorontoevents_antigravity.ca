@@ -995,11 +995,7 @@ function renderClickFunnel(){
   const last20 = arr.slice(-20).reverse();
   const summary = Object.entries(counts).map(([b,c])=>`<code>${b}</code> &times; ${c}`).join(' &middot; ');
   const rows = last20.map(e=>{
-    // Render click timestamps in EST/EDT to match the rest of /audit (zoo+composer audit 2026-06-04).
-    let ts = (e.ts||'').slice(0,19);
-    try {
-      if (e.ts) ts = new Date(e.ts).toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    } catch(_) { ts = (e.ts||'').replace('T',' ').slice(0,19); }
+    const ts = toEST(e.ts);
     const syms = (e.top_3_symbols||[]).join(', ') || '<span class="small">—</span>';
     const af = e.asset_class_filter || '<span class="small">all</span>';
     return `<tr><td>${ts}</td><td><code>${e.buttonId}</code></td><td>${af}</td><td class="num">${e.visible_picks_count||0}</td><td>${syms}</td></tr>`;
