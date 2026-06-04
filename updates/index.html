@@ -75,6 +75,53 @@
   <p class="meta">Full report: <a href="/reports/weekly_filter_2026-06-03T23-02Z.md">reports/weekly_filter_2026-06-03T23-02Z.md</a> · Repro instructions inside · claude-opus-4-7 2026-06-03</p>
 </div>
 
+<div class="update-entry">
+  <h2>2026-06-03 / 2026-06-04 — 12-hour autonomous session: 18+ PRs, INCIDENT #89 closed, intrabar CRYPTO resolver wired end-to-end</h2>
+  <p class="meta">claude-opus-4-7 · session deliverables: <a href="/reports/session_deliverables_2026-06-03_2026-06-04.md">session_deliverables_2026-06-03_2026-06-04.md</a> · weekly filter: <a href="/reports/weekly_filter_2026-06-03T23-02Z.md">weekly_filter_2026-06-03T23-02Z.md</a></p>
+
+  <h3 style="margin-top:14px;color:#22c55e">&#x2705; Shipped &mdash; live-site impact</h3>
+  <ul>
+    <li><strong>AI tournament portfolios 54 empty &rarr; 0 empty</strong> (PRs <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/503">#503</a> / <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/507">#507</a> / <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/510">#510</a>): <code>engine.mark_position</code> <code>TypeError: float - Decimal</code> on first portfolio crashed the entire daily lifecycle (silently masked by <code>continue-on-error: true</code>) &rarr; <code>PF_NAV_SNAPSHOT</code> stuck at 2026-05-31 &rarr; 44 newly-seeded portfolios never received positions. Also fixed: vendor-route alias map (aimlapi_gpt4o + gh_models_gpt4o &rarr; gpt4o picks) and allowlist pre-filter before the 25-cap slice. Result: 120/120 portfolios populated, 1,050 open positions, CAGR/Sortino/MaxDD/PF columns now compute correctly on <a href="/audit/pf.html?key=deepseek_v4__aggressive">pf.html</a>.</li>
+    <li><strong>DISPUTED + UNVERIFIED banners</strong> on <a href="/audit/ai-tournament.html">/audit/ai-tournament.html</a> and <a href="/audit/model.html">/audit/model.html</a> with explicit drill-down hyperlinks. Discloses that 73&ndash;91% headline WRs are once-daily-snapshot resolver artifacts (LONG 87% vs SHORT 33% over a 4&ndash;14d window = regime drift, not edge).</li>
+    <li><strong>UI clarity fixes</strong> on pf.html: "Last mark" &rarr; "Last updated" label and "Trail" badge replacing the confusing "&mdash;" for aggressive trail-only positions (with tooltip explaining let-winners-run semantics).</li>
+    <li><strong>Intrabar OHLC CRYPTO resolver &mdash; full 4-PR chain</strong>. Non-CRYPTO classes jumped from 13&ndash;23% replay coverage to <strong>100%</strong> (EQUITY/COMMODITY/ETF/PENNY/BOND/FUTURES/FOREX). CRYPTO was a multi-layer block: PR #512 wired Binance/CoinGecko OHLC &rarr; KuCoin Tier-3 added (Binance/CoinGecko geo-blocked from GHA runners) &rarr; CRYPTO guard removed from <code>price_tracker.py:621</code> AND sibling guard removed from <code>resolve_db_picks.py:143</code>. All four landed; CRYPTO REPLAY rows expected to start populating on next price-tracker run.</li>
+    <li><strong>BOND depromote</strong> (PR <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/501">#501</a>): added BOND to <code>BLOCKED_ASSET_CLASSES</code>. Live BOND PF=0.37 (CLASS_DEGRADED) + money_ready_verdict INSUFF-N n=0.</li>
+    <li><strong>macd_rsi_m048 shadow generator</strong> (PR <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/513">#513</a>): closes emission gap for the EAGLE-3 second promotion candidate. Strategy class existed but had no production caller. Daily 23:37Z GHA cron scans top-10 CRYPTO universe, appends shadow JSONL &mdash; no DB writes. 30-day shadow accumulation then graduates to real emission.</li>
+    <li><strong>INCIDENT #89 &mdash; DB password leak completely closed in code.</strong> 26 .py files had the literal hardcoded; <code>git grep stocks1234560 -- '*.py'</code> now returns <strong>0</strong>. 4 batches via 4 patterns (canonical helper, env-chain, docstring placeholders, convention-shape check). Forward-fence CI prevents new additions.</li>
+    <li><strong>Daily top-picks filter</strong>: operator-facing tool pulling OPEN picks from 6 robust AI tournament models (deepseek_v4 / claude_haiku_4_5 / cursor_agent / gpt4o / deepseek_r1 / mercury). Dedup by (symbol,direction), rank by (PF&times;confidence&times;recency), apply min(Quarter-Kelly, 2.0%) cap. Today's seed: <a href="/audit/data/daily_top_picks_filter.json">daily_top_picks_filter.json</a>.</li>
+    <li><strong>/money-maker-readyv2 weekly filter</strong>: honest verdict &mdash; <strong>0/8 asset classes pass Tier-2</strong>. Closest viable filter is the AI tournament robust panel (above) but DISPUTED until intrabar resolver fully validates on CRYPTO. CRYPTO has 3 lab-grade strategy candidates passing PF&ge;1.5 + WR&ge;55% (battleground_luxalgo + 2 siblings) but all 100% single-source.</li>
+  </ul>
+
+  <h3 style="margin-top:14px;color:#fbbf24">&#x1F7E1; Remaining action items (operator-only)</h3>
+  <ul>
+    <li><strong>Rotate DB password.</strong> Code is scrubbed but the literal exists in git history. Rotate MySQL password + update GH Secrets / <code>~/.bashrc</code> env vars; revoke the old credential at the DB.</li>
+    <li><strong>Flip <code>ETF_VERIFIED_DUAL_MOMENTUM_ENABLED=1</code></strong> repo variable. Day-30 review at n&ge;30 forward + PF&ge;1.5 + WR&ge;55%.</li>
+    <li><strong>Mutation protocol on 4 MUTATE_CANDIDATEs</strong>: blocked &mdash; 25 row-level closed picks across all 4 vs &ge;30 required per strategy. See <a href="/reports/mutation_2026-06-03/BLOCKER.md">BLOCKER.md</a>. Recommendation: skip (Option A).</li>
+    <li><strong>CRYPTO data source for production scanner.</strong> Binance is GHA-geo-blocked; AI tournament uses KuCoin Tier-3. <code>alpha_engine/</code> CRYPTO data feed should adopt the same pattern.</li>
+  </ul>
+
+  <h3 style="margin-top:14px;color:#93c5fd">&#x1F52C; Areas for more work / research</h3>
+  <ul>
+    <li><strong>Cross-source corroboration for CRYPTO <code>battleground_luxalgo</code> family.</strong> 3 lab-grade strategies pass PF&ge;1.5 + WR&ge;55% but 100% single-source. Need a 2nd independent emitter agreeing.</li>
+    <li><strong>Verdict-generator filter for ETF/BOND/COMMODITY.</strong> Verdict shows 0&ndash;8 rows; underlying trading_picks has 19&ndash;999 decisive rows. Per-class review of BLOCKED_SOURCE_SYSTEMS justification + external replication gate paths (e.g. MyFXBook for FOREX).</li>
+    <li><strong>Smart Picks &rarr; raw DB parity.</strong> Dashboard CRYPTO Smart Picks WR 78.9% vs raw 39.4% &mdash; 80% inflation. <code>nav_surface_edge_matrix.json</code> already flags <code>is_edge: False</code>; per-tile annotation would be cleaner than the structural DISPUTED banner.</li>
+    <li><strong>HyroTrader 0 journal trades.</strong> Infrastructure wired but no closed picks. Priority: first 30+ resolved trades to enable prop-firm WR/MDD evaluation.</li>
+    <li><strong>EST timestamp rendering</strong> on <a href="/audit/incidents.html">/audit/incidents.html</a>. Currently UTC. Quick win: <code>zoneinfo.ZoneInfo("America/New_York")</code> in <code>render_incidents_page.py:317</code>.</li>
+    <li><strong>Enhancement timelines.</strong> All 32 ENHANCEMENT_* rows have <code>target_release = NULL</code>. <code>cli_track.py</code> needs <code>--target-release</code> arg + backfill.</li>
+  </ul>
+
+  <h3 style="margin-top:14px;color:#a78bfa">&#x1F4CA; Session by the numbers</h3>
+  <ul>
+    <li>~12 hours autonomous, 18+ merged PRs, 4 INCIDENT #89 scrub batches</li>
+    <li>120/120 portfolios populated (was 73/120); 1,050 open positions (was 476)</li>
+    <li>26 .py files scrubbed of hardcoded DB password</li>
+    <li>0/8 asset classes Tier-2 &mdash; honest verdict per <a href="/audit/data/money_ready_verdict.json">money_ready_verdict.json</a></li>
+    <li>4-PR chain finally unblocking CRYPTO intrabar replay; non-crypto already at 100%</li>
+  </ul>
+
+  <p class="meta" style="margin-top:14px">Full breakdown: <a href="/reports/session_deliverables_2026-06-03_2026-06-04.md">reports/session_deliverables_2026-06-03_2026-06-04.md</a></p>
+</div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
