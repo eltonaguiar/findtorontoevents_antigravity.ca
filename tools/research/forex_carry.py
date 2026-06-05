@@ -7,6 +7,7 @@ Data: FRED interest rates (policy rates) + Yahoo Finance FX spot rates.
 Usage:
     python tools/research/forex_carry.py           # print current carry signals
     python tools/research/forex_carry.py --backtest # run 1-year backtest
+    python tools/research/forex_carry.py --backtest --start 2010-01-01  # 10y unlock study
     python tools/research/forex_carry.py --json     # output JSON for integration
 
 UNLOCK CONDITION: If backtest shows PF>1.0, WR>45%, n>30, print unlock message
@@ -659,6 +660,12 @@ if __name__ == "__main__":
     do_backtest = "--backtest" in sys.argv
     do_json = "--json" in sys.argv
     verbose = "--verbose" in sys.argv
+    start_date = None
+    for i, arg in enumerate(sys.argv):
+        if arg == "--start" and i + 1 < len(sys.argv):
+            start_date = sys.argv[i + 1]
+        elif arg.startswith("--start="):
+            start_date = arg.split("=", 1)[1]
 
     api_key = os.environ.get("FRED_API_KEY", "")
     if not api_key:
@@ -668,7 +675,9 @@ if __name__ == "__main__":
 
     if do_backtest:
         log.info("Running 1-year G10 carry backtest...")
-        backtest = run_carry_backtest(api_key=api_key, rates=rates, verbose=verbose)
+        backtest = run_carry_backtest(
+            api_key=api_key, rates=rates, verbose=verbose, start_date=start_date
+        )
         if do_json:
             out = build_json_output(rates=rates, backtest_result=backtest, api_key=api_key)
             print(json.dumps(out, indent=2, default=str))

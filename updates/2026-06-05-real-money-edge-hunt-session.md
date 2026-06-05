@@ -117,15 +117,20 @@ Each subagent read `pf_registry`, tier tracker, gates, verified pilots, and back
 | 13 | Governed lab→paper_log backfill for ETF dual-momentum n≥30 shadow gate (if leadership approves) |
 | 14 | BOND: paper `bond_hyg_lqd_winner` only; FUTURES: move TSMOM research to COMMODITY |
 
+### P1 tranche (2026-06-05 evening)
+
+- **FOREX carry 10y backtest:** n=197, WR=60.4%, PF=1.59 — `UNLOCK_READY` (`reports/forex_carry_backtest_extended_20260606.json`); repro `--backtest --start 2010-01-01`
+- **ETF DM paper:** XLK OPEN since 2026-06-02; first CLOSE pending rotation
+- **DBMF/KMLM paper pilot:** `etf_managed_futures_proxy_pilot.py` + `run_verified_pilots_daily.py`
+- **CRYPTO pilot policy:** documented in `updates/2026-06-05-p1-real-money-sleeves.md`
+- **Doc:** `updates/2026-06-05-p1-real-money-sleeves.md`
+
 ### Not done this session (explicit)
 
 - No `production_scanner` full run (heavy; user rules)
-- No FTP deploy of updates page
-- No git commit/push (user push rules — only own changes)
-- Crypto onchain → fundamental gates patch
-- `PEAD_EQUITY_PROBATION` env / active-pipeline merge
-- forex_carry backtest extension execution
-- DBMF/KMLM paper pilot enable
+- FTP deploy of updates page (run after `updates/index.html` edit)
+- `PEAD_EQUITY_PROBATION=1` after ~30 shadow signals
+- Expand `data/earnings/` tickers + guidance feed
 
 ---
 

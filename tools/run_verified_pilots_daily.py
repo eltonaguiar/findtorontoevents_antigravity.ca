@@ -28,6 +28,8 @@ def main() -> int:
     py = sys.executable
     steps = [
         _run([py, "verified_strategies/paper_pilot/etf_dual_momentum_pilot.py", "--one-shot"]),
+        # COMMODITY beta substitute (DBMF/KMLM) under ETF class — paper only
+        _run([py, "verified_strategies/paper_pilot/etf_managed_futures_proxy_pilot.py", "--one-shot"]),
         # 2026-06-02 EAGLE-3 second candidate (PR #462). Live lab stats:
         # n=65, WR 75.4%, PF ~3.06. Already in CRYPTO_PROVEN_STRATEGIES.
         # Flips SHADOW -> READY_REVIEW when PF>=1.5 + WR>=0.55 + n>=30 +
