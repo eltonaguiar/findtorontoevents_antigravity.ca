@@ -1361,6 +1361,16 @@ BANNED_SOURCES = {
     "sandbox_opposite",
     "rapid_fire",
     "incubator_gainer",
+    # Added 2026-06-05: live DB confirmed consistent losers (scrutiny + OHLCV replay)
+    # luxalgo_filters: n=2037, WR=43.0%, PF=1.02 (sub-T2, barely above 1.0)
+    "luxalgo_filters",
+    # multi_asset_copytrader: FOREX PF=1.02 (post-outlier), COMMODITY PF=0.81 n=677
+    # Also caused 3,495 extreme-pnl rows (CADJPY +427%, NZDUSD +7955%) = price-feed bugs
+    "multi_asset_copytrader",
+    # forex_copy_trader: WR=39.7%, PF=0.84, n=63 — persistent FOREX loser
+    "forex_copy_trader",
+    # signal_validation: 322/353 active picks are ghost >7d stale (never resolves)
+    "signal_validation",
 }
 
 # TP cap: max allowed distance from entry (as a fraction)
