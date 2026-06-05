@@ -60,6 +60,7 @@ UPLOADS = [
     ("audit_dashboard/strategy_perf_by_class.html",          "/findtorontoevents.ca/audit/strategy_perf_by_class.html",           "pick_funnel"),
     ("audit_dashboard/data/phase3_promotion_readiness.json", "/findtorontoevents.ca/audit/data/phase3_promotion_readiness.json",  "ai_portfolios"),
     ("audit_dashboard/data/bootstrap_forward_stats.json",    "/findtorontoevents.ca/audit/data/bootstrap_forward_stats.json",     "ai_portfolios"),
+    ("audit_dashboard/data/vrp_forward_stats.json",          "/findtorontoevents.ca/audit/data/vrp_forward_stats.json",           "ai_portfolios"),
     ("audit_dashboard/data/pf_portfolio_portfolio_mix__aggressive_top5.json", "/findtorontoevents.ca/audit/data/pf_portfolio_portfolio_mix__aggressive_top5.json", "ai_portfolios"),
     ("audit_dashboard/data/pf_portfolio_portfolio_mix__balanced_top3.json", "/findtorontoevents.ca/audit/data/pf_portfolio_portfolio_mix__balanced_top3.json", "ai_portfolios"),
     ("audit_dashboard/data/pf_portfolio_portfolio_mix__conservative_top1.json", "/findtorontoevents.ca/audit/data/pf_portfolio_portfolio_mix__conservative_top1.json", "ai_portfolios"),

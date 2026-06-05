@@ -41,13 +41,16 @@ def main() -> int:
     crypto = _load(ROOT / "reports/crypto_wf_forward_stats_latest.json")
     faber = _load(ROOT / "reports/faber_forward_stats_latest.json")
     bootstrap = _load(ROOT / "reports/bootstrap_forward_stats_latest.json")
+    vrp = _load(ROOT / "audit_dashboard/data/vrp_forward_stats.json")
 
     any_ready = any(
         x.get("paper_pilot_forward", {}).get("promotion_ready")
         or x.get("promotion_ready")
         for x in (etf, crypto, faber)
         if isinstance(x, dict)
-    ) or bool(bootstrap.get("any_promotion_ready"))
+    ) or bool(bootstrap.get("any_promotion_ready")) or bool(
+        isinstance(vrp, dict) and vrp.get("promotion_ready")
+    )
 
     dashboard = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -70,6 +73,7 @@ def main() -> int:
             "faber_taa": faber,
             "bootstrap_b_flip": bootstrap.get("sleeves", {}).get("b_flip_price_roc"),
             "bootstrap_inverse_ml_btc": bootstrap.get("sleeves", {}).get("inverse_ml_btc_15m"),
+            "vrp_harvest": vrp,
         },
         "bootstrap_forward": bootstrap,
         "money_ready_blockers": [

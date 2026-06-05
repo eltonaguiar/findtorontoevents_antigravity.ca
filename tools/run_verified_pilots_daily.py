@@ -33,6 +33,8 @@ def main() -> int:
         # Flips SHADOW -> READY_REVIEW when PF>=1.5 + WR>=0.55 + n>=30 +
         # PF drift <=30% from lab.
         _run([py, "verified_strategies/paper_pilot/macd_rsi_m048_pilot.py", "--one-shot"]),
+        # 2026-06-05 MASTERPLAN — isolated CRYPTO sleeve (lab n=381, PF 2.36)
+        _run([py, "verified_strategies/paper_pilot/luxalgo_confluence_forward_pilot.py", "--one-shot"]),
         # 2026-06-04 swarm winner (50-agent AutoGen-style multi-class strategy
         # swarm; only candidate clearing the PF>=1.3 floor). Lab OOS Sharpe
         # 3.16, PF 1.70, WR 56.3%, MDD -10.6%; MC null p=0.000 significant at
@@ -42,11 +44,18 @@ def main() -> int:
         # PR #482 bootstrap forward-test (virtual book; no production enable)
         _run([py, "verified_strategies/paper_pilot/b_flip_price_roc_forward_pilot.py"]),
         _run([py, "verified_strategies/paper_pilot/inverse_ml_btc_forward_pilot.py"]),
+        # 2026-06-05 VRP Harvest forward pilot (EXEC PLAN 01)
+        _run([py, "verified_strategies/paper_pilot/vrp_harvest_pilot.py"]),
         _run([py, "tools/etf_forward_stats.py", "--write"]),
         _run([py, "tools/crypto_wf_forward_stats.py", "--write"]),
         _run([py, "tools/faber_forward_stats.py", "--write"]),
         _run([py, "tools/bootstrap_forward_stats.py", "--write"]),
+        _run([py, "tools/tournament_shadow_book.py"]),
         _run([py, "tools/pilot_forward_dashboard.py"]),
+        _run([py, "tools/rebuild_strategy_stats_all_classes.py"]),
+        _run([py, "tools/export_strategy_perf_by_class.py"]),
+        _run([py, "tools/phase3_promotion_readiness.py"]),
+        _run([py, "tools/money_ready_snapshot.py"]),
         _run([py, "tools/strategy_admit.py", "--strategy", "etf_dual_momentum", "--asset-class", "ETF", "--write"]),
     ]
     if os.environ.get("VERIFIED_PILOT_WALKFORWARD", "").strip() in ("1", "true", "yes"):
