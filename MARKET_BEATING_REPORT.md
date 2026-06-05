@@ -1,14 +1,14 @@
 # 🎯 Market Beating Trading System Report
 
-**Generated:** 2026-06-05T16:53:47.489324
+**Generated:** 2026-06-05T18:45:46.942392
 **Status:** ⏳ OPTIMIZING
 
 ---
 
 ## 📊 Overall Performance
 - **Total Signals Tracked:** 396
-- **Signals Validated:** 391
-- **Overall Accuracy:** 58.5%
+- **Signals Validated:** 392
+- **Overall Accuracy:** 58.7%
 - **Target Accuracy:** 60%
 - **Status:** ⏳ BELOW TARGET
 
@@ -25,12 +25,12 @@
 | Pair | Accuracy | Signals | Status |
 |------|----------|---------|--------|
 | EUR-USD | 65.0% | 21 | ✅ |
-| GBP-USD | 50.0% | 23 | ⚠️ |
+| GBP-USD | 52.2% | 24 | ⚠️ |
 | USD-JPY | 58.8% | 17 | ⚠️ |
 
 ## 🎯 Road to Beating the Market
 - **Signals:** 396/50 (792%)
-- **Accuracy:** 58.5%/65.0%
+- **Accuracy:** 58.7%/65.0%
 
 ### ⏳ Continuing Optimization
 The system is gathering more data and refining parameters.
