@@ -257,6 +257,29 @@ def _float(v):
         return 0.0
 
 
+def _compute_pnl(entry: float, exit_price: float, direction: str) -> float:
+    """Compute PnL % with zero-safeguard fallback.
+
+    If the rounded PnL computes to exactly 0.0 for a resolved pick,
+    fallback to the unrounded formula so that WON/LOST picks do not
+    end up with zero PnL in at_pick_outcomes.
+    """
+    if not entry or entry <= 0:
+        return 0.0
+    mult = 1.0 if direction == "LONG" else -1.0
+    pnl = round(((exit_price - entry) / entry) * 100 * mult, 2)
+    if pnl == 0.0:
+        fallback = ((exit_price - entry) / entry) * 100 * mult
+        if fallback != 0.0:
+            log.warning(
+                "[ZERO-PNL-SAFEGUARD] PnL computed as 0.0 for %s pick "
+                "(entry=%s exit=%s). Fallback recompute: %.4f%%",
+                direction, entry, exit_price, fallback,
+            )
+            return fallback
+    return pnl
+
+
 _PREDICTION_MARKET_SYSTEMS = {
     "polymarket_signals",
     "pm_momentum_signals",
@@ -552,17 +575,17 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
         # SL-first conservative ordering (mirrors tournament's _scan_bars_for_touch).
         if direction == "LONG":
             if sl and low <= sl:
-                pnl = round((sl - entry) / entry * 100, 2) if entry else 0
+                pnl = _compute_pnl(entry, sl, direction)
                 return ("SL_HIT", sl, pnl)
             if tp and high >= tp:
-                pnl = round((tp - entry) / entry * 100, 2) if entry else 0
+                pnl = _compute_pnl(entry, tp, direction)
                 return ("TP_HIT", tp, pnl)
         else:  # SHORT
             if sl and high >= sl:
-                pnl = round((entry - sl) / entry * 100, 2) if entry else 0
+                pnl = _compute_pnl(entry, sl, direction)
                 return ("SL_HIT", sl, pnl)
             if tp and low <= tp:
-                pnl = round((entry - tp) / entry * 100, 2) if entry else 0
+                pnl = _compute_pnl(entry, tp, direction)
                 return ("TP_HIT", tp, pnl)
 
     return None
@@ -743,17 +766,17 @@ def check_tp_sl(pick, current_price):
 
     if direction == "LONG":
         if tp and current_price >= tp:
-            pnl = round((tp - entry) / entry * 100, 2) if entry else 0
+            pnl = _compute_pnl(entry, tp, direction)
             return ("TP_HIT", tp, pnl)
         if sl and current_price <= sl:
-            pnl = round((sl - entry) / entry * 100, 2) if entry else 0
+            pnl = _compute_pnl(entry, sl, direction)
             return ("SL_HIT", sl, pnl)
     else:  # SHORT
         if tp and current_price <= tp:
-            pnl = round((entry - tp) / entry * 100, 2) if entry else 0
+            pnl = _compute_pnl(entry, tp, direction)
             return ("TP_HIT", tp, pnl)
         if sl and current_price >= sl:
-            pnl = round((entry - sl) / entry * 100, 2) if entry else 0
+            pnl = _compute_pnl(entry, sl, direction)
             return ("SL_HIT", sl, pnl)
     return None
 
@@ -1271,10 +1294,7 @@ def main():
             _max_hold = _max_hold_hours_for(pick)
             if pick_dt and (now - pick_dt).total_seconds() > _max_hold * 3600:
                 # Time exit — compute PnL at current price
-                if pick["direction"] == "SHORT":
-                    pnl = round((entry - current_price) / entry * 100, 2) if entry else 0
-                else:
-                    pnl = round((current_price - entry) / entry * 100, 2) if entry else 0
+                pnl = _compute_pnl(entry, current_price, pick["direction"])
 
                 resolved = {
                     **pick,

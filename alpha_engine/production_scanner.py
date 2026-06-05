@@ -1351,6 +1351,18 @@ BAD_SYMBOLS = {
     "XPLUSDT",
 }
 
+# Source-system bans: poison emitters that must never enter the pipeline.
+# - Predictions: physically impossible prices (+370,850% on BTCUSDT)
+# - sandbox_opposite: emits 12x duplicate signals
+# - rapid_fire: duplicate emitter
+# - incubator_gainer: 94% abandonment rate, broken resolution linkage
+BANNED_SOURCES = {
+    "Predictions",
+    "sandbox_opposite",
+    "rapid_fire",
+    "incubator_gainer",
+}
+
 # TP cap: max allowed distance from entry (as a fraction)
 TP_CAP_CRYPTO = 0.15  # 15% max for crypto (hedge-fund risk cap)
 # 2026-04-25: WIDENED from 0.0075 -> 0.015. Realised FX class shows PF=0.26
@@ -1375,6 +1387,31 @@ SL_CAP_EQUITY = 0.07
 
 # Stale pick threshold: picks open >48h with no price update are closed
 STALE_HOURS_THRESHOLD = 48
+
+
+def apply_source_ban_gate(picks: list[dict]) -> list[dict]:
+    """Reject picks from banned source systems before scoring.
+
+    Logs every rejected pick with its source_system and symbol so audit
+    trails show exactly why a poison source was dropped.
+    """
+    clean = []
+    removed = 0
+    for pick in picks:
+        source = str(pick.get("source_system") or "").strip()
+        sym = pick.get("symbol", "")
+        strategy = pick.get("strategy", "")
+        if source in BANNED_SOURCES:
+            print(
+                f"  [SOURCE_BAN] Removing {sym} ({strategy}): "
+                f"source_system='{source}' is in BANNED_SOURCES"
+            )
+            removed += 1
+            continue
+        clean.append(pick)
+    if removed:
+        print(f"  [SOURCE_BAN] Removed {removed} picks from banned source systems")
+    return clean
 
 
 def filter_bad_symbols(picks: list[dict]) -> list[dict]:
@@ -4013,6 +4050,7 @@ def main():
     # 3b. Data quality fixes
     active = sanitize_symbols(active)
     active = filter_bad_symbols(active)
+    active = apply_source_ban_gate(active)
     active = backfill_direction_and_timestamp(active)
     active = deduplicate_picks(active)
     active = resolve_direction_conflicts(active)

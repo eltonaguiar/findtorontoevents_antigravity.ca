@@ -227,6 +227,25 @@ _RETIRED_STRATEGIES = frozenset({
     # in force but only catches the FOREX-on-default-strategy combo. This
     # entry catches the bare strategy name lookup.
     "kimi_signal_tracking",
+    # 2026-06-05: auto-killed by strategy_kill_switch.py
+    # n=647 WR=35.39% avg_pnl=-0.752812% total_pnl=-487.0695%  reasons=wr_below_floor, total_pnl_destroyed
+    "futures_momentum",
+    # n=100 WR=19.0% avg_pnl=-1.428167% total_pnl=-142.8167%  reasons=wr_below_floor, total_pnl_destroyed
+    "cta_cross_asset_tsmom",
+    # n=103 WR=40.78% avg_pnl=-7.208242% total_pnl=-742.4489%  reasons=avg_pnl_below_floor, total_pnl_destroyed
+    "ensemble",
+    # n=54 WR=18.52% avg_pnl=-1.074074% total_pnl=-58.0%  reasons=wr_below_floor
+    "MomentumEMA",
+    # n=747 WR=42.17% avg_pnl=-0.178155% total_pnl=-133.0815%  reasons=total_pnl_destroyed
+    "forex_rsi2_mean_reversion",
+    # n=491 WR=36.86% avg_pnl=0.16641% total_pnl=81.7075%  reasons=wr_below_floor
+    "ig_contrarian_sentiment",
+    # n=476 WR=39.71% avg_pnl=0.050824% total_pnl=24.1924%  reasons=wr_below_floor
+    "myfxbook_retail_contrarian",
+    # n=154 WR=7.79% avg_pnl=5.03483% total_pnl=775.3638%  reasons=wr_below_floor
+    "forex_carry_momentum",
+    # n=55 WR=38.18% avg_pnl=-0.071695% total_pnl=-3.9432%  reasons=wr_below_floor
+    "fx_smart_carry_trade_momentum",
 })
 
 # Composite (system, strategy) pairs that are toxic only in a specific combo.

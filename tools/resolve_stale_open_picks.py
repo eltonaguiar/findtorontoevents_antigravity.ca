@@ -3,9 +3,11 @@
 tools/resolve_stale_open_picks.py — Batch-resolve stale live picks in MySQL
 =============================================================================
 
-Connects to the ejaguiar1_stocks MySQL database, finds OPEN and ACTIVE picks
-whose age exceeds the per-category MAX_HOLD_HOURS threshold, and batch-resolves
-them as TIME_EXIT with flat PnL.
+Connects to the ejaguiar1_stocks MySQL database, finds OPEN (and ACTIVE for
+`trading_picks`) picks whose age exceeds the per-category MAX_HOLD_HOURS
+threshold, and batch-resolves them as ABANDONED/STALE_TIMEOUT with flat PnL.
+
+Supports both `at_raw_picks` (default) and `trading_picks` via --table.
 
 Hold windows match audit_trail/universal_pick_resolver.py:
   CRYPTO            48h
@@ -21,8 +23,8 @@ Usage
     # Execute updates (daily hygiene uses --max-batches 30)
     python tools/resolve_stale_open_picks.py --execute --batch-size 500 --max-batches 30
 
-    # Custom batch size
-    python tools/resolve_stale_open_picks.py --execute --batch-size 5000
+    # Target trading_picks instead of at_raw_picks
+    python tools/resolve_stale_open_picks.py --table trading_picks --execute --batch-size 500
 
 Environment variables
 ---------------------
@@ -49,7 +51,10 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from tools.pick_hold_windows import LIVE_PICK_STATUSES, is_past_max_hold
+from tools.pick_hold_windows import LIVE_PICK_STATUSES, is_past_max_hold, hold_hours_for
+
+# Backward-compatible alias used by test_resolver_health.py
+_hold_hours_for = hold_hours_for
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -60,6 +65,26 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%SZ",
 )
 log = logging.getLogger("stale_open_resolver")
+
+# ---------------------------------------------------------------------------
+# Table configuration
+# ---------------------------------------------------------------------------
+_TABLE_CONFIG = {
+    "at_raw_picks": {
+        "statuses": ("OPEN",),
+        "time_col": "recorded_at",
+        "category_col": "asset_class",
+        "resolved_status": "ABANDONED",
+        "resolved_exit_reason": "STALE_TIMEOUT",
+    },
+    "trading_picks": {
+        "statuses": LIVE_PICK_STATUSES,  # OPEN + ACTIVE
+        "time_col": "created_at",
+        "category_col": "category",
+        "resolved_status": "TIME_EXIT",
+        "resolved_exit_reason": "TIME_EXIT_MAX_HOLD",
+    },
+}
 
 def _read_db_password() -> str:
     """Read DB password from /home/eaguiar2015/dbpasses.txt if available."""
@@ -136,27 +161,35 @@ def _connect():
 # Core resolution logic
 # ---------------------------------------------------------------------------
 
-def count_live_picks(conn) -> int:
-    """Return total OPEN + ACTIVE picks count."""
+def count_live_picks(conn, table: str = "at_raw_picks") -> int:
+    """Return total live picks count for the given table."""
+    cfg = _TABLE_CONFIG[table]
+    statuses = cfg["statuses"]
+    status_sql = ", ".join("'%s'" % s for s in statuses)
     with conn.cursor() as cur:
         cur.execute(
-            f"SELECT COUNT(*) AS cnt FROM trading_picks "
-            f"WHERE status IN ({_LIVE_STATUS_SQL})"
+            f"SELECT COUNT(*) AS cnt FROM {table} "
+            f"WHERE status IN ({status_sql})"
         )
         row = cur.fetchone()
         return int(row["cnt"]) if row else 0
 
 
 def find_live_picks_batch(
-    conn, batch_size: int, offset: int = 0
+    conn, batch_size: int, offset: int = 0, table: str = "at_raw_picks"
 ) -> list[dict[str, Any]]:
-    """Fetch live picks (OPEN or ACTIVE) oldest-first with OFFSET pagination."""
+    """Fetch live picks oldest-first with OFFSET pagination."""
+    cfg = _TABLE_CONFIG[table]
+    statuses = cfg["statuses"]
+    status_sql = ", ".join("'%s'" % s for s in statuses)
+    time_col = cfg["time_col"]
+    cat_col = cfg["category_col"]
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id, symbol, category, strategy, direction, status, "
-            "entry_price, take_profit, stop_loss, created_at "
-            f"FROM trading_picks WHERE status IN ({_LIVE_STATUS_SQL}) "
-            "ORDER BY created_at ASC LIMIT %s OFFSET %s",
+            f"SELECT id, symbol, {cat_col} AS category, strategy, direction, status, "
+            f"entry_price, take_profit, stop_loss, {time_col} AS created_at "
+            f"FROM {table} WHERE status IN ({status_sql}) "
+            f"ORDER BY {time_col} ASC LIMIT %s OFFSET %s",
             (batch_size, offset),
         )
         return cur.fetchall()
@@ -184,6 +217,44 @@ def _compute_pnl(pick: dict, current_price: float | None = None) -> float:
         return round((exit_price - entry) / entry * 100, 4)
 
 
+def _ensure_abandoned_enum(conn, table: str) -> bool:
+    """For at_raw_picks, ensure 'ABANDONED' is in the status ENUM.
+
+    Returns True if ABANDONED can be used safely, False if we must fallback.
+    """
+    if table != "at_raw_picks":
+        return True
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT COLUMN_TYPE FROM information_schema.COLUMNS "
+                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = 'status'",
+                (table,),
+            )
+            row = cur.fetchone()
+            if row and "abandoned" not in str(row.get("COLUMN_TYPE", "")).lower():
+                log.warning(
+                    "[%s] status ENUM missing 'ABANDONED'; running ALTER TABLE ...",
+                    table,
+                )
+                cur.execute(
+                    "ALTER TABLE at_raw_picks MODIFY COLUMN status "
+                    "ENUM('OPEN','WON','LOST','EXPIRED','CLOSED','ABANDONED') "
+                    "DEFAULT 'OPEN'"
+                )
+                conn.commit()
+                log.info("[%s] ENUM altered to include ABANDONED", table)
+        return True
+    except Exception as exc:
+        log.error(
+            "[%s] Could not expand status ENUM for ABANDONED: %s. "
+            "Will fallback to 'EXPIRED' for updates.",
+            table,
+            exc,
+        )
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Main resolve loop
 # ---------------------------------------------------------------------------
@@ -192,6 +263,7 @@ def resolve_stale_open_picks(
     execute: bool = False,
     batch_size: int = 1000,
     max_batches: int | None = None,
+    table: str = "at_raw_picks",
 ) -> dict:
     """
     Find and batch-resolve stale OPEN/ACTIVE picks.
@@ -204,16 +276,23 @@ def resolve_stale_open_picks(
         Number of picks to fetch per SQL query.
     max_batches : int | None
         Maximum number of batches to process. None = unlimited (process all stale picks).
+    table : str
+        Target table: 'at_raw_picks' (default) or 'trading_picks'.
 
     Returns
     -------
     dict with summary statistics.
     """
+    if table not in _TABLE_CONFIG:
+        raise ValueError(f"Unknown table: {table}. Choose from {list(_TABLE_CONFIG.keys())}")
+
+    cfg = _TABLE_CONFIG[table]
     now_utc = datetime.now(timezone.utc)
     summary: dict = {
         "started_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "mode": "EXECUTE" if execute else "DRY_RUN",
         "batch_size": batch_size,
+        "table": table,
         "total_live_picks": 0,
         "total_open_picks": 0,  # alias for dashboards expecting this key
         "by_status": defaultdict(lambda: {"stale": 0, "resolved": 0}),
@@ -228,26 +307,36 @@ def resolve_stale_open_picks(
 
     conn = _connect()
     try:
-        summary["total_live_picks"] = count_live_picks(conn)
+        # For at_raw_picks, pre-flight: ensure ABANDONED is in the ENUM
+        abandoned_ready = _ensure_abandoned_enum(conn, table)
+
+        summary["total_live_picks"] = count_live_picks(conn, table=table)
         summary["total_open_picks"] = summary["total_live_picks"]
         log.info(
-            "Total live picks (OPEN+ACTIVE): %d  statuses=%s",
-            summary["total_live_picks"],
-            LIVE_PICK_STATUSES,
+            "Total live picks (%s statuses=%s): %d",
+            table, cfg["statuses"], summary["total_live_picks"],
         )
 
         if summary["total_live_picks"] == 0:
-            log.info("No OPEN/ACTIVE picks -- nothing to resolve.")
+            log.info("No live picks in %s -- nothing to resolve.", table)
             summary["completed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             return summary
 
         batches_done = 0
-        scan_offset = 0  # paginate through full live set (fix: don't stop at oldest 500 only)
+        scan_offset = 0  # paginate through full live set
+
+        resolved_status = cfg["resolved_status"]
+        if not abandoned_ready and resolved_status == "ABANDONED":
+            resolved_status = "EXPIRED"
+            log.warning(
+                "[%s] Falling back to status='EXPIRED' because ABANDONED is not available in ENUM",
+                table,
+            )
 
         while True:
-            picks = find_live_picks_batch(conn, batch_size, scan_offset)
+            picks = find_live_picks_batch(conn, batch_size, scan_offset, table=table)
             if not picks:
-                log.info("No more OPEN/ACTIVE picks to check (offset=%d).", scan_offset)
+                log.info("No more live picks to check in %s (offset=%d).", table, scan_offset)
                 break
 
             batches_done += 1
@@ -302,13 +391,16 @@ def resolve_stale_open_picks(
                         chunk = all_ids[i:i + chunk_size]
                         placeholders = ",".join(["%s"] * len(chunk))
                         bulk_sql = (
-                            "UPDATE trading_picks SET "
-                            "status='TIME_EXIT', "
-                            "exit_reason='TIME_EXIT_MAX_HOLD', "
-                            "exit_price=entry_price, pnl_pct=0.0 "
+                            f"UPDATE {table} SET "
+                            f"status=%s, "
+                            f"exit_reason=%s, "
+                            f"exit_price=entry_price, pnl_pct=0.0 "
                             f"WHERE id IN ({placeholders})"
                         )
-                        cur.execute(bulk_sql, chunk)
+                        cur.execute(
+                            bulk_sql,
+                            (resolved_status, cfg["resolved_exit_reason"]) + tuple(chunk),
+                        )
                         total_updated += cur.rowcount
 
                 conn.commit()
@@ -329,7 +421,7 @@ def resolve_stale_open_picks(
                 # Re-scan from oldest after removals (counts/shape changed).
                 scan_offset = 0
             else:
-                # DRY_RUN: just count
+                # DRY_RUN: just count — advance offset so we don't loop forever
                 for p in stale_picks:
                     ac = (p.get("category") or "UNKNOWN").upper()
                     strat = (p.get("strategy") or "unknown")[:100]
@@ -342,7 +434,7 @@ def resolve_stale_open_picks(
                     "Batch %d [DRY_RUN]: %d stale picks would be resolved.",
                     batches_done, len(stale_picks),
                 )
-                scan_offset = 0
+                scan_offset += len(picks)
 
         summary["batches_processed"] = batches_done
         summary["scan_offset_final"] = scan_offset
@@ -404,7 +496,7 @@ def print_summary(summary: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Resolve stale OPEN/ACTIVE picks in MySQL trading_picks table",
+        description="Resolve stale OPEN/ACTIVE picks in MySQL",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -426,6 +518,13 @@ def main() -> None:
         help="Max batches to process (default: unlimited)",
     )
     parser.add_argument(
+        "--table",
+        type=str,
+        default="at_raw_picks",
+        choices=["at_raw_picks", "trading_picks"],
+        help="Target table (default: at_raw_picks)",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output summary as JSON",
@@ -441,9 +540,9 @@ def main() -> None:
         logging.getLogger().setLevel(logging.DEBUG)
 
     log.info("=== Stale Live Picks Resolver (OPEN+ACTIVE) ===")
-    log.info("Mode: %s | batch_size=%d | max_batches=%s",
+    log.info("Mode: %s | table=%s | batch_size=%d | max_batches=%s",
              "EXECUTE" if args.execute else "DRY_RUN",
-             args.batch_size, args.max_batches)
+             args.table, args.batch_size, args.max_batches)
     log.info("DB: %s@%s:%s/%s", DB_USER, DB_HOST, DB_PORT, DB_NAME)
     log.info("Hold windows module: tools.pick_hold_windows")
 
@@ -451,6 +550,7 @@ def main() -> None:
         execute=args.execute,
         batch_size=args.batch_size,
         max_batches=args.max_batches,
+        table=args.table,
     )
 
     if args.json:
