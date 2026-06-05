@@ -201,7 +201,7 @@
       <th class="num" title="Ranking score = lower-95%(WR) × lower-95%(PF). Shrinks small samples toward their confidence floor so a few lucky picks can't top the board.">Score*</th>
       <th class="num" title="Total picks submitted by this model, INCLUDING still-OPEN picks (~half the field). Open picks do NOT count toward WR/PF until they resolve.">n picks</th>
       <th class="num" title="Resolved picks (WIN or LOSS). Below 30 (shown amber) = not statistically rankable yet — treat the WR as activity, not a proven edge.">n resolved</th>
-      <th title="T1 PF≥2 & WR≥55 · T2 PF≥1.5 & WR≥50 · T3 PF≥1.2 & WR≥45 · BELOW otherwise. Tier uses absolute PF/WR thresholds; the # column uses the CI-adjusted score.">Tier</th>
+      <th title="T1 PF≥2 & WR≥55 · T2 PF≥1.5 & WR≥50 · T3 PF≥1.2 & WR≥45 · BELOW otherwise. Tier uses absolute PF/WR thresholds; the # column uses the CI-adjusted score. ⚠ T1 badges carry a warning icon — current resolver uses single-snapshot (no intrabar OHLC replay) which inflates WR by 15–30%; all T1s are UNPROVEN until n≥100 intrabar-replay-resolved closes accumulate.">Tier</th>
       <th title="LIVE = ranked (n≥30). BUILDING = still accumulating resolved picks toward the n=30 floor.">Status</th>
     </tr>
   </thead>
@@ -681,7 +681,16 @@ function renderLeaderboard(models, opts) {
   }
 
   ranked.forEach((m, i) => {
-    const tier = m.tier === 'T1' ? '<span class="badge b-t1">T1</span>'
+    // T1 warning: single-snapshot resolver inflates WR; intrabar OHLC replay not yet complete for any model.
+    // n<100 adds an additional statistical-minimum concern.
+    const t1WarnTip = 'UNPROVEN T1 — WR/PF computed from single-snapshot resolver '
+      + '(no intrabar OHLC replay), known to inflate WR by 15–30%. '
+      + (m.n_resolved < 100 ? 'n_resolved=' + m.n_resolved + ' is below the 100-trade minimum for T1 confidence. ' : '')
+      + 'Treat as BUILDING until ≥7 days of intrabar-replay-resolved closes (n≥100) accumulate.';
+    const t1Warn = m.tier === 'T1'
+      ? ' <span title="' + t1WarnTip + '" style="color:#f59e0b;cursor:help;font-size:13px;vertical-align:middle">⚠️</span>'
+      : '';
+    const tier = m.tier === 'T1' ? '<span class="badge b-t1">T1</span>' + t1Warn
                : m.tier === 'T2' ? '<span class="badge b-t2">T2</span>'
                : m.tier === 'T3' ? '<span class="badge b-t3">T3</span>'
                : '<span class="badge b-below">BELOW</span>';
