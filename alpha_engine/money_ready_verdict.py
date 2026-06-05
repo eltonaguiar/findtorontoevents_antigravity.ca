@@ -586,6 +586,67 @@ def _class_stats(picks: list[dict]) -> dict[str, dict]:
 
 
 # ---------------------------------------------------------------------------
+# Recency gate — ensures the class is still actively producing picks
+# ---------------------------------------------------------------------------
+
+def _recency_gate(ac_picks: list[dict]) -> dict[str, Any]:
+    """Gate 0 (14-day) + Gate 0.5 (48-hour) recency check.
+
+    Uses `closed_at` (most reliable for resolved picks) with fallbacks to
+    `created_at` and `entry_date`. Returns ok=None when no date field is
+    present in any pick — fail-open so this never blocks purely on missing
+    schema; the dashboard surfaces it as UNKNOWN rather than FAIL.
+    """
+    from datetime import datetime, timezone, timedelta
+
+    dates: list[datetime] = []
+    for p in ac_picks:
+        raw = (p.get("closed_at") or p.get("created_at")
+               or p.get("entry_date") or p.get("timestamp"))
+        if not raw:
+            continue
+        if isinstance(raw, datetime):
+            dt = raw if raw.tzinfo else raw.replace(tzinfo=timezone.utc)
+        else:
+            s = str(raw).strip()
+            if not s or s in ("None", "null"):
+                continue
+            try:
+                dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+            except (ValueError, TypeError):
+                continue
+        dates.append(dt)
+
+    if not dates:
+        return {"ok": None, "note": "no date field found in picks", "most_recent": None,
+                "days_since_last": None}
+
+    now = datetime.now(timezone.utc)
+    most_recent = max(dates)
+    days_since = (now - most_recent).total_seconds() / 86400
+
+    gate_14d = days_since <= 14
+    gate_48h = days_since <= 2
+
+    ok = gate_14d  # primary gate: at least one closed pick in last 14 days
+    note_parts = []
+    if not gate_14d:
+        note_parts.append(f"no picks closed in last 14d (last={days_since:.1f}d ago)")
+    elif not gate_48h:
+        note_parts.append(f"no picks closed in last 48h (last={days_since:.1f}d ago)")
+
+    return {
+        "ok": ok,
+        "gate_48h": gate_48h,
+        "most_recent": most_recent.isoformat(),
+        "days_since_last": round(days_since, 2),
+        "note": "; ".join(note_parts) if note_parts else "ok",
+    }
+
+
+# ---------------------------------------------------------------------------
 # DSR gate (per-class aggregate — treat all class picks as one strategy)
 # ---------------------------------------------------------------------------
 
@@ -1095,6 +1156,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         spa = _spa_gate(ac_picks)
         fdr = _fdr_gate(ac_picks)
         single_src = _single_source_gate(ac_picks)
+        recency = _recency_gate(ac_picks)
         top_symbol = stats.get("top_symbol", "")
         top_symbol_share = stats.get("top_symbol_share", 0.0)
         top_source = stats.get("top_source", "")
@@ -1191,6 +1253,16 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                     and verdict == "MONEY_READY")
                 else None
             ),
+            # Recency gate (shadow — informational only, does not change verdict)
+            "recency_ok": recency.get("ok"),
+            "recency_gate_48h": recency.get("gate_48h"),
+            "recency_days_since_last": recency.get("days_since_last"),
+            "recency_most_recent": recency.get("most_recent"),
+            "recency_note": recency.get("note"),
+            # Flag: class passed all hard gates but recency check says stale
+            "_recency_warn": (
+                verdict == "MONEY_READY" and recency.get("ok") is False
+            ),
             "verdict": verdict,
             # 2026-06-04: surface BLOCKED_ASSET_CLASSES freeze status so the
             # dashboard can distinguish "policy-blocked" classes (FOREX,
@@ -1217,7 +1289,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                 )
             ),
             "details": {"dsr": dsr, "pbo": pbo, "spa": spa, "expectancy": exp_gate,
-                        "mdd_cvar": mdd_cvar, "fdr": fdr, "single_source": single_src},
+                        "mdd_cvar": mdd_cvar, "fdr": fdr, "single_source": single_src,
+                        "recency": recency},
         }
 
     return results
