@@ -44,6 +44,8 @@ UPLOADS = [
     ("audit_dashboard/data/ai_tournament_leaderboard.json",  "/findtorontoevents.ca/audit/data/ai_tournament_leaderboard.json",   "ai_tournament"),
     ("audit_dashboard/data/tier_rating_algorithms.json",     "/findtorontoevents.ca/audit/data/tier_rating_algorithms.json",      "ai_tournament"),
     ("audit_dashboard/data/money_ready_verdict.json",        "/findtorontoevents.ca/audit/data/money_ready_verdict.json",         "audit_data"),
+    ("audit_dashboard/data/audit_surface_truth.json",        "/findtorontoevents.ca/audit/data/audit_surface_truth.json",         "audit_data"),
+    ("audit_dashboard/audit_surface_truth_banner.js",        "/findtorontoevents.ca/audit/audit_surface_truth_banner.js",         "audit_data"),
     ("alpha_engine/data/regime_report.json",                 "/findtorontoevents.ca/audit/data/regime_report.json",              "audit_data"),
     ("audit_dashboard/data/ai_tournament_model_diagnostics.json", "/findtorontoevents.ca/audit/data/ai_tournament_model_diagnostics.json", "ai_tournament"),
     ("audit_dashboard/pf.html",                              "/findtorontoevents.ca/audit/pf.html",                               "ai_portfolios"),
