@@ -27,7 +27,6 @@ if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 OUT_PATH = REPO / "audit_dashboard" / "data" / "feature_signals_latest.json"
-CANON_PATH = REPO / "alpha_engine" / "data" / "feature_signals.json"
 
 
 def _stamp(pick: dict[str, Any], sleeve: str) -> dict[str, Any]:
@@ -175,10 +174,6 @@ def emit_all(*, include_funding: bool = True) -> dict[str, Any]:
             "tools.feature_signals.forex_carry_momentum", "forex_carry_momentum", "FOREX")
         sleeves["etf_sector_rotation"] = _emit_via_factor_module(
             "tools.feature_signals.etf_sector_rotation", "etf_sector_rotation", "ETF")
-        sleeves["commodity_term_cot"] = _emit_via_factor_module(
-            "tools.feature_signals.commodity_term_cot", "commodity_term_cot", "COMMODITY")
-        sleeves["bond_duration_momentum"] = _emit_via_factor_module(
-            "tools.feature_signals.bond_duration_momentum", "bond_duration_momentum", "BOND")
 
     picks: list[dict[str, Any]] = []
     for name, rows in sleeves.items():
@@ -236,14 +231,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--no-funding", action="store_true")
     args = ap.parse_args(argv)
     payload = emit_all(include_funding=not args.no_funding)
-    # Write to both dashboard path and canonical alpha_engine path
-    # (CANON_PATH is the production scanner read path; without this fix the
-    # scanner would crash with NameError when FEATURE_SIGNALS_REFRESH=1)
-    for out_path in (OUT_PATH, CANON_PATH):
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUT_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"Wrote {OUT_PATH} picks={len(payload.get('picks', []))}")
-    print(f"Wrote {CANON_PATH} picks={len(payload.get('picks', []))}")
     return 0
 
 
