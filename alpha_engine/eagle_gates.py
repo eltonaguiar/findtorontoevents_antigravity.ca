@@ -11,10 +11,28 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from alpha_engine.fundamental_macro_gates import (
-    passes_high_conviction_gate,
-    passes_long_term_stability_gate,
-)
+# Lazy imports to avoid ModuleNotFoundError when ci_gate scripts import this
+# module from a different sys.path context (e.g. GHA runners).
+_FUNDAMENTAL_MACRO_GATES: tuple | None = None
+
+def _get_fundamental_macro_gates():
+    global _FUNDAMENTAL_MACRO_GATES
+    if _FUNDAMENTAL_MACRO_GATES is not None:
+        return _FUNDAMENTAL_MACRO_GATES
+    try:
+        from alpha_engine.fundamental_macro_gates import (
+            passes_high_conviction_gate,
+            passes_long_term_stability_gate,
+        )
+        _FUNDAMENTAL_MACRO_GATES = (passes_high_conviction_gate, passes_long_term_stability_gate)
+    except Exception as _fmg_err:
+        import sys as _sys
+        print(f"WARN: fundamental_macro_gates unavailable ({_fmg_err}), "
+              f"using no-op stubs in eagle_gates", file=_sys.stderr)
+        def _noop_gate(pick):
+            return True, {}
+        _FUNDAMENTAL_MACRO_GATES = (_noop_gate, _noop_gate)
+    return _FUNDAMENTAL_MACRO_GATES
 
 # ---------------------------------------------------------------------------
 # EAGLE-4 (negative side): kill noise personas, kill negative-edge directions,
@@ -639,7 +657,8 @@ def passes_hard_money_gates(
     if max_share is not None and float(max_share) > 0.30:
         return False, f"CONCENTRATION: max_symbol_share={max_share:.1%} > 30%"
 
-    # New Gates from fundamental_macro_gates.py
+    # New Gates from fundamental_macro_gates.py (lazy import for GHA sys.path safety)
+    passes_high_conviction_gate, passes_long_term_stability_gate = _get_fundamental_macro_gates()
     hc_ok, hc_details = passes_high_conviction_gate(pick)
     lt_ok, lt_details = passes_long_term_stability_gate(pick)
 

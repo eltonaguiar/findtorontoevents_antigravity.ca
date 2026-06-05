@@ -83,3 +83,17 @@ Latest run: `audit_trail/data/hc_edge_latest.json`
 ---
 *Last check: 2026-04-09 02:45 UTC*
 *Issues Found: trust_tier missing in active picks, high SL rate*
+
+---
+
+## 7. bt_backtest Sync Recheck (2026-06-06)
+
+**Due: 2026-06-06 ~14:00 UTC (24h after fix)**
+
+Verify that the `imported_at` column fix + `MAX(id)` PK optimization in `audit-dashboard.yml` is stable:
+```bash
+gh run list --workflow=audit-dashboard.yml --limit 5 --json conclusion,createdAt
+```
+**Look for:** All recent runs should be `success`. Any failure with duplicate-insertion or column-not-found errors means the fix regressed.
+
+Also check: `python3 tools/db_freshness_check.py` for any stale data warnings.
