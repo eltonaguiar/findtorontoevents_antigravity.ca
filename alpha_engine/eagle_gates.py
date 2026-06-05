@@ -475,7 +475,20 @@ def is_admissible_for_production(
     else:
         gates["hhi"] = {"this_strategy_hhi": None, "max_allowed": _EAGLE6_MAX_SOURCE_HHI, "pass": True}
 
-    overall_pass = all(g["pass"] for g in gates.values())
+    # Gate 4: Walk-Forward Efficiency (WFE) — 2026-06-05
+    # Reads tools/walk_forward_per_strategy_latest.json; fails-open when missing.
+    cat = str(pick.get("category") or pick.get("asset_class") or "").lower()
+    wfe_pass, wfe_detail = passes_wfe_gate(strat, cat)
+    gates["wfe"] = wfe_detail
+
+    # Gate 5: Global PBO — 2026-06-05
+    # cpcv_pbo_results.json exists (built 2026-06-02); if global PBO >= 0.50
+    # the *entire portfolio* is overfit — flag but don't hard-kill individual picks
+    # (the per-strategy PBO kill will be added when per-strategy PBO is available).
+    pbo_pass, pbo_detail = passes_pbo_global_gate(strict=False)
+    gates["pbo_global"] = pbo_detail
+
+    overall_pass = all(g["pass"] for g in gates.values() if isinstance(g, dict))
     verdict = "ADMISSIBLE" if overall_pass else "INADMISSIBLE"
     gates["verdict"] = verdict
     return overall_pass, gates
@@ -525,4 +538,77 @@ def apply_eagle6_admissibility(picks: list[dict]) -> list[dict]:
         for p in picks:
             p.setdefault("_eagle6_verdict", "UNSCORED")
         return picks
+
+
+# ---------------------------------------------------------------------------
+# passes_hard_money_gates — THE gate for real money / shadow probation (2026-06-05)
+# Wraps all eagle_gates components into one call.  Designed to be called from
+# money_ready_verdict.py, production_scanner.py, and paper-pilot scripts.
+# ---------------------------------------------------------------------------
+
+def passes_hard_money_gates(
+    strategy_results: dict,
+    min_n: int = 100,
+) -> tuple[bool, str]:
+    """Single entry-point for real-money / shadow-probation eligibility.
+
+    Args:
+        strategy_results: dict with keys:
+            - daily_returns: list[float]  (per-trade pnl_pct / 100 or daily returns)
+            - n_trades: int
+            - profit_factor: float
+            - win_rate: float (0–1)
+            - strategy: str  (for WFE lookup)
+            - category: str  (for WFE lookup)
+            - pbo: float (optional — from cpcv_pbo_results.json per-strategy; defaults to global)
+            - max_symbol_share: float (optional, 0–1)
+        min_n: minimum closed trades required (default 100)
+
+    Returns:
+        (passes: bool, reason: str)
+    """
+    n_trades = int(strategy_results.get("n_trades") or 0)
+    pf = float(strategy_results.get("profit_factor") or 0.0)
+    wr = float(strategy_results.get("win_rate") or 0.0)
+    returns = list(strategy_results.get("daily_returns") or strategy_results.get("returns") or [])
+    strat = str(strategy_results.get("strategy") or "")
+    cat = str(strategy_results.get("category") or "")
+
+    # Gate 1: Minimum n
+    if n_trades < min_n:
+        return False, f"INSUFFICIENT_N: need>={min_n} have={n_trades}"
+
+    # Gate 2: T2 baseline (PF >= 1.5, WR >= 50%)
+    if pf < 1.5:
+        return False, f"BELOW_T2_PF: pf={pf:.2f} < 1.5"
+    if wr < 0.50:
+        return False, f"BELOW_T2_WR: wr={wr:.1%} < 50%"
+
+    # Gate 3: DSR noise kill (strategy must not be in DSR noise set)
+    noise = _load_dsr_noise()
+    if strat and strat in noise:
+        return False, f"DSR_NOISE_KILL: strategy={strat}"
+
+    # Gate 4: WFE >= 0.60 (fail-open when data missing)
+    wfe_pass, wfe_detail = passes_wfe_gate(strat, cat)
+    if not wfe_pass:
+        return False, f"WFE_FAIL: {wfe_detail.get('reason', 'wfe<0.60')}"
+
+    # Gate 5: MinTRL (need sufficient observations to trust the Sharpe estimate)
+    if returns:
+        trl_pass, trl_detail = passes_min_trl_gate(returns, n_trades)
+        if not trl_pass:
+            return False, f"MIN_TRL_FAIL: {trl_detail.get('reason', 'n<min_trl')}"
+
+    # Gate 6: Global PBO sanity (soft gate — fail if global PBO >= 0.70)
+    pbo_pass, pbo_detail = passes_pbo_global_gate(strict=True)
+    if not pbo_pass:
+        return False, f"PBO_GLOBAL_FAIL: {pbo_detail.get('reason', 'pbo>=0.50')}"
+
+    # Gate 7: Symbol concentration (optional)
+    max_share = strategy_results.get("max_symbol_share")
+    if max_share is not None and float(max_share) > 0.30:
+        return False, f"CONCENTRATION: max_symbol_share={max_share:.1%} > 30%"
+
+    return True, "ALL_HARD_GATES_PASS — MONEY_READY"
 
