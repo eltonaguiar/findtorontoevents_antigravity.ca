@@ -9142,6 +9142,25 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     if _anti_overfit_reject(pick):
         return False
 
+    # ── Global PBO gate (selection-process overfitting, 2026-06-05) ──
+    # Complements per-pick DSR/PBO with the BBLZ 2017 *global* PBO check from
+    # tools/cpcv_pbo_results.json. Per-pick gate catches strategies with bad
+    # returns history; global gate catches the case where the IS-winner
+    # selection process itself is statistically indistinguishable from chance.
+    # Default-OFF (opt-in for Tier-1 promotion only) to avoid blocking ALL picks
+    # when the file currently reports global_pbo=1.0 (= FAIL). Enable with
+    # GLOBAL_PBO_GATE_ENABLED=1 (strict, threshold 0.5) or =soft (threshold 0.7).
+    _gpbo_mode = os.environ.get("GLOBAL_PBO_GATE_ENABLED", "0").strip().lower()
+    if _gpbo_mode in ("1", "true", "strict", "soft"):
+        try:
+            from alpha_engine.eagle_gates import passes_pbo_global_gate
+            _ok, _info = passes_pbo_global_gate(strict=(_gpbo_mode != "soft"))
+            if not _ok:
+                logger.debug("Smart gate: global PBO %s", _info.get("reason"))
+                return False
+        except Exception:
+            pass  # fail-open on import/data error
+
     # ── Phase 2-A CRYPTO SHORT regime-gate / kill-switch (defense-in-depth) ──
     # passes_active_gate already enforces this, but mirror the rule in Smart so
     # that any future code path bypassing active still respects the panel verdict.

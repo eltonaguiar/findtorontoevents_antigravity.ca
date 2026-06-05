@@ -172,8 +172,12 @@ def apply_eagle5_promotion(picks):
 #   - Insufficient-n    : strategy must have >= 30 resolved trades
 #   - HHI concentration : per-source concentration must stay under 0.20
 #
-# v2 gates (planned, data-pipeline blockers noted in doc):
-#   - PBO < 0.5         : requires tools/cpcv_pbo_results.json (not yet generated)
+# v2 gates (WIRED 2026-06-05):
+#   - PBO < 0.5 (global, BBLZ 2017 threshold) : tools/cpcv_pbo_results.json IS generated
+#     (file dated 2026-06-02 23:34Z; global PBO=1.0 currently → blocks promotion to Tier-1
+#      until strategy set is pruned and global PBO drops below 0.5).
+#
+# v3 gates (still planned):
 #   - WF OOS PF >= 0.8x : requires alpha_engine/walkforward_validator.py per-strat results
 #   - Bootstrap CI PF   : requires per-strategy pnL list (not in DSR JSON)
 # ---------------------------------------------------------------------------
@@ -184,9 +188,17 @@ _EAGLE6_MIN_TRADES = 30
 # Max HHI contribution from a single source (matches EAGLE2 initiative 4.6 HHI<0.20)
 _EAGLE6_MAX_SOURCE_HHI = 0.20
 
+# BBLZ 2017 PBO threshold (>= 0.5 = "selection process indistinguishable from chance").
+# Used for Tier-1 / real-money gating; production-tier still allowed (fail-soft).
+_EAGLE6_MAX_PBO_GLOBAL = 0.5
+
 # Optional DSR noise set (lazy-loaded from tools/deflated_sharpe_results.json)
 _DSR_NOISE_CACHE: frozenset[str] | None = None
 _DSR_TRADES_CACHE: dict[str, int] | None = None
+
+# Global PBO value (lazy-loaded from tools/cpcv_pbo_results.json)
+_PBO_GLOBAL_CACHE: float | None = None
+_PBO_LOADED: bool = False
 
 
 def _load_dsr_noise() -> frozenset[str]:
@@ -220,6 +232,63 @@ def _load_dsr_noise() -> frozenset[str]:
         _DSR_NOISE_CACHE = frozenset()
         _DSR_TRADES_CACHE = {}
         return _DSR_NOISE_CACHE
+
+
+def _load_pbo_global() -> float | None:
+    """Load the global PBO value from `tools/cpcv_pbo_results.json`.
+
+    PBO (Probability of Backtest Overfitting, BBLZ 2017) is a property of the
+    *selection process* — not per-strategy. Global PBO >= 0.5 means the
+    IS-winner selection is statistically indistinguishable from picking by
+    chance. Mirrors `_load_dsr_noise()` pattern, fail-open on I/O error.
+
+    Returns None when the file is missing or unreadable so the gate degrades
+    to fail-open. Real value (typically [0, 1]) when available.
+    """
+    global _PBO_GLOBAL_CACHE, _PBO_LOADED
+    if _PBO_LOADED:
+        return _PBO_GLOBAL_CACHE
+    _PBO_LOADED = True
+    try:
+        import json
+        from pathlib import Path
+        path = Path(__file__).resolve().parent.parent / "tools" / "cpcv_pbo_results.json"
+        with open(path, "r", encoding="utf-8") as f:
+            d = json.load(f)
+        pbo = d.get("pbo")
+        _PBO_GLOBAL_CACHE = float(pbo) if pbo is not None else None
+        return _PBO_GLOBAL_CACHE
+    except Exception:
+        _PBO_GLOBAL_CACHE = None
+        return None
+
+
+def passes_pbo_global_gate(strict: bool = True) -> tuple[bool, dict]:
+    """Hard gate for Tier-1 / real-money promotion based on global PBO.
+
+    `strict=True` (default) blocks when global PBO >= _EAGLE6_MAX_PBO_GLOBAL (0.5).
+    `strict=False` only blocks when the file says global PBO >= 0.7 ("FAIL"
+    per the file's own pbo_interpretation field).
+
+    Used by `audit_trail/promotion_gate.py` / `audit_trail/quality_gates.py`
+    to block Tier-1 promotions while the strategy set is over-fit at the
+    selection layer. Returns (pass, gate_info).
+    """
+    pbo = _load_pbo_global()
+    threshold = _EAGLE6_MAX_PBO_GLOBAL if strict else 0.7
+    if pbo is None:
+        return True, {
+            "global_pbo": None,
+            "threshold": threshold,
+            "pass": True,
+            "reason": "no_data (fail-open)",
+        }
+    return (pbo < threshold), {
+        "global_pbo": pbo,
+        "threshold": threshold,
+        "pass": pbo < threshold,
+        "reason": f"global_pbo={pbo:.3f} {'<' if pbo < threshold else '>='} {threshold}",
+    }
 
 
 def _strategy_name(pick: dict) -> str:
