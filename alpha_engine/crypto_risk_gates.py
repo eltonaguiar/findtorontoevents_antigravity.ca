@@ -343,6 +343,31 @@ def apply_crypto_gates(
         pick["crypto_gate_notes"] = gate_notes
     pick["crypto_gates_applied"] = True
 
+    # Network snapshot for fundamental_macro_gates / money_ready HC scoring
+    _extra = pick.setdefault("extra", {})
+    if not isinstance(_extra, dict):
+        _extra = {}
+        pick["extra"] = _extra
+    _onchain_path = Path(__file__).resolve().parent / "genome" / "data" / "onchain_cache.json"
+    if _onchain_path.exists():
+        try:
+            _oc = json.loads(_onchain_path.read_text(encoding="utf-8"))
+            _sym_key = symbol.replace("=X", "").upper()
+            _extra.setdefault("network_metrics", {})
+            _extra["network_metrics"].update(
+                {
+                    "funding_rate": funding_rate,
+                    "fear_greed": _oc.get("fear_greed") or _fgi_value,
+                    "ssr": _oc.get("ssr"),
+                    "btc_dominance": _oc.get("btc_dominance"),
+                    "funding_rate_symbol": _oc.get(f"funding_rate_{_sym_key}"),
+                }
+            )
+        except Exception:
+            pass
+    if funding_rate is not None:
+        pick["funding_rate"] = funding_rate
+
     return pick
 
 
