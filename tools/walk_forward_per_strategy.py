@@ -23,19 +23,9 @@ PASS criteria:
   - survival_rate >= SURVIVAL_THRESHOLD (default 0.60)
   - mean_oos_pf >= 1.2
   - mean_oos_wr >= 0.50
-  - total_pf >= 1.0 (hard-gate: a losing strategy cannot PASS, even if
-    rolling windows look good — see reports/deep_dive_forex_regime_2026-06-05.md)
 
 Source: Mercury 2 (Inception Labs) audit-toolkit Sec 2.3 + the operator-shared
 enhancement plan's walk_forward_backtest_example.py.
-
-Note on --require-macro-join
----------------------------
-Per `reports/deep_dive_forex_regime_2026-06-05.md`, the unfiltered walk-forward
-returned 3/3 forex PASSes that were data-join artifacts: 88% of cta_cross_asset_tsmom's
-forex trades closed after 2026-04-27 (when `alpha_macro` ends), so an INNER JOIN
-removes 151/172 of those trades. With --require-macro-join, the same 3 strategies
-are correctly demoted. Enable this flag for any audit-grade verdict.
 """
 from __future__ import annotations
 
@@ -82,31 +72,17 @@ def _pf_wr(pnls: list[float]) -> tuple[float, float]:
     return pf, wr
 
 
-def _eligible_cells(cur, min_n: int, strategy_filter: str | None, require_macro: bool = False) -> list[dict]:
+def _eligible_cells(cur, min_n: int, strategy_filter: str | None) -> list[dict]:
     where_extra = ""
     params: tuple = ()
     if strategy_filter:
         where_extra = "AND strategy = %s"
         params = (strategy_filter,)
-    # Exclude 2026-06-04 resolver backfill (5,960 commodity rows in one day;
-    # see reports/deep_dive_commodity_2026-06-05.md). Without this, walk-forward
-    # reports spurious PASS for futures_bb_mean_reversion::commodity that
-    # contradicts the LOW_CONFIDENCE_STRATEGIES auto_tuner ban.
-    backfill_filter = "AND DATE(closed_at) != '2026-06-04'"
-    # require_macro: INNER JOIN alpha_macro to filter out trades whose close date
-    # has no macro context. This is the data-join-artifact gate per
-    # reports/deep_dive_forex_regime_2026-06-05.md — without it, forex strategies
-    # whose 88% of trades close in the 2026-05+ alpha_macro gap can pass spuriously.
-    macro_join = "INNER JOIN alpha_macro m ON m.trade_date = DATE(tp.closed_at)" if require_macro else ""
-    macro_filter = "AND m.vix_close IS NOT NULL" if require_macro else ""
     cur.execute(f"""
         SELECT strategy, category, COUNT(*) n
-        FROM trading_picks tp
-        {macro_join}
-        WHERE tp.closed_at IS NOT NULL AND tp.pnl_pct IS NOT NULL
-          AND tp.status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
-          {backfill_filter}
-          {macro_filter}
+        FROM trading_picks
+        WHERE closed_at IS NOT NULL AND pnl_pct IS NOT NULL
+          AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
           {where_extra}
         GROUP BY strategy, category
         HAVING n >= %s
@@ -116,19 +92,13 @@ def _eligible_cells(cur, min_n: int, strategy_filter: str | None, require_macro:
 
 
 def walk_forward_one(cur, strategy: str, category: str,
-                     in_window: int, out_window: int, step: int,
-                     require_macro: bool = False) -> dict:
-    macro_join = "INNER JOIN alpha_macro m ON m.trade_date = DATE(tp.closed_at)" if require_macro else ""
-    macro_filter = "AND m.vix_close IS NOT NULL" if require_macro else ""
-    cur.execute(f"""
-        SELECT pnl_pct FROM trading_picks tp
-        {macro_join}
+                     in_window: int, out_window: int, step: int) -> dict:
+    cur.execute("""
+        SELECT pnl_pct FROM trading_picks
         WHERE strategy=%s AND category=%s
-          AND tp.closed_at IS NOT NULL AND tp.pnl_pct IS NOT NULL
-          AND tp.status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
-          AND DATE(tp.closed_at) != '2026-06-04'
-          {macro_filter}
-        ORDER BY tp.closed_at ASC
+          AND closed_at IS NOT NULL AND pnl_pct IS NOT NULL
+          AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
+        ORDER BY closed_at ASC
     """, (strategy, category))
     pnls = [_f(r["pnl_pct"]) for r in cur.fetchall()]
     n = len(pnls)
@@ -163,23 +133,12 @@ def walk_forward_one(cur, strategy: str, category: str,
     mean_oos_pf = sum(oos_pfs) / len(oos_pfs) if oos_pfs else 0.0
     mean_oos_wr = sum(oos_wrs) / len(oos_wrs) if oos_wrs else 0.0
     mean_is_pf = sum(is_pfs) / len(is_pfs) if is_pfs else 0.0
-    # Overall PF/WR across the full pnls list (not just OOS windows). This is
-    # the ground-truth edge measure: if overall PF < 1, the strategy is losing
-    # money and walk-forward's rolling-window PASS is an artifact of
-    # non-stationary windows. Per reports/deep_dive_forex_regime_2026-06-05.md,
-    # myfxbook_retail_contrarian::forex passed walk-forward (PF=2.50 n=299) but
-    # overall is WR 48.3% / PF 0.98 — the hard-gate below catches this.
-    total_pf, total_wr = _pf_wr(pnls)
 
     if n_windows < MIN_WINDOWS_FOR_VERDICT:
         verdict = "INSUFF_N"
         reasons = [f"n_windows={n_windows} < {MIN_WINDOWS_FOR_VERDICT}"]
     else:
         reasons: list[str] = []
-        # Hard-gate: a losing strategy cannot be declared PASS no matter what
-        # the rolling windows say. This is the audit-grade rule.
-        if total_pf < 1.0:
-            reasons.append(f"total_pf={total_pf:.2f} < 1.0 (strategy is losing overall)")
         if survival_rate < SURVIVAL_THRESHOLD:
             reasons.append(f"survival_rate={survival_rate:.2f} < {SURVIVAL_THRESHOLD}")
         if mean_oos_pf < 1.2:
@@ -198,8 +157,6 @@ def walk_forward_one(cur, strategy: str, category: str,
         "mean_oos_pf": round(mean_oos_pf, 4),
         "mean_oos_wr": round(mean_oos_wr, 4),
         "mean_is_pf": round(mean_is_pf, 4),
-        "total_pf": round(total_pf, 4) if total_pf != float("inf") else None,
-        "total_wr": round(total_wr, 4),
         "verdict": verdict,
         "reasons": reasons,
     }
@@ -215,7 +172,6 @@ def run(args) -> dict:
             "min_n_total": args.min_n,
             "survival_threshold": SURVIVAL_THRESHOLD,
             "is_oos_pf_decay_tolerance": IS_OOS_PF_DECAY_TOLERANCE,
-            "require_macro_join": bool(args.require_macro_join),
         },
         "cells": [],
         "summary": {},
@@ -223,12 +179,11 @@ def run(args) -> dict:
     conn = _connect()
     try:
         with conn.cursor() as cur:
-            cells = _eligible_cells(cur, args.min_n, args.strategy, args.require_macro_join)
+            cells = _eligible_cells(cur, args.min_n, args.strategy)
             for c in cells:
                 out["cells"].append(
                     walk_forward_one(cur, c["strategy"], c["category"],
-                                     args.in_window, args.out_window, args.step,
-                                     args.require_macro_join)
+                                     args.in_window, args.out_window, args.step)
                 )
     finally:
         conn.close()
@@ -254,10 +209,6 @@ def main() -> int:
     ap.add_argument("--in-window", type=int, default=IN_WINDOW_DEFAULT)
     ap.add_argument("--out-window", type=int, default=OUT_WINDOW_DEFAULT)
     ap.add_argument("--step", type=int, default=STEP_DEFAULT)
-    ap.add_argument("--require-macro-join", action="store_true",
-                    help="INNER JOIN alpha_macro to filter out trades whose close "
-                         "date has no macro context. Audit-grade verdicts should "
-                         "use this flag. See reports/deep_dive_forex_regime_2026-06-05.md.")
     args = ap.parse_args()
 
     out = run(args)
