@@ -10,20 +10,18 @@ from decimal import Decimal
 
 DB_HOST = 'mysql.50webs.com'
 DB_USER = 'ejaguiar1_stocks'
+DB_PASS = 'stocks1234560'
 DB_NAME = 'ejaguiar1_stocks'
-
-
-def _connect():
-    from tools.db_env import get_stocks_creds
-    return pymysql.connect(**get_stocks_creds())
 
 AT_PO_COLS = ['pick_id', 'symbol', 'strategy', 'asset_class', 'status',
               'resolution_method', 'pnl_pct', 'resolved_at', 'resolver_version']
 
 def connect():
-    from tools.db_env import get_stocks_creds
     return pymysql.connect(
-        **get_stocks_creds(),
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASS,
+        database=DB_NAME,
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor,
         connect_timeout=30,

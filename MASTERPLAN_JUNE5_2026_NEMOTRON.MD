@@ -387,7 +387,7 @@ This plan addresses these issues through immediate data fixes, engine diversific
 ### Appendix B: Database Credentials Reference
 From `dbpasses.txt` and `.env.dbpw`:
 - **Host**: mysql.50webs.com
-- **Stocks DB**: ejaguiar1_stocks / password: `get_stocks_creds()` (per CLAUDE.md credential rule)
+- **Stocks DB**: ejaguiar1_stocks / password: stocks1234560
 - **Backtests DB**: ejaguiar1_backtests / password: backtests1234560
 - **Backups DB**: ejaguiar1_backups / password: backups1234560
 - **Canonical Source**: `DB_PASSWORDS_JSON` or `.env.dbpw`

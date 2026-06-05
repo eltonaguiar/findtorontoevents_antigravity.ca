@@ -125,10 +125,10 @@ This is the **single genuine candidate** in the entire database. The pilot track
 
 ```bash
 # Confirm TP/SL fix
-python3 -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password=get_stocks_creds()["password"],database='ejaguiar1_stocks'); cur=c.cursor(); cur.execute(\"SELECT resolution_method, COUNT(*), SUM(CASE WHEN pnl_pct>0 THEN 1 ELSE 0 END)/COUNT(*)*100 as wr FROM at_pick_outcomes WHERE resolution_method IN ('TP_HIT','SL_HIT') GROUP BY resolution_method\"); [print(r) for r in cur.fetchall()]; c.close()"
+python3 -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='stocks1234560',database='ejaguiar1_stocks'); cur=c.cursor(); cur.execute(\"SELECT resolution_method, COUNT(*), SUM(CASE WHEN pnl_pct>0 THEN 1 ELSE 0 END)/COUNT(*)*100 as wr FROM at_pick_outcomes WHERE resolution_method IN ('TP_HIT','SL_HIT') GROUP BY resolution_method\"); [print(r) for r in cur.fetchall()]; c.close()"
 
 # Confirm clean ledger
-python3 -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password=get_stocks_creds()["password"],database='ejaguiar1_stocks'); cur=c.cursor(); cur.execute('SELECT clean_status, COUNT(*) FROM trading_picks_v2 GROUP BY clean_status'); [print(r) for r in cur.fetchall()]; c.close()"
+python3 -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='stocks1234560',database='ejaguiar1_stocks'); cur=c.cursor(); cur.execute('SELECT clean_status, COUNT(*) FROM trading_picks_v2 GROUP BY clean_status'); [print(r) for r in cur.fetchall()]; c.close()"
 
 # Check PMC pilot
 python3 tools/prediction_market_consensus_pilot.py --snapshot
