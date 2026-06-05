@@ -2678,7 +2678,8 @@ BLOCKED_ASSET_STRATEGY_PAIRS = {
     # Escalation criterion met: WR=2% < 10% escalation_wr_floor + H-005 confirms no rescue path.
     ("FUTURES", "futures_momentum"),  # re-blocked 2026-05-19 — H-005 escalation
     ("CRYPTO", "MeanReversionBB"),
-    # EQUITY MeanReversionBB unblocked 2026-06-06 — equity_bb_pilot, resolver n=175 PF=1.82
+    # EQUITY MeanReversionBB unblocked 2026-06-06 — resolver n=175 WR=54.9% PF=1.82;
+    # isolated paper pilot: verified_strategies/paper_pilot/equity_bb_pilot.py
     # ── 2026-05-12 MEMECOIN class-wide quarantine (Kimi F13/F14 + 5-agent synthesis) ──
     # Kimi edge audit 2026-05-11 (`reports/kimi_edge_audit_2026-05-11/metrics_by_asset_class.csv`):
     #   MEMECOIN class: n=1869, WR 15.7%, avg_return -3.58%, Sharpe -2.79, PF 0.50.
@@ -2794,10 +2795,6 @@ BLOCKED_ASSET_STRATEGY_PAIRS = {
     # regime_terminal EQUITY: n=72, WR=34.7%, PF=1.06. strategy "unknown" dominates.
     # Below 45% WR charter floor. Mutation: no profitable direction/symbol subset found (n=72 satisfies threshold).
     ("EQUITY", "regime_terminal"),
-    # 2026-06-05 edge hunt: policy-clean n=12 WR=8.3% PF=0.13 — copytrader drag on EQUITY book
-    ("EQUITY", "multi_asset_copytrader"),
-    # regime_accumulation EQUITY: n=3 WR=0% PF=0.00 on tier tracker 2026-06-05
-    ("EQUITY", "regime_accumulation"),
     # EAGLE2 Phase 0 (2026-06-02): extend regime_terminal block to CRYPTO/FOREX emitters.
     ("CRYPTO", "regime_terminal"),
     ("FOREX", "regime_terminal"),

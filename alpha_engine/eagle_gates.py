@@ -19,19 +19,11 @@ def _get_fundamental_macro_gates():
     global _FUNDAMENTAL_MACRO_GATES
     if _FUNDAMENTAL_MACRO_GATES is not None:
         return _FUNDAMENTAL_MACRO_GATES
-    try:
-        from alpha_engine.fundamental_macro_gates import (
-            passes_high_conviction_gate,
-            passes_long_term_stability_gate,
-        )
-        _FUNDAMENTAL_MACRO_GATES = (passes_high_conviction_gate, passes_long_term_stability_gate)
-    except Exception as _fmg_err:
-        import sys as _sys
-        print(f"WARN: fundamental_macro_gates unavailable ({_fmg_err}), "
-              f"using no-op stubs in eagle_gates", file=_sys.stderr)
-        def _noop_gate(pick):
-            return True, {}
-        _FUNDAMENTAL_MACRO_GATES = (_noop_gate, _noop_gate)
+    from alpha_engine.fundamental_macro_gates import (
+        passes_high_conviction_gate,
+        passes_long_term_stability_gate,
+    )
+    _FUNDAMENTAL_MACRO_GATES = (passes_high_conviction_gate, passes_long_term_stability_gate)
     return _FUNDAMENTAL_MACRO_GATES
 
 # ---------------------------------------------------------------------------

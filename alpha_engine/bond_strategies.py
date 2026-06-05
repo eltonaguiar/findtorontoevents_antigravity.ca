@@ -243,7 +243,7 @@ def bond_duration_rotation(data: dict[str, pd.DataFrame]) -> list[dict]:
 
 
 def bond_tlt_ief_v3(data: dict[str, pd.DataFrame]) -> list[dict]:
-    """TLT/IEF 12-1m momentum (orphan backtest wire-up, PF 1.29 / WR 54%)."""
+    """TLT/IEF 12-1m momentum rotation (orphan backtest wire-up, PF 1.29 / WR 54%)."""
     signals: list[dict] = []
     scores: dict[str, float] = {}
     for sym in ("TLT", "IEF", "SHY"):

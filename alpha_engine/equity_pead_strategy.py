@@ -74,7 +74,8 @@ def _load_repo_earnings(symbol: str, cache: dict[str, Any], now: datetime) -> fl
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         for row in data.get("history") or []:
-            surprise, edate = row.get("surprise_pct"), row.get("date")
+            surprise = row.get("surprise_pct")
+            edate = row.get("date")
             if surprise is None or not edate:
                 continue
             ed = datetime.fromisoformat(str(edate)).replace(tzinfo=timezone.utc)
@@ -84,6 +85,7 @@ def _load_repo_earnings(symbol: str, cache: dict[str, Any], now: datetime) -> fl
                 "surprise_pct": round(float(surprise), 2),
                 "earnings_date": str(ed.date()),
                 "cached_at": now.timestamp(),
+                "source": "repo_earnings_cache",
             }
             return float(surprise)
     except Exception as e:
@@ -120,7 +122,6 @@ def _fetch_earnings_surprise(symbol: str, cache: dict[str, Any]) -> float | None
         if ed is None or ed.empty:
             return None
 
-        # Find most recent PAST earnings event (not future)
         past = ed[ed.index < now].dropna(subset=["Reported EPS", "EPS Estimate"])
         if past.empty:
             return None

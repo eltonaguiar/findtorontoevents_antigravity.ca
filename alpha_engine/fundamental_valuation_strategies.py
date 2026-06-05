@@ -38,7 +38,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from config import (
+from alpha_engine.config import (
     COINGECKO_BASE,
     fetch_binance_json,
     DATA_DIR,
