@@ -28,6 +28,8 @@ concurrency:
 
 jobs:
   pipeline:
+    # MASTERPLAN 2026-06-05: tournament ingest frozen until clean ingest + forward n≥100
+    if: ${{ vars.AI_TOURNAMENT_PIPELINE_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     # 2026-05-28: bumped 15→45. With 16 provider secrets now set, the expanded
     # model fleet's serial "Generate picks fleet" step exceeded the 15-min ceiling

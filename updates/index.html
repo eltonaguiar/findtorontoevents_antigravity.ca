@@ -34,6 +34,36 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+  <div class="update-entry">
+  <h2>Jun 5, 2026 — luxalgo forward dedup truth (do not size)</h2>
+  <p>Fixed <code>luxalgo_confluence_forward_pilot.py</code> MySQL (<code>closed_at</code> + dedupe). Forward 30d: <strong>n=827, WR 42%, PF 0.97</strong> — does not match lab 64%/2.36. Tier-2 on last 100: <strong>fail</strong>. Sleeve stays SHADOW.</p>
+  <p>Doc: <code>updates/2026-06-05-luxalgo-forward-dedup-truth.md</code></p>
+  </div>
+
+  <div class="update-entry">
+  <h2>Jun 5, 2026 — Grok MASTERPLAN Phase 2 (non-LLM feature signals)</h2>
+  <p><strong>Goal #1.</strong> Phase 2 adds slow features beside the frozen LLM tournament: funding extremes, VIX regime overlay, commodity momentum — merged in <code>production_scanner.py</code>, hourly CI <code>feature-signals-hourly.yml</code>.</p>
+  <ul>
+    <li><code>tools/feature_signals/orchestrator.py</code> → <code>audit_dashboard/data/feature_signals_latest.json</code></li>
+    <li>Tournament pipeline gated: <code>AI_TOURNAMENT_PIPELINE_ENABLED=true</code> only to re-enable</li>
+    <li><code>CLEAN_INGEST_V2_ENFORCE=1</code> on mysql sync (opt-in, after backup)</li>
+  </ul>
+  <p>Doc: <code>updates/2026-06-05-grok-masterplan-phase2-shipped.md</code></p>
+  </div>
+
+  <div class="update-entry">
+  <h2>Jun 5, 2026 — Grok MASTERPLAN Phase 1 (clean ingest + CRYPTO LONG gate)</h2>
+  <p><strong>Goal #1.</strong> Deep dive on <a href="https://findtorontoevents.ca/audit/">/audit</a> + AI leaderboard: <strong>0/9 classes money-ready</strong> on policy-clean verdict (CRYPTO WR 36%, PF 0.98). Phase 1 ships data-contract tooling and production gates — not more LLM volume.</p>
+  <ul>
+    <li><strong>Plan:</strong> <code>MASTERPLAN_JUNE52026_GROK.MD</code> (Grok) + <code>MASTERPLAN_JUNE52026_CLAUDE.MD</code> (Opus swarm)</li>
+    <li><strong>Clean ingest v2:</strong> <code>tools/clean_ingest_v2.py</code> — drift / reverse-split / TP_HIT_REPLAY rejects</li>
+    <li><strong>CRYPTO LONG block:</strong> <code>CRYPTO_PRODUCTION_BLOCK_LONG=1</code> in <code>quality_gates.py</code> (SHORT edge ~67% vs LONG ~33%)</li>
+    <li><strong>Tier-2 ladder:</strong> <code>audit_trail/promotion_gate.evaluate_forward_tier2()</code></li>
+    <li><strong>Recency panels:</strong> hourly <code>build_recency_summary.py</code> in audit-dashboard workflow</li>
+  </ul>
+  <p>Doc: <code>updates/2026-06-05-grok-masterplan-phase1-shipped.md</code></p>
+  </div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.

@@ -666,6 +666,23 @@ def sync(dry_run=False):
         if _raw_cat == "FOREX":
             _forex_skipped = locals().get("_forex_skipped", 0) + 1
             continue
+        if os.environ.get("CLEAN_INGEST_V2_ENFORCE", "0") in ("1", "true", "TRUE", "yes"):
+            try:
+                from tools.clean_ingest_v2 import validate_pick_row
+                _ci = validate_pick_row({
+                    "symbol": pick.get("symbol"),
+                    "asset_class": pick.get("category") or pick.get("asset_class"),
+                    "direction": pick.get("direction"),
+                    "entry_price": pick.get("entry_price"),
+                    "tp_fill_method": pick.get("tp_fill_method"),
+                    "submitted_at": pick.get("created_at") or pick.get("entry_date"),
+                    "status": pick.get("status"),
+                })
+                if not _ci.ok:
+                    _clean_skipped = locals().get("_clean_skipped", 0) + 1
+                    continue
+            except Exception:
+                pass
         try:
             rows.append(pick_to_row(pick))
         except Exception as e:
@@ -675,6 +692,9 @@ def sync(dry_run=False):
     if _forex_skipped:
         log_info(f"[FOREX_ZERO_ALLOCATE] suppressed {_forex_skipped} FOREX picks "
                  f"(FOREX_HIGH_CONVICTION preserved per EDGE_CRITERIA_ACTION_PLAN_2026-05-24.md)")
+    _clean_skipped = locals().get("_clean_skipped", 0)
+    if _clean_skipped:
+        log_info(f"[CLEAN_INGEST_V2] suppressed {_clean_skipped} picks (set CLEAN_INGEST_V2_ENFORCE=0 to disable)")
     log_ok(f"Prepared {len(rows)} unique rows for upsert")
 
     if dry_run:

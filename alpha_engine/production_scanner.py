@@ -3961,6 +3961,13 @@ def main():
     # 3. Load resulting JSON
     active = load_active_picks()
     closed = load_closed_picks()
+
+    # Phase 2 — non-LLM feature sleeves (funding / VIX / commodity mom)
+    try:
+        from tools.feature_signals.orchestrator import merge_feature_signals
+        active = merge_feature_signals(active)
+    except Exception as _fs_err:
+        print(f"  [FEATURE SIGNALS] Skipped (non-fatal): {_fs_err}")
     if not perf:
         perf = load_strategy_performance()
 

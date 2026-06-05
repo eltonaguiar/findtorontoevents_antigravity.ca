@@ -8637,6 +8637,37 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
         )
         return False
 
+    # ── CRYPTO production LONG block (MASTERPLAN 2026-06-05, INCIDENT CRYPTO directional) ──
+    # Tournament + trading_picks: LONG ~33–43% WR vs SHORT ~54–67%. EAGLE-4 flips in
+    # production_scanner only; emitters that bypass the scanner still surface LONGs.
+    # Default ON. Exempt picks already flipped (_eagle4_flipped) or explicit override.
+    _crypto_ac = str(asset_class or pick.get("category") or "").upper()
+    _crypto_dir = str(pick.get("direction") or pick.get("side") or "").upper()
+    if (
+        _crypto_ac == "CRYPTO"
+        and _crypto_dir in ("LONG", "BUY")
+        and _truthy(os.environ.get("CRYPTO_PRODUCTION_BLOCK_LONG"), "1")
+        and not pick.get("_eagle4_flipped")
+        and os.environ.get("CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE", "0") != "1"
+    ):
+        pick["_hf_quality_gate_reason"] = "crypto_production_block_long"
+        logger.info(
+            "Pick rejected: CRYPTO_PRODUCTION_BLOCK_LONG=1 (symbol=%s, source=%s)",
+            str(pick.get("symbol", "")),
+            str(pick.get("source_system", "")),
+        )
+        try:
+            if _pll_tracer_m110 and _pll_pick_id_m110:
+                _pll_tracer_m110.log_filter(
+                    _pll_pick_id_m110,
+                    "crypto_direction",
+                    "crypto_production_block_long",
+                    pick_values={"symbol": pick.get("symbol"), "direction": _crypto_dir},
+                )
+        except Exception:
+            pass
+        return False
+
     # Ghost-row cohort surgical block — (asset_class, strategy, symbol) tuples
     # for known constant-pnl template emissions (see BLOCKED_ASSET_STRATEGY_SYMBOL_TRIPLES
     # definition for evidence). Catches MATIC quan_engine, ROBO funding_rate_carry,

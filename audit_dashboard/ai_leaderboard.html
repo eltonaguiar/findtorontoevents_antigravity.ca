@@ -45,6 +45,7 @@
   <div id="meta" class="small" style="margin-top:8px"></div>
   <div id="updated-est" class="small" style="color:#60a5fa;margin-top:4px"></div>
   <div id="stale-warn" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.45);border-radius:8px;font-size:12px;color:#fde68a"></div>
+  <div id="frozen-book-warn" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.45);border-radius:8px;font-size:12px;color:#fecaca"></div>
 </header>
 
 <!-- NAV -->
@@ -118,6 +119,22 @@ fetch('data/ai_leaderboard/ai_leaderboard_index.json?cb=' + Date.now())
       if (ageH > 24) {
         staleEl.style.display = 'block';
         staleEl.innerHTML = '⚠ Leaderboard data is <b>' + ageH.toFixed(0) + 'h old</b>. Run <code>python tools/ai_attribution/build_ai_leaderboard.py</code> and redeploy <code>audit_dashboard/data/ai_leaderboard/</code>.';
+      }
+    }
+    const frozenEl = document.getElementById('frozen-book-warn');
+    if (frozenEl) {
+      const bookN = (t.picks || 0);
+      const resolvedN = (t.resolved || 0);
+      const range = idx.pick_date_range || {};
+      const newest = range.newest ? new Date(range.newest).getTime() : 0;
+      const bookAgeD = newest ? (Date.now() - newest) / 86400000 : 999;
+      if (bookN < 50 || bookAgeD > 14) {
+        frozenEl.style.display = 'block';
+        frozenEl.innerHTML = '⛔ <b>Attribution book frozen / too thin for Goal #1.</b> '
+          + bookN + ' picks (' + resolvedN + ' resolved)'
+          + (range.newest ? ', newest pick ' + range.newest.slice(0, 10) : '')
+          + '. Not money-ready — revive <code>swarm_picks.json</code> ingest or use '
+          + '<a href="/audit/ai-tournament.html">AI Tournament</a> + policy-clean verdict only.';
       }
     }
     const engines = idx.engines || [];

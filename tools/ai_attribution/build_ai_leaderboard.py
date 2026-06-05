@@ -253,9 +253,22 @@ def build(picks_path: Path,
 
     research = mine_research_proposers(research_dir or DEFAULT_RESEARCH)
 
+    pick_dates: list[str] = []
+    for p in picks:
+        for key in ("signal_timestamp", "created_at", "submitted_at", "opened_at"):
+            val = p.get(key)
+            if val:
+                pick_dates.append(str(val)[:32])
+                break
+    pick_date_range: dict[str, str | None] = {"oldest": None, "newest": None}
+    if pick_dates:
+        pick_dates.sort()
+        pick_date_range = {"oldest": pick_dates[0], "newest": pick_dates[-1]}
+
     return {
         "schema_version": SCHEMA_VERSION,
         "as_of": datetime.now(timezone.utc).isoformat(),
+        "pick_date_range": pick_date_range,
         "min_n_ranked": MIN_N_RANKED,
         "shrinkage_alpha": SHRINKAGE_ALPHA,
         "totals": {
