@@ -1,0 +1,26 @@
+findtorontoevents.ca/audit. Multi-AI prediction system, 23+ LLM models, 12+ personas (cta_trend, macro_hedge, risk_parity, deep_value, etc), assets across 8 classes. Database: ejaguiar1_stocks (mysql.50webs.com).
+
+STATE 2026-06-05 04:50Z:
+
+Tournament_picks (LLM bets, post 7 audit cleanup rounds, 4154 MISPRICED removed):
+- ETF: WR 57.4% n=216 (best class) PF 1.33
+- FOREX: WR 54.5% n=189 PF 0.56 (losing despite WR>50%)
+- COMMODITY: WR 53.5% n=243 PF 1.79 (best PF, but cta_trend bias-flagged WINDOW_ARTIFACT)
+- BOND: WR 51.3% n=314 PF 0.69 (losing)
+- FUTURES: WR 50% n=20 PF 1.35
+- CRYPTO: WR 45.8% n=454 PF 1.07
+- EQUITY: WR 38.3% n=266 PF 0.94 (NO-edge)
+- PENNY: WR 42.2% n=45 PF 0.85
+
+Production trading_picks: every class sub-55% WR, mostly near-zero avg pnl. crypto 47.7%/n=16258, forex 53.8%/n=14765, equity 37.9%/n=2410.
+
+7 statistically-confirmed bootstrap CI edges (95% lower >= 50%):
+QQQ LONG n=33 WR84.8% lo72.7%; SPY LONG n=35 WR82.9% lo68.6%; USDCAD LONG n=26 WR76.9% lo61.5%; NEARUSDT LONG n=35 WR71.4% lo57.1%; BTC SHORT n=21 WR76.2% lo57.1%; SHY LONG n=49 WR63.3% lo51.0%; TLT SHORT n=20 WR70% lo50%.
+
+KNOWN PROBLEMS for months:
+- Resolver TIME_EXIT pnl=0 bug (INCIDENT 94 fixed) hid 32K row pnl data
+- INCIDENT 91 NULL opened_at duplicates inflated n 5-43x for many strategies
+- Reverse split contamination (LODE/FFIE/HOLO/KULR/GSAT/WKHS) inflated WRs
+- Real-money-worthy picks elusive: still no class clears T2 (PF>=1.5 WR>=55 n>=100)
+
+QUESTION: Write a 1-paragraph honest blunt assessment + 5 highest-leverage action items to actually achieve real-money-worthy picks in next 30 days. Be skeptical of further LLM-tournament effort if it can't beat 60% WR sustainably.
