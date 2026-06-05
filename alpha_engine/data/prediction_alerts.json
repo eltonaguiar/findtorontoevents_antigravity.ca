@@ -1,30 +1,30 @@
 {
   "alerts": [
     {
-      "type": "MODEL_FLAT",
+      "type": "PREDICTION_DRIFT",
       "severity": "WARNING",
-      "message": "Prediction variance 0.0058 < 0.01 -- model not discriminating between good and bad picks",
-      "timestamp": "2026-06-05T18:51:41.562539+00:00"
+      "message": "Mean ml_score shifted by 0.130 (baseline=0.749, current=0.620)",
+      "timestamp": "2026-06-05T19:23:29.898734+00:00"
     },
     {
       "type": "PSI_SHIFT",
       "severity": "CRITICAL",
-      "message": "PSI = 0.630 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
-      "timestamp": "2026-06-05T18:51:41.562539+00:00"
+      "message": "PSI = 1.270 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-06-05T19:23:29.898734+00:00"
     },
     {
-      "type": "CONSECUTIVE_LOSSES",
-      "severity": "CRITICAL",
-      "message": "Strategy 'regime_mild_bull' has 17 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
-      "strategy": "regime_mild_bull",
-      "streak": 17,
-      "timestamp": "2026-06-05T18:51:41.685793+00:00"
+      "type": "OUT_OF_DISTRIBUTION",
+      "severity": "WARNING",
+      "message": "PL=F (futures_bb_mean_reversion) is OOD -- 2 features beyond 3.0 sigma, confidence reduced by 0.05",
+      "symbol": "PL=F",
+      "strategy": "futures_bb_mean_reversion",
+      "timestamp": "2026-06-05T19:23:30.082957+00:00"
     }
   ],
   "summary": {
     "total_alerts": 3,
-    "critical": 2,
-    "warning": 1,
+    "critical": 1,
+    "warning": 2,
     "info": 0,
     "sizing_multiplier": 0.5
   },
@@ -34,9 +34,9 @@
     "center_line": null
   },
   "prediction_dist": {
-    "psi": 0.6295,
-    "mean_shift": 0.0575,
-    "current_var": 0.0058
+    "psi": 1.2701,
+    "mean_shift": 0.1296,
+    "current_var": 0.0158
   },
-  "updated_at": "2026-06-05T18:51:41.562539+00:00"
+  "updated_at": "2026-06-05T19:23:29.898734+00:00"
 }
