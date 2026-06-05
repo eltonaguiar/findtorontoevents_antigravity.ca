@@ -1,0 +1,13 @@
+This thesis is largely correct, but **understates the immediate need for robust validation and overstates the value of Optuna in its current proposed form.**
+
+**Critique:**
+
+*   **Correct:** The core message that data hygiene and leakage-controlled validation are paramount is spot-on. The repo's current state confirms this. The rejection of PyTorch/TF for tabular data is also sound. The emphasis on ML as a filter is wise.
+*   **Understated:** The thesis correctly identifies Optuna as an addition but fails to acknowledge that without proper purged walk-forward CV, it *will* leak and overfit, just like any other model. The "inside purged-embargoed walk-forward CV" is crucial but needs more emphasis on the *rigor* required.
+*   **Overstated:** The thesis implies Optuna *can* be used effectively if placed correctly. Given the current data issues and lack of proven edge, even *with* proper CV, the ROI on hyperparameter tuning might be low until data quality improves.
+
+**Highest-ROI MLOps Addition:** Feature/Data validation gates (pandera/great-expectations). This directly addresses the identified data quality bottleneck and is a prerequisite for any reliable ML.
+
+**Single Thing to AVOID:** Adding Optuna *without* a fully implemented, rigorously enforced, and audited purged walk-forward CV framework. It will just accelerate overfitting.
+
+**Recommendation:** **REVISE.** The thesis is a good starting point, but the validation and Optuna points need significant tightening to reflect the repo's critical state. Prioritize data quality and validation gates above all else.
