@@ -205,10 +205,14 @@ if __name__ == "__main__":
 
 
 def _write_basket_to_db(legs: list[dict]) -> int:
-    """Write each leg of the carry basket to trading_picks."""
+    """Write each leg of the carry basket to trading_picks with live yfinance prices."""
     import pymysql
     from tools.db_env import get_stocks_creds
     from datetime import datetime, timezone
+    try:
+        import yfinance as yf
+    except ImportError:
+        yf = None
 
     creds = get_stocks_creds()
     conn = pymysql.connect(**creds, cursorclass=pymysql.cursors.DictCursor)
@@ -219,16 +223,35 @@ def _write_basket_to_db(legs: list[dict]) -> int:
 
     for leg in legs:
         pick_id = f"fxcarry_{leg['ccy']}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
-        # Use a placeholder entry_price of 1.0 for FX; resolver will backfill actual
-        # TP/SL set to 2% / 1.5% as conservative monthly targets for carry trades
+        pair = leg["pair"]
+
+        # Fetch live price from yfinance
+        entry_price = 1.0
+        if yf is not None:
+            try:
+                ticker = yf.Ticker(pair)
+                hist = ticker.history(period="1d")
+                if not hist.empty:
+                    entry_price = float(hist["Close"].iloc[-1])
+            except Exception:
+                pass  # fallback to 1.0 placeholder
+
+        # Monthly carry: 1.5% TP / 1.0% SL (conservative for carry factor)
+        if leg["direction"] == "LONG":
+            take_profit = round(entry_price * 1.015, 6)
+            stop_loss = round(entry_price * 0.990, 6)
+        else:
+            take_profit = round(entry_price * 0.985, 6)
+            stop_loss = round(entry_price * 1.010, 6)
+
         row = {
             "id": pick_id,
-            "symbol": leg["pair"],
+            "symbol": pair,
             "direction": "LONG" if leg["direction"] == "LONG" else "SHORT",
             "strategy": STRATEGY_ID,
-            "entry_price": 1.0,
-            "take_profit": 1.02 if leg["direction"] == "LONG" else 0.98,
-            "stop_loss": 0.985 if leg["direction"] == "LONG" else 1.015,
+            "entry_price": entry_price,
+            "take_profit": take_profit,
+            "stop_loss": stop_loss,
             "confidence": 0.65,
             "elite_score": 70,
             "trust_score": 65,
