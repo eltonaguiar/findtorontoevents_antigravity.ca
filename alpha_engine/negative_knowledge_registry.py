@@ -53,6 +53,13 @@ BLOCKED_STRATEGY_SYSTEMS = {
     "luxalgo_filters": {"pf": 0.00, "wr": 0.0, "n": 2121, "null_close_pct": 3.8},
     # signal_validation: creates stale ghost picks (322/353 open picks >7d old)
     "signal_validation": {"pf": None, "wr": None, "n": 353, "reason": "ghost_picks_stale"},
+    # --- Added 2026-06-05 Session 2: confirmed bleeders across all classes ---
+    # multi_asset_copytrader: FOREX WR=45.7% PF=1.02 (true, post-outlier-removal);
+    #   COMMODITY WR=34.4% PF=0.81 (n=677). Also caused 3,495 extreme-pnl FOREX
+    #   rows (CADJPY +427%, NZDUSD +7955%) = price-feed unit-mismatch bugs.
+    "multi_asset_copytrader": {"pf": 0.91, "wr": 44.8, "n": 1971, "reason": "consistent_loser_all_classes+price_feed_bugs"},
+    # forex_copy_trader: WR=39.7% PF=0.84 on n=63 — persistent losing FOREX source
+    "forex_copy_trader": {"pf": 0.84, "wr": 39.7, "n": 63, "reason": "consistent_loser_forex"},
 }
 
 # Time-of-day blocks (UTC hours with <35% WR)
