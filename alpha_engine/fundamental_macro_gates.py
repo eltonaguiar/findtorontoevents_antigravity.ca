@@ -23,6 +23,7 @@ import math
 from typing import Any, Optional
 
 from alpha_engine.fred_macro_context import get_macro_context
+from alpha_engine.equity_earnings_loader import load_pead_event_for_ticker
 from alpha_engine.fundamental_valuation_strategies import (
     FUNDAMENTAL_VALUATION_STRATEGIES,
     btc_power_law_deviation,
@@ -51,37 +52,53 @@ def _compute_equity_fundamental_strength(pick: dict) -> Optional[float]:
     Returns:
         float: Score in range [0, 100], or None if insufficient data
     """
-    # Placeholder for equity fundamental scoring logic
-    # In a real implementation, this would fetch:
-    # - Earnings surprises (positive/negative)
-    # - Analyst upgrades/downgrades
-    # - Sector relative strength
-    # - Valuation metrics (P/E, EV/EBITDA)
-    # - Institutional ownership changes
-    
-    # For now, return a conservative score based on available data
     category = pick.get("category", "").lower()
     if category != "equity":
         return None
     
-    # Simple heuristic: if we have a reason field with positive keywords, boost score
+    ticker = pick.get("symbol")
     reason = (pick.get("reason", "") or "").lower()
     
     score = 50.0  # Base score
     
-    # Earnings momentum indicators
-    if "earnings surprise" in reason or "positive earnings" in reason:
-        score += 15
-    elif "earnings miss" in reason or "negative earnings" in reason:
-        score -= 10
-    
-    # Analyst sentiment
+    # 1. PEAD (Earnings Momentum) - Data Driven
+    if ticker:
+        pead_event = load_pead_event_for_ticker(ticker)
+        if pead_event and isinstance(pead_event, dict):
+            surprise = pead_event.get("surprise_pct", 0.0)
+            guidance = pead_event.get("guidance_raised", False)
+
+            # Surprise scoring
+            if surprise > 10:
+                score += 20
+            elif surprise > 5:
+                score += 10
+            elif surprise > 0:
+                score += 5
+            elif surprise > -5:
+                score -= 5
+            elif surprise > -10:
+                score -= 10
+            else:
+                score -= 20
+            
+            # Guidance boost
+            if guidance:
+                score += 15
+        else:
+            # Fallback to heuristic if no PEAD data found
+            if "earnings surprise" in reason or "positive earnings" in reason:
+                score += 15
+            elif "earnings miss" in reason or "negative earnings" in reason:
+                score -= 10
+
+    # 2. Analyst sentiment (Heuristic/Keyword)
     if "upgrade" in reason:
         score += 10
     elif "downgrade" in reason:
         score -= 10
     
-    # Valuation
+    # 3. Valuation (Heuristic/Keyword)
     if "undervalued" in reason or "cheap" in reason:
         score += 10
     elif "overvalued" in reason or "expensive" in reason:
@@ -383,9 +400,18 @@ def passes_high_conviction_gate(pick: dict) -> tuple[bool, dict[str, Any]]:
     # Minimum trade count check
     n_trades = pick.get("n_trades", 0)
     
-    # Risk profile checks (placeholder - would come from pick stats)
-    mdd = pick.get("mdd", 999)  # Max drawdown
-    cvar = pick.get("cvar", 999)  # Conditional VaR
+    # Risk profile checks - try pick stats first, then defaults
+    mdd = pick.get("mdd")
+    cvar = pick.get("cvar")
+    
+    if mdd is None:
+        mdd = pick.get("max_drawdown", 999)
+    if cvar is None:
+        cvar = pick.get("cvar_95", 999)
+    
+    # Guard against None values
+    mdd = float(mdd) if mdd is not None else 999
+    cvar = float(cvar) if cvar is not None else 999
     
     # Determine if criteria are met
     category = pick.get("category", "").lower()
