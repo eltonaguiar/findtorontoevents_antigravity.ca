@@ -1,0 +1,325 @@
+# Transcript action-item scan
+
+- transcript: `/home/eaguiar2015/.claude/projects/-home-eaguiar2015-findtorontoevents-antigravity-ca/2df671fe-c976-4b6f-8366-a1c1dddd7dcf.jsonl`
+- turns: 214 · chunks: 26 · provider: deepseek
+- deduped action items: 248
+
+## Action items (deduped across chunks)
+
+- [OPEN] Deploy subagents
+- [OPEN] Review recent .MD files over last 48 hours
+- [OPEN] Look for unfulfilled action items in those .MD files
+- [OPEN] Create a PR to implement the found action items
+- [DONE] Dynamic workflow "Read recent .MD files, extract unfulfilled action items, create a PR" completed
+- [OPEN] Fix `CANON_PATH` NameError crash in orchestrator.py
+- [OPEN] Fix MySQL DDL multi-index syntax error in CREATE_TABLE_SQL
+- [OPEN] Change workflow cron from hourly to every-8-hours
+- [OPEN] Add dual-JSON-commit to workflow (stage both JSON files)
+- [OPEN] Add `DB_PASS` secret to workflow env block
+- [OPEN] Add pip-cache to workflow setup-python step
+- [OPEN] Add hard production ban for PENNY_STOCK and MEMECOIN in quality_gates.py
+- [OPEN] Execute test plan items (compile checks, dry-run, etc.)
+- [DONE] Read credentials from /home/eaguiar2015/dbpasses.txt
+- [DONE] Export DB credentials and run health check and OHLCV tools
+- [DONE] Query DB directly for exit_reason breakdown
+- [DONE] Check date distribution and concentration for high-WR sources
+- [DONE] Run OHLCV populate (322 symbols)
+- [DONE] Write honest WR scrutiny report based on live DB data
+- [DONE] Fix BLOCKED_STRATEGY_SYSTEMS for mega_mutation and add garbage sources
+- [DONE] Run stale picks resolver on signal_validation ghost picks (298 stale picks closed)
+- [DONE] Commit all changes and open PR
+- [DONE] Save OHLCV loop prompt to DAILY_IDEAS.MD
+- [OPEN] Apply INCIDENT #91 dedup (needs operator DB access — skipped)
+- [OPEN] Populate OHLCV (needs operator DB access — skipped)
+- [OPEN] Run opened_at NULL schema migration (needs operator DB access — skipped)
+- [OPEN] Implement PENNY_STOCK/MEMECOIN freeze gate (needs more gate-logic audit — skipped)
+- [DONE] Review .MD files from last 48 hours using subagents, find unfulfilled action items, create a PR to implement them
+- [DONE] Run DB-level action items: health check, OHLCV populate, stale picks resolver
+- [OPEN] Run `/loop 2h keep going and dig deeper until you find us true winners per asset class`
+- [OPEN] Save the 2h loop output into `DAILY_IDEAS.MD`
+- [DONE] Add GE to `reverse_split_symbols.py`
+- [DONE] Add RENDERUSDT strategies to `LOW_CONFIDENCE_STRATEGIES` in `auto_tuner.py`
+- [DONE] Create `db_credentials.py`
+- [DONE] Create `.github/workflows/db-secret-scan.yml`
+- [DONE] Remove `mega_mutation` from `BLOCKED_STRATEGY_SYSTEMS` in `negative_knowledge_registry.py`
+- [DONE] Add 6 garbage sources to block list in `negative_knowledge_registry.py`
+- [DONE] Create `reports/wr_scrutiny_honest_2026-06-05.md`
+- [OPEN] OHLCV populate (listed as next action in the report)
+- [OPEN] Intrabar replay (listed as next action in the report)
+- [OPEN] Use mega_mutation as primary pilot (listed as next action in the report)
+- [DONE] Update DAILY_IDEAS.MD
+- [DONE] Run full scrutiny pass on live DB candidates
+- [DONE] Write comprehensive peer-reviewable report
+- [DONE] Commit report
+- [OPEN] Intrabar OHLCV replay on mega_mutation
+- [OPEN] Kill AVAXUSDT/STXUSDT from the source
+- [OPEN] 4-week live forward pilot on JUPUSDT, ENAUSDT, ADAUSDT, WIFUSDT
+- [DONE] Review recent .MD files for trustworthy asset classes (findings compiled to reports/agent_md_review_findings.md)
+- [DONE] Compile findings: which asset classes are actually trustworthy for real money (output in final audit report)
+- [DONE] Define "money-ready" tier criteria (formalized in audit report)
+- [DONE] Update updates/index.html (entry inserted above line 37)
+- [OPEN] Deploy parallel sub-agents for updates page + .MD review
+- [OPEN] Read findtorontoevents.ca/updates/ for "best possible picks"
+- [OPEN] Fix resolver data integrity (intrabar OHLC replay, remove mispriced entries, clean label pollution)
+- [OPEN] Implement concentration caps and isolate high-conviction FOREX sleeves
+- [OPEN] Execute 8-12 week paper-pilot validation for ETF and CRYPTO sub-cohorts before live capital deployment
+- [UNCLEAR] Check if Nemotron corrupted the resolver
+- [UNCLEAR] Prep git push
+- [UNCLEAR] FTP deploy
+- [DONE] Review Zoo agent output (MD overstatement audit, tournament_picks critique)
+- [DONE] Review Gemini agent output (masterplan, tagging fix, password hardening)
+- [DONE] Review Nemotron agent output (resolver break, orphan files, winner analysis)
+- [DONE] Confirm `.env.dbpw` is in `.gitignore`
+- [DONE] Commit and FTP-deploy TRUE_WINNERS report
+- [OPEN] Investigate and fix TP/SL asymmetry smoking gun
+- [DONE] Save /loop 2h prompt to DAILY_IDEAS.MD
+- [DONE] Find TRUE WINNERS per asset class (5-axis scrutiny)
+- [DONE] Review Zoo/Nemotron/Gemini agent outputs
+- [DONE] Document findings to updates/index.html, FTP deploy, push to GitHub
+- [OPEN] Proceed on next steps (Kimi Phase 2) — OHLCV population, stale pick resolver, TP/SL asymmetry investigation, trading_picks_v2 clean ledger, PMC paper pilot
+- [DONE] Verify that Gemini's mutation of outcome_resolver.py is safe (referenced but undefined function found)
+- [OPEN] Add missing `get_split_adjustment` function definition
+- [OPEN] Execute the full plan the user requested (build ground-breaking infrastructure for golden picks per asset class)
+- [UNCLEAR] Verify Gemini's session ran in parallel (no confirmation shown)
+- [OPEN] Build structured JSON payload from session deliverables (commits, PRs, files, decisions, open questions, follow-ups)
+- [OPEN] Run canonical health probe (`python tools/protocol_inspect.py health`) against gateway at 192.168.2.32:8788
+- [OPEN] Send broadcast envelope via cross-PC gateway using `tools/adapters/cursor_claude_adapter.py --runtime claude`
+- [OPEN] Drain peer inbox to see what other agents have done in parallel
+- [OPEN] Revise if needed based on peer inbox contents
+- [DONE] Run health check, gather session payload, broadcast, drain inbox (gateway failure logged)
+- [DONE] Log CHATBIBLE failure and commit including resolver fix
+- [DONE] Resolve conflict in feargreed_cache.json (take our version)
+- [DONE] Rebase and force-push feature branch
+- [DONE] Run full per-class scan on trading_picks using `category` column
+- [DONE] Build comprehensive plan and per-class scrutiny framework
+- [DONE] Verify two suspicious high-PF sources (prediction_market_agents, multi_asset_copytrader)
+- [DONE] Write MASTERPLAN_JUNE52026_CLAUDE.MD with full 90-day plan
+- [DONE] Confirm CADJPY +427% trade is fake data
+- [DONE] Execute P0 fixes for CADJPY data bug
+- [DONE] Check PF after CADJPY fix and add bleeders to blocklist
+- [DONE] Run 5-axis scrutiny on non_crypto_consensus FOREX
+- [DONE] Read existing masterplan file to update it
+- [OPEN] Kill confirmed bleeders from emission blocklist (add multi_asset_copytrader, forex_copy_trader)
+- [OPEN] Build per-class scrutiny engine tool that automates 5-axis analysis
+- [DONE] Read and understand the `consult-multi` skill documentation (base directory: /home/eaguiar2015/findtorontoevents_antigravity.ca/.claude/skills/consult-multi)
+- [OPEN] Get multi-AI feedback on the masterplan
+- [OPEN] Build the top-requested components
+- [DONE] Run multi-AI consultation and build requested components in parallel
+- [OPEN] Find viable picks NOW
+- [OPEN] Commit everything (all work done)
+- [OPEN] Build promotion gate tests
+- [UNCLEAR] Check paper-trade positions (suggested by assistant, unclear if done)
+- [DONE] Fix OHLCV query column name (`timestamp` not `open_time` in crypto_ohlcv)
+- [DONE] Add missing `get_split_adjustment()` function to `alpha_engine/outcome_resolver.py`
+- [DONE] Tighten `PNL_SANITY_CAP_BY_CLASS` values (FOREX 0.30→0.10, EQUITY 5.00→0.50, CRYPTO 5.00→2.00)
+- [DONE] Change `PNL_SANITY_CAP_DEFAULT` from 10.0 to 2.0
+- [DONE] Add two new blocked sources to `alpha_engine/negative_knowledge_registry.py`
+- [DONE] Commit changes (`bb12b4df09`, `57dfa6b337`)
+- [OPEN] Proceed on "next steps" after Kimi Phase 2 execution (4 background subagents)
+- [OPEN] Review Gemini's session output — Gemini had injected V3 split logic and run resolver/tagging hygiene
+- [OPEN] Build per-asset-class infrastructure for trusted picks with institutional/hedge-fund-grade stats
+- [OPEN] Double-check if CADJPY +427% trade is real
+- [OPEN] Review .MD files from last 48 hours for high-value action items via subagents
+- [OPEN] /dropchat-multipc — cross-PC session broadcast
+- [OPEN] Find viable picks NOW across all asset classes without waiting for forward-testing
+- [DONE] Stage and commit Decimal-safe fixes for scrutiny engine
+- [DONE] Run scrutiny engine against live DB to get automated report
+- [DONE] Investigate kimi_signal_tracking CRYPTO (3/5) — identified as fake (all trades on single date)
+- [DONE] Build intrabar OHLCV replay tool to validate mega_mutation
+- [DONE] Fix replay tool to search 48h window for exit candle (was using wrong timestamp)
+- [DONE] Fix per-symbol WR display bug in replay tool
+- [DONE] Add AVAXUSDT and RENDERUSDT to negative knowledge symbol blocklist
+- [DONE] Fix duplicate ingestion bug — 92 duplicates cleaned from live DB (296→204)
+- [DONE] Verify deduped stats match expected (WR=63.2%, PF=2.86, n=204)
+- [DONE] Push progress and tackle next priority: wiring clean_ingest_v2.py into production
+- [DONE] Check Wire-Up Rule compliance for clean_ingest_v2.py — satisfied (mysql_trading_sync.py has caller)
+- [DONE] Add dedup check to production path (pre-insert soft dedup check)
+- [DONE] Check if luxalgo_filters and multi_asset_copytrader are blocked in production — found negative_knowledge_registry.py has no callers (dead code)
+- [DONE] Add losing source systems to BANNED_SOURCES in production_scanner.py
+- [DONE] Wire negative_knowledge_registry into apply_source_ban_gate
+- [DONE] Add dedup prevention to mysql_trading_sync.py sync loop
+- [DONE] Check high-value untracked files from other agents
+- [OPEN] Provide concrete code for WFE + MinTRL hard-gate in audit_trail/quality_gates.py
+- [OPEN] Provide concrete code for Equity Momentum + Quality factor in alpha_engine
+- [OPEN] Provide concrete code for upgraded mega_mutation paper pilot
+- [DONE] Wire up PBO gate in eagle_gates.py
+- [DONE] Implement WFE + MinTRL hard-gate in quality_gates.py
+- [DONE] Build Equity Momentum + Quality factor emitter
+- [DONE] Integrate passes_hard_money_gates function into codebase
+- [DONE] Wire WFE + PBO gates, build equity factor, and add passes_hard_money_gates — all in parallel
+- [DONE] Add `passes_hard_money_gates` wrapper in quality_gates.py
+- [DONE] Write memory file with session findings
+- [DONE] Push 7 commits to `pr/money-ready-bridge-truth`
+- [DONE] Remove 92 dedup rows from live DB
+- [DONE] Add soft-dedup gate in mysql_trading_sync.py
+- [DONE] Kill AVAXUSDT (add to BLOCKED_SYMBOLS)
+- [DONE] Ban 4 losers in BANNED_SOURCES
+- [DONE] Create per-class scrutiny engine + report
+- [DONE] Wire WFE + PBO into `is_admissible_for_production` + `passes_hard_money_gates()`
+- [DONE] Create Equity Momentum + Quality factor
+- [OPEN] Handle updates/index.html FTP deploy and incidents filing (user's peer agent handling)
+- [UNCLEAR] Proceed on next steps (user asked, no response shown)
+- [DONE] Build per-asset-class infrastructure for institutionally trustworthy picks
+- [DONE] Validate mega_mutation edge through intrabar OHLCV replay under realistic fills
+- [DONE] Fix data quality issues (deduplication, source bans, gate wiring)
+- [DONE] Add non-LLM factor signals (equity momentum + quality)
+- [DONE] Wire dormant gate implementations (WFE, PBO, MinTRL) into production path
+- [DONE] Fix Decimal-safe coercion in `tools/per_class_scrutiny_engine.py`
+- [DONE] Create `tools/intrabar_ohlcv_replay.py` for mega_mutation exit validation
+- [DONE] Add AVAXUSDT to BLOCKED_SYMBOLS in `alpha_engine/negative_knowledge_registry.py`
+- [DONE] Add 4 confirmed losers to BANNED_SOURCES in `alpha_engine/production_scanner.py`
+- [DONE] Add soft-dedup gate in `alpha_engine/mysql_trading_sync.py` to prevent NULL created_at duplicates
+- [DONE] Read groksstuff.txt to understand full scope
+- [DONE] Investigate 69% zero-PnL pipeline issue (actual rate 16.2%)
+- [DONE] Add 3 more sources to BANNED_SOURCES (regime_terminal, alpha_engine_fast, copy_trader_intel)
+- [DONE] Fix NULL pnl resolver bug
+- [DONE] Write pnl backfill script (tools/backfill_null_pnl.py)
+- [DONE] Run pnl backfill live (4,393 rows fixed)
+- [DONE] Add DSR/CPCV gates to quality_gates.py
+- [DONE] Verify get_split_adjustment exists
+- [DONE] Commit current batch of changes
+- [DONE] Run updated hedge-fund metrics post-backfill
+- [DONE] Investigate blank-category row (PF=1.91 T2)
+- [DONE] Verify FOREX non_crypto_consensus edge
+- [DONE] Backfill closed_at = updated_at for resolved rows (35,494 rows)
+- [DONE] Check updated asset-class picture with full data
+- [DONE] Verify battleground_luxalgo ban (stays banned)
+- [DONE] Check cta_replicator FOREX and non_crypto_consensus T2 candidates
+- [DONE] Verify mega_mutation properly (confirmed T1)
+- [DONE] Fix resolver to stamp closed_at on resolution
+- [DONE] Write auto-shutdown rules script
+- [DONE] Fix MDD calculation (multiple attempts, ultimately removed MDD metric)
+- [DONE] Keep only Sharpe + WR collapse metrics
+- [DONE] Commit everything
+- [DONE] Open PR to merge to main (PR #543 already exists)
+- [OPEN] Run auto-shutdown monitor as a GHA cron for daily alerting
+- [OPEN] Write daily scrutiny report using per_class_scrutiny_engine
+- [OPEN] Investigate why non_crypto_consensus shows Sharpe=24
+- [DONE] Write concise session report and update memory
+- [DONE] Fixed 4,393 NULL `pnl_pct` rows
+- [DONE] Backfilled 35,494 NULL `closed_at` rows
+- [DONE] Fixed resolver to stamp `closed_at = NOW()` going forward
+- [DONE] Banned 8 sources from BANNED_SOURCES
+- [DONE] Created `tools/auto_shutdown_monitor.py`
+- [DONE] Created `tools/backfill_null_pnl.py`
+- [DONE] Created `.github/workflows/auto-shutdown-monitor.yml`
+- [OPEN] Investigate why 20 sources have negative rolling Sharpe
+- [OPEN] Build intrabar OHLCV resolver for proper exit timestamps
+- [UNCLEAR] Check why EQUITY sleeve is missing from output
+- [UNCLEAR] Enable `FACTOR_EMITTERS_ENABLED=1` and test factor emitters
+- [DONE] Add 4 sources to BANNED_SOURCES in `production_scanner.py` (regime_terminal, alpha_engine_fast, copy_trader_intel, battleground_luxalgo)
+- [DONE] Create `tools/backfill_null_pnl.py` and fix 4,393 rows
+- [DONE] Add NOW() stamp for missing closed_at in `outcome_resolver.py` (line ~1945)
+- [DONE] Create `tools/auto_shutdown_monitor.py` with rolling Sharpe + WR collapse monitoring
+- [OPEN] Proceed on next steps (user's final message "proceed on next steps")
+- [DONE] Fix ZSZ26.CBT 404 issue (determined it's expected noise, not a bug)
+- [DONE] Backfill 242 resolved picks without `closed_at`
+- [DONE] Wire daily scrutiny cron and fix FACTOR_EMITTERS_ENABLED default
+- [DONE] Create daily scrutiny cron workflow
+- [DONE] Verify sign-coherence issues in mega_mutation (confirmed fixed June 2-4)
+- [DONE] Commit workflow changes
+- [DONE] Run intrabar OHLCV replay on mega_mutation
+- [DONE] Check kimi_signal_tracking as CRYPTO T2 candidate (determined severe batch artifact)
+- [DONE] Check genome mutation pipeline for reviving mega_mutation picks
+- [DONE] Check isolated_signal_integrator's mega_mutation ingest path (confirmed clean)
+- [DONE] Check prediction_market_consensus (4/5, n=23, WR=73.9%, PF=6.63)
+- [DONE] Write evidence summary for un-blocking mega_mutation
+- [DONE] Check pf_registry recompute situation
+- [DONE] Build lightweight DB→closed_picks sync tool (determined not feasible locally)
+- [DONE] Add daily NULL pnl backfill to auto-shutdown cron
+- [DONE] Fix workflow (--apply flag doesn't exist)
+- [DONE] Run auto-shutdown monitor with fresh data
+- [DONE] Fix duplicate kwarg in get_stocks_creds()
+- [DONE] Verify non_crypto_consensus anomalous Sharpe (determined batch artifact)
+- [DONE] Fix monitor query to exclude FORCE_CLOSED_TOXIC
+- [DONE] Remove pnl threshold filter, keep only FORCE_CLOSED_TOXIC exclusion
+- [DONE] Exclude TIME_EXIT and FORCE_CLOSED_TOXIC from Sharpe monitor
+- [DONE] Fix no-data return KeyError in monitor
+- [DONE] Commit and push monitor fixes (3 bugs: duplicate connect_timeout, FORCE_CLOSED_TOXIC inflating Sharpe, TIME_EXIT neutral exits polluting WR)
+- [DONE] Update memory with session findings
+- [OPEN] Operator decision: unblock mega_mutation (remove two lines from strategy_blocklist.py)
+- [DONE] Investigate alpha_engine PF=2446 artifact (found TP_HIT trade with +1,000,000% pnl_pct)
+- [DONE] Fix corrupt pnl_pct (3 price-unit mismatches: SHIB entry vs exit)
+- [DONE] Add hard cap to backfill_null_pnl.py to prevent recomputation with wrong prices
+- [DONE] Wire recency gate into money_ready_verdict.py
+- [DONE] Build institutional-grade picks infrastructure with back-tested picks passing risk management, model validation, and quant/hedge-fund stats (from prior session)
+- [DONE] Enable FACTOR_EMITTERS_ENABLED env var in feature-signals-hourly.yml
+- [DONE] Create daily-scrutiny-engine.yml workflow (07:30 UTC cron)
+- [DONE] Add backfill step to auto-shutdown-monitor.yml
+- [DONE] Fix 3 bugs in auto_shutdown_monitor.py (duplicate connect_timeout, FORCE_CLOSED_TOXIC/TIME_EXIT inflation, NO_DATA missing keys)
+- [DONE] Add hard cap guard (500%) to backfill_null_pnl.py
+- [DONE] Create mega_mutation_unblock_recommendation_2026-06-05.md
+- [OPEN] Wire recency gate (eagle_gates.py) into money_ready_verdict.py
+- [OPEN] Operator decision on mega_mutation unblock (remove 2 lines in strategy_blocklist.py)
+- [DONE] Add warning icon to all T1 tier badges (commit + FTP-deploy shown)
+- [DONE] Update header tooltip for Tier column (commit + FTP-deploy shown)
+- [OPEN] Run swarm-transcript-scan skill on a transcript JSONL
+
+## OPEN (66)
+
+- [OPEN] Deploy subagents
+- [OPEN] Review recent .MD files over last 48 hours
+- [OPEN] Look for unfulfilled action items in those .MD files
+- [OPEN] Create a PR to implement the found action items
+- [OPEN] Fix `CANON_PATH` NameError crash in orchestrator.py
+- [OPEN] Fix MySQL DDL multi-index syntax error in CREATE_TABLE_SQL
+- [OPEN] Change workflow cron from hourly to every-8-hours
+- [OPEN] Add dual-JSON-commit to workflow (stage both JSON files)
+- [OPEN] Add `DB_PASS` secret to workflow env block
+- [OPEN] Add pip-cache to workflow setup-python step
+- [OPEN] Add hard production ban for PENNY_STOCK and MEMECOIN in quality_gates.py
+- [OPEN] Execute test plan items (compile checks, dry-run, etc.)
+- [OPEN] Apply INCIDENT #91 dedup (needs operator DB access — skipped)
+- [OPEN] Populate OHLCV (needs operator DB access — skipped)
+- [OPEN] Run opened_at NULL schema migration (needs operator DB access — skipped)
+- [OPEN] Implement PENNY_STOCK/MEMECOIN freeze gate (needs more gate-logic audit — skipped)
+- [OPEN] Run `/loop 2h keep going and dig deeper until you find us true winners per asset class`
+- [OPEN] Save the 2h loop output into `DAILY_IDEAS.MD`
+- [OPEN] OHLCV populate (listed as next action in the report)
+- [OPEN] Intrabar replay (listed as next action in the report)
+- [OPEN] Use mega_mutation as primary pilot (listed as next action in the report)
+- [OPEN] Intrabar OHLCV replay on mega_mutation
+- [OPEN] Kill AVAXUSDT/STXUSDT from the source
+- [OPEN] 4-week live forward pilot on JUPUSDT, ENAUSDT, ADAUSDT, WIFUSDT
+- [OPEN] Deploy parallel sub-agents for updates page + .MD review
+- [OPEN] Read findtorontoevents.ca/updates/ for "best possible picks"
+- [OPEN] Fix resolver data integrity (intrabar OHLC replay, remove mispriced entries, clean label pollution)
+- [OPEN] Implement concentration caps and isolate high-conviction FOREX sleeves
+- [OPEN] Execute 8-12 week paper-pilot validation for ETF and CRYPTO sub-cohorts before live capital deployment
+- [OPEN] Investigate and fix TP/SL asymmetry smoking gun
+- [OPEN] Proceed on next steps (Kimi Phase 2) — OHLCV population, stale pick resolver, TP/SL asymmetry investigation, trading_picks_v2 clean ledger, PMC paper pilot
+- [OPEN] Add missing `get_split_adjustment` function definition
+- [OPEN] Execute the full plan the user requested (build ground-breaking infrastructure for golden picks per asset class)
+- [OPEN] Build structured JSON payload from session deliverables (commits, PRs, files, decisions, open questions, follow-ups)
+- [OPEN] Run canonical health probe (`python tools/protocol_inspect.py health`) against gateway at 192.168.2.32:8788
+- [OPEN] Send broadcast envelope via cross-PC gateway using `tools/adapters/cursor_claude_adapter.py --runtime claude`
+- [OPEN] Drain peer inbox to see what other agents have done in parallel
+- [OPEN] Revise if needed based on peer inbox contents
+- [OPEN] Kill confirmed bleeders from emission blocklist (add multi_asset_copytrader, forex_copy_trader)
+- [OPEN] Build per-class scrutiny engine tool that automates 5-axis analysis
+- [OPEN] Get multi-AI feedback on the masterplan
+- [OPEN] Build the top-requested components
+- [OPEN] Find viable picks NOW
+- [OPEN] Commit everything (all work done)
+- [OPEN] Build promotion gate tests
+- [OPEN] Proceed on "next steps" after Kimi Phase 2 execution (4 background subagents)
+- [OPEN] Review Gemini's session output — Gemini had injected V3 split logic and run resolver/tagging hygiene
+- [OPEN] Build per-asset-class infrastructure for trusted picks with institutional/hedge-fund-grade stats
+- [OPEN] Double-check if CADJPY +427% trade is real
+- [OPEN] Review .MD files from last 48 hours for high-value action items via subagents
+- [OPEN] /dropchat-multipc — cross-PC session broadcast
+- [OPEN] Find viable picks NOW across all asset classes without waiting for forward-testing
+- [OPEN] Provide concrete code for WFE + MinTRL hard-gate in audit_trail/quality_gates.py
+- [OPEN] Provide concrete code for Equity Momentum + Quality factor in alpha_engine
+- [OPEN] Provide concrete code for upgraded mega_mutation paper pilot
+- [OPEN] Handle updates/index.html FTP deploy and incidents filing (user's peer agent handling)
+- [OPEN] Run auto-shutdown monitor as a GHA cron for daily alerting
+- [OPEN] Write daily scrutiny report using per_class_scrutiny_engine
+- [OPEN] Investigate why non_crypto_consensus shows Sharpe=24
+- [OPEN] Investigate why 20 sources have negative rolling Sharpe
+- [OPEN] Build intrabar OHLCV resolver for proper exit timestamps
+- [OPEN] Proceed on next steps (user's final message "proceed on next steps")
+- [OPEN] Operator decision: unblock mega_mutation (remove two lines from strategy_blocklist.py)
+- [OPEN] Wire recency gate (eagle_gates.py) into money_ready_verdict.py
+- [OPEN] Operator decision on mega_mutation unblock (remove 2 lines in strategy_blocklist.py)
+- [OPEN] Run swarm-transcript-scan skill on a transcript JSONL

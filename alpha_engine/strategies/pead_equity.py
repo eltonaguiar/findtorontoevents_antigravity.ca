@@ -40,7 +40,8 @@ PEAD_WINDOW_DAYS = 2
 MIN_EARNINGS_BEAT_PCT = 0.05
 
 # Require guidance raise (management conviction). Eliminates one-time beats.
-REQUIRE_GUIDANCE_RAISE = True
+# Shadow probation: PEAD_REQUIRE_GUIDANCE_RAISE=0 allows earnings-cache signals.
+REQUIRE_GUIDANCE_RAISE = os.environ.get("PEAD_REQUIRE_GUIDANCE_RAISE", "1") == "1"
 
 # Score thresholds — not wired to production until these are met in backtest.
 MIN_PF_THRESHOLD = 1.5

@@ -77,6 +77,12 @@ def main():
         if pnl is None:
             skipped += 1
             continue
+        # Hard cap: pnl > 500% almost always means price-unit mismatch
+        # (e.g. SHIB entry in USDT-fraction, exit in whole-number scale).
+        # Leave these NULL rather than contaminating metrics.
+        if abs(pnl) > 5.0:  # 500% in decimal fraction
+            skipped += 1
+            continue
         status = str(row.get("status") or "")
         # Respect chk_pnl_sign_coherence constraint
         if status in ("TP_HIT", "WON", "closed_win") and pnl < -0.01:

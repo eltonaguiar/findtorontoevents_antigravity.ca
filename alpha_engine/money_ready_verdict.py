@@ -45,11 +45,18 @@ for _p in (str(REPO_ROOT), str(Path(__file__).resolve().parent)):
 
 import numpy as np
 
-from alpha_engine.eagle_gates import passes_recency_gate
-from alpha_engine.fundamental_macro_gates import (
-    passes_high_conviction_gate,
-    passes_long_term_stability_gate,
-)
+# Lazy imports to avoid ModuleNotFoundError when ci_gate scripts import this
+# module from a different sys.path context (e.g. GHA runners).
+def _get_eagle_gates():
+    from alpha_engine.eagle_gates import passes_recency_gate
+    return passes_recency_gate
+
+def _get_fundamental_macro_gates():
+    from alpha_engine.fundamental_macro_gates import (
+        passes_high_conviction_gate,
+        passes_long_term_stability_gate,
+    )
+    return passes_high_conviction_gate, passes_long_term_stability_gate
 
 # P1/#7 — Net-of-cost slippage / expectancy promotion gate.
 # ENFORCED by default (2026-05-19, swarm-settled Q1 verdict): the net-of-slippage

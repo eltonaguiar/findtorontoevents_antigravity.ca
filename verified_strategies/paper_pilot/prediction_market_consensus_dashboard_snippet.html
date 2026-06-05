@@ -1,0 +1,103 @@
+<!-- PMC Paper Pilot Dashboard Snippet — drop into audit_dashboard/template.html or any audit page -->
+<div id="pmc-pilot-card" class="audit-card">
+  <h3>📊 Paper Pilot — prediction_market_consensus</h3>
+  <div class="metrics-grid">
+    <div class="metric">
+      <span class="label">Forward N</span>
+      <span class="value" id="pmc-n">110</span>
+    </div>
+    <div class="metric">
+      <span class="label">Win Rate</span>
+      <span class="value" id="pmc-wr">79.09%</span>
+    </div>
+    <div class="metric">
+      <span class="label">Profit Factor</span>
+      <span class="value" id="pmc-pf">13.20</span>
+    </div>
+    <div class="metric">
+      <span class="label">Avg PnL</span>
+      <span class="value" id="pmc-avg">+2.35%</span>
+    </div>
+    <div class="metric">
+      <span class="label">Total PnL</span>
+      <span class="value" id="pmc-total">+258.60%</span>
+    </div>
+    <div class="metric">
+      <span class="label">Kill Switch</span>
+      <span class="value status-ok" id="pmc-ks">OK</span>
+    </div>
+  </div>
+
+  <h4>Recent 10 Picks</h4>
+  <table class="pilot-table">
+    <thead>
+      <tr><th>Date</th><th>Symbol</th><th>Dir</th><th>Outcome</th><th>PnL</th></tr>
+    </thead>
+    <tbody id="pmc-recent">
+      <!-- Populated by JS below or server-side render -->
+      <tr><td>2026-06-05</td><td>BTCUSDT</td><td>LONG</td><td>TP_HIT</td><td class="pos">+2.50%</td></tr>
+      <tr><td>2026-06-04</td><td>BNBUSDT</td><td>LONG</td><td>SL_HIT</td><td class="neg">-1.50%</td></tr>
+      <tr><td>2026-06-04</td><td>BTCUSDT</td><td>LONG</td><td>TP_HIT</td><td class="pos">+2.50%</td></tr>
+      <tr><td>2026-06-04</td><td>DOGEUSDT</td><td>LONG</td><td>SL_HIT</td><td class="neg">-1.50%</td></tr>
+      <tr><td>2026-06-04</td><td>ETHUSDT</td><td>LONG</td><td>SL_HIT</td><td class="neg">-1.50%</td></tr>
+      <tr><td>2026-06-02</td><td>BNBUSDT</td><td>LONG</td><td>SL_HIT</td><td class="neg">-1.50%</td></tr>
+      <tr><td>2026-06-02</td><td>DOGEUSDT</td><td>LONG</td><td>TP_HIT</td><td class="pos">+2.50%</td></tr>
+      <tr><td>2026-06-02</td><td>ETHUSDT</td><td>LONG</td><td>TP_HIT</td><td class="pos">+2.50%</td></tr>
+      <tr><td>2026-06-02</td><td>ETHUSDT</td><td>LONG</td><td>TP_HIT</td><td class="pos">+2.50%</td></tr>
+      <tr><td>2026-06-02</td><td>SOLUSDT</td><td>LONG</td><td>TP_HIT</td><td class="pos">+2.50%</td></tr>
+    </tbody>
+  </table>
+
+  <p class="pilot-meta">
+    Shadow mode: <strong>ON</strong> &nbsp;|&nbsp;
+    Promotion ready: <strong>NO</strong> (needs n≥150) &nbsp;|&nbsp;
+    Risk/pick: <strong>0.5%</strong> &nbsp;|&nbsp;
+    Updated: <span id="pmc-updated">2026-06-05</span>
+  </p>
+</div>
+
+<style>
+  #pmc-pilot-card { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:16px; color:#e2e8f0; font-family:system-ui, sans-serif; }
+  #pmc-pilot-card h3 { margin:0 0 12px; font-size:1.1rem; color:#38bdf8; }
+  #pmc-pilot-card h4 { margin:16px 0 8px; font-size:0.95rem; color:#94a3b8; }
+  .metrics-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+  .metric { background:#1e293b; padding:10px; border-radius:6px; text-align:center; }
+  .metric .label { display:block; font-size:0.75rem; color:#94a3b8; text-transform:uppercase; }
+  .metric .value { display:block; font-size:1.1rem; font-weight:700; margin-top:4px; }
+  .status-ok { color:#4ade80; }
+  .status-trip { color:#f87171; }
+  .pilot-table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:8px; }
+  .pilot-table th { text-align:left; padding:6px; color:#94a3b8; border-bottom:1px solid #334155; }
+  .pilot-table td { padding:6px; border-bottom:1px solid #1e293b; }
+  .pos { color:#4ade80; }
+  .neg { color:#f87171; }
+  .pilot-meta { font-size:0.8rem; color:#64748b; margin-top:12px; }
+</style>
+
+<script>
+  // Optional: auto-refresh from the dashboard JSON payload
+  (async function() {
+    try {
+      const res = await fetch('verified_strategies/paper_pilot/prediction_market_consensus_dashboard.json');
+      if (!res.ok) return;
+      const d = await res.json();
+      document.getElementById('pmc-n').textContent = d.forward.n;
+      document.getElementById('pmc-wr').textContent = d.forward.wr.toFixed(2) + '%';
+      document.getElementById('pmc-pf').textContent = d.forward.pf.toFixed(2);
+      document.getElementById('pmc-avg').textContent = (d.forward.avg_pnl >= 0 ? '+' : '') + d.forward.avg_pnl.toFixed(2) + '%';
+      document.getElementById('pmc-total').textContent = (d.forward.total_pnl >= 0 ? '+' : '') + d.forward.total_pnl.toFixed(2) + '%';
+      const ks = document.getElementById('pmc-ks');
+      ks.textContent = d.kill_switch.active ? 'TRIPPED' : 'OK';
+      ks.className = 'value ' + (d.kill_switch.active ? 'status-trip' : 'status-ok');
+      document.getElementById('pmc-updated').textContent = d.updated_at ? d.updated_at.slice(0,10) : '—';
+      // Rebuild recent picks table
+      const tbody = document.getElementById('pmc-recent');
+      tbody.innerHTML = d.recent_picks.map(p => {
+        const date = (p.timestamp || '').slice(0,10);
+        const cls = p.pnl_pct >= 0 ? 'pos' : 'neg';
+        const sign = p.pnl_pct >= 0 ? '+' : '';
+        return `<tr><td>${date}</td><td>${p.symbol}</td><td>${p.direction}</td><td>${p.outcome}</td><td class="${cls}">${sign}${p.pnl_pct.toFixed(2)}%</td></tr>`;
+      }).join('');
+    } catch (e) { /* silent fail — static fallback remains */ }
+  })();
+</script>
