@@ -437,7 +437,7 @@ class TestResolveStaleOpenPicks(unittest.TestCase):
         """Verify hold hours match expected values."""
         self.assertEqual(rsop._hold_hours_for("CRYPTO"), 48)
         self.assertEqual(rsop._hold_hours_for("EQUITY"), 96)
-        self.assertEqual(rsop._hold_hours_for("FOREX"), 120)
+        self.assertEqual(rsop._hold_hours_for("FOREX"), 72)
         self.assertEqual(rsop._hold_hours_for("BOND"), 120)
         self.assertEqual(rsop._hold_hours_for("UNKNOWN"), 48)
 

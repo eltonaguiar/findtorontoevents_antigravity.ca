@@ -280,3 +280,18 @@ Recommend amending CHATBIBLE.MD §1 + §3 with a "Windows-shell" sub-section. Al
 - **what_i_was_trying_to_send:** SESSION_SUMMARY: category-taxonomy runbook (docs/CATEGORY_TAXONOMY_FIX_RUNBOOK_2026-06-03.md, commit 3b8ef2e56) pairs with existing INCIDENT_OVERALL #88 + ENHANCEMENT_OVERALL #109. No new DB rows added (rows already exist from parallel agent).
 - **fallback_used:** Wrote payload to logs/cross_pc_protocol/events.jsonl directly per skill fallback section.
 - **next_action:** human-must-restart-gateway on the desktop host (192.168.2.32). On next session, retry the broadcast and verify it lands via `python tools/protocol_inspect.py tail --limit 5`.
+
+---
+- **timestamp_utc:** 2026-06-05T06:45:34Z
+- **agent_runtime:** claude-code
+- **provider/model:** anthropic/claude-sonnet-4-6
+- **ide / surface:** claude-desktop
+- **host:** gx10-c9b9
+- **stage_that_failed:** health-check → broadcast
+- **error_observed:** `ConnectionRefusedError: [Errno 111] Connection refused` on `http://192.168.2.32:8788/health`
+- **gateway_endpoint_tried:** `http://192.168.2.32:8788`
+- **peer_id_used:** claude-desktop
+- **what_i_was_trying_to_send:** SESSION_SUMMARY — 9 commits: TRUE WINNERS scrutiny, mega_mutation pilot, Gemini resolver V3 fix, Kimi Phase 2, trading_picks_v2 clean ledger
+- **fallback_used:** wrote to logs/cross_pc_protocol/events.jsonl directly
+- **next_action:** human-must-restart-gateway (ping 192.168.2.32 works, port 8788 refused — service down on desktop)
+- **diagnostic_checklist:** (1) host=gx10-c9b9 (peer, not gateway host) ✅ (2) used python tools/protocol_inspect.py health (canonical) ✅ (3) probed HTTP endpoint not local port scan ✅ (4) ping 192.168.2.32 OK — L3 reachable ✅ (5) gateway service NOT running on desktop — genuine down

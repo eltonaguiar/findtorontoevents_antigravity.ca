@@ -70,13 +70,8 @@ def _db_forward_stats(strategy_id: str) -> dict | None:
     try:
         import os
         import pymysql
-        conn = pymysql.connect(
-            host=os.environ.get("DB_HOST", "mysql.50webs.com"),
-            user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
-            password=os.environ.get("DB_PASS_STOCKS", "stocks1234560"),
-            database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
-            connect_timeout=10,
-        )
+        from tools.db_env import get_stocks_creds
+        conn = pymysql.connect(**get_stocks_creds())
         with conn.cursor() as cur:
             cur.execute(
                 """SELECT

@@ -42,6 +42,10 @@ def main() -> int:
         # PR #482 bootstrap forward-test (virtual book; no production enable)
         _run([py, "verified_strategies/paper_pilot/b_flip_price_roc_forward_pilot.py"]),
         _run([py, "verified_strategies/paper_pilot/inverse_ml_btc_forward_pilot.py"]),
+        # 2026-06-05 — mega_mutation CRYPTO multi-symbol sleeve, lead T2 bridge
+        # candidate after INCIDENT #91 dedup (n=109 WR 61.5% PF 2.79 OOS-stable).
+        # reports/MEGA_MUTATION_BRIDGE_CANDIDATE_2026-06-05.md
+        _run([py, "verified_strategies/paper_pilot/mega_mutation_forward_pilot.py", "--one-shot"]),
         _run([py, "tools/etf_forward_stats.py", "--write"]),
         _run([py, "tools/crypto_wf_forward_stats.py", "--write"]),
         _run([py, "tools/faber_forward_stats.py", "--write"]),

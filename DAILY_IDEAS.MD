@@ -4230,3 +4230,143 @@ Our /audit production book has no deployable edge. The real edge is in:
 **Re-run artifact:** `python3 tools/eagle_swarm_synthesis.py` → `reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md`
 **Best-picks verify:** `python3 tools/verify_best_picks_swarm.py` → `reports/best_picks_swarm_review_2026-06-02.json`
 **Consolidated swarm:** `reports/EAGLE_SWARM_CONSOLIDATED_2026-06-02.md`
+
+### 2026-06-05 — Audit & Money-Ready Tiering Brainstorm
+
+**Audit Findings (Universal Resolver & Dashboard Generator):**
+- **Resolver:** Robust handling of reverse splits and asset-class specific hold windows (e.g., 48h for Crypto, 72h for Forex, 120h for Bonds) to prevent stale picks from skewing stats.
+- **Dashboard:** Strong data integrity filters in place:
+    - : Filters out "ghost rows" (zero-PnL artifacts), corrupt PnL (JPY pip-vs-percent), and price-magnitude corruption.
+    - : Uses standardized  formula.
+    - : Excludes effectively flat trades (noise) from win-rate calculations.
+
+**Brainstorm: "Money-Ready" Tiering Framework:**
+To bridge the gap to real money, we need clear, non-embarrassing tiers of confidence:
+- **Tier 1 (Institutional/Mutual Fund Ready):** 
+    - Statistically significant sample size (e.g., N > 50 or 100).
+    - Consistent edge across multiple market regimes.
+    - High Win Rate (WR) + high Profit Factor (PF) + low Max Drawdown (MDD).
+    - Verified through both paper trading and (if possible) small-scale live execution.
+- **Tier 2 (High Conviction/Aggressive):**
+    - Emerging edge with growing sample size.
+    - Strong performance in recent windows.
+    - Suitable for "paper trading" or very small "skin in the game" amounts.
+- **Tier 3 (Research/Experimental):**
+    - New strategies, low sample size.
+    - High volatility in performance.
+    - Purely for data gathering and refinement.
+
+**Immediate Action Items:**
+- Identify which asset classes/strategies currently meet Tier 1 criteria.
+- Audit the "best possible picks" mentioned in recent updates to see if they are truly Tier 1.
+- Deploy sub-agents to cross-reference  research with dashboard performance.
+
+---
+
+### 2026-06-05 ~05:50 UTC — Operator /loop prompt + Bridge-Tier consolidation (claude-opus-4-7)
+
+**Operator's /loop prompt (saved verbatim, scheduled at `7 * * * *` job `e65b9a0e`, session-only, 7-day expiry):**
+
+> keep going we need constant progres towards statitically valid scrutnized algorithms across each asset class, that are ready for us to put REAL money into.. we need to find a way to bridge the gap quickly to get to being "money-ready" . .our paper trading / tracking had flaws such as resolver issues, reverse stock causing skewed Win-rates scrunitize all win-rates and stats & wording on findtorontoevents.ca/audit and https://findtorontoevents.ca/audit/ai_leaderboard.html and https://findtorontoevents.ca/audit/ai-tournament.html including performance by portfolio, asset class, model, etc. and ensure we REALLY have picks that would performance reliably..  we are talking about mutual fund worthy performance.. or genius level stock picker level.. we cant have any embrassing bunch of loser after loser picks.. no coin flips.
+
+**Frustration context:** months struggling, 0/9 asset classes trustworthy enough for real money, embarrassment risk on public-facing audit.
+
+#### Reconciling Zoocode's draft above with the CANONICAL tier framework
+
+Zoocode's "Tier 1 = N>50" above does NOT match the codebase's canonical tier table at `docs/PERFORMANCE_CHARTER.md`. Using the wrong thresholds publicly is exactly the embarrassment the operator is trying to avoid. Authoritative reference table (cite this, not the simplified version):
+
+| Tier | PF | WR | MaxDD | n | What it means |
+|---|---|---|---|---|---|
+| **Tier 1 (Renaissance)** | ≥2.0 | ≥55% | ≤10% | ≥200 | Long-run target. Real, large-money grade. |
+| **Tier 2 (Institutional/Sized-up)** | ≥1.5 | ≥50% | ≤20% | ≥100 | Minimum for sizing up beyond pilot. |
+| **Tier 3 (Marginal/Probation)** | ≥1.2 | ≥45% | ≤25% | ≥100 | Paper-trading floor only. |
+| Below Tier 3 | <1.2 OR WR<45% OR MDD>25% | — | — | — | Do NOT size. |
+
+**Sample-size discipline** (PERFORMANCE_CHARTER §10):
+- n<30 → "insufficient data" (no inference permitted)
+- 30 ≤ n < 100 → "developing" (directional only, NOT promotable)
+- n ≥ 100 → tier classification permitted
+
+#### The Bridge: a 5-stage progression from coin-flip to mutual-fund-worthy
+
+The "months-long gap" the operator describes is actually well-formalized already — it's just spread across multiple docs. Consolidated for /audit publication:
+
+| Stage | Label | Gate to enter | Sizing | Days from cold start |
+|---|---|---|---|---|
+| 0 | **Backtest only** | Idea has working code | 0% (no live picks) | Day 0 |
+| 1 | **Shadow / Lab-validated** | Backtest passes T2 stats on cleaned data | 0% (shadow emission only) | ~14 days |
+| 2 | **Forward-paper pilot** | Lab-validated + walk-forward PASS + ≥1 LLM peer review | 0% (paper book) | ~30 days |
+| 3 | **WATCH (forward n→100)** | Forward n ≥ 30, WR/PF trending toward T2 | 0.1% notional, drawdown-halted | ~60 days |
+| 4 | **MONEY_READY (Tier 2)** | Forward n ≥ 100, DSR/PBO/SPA pass post-slippage, single-source HHI<0.20 | Kelly-fraction sized | ~90-120 days |
+| 5 | **Tier 1 (Renaissance)** | n ≥ 200 forward, PF ≥ 2.0 maintained across 2+ regimes | Full strategy weight | 6-12 months |
+
+**Honesty rule:** every audit-surface cell that publishes a WR/PF MUST also publish its stage. Stage 0-2 cells must NOT say "Best Picks" without "PAPER WATCH — DO NOT SIZE" inline.
+
+#### Audit of the existing "best possible picks" entry (`updates/index.html` ~line 816, dated 2026-06-02)
+
+The most recent best-possible-picks entry already published:
+- **Title**: "EAGLE-4 + EAGLE-5 Gates — Code Diff, Smoke Test, Best Picks & 12-Week Plan"
+- **Paper-watch picks**: CRYPTO SHORT (BTC/ETH); ETF: EEM, IWM, GLD; EQUITY: BAC, JPM, MSFT, NVDA
+- **Caveat already present**: "do NOT size (0/9 money-ready per `money_ready_verdict.json`)"
+- **Only shadow-pilot**: `etf_verified_dual_momentum`
+
+**Status check needed today (2026-06-05)**: are those picks still in their expected ranges? Has any of them resolved? File ENH if entries are now stale-but-still-displayed as if current.
+
+#### Highest-leverage bridge ideas brainstormed (this session)
+
+1. **Stage banner on every cell** — auto-prefix each /audit asset-class cell with its current Stage (1-5) instead of just verdict. Removes the "looks T1 but is shadow" ambiguity at the source.
+2. **Per-row tier caveat field in JSON** (already filed ENH #132) — tournament leaderboard JSON needs `wr_artifact_risk` per row so non-browser consumers don't mis-cite Tier-1.
+3. **WR units unified** (already filed ENH #131) — pick decimal OR percent across all canonical JSON, enforce via CI.
+4. **Bridge-stage accelerator: piggyback off ETF DM** — `etf_verified_dual_momentum` is the only sleeve approaching Stage 3. Wire it to live emission with 0.1% notional + circuit-breaker the day forward n hits 30 (currently 0).
+5. **Per-class "fastest credible bridge" table** — publish to /audit so the operator can show stakeholders "ETF: ~60 days, CRYPTO: ~90 days, EQUITY: gated on trust_score=7 sleeve first, BOND: no data yet" instead of just "0/9 ready".
+6. **Bias-survivor sleeve formal entry** (`reports/high_quality_picks_plan_2026-06-05.md`) — 12 picks identified, top 5 in open-consensus state (BND/SHY/IWM/SPY LONG, SHY SHORT). Wire to a 4-week forward-pilot with mandatory ENH gates instead of leaving in a one-off report.
+7. **DISPUTED-banner-to-data flip** — tournament's 67-91% WR caveat lives only in HTML. Move to data layer so anyone reading the JSON sees the caveat.
+8. **Stop publishing aggregate WR/PF when n<30** — the COMMODITY n=4 PF 10.50 cell makes the dashboard look serious when it's anecdote. Show "INSUFFICIENT DATA (n=4)" instead of a PF number.
+
+#### Related already-filed enhancements/incidents (this session, for reviewer cross-link)
+
+- `ENH OVERALL #129` — Backfill 1034 zero-PnL rows in `at_pick_outcomes` after `_compute_pnl` landed
+- `ENH OVERALL #130` — EXEC_PLAN_06 VRP entry blocked by 11 methodology bugs (DeepSeek-corroborated 5/11)
+- `ENH OVERALL #131` — WR unit inconsistency (decimal vs percent) across canonical JSON
+- `ENH OVERALL #132` — Tournament leaderboard JSON missing per-row DISPUTED/artifact caveat field
+- `ENH FOREX #4` — FOREX n/WR/PF disagree between `money_ready_verdict` and `pf_registry` at same timestamp
+- `INCIDENT STOCKS #11` — Hermes/Nemotron-3-Super + Gemini-YOLO backupless `trading_picks` mutation 2026-06-05T05:30Z
+
+#### What NOT to do (operator embarrassment-avoidance hard rules)
+
+- ❌ Do NOT publish "Tier 1" label on any sleeve with n<200 + forward PF<2.0 (even if backtest looks great)
+- ❌ Do NOT promote any strategy to `PROMOTED_STRATEGIES` without all 5 stages complete (re: Gemini's PROMOTED_STRATEGIES bypass today, defused)
+- ❌ Do NOT cite the VRP harvest "VALIDATED ✅" backtest from `_CLAUDE_CLOUD_MINIMIX_*` until 11 methodology bugs are fixed
+- ❌ Do NOT flip CRYPTO LONG production back on (Grok's `CRYPTO_PRODUCTION_BLOCK_LONG=1` is the right default)
+- ❌ Do NOT publish aggregate per-class WR when n<30 — show "INSUFFICIENT DATA" caption instead
+
+— claude-opus-4-7 (session: /loop e65b9a0e + 3-agent parallel scan)
+
+---
+
+## /loop 2h — Deep Winner Hunt Per Asset Class (2026-06-05)
+
+**Operator prompt:**
+> /loop 2h keep going and dig deeper until you find us true winners per asset class. Scrutinize picks continuously looping until you narrow down winners that are statistically valid, even if we can't forward test them, we need the best possible picks. So maybe a stock with a proven track record, or something like NVDA which has a lot of potential I would say. Maybe try to pull stock analyst consensus or something? Pro trader calls? etc.
+
+**What this loop should do each iteration:**
+1. Query live DB (`ejaguiar1_stocks.trading_picks`) for source systems passing: n≥30, WR≥50%, PF≥1.5, closed_at NOT NULL, 2026+
+2. Run concentration check (HHI < 0.30 per symbol)
+3. Pull analyst consensus via yfinance for top EQUITY/ETF candidates (recommendationMean ≤ 2.0 = Strong Buy/Buy)
+4. Check CoinGecko/Binance funding rates for CRYPTO directional bias
+5. Cross-reference with `reports/wr_scrutiny_honest_2026-06-05.md` (source: mega_mutation n=296 WR=63.9%)
+6. Emit a ranked shortlist: top 3 picks per asset class with statistical backing
+7. Log findings to `reports/winner_hunt_<date>.md`
+
+**Current best candidates (as of 2026-06-05 live DB query):**
+- CRYPTO: `mega_mutation` n=296 WR=63.9% PF=3.12 — top symbols: JUPUSDT (85.1%), ENAUSDT (80%), ADAUSDT (77.8%)
+- EQUITY/ETF: `battleground_luxalgo` n=129 WR=51.9% PF=1.76 — needs analyst cross-check
+- STOCKS: need deeper per-symbol analysis (NVDA, QQQ, SPY analyst consensus)
+
+**Hard rules for this loop:**
+- ❌ Never claim "winner" on n<30 with real closed_at
+- ❌ Never cite batch-day artifact sources (kimi_signal_tracking = all 146 on one day)
+- ❌ Never cite NULL pnl_pct picks in WR/PF calculations
+- ✅ Analyst consensus: yfinance `ticker.info['recommendationMean']` ≤ 2.0 = strong candidate
+- ✅ Minimum: binomial p-value < 0.05 on observed WR with observed n
+
