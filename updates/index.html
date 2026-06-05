@@ -34,6 +34,28 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+    <!-- Update: Jun 5, 2026 — Deep-Dive Series: 3 Backfill-Contamination Findings -->
+    <div class="update-entry" style="--dot-color: #ef4444;" data-tags="deep-dive,backfill,data-quality,audit,walk-forward,scrutiny" data-category="trading" data-types="analysis,research,fix">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:30 UTC &mdash; <strong style="color:#ef4444;">🚨 DEEP-DIVE SERIES: 3 Backfill-Contamination Findings Force Walk-Forward Rewrite</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Three sequential deep-dives against live <code>trading_picks</code> SQL each found a different kind of <strong>batch artifact</strong> masquerading as edge. All three fixes are <strong>shipped to main</strong>.</p>
+        <ul>
+          <li><strong>Commodity deep-dive</strong> (reports/deep_dive_commodity_2026-06-05.md): The 5,960 commodity rows on 2026-06-04 = resolver backfill, not edge. ALL commodity T2 candidates (futures_bb_mean_reversion, non_crypto_consensus, multi_asset_cot, combined_confidence_strategy) fail <code>batch_artifact</code> axis. Post-filter: <strong>0/6 commodity classes</strong> have T2 candidates. Contradiction with auto_tuner's LOW_CONFIDENCE_STRATEGIES ban was artifact-driven — auto_tuner is correct.</li>
+          <li><strong>Forex regime deep-dive</strong> (reports/deep_dive_forex_regime_2026-06-05.md): Walk-forward's 3/3 forex PASSes (myfxbook_retail_contrarian, cta_cross_asset_tsmom, non_crypto_consensus) were <strong>data-join artifacts</strong>. 88% of cta_cross_asset_tsmom forex closes are in 2026-05+ where <code>alpha_macro</code> ends. The "edge" was missing data, not regime-tunable. Added <code>--require-macro-join</code> flag + <code>total_pf &gt;= 1.0</code> hard-gate to walk-forward. Post-fix: 4 PASS → 1 PASS (only <code>mega_mutation::crypto</code>).</li>
+          <li><strong>Bond n-ramp analysis</strong> (reports/bond_n_ramp_analysis_2026-06-05.md): BOND is structurally low-n (8 post-filter trades). 167 closed trades exist but 159 are 2026-06-04 backfill; pre-backfill is 16 trades in 3 months. N-ramp requires generation-side investment (PIMCO replication / yield-curve momentum / TLT-IEF mean reversion with 10Y-2Y spread filter).</li>
+        </ul>
+        <p style="margin:0 0 8px;"><strong>Infrastructure shipped</strong> (commits 18f0c17c4b → 7cd7586238 → 49bffbb10c):</p>
+        <ul>
+          <li><code>BACKFILL_EXCLUDE_DATE = "2026-06-04"</code> filter in <code>tools/per_class_scrutiny_engine.py</code> + <code>tools/walk_forward_per_strategy.py</code></li>
+          <li><code>--require-macro-join</code> flag in walk-forward (data-join artifact gate)</li>
+          <li><code>total_pf &gt;= 1.0</code> hard-gate in walk-forward (no PASS for losing strategies)</li>
+          <li>New <code>total_pf</code> + <code>total_wr</code> fields in walk-forward cells</li>
+        </ul>
+        <p style="margin:0 0 8px;"><strong>Re-verified audit verdict</strong>: 0/9 money-ready, with <code>mega_mutation::crypto</code> (n=295 WR=64.1% PF=3.16) as the sole confirmed T1. The "78.9% CRYPTO Smart-Picks" cell on /audit/pick_funnel.html remains DISPUTED (per TRUE WINNERS scrutiny entry above).</p>
+        <p style="margin:8px 0 0;color:#999;">Reports: <code>reports/deep_dive_commodity_2026-06-05.md</code>, <code>reports/deep_dive_forex_regime_2026-06-05.md</code>, <code>reports/bond_n_ramp_analysis_2026-06-05.md</code> | Tools: <code>tools/per_class_scrutiny_engine.py</code>, <code>tools/walk_forward_per_strategy.py</code> | All claims verifiable via live DB SQL</p>
+      </div>
+    </div>
+
     <!-- Update: Jun 5, 2026 — TRUE WINNERS Scrutiny: mega_mutation Only Verified CRYPTO Edge -->
     <div class="update-entry" style="--dot-color: #10b981;" data-tags="scrutiny,crypto,winners,mega_mutation,analyst,equity,statistically-valid" data-category="trading" data-types="analysis,research">
       <div class="update-date" style="line-height:1.5">Jun 5, 2026 06:30 UTC &mdash; <strong style="color:#10b981;">&#x2705; TRUE WINNERS SCRUTINY: Only 1 Source Passes All 5 Axes</strong></div>
