@@ -291,6 +291,107 @@ def passes_pbo_global_gate(strict: bool = True) -> tuple[bool, dict]:
     }
 
 
+# ---------------------------------------------------------------------------
+# Walk-Forward Efficiency (WFE) gate (2026-06-05, Grok-proposed priority #1)
+# WFE = % of walk-forward windows where OOS_PF >= 0.85 * IS_PF.
+# Reads tools/walk_forward_per_strategy_latest.json (output of
+# tools/walk_forward_per_strategy.py). Hard gate at WFE >= 0.60.
+# ---------------------------------------------------------------------------
+_EAGLE6_MIN_WFE = 0.60
+_WFE_CACHE: dict[str, float] | None = None
+
+
+def _load_wfe() -> dict[str, float]:
+    """Per-(strategy::category) WFE = survival_rate from walk-forward JSON."""
+    global _WFE_CACHE
+    if _WFE_CACHE is not None:
+        return _WFE_CACHE
+    try:
+        import json
+        from pathlib import Path
+        path = Path(__file__).resolve().parent.parent / "audit_dashboard" / "data" / "walk_forward_per_strategy_latest.json"
+        with open(path, "r", encoding="utf-8") as f:
+            d = json.load(f)
+        out: dict[str, float] = {}
+        for cell in d.get("cells", []):
+            key = f"{cell.get('strategy','')}::{cell.get('category','')}"
+            if cell.get("survival_rate") is not None:
+                out[key] = float(cell["survival_rate"])
+        _WFE_CACHE = out
+        return _WFE_CACHE
+    except Exception:
+        _WFE_CACHE = {}
+        return _WFE_CACHE
+
+
+def passes_wfe_gate(strategy: str, category: str = "") -> tuple[bool, dict]:
+    """Hard gate: WFE >= 0.60 per Grok's priority #1.
+
+    Fails-open when the walk-forward JSON is missing or the (strategy, category)
+    cell is not in it (= no opinion). Used by Tier-1 promotion paths.
+    """
+    wfe = _load_wfe().get(f"{strategy}::{category}")
+    if wfe is None:
+        return True, {"wfe": None, "threshold": _EAGLE6_MIN_WFE, "pass": True, "reason": "no_data (fail-open)"}
+    return (wfe >= _EAGLE6_MIN_WFE), {
+        "wfe": round(wfe, 4),
+        "threshold": _EAGLE6_MIN_WFE,
+        "pass": wfe >= _EAGLE6_MIN_WFE,
+        "reason": f"wfe={wfe:.3f} {'>=' if wfe >= _EAGLE6_MIN_WFE else '<'} {_EAGLE6_MIN_WFE}",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Minimum Track Record Length (MinTRL) gate (Bailey & Lopez de Prado 2014)
+# MinTRL = 1 + (1 - γ3*SR + ((γ4 - 1)/4) * SR²) * (Z_α / SR)²
+# where γ3 is skew, γ4 is excess kurtosis, Z_α is z-score for desired
+# confidence (1.96 for 95%). A strategy is Sharpe-trustworthy iff its
+# closed-trade count >= MinTRL.
+# Default benchmark SR = 0 (i.e. we want the strategy SR > 0 reliably).
+# ---------------------------------------------------------------------------
+_MIN_TRL_CONFIDENCE_Z = 1.96  # 95%
+
+
+def compute_min_trl(returns: list[float], benchmark_sr: float = 0.0) -> float | None:
+    """Bailey-Lopez de Prado 2014 MinTRL. Returns None on degenerate input."""
+    if not returns or len(returns) < 4:
+        return None
+    import math
+    n = len(returns)
+    mu = sum(returns) / n
+    var = sum((x - mu) ** 2 for x in returns) / (n - 1)
+    if var <= 0:
+        return None
+    sd = math.sqrt(var)
+    sr = mu / sd
+    if abs(sr - benchmark_sr) < 1e-9:
+        return None  # degenerate: SR ≈ benchmark → MinTRL undefined
+    # Fisher-corrected skew + excess kurtosis
+    z = [(x - mu) / sd for x in returns]
+    skew = ((n * n) / ((n - 1) * (n - 2))) * sum(zi ** 3 for zi in z) / n
+    kurt_raw = sum(zi ** 4 for zi in z) / n
+    kurt_excess = ((n + 1) * kurt_raw - 3 * (n - 1)) * (n - 1) / ((n - 2) * (n - 3))
+    bracket = 1.0 - skew * sr + ((kurt_excess) / 4.0) * sr * sr
+    if bracket <= 0:
+        return None  # implausible
+    denom = sr - benchmark_sr
+    min_trl = 1.0 + bracket * (_MIN_TRL_CONFIDENCE_Z / denom) ** 2
+    return float(min_trl)
+
+
+def passes_min_trl_gate(returns: list[float], n_closed: int, benchmark_sr: float = 0.0) -> tuple[bool, dict]:
+    """Hard gate: n_closed >= MinTRL. Fails-open when MinTRL is undefined."""
+    min_trl = compute_min_trl(returns, benchmark_sr)
+    if min_trl is None:
+        return True, {"min_trl": None, "n_closed": n_closed, "pass": True, "reason": "min_trl_undefined (fail-open)"}
+    return (n_closed >= min_trl), {
+        "min_trl": round(min_trl, 1),
+        "n_closed": n_closed,
+        "pass": n_closed >= min_trl,
+        "reason": f"n_closed={n_closed} {'>=' if n_closed >= min_trl else '<'} min_trl={min_trl:.1f}",
+    }
+
+
 def _strategy_name(pick: dict) -> str:
     """Extract a normalised strategy name from a pick dict."""
     return str(
