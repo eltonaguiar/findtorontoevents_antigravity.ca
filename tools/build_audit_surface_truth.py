@@ -172,7 +172,7 @@ def build_report() -> dict:
                 "money_ready": ac in (verdict.get("summary") or {}).get("money_ready", []),
                 "policy_clean_n": pc.get("n"),
                 "policy_clean_pf": pc.get("pf") or pc.get("profit_factor"),
-                "policy_clean_wr_pct": pc.get("win_rate_pct") or pc.get("wr") or pc.get("wr_pct"),
+                "policy_clean_wr_pct": pc.get("wr") or pc.get("wr_pct"),
                 "tier2_pass": (
                     int(block.get("n_resolved") or 0) >= TIER2["min_n"]
                     and float(block.get("wr") or 0) >= TIER2["min_wr"]
