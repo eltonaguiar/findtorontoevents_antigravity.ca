@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strategy Performance by Asset Class | /audit</title>
+<style>
+  :root{--bg:#0d1117;--card:#161b22;--ink:#e6edf3;--mut:#9da7b3;--line:#30363d;--accent:#58a6ff;--good:#22c55e;--bad:#f85149;--warn:#d29922;}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
+  h1{font-size:1.5rem;margin:.2em 0}
+  .sub{color:var(--mut);font-size:.9rem}
+  a{color:var(--accent)}
+  .caveat{background:rgba(210,153,34,.1);border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0;font-size:.92rem}
+  .controls{margin:14px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select,input{background:#1c2330;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.88rem}
+  th,td{border-bottom:1px solid var(--line);padding:6px 9px;text-align:right;white-space:nowrap}
+  th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+  th{background:#1c2330;cursor:pointer;position:sticky;top:0;user-select:none}
+  th:hover{color:var(--accent)}
+  tbody tr:hover{background:rgba(88,166,255,.06)}
+  .cls{font-size:1.05rem;font-weight:700;margin:22px 0 4px;color:var(--accent);border-top:1px solid var(--line);padding-top:14px}
+  .good{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}.dim{color:var(--mut)}
+  .pill{font-size:.72rem;padding:1px 7px;border-radius:999px;background:#1c2330;color:var(--mut)}
+  #status{color:var(--mut);font-size:.9rem;margin:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="sub"><a href="/audit/">&larr; /audit</a></p>
+  <h1>Strategy Performance by Asset Class</h1>
+  <p class="sub" id="meta">loading…</p>
+  <div class="caveat"><b>Read this first.</b> These are <b>raw tracking</b> numbers — win-rate / profit-factor
+   per (asset&nbsp;class,&nbsp;strategy) from resolved WON/LOST picks. <b>NOT edge-proven.</b> A high WR/PF here
+   does <i>not</i> mean real edge: most survive only at tiny <code>n</code>, and none have passed the
+   leakage-free attribution gate (alpha&nbsp;vs&nbsp;beta, <code>t&ge;2</code>), DSR/PBO, or <code>n&ge;30</code>.
+   Use this to <i>see what's emitting + tracked per class</i> (it closes the gap where FUTURES/ETF/BOND/COMMODITY
+   had no tracking) — not to size capital. <code>money_ready</code> is still empty.</div>
+  <div class="controls">
+    <label>Class <select id="fClass"><option value="">All</option></select></label>
+    <label>Min n <input id="fMinN" type="number" value="0" min="0" style="width:70px"></label>
+    <label><input id="fProfitable" type="checkbox"> PF&ge;1 only</label>
+    <span class="pill" id="count"></span>
+  </div>
+  <div id="status"></div>
+  <div id="tables"></div>
+</div>
+<script>
+var DATA=null, SORT={key:'n', dir:-1};
+function fmt(v,d){ if(v===null||v===undefined||v==='') return '<span class="dim">—</span>'; var n=Number(v); return isNaN(n)?String(v):n.toFixed(d==null?2:d); }
+function wrColor(v){ if(v==null) return 'dim'; return v>=55?'good':v>=45?'warn':'bad'; }
+function pfColor(v){ if(v==null) return 'dim'; if(v>=1.5) return 'good'; if(v>=1.0) return 'warn'; return 'bad'; }
+function rows(cls){
+  var minN=Number(document.getElementById('fMinN').value)||0;
+  var profOnly=document.getElementById('fProfitable').checked;
+  var out=[];
+  Object.keys(DATA.by_class).forEach(function(c){
+    if(cls && c!==cls) return;
+    (DATA.by_class[c]||[]).forEach(function(r){
+      if((r.n||0)<minN) return;
+      if(profOnly && !(r.profit_factor>=1)) return;
+      out.push(r);
+    });
+  });
+  out.sort(function(a,b){ var k=SORT.key, av=a[k], bv=b[k];
+    if(k==='strategy'){ return SORT.dir*String(av).localeCompare(String(bv)); }
+    av=(av==null?-1e18:Number(av)); bv=(bv==null?-1e18:Number(bv)); return SORT.dir*(av-bv); });
+  return out;
+}
+function render(){
+  if(!DATA) return;
+  var cls=document.getElementById('fClass').value;
+  var rs=rows(cls);
+  document.getElementById('count').textContent=rs.length+' strategies';
+  var cols=[['strategy','Strategy'],['asset_class','Class'],['n','n'],['wins','W'],['losses','L'],['win_rate_pct','WR%'],['profit_factor','PF'],['avg_pnl_pct','avg pnl'],['total_pnl_pct','tot pnl']];
+  var h='<table><thead><tr>'+cols.map(function(c){var ar=SORT.key===c[0]?(SORT.dir<0?' ▼':' ▲'):'';return '<th data-k="'+c[0]+'">'+c[1]+ar+'</th>';}).join('')+'</tr></thead><tbody>';
+  rs.forEach(function(r){
+    h+='<tr><td>'+r.strategy+'</td><td>'+r.asset_class+'</td><td>'+r.n+'</td><td>'+r.wins+'</td><td>'+r.losses+'</td>'
+      +'<td class="'+wrColor(r.win_rate_pct)+'">'+fmt(r.win_rate_pct,1)+'</td>'
+      +'<td class="'+pfColor(r.profit_factor)+'">'+fmt(r.profit_factor,2)+'</td>'
+      +'<td>'+fmt(r.avg_pnl_pct,4)+'</td><td>'+fmt(r.total_pnl_pct,2)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('tables').innerHTML=h;
+  document.querySelectorAll('th[data-k]').forEach(function(th){
+    th.onclick=function(){ var k=th.getAttribute('data-k'); if(SORT.key===k) SORT.dir*=-1; else {SORT.key=k;SORT.dir=-1;} render(); };
+  });
+}
+fetch('data/strategy_perf_by_class.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(d){
+  DATA=d;
+  document.getElementById('meta').innerHTML='Source: <code>strategy_perf_by_class</code> (ENHANCEMENT #121) · '
+    +d.n_cells+' strategy-class cells across '+d.n_classes+' classes · generated '+(d.generated_at||'').replace('T',' ').slice(0,16)+' UTC';
+  var sel=document.getElementById('fClass');
+  Object.keys(d.by_class).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c+' ('+d.by_class[c].length+')';sel.appendChild(o);});
+  ['fClass','fMinN','fProfitable'].forEach(function(id){document.getElementById(id).addEventListener('input',render);});
+  render();
+}).catch(function(e){ document.getElementById('status').innerHTML='<span class="bad">Failed to load strategy_perf_by_class.json: '+e+'</span>'; });
+</script>
+</body>
+</html>
