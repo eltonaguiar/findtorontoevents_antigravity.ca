@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -89,19 +90,62 @@ def _recompute(row: dict) -> float | None:
     return _compute_pnl(entry, exit_p, d)
 
 
-def _archive_before_apply(where: str) -> None:
-    from tools.db_backup import archive_table_slice
+def _json_archive(where: str, archive_name: str, n: int, mysql_err: Exception) -> None:
+    """Fallback when cross-DB CREATE is denied: JSON slice under reports/ (operator audit)."""
+    path = ROOT / "reports" / "db_archive_slices" / f"{archive_name}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = _connect()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT * FROM trading_picks WHERE {where}")
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+    payload = {
+        "archive_name": archive_name,
+        "row_count": n,
+        "mysql_fallback_reason": str(mysql_err),
+        "where": where,
+        "rows": rows,
+    }
+    path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    print(f"[backfill] WARN: MySQL cross-DB archive failed ({mysql_err})")
+    print(f"[backfill] JSON slice backup: {path} ({len(rows)} rows)")
 
-    result = archive_table_slice(
-        source_table="trading_picks",
-        where=where,
-        purpose="pre_backfill_resolved_pnl",
-        apply=True,
-        max_rows=500_000,
-    )
-    if result.row_count == 0:
-        raise RuntimeError("Refusing apply: zero rows archived (nothing to back up)")
-    print(f"[backfill] archived {result.row_count} rows → ejaguiar1_backups.{result.archive_table}")
+
+def _archive_before_apply(where: str) -> None:
+    """Archive affected rows to ejaguiar1_backups (CREATE AS SELECT — avoids CHECK dup names)."""
+    import pymysql
+    from datetime import datetime, timezone
+    from tools.db_env import get_stocks_creds
+
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    archive_name = f"trading_picks_pre_backfill_resolved_pnl_{ts}"
+    creds = get_stocks_creds()
+    src = pymysql.connect(**creds)
+    backup_db = "ejaguiar1_backups"
+    try:
+        with src.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) FROM trading_picks WHERE {where}")
+            n = int(cur.fetchone()[0])
+        if n == 0:
+            raise RuntimeError("Refusing apply: zero rows to back up")
+        if n > 500_000:
+            raise RuntimeError(f"Refusing apply: {n} rows > 500k — narrow --strategy or --limit")
+        stocks_db = creds["database"]
+        with src.cursor() as cur:
+            try:
+                cur.execute(
+                    f"CREATE TABLE `{backup_db}`.`{archive_name}` AS "
+                    f"SELECT * FROM `{stocks_db}`.`trading_picks` WHERE {where}"
+                )
+                src.commit()
+                print(f"[backfill] archived {n} rows → {backup_db}.{archive_name}")
+            except Exception as exc:
+                src.rollback()
+                _json_archive(where, archive_name, n, exc)
+    finally:
+        src.close()
 
 
 def main() -> int:
