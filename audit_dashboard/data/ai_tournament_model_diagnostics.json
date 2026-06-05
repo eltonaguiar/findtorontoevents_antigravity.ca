@@ -342,6 +342,94 @@
         "others": "0 solid T2+ per class after criteria"
       },
       "link_to_full": "reports/2026-06-06-SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md"
+    },
+    "audit_surface_truth_review_2026_06_05": {
+      "generated_at": "2026-06-05T12:21:32.004924+00:00",
+      "source": "audit_surface_truth.json (2026-06-05T05:45:25Z)",
+      "trust": "money_ready_verdict.json + pf_registry.by_asset_class_policy_clean_net",
+      "headline": "0/9 asset classes money-ready on policy-clean closed picks (mutual-fund bar: n\u2265100, WR\u226550%, PF\u22651.5). Do not size on Smart Picks / tournament / leaderboard inflated WR. Bridge = clean ledger + forward n\u2265100 + promotion gate.",
+      "tournament_note": "4154/7099 rows MISPRICED_ENTRY \u2014 tournament WR is coin-flip at pool level; not money-ready. Leaderboard: Frozen/thin book \u2014 not Goal #1 sizing. n=29 vs Tier-2 n\u2265100.",
+      "per_class_policy_clean": {
+        "CRYPTO": {
+          "n": 310,
+          "WR": 36.1,
+          "PF": 0.995,
+          "status": "NOT money-ready",
+          "bridge": "Hold production LONG; grow inverse_ml ADA / feature sleeves to forward n=100; fix null pnl backfill"
+        },
+        "EQUITY": {
+          "n": 47,
+          "WR": 23.4,
+          "PF": 0.2466,
+          "status": "NOT money-ready",
+          "bridge": "FAIL \u2014 mutate or kill emitters; no real money"
+        },
+        "FOREX": {
+          "n": 23,
+          "WR": 21.7,
+          "PF": 10.8014,
+          "status": "NOT money-ready",
+          "bridge": "Watch promotion_gate + DSR/PBO"
+        },
+        "FUTURES": {
+          "n": 15,
+          "WR": 6.7,
+          "PF": 0.3835,
+          "status": "NOT money-ready",
+          "bridge": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
+        },
+        "ETF": {
+          "n": 11,
+          "WR": 63.6,
+          "PF": 0.8008,
+          "status": "NOT money-ready",
+          "bridge": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
+        },
+        "UNKNOWN": {
+          "n": 8,
+          "WR": 87.5,
+          "PF": 8.5087,
+          "status": "NOT money-ready",
+          "bridge": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
+        },
+        "COMMODITY": {
+          "n": 4,
+          "WR": 75,
+          "PF": 10.4987,
+          "status": "NOT money-ready",
+          "bridge": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
+        },
+        "PENNY_STOCK": {
+          "n": 1,
+          "WR": 0,
+          "PF": 0,
+          "status": "NOT money-ready",
+          "bridge": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
+        },
+        "BOND": {
+          "n": 0,
+          "WR": 0,
+          "PF": 0,
+          "status": "NOT money-ready",
+          "bridge": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
+        }
+      },
+      "integration": "Added to SOLID-PICKS .MD as authoritative policy-clean truth anchor. All solid claims must reconcile (0/9 today). Cross-ref with CRYPTO hold+grow inverse_ml + fix backfill; EQUITY mutate/kill; others paper only. Updates ai-tournament diagnostics to highlight tournament/leaderboard risks per Goal #1.",
+      "link_to_md": "reports/2026-06-06-SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md"
+    },
+    "data_quality_cleanups_2026_06_04_review": {
+      "generated_at": "2026-06-05T13:08:21.250431+00:00",
+      "source": "User-provided data quality note (intrabar OHLC replay + mispriced-entry drift audit, cleanups landed 2026-06-04)",
+      "headline": "\u26a0 DATA QUALITY \u2014 TWO CLEANUPS LANDED 2026-06-04; RANK STILL BUILDING. Intrabar OHLC replay live (CRYPTO ~89%+ rising, non-crypto 100%); 914 picks marked MISPRICED_ENTRY (drift >25%, corporate actions/splits/rolls/stale data). Excluded via is_resolution_trustworthy.",
+      "details": {
+        "intrabar": "Daily-bar TP/SL replay (SL-first conservative, gap-through fills), Binance\u2192CoinGecko\u2192KuCoin Tier-3 for CRYPTO. Non-CRYPTO 100% coverage; CRYPTO ~89% and rising.",
+        "mispriced_entry": "914 picks marked MISPRICED_ENTRY post drift audit. Models e.g. fireworks_qwen dropped 92.1% \u2192 BUILDING (n<30 post-cleanup).",
+        "fix_chain": "PRs #512 + f273b6db57 + 893c660c10 + 4fd7cb4c69 (intrabar) + 71062a7462 (drift-guard) + 5853ca6c3b (audit). Audit reports: fireworks_qwen \u00b7 DB-wide."
+      },
+      "key_warning": "Treat the current Tier-1 badges as UNPROVEN until ~7 days of replay-resolved + drift-checked closes (n\u2265100 post-fix) accumulate. Honest top WRs post-cleanup are now ~57-71% (was 86-92%) \u2014 still above 50% baseline, but the rank ordering may continue to shift as more inflated entries get caught.",
+      "integration": "Added as review section to SOLID-PICKS .MD (after policy-clean review). Caveat all Tier-1/solid/rank claims. Monitor coverage + n post-fix. Update ai-tournament surfaces + diagnostics. Cross-ref prior intrabar tooling.",
+      "link_to_md": "reports/2026-06-06-SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md",
+      "impact_on_solid_picks": "Current solid (mega only) and any high-WR models must be caveated; wait for post-fix n>=100 before promotion or real sizing. Rank may shift."
     }
   },
   "key_coverage": {

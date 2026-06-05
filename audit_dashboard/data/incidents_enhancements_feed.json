@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T12:19:24.362834Z",
+  "generated_at": "2026-06-05T13:08:29.817323Z",
   "incidents": {
     "OVERALL": [
       {
@@ -6768,6 +6768,66 @@
         "link_url": null,
         "link_github_ref": null,
         "enhancement_plan": "1. P0 exclude 2026-06-04 backfill everywhere + alpha_macro daily + live isolation flag. 2. P0 EQUITY yf analyst consensus emitter + pilot. 3. Enforce recency first. 4. Update ai-tourn diagnostics (done) + feed (this) + card (next). 5. Re-run tools and verify more solid candidates."
+      },
+      {
+        "enhancement_id": "ENH-148",
+        "asset_class": "OVERALL",
+        "source_ref": "audit_surface_truth.json 2026-06-05T05:45:25Z review",
+        "title": "audit_surface_truth.json policy-clean review: 0/9 money-ready (n\u2265100/WR\u226550%/PF\u22651.5 bar); do not size on tournament/leaderboard/Smart Picks; CRYPTO hold+grow inverse_ml+fix backfill; EQUITY FAIL mutate/kill; others INSUFF_N paper-only",
+        "description": "Authoritative policy-clean truth (trust money_ready_verdict + pf_registry). 0/9 ready. Tournament 58%+ MISPRICED_ENTRY (coin-flip). Leaderboard thin n=29. Per-class bridge recs integrated into SOLID-PICKS .MD todos (P0 backfill fixes for CRYPTO n=100 forward; EQUITY emitters mutate/kill; paper-pilot only for low-n). Cross-refs previous ENH-146/147, deep-dives, inventory. Documented in ai_tournament_model_diagnostics + updates card + feed.",
+        "category": "ai-tournament,real-money,policy-clean,audit-surface",
+        "expected_impact": "HIGH",
+        "effort": "LOW",
+        "status": "IN_PROGRESS",
+        "proposed_by": "Grok session",
+        "related_persona_id": null,
+        "proposed_features": [
+          "policy-clean truth anchor for all sizing",
+          "tournament/leaderboard quarantine explicit",
+          "CRYPTO backfill fix + inverse_ml growth to n=100",
+          "EQUITY emitter kill/mutate"
+        ],
+        "success_metric": "All real-money decisions reconcile to this table (0/9 today); CRYPTO production LONG held + specific sleeves grown; EQUITY no real $; ai-tournament page data reflects risks.",
+        "target_release": "2026-06-06",
+        "review_notes": "Direct from user-provided source. Aligns with 0/9 from inventory/roadmap. Prioritizes clean ledger + forward n + gate per bridge definition.",
+        "implementation_pr": "this review + .MD update + diagnostics json + feed + card",
+        "created_at": "2026-06-05T12:21:39.994764Z",
+        "updated_at": "2026-06-05T12:21:39.994764Z",
+        "implemented_at": null,
+        "link_md_path": "reports/2026-06-06-SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md",
+        "link_url": null,
+        "link_github_ref": null,
+        "enhancement_plan": "1. Integrate recs into CRYPTO (grow inverse_ml ADA etc to n=100, fix null pnl) and EQUITY (mutate/kill) emitters. 2. Enforce in promotion_gate / money_ready. 3. Update all surfaces to cite this source. 4. Doc in ai-tournament (done via diagnostics). 5. Re-generate surface_truth after fixes."
+      },
+      {
+        "enhancement_id": "ENH-149",
+        "asset_class": "OVERALL",
+        "source_ref": "Data quality note: intrabar OHLC replay + mispriced-entry drift audit (cleanups 2026-06-04)",
+        "title": "\u26a0 DATA QUALITY \u2014 TWO CLEANUPS LANDED 2026-06-04; RANK STILL BUILDING. Intrabar OHLC replay (CRYPTO ~89%+, non-crypto 100%); 914 MISPRICED_ENTRY drift >25% (splits/rolls/stale). Tier-1 badges UNPROVEN until 7d post-fix n\u2265100 replay+drift closes. Honest top WRs now ~57-71% (was 86-92%).",
+        "description": "Intrabar: daily-bar TP/SL replay SL-first conservative (gap-through), multi-source failover for CRYPTO. Mispriced: 914 marked, excluded via is_resolution_trustworthy (e.g. fireworks_qwen 92.1%\u2192BUILDING n<30). Fix chain PRs #512 + commits f273b6db57 + 893c660c10 + 4fd7cb4c69 (intrabar) + 71062a7462 (drift-guard) + 5853ca6c3b (audit). Reports: fireworks_qwen \u00b7 DB-wide. Integrated to SOLID-PICKS .MD + diagnostics + this card + ENH-149.",
+        "category": "data-quality,rank,intrabar,drift,audit,ai-tournament",
+        "expected_impact": "HIGH",
+        "effort": "LOW",
+        "status": "IN_PROGRESS",
+        "proposed_by": "Grok session (review also)",
+        "related_persona_id": null,
+        "proposed_features": [
+          "data-quality banner on ranks/badges",
+          "UNPROVEN caveat on Tier-1 until n>=100 post-fix 7d",
+          "monitor intrabar coverage to 100% CRYPTO",
+          "expose is_resolution_trustworthy + intrabar flags in surfaces"
+        ],
+        "success_metric": "Current Tier-1 treated as UNPROVEN; no promotion/sizing until >=7d replay-resolved + drift-checked closes with n>=100 clean post both fixes. Rank shifts tracked; coverage 100% CRYPTO. All claims cross-ref this note.",
+        "target_release": "2026-06-06+",
+        "review_notes": "Direct from user query. Aligns with prior intrabar work (2026-06-04 port) and policy-clean 0/9. Emphasizes transitional nature of current WR/ranks. Ties to Goal #1 (trustworthy numbers only).",
+        "implementation_pr": "this review + .MD section + diagnostics update + feed ENH + updates card + deploy",
+        "created_at": "2026-06-05T13:08:29.817323Z",
+        "updated_at": "2026-06-05T13:08:29.817323Z",
+        "implemented_at": null,
+        "link_md_path": "reports/2026-06-06-SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md",
+        "link_url": null,
+        "link_github_ref": "PRs #512 + commits f273b6db57,893c660c10,4fd7cb4c69,71062a7462,5853ca6c3b",
+        "enhancement_plan": "1. Caveat all badges/ranks in surfaces/diagnostics. 2. Wait 7d + n>=100 post-fix before any Tier-1 promotion. 3. Push intrabar coverage. 4. Re-audit other models. 5. Update weekly .MDs/cards as n accumulates."
       }
     ],
     "STOCKS": [
@@ -8060,7 +8120,7 @@
   },
   "totals": {
     "incidents": 129,
-    "enhancements": 179,
+    "enhancements": 181,
     "findings": 16
   }
 }

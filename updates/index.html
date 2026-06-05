@@ -148,6 +148,25 @@
       </div>
     </div>
 
+    <!-- Update: Jun 6, 2026 — Data Quality Cleanups 2026-06-04 (Intrabar OHLC replay + Mispriced-Entry drift) — RANK STILL BUILDING; Tier-1 UNPROVEN -->
+    <div class="update-entry" style="--dot-color: #f59e0b;" data-tags="data-quality,intrabar,drift,mispriced-entry,rank,UNPROVEN,57-71,audit,ai-tournament,ENH-149" data-category="trading" data-types="analysis,warning,enhancement">
+      <div class="update-date" style="line-height:1.5">Jun 6, 2026 ~16:30 UTC &mdash; <strong style="color:#f59e0b;">⚠ DATA QUALITY — TWO CLEANUPS LANDED 2026-06-04; RANK STILL BUILDING. Tier-1 badges UNPROVEN pending 7d post-fix n≥100 replay+drift closes. Honest top WRs ~57-71% (was 86-92%).</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;"><strong>Two cleanups (landed 2026-06-04):</strong></p>
+        <ol style="margin:4px 0 8px 18px; font-size:0.9em;">
+          <li><strong>Intrabar OHLC replay live 02:01Z</strong> — daily-bar TP/SL replay (SL-first conservative ordering, gap-through fills), Binance → CoinGecko → KuCoin Tier-3 for CRYPTO. Non-CRYPTO 100% replay coverage; CRYPTO ~89% and rising.</li>
+          <li><strong>Mispriced-entry audit</strong> — 914 picks marked MISPRICED_ENTRY after entry_price drift >25% from market at submission (corporate actions e.g. LODE 1:10 split, futures contract rolls, stale AI training data). Excluded from WR/PF via is_resolution_trustworthy. Models like fireworks_qwen dropped 92.1% → correctly-de-ranked BUILDING (n&lt;30 post-cleanup).</li>
+        </ol>
+        <p style="margin:0 0 6px; font-weight:600; color:#fbbf24;">Treat the current Tier-1 badges as <strong>UNPROVEN</strong> until ~7 days of replay-resolved + drift-checked closes (n≥100 post-fix) accumulate. Honest top WRs post-cleanup are now ~57-71% (was 86-92%) — still above 50% baseline, but the rank ordering may continue to shift as more inflated entries get caught.</p>
+        <p style="margin:4px 0; font-size:0.85em;"><strong>Fix chain:</strong> PRs #512 + f273b6db57 + 893c660c10 + 4fd7cb4c69 (intrabar) + 71062a7462 (drift-guard) + 5853ca6c3b (audit). Audit reports: fireworks_qwen · DB-wide.</p>
+        <ul style="margin:4px 0 0; font-size:0.9em;">
+          <li><strong>Impact on solid picks / ranks:</strong> Current "solid" (mega_mutation crypto) and any high-WR models/Tier-1 must be caveated. Do not size or promote on pre-cleanup inflated numbers. Re-evaluate after more post-fix closes; rank may shift further as remaining drift/MISPRICED caught.</li>
+          <li><strong>Immediate todos:</strong> Monitor intrabar coverage (push CRYPTO to 100%); ensure is_resolution_trustworthy + intrabar flags visible in pick_funnel/diagnostics/production_scanner; update all rank/WR/badge claims to cite this note; re-audit other models DB-wide; add data-quality caveat to ai-tournament surfaces.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Integrated into <code>reports/2026-06-06-SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md</code> (new review section after policy-clean + todos). Added "data_quality_cleanups_2026_06_04_review" to <code>audit_dashboard/data/ai_tournament_model_diagnostics.json</code>. Appended ENH-149 to feed (data-quality/rank category). This card + deploy. <strong>All current Tier-1 / solid / rank claims are transitional — wait for post-fix n≥100 + 7d before treating as proven.</strong> Cross-ref prior intrabar tooling and policy-clean 0/9 anchor.</p>
+      </div>
+    </div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.

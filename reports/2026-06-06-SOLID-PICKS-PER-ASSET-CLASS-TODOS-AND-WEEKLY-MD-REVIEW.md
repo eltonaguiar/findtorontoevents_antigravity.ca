@@ -71,6 +71,66 @@ Prioritized P0 (immediate, hygiene + bootstrap), P1 (infra + pilots), P2 (scale 
 - Integrate pro trader consensus (cleaned copytrader) where passes.
 - For EQUITY pro-trader: NVDA etc. as "source" even if DB n low — treat analyst as signal, forward test.
 
+**Review of audit_surface_truth.json (generated 2026-06-05T05:45:25Z, Trust: money_ready_verdict.json + pf_registry.by_asset_class_policy_clean_net)**
+
+**🎯 Money-ready bridge — policy-clean truth (mutual-fund bar: n≥100, WR≥50%, PF≥1.5)**
+
+0/9 asset classes money-ready on policy-clean closed picks. **Do not size on Smart Picks / tournament / leaderboard inflated WR. Bridge = clean ledger + forward n≥100 + promotion gate.**
+
+**Tournament:** 4154/7099 rows MISPRICED_ENTRY — tournament WR is coin-flip at pool level; not money-ready. **Leaderboard:** Frozen/thin book — not Goal #1 sizing. n=29 vs Tier-2 n≥100.
+
+**Per-class policy-clean (from source):**
+
+| Class       | n   | WR%  | PF     | Status          | Bridge |
+|-------------|-----|------|--------|-----------------|--------|
+| CRYPTO     | 310 | 36.1% | 0.995 | NOT money-ready | Hold production LONG; grow inverse_ml ADA / feature sleeves to forward n=100; fix null pnl backfill |
+| EQUITY     | 47  | 23.4% | 0.2466 | NOT money-ready | FAIL — mutate or kill emitters; no real money |
+| FOREX      | 23  | 21.7% | 10.8014 | NOT money-ready | Watch promotion_gate + DSR/PBO |
+| FUTURES    | 15  | 6.7%  | 0.3835 | NOT money-ready | INSUFFICIENT_N — no class-level sizing; paper-pilot only |
+| ETF        | 11  | 63.6% | 0.8008 | NOT money-ready | INSUFFICIENT_N — no class-level sizing; paper-pilot only |
+| UNKNOWN    | 8   | 87.5% | 8.5087 | NOT money-ready | INSUFFICIENT_N — no class-level sizing; paper-pilot only |
+| COMMODITY  | 4   | 75%   | 10.4987 | NOT money-ready | INSUFFICIENT_N — no class-level sizing; paper-pilot only |
+| PENNY_STOCK| 1   | 0%    | 0      | NOT money-ready | INSUFFICIENT_N — no class-level sizing; paper-pilot only |
+| BOND       | 0   | 0%    | 0      | NOT money-ready | INSUFFICIENT_N — no class-level sizing; paper-pilot only |
+
+**Integration into todos / solid picks:**
+- This is the **authoritative policy-clean view** for real-money decisions (n≥100, WR≥50%, PF≥1.5 on clean closed picks).
+- Reinforces: Only pursue **clean ledger + forward n≥100 + promotion gate**. Current "solid" (mega_mutation crypto) must be validated against this (n=310 here vs scrutiny 296; WR 36.1% policy-clean vs higher in other views — use this for sizing).
+- **Immediate todos from this source:**
+  - CRYPTO: Hold production LONG (mega_mutation etc.); prioritize growing inverse_ml ADA / feature sleeves (e.g. from previous high-quality pilots) to forward n=100; fix null pnl backfill (cross-ref LIVE-FORWARD-TRIAGE P0 for gated_forward_test_isolated and resolver PnL fixes).
+  - EQUITY: FAIL per policy-clean (WR 23.4%, PF 0.25) — mutate or kill emitters; no real money sizing (aligns with previous "mutate or kill" in winner-dig and roadmap; focus on analyst consensus bootstrap but only paper until n≥100 clean + promotion gate).
+  - FOREX: Watch promotion_gate + DSR/PBO (n=23 INSUFF; per previous deep-dive, condition on DXY or demote).
+  - All INSUFF_N classes (FUTURES/ETF/UNKNOWN/COMMODITY/PENNY/BOND): No class-level real money sizing; restrict to paper-pilot only. For BOND/COMMODITY, accelerate n-ramp at generation (PIMCO, COT, term structure) per previous bond/commodity deep-dives.
+  - Tournament/Leaderboard: Explicitly do not size (MISPRICED_ENTRY 58%+; thin n=29); keep quarantined as per ai-tournament todos.
+- Update all "solid picks" claims to cross-reference this policy-clean table + bridge recs. Re-generate surface truth / verdict after backfill fixes.
+- Add to ai-tournament documentation: This source highlights tournament mispricing; ensure diagnostics/summary calls out "do not size on tournament/leaderboard".
+
+This source (audit_surface_truth.json) is now the **trust anchor** for money-ready bridge decisions alongside the other criteria in this .MD. All future solid pick claims must reconcile against it (0/9 today; bridge via clean + n=100 forward + gate).
+
+**Review of Data Quality Cleanups landed 2026-06-04 (Intrabar OHLC replay + Mispriced-Entry drift guard) — RANK STILL BUILDING**
+
+⚠ DATA QUALITY — TWO CLEANUPS LANDED 2026-06-04; RANK STILL BUILDING.
+
+(1) Intrabar OHLC replay live 02:01Z — daily-bar TP/SL replay (SL-first conservative ordering, gap-through fills), Binance → CoinGecko → KuCoin Tier-3 for CRYPTO. Non-CRYPTO 100% replay coverage; CRYPTO ~89% and rising.
+
+(2) Mispriced-entry audit — 914 picks marked MISPRICED_ENTRY after entry_price was found to drift >25% from market at submission (corporate actions like LODE 1:10 split, futures contract rolls, stale AI training data). Excluded from WR/PF aggregates via is_resolution_trustworthy. Models like fireworks_qwen dropped from 92.1% → correctly-de-ranked BUILDING (n<30 post-cleanup).
+
+**Treat the current Tier-1 badges as UNPROVEN until ~7 days of replay-resolved + drift-checked closes (n≥100 post-fix) accumulate.** Honest top WRs post-cleanup are now ~57-71% (was 86-92%) — still above 50% baseline, but the rank ordering may continue to shift as more inflated entries get caught.
+
+Fix chain: PRs #512 + f273b6db57 + 893c660c10 + 4fd7cb4c69 (intrabar) + 71062a7462 (drift-guard) + 5853ca6c3b (audit). Audit reports: fireworks_qwen · DB-wide.
+
+**Integration into todos / solid picks / ranks:**
+- Caveat **ALL** current Tier-1 / high-WR claims, badges, and "solid" lists as **UNPROVEN** pending ~7 days of post-fix (intrabar replay-resolved + drift-checked) closes with n≥100 clean accumulation. Do not size or promote on pre-cleanup numbers.
+- Re-evaluate solid list, any leaderboard / tournament / ai-tournament ranks, and WR/PF after more closes; expect further de-ranks and re-ordering as remaining inflated entries surface.
+- Monitor intrabar coverage daily (target 100% CRYPTO; confirm/maintain non-CRYPTO 100%; expand Tier-3 fallbacks if gaps).
+- Ensure is_resolution_trustworthy (from drift-guard) and intrabar flags are exposed in pick_funnel, diagnostics, production_scanner outputs, and /audit surfaces.
+- Update all "honest top WR" or badge claims in .MDs / diagnostics / cards to cite this data quality note + the 57-71% post-cleanup reality.
+- Cross-reference prior intrabar tooling (intrabar_ohlcv_replay.py, port to universal_pick_resolver / outcome_resolver) and the 2026-06-04 port note in memory.
+- Add data-quality banner/note to ai-tournament.html (via diagnostics) and pick_funnel emphasizing "rank still building; badges UNPROVEN".
+- Re-run any aggregate WR/PF reports post more closes; audit other models beyond fireworks_qwen for similar drift/replay issues (DB-wide).
+
+This data quality note (intrabar coverage + 914 MISPRICED_ENTRY drift clean) is now a core caveat for all rank / badge / solid-pick claims in this .MD alongside the policy-clean table. Current numbers are transitional; wait for post-fix n≥100 before treating any as proven.
+
 **Extracted Action Items / Enhancements / Fixes from .MD Review (Past Week ~2026-05-30 to 06-06; aggregated, not exhaustive; prioritized for solid picks):**
 From PER-CLASS-T2-INVENTORY-POST-FILTER.md + DEEP-DIVE-SERIES:
 - Backfill alpha_macro daily + re-run scrutiny/WF with join (Day7).
