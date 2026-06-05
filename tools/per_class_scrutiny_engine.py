@@ -50,8 +50,6 @@ def get_conn():
     from tools.db_env import get_stocks_creds
     return pymysql.connect(
         **get_stocks_creds(),
-        port=3306,
-        connect_timeout=20,
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,
     )
