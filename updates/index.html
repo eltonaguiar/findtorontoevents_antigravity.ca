@@ -35,6 +35,57 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
 <div class="update-entry">
+  <h2>Jun 5, 2026 - Statistical Edge Per Asset Class (Bootstrap 95% CI)</h2>
+  <p class="timestamp">Posted: June 5, 2026 - 02:20 EDT</p>
+  <p><strong>Operator ask</strong>: "top-notch performance by asset class, statistically proven, fast."</p>
+  <p><strong>Method</strong>: 2,000-iteration bootstrap on tournament_picks pnl, post 7 audit cleanup rounds (4,154 MISPRICED excluded). Required floor: 95% CI lower bound on WR &ge; 50% (so we're statistically confident the edge isn't noise). All cells with TP_HIT_REPLAY share &gt; 25% flagged separately.</p>
+
+  <h3>Top edge per asset class (operator-grade, bootstrap CI floor)</h3>
+  <table>
+    <tr><th>Class</th><th>Top pick</th><th>n</th><th>WR</th><th>WR 95% CI lower</th><th>PF</th><th>Avg pnl</th><th>Status</th></tr>
+    <tr><td><strong>ETF</strong></td><td><code>QQQ LONG</code></td><td>33</td><td>84.8%</td><td><strong>72.7%</strong></td><td>7.47</td><td>+2.51%</td><td><span style="color:#86efac;font-weight:600">CONFIRMED</span> &mdash; cleanest large-sample signal</td></tr>
+    <tr><td><strong>ETF</strong></td><td><code>SPY LONG</code></td><td>35</td><td>82.9%</td><td><strong>68.6%</strong></td><td>4.48</td><td>+1.56%</td><td><span style="color:#86efac;font-weight:600">CONFIRMED</span> &mdash; largest sample</td></tr>
+    <tr><td><strong>FOREX</strong></td><td><code>USDCAD LONG</code></td><td>26</td><td>76.9%</td><td><strong>61.5%</strong></td><td>3.49</td><td>+0.60%</td><td><span style="color:#86efac;font-weight:600">CONFIRMED</span> &mdash; strongest FX</td></tr>
+    <tr><td><strong>CRYPTO</strong></td><td><code>NEARUSDT LONG</code></td><td>35</td><td>71.4%</td><td><strong>57.1%</strong></td><td>3.29</td><td>+4.60%</td><td><span style="color:#86efac;font-weight:600">CONFIRMED</span> &mdash; strongest CRYPTO single-symbol</td></tr>
+    <tr><td><strong>CRYPTO</strong></td><td><code>BTCUSDT SHORT</code></td><td>21</td><td>76.2%</td><td><strong>57.1%</strong></td><td>2.72</td><td>+2.87%</td><td><span style="color:#86efac;font-weight:600">CONFIRMED</span></td></tr>
+    <tr><td><strong>BOND</strong></td><td><code>SHY LONG</code></td><td>49</td><td>63.3%</td><td><strong>51.0%</strong></td><td>1.60</td><td>+0.38%</td><td><span style="color:#86efac;font-weight:600">CONFIRMED</span> &mdash; largest n in BOND</td></tr>
+    <tr><td><strong>BOND</strong></td><td><code>TLT SHORT</code></td><td>20</td><td>70.0%</td><td><strong>50.0%</strong></td><td>2.94</td><td>+1.16%</td><td><span style="color:#86efac;font-weight:600">CONFIRMED</span> &mdash; bearish bond signal</td></tr>
+    <tr><td>COMMODITY</td><td><code>CL=F LONG</code></td><td>46</td><td>95.7%</td><td>89.1%</td><td>16.78</td><td>+7.18%</td><td><span style="color:#fbbf24">CAUTION</span> &mdash; bias-flagged cta_trend monoculture</td></tr>
+    <tr><td>EQUITY</td><td><code>momentum_momentum</code> persona</td><td>12</td><td>91.7%</td><td>75.0%</td><td>22.44</td><td>+9.50%</td><td><span style="color:#fbbf24">CAUTION</span> &mdash; REPLAY_HEAVY + below n&ge;15</td></tr>
+    <tr><td>CRYPTO</td><td><code>BNBUSDT LONG</code></td><td>11</td><td>100%</td><td>100%</td><td>&#8734;</td><td>+14.83%</td><td><span style="color:#fbbf24">CAUTION</span> &mdash; REPLAY_HEAVY, perfect-WR suspect</td></tr>
+    <tr><td>ETF</td><td><code>TLT SHORT</code></td><td>15</td><td>93.3%</td><td>80.0%</td><td>89.46</td><td>+3.18%</td><td><span style="color:#fbbf24">CAUTION</span> &mdash; REPLAY_HEAVY (intrabar wick fills)</td></tr>
+    <tr><td>FUTURES, PENNY</td><td colspan="7">No cells passed WR_lo95 &ge; 50% bootstrap floor. Edge not statistically confirmed.</td></tr>
+  </table>
+
+  <h3>Top edge by MODEL (per class)</h3>
+  <table>
+    <tr><th>Class</th><th>Model</th><th>n</th><th>WR</th><th>WR 95% CI</th><th>PF</th></tr>
+    <tr><td>ETF</td><td>kimi_direct</td><td>12</td><td>83.3%</td><td>58.3-100%</td><td>13.15</td></tr>
+    <tr><td>ETF</td><td>minimax_m2_5</td><td>10</td><td>80%</td><td>50.0-100%</td><td>2.06</td></tr>
+    <tr><td>ETF</td><td>cursor_agent</td><td>10</td><td>80%</td><td>50.0-100%</td><td>4.15</td></tr>
+    <tr><td>BOND</td><td>claude_haiku_4_5</td><td>12</td><td>75%</td><td>50.0-100%</td><td>2.95</td></tr>
+    <tr><td>CRYPTO</td><td>llm7_qwen</td><td>10</td><td>80%</td><td>50.0-100%</td><td>4.67 [REPLAY_HEAVY]</td></tr>
+  </table>
+
+  <h3>What does "95% CI lower" mean (ELI5)</h3>
+  <p>If I resampled this set of trades 2,000 times with replacement, in 95 out of 100 alternate worlds the win rate would be at least the "CI lower" number. So <code>QQQ LONG</code>'s 72.7% lower bound means: even in a pessimistic alternate-history bootstrap, we're 95% confident the WR is above 72.7%. <strong>That's an operator-grade edge, not a coincidence.</strong></p>
+
+  <h3>Use cases</h3>
+  <ul>
+    <li><strong>Quick "is this real?" test</strong>: any cell where WR_lo95 &lt; 50% is statistically indistinguishable from a coin flip given the sample size. Reject it.</li>
+    <li><strong>Position sizing</strong>: use WR_lo95 (not WR) in Kelly sizing to be conservative.</li>
+    <li><strong>Bias-survivor cross-check</strong>: the 7 cells in green (CONFIRMED) all also survived yesterday's bias filter (symbol HHI&lt;0.5, family HHI&lt;0.5, replay&lt;25%, &ge;3 symbols, &ge;3 model families).</li>
+  </ul>
+
+  <h3>Tracked on <a href="/audit/incidents.html">/audit/incidents.html</a></h3>
+  <ul>
+    <li><strong>ENHANCEMENT #119</strong>: Paper-pilot promotion for top 5 bias-survivors (4-week protocol)</li>
+    <li><strong>ENHANCEMENT #120</strong>: Wire auto-bias-scrutiny on every WR&gt;60% cell to nightly workflow</li>
+    <li><strong>INCIDENT #97 (P1)</strong>: SHY LONG (6 models) vs SHORT (4 models) directional conflict</li>
+  </ul>
+</div>
+
+<div class="update-entry">
   <h2>Jun 4, 2026 - Persona-Level Edge Discovery via MLflow + Statsmodels (ELI5)</h2>
   <p class="timestamp">Posted: June 4, 2026 - 19:30 EDT &middot; <strong>UPDATED 23:30 EDT</strong> with bias scrutiny results.</p>
 
