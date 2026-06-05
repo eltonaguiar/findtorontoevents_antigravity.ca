@@ -51,6 +51,7 @@ try:
     from alpha_engine.bond_strategies import (
         bond_yield_momentum,
         bond_duration_rotation,
+        bond_tlt_ief_v3,
         bond_mean_reversion,
         bond_yield_curve_slope,
         bond_connors_rsi2,
@@ -61,6 +62,7 @@ except ImportError:
     from bond_strategies import (
         bond_yield_momentum,
         bond_duration_rotation,
+        bond_tlt_ief_v3,
         bond_mean_reversion,
         bond_yield_curve_slope,
         bond_connors_rsi2,
@@ -99,6 +101,7 @@ _BOND_PICKS_SCANNER_PATH = OUTPUT_DIR / "active_picks_bond.json"  # secondary au
 STRATEGIES = [
     ("bond_yield_momentum", bond_yield_momentum),
     ("bond_duration_rotation", bond_duration_rotation),
+    ("bond_tlt_ief_v3", bond_tlt_ief_v3),
     ("bond_mean_reversion", bond_mean_reversion),
     # 2026-05-14: Added yield-curve slope strategy (swarm P1 consensus)
     # Uses FRED T10Y2Y (2s10s spread): inverted→BUY TLT, steep→SELL TLT + BUY IEF

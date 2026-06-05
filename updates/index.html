@@ -34,20 +34,6 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
-    <!-- Update: Jun 5, 2026 — PEAD shadow cron + EQUITY dragger hard-blocks -->
-    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="pead,equity,quality-gates,alpha-engine,goal-1" data-category="trading" data-types="feature,fix">
-      <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:32 AM EDT &mdash; <strong style="color:#22c55e;">P0 shipped: PEAD shadow on hourly scanner + block EQUITY copytrader/regime drags</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">Next-step execution from the real-money edge hunt: hourly <code>alpha-engine-live.yml</code> now sets <code>PEAD_EQUITY_ENABLED=1</code> (shadow-only; <code>PEAD_EQUITY_PROBATION=0</code>). Earnings cache bootstrap + <code>equity_earnings_loader</code> feed PEAD without adding picks to <code>active</code> until review gate 2026-06-14.</p>
-        <ul>
-          <li><strong>Blocked on new EQUITY emits:</strong> <code>multi_asset_copytrader</code> (n=12, WR=8.3%, PF=0.13) and <code>regime_accumulation</code> alongside existing <code>regime_terminal</code> quarantine.</li>
-          <li><strong>Still probation-only:</strong> <code>pead_equity</code> WF 62.2% OOS &mdash; do not set <code>PEAD_EQUITY_PROBATION=1</code> without operator sign-off.</li>
-          <li><strong>Next P1:</strong> forex_carry long backtest (n&ge;30), DBMF/KMLM ETF proxy paper, ETF dual-momentum first forward close.</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Doc: <code>updates/2026-06-05-pead-shadow-cron-equity-blocks.md</code> | Tests: <code>pytest tests/test_eagle2_phase0_gates.py</code></p>
-      </div>
-    </div>
-
     <!-- Update: Jun 5, 2026 — Real-money edge hunt: PR swarm review + main integration -->
     <div class="update-entry" style="--dot-color: #8b5cf6;" data-tags="money-ready,edge-hunt,pead,crypto,audit,goal-1" data-category="trading" data-types="feature,analysis,fix">
       <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:21 AM EDT &mdash; <strong style="color:#8b5cf6;">Real-money edge hunt shipped: per-class filters, PEAD earnings wire-up, crypto HC gates</strong></div>
@@ -120,16 +106,17 @@
     <div class="update-entry" style="border-left:4px solid #10b981;">
       <div class="update-header">
         <span class="update-date">2026-06-05</span>
-        <span class="update-title">mega_mutation unblocked — direction-blind checker false positive; 30-day paper pilot live</span>
+        <span class="update-title">mega_mutation unblocked — direction-blind checker was a false positive; 30-day paper pilot started</span>
       </div>
       <div class="update-body">
         <ul>
-          <li><strong>False block retracted:</strong> June 2 block cited 141 sign-flip rows. Root cause: sign_coherence_check recomputed pnl assuming LONG — legitimate SHORT losses (negative pnl) were falsely flagged. Current live DB: <strong>0 sign flips</strong> (verified 2026-06-05).</li>
-          <li><strong>Post-dedup stats (INCIDENT#91 composite-key dedup):</strong> n=109, WR=61.5%, PF=2.79 | h1_PF=2.65 / h2_PF=2.93 (OOS-stable) | 8 symbols, 39 dates | fat-tail=4%, batch=7%, conc=16% — all 5 scrutiny axes pass</li>
-          <li><strong>NULL rate=0%</strong> — closed_at+pnl_pct fully populated (backfill resolved). Backfill contamination concern from swarm HOLD now refuted.</li>
-          <li><strong>30-day paper pilot:</strong> started 2026-06-05T06:40Z, runs daily via <code>tools/run_verified_pilots_daily.py</code>. Gate: rolling_30d_n_closed≥30, WR≥55%, PF within 30% of 2.79. Review: 2026-07-05.</li>
+          <li><strong>False block retracted:</strong> June 2 block cited 141 sign-flip rows. Root cause: <code>sign_coherence_check.py</code> recomputed pnl assuming LONG for all picks — legitimate SHORT losses (negative pnl) were falsely flagged as positive anomalies. Current live DB: <strong>0 sign flips</strong>.</li>
+          <li><strong>Post-dedup stats:</strong> n=109 (raw 296, dedup 2.72×), WR=61.5%, PF=2.79 | h1_PF=2.65, h2_PF=2.93 (OOS-stable) | 8 symbols, 39 dates | fat-tail=4%, batch=7%, conc=16% — all 5 scrutiny axes pass</li>
+          <li><strong>Backfill contamination resolved:</strong> NULL rate=0% (closed_at+pnl_pct both populated for all 296 rows)</li>
+          <li><strong>30-day paper pilot:</strong> started 2026-06-05T06:40Z, wired into <code>tools/run_verified_pilots_daily.py</code>. Promotion gate: rolling_30d_n_closed≥30, WR≥55%, PF within 30% of 2.79. Expected review: 2026-07-05.</li>
+          <li><strong>production_enable=False</strong> in <code>mega_mutation_state.json</code> until pilot passes. Unblock only allows forward tracking.</li>
         </ul>
-        <p style="margin:8px 0 0;color:#999;">Swarm 4-0 OPTION_A wick-reversal | 3-1 HOLD mega_mutation overridden by NULL=0% | Commit: <code>620bbc62d4</code></p>
+        <p style="margin:8px 0 0;color:#999;">Swarm consult: 4/4 OPTION_A for wick-reversal | 3-1 HOLD on mega_mutation (overridden by NULL=0% evidence) | Commit: <code>e4d38711b4</code></p>
       </div>
     </div>
 

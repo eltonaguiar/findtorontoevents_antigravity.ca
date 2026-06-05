@@ -590,6 +590,8 @@ def _load_outcomes_rows() -> tuple[list, dict]:
         if r.get("asset_class"):
             r["asset_class"] = str(r["asset_class"]).upper()
         r["entry_date"] = str(r.get("pick_id") or r.get("resolved_at") or "")
+        # Keep strategy as dedup identity — do not set source_system here
+        # (_strategy prefers source_system and would collapse all rows to one key).
         r["_origin_file"] = "mysql:at_pick_outcomes"
         rows.append(r)
     meta["loaded"] = len(rows)

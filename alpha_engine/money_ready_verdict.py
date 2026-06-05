@@ -51,28 +51,12 @@ def _get_eagle_gates():
     from alpha_engine.eagle_gates import passes_recency_gate
     return passes_recency_gate
 
-_FUNDAMENTAL_MACRO_GATES: tuple | None = None
-
 def _get_fundamental_macro_gates():
-    global _FUNDAMENTAL_MACRO_GATES
-    if _FUNDAMENTAL_MACRO_GATES is not None:
-        return _FUNDAMENTAL_MACRO_GATES
-    try:
-        from alpha_engine.fundamental_macro_gates import (
-            passes_high_conviction_gate,
-            passes_long_term_stability_gate,
-        )
-        _FUNDAMENTAL_MACRO_GATES = (passes_high_conviction_gate, passes_long_term_stability_gate)
-    except Exception as _fmg_err:
-        # Fail-open: if fundamental_macro_gates is broken (e.g. missing
-        # equity_earnings_loader dep), return no-op stubs so verdict doesn't crash.
-        print(f"WARN: fundamental_macro_gates unavailable ({_fmg_err}), "
-              f"using no-op stubs (high_conviction/long_term_stability = always pass)",
-              file=sys.stderr)
-        def _noop_gate(pick):
-            return True, {}
-        _FUNDAMENTAL_MACRO_GATES = (_noop_gate, _noop_gate)
-    return _FUNDAMENTAL_MACRO_GATES
+    from alpha_engine.fundamental_macro_gates import (
+        passes_high_conviction_gate,
+        passes_long_term_stability_gate,
+    )
+    return passes_high_conviction_gate, passes_long_term_stability_gate
 
 # P1/#7 — Net-of-cost slippage / expectancy promotion gate.
 # ENFORCED by default (2026-05-19, swarm-settled Q1 verdict): the net-of-slippage
@@ -1325,20 +1309,13 @@ def _simple_wf_oos_ratio(picks: list[dict], train_frac: float = 0.6) -> dict[str
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500,
-                       ci_mode: bool = False) -> dict[str, dict]:
+def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mode: bool = False) -> dict[str, dict]:
     """Return per-class readiness verdict dict.
 
     When closed_picks.json has <MIN_N_CLASS picks for an asset class, the n/wr/pf
     from dashboard_data.json::asset_class_health is used as a fallback for display.
     Statistical tests (DSR/PBO/SPA) still require actual pick-level data and will
     show N/A when the closed_picks sample is too small.
-
-    Args:
-        asset_class: Filter to one asset class (None = all).
-        n_boot: Bootstrap iterations for SPA test.
-        ci_mode: Skip MySQL-dependent queries (sleeves from at_pick_outcomes).
-                 Use in CI/GHA runners where no DB is available to avoid timeouts.
     """
     picks = _load_picks()
     class_stats = _class_stats(picks)
@@ -1631,7 +1608,7 @@ def main() -> None:
     parser.add_argument("--class", dest="asset_class", help="Filter to one asset class")
     parser.add_argument("--json", dest="as_json", action="store_true")
     parser.add_argument("--ci", dest="ci_mode", action="store_true",
-                        help="CI mode: skip MySQL-dependent queries to avoid GHA timeouts")
+                        help="CI mode: skip MySQL-dependent queries (sleeves from outcomes)")
     args = parser.parse_args()
 
     results = money_ready_verdict(asset_class=args.asset_class, ci_mode=args.ci_mode)

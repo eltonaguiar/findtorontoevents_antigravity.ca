@@ -242,6 +242,52 @@ def bond_duration_rotation(data: dict[str, pd.DataFrame]) -> list[dict]:
     return signals
 
 
+def bond_tlt_ief_v3(data: dict[str, pd.DataFrame]) -> list[dict]:
+    """TLT/IEF 12-1m momentum (orphan backtest wire-up, PF 1.29 / WR 54%)."""
+    signals: list[dict] = []
+    scores: dict[str, float] = {}
+    for sym in ("TLT", "IEF", "SHY"):
+        df = data.get(sym)
+        if df is None or len(df) < 270:
+            continue
+        close = _col(df, "Close")
+        if len(close) < 270 or pd.isna(float(close.iloc[-1])):
+            continue
+        scores[sym] = float(close.iloc[-22] / close.iloc[-252] - 1.0)
+    if not scores:
+        return signals
+    best_sym = max(scores, key=scores.get)
+    best_mom = scores[best_sym]
+    if best_mom <= 0:
+        return signals
+    df = data.get(best_sym)
+    if df is None:
+        return signals
+    close = _col(df, "Close")
+    entry, tp, sl = _bond_tp_sl(
+        close, _col(df, "High"), _col(df, "Low"), direction="BUY", tp_mult=2.0, sl_mult=1.0,
+    )
+    rr = abs(tp - entry) / abs(entry - sl) if abs(entry - sl) > 0 else 0.0
+    if rr < 1.20:
+        return signals
+    signals.append({
+        "strategy": "bond_tlt_ief_v3",
+        "symbol": best_sym,
+        "category": "bond",
+        "signal_type": "BUY",
+        "entry_price": round(entry, 4),
+        "take_profit": round(tp, 4),
+        "stop_loss": round(sl, 4),
+        "confidence": round(min(0.78, 0.58 + best_mom * 2), 2),
+        "risk_reward": round(rr, 2),
+        "reason": f"TLT/IEF 12-1m momentum: {best_sym} mom={best_mom:.1%}",
+        "timeframe": "1mo",
+        "extra": {"momentum_12_1": round(best_mom, 4), "scores": scores},
+        "timestamp": _now_iso(),
+    })
+    return signals
+
+
 # ---------------------------------------------------------------------------
 # STRATEGY 3: Bond Mean Reversion
 # ---------------------------------------------------------------------------

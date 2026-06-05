@@ -4,15 +4,47 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 log = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EARNINGS_DIR = REPO_ROOT / "data" / "earnings"
 
+def normalize_ticker(ticker: str) -> str:
+    """Normalize ticker by stripping exchange suffixes and handling share classes."""
+    if not ticker:
+        return ""
+    t = ticker.upper().strip()
+    # Strip exchange suffixes: AAPL.N, MSFT.O, BRK.B.N
+    t = re.sub(r'\.[A-Z]{1,2}$', '', t)
+    # Handle share classes: BRK.B -> BRK-B, BF.A -> BF-A
+    t = t.replace('.', '-')
+    return t
+
+def load_pead_event_for_ticker(
+    ticker: str,
+    *,
+    max_age_days: int = 14,
+    assume_guidance_on_beat: bool = False,
+) -> Optional[dict[str, Any]]:
+    """Fetch the latest PEAD event for a specific ticker from cache."""
+    events = load_pead_events_from_earnings_cache(
+        max_age_days=max_age_days,
+        assume_guidance_on_beat=assume_guidance_on_beat
+    )
+    norm_target = normalize_ticker(ticker)
+    
+    # Filter for matching ticker
+    matches = [e for e in events if normalize_ticker(e["symbol"]) == norm_target]
+    if not matches:
+        return None
+        
+    # Return the most recent one
+    return sorted(matches, key=lambda x: x["earnings_date"], reverse=True)[0]
 
 def load_pead_events_from_earnings_cache(
     *,

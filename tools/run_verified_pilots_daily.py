@@ -46,7 +46,6 @@ def main() -> int:
         # candidate after INCIDENT #91 dedup (n=109 WR 61.5% PF 2.79 OOS-stable).
         # reports/MEGA_MUTATION_BRIDGE_CANDIDATE_2026-06-05.md
         _run([py, "verified_strategies/paper_pilot/mega_mutation_forward_pilot.py", "--one-shot"]),
-        # 2026-06-06 edge-hunt pilots — EQUITY BB + PEAD drift + FOREX carry paper
         _run([py, "verified_strategies/paper_pilot/equity_bb_pilot.py", "--one-shot"]),
         _run([py, "verified_strategies/paper_pilot/equity_pead_drift_pilot.py", "--one-shot"]),
         _run([py, "verified_strategies/paper_pilot/forex_carry_g10_pilot.py", "--one-shot"]),

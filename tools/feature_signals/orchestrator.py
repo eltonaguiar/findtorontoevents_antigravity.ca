@@ -165,6 +165,9 @@ def emit_all(*, include_funding: bool = True) -> dict[str, Any]:
         sleeves["funding_rate_extreme"] = emit_funding_picks()
     sleeves["vix_regime_overlay"] = emit_vix_regime_picks()
     sleeves["commodity_momentum"] = emit_commodity_momentum_picks()
+    if os.environ.get("COMMODITY_TERM_COT_ENABLED", "1") in ("1", "true", "TRUE", "yes"):
+        sleeves["commodity_term_cot"] = _emit_via_factor_module(
+            "tools.feature_signals.commodity_term_cot", "commodity_term_cot", "COMMODITY")
     # 2026-06-05: persona factor emitters (Grok fast-track plan step 3).
     # Each is opt-in via env var; default OFF to avoid silently amplifying noise
     # without operator review of cross-AI skeptic per multi-agent-storm pattern.
@@ -175,8 +178,6 @@ def emit_all(*, include_funding: bool = True) -> dict[str, Any]:
             "tools.feature_signals.forex_carry_momentum", "forex_carry_momentum", "FOREX")
         sleeves["etf_sector_rotation"] = _emit_via_factor_module(
             "tools.feature_signals.etf_sector_rotation", "etf_sector_rotation", "ETF")
-        sleeves["commodity_term_cot"] = _emit_via_factor_module(
-            "tools.feature_signals.commodity_term_cot", "commodity_term_cot", "COMMODITY")
         sleeves["bond_duration_momentum"] = _emit_via_factor_module(
             "tools.feature_signals.bond_duration_momentum", "bond_duration_momentum", "BOND")
 

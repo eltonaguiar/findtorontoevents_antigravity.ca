@@ -32,9 +32,11 @@ except ImportError:
     _HAS_YFINANCE = False
 
 _CACHE_PATH = Path(__file__).parent / "data" / "pead_earnings_cache.json"
+_REPO_EARNINGS_DIR = Path(__file__).resolve().parent.parent / "data" / "earnings"
 _CACHE_TTL_HOURS = 6
 _MIN_SURPRISE_PCT = 5.0  # ≥5% beat to qualify
 _HOLD_DAYS = 30
+_DRIFT_MAX_DAYS = int(os.environ.get("PEAD_DRIFT_MAX_DAYS", "3") or "3")
 _TP_PCT = 0.06  # 6% take-profit
 _SL_PCT = 0.03  # 3% stop-loss
 
@@ -65,6 +67,30 @@ def _save_cache(cache: dict[str, Any]) -> None:
         pass
 
 
+def _load_repo_earnings(symbol: str, cache: dict[str, Any], now: datetime) -> float | None:
+    path = _REPO_EARNINGS_DIR / symbol.upper() / "latest.json"
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for row in data.get("history") or []:
+            surprise, edate = row.get("surprise_pct"), row.get("date")
+            if surprise is None or not edate:
+                continue
+            ed = datetime.fromisoformat(str(edate)).replace(tzinfo=timezone.utc)
+            if ed >= now:
+                continue
+            cache[f"pead_{symbol}"] = {
+                "surprise_pct": round(float(surprise), 2),
+                "earnings_date": str(ed.date()),
+                "cached_at": now.timestamp(),
+            }
+            return float(surprise)
+    except Exception as e:
+        logger.debug("Repo earnings cache failed for %s: %s", symbol, e)
+    return None
+
+
 def _fetch_earnings_surprise(symbol: str, cache: dict[str, Any]) -> float | None:
     """Return earnings surprise % for the most recent quarter, or None if unavailable.
 
@@ -80,6 +106,11 @@ def _fetch_earnings_surprise(symbol: str, cache: dict[str, Any]) -> float | None
         if age_hours < _CACHE_TTL_HOURS:
             return cached.get("surprise_pct")
 
+    now = datetime.now(timezone.utc)
+    repo_surprise = _load_repo_earnings(symbol, cache, now)
+    if repo_surprise is not None:
+        return repo_surprise
+
     try:
         if not _HAS_YFINANCE:
             return None
@@ -90,7 +121,6 @@ def _fetch_earnings_surprise(symbol: str, cache: dict[str, Any]) -> float | None
             return None
 
         # Find most recent PAST earnings event (not future)
-        now = datetime.now(timezone.utc)
         past = ed[ed.index < now].dropna(subset=["Reported EPS", "EPS Estimate"])
         if past.empty:
             return None
@@ -160,8 +190,8 @@ def equity_pead_signals(symbols: list[str] | None = None) -> list[dict]:
                 continue
 
             days_since = _earnings_days_ago(symbol, cache)
-            if days_since is None or days_since > 3:
-                continue  # Only enter within 3 days of announcement
+            if days_since is None or days_since > _DRIFT_MAX_DAYS:
+                continue
 
             # Fetch current price via yfinance
             try:
