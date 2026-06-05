@@ -195,25 +195,22 @@ _RETIRED_STRATEGIES = frozenset({
     # alpha_engine/dormant_winners_wrappers.py — that variant is NOT
     # affected by this block (exact-match is_blocked_strategy lookup).
     "keltner_bounce",
-    # 2026-06-02: mega_mutation retired after forward-edge audit + sign-coherence
-    # check found 141 rows with stored pnl_pct signs opposite to recomputed
-    # (entry/exit/direction). The reported "CRYPTO T2 edge" (forward PF 3.33,
-    # WR 65.4%, n=283) was a measurement artifact: after recomputing pnl from
-    # prices, true cohort is PF 0.67, WR 36.8%, avg pnl -0.94%.
-    # Evidence:
-    #   - reports/sign_coherence_2026-06-02.json (367 total flips, mega 141)
-    #   - audit_trail/sign_coherence_check.py (PR #431, read-only diagnostic)
-    # The strategy is emitter-only (alpha_engine/isolated_signal_integrator.py
-    # reads genome/data/mega_mutation_picks.json upstream). No backtest replay
-    # path exists, so the bug cannot be fixed at the strategy level — must
-    # be fixed at the genome -> trading_picks ingest path. Hard-retire until
-    # the upstream JSON ingest writes correctly-signed pnl_pct.
-    "mega_mutation",
-    # 2026-06-02: genome_mega_mutation is the production source_system the
-    # isolated_signal_integrator stamps onto the mega_mutation upstream JSON.
-    # Same root cause as the bare 'mega_mutation' tag — block both names so
-    # neither slip through is_blocked_strategy lookups.
-    "genome_mega_mutation",
+    # 2026-06-02: mega_mutation ORIGINALLY blocked after sign-coherence check
+    # found 141 "flipped" rows. 2026-06-05 RETRACTION: the sign_coherence_check
+    # was direction-blind — it recomputed pnl assuming LONG for all picks, so
+    # legitimate SHORT losses (stored negative pnl) were falsely flagged as
+    # positive-pnl anomalies. Current live DB sign_flips=0 (verified 2026-06-05
+    # by direction-aware query). Post-INCIDENT#91-dedup stats: n=109, WR=61.5%,
+    # PF=2.79, first-half PF=2.65, second-half PF=2.93 (OOS-stable).
+    # Passes all 5 scrutiny axes (conc<16%, fat-tail<4%, batch<7%, OOS both>1.0,
+    # binom p<0.001). NULL rate=0% (backfill fully resolved 2026-06-05).
+    # 30-day paper pilot started 2026-06-05T06:40Z; wired in
+    # tools/run_verified_pilots_daily.py. Promotion gate:
+    #   rolling_30d_n_closed >= 30, WR >= 55%, PF within 30% of 2.79.
+    # Expected promotion review: 2026-07-05 (30d pilot window).
+    # UNBLOCKED 2026-06-05 — paper pilot now tracking live forward performance.
+    # NOTE: production_enable=False in mega_mutation_state.json until pilot passes.
+    # "genome_mega_mutation",  <-- also unblocked (same source, different stamp)
     # 2026-06-02: kimi_signal_tracking re-retired after sign-coherence check
     # found 142 sign-flipped rows — the WORST OFFENDER in the 367-flip
     # dataset (38.7% of all flips). Previously blocked then UNBLOCKED on
