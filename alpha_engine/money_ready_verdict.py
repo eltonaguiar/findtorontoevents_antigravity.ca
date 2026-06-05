@@ -40,6 +40,10 @@ from typing import Any
 import numpy as np
 
 from alpha_engine.eagle_gates import passes_recency_gate
+from alpha_engine.fundamental_macro_gates import (
+    passes_high_conviction_gate,
+    passes_long_term_stability_gate,
+)
 
 # P1/#7 — Net-of-cost slippage / expectancy promotion gate.
 # ENFORCED by default (2026-05-19, swarm-settled Q1 verdict): the net-of-slippage
@@ -137,7 +141,7 @@ def _canonical_pipeline():
         return None
 
 # Tier-2 floors per PERFORMANCE_CHARTER.md
-MIN_N_CLASS = 50          # minimum resolved picks for a class verdict
+MIN_N_CLASS = 100         # minimum resolved picks for a class verdict (T2 charter n>=100; was 50)
 MIN_WR = 0.55             # win-rate floor (default fallback only — all real asset
                           # classes now have an explicit lower per-class sanity
                           # floor in CLASS_WR_FLOORS below)
@@ -1086,6 +1090,69 @@ def _mdd_cvar_gate(returns: list[float], asset_class: str,
 
 
 # ---------------------------------------------------------------------------
+# Bootstrap CI + WF OOS (ported from xyzdrag worktree 2026-06-05 swarm research
+# on money-ready essentials per docs/PERFORMANCE_CHARTER.md + MASTERPLAN). Both
+# functions are SHADOW MODE only — stamp _bootstrap_ci + _wf_oos fields into
+# results so dashboards can surface them, but do NOT change the verdict until
+# an operator decides to enforce.
+# ---------------------------------------------------------------------------
+
+def _bootstrap_expectancy_ci(picks: list[dict], n_boot: int = 1000, ci: float = 0.95) -> dict[str, Any]:
+    """Bootstrap 95% CI on net-of-slippage expectancy (lower>0 = stable edge)."""
+    resolved = _resolved(picks)
+    if len(resolved) < 20:
+        return {"lower": None, "upper": None, "ok": None, "note": "n<20 for bootstrap"}
+    exps = []
+    for _ in range(n_boot):
+        sample = [resolved[i] for i in np.random.choice(len(resolved), len(resolved), replace=True)]
+        wr_s = sum(1 for p in sample if (p.get("pnl_pct") or 0) > 0) / max(1, len(sample))
+        wins_s = [abs(_net_pnl(p)) for p in sample if (p.get("pnl_pct") or 0) > 0]
+        losses_s = [abs(_net_pnl(p)) for p in sample if (p.get("pnl_pct") or 0) <= 0]
+        aw = (sum(wins_s) / len(wins_s)) if wins_s else 0.0
+        al = (sum(losses_s) / len(losses_s)) if losses_s else 0.0
+        exps.append(wr_s * aw - (1 - wr_s) * al)
+    lower = float(np.percentile(exps, (1 - ci) / 2 * 100))
+    upper = float(np.percentile(exps, (1 + ci) / 2 * 100))
+    return {
+        "lower": round(lower, 6),
+        "upper": round(upper, 6),
+        "ok": lower > 0,
+        "note": f"95% CI on net expectancy; n_boot={n_boot}",
+    }
+
+
+def _simple_wf_oos_ratio(picks: list[dict], train_frac: float = 0.6) -> dict[str, Any]:
+    """Single-split walk-forward OOS PF ratio (target OOS_PF >= 0.85 * IS_PF per masterplan)."""
+    resolved = sorted(
+        _resolved(picks),
+        key=lambda p: p.get("closed_at") or p.get("signal_timestamp") or p.get("entry_time") or "",
+    )
+    n = len(resolved)
+    if n < 30:
+        return {"ratio": None, "ok": None, "note": "n<30 for WF split"}
+    split = max(10, int(n * train_frac))
+    train = resolved[:split]
+    oos = resolved[split:]
+
+    def _pf(ps: list[dict]) -> float:
+        gp = sum(max(0, _net_pnl(p)) for p in ps)
+        gl = sum(abs(min(0, _net_pnl(p))) for p in ps)
+        return (gp / gl) if gl > 0 else (float("inf") if gp > 0 else 0.0)
+
+    is_pf = _pf(train)
+    oos_pf = _pf(oos)
+    ratio = (oos_pf / is_pf) if is_pf > 0 and is_pf != float("inf") else None
+    ok = (ratio is not None) and (ratio >= 0.85)
+    return {
+        "ratio": round(ratio, 4) if ratio is not None else None,
+        "is_pf": round(is_pf, 4) if is_pf not in (0, float("inf")) else is_pf,
+        "oos_pf": round(oos_pf, 4) if oos_pf not in (0, float("inf")) else oos_pf,
+        "ok": ok,
+        "note": f"train_frac={train_frac}; target OOS/IS >=0.85",
+    }
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -1169,20 +1236,37 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         top_source_share = stats.get("top_source_share", 0.0)
         avg_win = stats.get("avg_win", 0.0)
         avg_loss = stats.get("avg_loss", 0.0)
+        # New Fundamental/Macro Gates (per-pick aggregation)
+        hc_passes = 0
+        lt_passes = 0
+        for p in ac_picks:
+            hc_ok, _ = passes_high_conviction_gate(p)
+            lt_ok, _ = passes_long_term_stability_gate(p)
+            if hc_ok: hc_passes += 1
+            if lt_ok: lt_passes += 1
+        hc_rate = hc_passes / n if n > 0 else 0.0
+        lt_rate = lt_passes / n if n > 0 else 0.0
+
         # Q2 (2026-05-19): prefer the persisted class-level MDD from
         # pf_registry.json over the ephemeral _rolling_mdd recompute.
         _registry_mdd = (dash_health.get(ac) or {}).get("max_drawdown_pct")
-        mdd_cvar = _mdd_cvar_gate(returns, asset_class=ac,
-                                  registry_mdd=_registry_mdd)
+        mdd_cvar = _mdd_cvar_gate(returns, ac, registry_mdd=_registry_mdd)
+
         verdict = _verdict(n, wr, pf, dsr, pbo, spa, asset_class=ac,
                            top_symbol_share=top_symbol_share,
                            top_source_share=top_source_share,
                            avg_win=avg_win, avg_loss=avg_loss,
                            mdd_cvar_gate_ok=mdd_cvar.get("gate_ok"),
                            fdr_gate_ok=fdr.get("ok"),
-                           single_source_gate_ok=single_src.get("ok"))
+                           single_source_gate_ok=single_src.get("ok"),
+                           recency_ok=recency.get("ok") is True)
+        
         wr_floor = MIN_WR_BY_CLASS.get(ac.upper(), MIN_WR)
         exp_gate = _expectancy_gate(wr, avg_win, avg_loss, asset_class=ac)
+
+        # Shadow-mode gates (stamped but do NOT change verdict yet)
+        bootstrap_ci = _bootstrap_expectancy_ci(ac_picks)
+        wf_oos = _simple_wf_oos_ratio(ac_picks)
 
         results[ac] = {
             "n_resolved": n,
@@ -1265,6 +1349,14 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
             "recency_days_since_last": recency.get("days_since_last"),
             "recency_most_recent": recency.get("most_recent"),
             "recency_note": recency.get("note"),
+            # Bootstrap CI + WF OOS (shadow — informational only, do not change verdict)
+            "bootstrap_ci_lower": bootstrap_ci.get("lower"),
+            "bootstrap_ci_upper": bootstrap_ci.get("upper"),
+            "bootstrap_ci_ok": bootstrap_ci.get("ok"),
+            "wf_oos_ratio": wf_oos.get("ratio"),
+            "wf_oos_is_pf": wf_oos.get("is_pf"),
+            "wf_oos_oos_pf": wf_oos.get("oos_pf"),
+            "wf_oos_ok": wf_oos.get("ok"),
             # Flag: class passed all hard gates but recency check says stale
             "_recency_warn": (
                 verdict == "MONEY_READY" and recency.get("ok") is False
@@ -1294,6 +1386,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
                     ac.upper(), MAX_SOURCE_CONCENTRATION
                 )
             ),
+            "high_conviction_rate": round(hc_rate, 4),
+            "long_term_stability_rate": round(lt_rate, 4),
             "details": {"dsr": dsr, "pbo": pbo, "spa": spa, "expectancy": exp_gate,
                         "mdd_cvar": mdd_cvar, "fdr": fdr, "single_source": single_src,
                         "recency": recency},
