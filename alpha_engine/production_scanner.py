@@ -1371,6 +1371,15 @@ BANNED_SOURCES = {
     "forex_copy_trader",
     # signal_validation: 322/353 active picks are ghost >7d stale (never resolves)
     "signal_validation",
+    # Added 2026-06-05 session 2: DB-confirmed losers (WR/PF well below T2)
+    # regime_terminal: WR=42.9%, PF=0.67, n=257 — also 56.4% null/zero pnl (resolver bug)
+    "regime_terminal",
+    # alpha_engine_fast: WR=46.3%, PF=0.55, n=553 — sub-T2 loser with 46.1% null pnl
+    "alpha_engine_fast",
+    # copy_trader_intel: WR=49.0%, PF=0.38, n=573 — worst PF, 64.7% null pnl (resolver never records it)
+    "copy_trader_intel",
+    # battleground_luxalgo: WR=60% but PF=0.70 (n=239) — fat-tail losses wipe gains; 39.3% null pnl
+    "battleground_luxalgo",
 }
 
 # TP cap: max allowed distance from entry (as a fraction)
