@@ -103,6 +103,22 @@
       </div>
     </div>
 
+    <div class="update-entry" style="border-left:4px solid #10b981;">
+      <div class="update-header">
+        <span class="update-date">2026-06-05</span>
+        <span class="update-title">mega_mutation unblocked — direction-blind checker false positive; 30-day paper pilot live</span>
+      </div>
+      <div class="update-body">
+        <ul>
+          <li><strong>False block retracted:</strong> June 2 block cited 141 sign-flip rows. Root cause: sign_coherence_check recomputed pnl assuming LONG — legitimate SHORT losses (negative pnl) were falsely flagged. Current live DB: <strong>0 sign flips</strong> (verified 2026-06-05).</li>
+          <li><strong>Post-dedup stats (INCIDENT#91 composite-key dedup):</strong> n=109, WR=61.5%, PF=2.79 | h1_PF=2.65 / h2_PF=2.93 (OOS-stable) | 8 symbols, 39 dates | fat-tail=4%, batch=7%, conc=16% — all 5 scrutiny axes pass</li>
+          <li><strong>NULL rate=0%</strong> — closed_at+pnl_pct fully populated (backfill resolved). Backfill contamination concern from swarm HOLD now refuted.</li>
+          <li><strong>30-day paper pilot:</strong> started 2026-06-05T06:40Z, runs daily via <code>tools/run_verified_pilots_daily.py</code>. Gate: rolling_30d_n_closed≥30, WR≥55%, PF within 30% of 2.79. Review: 2026-07-05.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Swarm 4-0 OPTION_A wick-reversal | 3-1 HOLD mega_mutation overridden by NULL=0% | Commit: <code>620bbc62d4</code></p>
+      </div>
+    </div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
