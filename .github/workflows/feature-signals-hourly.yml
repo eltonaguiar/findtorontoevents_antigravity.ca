@@ -2,7 +2,7 @@ name: Feature Signals — Non-LLM Emitters
 
 on:
   schedule:
-    - cron: '25 * * * *'
+    - cron: '25 0,8,16 * * *'   # 3x daily, offset from :00 to avoid fleet thundering herd
   workflow_dispatch:
 
 permissions:
@@ -21,6 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
       - name: Install deps
         run: pip install -q requests yfinance pymysql
       - name: Emit feature signals
@@ -33,5 +34,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add audit_dashboard/data/feature_signals_latest.json
-          git diff --staged --quiet || git commit -m "chore(audit): refresh feature_signals_latest.json [skip ci]"
+          git add alpha_engine/data/feature_signals.json || true
+          git diff --staged --quiet || git commit -m "chore(audit): refresh feature_signals [skip ci]"
           git push || echo "::warning::push failed (concurrent commit)"
