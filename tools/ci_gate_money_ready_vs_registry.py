@@ -55,7 +55,7 @@ def _conc_limits() -> tuple[float, dict]:
 def _load_verdicts() -> dict:
     """Run money_ready_verdict.py --json and parse the per-class verdict map."""
     out = subprocess.run(
-        [sys.executable, str(VERDICT_SCRIPT), "--json"],
+        [sys.executable, str(VERDICT_SCRIPT), "--json", "--ci"],
         capture_output=True, text=True, cwd=str(REPO), timeout=300,
     )
     if out.returncode != 0:

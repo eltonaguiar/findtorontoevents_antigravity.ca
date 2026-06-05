@@ -519,6 +519,9 @@ jobs:
           # immediately. Days window honored by PF_REGISTRY_TOURNAMENT_DB_DAYS
           # (default 90 if unset).
           PF_REGISTRY_INCLUDE_TOURNAMENT_DB: '1'
+          # 2026-06-06: resolver-grade at_pick_outcomes ingest (MeanReversionBB
+          # n=175 PF=1.82 lives here, not closed_picks.json). Revert: '0'.
+          PF_REGISTRY_INCLUDE_OUTCOMES: '1'
         run: |
           python -m alpha_engine.score_booster || echo "Score booster warning (non-fatal)"
           # 2026-05-28: refresh money_ready_verdict.json on every hourly dashboard

@@ -350,12 +350,20 @@ def _trade_date(row) -> str:
 
     entry_date is only ~27% populated in the main ledger, so fall back through
     timestamp -> closed_at -> resolved_at -> exit_date.
+
+    at_pick_outcomes synthetic pick_ids (v1::signal_validation::...) share a
+    10-char prefix — use the full id so dedup does not collapse distinct rows.
     """
+    pid = str(row.get("pick_id") or "")
+    if pid.startswith("v1::"):
+        return pid
     for field in ("entry_date", "entry_time", "timestamp", "created_at",
                    "closed_at", "resolved_at", "exit_date", "exit_time"):
         v = row.get(field)
         if v:
             s = str(v)
+            if s.startswith("v1::"):
+                return s
             # ISO strings: take the date portion
             return s[:10]
     return "UNKNOWN"
@@ -548,6 +556,46 @@ def _load_tournament_picks_rows(days: int = 90) -> tuple[list, dict]:
     return rows, meta
 
 
+def _load_outcomes_rows() -> tuple[list, dict]:
+    """Resolver-grade at_pick_outcomes (PF_REGISTRY_INCLUDE_OUTCOMES=1)."""
+    rows: list = []
+    meta: dict = {"enabled": True}
+    try:
+        from tools import db_env  # type: ignore[import-not-found]
+        import pymysql  # type: ignore[import-not-found]
+    except ImportError as exc:
+        return rows, {"enabled": True, "loaded": 0, "error": str(exc)}
+    try:
+        creds = {k: v for k, v in db_env.get_stocks_creds().items()
+                 if k not in ("cursorclass", "connect_timeout")}
+        conn = pymysql.connect(**creds, connect_timeout=15,
+                               cursorclass=pymysql.cursors.DictCursor)
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT pick_id, symbol, strategy, asset_class, status, pnl_pct, resolved_at "
+                "FROM at_pick_outcomes WHERE status IN ('WON','LOST') AND pnl_pct IS NOT NULL"
+            )
+            raw = list(cur.fetchall())
+        conn.close()
+    except Exception as exc:
+        return rows, {"enabled": True, "loaded": 0, "error": type(exc).__name__}
+    for r in raw:
+        r = dict(r)
+        pnl = r.get("pnl_pct")
+        if pnl is not None:
+            pnl_f = float(pnl)
+            r["pnl_pct"] = pnl_f / 100.0 if abs(pnl_f) > 1.0 else pnl_f
+        status = str(r.get("status") or "").upper()
+        r["status"] = "WIN" if status == "WON" else "LOSS"
+        if r.get("asset_class"):
+            r["asset_class"] = str(r["asset_class"]).upper()
+        r["entry_date"] = str(r.get("pick_id") or r.get("resolved_at") or "")
+        r["_origin_file"] = "mysql:at_pick_outcomes"
+        rows.append(r)
+    meta["loaded"] = len(rows)
+    return rows, meta
+
+
 def load_rows():
     """Returns (rows, source_meta). rows is a flat list of dicts; source_meta
     records which files were found and how many rows each contributed.
@@ -658,6 +706,22 @@ def load_rows():
             "present": False,
             "rows": 0,
             "note": "set PF_REGISTRY_INCLUDE_TOURNAMENT_DB=1 to merge AI-tournament cohort (40 models, ~1.6k resolved trades)",
+        })
+    if os.environ.get("PF_REGISTRY_INCLUDE_OUTCOMES") == "1":
+        o_rows, o_meta = _load_outcomes_rows()
+        rows.extend(o_rows)
+        source_meta.append({
+            "file": "mysql://at_pick_outcomes",
+            "present": True,
+            "rows": o_meta.get("loaded", 0),
+            **{k: v for k, v in o_meta.items() if k == "error"},
+        })
+    else:
+        source_meta.append({
+            "file": "mysql://at_pick_outcomes",
+            "present": False,
+            "rows": 0,
+            "note": "set PF_REGISTRY_INCLUDE_OUTCOMES=1 for resolver-grade sleeves",
         })
     return rows, source_meta
 

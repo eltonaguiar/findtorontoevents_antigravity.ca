@@ -2677,7 +2677,7 @@ BLOCKED_ASSET_STRATEGY_PAIRS = {
     # Escalation criterion met: WR=2% < 10% escalation_wr_floor + H-005 confirms no rescue path.
     ("FUTURES", "futures_momentum"),  # re-blocked 2026-05-19 — H-005 escalation
     ("CRYPTO", "MeanReversionBB"),
-    ("EQUITY", "MeanReversionBB"),
+    # EQUITY MeanReversionBB unblocked 2026-06-06 — equity_bb_pilot, resolver n=175 PF=1.82
     # ── 2026-05-12 MEMECOIN class-wide quarantine (Kimi F13/F14 + 5-agent synthesis) ──
     # Kimi edge audit 2026-05-11 (`reports/kimi_edge_audit_2026-05-11/metrics_by_asset_class.csv`):
     #   MEMECOIN class: n=1869, WR 15.7%, avg_return -3.58%, Sharpe -2.79, PF 0.50.
