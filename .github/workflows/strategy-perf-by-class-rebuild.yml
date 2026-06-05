@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   rebuild:
@@ -28,6 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          token: ${{ secrets.GH_PAT || github.token }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -38,7 +39,20 @@ jobs:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
         run: |
           python tools/rebuild_strategy_stats_all_classes.py 2>&1 | tee /tmp/rebuild.log
+      - name: Export to dashboard JSON
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+        run: |
+          python tools/export_strategy_perf_by_class.py 2>&1 | tee /tmp/export.log
+      - name: Commit dashboard JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/strategy_perf_by_class.json
+          if git diff --staged --quiet; then echo "no JSON change"; exit 0; fi
+          git commit -m "chore(tracking): refresh strategy_perf_by_class.json [skip ci]"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin main && break; sleep 5; done
       - name: Summary
         if: always()
         run: |
-          { echo "## strategy_perf_by_class rebuild"; echo '```json'; cat /tmp/rebuild.log 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          { echo "## strategy_perf_by_class rebuild + export"; echo '```json'; cat /tmp/rebuild.log /tmp/export.log 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
