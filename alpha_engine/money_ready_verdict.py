@@ -303,7 +303,11 @@ NB_TRIALS_BY_CLASS: dict[str, int] = {
 # Data loading (shared with whites_reality_check.py, deflated_sharpe.py)
 # ---------------------------------------------------------------------------
 
-_CI_MODE: bool = False  # set by money_ready_verdict() when ci_mode=True
+_CI_MODE: bool = False  # set by money_ready_verdict() when ci_mode=True.
+# NOTE: In CI mode, PBO/SPA/FDR/single-source/bootstrap gates are all skipped
+# (return ok=None).  Since _verdict() requires (pbo_ok or spa_ok) == True for
+# MONEY_READY, CI verdicts are always NOT_READY/WATCH — the CI gate is a
+# syntax/import/smoke test only, not a full verdict-vs-registry audit.
 
 
 def _load_blocked(asset_class: str = "") -> set[str]:
@@ -1403,10 +1407,10 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
                 data_source = "dashboard_fallback"
 
         dsr = _dsr_gate(returns)
-        pbo = _pbo_gate(ac_picks)
-        spa = _spa_gate(ac_picks)
-        fdr = _fdr_gate(ac_picks)
-        single_src = _single_source_gate(ac_picks)
+        pbo = _pbo_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "pbo": None}
+        spa = _spa_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "spa_p": None, "n_spa_pass": 0}
+        fdr = _fdr_gate(ac_picks) if not _CI_MODE else {"ok": None, "n_tested": 0, "n_fdr_pass": 0, "n_bonferroni_pass": 0, "min_p": None, "fdr_q": FDR_Q, "note": "skipped in CI mode"}
+        single_src = _single_source_gate(ac_picks) if not _CI_MODE else {"ok": None, "n_profitable": 0, "n_profitable_single_source": 0, "n_profitable_multi_source": 0, "note": "skipped in CI mode"}
         recency = _recency_gate(ac_picks)
         top_symbol = stats.get("top_symbol", "")
         top_symbol_share = stats.get("top_symbol_share", 0.0)
@@ -1446,8 +1450,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         exp_gate = _expectancy_gate(wr, avg_win, avg_loss, asset_class=ac)
 
         # Shadow-mode gates (stamped but do NOT change verdict yet)
-        bootstrap_ci = _bootstrap_expectancy_ci(ac_picks)
-        wf_oos = _simple_wf_oos_ratio(ac_picks)
+        bootstrap_ci = _bootstrap_expectancy_ci(ac_picks) if not _CI_MODE else {"lower": None, "upper": None, "ok": None, "note": "skipped in CI mode"}
+        wf_oos = _simple_wf_oos_ratio(ac_picks) if not _CI_MODE else {"ratio": None, "ok": None, "note": "skipped in CI mode"}
         reg_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
         outcome_sleeves = _top_sleeves_from_outcomes(ac) if not ci_mode else []
         top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
