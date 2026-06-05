@@ -101,3 +101,27 @@ All generated 2026-06-05 13:26-13:27 UTC. **ALL LONG.**
 
 *Generated: 2026-06-05T14:06Z*
 *Sources: ejaguiar1_stocks.trading_picks live DB, per_class_scrutiny_engine, subagent swarm (6 agents)*
+
+---
+
+## UPDATE 2026-06-05T14:15Z — Subagent Verification
+
+**VERIFIED (live DB):**
+- 117 OPEN ml_enhanced CRYPTO picks (was 15 in initial scan)
+- High concentration: 7 symbols have 6+ concurrent picks
+- 108 of 117 picks have SL within 3% of entry (tight stops = high stop-out risk if market dips)
+
+**FABRICATED by subagent (cross-AI verification caught):**
+- FOREX EURUSD claim: subagent said n=88 WR=73.9% PF=2.70 → ACTUAL n=6 WR=66.7% PF=1.08
+- Earnings plays (ORCL, ADBE, CASY): subagent claimed technical setups + fundamentals → ACTUAL DB shows n=2 WR=0% for ADBE, almost no history for ORCL/CASY
+
+**Lesson:** Per feedback-subagent-stat-fabrication-2026-06-05, always live-DB-verify subagent claims before acting. The 117 picks and wick-reversal_v1 are verified. Earnings/FOREX claims from this batch are NOT actionable.
+
+---
+
+## IMMEDIATE ACTION ITEMS (Verified Only)
+
+1. **Monitor 117 ml_enhanced picks** — 108 near SL. Any CRYPTO dip will cascade stop-outs.
+2. **Paper-trade wick-reversal_v1** — only verified non-blocked T2-near sleeve.
+3. **Re-evaluate mega_mutation** on ~Jun 12-16 per swarm consensus.
+4. **Do NOT act** on unverified earnings/FOREX claims without independent DB confirmation.
