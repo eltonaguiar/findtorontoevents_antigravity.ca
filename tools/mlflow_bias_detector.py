@@ -46,13 +46,8 @@ BIAS_FLAG_THRESHOLD = 0.50
 
 
 def _connect():
-    return pymysql.connect(
-        host=os.environ.get("DB_HOST", "mysql.50webs.com"),
-        user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
-        password=os.environ.get("DB_PASS_STOCKS", "stocks1234560"),
-        database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
-        connect_timeout=20,
-    )
+    from tools.db_env import get_stocks_creds
+    return pymysql.connect(**get_stocks_creds())
 
 
 def hhi(values: list) -> float:
