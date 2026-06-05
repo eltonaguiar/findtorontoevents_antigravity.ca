@@ -1,6 +1,6 @@
 # Autonomous Trading Bot - Performance Report
 
-**Last Updated:** 2026-06-05 00:27:25 UTC
+**Last Updated:** 2026-06-05 05:28:42 UTC
 
 ## Portfolio Summary
 
@@ -8,7 +8,7 @@
 |--------|-------|
 | Initial Capital | $10,000.00 |
 | Current Equity | $10,000.00 |
-| Cash | $4,000.00 |
+| Cash | $8,000.00 |
 | Return | 0.00% |
 | Total Trades | 0 |
 | Win Rate | 0.0% |
@@ -17,13 +17,11 @@
 | Risk Per Trade | 2.0% |
 | Max Positions | 5 |
 
-## Open Positions (3)
+## Open Positions (1)
 
 | Symbol | Direction | Entry Price | Stop Loss | Take Profit | Strategy |
 |--------|-----------|-------------|-----------|-------------|----------|
-| SOL-USD | LONG | $68.74 | $67.37 | $72.86 | MeanReversion |
-| ADA-USD | LONG | $0.18 | $0.17 | $0.19 | MeanReversion |
-| DOT-USD | LONG | $1.03 | $1.01 | $1.10 | MeanReversion |
+| ETH-USD | LONG | $1,733.09 | $1,698.43 | $1,837.08 | MeanReversion |
 
 ---
 
