@@ -1943,6 +1943,9 @@ def _sync_resolved_to_mysql_trading_picks(resolved_picks: list[dict]) -> int:
                 ).strftime("%Y-%m-%d %H:%M:%S")
             except Exception:
                 closed_at = None
+        # Stamp NOW if resolver has no explicit exit time — prevents NULL closed_at
+        if closed_at is None:
+            closed_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
         pnl_raw = pick.get("pnl_pct", 0) or 0
         try:

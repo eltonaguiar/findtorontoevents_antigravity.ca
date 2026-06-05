@@ -1,0 +1,28 @@
+name: Auto-Shutdown Source Monitor
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 08:00 UTC daily
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install pymysql --quiet
+      - name: Run auto-shutdown monitor
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_USER: ${{ secrets.DB_USER_STOCKS }}
+        run: |
+          python3 tools/auto_shutdown_monitor.py 2>&1 | tee /tmp/monitor_report.txt
+          # Fail CI if any HARD_STOP sources detected (alert operator)
+          if grep -q "HARD_STOP" /tmp/monitor_report.txt; then
+            echo "::warning::HARD_STOP sources detected — review monitor output above"
+          fi
