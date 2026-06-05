@@ -279,6 +279,17 @@ NON_CRYPTO_STRATEGY_POLICY: dict[str, dict[str, Any]] = {
         "min_forward_wr": 0.40,
         "allow_without_forward": True,
     },
+    # forex_carry_g10 — 2026-06-05: extended backtest PF=1.59, WR=60.4%, n=197.
+    # Same G10 carry methodology as forex_carry but with stricter 10-yielder filter.
+    "forex_carry_g10": {
+        "categories": {"forex"},
+        "min_confidence": 0.52,
+        "min_rr": 1.20,
+        "min_elite_score": 50,
+        "min_forward_trades": 5,
+        "min_forward_wr": 0.40,
+        "allow_without_forward": True,
+    },
     # ── ETF strategies (new 2026-04-07) ──────────────────────────────────────
     # All start on probation (allow_without_forward=True) to build forward record.
     # Benchmarks: Antonacci dual-momentum 75%+ WR, Faber TAA ~65% WR in academic tests.
