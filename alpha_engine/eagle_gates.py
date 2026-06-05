@@ -9,8 +9,6 @@ Source: audit_dashboard/data/ai_tournament_picks_latest.json
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
 # ---------------------------------------------------------------------------
 # EAGLE-4 (negative side): kill noise personas, kill negative-edge directions,
 # flip CRYPTO LONG→SHORT (67% WR vs 33% WR).
@@ -293,107 +291,6 @@ def passes_pbo_global_gate(strict: bool = True) -> tuple[bool, dict]:
     }
 
 
-# ---------------------------------------------------------------------------
-# Walk-Forward Efficiency (WFE) gate (2026-06-05, Grok-proposed priority #1)
-# WFE = % of walk-forward windows where OOS_PF >= 0.85 * IS_PF.
-# Reads tools/walk_forward_per_strategy_latest.json (output of
-# tools/walk_forward_per_strategy.py). Hard gate at WFE >= 0.60.
-# ---------------------------------------------------------------------------
-_EAGLE6_MIN_WFE = 0.60
-_WFE_CACHE: dict[str, float] | None = None
-
-
-def _load_wfe() -> dict[str, float]:
-    """Per-(strategy::category) WFE = survival_rate from walk-forward JSON."""
-    global _WFE_CACHE
-    if _WFE_CACHE is not None:
-        return _WFE_CACHE
-    try:
-        import json
-        from pathlib import Path
-        path = Path(__file__).resolve().parent.parent / "audit_dashboard" / "data" / "walk_forward_per_strategy_latest.json"
-        with open(path, "r", encoding="utf-8") as f:
-            d = json.load(f)
-        out: dict[str, float] = {}
-        for cell in d.get("cells", []):
-            key = f"{cell.get('strategy','')}::{cell.get('category','')}"
-            if cell.get("survival_rate") is not None:
-                out[key] = float(cell["survival_rate"])
-        _WFE_CACHE = out
-        return _WFE_CACHE
-    except Exception:
-        _WFE_CACHE = {}
-        return _WFE_CACHE
-
-
-def passes_wfe_gate(strategy: str, category: str = "") -> tuple[bool, dict]:
-    """Hard gate: WFE >= 0.60 per Grok's priority #1.
-
-    Fails-open when the walk-forward JSON is missing or the (strategy, category)
-    cell is not in it (= no opinion). Used by Tier-1 promotion paths.
-    """
-    wfe = _load_wfe().get(f"{strategy}::{category}")
-    if wfe is None:
-        return True, {"wfe": None, "threshold": _EAGLE6_MIN_WFE, "pass": True, "reason": "no_data (fail-open)"}
-    return (wfe >= _EAGLE6_MIN_WFE), {
-        "wfe": round(wfe, 4),
-        "threshold": _EAGLE6_MIN_WFE,
-        "pass": wfe >= _EAGLE6_MIN_WFE,
-        "reason": f"wfe={wfe:.3f} {'>=' if wfe >= _EAGLE6_MIN_WFE else '<'} {_EAGLE6_MIN_WFE}",
-    }
-
-
-# ---------------------------------------------------------------------------
-# Minimum Track Record Length (MinTRL) gate (Bailey & Lopez de Prado 2014)
-# MinTRL = 1 + (1 - γ3*SR + ((γ4 - 1)/4) * SR²) * (Z_α / SR)²
-# where γ3 is skew, γ4 is excess kurtosis, Z_α is z-score for desired
-# confidence (1.96 for 95%). A strategy is Sharpe-trustworthy iff its
-# closed-trade count >= MinTRL.
-# Default benchmark SR = 0 (i.e. we want the strategy SR > 0 reliably).
-# ---------------------------------------------------------------------------
-_MIN_TRL_CONFIDENCE_Z = 1.96  # 95%
-
-
-def compute_min_trl(returns: list[float], benchmark_sr: float = 0.0) -> float | None:
-    """Bailey-Lopez de Prado 2014 MinTRL. Returns None on degenerate input."""
-    if not returns or len(returns) < 4:
-        return None
-    import math
-    n = len(returns)
-    mu = sum(returns) / n
-    var = sum((x - mu) ** 2 for x in returns) / (n - 1)
-    if var <= 0:
-        return None
-    sd = math.sqrt(var)
-    sr = mu / sd
-    if abs(sr - benchmark_sr) < 1e-9:
-        return None  # degenerate: SR ≈ benchmark → MinTRL undefined
-    # Fisher-corrected skew + excess kurtosis
-    z = [(x - mu) / sd for x in returns]
-    skew = ((n * n) / ((n - 1) * (n - 2))) * sum(zi ** 3 for zi in z) / n
-    kurt_raw = sum(zi ** 4 for zi in z) / n
-    kurt_excess = ((n + 1) * kurt_raw - 3 * (n - 1)) * (n - 1) / ((n - 2) * (n - 3))
-    bracket = 1.0 - skew * sr + ((kurt_excess) / 4.0) * sr * sr
-    if bracket <= 0:
-        return None  # implausible
-    denom = sr - benchmark_sr
-    min_trl = 1.0 + bracket * (_MIN_TRL_CONFIDENCE_Z / denom) ** 2
-    return float(min_trl)
-
-
-def passes_min_trl_gate(returns: list[float], n_closed: int, benchmark_sr: float = 0.0) -> tuple[bool, dict]:
-    """Hard gate: n_closed >= MinTRL. Fails-open when MinTRL is undefined."""
-    min_trl = compute_min_trl(returns, benchmark_sr)
-    if min_trl is None:
-        return True, {"min_trl": None, "n_closed": n_closed, "pass": True, "reason": "min_trl_undefined (fail-open)"}
-    return (n_closed >= min_trl), {
-        "min_trl": round(min_trl, 1),
-        "n_closed": n_closed,
-        "pass": n_closed >= min_trl,
-        "reason": f"n_closed={n_closed} {'>=' if n_closed >= min_trl else '<'} min_trl={min_trl:.1f}",
-    }
-
-
 def _strategy_name(pick: dict) -> str:
     """Extract a normalised strategy name from a pick dict."""
     return str(
@@ -477,20 +374,7 @@ def is_admissible_for_production(
     else:
         gates["hhi"] = {"this_strategy_hhi": None, "max_allowed": _EAGLE6_MAX_SOURCE_HHI, "pass": True}
 
-    # Gate 4: Walk-Forward Efficiency (WFE) — 2026-06-05
-    # Reads tools/walk_forward_per_strategy_latest.json; fails-open when missing.
-    cat = str(pick.get("category") or pick.get("asset_class") or "").lower()
-    wfe_pass, wfe_detail = passes_wfe_gate(strat, cat)
-    gates["wfe"] = wfe_detail
-
-    # Gate 5: Global PBO — 2026-06-05
-    # cpcv_pbo_results.json exists (built 2026-06-02); if global PBO >= 0.50
-    # the *entire portfolio* is overfit — flag but don't hard-kill individual picks
-    # (the per-strategy PBO kill will be added when per-strategy PBO is available).
-    pbo_pass, pbo_detail = passes_pbo_global_gate(strict=False)
-    gates["pbo_global"] = pbo_detail
-
-    overall_pass = all(g["pass"] for g in gates.values() if isinstance(g, dict))
+    overall_pass = all(g["pass"] for g in gates.values())
     verdict = "ADMISSIBLE" if overall_pass else "INADMISSIBLE"
     gates["verdict"] = verdict
     return overall_pass, gates
@@ -540,104 +424,4 @@ def apply_eagle6_admissibility(picks: list[dict]) -> list[dict]:
         for p in picks:
             p.setdefault("_eagle6_verdict", "UNSCORED")
         return picks
-
-
-# ---------------------------------------------------------------------------
-# passes_hard_money_gates — THE gate for real money / shadow probation (2026-06-05)
-# Wraps all eagle_gates components into one call.  Designed to be called from
-# money_ready_verdict.py, production_scanner.py, and paper-pilot scripts.
-# ---------------------------------------------------------------------------
-
-def passes_recency_gate(picks: list[dict]) -> tuple[bool, str]:
-    """
-    Check if the provided picks are recent enough to be considered active.
-    Gate 0: 14-day window. Gate 0.5: 48-hour most recent pick.
-    """
-    if not picks:
-        return False, "RECENCY_FAIL: No picks available"
-
-    now = datetime.now(timezone.utc)
-    recency_threshold = now - timedelta(days=14)
-    recent_picks = [p for p in picks if p.get('created_at') and p['created_at'] >= recency_threshold]
-    if not recent_picks:
-        return False, "RECENCY_FAIL: No picks within the last 14 days"
-
-    # Gate 0.5: Check most recent pick's timestamp (48h)
-    most_recent_pick_ts = max(p['created_at'] for p in recent_picks)
-    if now - most_recent_pick_ts > timedelta(hours=48):
-        return False, "RECENCY_FAIL: Most recent pick is older than 48 hours"
-
-    return True, "PASS"
-
-
-def passes_hard_money_gates(
-    strategy_results: dict,
-    min_n: int = 100,
-) -> tuple[bool, str]:
-    """Single entry-point for real-money / shadow-probation eligibility.
-
-    Args:
-        strategy_results: dict with keys:
-            - daily_returns: list[float]  (per-trade pnl_pct / 100 or daily returns)
-            - n_trades: int
-            - profit_factor: float
-            - win_rate: float (0–1)
-            - strategy: str  (for WFE lookup)
-            - category: str  (for WFE lookup)
-            - pbo: float (optional — from cpcv_pbo_results.json per-strategy; defaults to global)
-            - max_symbol_share: float (optional, 0–1)
-        min_n: minimum closed trades required (default 100)
-
-    Returns:
-        (passes: bool, reason: str)
-    """
-    n_trades = int(strategy_results.get("n_trades") or 0)
-    pf = float(strategy_results.get("profit_factor") or 0.0)
-    wr = float(strategy_results.get("win_rate") or 0.0)
-    returns = list(strategy_results.get("daily_returns") or strategy_results.get("returns") or [])
-    strat = str(strategy_results.get("strategy") or "")
-    cat = str(strategy_results.get("category") or "")
-
-    # Gate 0: Recency check
-    recency_ok, recency_reason = passes_recency_gate(strategy_results.get('picks', []))
-    if not recency_ok:
-        return False, recency_reason
-
-    # Gate 2: Minimum n
-    if n_trades < min_n:
-        return False, f"INSUFFICIENT_N: need>={min_n} have={n_trades}"
-
-    # Gate 2: T2 baseline (PF >= 1.5, WR >= 50%)
-    if pf < 1.5:
-        return False, f"BELOW_T2_PF: pf={pf:.2f} < 1.5"
-    if wr < 0.50:
-        return False, f"BELOW_T2_WR: wr={wr:.1%} < 50%"
-
-    # Gate 3: DSR noise kill (strategy must not be in DSR noise set)
-    noise = _load_dsr_noise()
-    if strat and strat in noise:
-        return False, f"DSR_NOISE_KILL: strategy={strat}"
-
-    # Gate 4: WFE >= 0.60 (fail-open when data missing)
-    wfe_pass, wfe_detail = passes_wfe_gate(strat, cat)
-    if not wfe_pass:
-        return False, f"WFE_FAIL: {wfe_detail.get('reason', 'wfe<0.60')}"
-
-    # Gate 5: MinTRL (need sufficient observations to trust the Sharpe estimate)
-    if returns:
-        trl_pass, trl_detail = passes_min_trl_gate(returns, n_trades)
-        if not trl_pass:
-            return False, f"MIN_TRL_FAIL: {trl_detail.get('reason', 'n<min_trl')}"
-
-    # Gate 6: Global PBO sanity (soft gate — fail if global PBO >= 0.70)
-    pbo_pass, pbo_detail = passes_pbo_global_gate(strict=True)
-    if not pbo_pass:
-        return False, f"PBO_GLOBAL_FAIL: {pbo_detail.get('reason', 'pbo>=0.50')}"
-
-    # Gate 7: Symbol concentration (optional)
-    max_share = strategy_results.get("max_symbol_share")
-    if max_share is not None and float(max_share) > 0.30:
-        return False, f"CONCENTRATION: max_symbol_share={max_share:.1%} > 30%"
-
-    return True, "ALL_HARD_GATES_PASS — MONEY_READY"
 
