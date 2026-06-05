@@ -19,7 +19,8 @@ def bootstrap_wr_ci(pnls, n_boot=2000, alpha=0.05, seed=42):
     return float((pnls>0).mean()), float(np.quantile(wrs,alpha/2)), float(np.quantile(wrs,1-alpha/2))
 
 def main():
-    c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='stocks1234560',database='ejaguiar1_stocks',connect_timeout=15)
+    from tools.db_env import get_stocks_creds
+    c=pymysql.connect(**get_stocks_creds(), connect_timeout=15)
     with c.cursor(pymysql.cursors.DictCursor) as cur:
         cur.execute("""SELECT asset_class, model_id, persona_id, symbol, direction, pnl_pct, exit_reason
                        FROM tournament_picks WHERE status IN ('WIN','LOSS') AND pnl_pct IS NOT NULL""")
