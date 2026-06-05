@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +17,7 @@ EARNINGS_DIR = REPO_ROOT / "data" / "earnings"
 def load_pead_events_from_earnings_cache(
     *,
     max_age_days: int = 14,
-    assume_guidance_on_beat: bool = True,
+    assume_guidance_on_beat: bool = False,
 ) -> list[dict[str, Any]]:
     """
     Convert data/earnings/*/latest.json rows into PEAD event dicts.
@@ -29,6 +29,7 @@ def load_pead_events_from_earnings_cache(
         return []
 
     now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=max(1, max_age_days))
     events: list[dict[str, Any]] = []
 
     for path in sorted(EARNINGS_DIR.glob("*/latest.json")):
@@ -63,6 +64,16 @@ def load_pead_events_from_earnings_cache(
 
             ed = row.get("date")
             if not ed:
+                continue
+
+            try:
+                ed_s = str(ed).replace("Z", "+00:00")
+                ed_dt = datetime.fromisoformat(ed_s)
+                if ed_dt.tzinfo is None:
+                    ed_dt = ed_dt.replace(tzinfo=timezone.utc)
+                if ed_dt < cutoff:
+                    continue
+            except (TypeError, ValueError):
                 continue
 
             guidance = bool(row.get("guidance_raised", False))
