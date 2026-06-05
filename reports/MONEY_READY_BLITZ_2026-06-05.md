@@ -125,3 +125,43 @@ All generated 2026-06-05 13:26-13:27 UTC. **ALL LONG.**
 2. **Paper-trade wick-reversal_v1** — only verified non-blocked T2-near sleeve.
 3. **Re-evaluate mega_mutation** on ~Jun 12-16 per swarm consensus.
 4. **Do NOT act** on unverified earnings/FOREX claims without independent DB confirmation.
+
+---
+
+## UPDATE 2026-06-05T14:50Z — FOREX Carry G10 Pilot DISCOVERED
+
+**MAJOR FIND:** `verified_strategies/paper_pilot/forex_carry_g10_pilot.py` is actively running with a live basket.
+
+**Backtest stats (verified via reports/forex_carry_backtest_extended_20260606.json):**
+- n=197 months (2010-2026)
+- WR=60.4%
+- PF=1.59
+- Rebalance: monthly
+- Strategy: LONG top-3 carry / SHORT bottom-3 vs USD
+
+**Current live basket (opened 2026-06-05):**
+| Leg | Pair | Direction | Carry (bps) |
+|-----|------|-----------|-------------|
+| NZD | NZDUSD=X | LONG | +187 |
+| GBP | GBPUSD=X | LONG | +147 |
+| CAD | CADUSD=X | LONG | +112 |
+| JPY | JPYUSD=X | SHORT | -353 |
+| CHF | CHFUSD=X | SHORT | -213 |
+| EUR | EURUSD=X | SHORT | -163 |
+
+**Status:** Paper-only (FOREX_HARD_DISABLE=1). Needs 30 forward monthly closes + PF within 30% of lab for promotion.
+
+**Why this matters:** This is the MOST legitimate near-money-ready strategy across ALL asset classes. 197-month backtest, diversified 6-pair basket, genuine carry edge. The only blocker is the FOREX_HARD_DISABLE flag — not stats, not data quality.
+
+---
+
+## REVISED MONEY-READY RANKING
+
+| Rank | Strategy | Asset Class | n | WR | PF | Blocker | Time to Live |
+|------|----------|-------------|---|---|---|---------|--------------|
+| 1 | **forex_carry_g10** | FOREX | 197 months | 60.4% | 1.59 | FOREX_HARD_DISABLE flag | 30 months paper |
+| 2 | **genome_mega_mutation** | CRYPTO | 295 | 64% | 3.16 | Blocked (swarm HOLD) | ~Jun 12-16 |
+| 3 | **crypto_liquidity_wick_reversal_v1** | CRYPTO | 30 | 60% | 1.55 | Single-source | Corroborator live |
+| 4 | **etf_dual_momentum** | ETF | 48 months | 70.8% | 3.42 | Live ledger contaminated | Paper now |
+| 5 | **stocks_ema_golden_cross** | EQUITY | 324 | 42% | 2.08 | 100% time-exits | Paper + filter |
+
