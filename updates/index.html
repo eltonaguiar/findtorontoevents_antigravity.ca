@@ -73,6 +73,22 @@
       </div>
     </div>
 
+    <!-- Update: Jun 5, 2026 — Deep-Dive Series (Commodity/Forex/Bond) + Walk-Forward Hardening + Alpha Macro Populator + Per-Class T2 Inventory (peer + claude 2 tie-in) -->
+    <div class="update-entry" style="--dot-color: #ef4444;" data-tags="deep-dive,walkforward,alpha-macro,scrutiny,inventory,commodity,forex,bond,crypto,infra" data-category="trading" data-types="analysis,report,infra">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 ~11:30 UTC &mdash; <strong style="color:#ef4444;">&#x1F50D; DEEP-DIVE SERIES + WALK-FORWARD GATES + ALPHA_MACRO BACKFILL + T2 INVENTORY</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;"><strong>Peer (Claude transcript) + this session tie-in:</strong> Produced 3 class deep-dives (commodity/forex/bond) exposing backfill-contamination false T1s and structural low-n. Hardened walk-forward with --require-macro-join + total_pf >= 1.0 gate (9 PASS → 1: only mega_mutation::crypto). Shipped alpha_macro populator + 450d backfill + daily cron (regime/SMA/macro_score for all classes). Produced per-class T2 inventory post all filters. Ties directly to claude 2 infra (Gemini resolver fix, per_class_scrutiny + OHLCV replay, BANNED_SOURCES, dedup gate, hard gates, equity factor, consult-grok) which enabled trustworthy data and gates for the analysis.</p>
+        <ul>
+          <li><strong>Deep-dives:</strong> commodity (6 false T1 removed; cta_replicator borderline, multi_asset_copytrader loser); forex (non_crypto_consensus batchy OOS fail; myfxbook/ig borderline); bond (n=8 structural, PF=0, deprioritize). Only mega_mutation::crypto remains verified T1 (5/5, n~300+, PF~2.7-3.1 post all hygiene/gates).</li>
+          <li><strong>Walk-forward:</strong> --require-macro-join prevents 2026-06-04 resolver backfill artifacts; total_pf>=1.0 hard-gate. Updated tool + reports + dashboard JSON. Confirmed 0/9 MONEY_READY.</li>
+          <li><strong>Alpha macro:</strong> New alpha_engine/populate_alpha_macro.py (yfinance VIX/SPY/DXY/yields + SMA50/200 + regime + score); .github cron; 187-310 rows backfilled (2025-03+); now fresh with proper joins for walk-forward/filters.</li>
+          <li><strong>Inventory + scrutiny:</strong> reports/2026-06-05-PER-CLASS-T2-INVENTORY-POST-FILTER.md + updated per_class_scrutiny_20260605.json (29 candidates, mega only 5/5). Live money_ready_verdict + pick_funnel confirm.</li>
+          <li><strong>claude 2 tie-in (this session):</strong> See prior cards (Gemini V3 get_split_adjustment fix + PNL caps; tools/per_class_scrutiny_engine.py + intrabar_ohlcv_replay.py with 72h/31% dedup/sustained PF=2.53; 4 BANNED_SOURCES enforcement; soft-dedup gate; passes_hard_money_gates + WFE/PBO wire; equity_momentum_quality factor with Wire-Up; /consult-grok; ENH-143/144 + cards before AUTO; deploy; MASTERPLAN + project-*.md + MEMORY updates). These provided the clean data + gates the deep-dives relied on.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Full summary: <code>reports/2026-06-05-DEEP-DIVE-SERIES-WALKFORWARD-ALPHA-MACRO-POPULATOR.md</code> (links all deep-dive .md, walk-forward changes, populator, inventory, claude 2 commits e.g. 71aa6d30db, 3aecab6715, consult-grok). Peer commits to main (268161a8ed DEEP-DIVE SERIES entry + 04cba81b66 populator etc.). Deploy run. All per Goal #1, recency-first, Wire-Up, updates rules (read full before edit, cards before AUTO, own changes, pull-rebase, deploy script).</p>
+      </div>
+    </div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
