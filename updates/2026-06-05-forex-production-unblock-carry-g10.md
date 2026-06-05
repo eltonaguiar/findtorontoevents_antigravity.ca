@@ -65,3 +65,24 @@ assert r.get('reason') != 'forex_strategy_consolidation_blocked'
 - **Legacy forex drag:** Live DB still has old bad forex picks (cross_momentum_dxy, etc.) dragging class-level stats to WR=30.5%, PF=0.585. `money_ready_verdict.py` aggregates ALL forex, so FOREX class shows `NOT_READY` until legacy picks age out or are excluded. This does NOT block `forex_carry_g10` from flowing — individual picks pass gates.
 - **Daily cap:** `non_crypto_policy.py` `check_emission_gates()` enforces a daily cap that may block forex picks during busy sessions. This is expected runtime behavior, not a hard disable.
 - **Confidence floor:** `risk_regime_validator.py` requires confidence >= 0.70. The pilot emits 0.65. May need to bump pilot confidence or lower the validator floor for forex.
+
+## Update 2026-06-05 18:53 UTC
+
+Additional fix pushed: `alpha_engine/non_crypto_policy.py` — added `forex_carry_g10` to `NON_CRYPTO_STRATEGY_POLICY` with thresholds matching `forex_carry`:
+- min_confidence: 0.52
+- min_rr: 1.20
+- min_elite_score: 50
+- min_forward_trades: 5
+- min_forward_wr: 0.40
+- allow_without_forward: True
+
+This resolves the remaining production wiring gap. The scanner now has:
+1. Strategy policy thresholds (NON_CRYPTO_STRATEGY_POLICY)
+2. Forex class whitelist permission (_FOREX_ALLOWED)
+3. Quality gate pass (FOREX_HARD_DISABLE=0 via SSO)
+4. Scanner zero-alloc conditional (not blocked)
+5. MySQL sync conditional (not dropped at DB stage)
+6. Pilot DB write with live yfinance prices + deterministic IDs
+7. Daily runner auto-insert on monthly roll
+
+Commit: `3b8bec0447`
