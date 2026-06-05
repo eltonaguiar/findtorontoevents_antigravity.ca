@@ -4223,7 +4223,7 @@ def main():
         try:
             from strategies.pead_equity import generate_pead_signals  # type: ignore
 
-            # Load earnings events from incubator_picks.json (earnings calendar source)
+            # Load earnings: incubator_picks.json + data/earnings/*/latest.json (earnings calendar source)
             _pead_events_path = Path(__file__).resolve().parent / "data" / "incubator_picks.json"
             _pead_events: list[dict] = []
             if _pead_events_path.exists():
@@ -4236,6 +4236,21 @@ def main():
                         _pead_events = _pead_raw.get("events", []) or _pead_raw.get("picks", [])
                 except Exception as _pead_load_err:
                     print(f"  [PEAD_SHADOW] Failed to load incubator_picks.json: {_pead_load_err}")
+
+            try:
+                from alpha_engine.equity_earnings_loader import load_pead_events_from_earnings_cache
+
+                _cache_events = load_pead_events_from_earnings_cache()
+                _seen = {(e.get("symbol"), e.get("earnings_date")) for e in _pead_events}
+                for _ce in _cache_events:
+                    _k = (_ce.get("symbol"), _ce.get("earnings_date"))
+                    if _k not in _seen:
+                        _pead_events.append(_ce)
+                        _seen.add(_k)
+                if _cache_events:
+                    print(f"  [PEAD_SHADOW] Merged {len(_cache_events)} earnings-cache events")
+            except Exception as _cache_err:
+                print(f"  [PEAD_SHADOW] earnings cache merge skipped: {_cache_err}")
 
             if _pead_events:
                 _pead_signals = generate_pead_signals(_pead_events, dry_run=True)
