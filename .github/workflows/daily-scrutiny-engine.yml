@@ -1,0 +1,47 @@
+name: Daily Per-Class Scrutiny Engine
+
+on:
+  schedule:
+    - cron: '30 7 * * *'   # 07:30 UTC daily — after resolver runs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-scrutiny-engine
+  cancel-in-progress: true
+
+jobs:
+  scrutiny:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install deps
+        run: pip install -q pymysql
+      - name: Run scrutiny engine
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_USER: ${{ secrets.DB_USER_STOCKS }}
+        run: |
+          python3 tools/per_class_scrutiny_engine.py --min-n 20
+          # If auto_shutdown_monitor also available, run it for Sharpe monitor
+          python3 tools/auto_shutdown_monitor.py 2>&1 | tee /tmp/shutdown_report.txt || true
+          if grep -q "HARD_STOP" /tmp/shutdown_report.txt 2>/dev/null; then
+            echo "::warning::HARD_STOP sources detected — review auto-shutdown monitor output"
+          fi
+      - name: Commit scrutiny JSON (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          REPORT=$(ls reports/per_class_scrutiny_*.json 2>/dev/null | sort | tail -1)
+          if [ -n "$REPORT" ]; then
+            git add "$REPORT"
+            git diff --staged --quiet || git commit -m "chore(audit): daily scrutiny engine report [skip ci]"
+            git push || echo "::warning::push failed (concurrent commit)"
+          fi
