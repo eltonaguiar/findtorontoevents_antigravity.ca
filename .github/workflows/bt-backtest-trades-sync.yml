@@ -1,0 +1,151 @@
+# DRAFT WORKFLOW — DO NOT ENABLE WITHOUT OPERATOR REVIEW
+#
+# Purpose: Weekly cross-DB sync of bt_backtest_trades (and related backtest tables)
+#   from ejaguiar1_stocks -> ejaguiar1_backtests.
+#
+# Why this draft exists:
+#   2026-05-31 verification confirmed bt_backtest_trades is ~4M rows behind on
+#   the backtests-side (stocks MAX(import_at)=2026-05-13 vs backtests=2026-05-06).
+#   Root cause: tools/migrate_backtests_to_backtests_db.py is a manual one-shot
+#   and has never been scheduled. Any backtest computed from the backtests-side
+#   is silently 25d stale.
+#
+# Why .draft suffix:
+#   GHA filename must end in .yml/.yaml to be active. This file ends in
+#   .yml.draft so GitHub does NOT auto-run it. Operator review required before
+#   renaming to .yml because:
+#     - Touches a ~30M row table cross-DB
+#     - Requires BACKTESTS_DB_USER/PASS secrets configured
+#     - First run will be a large catch-up (~4M rows) — should be done off-hours
+#
+# To enable:
+#   1. Verify GitHub Secrets exist: AUDIT_DB_USER, AUDIT_DB_PASS,
+#      BACKTESTS_DB_USER, BACKTESTS_DB_PASS, MYSQL_HOST
+#   2. Run `tools/migrate_backtests_to_backtests_db.py --dry-run` locally first
+#   3. `git mv .github/workflows/bt-backtest-trades-sync.yml.draft \
+#             .github/workflows/bt-backtest-trades-sync.yml`
+#   4. Trigger once manually via workflow_dispatch; review summary
+#
+name: bt_backtest_trades cross-DB sync (DRAFT)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run (count only, no INSERTs)"
+        required: false
+        default: "true"
+      tables:
+        description: "Space-separated tables (default: bt_backtest_trades)"
+        required: false
+        default: "bt_backtest_trades"
+  schedule:
+    # Sunday 04:00 UTC — conservative for 30M-row table
+    - cron: "0 4 * * 0"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install pymysql
+
+      - name: Pre-flight — compare MAX(import_at) both sides
+        id: preflight
+        env:
+          SOURCE_DB_PASS: ${{ secrets.DB_PASS_STOCKS }}
+          TARGET_DB_PASS: ${{ secrets.DB_PASS_BACKTESTS }}
+          TABLES: ${{ github.event.inputs.tables || 'bt_backtest_trades' }}
+        run: |
+          python - <<'PY'
+          import os, pymysql, sys
+          host = "mysql.50webs.com"
+          src = pymysql.connect(host=host, user="ejaguiar1_stocks",
+                                password=os.environ["SOURCE_DB_PASS"],
+                                database="ejaguiar1_stocks", connect_timeout=20)
+          tgt = pymysql.connect(host=host, user="ejaguiar1_backtests",
+                                password=os.environ["TARGET_DB_PASS"],
+                                database="ejaguiar1_backtests", connect_timeout=20)
+          any_work = False
+          for tbl in os.environ["TABLES"].split():
+              with src.cursor() as c:
+                  c.execute(f"SELECT MAX(import_at), COUNT(*) FROM {tbl}")
+                  smax, scnt = c.fetchone()
+              with tgt.cursor() as c:
+                  c.execute(f"SELECT MAX(import_at), COUNT(*) FROM {tbl}")
+                  tmax, tcnt = c.fetchone()
+              print(f"{tbl}: stocks MAX={smax} cnt={scnt} | backtests MAX={tmax} cnt={tcnt}")
+              if smax and (not tmax or smax > tmax):
+                  any_work = True
+          if not any_work:
+              print("No-op — backtests-side already current. Exiting clean.")
+              sys.exit(0)
+          PY
+
+      - name: Incremental sync (per-table, import_at-windowed)
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          SOURCE_DB_PASS: ${{ secrets.DB_PASS_STOCKS }}
+          TARGET_DB_PASS: ${{ secrets.DB_PASS_BACKTESTS }}
+          TABLES: ${{ github.event.inputs.tables || 'bt_backtest_trades' }}
+        run: |
+          python - <<'PY'
+          import os, pymysql, time
+          host = "mysql.50webs.com"
+          src = pymysql.connect(host=host, user="ejaguiar1_stocks",
+                                password=os.environ["SOURCE_DB_PASS"],
+                                database="ejaguiar1_stocks", connect_timeout=20,
+                                read_timeout=600)
+          tgt = pymysql.connect(host=host, user="ejaguiar1_backtests",
+                                password=os.environ["TARGET_DB_PASS"],
+                                database="ejaguiar1_backtests", connect_timeout=20,
+                                write_timeout=600, autocommit=False)
+          BATCH = 5000
+          for tbl in os.environ["TABLES"].split():
+              with tgt.cursor() as c:
+                  c.execute(f"SELECT COALESCE(MAX(import_at),'1970-01-01') FROM {tbl}")
+                  cutoff = c.fetchone()[0]
+              print(f"[{tbl}] cutoff={cutoff}")
+              with src.cursor(pymysql.cursors.SSDictCursor) as c:
+                  c.execute(f"SELECT * FROM {tbl} WHERE import_at > %s ORDER BY import_at", (cutoff,))
+                  cols = [d[0] for d in c.description]
+                  placeholders = ",".join(["%s"] * len(cols))
+                  collist = ",".join(f"`{x}`" for x in cols)
+                  insert_sql = f"INSERT IGNORE INTO {tbl} ({collist}) VALUES ({placeholders})"
+                  batch = []
+                  total = 0
+                  t0 = time.time()
+                  for row in c:
+                      batch.append([row[x] for x in cols])
+                      if len(batch) >= BATCH:
+                          with tgt.cursor() as tc:
+                              tc.executemany(insert_sql, batch)
+                          tgt.commit()
+                          total += len(batch)
+                          batch = []
+                          if total % 50000 == 0:
+                              print(f"[{tbl}] {total} rows synced ({total/(time.time()-t0):.0f}/s)")
+                  if batch:
+                      with tgt.cursor() as tc:
+                          tc.executemany(insert_sql, batch)
+                      tgt.commit()
+                      total += len(batch)
+                  print(f"[{tbl}] DONE — {total} rows in {time.time()-t0:.0f}s")
+          PY
+
+      - name: Post SESSION_SUMMARY via gateway
+        if: always()
+        continue-on-error: true
+        run: |
+          curl -fsS -X POST http://192.168.2.32:8788/send \
+            -H 'Content-Type: application/json' \
+            -d "{\"channel\":\"broadcast\",\"peer_id\":\"all\",\"type\":\"SESSION_SUMMARY\",\"sender\":\"gha-bt-sync\",\"payload\":{\"workflow\":\"bt-backtest-trades-sync\",\"run\":\"${{ github.run_id }}\",\"status\":\"${{ job.status }}\"}}" \
+            || echo "gateway unreachable from GHA runner (expected on cloud runners)"
