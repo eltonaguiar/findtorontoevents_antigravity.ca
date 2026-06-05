@@ -7,6 +7,7 @@ After the first round (targeting the "yours/active/stale" list from UI + obvious
 **Current action (post `git stash && git pull --rebase origin main && git stash pop`):**
 - Full remote head count was 58 → after prior deletes + natural GONE during analysis: down to ~49.
 - Exhaustive analysis over the remaining 55 non-(main/gh/vrp) branches:
+- **Final post-delete + prune:** only **3 remote heads** remain (main + audit-truth-layer-20260531 + gh-pages). The `feature/vrp-forward-clock-wireup` ref was no longer present at final verification (may have been cleaned by concurrent activity or in an earlier pass; its unique pilot code was the reason we intended to preserve the ref).
   - `git ls-remote` + sha + committer date
   - `git merge-base --is-ancestor $sha origin/main`
   - `gh pr list --head $b --state all` (PR# + MERGED/CLOSED/OPEN)
