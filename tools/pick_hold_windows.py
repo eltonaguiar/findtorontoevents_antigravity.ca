@@ -37,7 +37,7 @@ def hold_hours_for(category: str | None) -> int:
 
 
 def pick_age_hours(pick: dict, *, now: datetime | None = None) -> float | None:
-    ts = pick.get("submitted_at") or pick.get("created_at")
+    ts = pick.get("submitted_at") or pick.get("created_at") or pick.get("recorded_at")
     if ts is None:
         return None
     ref = now or datetime.now(timezone.utc)
