@@ -548,6 +548,28 @@ def apply_eagle6_admissibility(picks: list[dict]) -> list[dict]:
 # money_ready_verdict.py, production_scanner.py, and paper-pilot scripts.
 # ---------------------------------------------------------------------------
 
+def passes_recency_gate(picks: list[dict]) -> tuple[bool, str]:
+    """
+    Check if the provided picks are recent enough to be considered active.
+    Gate 0: 14-day window. Gate 0.5: 48-hour most recent pick.
+    """
+    if not picks:
+        return False, "RECENCY_FAIL: No picks available"
+
+    now = datetime.now(timezone.utc)
+    recency_threshold = now - timedelta(days=14)
+    recent_picks = [p for p in picks if p.get('created_at') and p['created_at'] >= recency_threshold]
+    if not recent_picks:
+        return False, "RECENCY_FAIL: No picks within the last 14 days"
+
+    # Gate 0.5: Check most recent pick's timestamp (48h)
+    most_recent_pick_ts = max(p['created_at'] for p in recent_picks)
+    if now - most_recent_pick_ts > timedelta(hours=48):
+        return False, "RECENCY_FAIL: Most recent pick is older than 48 hours"
+
+    return True, "PASS"
+
+
 def passes_hard_money_gates(
     strategy_results: dict,
     min_n: int = 100,
@@ -577,20 +599,9 @@ def passes_hard_money_gates(
     cat = str(strategy_results.get("category") or "")
 
     # Gate 0: Recency check
-    picks = strategy_results.get('picks', [])
-    if not picks:
-        return False, "RECENCY_FAIL: No picks available in strategy_results"
-
-    now = datetime.now(timezone.utc)
-    recency_threshold = now - timedelta(days=14)
-    recent_picks = [p for p in picks if p.get('created_at') and p['created_at'] >= recency_threshold]
-    if not recent_picks:
-        return False, "RECENCY_FAIL: No picks within the last 14 days"
-
-    # Gate 0.5: Check most recent pick's timestamp (48h)
-    most_recent_pick_ts = max(p['created_at'] for p in recent_picks)
-    if now - most_recent_pick_ts > timedelta(hours=48):
-        return False, "RECENCY_FAIL: Most recent pick is older than 48 hours"
+    recency_ok, recency_reason = passes_recency_gate(strategy_results.get('picks', []))
+    if not recency_ok:
+        return False, recency_reason
 
     # Gate 2: Minimum n
     if n_trades < min_n:

@@ -39,6 +39,8 @@ from typing import Any
 
 import numpy as np
 
+from alpha_engine.eagle_gates import passes_recency_gate
+
 # P1/#7 — Net-of-cost slippage / expectancy promotion gate.
 # ENFORCED by default (2026-05-19, swarm-settled Q1 verdict): the net-of-slippage
 # expectancy gate is now the real money-ready promotion gate — a negative
@@ -908,10 +910,14 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
              avg_win: float = 0.0, avg_loss: float = 0.0,
              mdd_cvar_gate_ok: bool | None = None,
              fdr_gate_ok: bool | None = None,
-             single_source_gate_ok: bool | None = None) -> str:
+             single_source_gate_ok: bool | None = None,
+             recency_ok: bool = True) -> str:
     n_ok = n >= MIN_N_CLASS
     if not n_ok:
         return "INSUFFICIENT_DATA"
+
+    if not recency_ok:
+        return "NOT_READY"
 
     wr_floor = MIN_WR_BY_CLASS.get(asset_class.upper(), MIN_WR)
     wr_ok = wr >= wr_floor
