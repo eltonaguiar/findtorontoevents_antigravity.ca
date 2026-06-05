@@ -72,9 +72,25 @@ def _check_sleeve(
 def build_report() -> dict:
     etf_stats = _load(ROOT / "reports/etf_forward_stats_latest.json")
     etf_fwd = etf_stats.get("paper_pilot_forward") or {}
+    pilot = _load(ROOT / "audit_dashboard/data/pilot_forward_dashboard.json")
     lux = _load(ROOT / "verified_strategies/paper_pilot/luxalgo_confluence_state.json")
+    ada = _load(ROOT / "verified_strategies/paper_pilot/inverse_ml_ada_state.json")
     macd = _load(ROOT / "verified_strategies/paper_pilot/macd_rsi_m048_state.json")
     tournament = _load(ROOT / "reports/tournament_shadow_book.json")
+    ada_db = ada.get("forward_db") or {}
+    bootstrap_ada = (
+        (pilot.get("bootstrap_forward") or {})
+        .get("sleeves", {})
+        .get("inverse_ml_ada_15m", {})
+        .get("forward")
+        or {}
+    )
+    ada_n = max(
+        int(ada_db.get("n_closed") or 0),
+        int(bootstrap_ada.get("n_closed") or 0),
+    )
+    ada_pf = ada_db.get("pf") or bootstrap_ada.get("pf")
+    ada_wr = ada_db.get("wr") if ada_db.get("wr") is not None else bootstrap_ada.get("wr")
     t_combined = tournament.get("combined") or {}
 
     candidates = [
@@ -93,6 +109,17 @@ def build_report() -> dict:
             day_count=int(lux.get("day_count") or 0),
             min_n=50,
             min_days=30,
+        ),
+        _check_sleeve(
+            "inverse_ml_ada_15m",
+            forward_n=ada_n,
+            pf=float(ada_pf) if ada_pf is not None else None,
+            wr_pct=float(ada_wr) * 100 if ada_wr is not None else None,
+            extra_blockers=(
+                ["bootstrap n=36 vs mysql dedupe n=2 — reconcile strategy_id filter"]
+                if ada_n >= 30 and int(ada_db.get("n_closed") or 0) < 10
+                else []
+            ),
         ),
         _check_sleeve(
             "macd_rsi_m048",
@@ -139,8 +166,16 @@ def build_report() -> dict:
         "phase3_ready_count": len(ready),
         "phase3_ready_sleeves": [c["sleeve"] for c in ready],
         "first_real_money_candidate": (
-            ready[0]["sleeve"] if ready else "etf_verified_dual_momentum (forward clock running)"
+            ready[0]["sleeve"]
+            if ready
+            else (
+                "inverse_ml_ada_15m"
+                if ada_n >= int(bootstrap_ada.get("n_closed") or 0)
+                and int(bootstrap_ada.get("n_closed") or 0) >= 30
+                else "etf_verified_dual_momentum (forward clock running)"
+            )
         ),
+        "inverse_ml_ada_bootstrap_n": int(bootstrap_ada.get("n_closed") or 0),
         "tier2_luxalgo_confluence": tier2_lux,
         "operator_note": (
             "Empty PROMOTED_STRATEGIES is intentional until forward gates pass. "
