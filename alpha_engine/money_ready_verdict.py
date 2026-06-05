@@ -459,10 +459,109 @@ def _top_money_ready_sleeves(reg: dict, asset_class: str, min_n: int = 30) -> li
                 "wr": round(wr, 2),
                 "pf": round(pf, 4),
                 "is_single_source": single,
+                "source": "policy_clean",
+                "policy_blocked": False,
                 "note": r.get("note", "") or ("single-source" if single else ""),
             })
     sleeves.sort(key=lambda s: s["pf"], reverse=True)
     return sleeves[:5]
+
+
+def _top_sleeves_from_outcomes(asset_class: str, min_n: int = 30) -> list[dict]:
+    """T2+ sleeves from resolver-grade at_pick_outcomes (WON+LOST only).
+
+    Surfaces sleeves proven in MySQL but absent from pf_registry closed_picks
+    ingest (e.g. MeanReversionBB). Fail-open on DB errors.
+    """
+    ac = asset_class.upper()
+    try:
+        import pymysql
+        from tools.db_env import get_stocks_creds
+
+        creds = {
+            k: v for k, v in get_stocks_creds().items()
+            if k not in ("cursorclass", "connect_timeout")
+        }
+        conn = pymysql.connect(
+            **creds, connect_timeout=10, cursorclass=pymysql.cursors.DictCursor,
+        )
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT strategy,
+                   COUNT(*) AS n,
+                   SUM(CASE WHEN pnl_pct > 0 THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN pnl_pct > 0 THEN pnl_pct ELSE 0 END) AS gw,
+                   SUM(CASE WHEN pnl_pct < 0 THEN ABS(pnl_pct) ELSE 0 END) AS gl
+            FROM at_pick_outcomes
+            WHERE asset_class = %s
+              AND status IN ('WON', 'LOST')
+              AND pnl_pct IS NOT NULL
+            GROUP BY strategy
+            HAVING n >= %s
+            """,
+            (ac, min_n),
+        )
+        rows = cur.fetchall()
+        conn.close()
+    except Exception:
+        return []
+
+    blocked = _load_blocked(ac)
+    _OUTCOMES_ARTIFACT_STRATEGIES = frozenset({
+        "prediction_market_consensus",  # backfill WR≈0% artifact
+        "hs_lb_None",  # BLOCKED_SOURCE_SYSTEMS
+    })
+    sleeves: list[dict] = []
+    for r in rows:
+        strat = str(r.get("strategy") or "unknown")
+        if strat in _OUTCOMES_ARTIFACT_STRATEGIES:
+            continue
+        if ac == "CRYPTO" and strat.startswith("ml_enhanced"):
+            continue  # M-105 family — per-variant SPA required before promotion
+        n = int(r.get("n", 0) or 0)
+        wins = int(r.get("wins", 0) or 0)
+        gl = float(r.get("gl") or 0)
+        gw = float(r.get("gw") or 0)
+        if gl <= 0:
+            continue
+        wr = wins / n * 100.0
+        pf = gw / gl
+        if n < min_n or wr < 50.0 or pf < 1.5:
+            continue
+        note_parts = ["resolver_grade"]
+        if strat in blocked:
+            note_parts.append("policy-blocked")
+        if strat.startswith("ml_enhanced") and ac == "CRYPTO":
+            note_parts.append("ml_enhanced-family")
+        sleeves.append({
+            "strategy": strat,
+            "n": n,
+            "wr": round(wr, 2),
+            "pf": round(pf, 4),
+            "is_single_source": False,
+            "source": "resolver_grade",
+            "policy_blocked": strat in blocked,
+            "note": "; ".join(note_parts),
+        })
+    sleeves.sort(key=lambda s: s["pf"], reverse=True)
+    return sleeves[:5]
+
+
+def _merge_top_sleeves(
+    registry_sleeves: list[dict], outcome_sleeves: list[dict],
+) -> list[dict]:
+    """Merge pf_registry and resolver-grade sleeves; registry wins on name clash."""
+    seen = {s.get("strategy") for s in registry_sleeves}
+    merged = list(registry_sleeves)
+    for s in outcome_sleeves:
+        if s.get("strategy") not in seen:
+            merged.append(s)
+            seen.add(s.get("strategy"))
+    merged.sort(
+        key=lambda x: (x.get("policy_blocked", False), -x.get("pf", 0)),
+    )
+    return merged[:5]
 
 
 def _load_dashboard_health() -> dict[str, dict]:
@@ -1297,6 +1396,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         avg_win = stats.get("avg_win", 0.0)
         avg_loss = stats.get("avg_loss", 0.0)
         # New Fundamental/Macro Gates (per-pick aggregation)
+        passes_high_conviction_gate, passes_long_term_stability_gate = (
+            _get_fundamental_macro_gates()
+        )
         hc_passes = 0
         lt_passes = 0
         for p in ac_picks:
@@ -1327,7 +1429,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         # Shadow-mode gates (stamped but do NOT change verdict yet)
         bootstrap_ci = _bootstrap_expectancy_ci(ac_picks)
         wf_oos = _simple_wf_oos_ratio(ac_picks)
-        top_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
+        reg_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
+        outcome_sleeves = _top_sleeves_from_outcomes(ac)
+        top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
 
         results[ac] = {
             "n_resolved": n,
