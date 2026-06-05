@@ -174,6 +174,8 @@ def emit_all(*, include_funding: bool = True) -> dict[str, Any]:
             "tools.feature_signals.forex_carry_momentum", "forex_carry_momentum", "FOREX")
         sleeves["etf_sector_rotation"] = _emit_via_factor_module(
             "tools.feature_signals.etf_sector_rotation", "etf_sector_rotation", "ETF")
+        sleeves["commodity_term_cot"] = _emit_via_factor_module(
+            "tools.feature_signals.commodity_term_cot", "commodity_term_cot", "COMMODITY")
 
     picks: list[dict[str, Any]] = []
     for name, rows in sleeves.items():
