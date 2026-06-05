@@ -230,6 +230,17 @@ def resolve_pick(pick: dict) -> Optional[dict]:
     else:
         pnl_pct = (exit_price - entry_price) / entry_price
 
+    # Price-unit-mismatch guard: yfinance occasionally returns exit prices on a
+    # different scale than the stored entry (notably FX 4-digit vs 5-digit, or
+    # crypto USDT-fraction vs spot). A |pnl| > 5.0 (500%) is the marker.
+    # 2026-06-05: caught 2 fake AUD-USD -97% resolutions; ported the cap from
+    # tools/backfill_null_pnl.py to the live resolver.
+    if abs(pnl_pct) > 5.0:
+        log.warning(
+            "Pick %s suspected price-unit mismatch (entry=%s exit=%s pnl=%.2f%%) — skipping",
+            pick["id"], entry_price, exit_price, pnl_pct * 100)
+        return None
+
     win_threshold_price = entry_price * (1 + WIN_THRESHOLD)
     if direction == "SHORT":
         is_win = exit_price < entry_price * (1 - WIN_THRESHOLD)
