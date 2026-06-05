@@ -38,9 +38,15 @@ def _f(x) -> float:
 
 
 def get_conn():
-    from tools.db_env import get_stocks_creds
+    import os
+    pw = os.environ.get("DB_PASS_STOCKS", "stocks1234560")
     return pymysql.connect(
-        **get_stocks_creds(),
+        host="mysql.50webs.com",
+        user="ejaguiar1_stocks",
+        password=pw,
+        database="ejaguiar1_stocks",
+        port=3306,
+        connect_timeout=20,
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,
     )
