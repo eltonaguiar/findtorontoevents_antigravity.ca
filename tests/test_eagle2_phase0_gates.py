@@ -64,6 +64,14 @@ def test_regime_terminal_blocked_equity_crypto_forex():
     assert ("FOREX", "regime_terminal") in BLOCKED_ASSET_SOURCE_PAIRS
 
 
+def test_equity_dragger_strategies_blocked_2026_06_05():
+    """Edge hunt P0: block copytrader + regime_accumulation on EQUITY emits."""
+    assert ("EQUITY", "multi_asset_copytrader") in BLOCKED_ASSET_STRATEGY_PAIRS
+    assert ("EQUITY", "regime_accumulation") in BLOCKED_ASSET_STRATEGY_PAIRS
+    pick = _pick(ac="EQUITY", strategy="multi_asset_copytrader", source="multi_asset_copytrader")
+    assert passes_active_gate(pick) is False
+
+
 def test_incubator_gainer_rejected_by_active_gate():
     pick = _pick(source="incubator_gainer", ac="CRYPTO", strategy="gainer_scout")
     assert passes_active_gate(pick) is False

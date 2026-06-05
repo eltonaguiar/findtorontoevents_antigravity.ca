@@ -2793,6 +2793,10 @@ BLOCKED_ASSET_STRATEGY_PAIRS = {
     # regime_terminal EQUITY: n=72, WR=34.7%, PF=1.06. strategy "unknown" dominates.
     # Below 45% WR charter floor. Mutation: no profitable direction/symbol subset found (n=72 satisfies threshold).
     ("EQUITY", "regime_terminal"),
+    # 2026-06-05 edge hunt: policy-clean n=12 WR=8.3% PF=0.13 — copytrader drag on EQUITY book
+    ("EQUITY", "multi_asset_copytrader"),
+    # regime_accumulation EQUITY: n=3 WR=0% PF=0.00 on tier tracker 2026-06-05
+    ("EQUITY", "regime_accumulation"),
     # EAGLE2 Phase 0 (2026-06-02): extend regime_terminal block to CRYPTO/FOREX emitters.
     ("CRYPTO", "regime_terminal"),
     ("FOREX", "regime_terminal"),

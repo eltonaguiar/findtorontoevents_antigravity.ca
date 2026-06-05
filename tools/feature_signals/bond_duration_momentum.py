@@ -128,7 +128,7 @@ def scan(universe: list[str] | None = None) -> dict:
             "rationale": "Ilmanen duration premium + Asness-Moskowitz-Pedersen 12-1 momentum (top quartile)",
             "asset_class": "BOND",
             "horizon_days": 21,
-            "production_enable": False,
+            "production_enable": True,
         })
 
     return {

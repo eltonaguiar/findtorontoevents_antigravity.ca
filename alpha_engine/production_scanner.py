@@ -4223,7 +4223,7 @@ def main():
         try:
             from strategies.pead_equity import generate_pead_signals  # type: ignore
 
-            # Load earnings events from incubator_picks.json (earnings calendar source)
+            # Load earnings: incubator_picks.json + data/earnings/*/latest.json
             _pead_events_path = Path(__file__).resolve().parent / "data" / "incubator_picks.json"
             _pead_events: list[dict] = []
             if _pead_events_path.exists():
@@ -4236,6 +4236,21 @@ def main():
                         _pead_events = _pead_raw.get("events", []) or _pead_raw.get("picks", [])
                 except Exception as _pead_load_err:
                     print(f"  [PEAD_SHADOW] Failed to load incubator_picks.json: {_pead_load_err}")
+
+            try:
+                from alpha_engine.equity_earnings_loader import load_pead_events_from_earnings_cache
+
+                _cache_events = load_pead_events_from_earnings_cache()
+                _seen = {(e.get("symbol"), e.get("earnings_date")) for e in _pead_events}
+                for _ce in _cache_events:
+                    _k = (_ce.get("symbol"), _ce.get("earnings_date"))
+                    if _k not in _seen:
+                        _pead_events.append(_ce)
+                        _seen.add(_k)
+                if _cache_events:
+                    print(f"  [PEAD_SHADOW] Merged {len(_cache_events)} earnings-cache events")
+            except Exception as _cache_err:
+                print(f"  [PEAD_SHADOW] earnings cache merge skipped: {_cache_err}")
 
             if _pead_events:
                 _pead_signals = generate_pead_signals(_pead_events, dry_run=True)
@@ -4256,12 +4271,25 @@ def main():
                             )
                     except Exception as _pead_write_err:
                         print(f"  [PEAD_SHADOW] Failed to write shadow log: {_pead_write_err}")
-                    # Shadow mode: log, do NOT extend `active`
-                    print(
-                        f"  [PEAD_SHADOW] Generated {len(_pead_signals)} PEAD shadow signals "
-                        f"(T2 WF-VERIFIED, NOT added to active — shadow validation in progress). "
-                        f"See alpha_engine/data/pead_shadow_picks.json"
-                    )
+                    _PEAD_PROBATION = os.environ.get("PEAD_EQUITY_PROBATION", "0") == "1"
+                    if _PEAD_PROBATION:
+                        _prob_cap = int(os.environ.get("PEAD_EQUITY_PROBATION_MAX", "2"))
+                        _prob_picks = _pead_signals[: max(0, _prob_cap)]
+                        for _pp in _prob_picks:
+                            _pp["_probation"] = True
+                            _pp["_wired_to_production"] = True
+                        if _prob_picks:
+                            active.extend(_prob_picks)
+                            print(
+                                f"  [PEAD_PROBATION] Added {len(_prob_picks)} capped PEAD picks to active "
+                                f"(max={_prob_cap}; set PEAD_EQUITY_PROBATION=0 to shadow-only)"
+                            )
+                    else:
+                        print(
+                            f"  [PEAD_SHADOW] Generated {len(_pead_signals)} PEAD shadow signals "
+                            f"(T2 WF-VERIFIED, NOT added to active — shadow validation in progress). "
+                            f"See alpha_engine/data/pead_shadow_picks.json"
+                        )
                 else:
                     print("  [PEAD_SHADOW] No PEAD signals generated (no qualifying earnings events)")
             else:

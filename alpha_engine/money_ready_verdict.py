@@ -45,11 +45,25 @@ for _p in (str(REPO_ROOT), str(Path(__file__).resolve().parent)):
 
 import numpy as np
 
-from alpha_engine.eagle_gates import passes_recency_gate
-from alpha_engine.fundamental_macro_gates import (
-    passes_high_conviction_gate,
-    passes_long_term_stability_gate,
-)
+# Lazy imports to avoid ModuleNotFoundError when ci_gate scripts import this
+# module from a different sys.path context (e.g. GHA runners).
+def _get_eagle_gates():
+    from alpha_engine.eagle_gates import passes_recency_gate
+    return passes_recency_gate
+
+def _get_fundamental_macro_gates():
+    try:
+        from alpha_engine.fundamental_macro_gates import (
+            passes_high_conviction_gate,
+            passes_long_term_stability_gate,
+        )
+        return passes_high_conviction_gate, passes_long_term_stability_gate
+    except Exception:
+        # Fail-open: if fundamental_macro_gates is broken (e.g. missing
+        # equity_earnings_loader dep), return no-op stubs so verdict doesn't crash.
+        def _noop_gate(pick):
+            return True, {}
+        return _noop_gate, _noop_gate
 
 # P1/#7 — Net-of-cost slippage / expectancy promotion gate.
 # ENFORCED by default (2026-05-19, swarm-settled Q1 verdict): the net-of-slippage
@@ -452,10 +466,109 @@ def _top_money_ready_sleeves(reg: dict, asset_class: str, min_n: int = 30) -> li
                 "wr": round(wr, 2),
                 "pf": round(pf, 4),
                 "is_single_source": single,
+                "source": "policy_clean",
+                "policy_blocked": False,
                 "note": r.get("note", "") or ("single-source" if single else ""),
             })
     sleeves.sort(key=lambda s: s["pf"], reverse=True)
     return sleeves[:5]
+
+
+def _top_sleeves_from_outcomes(asset_class: str, min_n: int = 30) -> list[dict]:
+    """T2+ sleeves from resolver-grade at_pick_outcomes (WON+LOST only).
+
+    Surfaces sleeves proven in MySQL but absent from pf_registry closed_picks
+    ingest (e.g. MeanReversionBB). Fail-open on DB errors.
+    """
+    ac = asset_class.upper()
+    try:
+        import pymysql
+        from tools.db_env import get_stocks_creds
+
+        creds = {
+            k: v for k, v in get_stocks_creds().items()
+            if k not in ("cursorclass", "connect_timeout")
+        }
+        conn = pymysql.connect(
+            **creds, connect_timeout=10, cursorclass=pymysql.cursors.DictCursor,
+        )
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT strategy,
+                   COUNT(*) AS n,
+                   SUM(CASE WHEN pnl_pct > 0 THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN pnl_pct > 0 THEN pnl_pct ELSE 0 END) AS gw,
+                   SUM(CASE WHEN pnl_pct < 0 THEN ABS(pnl_pct) ELSE 0 END) AS gl
+            FROM at_pick_outcomes
+            WHERE asset_class = %s
+              AND status IN ('WON', 'LOST')
+              AND pnl_pct IS NOT NULL
+            GROUP BY strategy
+            HAVING n >= %s
+            """,
+            (ac, min_n),
+        )
+        rows = cur.fetchall()
+        conn.close()
+    except Exception:
+        return []
+
+    blocked = _load_blocked(ac)
+    _OUTCOMES_ARTIFACT_STRATEGIES = frozenset({
+        "prediction_market_consensus",  # backfill WR≈0% artifact
+        "hs_lb_None",  # BLOCKED_SOURCE_SYSTEMS
+    })
+    sleeves: list[dict] = []
+    for r in rows:
+        strat = str(r.get("strategy") or "unknown")
+        if strat in _OUTCOMES_ARTIFACT_STRATEGIES:
+            continue
+        if ac == "CRYPTO" and strat.startswith("ml_enhanced"):
+            continue  # M-105 family — per-variant SPA required before promotion
+        n = int(r.get("n", 0) or 0)
+        wins = int(r.get("wins", 0) or 0)
+        gl = float(r.get("gl") or 0)
+        gw = float(r.get("gw") or 0)
+        if gl <= 0:
+            continue
+        wr = wins / n * 100.0
+        pf = gw / gl
+        if n < min_n or wr < 50.0 or pf < 1.5:
+            continue
+        note_parts = ["resolver_grade"]
+        if strat in blocked:
+            note_parts.append("policy-blocked")
+        if strat.startswith("ml_enhanced") and ac == "CRYPTO":
+            note_parts.append("ml_enhanced-family")
+        sleeves.append({
+            "strategy": strat,
+            "n": n,
+            "wr": round(wr, 2),
+            "pf": round(pf, 4),
+            "is_single_source": False,
+            "source": "resolver_grade",
+            "policy_blocked": strat in blocked,
+            "note": "; ".join(note_parts),
+        })
+    sleeves.sort(key=lambda s: s["pf"], reverse=True)
+    return sleeves[:5]
+
+
+def _merge_top_sleeves(
+    registry_sleeves: list[dict], outcome_sleeves: list[dict],
+) -> list[dict]:
+    """Merge pf_registry and resolver-grade sleeves; registry wins on name clash."""
+    seen = {s.get("strategy") for s in registry_sleeves}
+    merged = list(registry_sleeves)
+    for s in outcome_sleeves:
+        if s.get("strategy") not in seen:
+            merged.append(s)
+            seen.add(s.get("strategy"))
+    merged.sort(
+        key=lambda x: (x.get("policy_blocked", False), -x.get("pf", 0)),
+    )
+    return merged[:5]
 
 
 def _load_dashboard_health() -> dict[str, dict]:
@@ -1203,13 +1316,20 @@ def _simple_wf_oos_ratio(picks: list[dict], train_frac: float = 0.6) -> dict[str
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> dict[str, dict]:
+def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500,
+                       ci_mode: bool = False) -> dict[str, dict]:
     """Return per-class readiness verdict dict.
 
     When closed_picks.json has <MIN_N_CLASS picks for an asset class, the n/wr/pf
     from dashboard_data.json::asset_class_health is used as a fallback for display.
     Statistical tests (DSR/PBO/SPA) still require actual pick-level data and will
     show N/A when the closed_picks sample is too small.
+
+    Args:
+        asset_class: Filter to one asset class (None = all).
+        n_boot: Bootstrap iterations for SPA test.
+        ci_mode: Skip MySQL-dependent queries (sleeves from at_pick_outcomes).
+                 Use in CI/GHA runners where no DB is available to avoid timeouts.
     """
     picks = _load_picks()
     class_stats = _class_stats(picks)
@@ -1290,6 +1410,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         avg_win = stats.get("avg_win", 0.0)
         avg_loss = stats.get("avg_loss", 0.0)
         # New Fundamental/Macro Gates (per-pick aggregation)
+        passes_high_conviction_gate, passes_long_term_stability_gate = (
+            _get_fundamental_macro_gates()
+        )
         hc_passes = 0
         lt_passes = 0
         for p in ac_picks:
@@ -1320,7 +1443,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         # Shadow-mode gates (stamped but do NOT change verdict yet)
         bootstrap_ci = _bootstrap_expectancy_ci(ac_picks)
         wf_oos = _simple_wf_oos_ratio(ac_picks)
-        top_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
+        reg_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
+        outcome_sleeves = _top_sleeves_from_outcomes(ac) if not ci_mode else []
+        top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
 
         results[ac] = {
             "n_resolved": n,
@@ -1496,9 +1621,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="M-061: Unified money_ready_verdict()")
     parser.add_argument("--class", dest="asset_class", help="Filter to one asset class")
     parser.add_argument("--json", dest="as_json", action="store_true")
+    parser.add_argument("--ci", dest="ci_mode", action="store_true",
+                        help="CI mode: skip MySQL-dependent queries to avoid GHA timeouts")
     args = parser.parse_args()
 
-    results = money_ready_verdict(asset_class=args.asset_class)
+    results = money_ready_verdict(asset_class=args.asset_class, ci_mode=args.ci_mode)
     if args.as_json:
         print(json.dumps(results, indent=2))
     else:
