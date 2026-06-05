@@ -6694,6 +6694,18 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     except Exception:
         pass  # fail-soft: meta_label gate must never affect admission on error
 
+    # ── Hard-ban: PENNY_STOCK and MEMECOIN (2026-06-05) ──
+    # Both classes have proven-negative WR: PENNY_STOCK 8.9%, MEMECOIN 16.7%.
+    # They actively destroy capital and must never reach live sizing.
+    _banned_class = str(pick.get("asset_class", "") or "").upper().strip()
+    if _banned_class in ("PENNY_STOCK", "MEMECOIN"):
+        logger.info(
+            "Pick rejected: asset_class=%s is production-banned (sub-10%% WR, capital destruction)",
+            _banned_class,
+        )
+        pick["_hf_quality_gate_reason"] = f"banned_asset_class:{_banned_class}"
+        return False
+
     # ── M-049: Safety status STOP gate (2026-05-15) ──
     # When safety_status verdict == STOP (Binance CB open, severe drift, etc.),
     # reject ALL picks — no fills should be emitted during a system halt.
