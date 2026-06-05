@@ -117,8 +117,11 @@ def check_dashboard_payload(
     for s in payload.get("systems") or []:
         name = s.get("name", "?")
         try:
-            float(s.get("unrealized_pnl_pct") or 0.0)
-            ap = int(s.get("active_picks") or 0)
+            upnl = s.get("unrealized_pnl_pct")
+            if upnl is not None and upnl != "":
+                float(upnl)
+            ap_raw = s.get("active_picks")
+            ap = int(ap_raw) if ap_raw is not None and ap_raw != "" else 0
             if ap < 0:
                 raise ValueError("active_picks < 0")
         except (TypeError, ValueError):

@@ -34,6 +34,21 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+    <!-- Update: Jun 5, 2026 — Money-ready verdict script fix + live snapshot refresh -->
+    <div class="update-entry" style="--dot-color: #06b6d4;" data-tags="money-ready,audit,verdict,gates,goal-1" data-category="trading" data-types="fix,analysis">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 14:15 UTC &mdash; <strong style="color:#06b6d4;">Money-ready verdict: import fix + sign-coherent stats + live JSON refresh</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Fixed <code>money_ready_verdict.py</code> script invocation (repo on <code>sys.path</code> before <code>alpha_engine.*</code> imports) so <code>tools/money_ready_snapshot.py</code> and GHA can refresh <code>audit_dashboard/data/money_ready_verdict.json</code> without <code>ModuleNotFoundError</code>. Verdict cohort now drops sign-incoherent WON/LOST rows; snapshot re-run stamps <strong>recency</strong>, <strong>WF/BOOT shadow gates</strong>, and <strong>top_sleeves</strong> per class on <a href="/audit/">/audit</a>.</p>
+        <ul>
+          <li><strong>Canonical verdict:</strong> 0 classes <code>MONEY_READY</code> (honest). CRYPTO policy-clean n≈301, WR≈35%, PF≈0.99, <code>NOT_READY</code>.</li>
+          <li><strong>Closest T2 sleeve:</strong> <code>crypto_liquidity_wick_reversal_v1</code> (n=30, WR=60%, PF=1.55) — flagged <strong>single-source</strong>; monitor only, do not size.</li>
+          <li><strong>Tournament truth:</strong> MISPRICED_ENTRY banner now cites <strong>4,154</strong> live DB rows (was 914).</li>
+          <li><strong>mega_mutation:</strong> remains blocklisted; swarm HOLD until ~Jun 12 (clean window + one post-fix close).</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Doc: <code>updates/2026-06-05-money-ready-verdict-import-and-gates.md</code> | Repro: <code>python3 tools/money_ready_snapshot.py</code></p>
+      </div>
+    </div>
+
     <!-- Update: Jun 5, 2026 — Deep-Dive Series: 3 Backfill-Contamination Findings -->
     <div class="update-entry" style="--dot-color: #ef4444;" data-tags="deep-dive,backfill,data-quality,audit,walk-forward,scrutiny" data-category="trading" data-types="analysis,research,fix">
       <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:30 UTC &mdash; <strong style="color:#ef4444;">🚨 DEEP-DIVE SERIES: 3 Backfill-Contamination Findings Force Walk-Forward Rewrite</strong></div>

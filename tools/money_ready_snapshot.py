@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -53,9 +54,10 @@ def run_verdict() -> dict:
     """Exec the verdict script and parse its --json stdout. Fail loud."""
     if not VERDICT_SCRIPT.exists():
         sys.exit(f"ERROR: verdict script not found: {VERDICT_SCRIPT}")
+    env = {**os.environ, "PYTHONPATH": str(ROOT)}
     proc = subprocess.run(
         [sys.executable, str(VERDICT_SCRIPT), "--json"],
-        capture_output=True, text=True, cwd=str(ROOT),
+        capture_output=True, text=True, cwd=str(ROOT), env=env,
     )
     if proc.returncode != 0:
         sys.exit(f"ERROR: money_ready_verdict.py exited {proc.returncode}\n"

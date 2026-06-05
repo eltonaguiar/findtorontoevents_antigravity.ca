@@ -37,6 +37,12 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+# Repo root must be on sys.path before alpha_engine.* imports (script invocation).
+for _p in (str(REPO_ROOT), str(Path(__file__).resolve().parent)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 import numpy as np
 
 from alpha_engine.eagle_gates import passes_recency_gate
@@ -92,12 +98,6 @@ MDD_GATE_THRESHOLD_BY_CLASS: dict[str, float] = {
 }
 CVAR_GATE_THRESHOLD_PCT: float = 10.0  # CVaR-95% must be < 10% absolute loss
 
-REPO_ROOT = Path(__file__).parent.parent
-# Ensure repo root and alpha_engine dir are importable regardless of how this file is invoked
-import sys as _sys
-for _p in [str(REPO_ROOT), str(Path(__file__).parent)]:
-    if _p not in _sys.path:
-        _sys.path.insert(0, _p)
 CLOSED_PATH = REPO_ROOT / "alpha_engine/data/closed_picks.json"
 DASHBOARD_PATH = REPO_ROOT / "audit_dashboard/data/dashboard_data.json"
 GATES_PATH = REPO_ROOT / "audit_trail/quality_gates.py"
@@ -501,7 +501,22 @@ def _load_dashboard_health() -> dict[str, dict]:
 
 
 def _resolved(picks: list[dict]) -> list[dict]:
-    return [p for p in picks if str(p.get("status", "")).upper() in ("WON", "LOST")]
+    """Closed rows with sign-coherent status vs pnl (drops resolver mislabels)."""
+    out: list[dict] = []
+    for p in picks:
+        st = str(p.get("status", "")).upper()
+        if st not in ("WON", "LOST"):
+            continue
+        try:
+            pnl = float(p.get("pnl_pct") or 0)
+        except (TypeError, ValueError):
+            continue
+        if st == "WON" and pnl <= 0:
+            continue
+        if st == "LOST" and pnl >= 0:
+            continue
+        out.append(p)
+    return out
 
 
 # ---------------------------------------------------------------------------
