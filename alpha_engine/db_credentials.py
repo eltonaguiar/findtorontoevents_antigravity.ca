@@ -16,7 +16,10 @@ import os
 _HOST_DEFAULT = "mysql.50webs.com"
 _USER_DEFAULT = "ejaguiar1_stocks"
 _DB_DEFAULT = "ejaguiar1_stocks"
-_PASS_DEFAULT = "stocks1234560"  # dev/CI default; override via DB_PASS_STOCKS env var
+# No password literal — the canonical resolver is tools.db_env.get_stocks_creds()
+# (handles DB_PASSWORDS_JSON + legacy env var fallbacks). This file is the
+# lightweight in-tree fallback; require an env var to be set.
+_PASS_DEFAULT = ""
 
 
 def get_stocks_db_config(db: str | None = None) -> dict:
