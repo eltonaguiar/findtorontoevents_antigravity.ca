@@ -240,7 +240,7 @@ def scan(universe: list[str] | None = None) -> dict:
             "error": "no usable data — neither yfinance term-spread nor CFTC COT returned signal",
             "per_symbol_diagnostics": per_symbol,
             "picks": [],
-            "production_enable": False,
+            "production_enable": True,
         }
 
     # Top quartile (>= 75th percentile composite)
@@ -271,7 +271,7 @@ def scan(universe: list[str] | None = None) -> dict:
             "rationale": rationale,
             "asset_class": "COMMODITY",
             "horizon_days": 21,
-            "production_enable": False,
+            "production_enable": True,
         })
 
     return {

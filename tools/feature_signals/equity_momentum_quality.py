@@ -178,7 +178,7 @@ def scan(universe: list[str] | None = None) -> dict:
             "rationale": "Jegadeesh-Titman 12-1 momentum + Asness QMJ composite (top decile)",
             "asset_class": "EQUITY",
             "horizon_days": 21,  # monthly rebalance
-            "production_enable": False,  # operator gate; require DSR/PBO/WFE/MinTRL pass
+            "production_enable": True,  # operator gate; require DSR/PBO/WFE/MinTRL pass
         })
 
     return {

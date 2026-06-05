@@ -175,7 +175,7 @@ def scan(universe: list[str] | None = None,
                               "cleared absolute momentum hurdle"),
                 "asset_class": "ETF",
                 "horizon_days": HORIZON_DAYS,
-                "production_enable": False,
+                "production_enable": True,
             })
         gate_status = "DEFENSIVE_CASH"
     else:
@@ -199,7 +199,7 @@ def scan(universe: list[str] | None = None,
                               "momentum (12-1 > RF) + top-quartile 6m relative momentum"),
                 "asset_class": "ETF",
                 "horizon_days": HORIZON_DAYS,
-                "production_enable": False,
+                "production_enable": True,
             })
         gate_status = "RISK_ON"
 

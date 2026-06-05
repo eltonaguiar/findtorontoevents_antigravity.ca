@@ -239,7 +239,7 @@ def scan(universe: list[str] | None = None) -> dict:
             "rationale": "Lustig-Roussanov-Verdelhan carry + Asness-Moskowitz-Pedersen 12-1 momentum (top quartile, vol<12%)",
             "asset_class": "FOREX",
             "horizon_days": 21,
-            "production_enable": False,
+            "production_enable": True,
         })
 
     return {
