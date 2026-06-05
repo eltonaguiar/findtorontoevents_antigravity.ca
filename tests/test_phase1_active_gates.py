@@ -96,7 +96,12 @@ def make_pick(**overrides):
 
 
 class _ClearPhase1Env:
-    """Reset Phase 1 env vars between tests so one run doesn't taint the next."""
+    """Reset Phase 1 env vars between tests so one run doesn't taint the next.
+
+    Also neutralizes the production defaults for cross-cutting gates that
+    are ON in CI workflows (CRYPTO_PRODUCTION_BLOCK_LONG=1) so phase-1
+    unit tests aren't blocked by stack-on-top gates they aren't testing.
+    """
 
     _vars = (
         "PHASE1_TOD_GATE_ENABLED",
@@ -104,10 +109,16 @@ class _ClearPhase1Env:
         "PHASE1_CONF_DEADZONE_ENABLED",
         "PHASE1_CONF_DEADZONE_LOW",
         "PHASE1_CONF_DEADZONE_HIGH",
+        "CRYPTO_PRODUCTION_BLOCK_LONG",
+        "CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE",
     )
 
     def __enter__(self):
         self._saved = {k: os.environ.pop(k, None) for k in self._vars}
+        # Default to off so individual tests that DO want the gate on can
+        # set it explicitly within their `with` block. Mirrors the
+        # OFF-by-default posture used in production tuning runs.
+        os.environ.setdefault("CRYPTO_PRODUCTION_BLOCK_LONG", "0")
         return self
 
     def __exit__(self, *exc):
