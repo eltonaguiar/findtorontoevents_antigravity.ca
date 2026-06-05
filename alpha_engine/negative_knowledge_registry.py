@@ -35,13 +35,24 @@ BLOCKED_STRATEGY_SYSTEMS = {
     "ml_bg_system_b": {"pf": 0.02, "wr": 5.3, "n": 19},
     "ml_bg_system_c": {"pf": 0.00, "wr": 0, "n": 5},
     "ml_bg_ensemble": {"pf": 0.00, "wr": 0, "n": 8},
-    "mega_mutation": {"pf": 0.03, "wr": 14.3, "n": 7},
+    # mega_mutation REMOVED from block: stale n=7/14.3% entry was wrong.
+    # Current live DB (2026-06-05): n=296, WR=63.9%, PF=3.12 — GENUINE T2+ edge.
+    # 39 distinct close dates, 8 symbols, HHI=0.128. See reports/wr_scrutiny_honest_2026-06-05.md
     "momentum_evolver": {"pf": 0.00, "wr": 0, "n": 8},
     "contrarian_evolver": {"pf": 0.00, "wr": 0, "n": 5},
     "st_rsi_momentum_confluence": {"pf": 0.20, "wr": 12.0, "n": 108},
     "enhanced_ml_A_xgboost": {"pf": 0.50, "wr": 29.3, "n": 123},
     "proven_triple_ema_prop": {"pf": 0.30, "wr": 14.0, "n": 980},
     "proven_propfirm_cons_prop": {"pf": 0.25, "wr": 17.0, "n": 1088},
+    # --- Added 2026-06-05: live DB verified 0% WR, near-100% null-close picks ---
+    # Source: reports/wr_scrutiny_honest_2026-06-05.md (queries against live trading_picks)
+    "polymarket_whale_tracker": {"pf": 0.00, "wr": 0.0, "n": 1582, "null_close_pct": 100},
+    "short_dominant_engine": {"pf": 0.00, "wr": 0.0, "n": 1840, "null_close_pct": 99.9},
+    "polymarket_momentum": {"pf": 0.00, "wr": 0.0, "n": 389, "null_close_pct": 100},
+    "copy_trader_polymarket": {"pf": 0.00, "wr": 0.1, "n": 1183, "null_close_pct": 99.9},
+    "luxalgo_filters": {"pf": 0.00, "wr": 0.0, "n": 2121, "null_close_pct": 3.8},
+    # signal_validation: creates stale ghost picks (322/353 open picks >7d old)
+    "signal_validation": {"pf": None, "wr": None, "n": 353, "reason": "ghost_picks_stale"},
 }
 
 # Time-of-day blocks (UTC hours with <35% WR)
