@@ -72,6 +72,10 @@ REVERSE_SPLIT_SYMBOLS: dict[str, list[tuple[str, str]]] = {
     # Source: splithistory.com (verified 2026-05-26)
     "GSAT": [("1-for-15", "2025-02-11")],
 
+    # GE: 1-for-8 reverse split effective 2021-08-02 (GE Aerospace restructuring).
+    # Source: GE investor relations / splithistory.com (verified by swarm review 2026-06-04)
+    "GE": [("1-for-8", "2021-08-02")],
+
     # Excluded: SQQQ/SOXS/LABD (inverse ETF structural decay, not corporate splits)
     # Excluded: CLSK (2019), MARA (2013-2019) — old splits, low stale-data risk
     # Excluded: ASTS, RKLB, WULF, QBTS, IONQ, RGTI, CTM, MVST — no reverse splits 2023-2026
