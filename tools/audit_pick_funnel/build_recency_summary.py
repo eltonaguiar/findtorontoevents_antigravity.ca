@@ -298,6 +298,10 @@ def main():
     _build(hours=24 * 14, label="last_14_days", include_pick_rows=False, out_name="pick_summary_stats_2w.json")
     print("=== 48-hour window ===")
     _build(hours=48, label="last_48_hours", include_pick_rows=True, out_name="pick_summary_stats_48h.json")
+    from tools.audit_pick_funnel.sync_pick_summary_14d import main as sync_14d
+
+    if sync_14d() != 0:
+        print("[build_recency_summary] WARN: sync_pick_summary_14d failed", file=sys.stderr)
 
 
 if __name__ == "__main__":
