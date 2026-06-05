@@ -4271,12 +4271,25 @@ def main():
                             )
                     except Exception as _pead_write_err:
                         print(f"  [PEAD_SHADOW] Failed to write shadow log: {_pead_write_err}")
-                    # Shadow mode: log, do NOT extend `active`
-                    print(
-                        f"  [PEAD_SHADOW] Generated {len(_pead_signals)} PEAD shadow signals "
-                        f"(T2 WF-VERIFIED, NOT added to active — shadow validation in progress). "
-                        f"See alpha_engine/data/pead_shadow_picks.json"
-                    )
+                    _PEAD_PROBATION = os.environ.get("PEAD_EQUITY_PROBATION", "0") == "1"
+                    if _PEAD_PROBATION:
+                        _prob_cap = int(os.environ.get("PEAD_EQUITY_PROBATION_MAX", "2"))
+                        _prob_picks = _pead_signals[: max(0, _prob_cap)]
+                        for _pp in _prob_picks:
+                            _pp["_probation"] = True
+                            _pp["_wired_to_production"] = True
+                        if _prob_picks:
+                            active.extend(_prob_picks)
+                            print(
+                                f"  [PEAD_PROBATION] Added {len(_prob_picks)} capped PEAD picks to active "
+                                f"(max={_prob_cap}; set PEAD_EQUITY_PROBATION=0 to shadow-only)"
+                            )
+                    else:
+                        print(
+                            f"  [PEAD_SHADOW] Generated {len(_pead_signals)} PEAD shadow signals "
+                            f"(T2 WF-VERIFIED, NOT added to active — shadow validation in progress). "
+                            f"See alpha_engine/data/pead_shadow_picks.json"
+                        )
                 else:
                     print("  [PEAD_SHADOW] No PEAD signals generated (no qualifying earnings events)")
             else:
