@@ -7,6 +7,12 @@ VIX regimes, DXY trend, and macro regimes? Or is it concentrated in one corner?
 
 **Verdict:** **All 3 walk-forward PASS verdicts are misleading.**
 
+> **Resolution 2026-06-05 (this session):** Added `--require-macro-join` and
+> `total_pf >= 1.0` hard-gate to `tools/walk_forward_per_strategy.py`. With
+> both flags, only `mega_mutation::crypto` PASSes (n=166, total_pf=2.51,
+> OOS_PF=2.58). All 3 forex candidates are correctly demoted. The 0/9
+> money-ready verdict is fully consistent with the audit-grade walk-forward.
+
 | Strategy | Walk-forward verdict | Overall actual | Macro-joinable actual | Verdict |
 |----------|----------------------|----------------|------------------------|---------|
 | `myfxbook_retail_contrarian` | PASS PF=2.39 | n=321 PF=0.98 | n=299 PF=0.96 (WR 48.8%) | **FAIL — losing overall** |
@@ -124,8 +130,8 @@ walk-forward when n reaches 200+ (currently 107 post-filter).
 ### Day 0 (today, 2026-06-05)
 - [x] Identify walk-forward data-join artifacts
 - [x] Document finding (this report)
-- [ ] Add `INNER JOIN alpha_macro` requirement to walk-forward (or post-filter step)
-- [ ] Re-run walk-forward and confirm 0 PASS for forex (or close to it)
+- [x] Add `--require-macro-join` flag + `total_pf >= 1.0` hard-gate to walk-forward
+- [x] Re-run walk-forward: 4 PASS → 1 PASS (only `mega_mutation::crypto`)
 
 ### Day 7 (2026-06-12)
 - [ ] Backfill `alpha_macro` to 2026-06-05 (DXY + VIX daily feed)

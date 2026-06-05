@@ -23,6 +23,8 @@ PASS criteria:
   - survival_rate >= SURVIVAL_THRESHOLD (default 0.60)
   - mean_oos_pf >= 1.2
   - mean_oos_wr >= 0.50
+  - total_pf >= 1.0 (hard-gate: a losing strategy cannot PASS, even if
+    rolling windows look good — see reports/deep_dive_forex_regime_2026-06-05.md)
 
 Source: Mercury 2 (Inception Labs) audit-toolkit Sec 2.3 + the operator-shared
 enhancement plan's walk_forward_backtest_example.py.
@@ -161,12 +163,23 @@ def walk_forward_one(cur, strategy: str, category: str,
     mean_oos_pf = sum(oos_pfs) / len(oos_pfs) if oos_pfs else 0.0
     mean_oos_wr = sum(oos_wrs) / len(oos_wrs) if oos_wrs else 0.0
     mean_is_pf = sum(is_pfs) / len(is_pfs) if is_pfs else 0.0
+    # Overall PF/WR across the full pnls list (not just OOS windows). This is
+    # the ground-truth edge measure: if overall PF < 1, the strategy is losing
+    # money and walk-forward's rolling-window PASS is an artifact of
+    # non-stationary windows. Per reports/deep_dive_forex_regime_2026-06-05.md,
+    # myfxbook_retail_contrarian::forex passed walk-forward (PF=2.50 n=299) but
+    # overall is WR 48.3% / PF 0.98 — the hard-gate below catches this.
+    total_pf, total_wr = _pf_wr(pnls)
 
     if n_windows < MIN_WINDOWS_FOR_VERDICT:
         verdict = "INSUFF_N"
         reasons = [f"n_windows={n_windows} < {MIN_WINDOWS_FOR_VERDICT}"]
     else:
         reasons: list[str] = []
+        # Hard-gate: a losing strategy cannot be declared PASS no matter what
+        # the rolling windows say. This is the audit-grade rule.
+        if total_pf < 1.0:
+            reasons.append(f"total_pf={total_pf:.2f} < 1.0 (strategy is losing overall)")
         if survival_rate < SURVIVAL_THRESHOLD:
             reasons.append(f"survival_rate={survival_rate:.2f} < {SURVIVAL_THRESHOLD}")
         if mean_oos_pf < 1.2:
@@ -185,6 +198,8 @@ def walk_forward_one(cur, strategy: str, category: str,
         "mean_oos_pf": round(mean_oos_pf, 4),
         "mean_oos_wr": round(mean_oos_wr, 4),
         "mean_is_pf": round(mean_is_pf, 4),
+        "total_pf": round(total_pf, 4) if total_pf != float("inf") else None,
+        "total_wr": round(total_wr, 4),
         "verdict": verdict,
         "reasons": reasons,
     }
