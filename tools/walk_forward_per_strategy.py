@@ -26,6 +26,14 @@ PASS criteria:
 
 Source: Mercury 2 (Inception Labs) audit-toolkit Sec 2.3 + the operator-shared
 enhancement plan's walk_forward_backtest_example.py.
+
+Note on --require-macro-join
+---------------------------
+Per `reports/deep_dive_forex_regime_2026-06-05.md`, the unfiltered walk-forward
+returned 3/3 forex PASSes that were data-join artifacts: 88% of cta_cross_asset_tsmom's
+forex trades closed after 2026-04-27 (when `alpha_macro` ends), so an INNER JOIN
+removes 151/172 of those trades. With --require-macro-join, the same 3 strategies
+are correctly demoted. Enable this flag for any audit-grade verdict.
 """
 from __future__ import annotations
 
@@ -72,7 +80,7 @@ def _pf_wr(pnls: list[float]) -> tuple[float, float]:
     return pf, wr
 
 
-def _eligible_cells(cur, min_n: int, strategy_filter: str | None) -> list[dict]:
+def _eligible_cells(cur, min_n: int, strategy_filter: str | None, require_macro: bool = False) -> list[dict]:
     where_extra = ""
     params: tuple = ()
     if strategy_filter:
@@ -83,12 +91,20 @@ def _eligible_cells(cur, min_n: int, strategy_filter: str | None) -> list[dict]:
     # reports spurious PASS for futures_bb_mean_reversion::commodity that
     # contradicts the LOW_CONFIDENCE_STRATEGIES auto_tuner ban.
     backfill_filter = "AND DATE(closed_at) != '2026-06-04'"
+    # require_macro: INNER JOIN alpha_macro to filter out trades whose close date
+    # has no macro context. This is the data-join-artifact gate per
+    # reports/deep_dive_forex_regime_2026-06-05.md — without it, forex strategies
+    # whose 88% of trades close in the 2026-05+ alpha_macro gap can pass spuriously.
+    macro_join = "INNER JOIN alpha_macro m ON m.trade_date = DATE(tp.closed_at)" if require_macro else ""
+    macro_filter = "AND m.vix_close IS NOT NULL" if require_macro else ""
     cur.execute(f"""
         SELECT strategy, category, COUNT(*) n
-        FROM trading_picks
-        WHERE closed_at IS NOT NULL AND pnl_pct IS NOT NULL
-          AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
+        FROM trading_picks tp
+        {macro_join}
+        WHERE tp.closed_at IS NOT NULL AND tp.pnl_pct IS NOT NULL
+          AND tp.status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
           {backfill_filter}
+          {macro_filter}
           {where_extra}
         GROUP BY strategy, category
         HAVING n >= %s
@@ -98,14 +114,19 @@ def _eligible_cells(cur, min_n: int, strategy_filter: str | None) -> list[dict]:
 
 
 def walk_forward_one(cur, strategy: str, category: str,
-                     in_window: int, out_window: int, step: int) -> dict:
-    cur.execute("""
-        SELECT pnl_pct FROM trading_picks
+                     in_window: int, out_window: int, step: int,
+                     require_macro: bool = False) -> dict:
+    macro_join = "INNER JOIN alpha_macro m ON m.trade_date = DATE(tp.closed_at)" if require_macro else ""
+    macro_filter = "AND m.vix_close IS NOT NULL" if require_macro else ""
+    cur.execute(f"""
+        SELECT pnl_pct FROM trading_picks tp
+        {macro_join}
         WHERE strategy=%s AND category=%s
-          AND closed_at IS NOT NULL AND pnl_pct IS NOT NULL
-          AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
-          AND DATE(closed_at) != '2026-06-04'
-        ORDER BY closed_at ASC
+          AND tp.closed_at IS NOT NULL AND tp.pnl_pct IS NOT NULL
+          AND tp.status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
+          AND DATE(tp.closed_at) != '2026-06-04'
+          {macro_filter}
+        ORDER BY tp.closed_at ASC
     """, (strategy, category))
     pnls = [_f(r["pnl_pct"]) for r in cur.fetchall()]
     n = len(pnls)
@@ -179,6 +200,7 @@ def run(args) -> dict:
             "min_n_total": args.min_n,
             "survival_threshold": SURVIVAL_THRESHOLD,
             "is_oos_pf_decay_tolerance": IS_OOS_PF_DECAY_TOLERANCE,
+            "require_macro_join": bool(args.require_macro_join),
         },
         "cells": [],
         "summary": {},
@@ -186,11 +208,12 @@ def run(args) -> dict:
     conn = _connect()
     try:
         with conn.cursor() as cur:
-            cells = _eligible_cells(cur, args.min_n, args.strategy)
+            cells = _eligible_cells(cur, args.min_n, args.strategy, args.require_macro_join)
             for c in cells:
                 out["cells"].append(
                     walk_forward_one(cur, c["strategy"], c["category"],
-                                     args.in_window, args.out_window, args.step)
+                                     args.in_window, args.out_window, args.step,
+                                     args.require_macro_join)
                 )
     finally:
         conn.close()
@@ -216,6 +239,10 @@ def main() -> int:
     ap.add_argument("--in-window", type=int, default=IN_WINDOW_DEFAULT)
     ap.add_argument("--out-window", type=int, default=OUT_WINDOW_DEFAULT)
     ap.add_argument("--step", type=int, default=STEP_DEFAULT)
+    ap.add_argument("--require-macro-join", action="store_true",
+                    help="INNER JOIN alpha_macro to filter out trades whose close "
+                         "date has no macro context. Audit-grade verdicts should "
+                         "use this flag. See reports/deep_dive_forex_regime_2026-06-05.md.")
     args = ap.parse_args()
 
     out = run(args)
