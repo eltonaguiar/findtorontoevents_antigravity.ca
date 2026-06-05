@@ -136,6 +136,54 @@ If 30 days of honest live-or-die testing under these constraints does not produc
 - **ENH new** (HIGH/M): Freeze LLM tournament for 30-day live-or-die test of 7 confirmed micro-edges
 - **ENH new** (HIGH/L): Build `tools/clean_ingest_v2.py` with split-aware rejection
 - **ENH new** (HIGH/L): Three non-LLM feature emitters (funding, term structure, VIX regime) as `tools/feature_signals/*`
+
+---
+
+## SESSION 2 UPDATE — Claude Sonnet 4.6 (2026-06-05 deep audit)
+
+**Key corrections and new findings since Session 1:**
+
+### Data Quality Bombs — FIXED THIS SESSION
+
+Three P0 data quality bombs were discovered and surgically removed from the DB:
+
+1. **CADJPY +427% trade** (`multi_asset_copytrader` FOREX): entry=115.77 → exit=611.23 in 31 minutes. Physically impossible (CAD/JPY cannot move 427% in 31 min). Flagged as FORCE_CLOSED_TOXIC, pnl_pct=NULL.
+
+2. **3,495 FOREX trades with |pnl| > 30%** including NZDUSD 7,955% (price-feed unit mismatch: resolver fetched wrong currency pair price). These inflated `multi_asset_copytrader` FOREX fake PF from 10.19 → 1.02 (actual value). All flagged.
+
+3. **NZDUSD fat-tail in `non_crypto_consensus`** (14 outlier trades). After removal, `non_crypto_consensus` FOREX stands at n=105, WR=57.1%, PF=1.77 — moved from "debunked" to "WATCHLIST" (passes 3/5 axes; fails April-15 batch concentration and p=0.086).
+
+**Action taken**: `UPDATE trading_picks SET status='FORCE_CLOSED_TOXIC', pnl_pct=NULL WHERE LOWER(category)='forex' AND ABS(pnl_pct) > 0.30` — 3,495 rows cleaned.
+
+### Category Normalization — DONE
+- 749 rows with `category IN ('stocks','stock','penny','pennystock')` → normalized to 'equity'
+- Now: crypto(17,545), forex(14,894), commodity(7,816), equity(3,627), bond(186), etf(347)
+
+### TRUE VERIFIED EDGES (post all cleanup)
+
+| Source | Class | n | WR | PF | 5-axis | Status |
+|--------|-------|---|----|----|--------|--------|
+| `mega_mutation` | CRYPTO | 296 | 63.9% | 3.12 | ALL PASS | ✅ **ONLY CONFIRMED T2** |
+| `non_crypto_consensus` | FOREX | 105 | 57.1% | 1.77 | 3/5 PASS | ⚠️ WATCHLIST |
+| All others | ALL | - | <57% | <1.5 | FAIL | ❌ |
+
+### Resolver V3 — FIXED
+Gemini injected `get_split_adjustment()` call that referenced an undefined function. Added proper yfinance-backed implementation at `alpha_engine/outcome_resolver.py:720` (commit bb12b4df09). Now safe.
+
+### Per-Class True State (post-cleanup):
+- **CRYPTO**: mega_mutation verified; luxalgo_filters (n=2037) is a consistent loser (WR=43%) — kill from emission
+- **FOREX**: All sources losers after outlier removal EXCEPT non_crypto_consensus WATCHLIST
+- **COMMODITY**: multi_asset_copytrader (n=677) pure bleeder WR=34.4% — kill from emission  
+- **EQUITY**: Category cleaned; no verified source yet; analysts consensus (NVDA 58 analysts STRONG BUY PEG=0.66) as external signal only
+- **ETF**: Paper pilot running (etf_verified_dual_momentum), n→100 tracking
+- **BOND**: Too few trades (n<10 closed); let accumulate
+
+### Next Highest-Leverage Actions (this session's additions to Session 1 plan):
+1. **Kill `luxalgo_filters` from emission** — 2,037 consistent-loser picks running daily, WR=43%
+2. **Kill `multi_asset_copytrader` from ALL classes** — FOREX WR=45.7% post-cleanup (still losing), COMMODITY WR=34.4% (bleeding)
+3. **Intrabar OHLCV replay on mega_mutation** — crypto_ohlcv populated (190k+ rows), column=`timestamp`
+4. **Track non_crypto_consensus forward** — if April 15 batch was one-time, underlying edge may be real; need n>=50 fresh non-batch closes
+5. **Scrutiny engine tool** (`tools/per_class_scrutiny_engine.py`) — automate 5-axis daily so we stop rediscovering the same issues each session
 - **ENH new** (HIGH/M): Promotion gate with walk-forward + DSR + two-regime test
 - **ENH new** (P0/M): Live-or-die kill switch monitoring with /audit/incidents.html P0 auto-file on breach
 
