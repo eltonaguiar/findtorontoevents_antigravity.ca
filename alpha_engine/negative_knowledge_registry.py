@@ -27,6 +27,9 @@ BLOCKED_SYMBOLS = {
     "MATICUSDT": {"wr": 0, "total_pnl": 0, "n": 553},  # Already in SYMBOL_BLOCKLIST
     "UUSDT": {"wr": 0, "total_pnl": -2.26, "n": 23},
     "JTOUSDT": {"wr": 0, "total_pnl": 0, "n": 15},
+    # Added 2026-06-05: intrabar OHLCV replay confirmed PF=0.82 on n=37 deduped trades
+    # Source: reports/ohlcv_replay_mega_mutation_20260605.json
+    "AVAXUSDT": {"wr": 51, "pf": 0.82, "n": 37, "reason": "mega_mutation_drag_pf_sub1"},
 }
 
 # Strategy systems with documented PF < 1.0 (losing strategies)
