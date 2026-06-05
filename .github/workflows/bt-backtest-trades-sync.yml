@@ -58,7 +58,7 @@ jobs:
       - name: Install deps
         run: pip install pymysql
 
-      - name: Pre-flight — compare MAX(imported_at) both sides
+      - name: Pre-flight — compare MAX(id) both sides
         id: preflight
         env:
           SOURCE_DB_PASS: ${{ secrets.DB_PASS_STOCKS }}
@@ -68,21 +68,25 @@ jobs:
           python - <<'PY'
           import os, pymysql, sys
           host = "mysql.50webs.com"
+          # Use MAX(id) on the PK — instant on indexed column, avoids full scan timeout
           src = pymysql.connect(host=host, user="ejaguiar1_stocks",
                                 password=os.environ["SOURCE_DB_PASS"],
-                                database="ejaguiar1_stocks", connect_timeout=20)
+                                database="ejaguiar1_stocks", connect_timeout=20,
+                                read_timeout=30)
           tgt = pymysql.connect(host=host, user="ejaguiar1_backtests",
                                 password=os.environ["TARGET_DB_PASS"],
-                                database="ejaguiar1_backtests", connect_timeout=20)
+                                database="ejaguiar1_backtests", connect_timeout=20,
+                                read_timeout=30)
           any_work = False
           for tbl in os.environ["TABLES"].split():
               with src.cursor() as c:
-                  c.execute(f"SELECT MAX(imported_at), COUNT(*) FROM {tbl}")
-                  smax, scnt = c.fetchone()
+                  c.execute(f"SELECT MAX(id) FROM {tbl}")
+                  smax = c.fetchone()[0]
               with tgt.cursor() as c:
-                  c.execute(f"SELECT MAX(imported_at), COUNT(*) FROM {tbl}")
-                  tmax, tcnt = c.fetchone()
-              print(f"{tbl}: stocks MAX={smax} cnt={scnt} | backtests MAX={tmax} cnt={tcnt}")
+                  c.execute(f"SELECT MAX(id) FROM {tbl}")
+                  tmax = c.fetchone()[0]
+              gap = (smax or 0) - (tmax or 0)
+              print(f"{tbl}: stocks MAX(id)={smax} | backtests MAX(id)={tmax} | gap={gap:,} rows")
               if smax and (not tmax or smax > tmax):
                   any_work = True
           if not any_work:
@@ -90,7 +94,7 @@ jobs:
               sys.exit(0)
           PY
 
-      - name: Incremental sync (per-table, imported_at-windowed)
+      - name: Incremental sync (per-table, id-windowed)
         if: ${{ github.event.inputs.dry_run != 'true' }}
         env:
           SOURCE_DB_PASS: ${{ secrets.DB_PASS_STOCKS }}
@@ -111,11 +115,11 @@ jobs:
           BATCH = 5000
           for tbl in os.environ["TABLES"].split():
               with tgt.cursor() as c:
-                  c.execute(f"SELECT COALESCE(MAX(imported_at),'1970-01-01') FROM {tbl}")
-                  cutoff = c.fetchone()[0]
-              print(f"[{tbl}] cutoff={cutoff}")
+                  c.execute(f"SELECT COALESCE(MAX(id), 0) FROM {tbl}")
+                  cutoff_id = c.fetchone()[0]
+              print(f"[{tbl}] cutoff_id={cutoff_id}")
               with src.cursor(pymysql.cursors.SSDictCursor) as c:
-                  c.execute(f"SELECT * FROM {tbl} WHERE imported_at > %s ORDER BY imported_at", (cutoff,))
+                  c.execute(f"SELECT * FROM {tbl} WHERE id > %s ORDER BY id", (cutoff_id,))
                   cols = [d[0] for d in c.description]
                   placeholders = ",".join(["%s"] * len(cols))
                   collist = ",".join(f"`{x}`" for x in cols)
