@@ -576,7 +576,7 @@ def evaluate_non_crypto_candidate(candidate: dict[str, Any], *, context: str = "
         pass
 
     # INC FOREX P0 (2026-05-31): consolidate to proven sleeve + one probation carry leg.
-    _FOREX_ALLOWED = frozenset({"cta_cross_asset_tsmom", "forex_carry"})
+    _FOREX_ALLOWED = frozenset({"cta_cross_asset_tsmom", "forex_carry", "forex_carry_g10"})
     if category == "forex":
         if strategy not in _FOREX_ALLOWED:
             return {

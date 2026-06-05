@@ -13,6 +13,7 @@ import os
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
+from alpha_engine import config as _ae_config  # SSO for FOREX kill-switch
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 CLOSED_PICKS_PATH = os.path.join(DATA_DIR, "closed_picks.json")
@@ -300,9 +301,9 @@ def apply_quality_gates(picks):
         if conf < 0.70:
             continue
 
-        # Gate 2: no forex
+        # Gate 2: no forex (lifted when FOREX_HARD_DISABLE=0)
         cat = (p.get("category") or "").lower()
-        if cat == "forex":
+        if cat == "forex" and _ae_config.FOREX_HARD_DISABLE:
             continue
 
         # Gate 3: no SELL in non-bearish regime

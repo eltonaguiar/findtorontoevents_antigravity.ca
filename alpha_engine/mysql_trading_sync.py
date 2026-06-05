@@ -19,6 +19,7 @@ import math
 import argparse
 from pathlib import Path
 from datetime import datetime, timezone
+from alpha_engine import config as _ae_config  # SSO for FOREX kill-switch
 
 logger = logging.getLogger("mysql_trading_sync")
 
@@ -667,7 +668,7 @@ def sync(dry_run=False):
         # 2.51 n=97 per commit e9dcfdca8) is preserved by the explicit category match. See
         # reports/2026-05-25_forex_zero_allocate_filter_DRAFT.md.
         _raw_cat = str(pick.get("category") or "").strip().upper()
-        if _raw_cat == "FOREX":
+        if _raw_cat == "FOREX" and _ae_config.FOREX_HARD_DISABLE:
             _forex_skipped = locals().get("_forex_skipped", 0) + 1
             continue
         if os.environ.get("CLEAN_INGEST_V2_ENFORCE", "0") in ("1", "true", "TRUE", "yes"):

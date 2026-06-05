@@ -299,6 +299,7 @@ from transaction_costs import (
     get_cost_model,
 )
 
+from alpha_engine import config as _ae_config  # SSO for FOREX kill-switch
 # Non-Crypto Quality Gate: macro filters for equity/forex picks (VIX, SPY SMA200, FX vol regime)
 try:
     from non_crypto_quality_gate import (
@@ -2601,7 +2602,8 @@ def run_strategies(data: dict[str, pd.DataFrame], context: dict,
             # FOREX zero-allocation (2026-05-24): kill-switch per EDGE_CRITERIA_ACTION_PLAN.
             # Both swarm engines agree: FOREX signal is bad, not mis-scaled. Zero-allocate.
             # Verification: SELECT COUNT(*) WHERE asset_class='FOREX' → 0.
-            if cat == "FOREX":
+            # LIFTED 2026-06-05: forex_carry_g10 backtest meets unlock (PF=1.59, WR=60.4%, n=197)
+            if cat == "FOREX" and _ae_config.FOREX_HARD_DISABLE:
                 sig["confidence"] = 0.0
                 sig["forex_killed"] = True
                 nc_blocked += 1  # count in summary log
