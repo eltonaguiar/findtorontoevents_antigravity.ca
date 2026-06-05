@@ -1,0 +1,44 @@
+# Per-asset-class strategy tracker rebuild — daily (ENHANCEMENT #121, 2026-06-04).
+#
+# Rebuilds strategy_perf_by_class in ejaguiar1_stocks from at_pick_outcomes (resolved
+# WON/LOST), covering ALL asset classes — closes the gap where FUTURES/ETF/BOND/
+# COMMODITY/PENNY emit picks with no strategy-level perf tracking, and keeps the table
+# fresh (addresses the stale-tracker INCIDENT #98). Derived table, full rebuild each run;
+# reads at_pick_outcomes, writes only strategy_perf_by_class (no source-table mutation).
+
+name: Strategy Perf By Class Rebuild
+
+on:
+  schedule:
+    - cron: "40 13 * * *"   # 13:40 UTC daily (after morning resolve/sync)
+  workflow_dispatch:
+
+concurrency:
+  group: strategy-perf-by-class
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pymysql
+      - name: Rebuild per-class strategy tracker
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+        run: |
+          python tools/rebuild_strategy_stats_all_classes.py 2>&1 | tee /tmp/rebuild.log
+      - name: Summary
+        if: always()
+        run: |
+          { echo "## strategy_perf_by_class rebuild"; echo '```json'; cat /tmp/rebuild.log 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
