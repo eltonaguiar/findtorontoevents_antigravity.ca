@@ -222,7 +222,7 @@ def _write_basket_to_db(legs: list[dict]) -> int:
     inserted = 0
 
     for leg in legs:
-        pick_id = f"fxcarry_{leg['ccy']}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+        month = _month_key(); pick_id = f"fxcarry_{leg['ccy']}_{month}"
         pair = leg["pair"]
 
         # Fetch live price from yfinance

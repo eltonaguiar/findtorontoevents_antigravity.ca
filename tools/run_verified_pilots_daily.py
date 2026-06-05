@@ -48,7 +48,7 @@ def main() -> int:
         _run([py, "verified_strategies/paper_pilot/mega_mutation_forward_pilot.py", "--one-shot"]),
         _run([py, "verified_strategies/paper_pilot/equity_bb_pilot.py", "--one-shot"]),
         _run([py, "verified_strategies/paper_pilot/equity_pead_drift_pilot.py", "--one-shot"]),
-        _run([py, "verified_strategies/paper_pilot/forex_carry_g10_pilot.py", "--one-shot"]),
+        _run([py, "verified_strategies/paper_pilot/forex_carry_g10_pilot.py", "--one-shot", "--write-db"]),
         _run([py, "tools/etf_forward_stats.py", "--write"]),
         _run([py, "tools/crypto_wf_forward_stats.py", "--write"]),
         _run([py, "tools/faber_forward_stats.py", "--write"]),

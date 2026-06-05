@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-06-05T14:13:36.413738+00:00",
+  "generated_at": "2026-06-05T15:12:20.961245+00:00",
   "methodology_doc": "docs/BACKTEST_ADMISSIBILITY_STANDARD.md",
   "quant_review": "reports/quant_strategy_root_cause_review_2026-06-02.md",
   "executive_answers": {
@@ -17,10 +17,20 @@
     "data_feeds": "Secondary; FRED carry fixed via curl cache; live pain is pick quality + methodology"
   },
   "live_money_ready": {
-    "generated_at": "2026-06-05T14:09:20.714432+00:00",
+    "generated_at": "2026-06-05T14:36:04.928220+00:00",
     "money_ready_classes": [],
     "n_classes": 9,
     "by_class": {
+      "EQUITY": {
+        "n": 45,
+        "wr": 0.2444,
+        "pf": 0.2605,
+        "mdd": 0.759,
+        "verdict": "INSUFFICIENT_DATA",
+        "top_source": "regime_terminal",
+        "top_source_share": 0.3529,
+        "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
+      },
       "FOREX": {
         "n": 22,
         "wr": 0.2273,
@@ -28,27 +38,17 @@
         "mdd": 0.027,
         "verdict": "INSUFFICIENT_DATA",
         "top_source": "multi_asset_scanner",
-        "top_source_share": 0.5,
+        "top_source_share": 0.6111,
         "root_cause": "PF 0.48, small n: carry lab thin; 14d raw shows high WR / PF 0.10 (EXPIRED mislabel). Not a data-feed outage \u2014 resolver/label issue."
-      },
-      "EQUITY": {
-        "n": 45,
-        "wr": 0.2444,
-        "pf": 0.2604,
-        "mdd": 0.759,
-        "verdict": "INSUFFICIENT_DATA",
-        "top_source": "regime_terminal",
-        "top_source_share": 0.3778,
-        "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
       },
       "CRYPTO": {
         "n": 220,
-        "wr": 0.4727,
-        "pf": 0.9934,
+        "wr": 0.4773,
+        "pf": 0.9967,
         "mdd": 1.0,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.6864,
+        "top_source_share": 0.6818,
         "root_cause": "Policy-clean PF 0.89 (n~377): bulk scanner loss-skew; lab VWAP/Bollinger WF PASS but opt-in only. Proven pick_funnel cell (RR1.0-1.5 LONG) is subset \u2014 aggregate loses."
       },
       "UNKNOWN": {
@@ -68,24 +68,24 @@
         "mdd": 0.9861,
         "verdict": "INSUFFICIENT_DATA",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.9091,
+        "top_source_share": 0.9,
         "root_cause": "Best lab candidate: dual momentum Tier-2 (PF 1.60, n=104). Live policy-clean n=3 \u2014 need forward n>=100 before merge."
       },
       "COMMODITY": {
         "n": 7,
         "wr": 0.4286,
-        "pf": 1.7412,
+        "pf": 1.7411,
         "mdd": null,
         "verdict": "INSUFFICIENT_DATA",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.5714,
+        "top_source_share": 0.8,
         "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
       },
       "FUTURES": {
-        "n": 15,
-        "wr": 0.0667,
-        "pf": 0.0701,
-        "mdd": 0.9999,
+        "n": 14,
+        "wr": 0.0714,
+        "pf": 0.3937,
+        "mdd": 0.1971,
         "verdict": "INSUFFICIENT_DATA",
         "top_source": "multi_asset_scanner",
         "top_source_share": 0.7857,
@@ -460,7 +460,7 @@
         }
       ],
       "dashboard": {
-        "timestamp": "2026-06-05T14:12:17.621165+00:00",
+        "timestamp": "2026-06-05T14:13:42.288538+00:00",
         "forward_n_target": 100,
         "any_promotion_ready": false,
         "sleeves": {
@@ -564,7 +564,7 @@
             }
           },
           "faber_taa": {
-            "timestamp": "2026-06-05T14:12:16.287789+00:00",
+            "timestamp": "2026-06-05T14:13:40.967100+00:00",
             "strategy": "faber_taa_paper_pilot",
             "n_closed": 0,
             "wr": 0.0,
@@ -612,9 +612,29 @@
               "shadow_gates": [
                 "n<30"
               ],
-              "open_position": null
+              "open_position": {
+                "symbol": "BTCUSDT",
+                "direction": "SELL",
+                "entry_price": 60732.36,
+                "take_profit": 58786.08714285714,
+                "stop_loss": 62192.06464285714,
+                "atr": 973.1364285714293,
+                "strategy": "B_flip_PriceRocMeanReversion",
+                "status": "OPEN",
+                "entry_date": "2026-06-05"
+              }
             },
-            "open_position": null,
+            "open_position": {
+              "symbol": "BTCUSDT",
+              "direction": "SELL",
+              "entry_price": 60732.36,
+              "take_profit": 58786.08714285714,
+              "stop_loss": 62192.06464285714,
+              "atr": 973.1364285714293,
+              "strategy": "B_flip_PriceRocMeanReversion",
+              "status": "OPEN",
+              "entry_date": "2026-06-05"
+            },
             "recommend_enable": false,
             "flag": "B_FLIP_PRICEROC_ENABLED"
           },
@@ -659,7 +679,7 @@
           }
         },
         "bootstrap_forward": {
-          "timestamp": "2026-06-05T14:12:17.610052+00:00",
+          "timestamp": "2026-06-05T14:13:42.272703+00:00",
           "forward_n_target": 100,
           "any_promotion_ready": false,
           "sleeves": {
@@ -695,9 +715,29 @@
                 "shadow_gates": [
                   "n<30"
                 ],
-                "open_position": null
+                "open_position": {
+                  "symbol": "BTCUSDT",
+                  "direction": "SELL",
+                  "entry_price": 60732.36,
+                  "take_profit": 58786.08714285714,
+                  "stop_loss": 62192.06464285714,
+                  "atr": 973.1364285714293,
+                  "strategy": "B_flip_PriceRocMeanReversion",
+                  "status": "OPEN",
+                  "entry_date": "2026-06-05"
+                }
               },
-              "open_position": null,
+              "open_position": {
+                "symbol": "BTCUSDT",
+                "direction": "SELL",
+                "entry_price": 60732.36,
+                "take_profit": 58786.08714285714,
+                "stop_loss": 62192.06464285714,
+                "atr": 973.1364285714293,
+                "strategy": "B_flip_PriceRocMeanReversion",
+                "status": "OPEN",
+                "entry_date": "2026-06-05"
+              },
               "recommend_enable": false,
               "flag": "B_FLIP_PRICEROC_ENABLED"
             },
