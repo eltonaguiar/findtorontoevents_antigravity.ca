@@ -1,0 +1,16 @@
+You are a skeptical quant-ML reviewer. Critique this thesis on ML/MLOps for our trading project. Be concrete, flag what's wrong, <=220 words.
+
+GROUND TRUTH (this repo, 2026-06-04):
+- Already ML-rich: xgboost in 181 files, lightgbm 142, sklearn 56, catboost 20. torch 10, tensorflow 4. optuna 0 (UNUSED), mlflow 4 (barely). ml_ranker/ml_engine_v2/ml_health_monitor exist.
+- Core finding this session: NO transferable edge. 8 clean-bar archetypes tested; 1 passed leakage-free attribution (ETF dual-momentum, alpha t=2.36, beta 0.34); the rest collapse to market BETA (attribution t<2). The headline AI-tournament sleeve (deepseek_v4 PF3.46) FAILED attribution (t=1.74) — beta/memorization, not skill (per KTD-Fin arXiv 2605.28359: backtests leak via knowledge-cutoff + raw returns != alpha).
+- Data is the bottleneck: signal_ts missing on ~all rows, ~25% no provenance, FORCE_CLOSED_TOXIC rows polluting WR, batch-stamped resolved_at (no real time series). money_ready=[].
+- Samples are small/tabular (n=48 monthly per sleeve; hundreds of picks/class).
+
+THESIS to critique:
+1. Do NOT add PyTorch/TensorFlow. Datasets are tiny, tabular, noisy, with no proven edge — deep learning would overfit. Tree models (xgboost/lightgbm) are already the right tool and already pervasive.
+2. The bottleneck is NOT model sophistication — it is DATA HYGIENE + LEAKAGE-CONTROLLED VALIDATION. More models on contaminated/no-edge data just manufacture overfit.
+3. Highest-value MLOps ADDITIONS: (a) optuna for hyperparameter search but ONLY inside purged-embargoed walk-forward CV (else it overfits the validation set); (b) mlflow (or a lightweight JSON registry) for experiment tracking + model registry so results are reproducible/auditable; (c) feature/data validation gates (pandera or great-expectations) to catch the signal_ts/provenance/toxic-row issues automatically; (d) drift monitoring (already partially in ml_health_monitor) wired to the gate-stack.
+4. ML should be a FILTER on top of the one proven sleeve (H-103) and on already-significant-alpha candidates — NOT a new predictor on no-edge classes. (Matches the repo's prior 'rule-first, ML-as-filter' guidance.)
+5. Add the attribution gate (#111) + DSR/PBO as mandatory pre-registration checks before any ML model is promoted.
+
+QUESTION: Is this thesis correct? What is OVER- or UNDER-stated? Name the single highest-ROI MLOps addition and the single thing to AVOID. GO/REVISE/STOP on adopting it.

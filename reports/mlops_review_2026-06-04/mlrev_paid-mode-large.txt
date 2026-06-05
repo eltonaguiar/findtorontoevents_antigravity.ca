@@ -1,0 +1,15 @@
+## Critique
+
+**Correct:** Points 1, 2,-augmented, and 5. Trees are right-sized; data hygiene is the actual bottleneck; attribution gates prevent self-deception.
+
+**Overstated:** Optuna (a). HPO on n=48 monthly samples with noisy labels is *itself* a leakage vector—even inside purged CV, you're optimizing on insufficient signal-to-noise. The expected improvement is epsilon; the risk of false discovery is material. Add it only *after* data gates fix provenance and sample size expands.
+
+**Understated:** (c) and the *scope* of data repair. "Validation gates" implies catching errors; the repo needs *reconstruction* of signal_ts, provenance backfill, and FORCE_CLOSED_TOXIC remediation. Catching is cheap; fixing is the work. Also understated: the "one proven sleeve" (H-103) has alpha but tiny capacity—ML-as-filter on it may not move PnL enough to justify infrastructure.
+
+**Missing:** Explicit ban on using DeepSeek/LLM outputs as features until their leakage mechanism (knowledge-cutoff contamination per KTD-Fin) is solved. The thesis implies this but should state it.
+
+**Single highest-ROI addition:** Feature/data validation gates (c)—fastest path to stopping invisible garbage-in-garbage-out.
+
+**Single thing to AVOID:** Any new model family (PyTorch/TF, or even new HPO) until data hygiene + attribution gate are passing on *existing* tree pipelines.
+
+**Verdict: GO** with revision—demote optuna to "defer," elevate data reconstruction to co-equal with gates, and add explicit LLM-feature ban.
