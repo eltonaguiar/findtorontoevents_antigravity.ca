@@ -26,9 +26,19 @@
 
 ---
 
-## Common upstream blocker
+## Common upstream blocker — REVISED
 
-**Single-snapshot resolver (no intrabar OHLC replay)** explains 6/8 class FAILs. PR #500 already disputed the WR inflation; intrabar replay was deployed at 02:01Z 2026-06-04 for CRYPTO (~89% coverage), but **non-CRYPTO classes are still on the old path**. Fix-this-first unlocks most of the inventory.
+**Originally suspected:** non-CRYPTO single-snapshot resolver.
+
+**Corrected by agent investigation (2026-06-05T14:30Z):** non-CRYPTO **already has** intrabar OHLC replay via yfinance, landed 2026-04-28 (v2) at `alpha_engine/outcome_resolver.py:440 _fetch_yfinance_ohlc_window`. Banner at `audit_dashboard/ai-tournament.html:189` is internally consistent: "Non-CRYPTO 100% replay coverage; CRYPTO ~89%".
+
+**Real gap = single-vendor risk**: CRYPTO has a 3-tier fallback chain (Binance → CoinGecko → KuCoin per PR #512); non-CRYPTO has **1 vendor (yfinance)** at `tools/ai_tournament/price_tracker.py:438` and silently drops to spot snapshot on failure.
+
+**Smallest unlock** (4-6h, low risk): add Tier-2 Alpha Vantage `TIME_SERIES_DAILY` fallback at `price_tracker.py:438` — AV key already wired at L138. Covers EQUITY + ETF simultaneously. Mirror the same fallback into `outcome_resolver.py:440` for money-ready/pf_registry path.
+
+**Alternative hypothesis** for why non-CRYPTO classes still FAIL 5-axis scrutiny: yfinance silent-empty returns OR mispriced-entry drift guard (`price_tracker.py:518 _DRIFT_BY_CLASS`) rejecting too many bars. Worth a separate dig before assuming the resolver is the bottleneck.
+
+Full agent report: `reports/INTRABAR_RESOLVER_EXPANSION_SCOPE_2026-06-05.md`.
 
 ---
 
@@ -73,11 +83,12 @@ PRs #547, #548, #549 CLOSED as superseded by `be7721dc34` (money-ready blitz). #
 
 ## Action items (prioritized, autonomous-execute scope)
 
-### P0 (this week — unlocks 6/8 verdicts)
-1. **Intrabar OHLC resolver for non-CRYPTO classes** — currently CRYPTO ~89% / others 0%
+### P0 (this week — unlocks 6/8 verdicts) — REVISED
+1. **~~Intrabar OHLC resolver for non-CRYPTO classes~~** — ALREADY DONE 2026-04-28 v2. Real gap = single-vendor risk: add Alpha Vantage Tier-2 fallback at `price_tracker.py:438` (~4-6h). Covers EQUITY+ETF.
 2. **Repopulate `alpha_engine/data/pead_earnings_cache.json`** — `next_earnings_date=None` for every major symbol
-3. **Quarantine `multi_asset_copytrader`** (0/426 ETF + 0/120 COMMODITY wins) into `BANNED_SOURCES`
+3. **~~Quarantine `multi_asset_copytrader`~~** for COMMODITY/EQUITY/FOREX — **NOT shippable**: policy-clean cohort n=1/9/2 respectively (below 30-pick floor per 2026-05-19 swarm decision at `quality_gates.py:2660`). Raw n=637 in trading_picks is already excluded by the policy-clean pipeline. Re-evaluate when policy-clean n≥30 per class.
 4. **Investigate `USDJPY × cta_replicator` silent retirement** — recover or kill the only FUTURES lead
+5. **NEW:** Investigate yfinance silent-empty returns OR mispriced-entry drift guard (`price_tracker.py:518 _DRIFT_BY_CLASS`) as alternative bottleneck if non-CRYPTO 5-axis scrutiny stays bad after multi-vendor fallback
 
 ### P1 (this month)
 5. **Wire `bond_duration_momentum` to production scanner** (Wire-Up Rule — shipped at `49443c0375` but 0 picks emitted)
