@@ -62,6 +62,10 @@ FAT_TAIL_THRESHOLD = 0.30 # top-3 wins as fraction of gross wins
 OOS_MIN_PF = 1.0          # both halves must beat this
 BATCH_THRESHOLD = 0.35    # max single-date share
 BINOM_ALPHA = 0.05        # significance level
+# Backfill exclusion: 2026-06-04 resolver backfill wrote 5,960 commodity rows
+# in a single day. See reports/deep_dive_commodity_2026-06-05.md. Set to None
+# to disable; set to a date string to exclude.
+BACKFILL_EXCLUDE_DATE = "2026-06-04"
 
 
 def scrutinize_source(cur, source_system: str, category: str) -> dict:
@@ -73,6 +77,8 @@ def scrutinize_source(cur, source_system: str, category: str) -> dict:
           AND status NOT IN ('OPEN','ABANDONED','FLAT','FORCE_CLOSED_TOXIC')
           AND closed_at > '2026-01-01'
     """
+    if BACKFILL_EXCLUDE_DATE:
+        base += f"  AND DATE(closed_at) != '{BACKFILL_EXCLUDE_DATE}'\n"
     cls = category.lower().strip()
 
     # Overall stats
@@ -200,10 +206,12 @@ def run_scrutiny(min_n: int = 30, output_dir: str = "reports") -> list:
         WHERE closed_at IS NOT NULL AND pnl_pct IS NOT NULL
           AND status NOT IN ('OPEN','ABANDONED','FLAT','FORCE_CLOSED_TOXIC')
           AND closed_at > '2026-01-01'
+          {backfill_filter}
         GROUP BY source_system, cls
         HAVING n >= %s
         ORDER BY n DESC
-    """, (min_n,))
+    """.format(backfill_filter=f"AND DATE(closed_at) != '{BACKFILL_EXCLUDE_DATE}'" if BACKFILL_EXCLUDE_DATE else ""),
+       (min_n,))
     candidates = cur.fetchall()
     print(f"Found {len(candidates)} (source, class) pairs with n>={min_n}")
 
