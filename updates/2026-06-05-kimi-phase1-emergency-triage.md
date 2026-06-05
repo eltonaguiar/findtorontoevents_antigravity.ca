@@ -166,14 +166,15 @@ Fetches 60d of 1h bars from yfinance for non-crypto symbols. Bulk-upserts into `
 ## 5. Verification Commands
 
 ```bash
+# NOTE: load creds via tools.db_env — never hardcode passwords. See `tools/db_env.py`.
 # Confirm source bans are active
-python3 -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='stocks1234560',database='ejaguiar1_stocks'); cur=c.cursor(); cur.execute('SELECT source_system,COUNT(*) FROM at_raw_picks WHERE was_banned=1 GROUP BY source_system'); [print(r) for r in cur.fetchall()]; c.close()"
+python3 -c "from tools.db_env import get_stocks_creds; import pymysql; c=pymysql.connect(**get_stocks_creds()); cur=c.cursor(); cur.execute('SELECT source_system,COUNT(*) FROM at_raw_picks WHERE was_banned=1 GROUP BY source_system'); [print(r) for r in cur.fetchall()]; c.close()"
 
 # Confirm stale picks resolved
-python3 -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='stocks1234560',database='ejaguiar1_stocks'); cur=c.cursor(); cur.execute(\"SELECT status,COUNT(*) FROM at_raw_picks GROUP BY status\"); [print(r) for r in cur.fetchall()]; c.close()"
+python3 -c "from tools.db_env import get_stocks_creds; import pymysql; c=pymysql.connect(**get_stocks_creds()); cur=c.cursor(); cur.execute(\"SELECT status,COUNT(*) FROM at_raw_picks GROUP BY status\"); [print(r) for r in cur.fetchall()]; c.close()"
 
 # Confirm zero-PnL fixed
-python3 -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='stocks1234560',database='ejaguiar1_stocks'); cur=c.cursor(); cur.execute(\"SELECT COUNT(*) FROM at_pick_outcomes WHERE pnl_pct=0 AND status IN ('WON','LOST')\"); print('remaining zero-pnl:', cur.fetchone()[0]); c.close()"
+python3 -c "from tools.db_env import get_stocks_creds; import pymysql; c=pymysql.connect(**get_stocks_creds()); cur=c.cursor(); cur.execute(\"SELECT COUNT(*) FROM at_pick_outcomes WHERE pnl_pct=0 AND status IN ('WON','LOST')\"); print('remaining zero-pnl:', cur.fetchone()[0]); c.close()"
 
 # Strategy kill switch dry-run
 python3 tools/strategy_kill_switch.py
