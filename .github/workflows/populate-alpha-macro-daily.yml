@@ -1,0 +1,44 @@
+name: Populate alpha_macro Daily
+
+on:
+  # Daily at 21:00 UTC — after US market close (20:00 UTC) data is settled
+  schedule:
+    - cron: '7 21 * * *'
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: 'Lookback window in days (default 450 = 200d SMA200 + buffer)'
+        type: number
+        default: 450
+
+permissions:
+  contents: read
+
+concurrency:
+  group: populate-alpha-macro
+  cancel-in-progress: false
+
+jobs:
+  populate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install yfinance + pymysql
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pymysql
+
+      - name: Run populate_alpha_macro
+        env:
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_STOCKS_PASSWORD }}
+          DB_BACKTESTS_PASSWORD: ${{ secrets.DB_BACKTESTS_PASSWORD }}
+        run: |
+          python alpha_engine/populate_alpha_macro.py --lookback-days ${{ inputs.lookback_days || 450 }}
