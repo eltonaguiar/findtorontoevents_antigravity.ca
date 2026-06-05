@@ -19,14 +19,13 @@ jobs:
       - name: Backfill NULL pnl_pct + closed_at
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
-          DB_USER: ${{ secrets.DB_USER_STOCKS }}
         run: |
           python3 tools/backfill_null_pnl.py 2>&1 | tail -5 || true
           # Backfill closed_at = updated_at for any new resolved-but-NULL picks
           python3 -c "
 import pymysql, os
 conn = pymysql.connect(host='mysql.50webs.com',
-    user=os.environ.get('DB_USER','ejaguiar1_stocks'),
+    user='ejaguiar1_stocks',
     password=os.environ.get('DB_PASS_STOCKS',''),
     db='ejaguiar1_stocks', connect_timeout=10)
 cur = conn.cursor()
@@ -39,7 +38,6 @@ conn.commit(); conn.close()
       - name: Run auto-shutdown monitor
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
-          DB_USER: ${{ secrets.DB_USER_STOCKS }}
         run: |
           python3 tools/auto_shutdown_monitor.py 2>&1 | tee /tmp/monitor_report.txt
           # Fail CI if any HARD_STOP sources detected (alert operator)

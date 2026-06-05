@@ -426,6 +426,38 @@ def _load_picks() -> list[dict]:
 PF_REGISTRY_PATH = REPO_ROOT / "audit_dashboard/data/pf_registry.json"
 
 
+def _top_money_ready_sleeves(reg: dict, asset_class: str, min_n: int = 30) -> list[dict]:
+    """T2+ individual sleeves from strategy-level policy-clean net.
+
+    Surfaces actionable per-strategy candidates even when the aggregate class
+    verdict is still NOT_READY / INSUFFICIENT_DATA.
+    """
+    rows = reg.get("by_asset_class_strategy_policy_clean_net", [])
+    if not rows:
+        return []
+    ac = asset_class.upper()
+    sleeves: list[dict] = []
+    for r in rows:
+        if str(r.get("asset_class", "")).upper() != ac:
+            continue
+        n = int(r.get("n", 0) or 0)
+        wr = float(r.get("win_rate_pct", 0) or 0)
+        pf_raw = r.get("profit_factor")
+        pf = float(pf_raw) if pf_raw is not None else 0.0
+        single = bool(r.get("is_single_source_artifact", False))
+        if n >= min_n and wr >= 50.0 and pf >= 1.5:
+            sleeves.append({
+                "strategy": r.get("strategy", "unknown"),
+                "n": n,
+                "wr": round(wr, 2),
+                "pf": round(pf, 4),
+                "is_single_source": single,
+                "note": r.get("note", "") or ("single-source" if single else ""),
+            })
+    sleeves.sort(key=lambda s: s["pf"], reverse=True)
+    return sleeves[:5]
+
+
 def _load_dashboard_health() -> dict[str, dict]:
     """Per-class n/wr/pf used as a display fallback when a class has fewer
     than MIN_N_CLASS resolved picks.
@@ -1167,6 +1199,12 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
     picks = _load_picks()
     class_stats = _class_stats(picks)
     dash_health = _load_dashboard_health()
+    full_reg: dict = {}
+    if PF_REGISTRY_PATH.exists():
+        try:
+            full_reg = json.loads(PF_REGISTRY_PATH.read_text())
+        except Exception:
+            full_reg = {}
 
     # Include any classes in dashboard health that have no closed_picks data at all
     for ac_dash, health in dash_health.items():
@@ -1267,6 +1305,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
         # Shadow-mode gates (stamped but do NOT change verdict yet)
         bootstrap_ci = _bootstrap_expectancy_ci(ac_picks)
         wf_oos = _simple_wf_oos_ratio(ac_picks)
+        top_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
 
         results[ac] = {
             "n_resolved": n,
@@ -1357,6 +1396,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500) -> di
             "wf_oos_is_pf": wf_oos.get("is_pf"),
             "wf_oos_oos_pf": wf_oos.get("oos_pf"),
             "wf_oos_ok": wf_oos.get("ok"),
+            "top_sleeves": top_sleeves,
             # Flag: class passed all hard gates but recency check says stale
             "_recency_warn": (
                 verdict == "MONEY_READY" and recency.get("ok") is False

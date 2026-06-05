@@ -995,9 +995,21 @@ a:hover { text-decoration: underline; }
             // the two failure modes.
             var frozen = c.policy_frozen === true;
             var frozenBadge = frozen ? ' <span title="In BLOCKED_ASSET_CLASSES — class is operator-frozen; picks exist but are policy-excluded. Lift via operator decision (external replication / source rehab), not more picks." style="background:rgba(96,165,250,0.18);color:#7dd3fc;border:1px solid rgba(96,165,250,0.45);padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:0.4px">&#x1F9CA; FROZEN</span>' : '';
+            var gateBadges = '';
+            if (c.wf_oos_ok === true) gateBadges += ' <span title="Walk-forward OOS ratio ≥0.85" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">WF OK</span>';
+            else if (c.wf_oos_ok === false) gateBadges += ' <span title="Walk-forward OOS ratio below 0.85 target" style="background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.35);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">WF FAIL</span>';
+            if (c.bootstrap_ci_ok === true) gateBadges += ' <span title="Bootstrap 95% CI lower bound on expectancy > 0" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">BOOT OK</span>';
+            else if (c.bootstrap_ci_ok === false) gateBadges += ' <span title="Bootstrap CI lower bound ≤ 0 — unstable edge" style="background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.35);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">BOOT FAIL</span>';
+            if (c.recency_ok === false) gateBadges += ' <span title="No pick within 14d / 48h recency gate" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">STALE</span>';
+            var sleeveTxt = '';
+            var sleeves = c.top_sleeves || [];
+            if (sleeves.length) {
+              var s0 = sleeves[0];
+              sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>';
+            }
             span.innerHTML = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
-              '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + ' ' +
-              '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' policy-clean resolved)</span>';
+              '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + gateBadges + ' ' +
+              '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' policy-clean resolved)</span>' + sleeveTxt;
           });
           var asof = document.getElementById('major-goal-asof');
           if (asof) asof.innerHTML = 'Live &mdash; <code>money_ready_verdict.json</code> policy-clean closed-pick cohort, generated ' +
