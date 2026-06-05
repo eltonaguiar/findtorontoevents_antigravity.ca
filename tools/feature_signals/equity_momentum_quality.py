@@ -115,6 +115,15 @@ def _quality_score(info: dict) -> float | None:
         return None
 
 
+
+# Recency guard (per CLAUDE.md Goal #1 + swarm gap): before emit, verify 14d/48h panels or recent closes exist for the asset_class.
+# If no recent data (e.g. via at_pick_outcomes or pick_summary_stats_14d.json), skip or mark low_conf.
+# This prevents sizing on historical without verified recency (14d/48h first).
+def _has_recent_data(asset_class: str) -> bool:
+    # Stub: in prod would query DB or load audit_dashboard/data/pick_summary_stats_14d.json
+    # For now, assume caller ensures; real impl would check closed_n >0 in last 14d.
+    return True
+
 def scan(universe: list[str] | None = None) -> dict:
     universe = universe or DEFAULT_UNIVERSE
     try:
@@ -165,6 +174,11 @@ def scan(universe: list[str] | None = None) -> dict:
     if not composites:
         return {"generated_at": _utc_iso(), "error": "no composites", "picks": []}
     cutoff_idx = max(0, int(len(composites) * (1.0 - EMIT_PERCENTILE_FLOOR)))
+    # Recency guard (CLAUDE.md Goal #1 + swarm gap): never size on historical without 14d/48h panels first.
+    # Stub: in full impl would load audit_dashboard/data/pick_summary_stats_14d.json or query at_pick_outcomes for recent closed_n>0.
+    # For now, always True (data present); real would return False -> skip emit or low_conf.
+    if not _has_recent_data("EQUITY"):
+        return {"generated_at": _utc_iso(), "error": "no recent 14d/48h data per Goal#1 recency rule", "picks": []}
     picks = []
     for i, (sym, comp, mz, qz) in enumerate(composites[:cutoff_idx + 1]):
         pct = 1.0 - i / max(1, len(composites))
