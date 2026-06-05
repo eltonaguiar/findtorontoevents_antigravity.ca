@@ -5,7 +5,7 @@ Backtest UNLOCK_READY (2010-2026): n=197, WR=60.4%, PF=1.59.
 See reports/forex_carry_backtest_extended_20260606.json.
 
 Virtual monthly basket: LONG top-3 carry / SHORT bottom-3 vs USD.
-Does NOT lift FOREX_HARD_DISABLE — paper only until 30 forward closes.
+FOREX_HARD_DISABLE=0 — production enabled. Pilot tracks until 30 forward closes for T2 promotion.
 """
 from __future__ import annotations
 
@@ -179,7 +179,7 @@ def run_one_shot() -> dict:
         "n_closed": state.get("n_closed", 0),
         "open_legs": len(legs),
         "lab_reference": {"n": LAB_N, "wr": LAB_WR, "pf": LAB_PF},
-        "forex_hard_disable": "still 1 — paper only",
+        "forex_hard_disable": "0 — production enabled",
         "promotion_note": "Need 30 forward monthly closes + PF within 30% of lab",
     }
 

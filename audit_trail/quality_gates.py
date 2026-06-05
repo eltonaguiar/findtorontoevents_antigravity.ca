@@ -425,6 +425,7 @@ def _reset_system_concentration_cache() -> None:
 # =============================================================================
 
 import os as _os
+from alpha_engine import config as _ae_config  # FOREX kill-switch SSO
 
 _THRESHOLD_FREEZE_ENV = _os.environ.get("THRESHOLD_FREEZE", "1")  # Default ON
 _THRESHOLD_FREEZE_UNTIL = "2026-08-18"
@@ -8624,9 +8625,7 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
         os.environ.get("FOREX_COPYTRADER_ENABLE", "0") == "1"
         and _forex_bypass_src == "multi_asset_copytrader"
     )
-    if str(asset_class).upper() == "FOREX" and _truthy(
-        os.environ.get("FOREX_HARD_DISABLE"), "1"
-    ) and not _forex_copytrader_exempt:
+    if str(asset_class).upper() == "FOREX" and _ae_config.FOREX_HARD_DISABLE and not _forex_copytrader_exempt:
         pick["_hf_quality_gate_reason"] = "ns_e_forex_hard_disable"
         # F-003: emit INFO (not DEBUG) so FOREX hard-disable appears in the audit trail.
         # Ticket: MASTER_ACTION_PLAN_2026-05-18 F-001/F-003.

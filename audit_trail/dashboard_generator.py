@@ -52,6 +52,7 @@ except Exception:  # pragma: no cover - optional import
     _HAS_PENDING_SPA = False
 
 from audit_trail.pnl_ingest_sanity import clamp_pnl_pct_for_pick
+from alpha_engine import config as _ae_config  # SSO for FOREX kill-switch
 
 try:
     from audit_trail.reverse_split_symbols import (
@@ -6113,9 +6114,7 @@ def _build_readiness_payload(asset_class_health: dict, generated_at: str) -> dic
       BELOW_T2:   anything else
     """
     # Read FOREX kill-switch (default ON per alpha_engine/config.py line 270)
-    _forex_disabled = os.environ.get("FOREX_HARD_DISABLE", "1") not in (
-        "0", "false", "FALSE", "False"
-    )
+    _forex_disabled = _ae_config.FOREX_HARD_DISABLE
 
     # Read blocked classes from quality_gates (fail-open)
     _blocked_classes: set = set()
