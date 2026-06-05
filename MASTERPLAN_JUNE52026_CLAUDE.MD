@@ -178,12 +178,30 @@ Gemini injected `get_split_adjustment()` call that referenced an undefined funct
 - **ETF**: Paper pilot running (etf_verified_dual_momentum), n→100 tracking
 - **BOND**: Too few trades (n<10 closed); let accumulate
 
+### Session 3 Update — OHLCV Replay + Full Scrutiny (2026-06-05)
+
+#### mega_mutation OHLCV replay results (tools/intrabar_ohlcv_replay.py)
+- **296 raw trades → 204 deduped (31% dup rate)** — ingestion dedup bug confirmed
+- **Deduped all-time: WR=63.2%, PF=2.86** (vs reported 63.9%/3.12) — T1 edge confirmed
+- **Conservative (sustained exits only): PF=2.05** — edge holds under worst-case fills
+- **AVAXUSDT kill**: PF=0.82 n=37 deduped — confirmed drag → added to BLOCKED_SYMBOLS
+- **Top 5 symbols (deduped)**: JUPUSDT PF=6.96, ENAUSDT PF=6.83, WIFUSDT PF=6.51, ADAUSDT PF=4.88, STXUSDT PF=2.22
+- **DOTUSDT watch**: PF=1.27 n=31 — below T2, monitor
+
+#### Per-class scrutiny (tools/per_class_scrutiny_engine.py — 21 pairs, n≥30)
+- **Only mega_mutation/crypto passes all 5 axes** (5/5)
+- **kimi_signal_tracking CRYPTO** (reported WR=72%, PF=2.46, n=111): BATCH ARTIFACT — 100% of trades on 2026-04-10. NOT real edge.
+- **prediction_market_agents CRYPTO** (WR=92%, PF=44.81): BATCH ARTIFACT — 68% on 2026-04-15, DOGE 68% concentration. NOT real edge.
+- **non_crypto_consensus FOREX**: still 3/5 (April-15 batch + p=0.086 fail). WATCHLIST only.
+- **cta_replicator COMMODITY** (PF=2.83): 50.5% SI=F concentration, H1=103/H2=4 trades (strategy dead in H2). NOT real.
+
 ### Next Highest-Leverage Actions (this session's additions to Session 1 plan):
 1. **Kill `luxalgo_filters` from emission** — 2,037 consistent-loser picks running daily, WR=43%
 2. **Kill `multi_asset_copytrader` from ALL classes** — FOREX WR=45.7% post-cleanup (still losing), COMMODITY WR=34.4% (bleeding)
-3. **Intrabar OHLCV replay on mega_mutation** — crypto_ohlcv populated (190k+ rows), column=`timestamp`
-4. **Track non_crypto_consensus forward** — if April 15 batch was one-time, underlying edge may be real; need n>=50 fresh non-batch closes
-5. **Scrutiny engine tool** (`tools/per_class_scrutiny_engine.py`) — automate 5-axis daily so we stop rediscovering the same issues each session
+3. ~~Intrabar OHLCV replay~~ — DONE. PF=2.86 confirmed. AVAXUSDT killed.
+4. **Fix mega_mutation dedup bug** — 31% duplicate trades in ingestion (same trade resolved multiple times daily)
+5. **Track non_crypto_consensus forward** — if April 15 batch was one-time, underlying edge may be real; need n>=50 fresh non-batch closes
+6. **Daily scrutiny cron** (`tools/per_class_scrutiny_engine.py`) — automate 5-axis daily so we stop rediscovering the same issues each session
 - **ENH new** (HIGH/M): Promotion gate with walk-forward + DSR + two-regime test
 - **ENH new** (P0/M): Live-or-die kill switch monitoring with /audit/incidents.html P0 auto-file on breach
 
