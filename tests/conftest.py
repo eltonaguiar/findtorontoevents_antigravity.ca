@@ -85,3 +85,20 @@ os.environ.setdefault("ANTI_OVERFIT_VALIDATOR_ENABLED", "0")
 # in that range). Tests that specifically exercise this gate set
 # EQUITY_ML_SCORE_GATE_ENABLED=1 explicitly.
 os.environ.setdefault("EQUITY_ML_SCORE_GATE_ENABLED", "0")
+# CRYPTO_PRODUCTION_BLOCK_LONG landed in Grok commit b9ffae732c (2026-06-05).
+# Default ON in quality_gates.py via _truthy(env, "1"). Blocks all CRYPTO
+# LONG picks at admission. Tests that pre-date this gate (most of
+# test_quality_gates.py, test_crypto_gates_p0.py, test_phase1_active_gates.py)
+# fixture CRYPTO LONG picks for OTHER gates and would fail spuriously.
+# Tests specifically exercising this gate (none yet, future) set
+# CRYPTO_PRODUCTION_BLOCK_LONG=1 + CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE=1.
+os.environ.setdefault("CRYPTO_PRODUCTION_BLOCK_LONG", "0")
+os.environ.setdefault("CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE", "0")
+# HF_QUALITY_GATE default flipped to ON 2026-04-28. Pre-existing test fixtures
+# (test_hf_quality_gate_wire.py, test_hf_gate_default_on_safety.py) explicitly
+# set HF_QUALITY_GATE_ENABLED=0 to test the OFF path; those still work. But
+# OTHER tests (test_m097_book_direction_conflict.py, etc.) that don't manage
+# the env get the ON default, which blocks picks via hf-dead-band / hf-lag-bt.
+# Tests that specifically test the HF gate set HF_QUALITY_GATE_ENABLED=1; the
+# rest default to OFF here.
+os.environ.setdefault("HF_QUALITY_GATE_ENABLED", "0")
