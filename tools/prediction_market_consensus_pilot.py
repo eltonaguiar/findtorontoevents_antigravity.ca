@@ -26,6 +26,14 @@ import pymysql
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PILOT_PATH = REPO_ROOT / "verified_strategies" / "paper_pilot" / "prediction_market_consensus_pilot.json"
 
+DB_CONFIG = {
+    "host": "mysql.50webs.com",
+    "user": "ejaguiar1_stocks",
+    "password": "stocks1234560",
+    "database": "ejaguiar1_stocks",
+    "cursorclass": pymysql.cursors.DictCursor,
+}
+
 PROMOTION_CRITERIA = {
     "min_forward_n": 50,
     "min_wr_pct": 60.0,
@@ -189,8 +197,7 @@ def fetch_outcomes(conn, open_ids: list) -> dict:
 
 
 def update_pilot(pilot: dict, dry_run: bool = False) -> dict:
-    from tools.db_env import get_stocks_creds
-    conn = pymysql.connect(**get_stocks_creds(), cursorclass=pymysql.cursors.DictCursor)
+    conn = pymysql.connect(**DB_CONFIG)
     try:
         existing_ids = {p["pick_id"] for p in pilot["picks"]}
 
