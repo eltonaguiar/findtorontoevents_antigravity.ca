@@ -18,8 +18,18 @@ import sys
 import json
 import argparse
 from datetime import datetime, date
+from decimal import Decimal
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
+def _f(x):
+    """Coerce Decimal (from pymysql SUM/AVG/ABS) to float for safe arithmetic."""
+    if x is None:
+        return 0.0
+    if isinstance(x, Decimal):
+        return float(x)
+    return x
 
 try:
     import pymysql
@@ -103,7 +113,7 @@ def scrutinize_source(cur, source_system: str, category: str) -> dict:
     # Axis 2: Fat-tail
     cur.execute(f"SELECT pnl_pct {base} AND pnl_pct>0 ORDER BY pnl_pct DESC LIMIT 3",
                 (source_system, cls))
-    top3_wins = sum(r["pnl_pct"] for r in cur.fetchall())
+    top3_wins = sum(_f(r["pnl_pct"]) for r in cur.fetchall())
     fat_ratio = top3_wins / gw if gw > 0 else 1.0
     axes["fat_tail"] = {"pass": fat_ratio < FAT_TAIL_THRESHOLD,
                          "top3_share": round(fat_ratio, 3)}
@@ -130,15 +140,17 @@ def scrutinize_source(cur, source_system: str, category: str) -> dict:
                     (mid_str, mid_str, mid_str, mid_str, mid_str, mid_str, mid_str, mid_str,
                      source_system, cls))
         oos = cur.fetchone()
-        h1_pf = (oos["h1gw"] / oos["h1gl"]) if oos["h1gl"] and oos["h1gl"] > 0 else None
-        h2_pf = (oos["h2gw"] / oos["h2gl"]) if oos["h2gl"] and oos["h2gl"] > 0 else None
+        h1gw_f, h1gl_f = _f(oos["h1gw"]), _f(oos["h1gl"])
+        h2gw_f, h2gl_f = _f(oos["h2gw"]), _f(oos["h2gl"])
+        h1_pf = (h1gw_f / h1gl_f) if h1gl_f and h1gl_f > 0 else None
+        h2_pf = (h2gw_f / h2gl_f) if h2gl_f and h2gl_f > 0 else None
         oos_pass = (h1_pf is None or h1_pf >= OOS_MIN_PF) and (h2_pf is None or h2_pf >= OOS_MIN_PF)
-        if oos["h1n"] == 0:
+        if _f(oos["h1n"]) == 0:
             oos_pass = True  # no H1 data — can't fail
         axes["oos_stability"] = {"pass": oos_pass,
                                   "h1_pf": round(h1_pf, 2) if h1_pf else None,
                                   "h2_pf": round(h2_pf, 2) if h2_pf else None,
-                                  "h1_n": oos["h1n"], "h2_n": oos["h2n"]}
+                                  "h1_n": int(_f(oos["h1n"])), "h2_n": int(_f(oos["h2n"]))}
     else:
         axes["oos_stability"] = {"pass": False, "error": "no date bounds"}
 
