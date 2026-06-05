@@ -53,7 +53,23 @@ def _conc_limits() -> tuple[float, dict]:
 
 
 def _load_verdicts() -> dict:
-    """Run money_ready_verdict.py --json and parse the per-class verdict map."""
+    """Run money_ready_verdict --ci and return the per-class verdict map.
+
+    Tries direct import first (avoids subprocess timeout on GHA runners
+    where numpy startup or transitive deps can be slow). Falls back to
+    subprocess if the import fails.
+    """
+    # Fast path: direct import (no subprocess overhead)
+    try:
+        sys.path.insert(0, str(REPO))
+        sys.path.insert(0, str(REPO / "alpha_engine"))
+        sys.path.insert(0, str(REPO / "tools"))
+        from alpha_engine.money_ready_verdict import money_ready_verdict  # type: ignore
+        return money_ready_verdict(ci_mode=True)
+    except Exception as exc:
+        print(f"::warning::direct import failed ({exc}); falling back to subprocess")
+
+    # Fallback: subprocess
     out = subprocess.run(
         [sys.executable, str(VERDICT_SCRIPT), "--json", "--ci"],
         capture_output=True, text=True, cwd=str(REPO), timeout=300,

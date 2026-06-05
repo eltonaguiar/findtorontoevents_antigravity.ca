@@ -43,7 +43,11 @@ for _p in (str(REPO_ROOT), str(Path(__file__).resolve().parent)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None  # type: ignore[assignment]
+    print("WARN: numpy unavailable; statistical gates degraded", file=sys.stderr)
 
 # Lazy imports to avoid ModuleNotFoundError when ci_gate scripts import this
 # module from a different sys.path context (e.g. GHA runners).
