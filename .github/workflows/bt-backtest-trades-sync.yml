@@ -46,7 +46,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
@@ -103,46 +103,87 @@ jobs:
         run: |
           python - <<'PY'
           import os, pymysql, time
+
           host = "mysql.50webs.com"
-          src = pymysql.connect(host=host, user="ejaguiar1_stocks",
-                                password=os.environ["SOURCE_DB_PASS"],
-                                database="ejaguiar1_stocks", connect_timeout=20,
-                                read_timeout=600)
-          tgt = pymysql.connect(host=host, user="ejaguiar1_backtests",
-                                password=os.environ["TARGET_DB_PASS"],
-                                database="ejaguiar1_backtests", connect_timeout=20,
-                                write_timeout=600, autocommit=False)
-          BATCH = 5000
+          BATCH = 2000  # smaller batches — 50webs drops long-lived server-side cursors
+
+          def connect_src():
+              return pymysql.connect(
+                  host=host, user="ejaguiar1_stocks",
+                  password=os.environ["SOURCE_DB_PASS"],
+                  database="ejaguiar1_stocks",
+                  connect_timeout=30, read_timeout=120, write_timeout=120,
+              )
+
+          def connect_tgt():
+              return pymysql.connect(
+                  host=host, user="ejaguiar1_backtests",
+                  password=os.environ["TARGET_DB_PASS"],
+                  database="ejaguiar1_backtests",
+                  connect_timeout=30, read_timeout=120, write_timeout=120,
+                  autocommit=False,
+              )
+
           for tbl in os.environ["TABLES"].split():
+              tgt = connect_tgt()
               with tgt.cursor() as c:
                   c.execute(f"SELECT COALESCE(MAX(id), 0) FROM {tbl}")
                   cutoff_id = c.fetchone()[0]
-              print(f"[{tbl}] cutoff_id={cutoff_id}")
-              with src.cursor(pymysql.cursors.SSDictCursor) as c:
-                  c.execute(f"SELECT * FROM {tbl} WHERE id > %s ORDER BY id", (cutoff_id,))
-                  cols = [d[0] for d in c.description]
-                  placeholders = ",".join(["%s"] * len(cols))
-                  collist = ",".join(f"`{x}`" for x in cols)
-                  insert_sql = f"INSERT IGNORE INTO {tbl} ({collist}) VALUES ({placeholders})"
-                  batch = []
-                  total = 0
-                  t0 = time.time()
-                  for row in c:
-                      batch.append([row[x] for x in cols])
-                      if len(batch) >= BATCH:
-                          with tgt.cursor() as tc:
-                              tc.executemany(insert_sql, batch)
-                          tgt.commit()
-                          total += len(batch)
-                          batch = []
-                          if total % 50000 == 0:
-                              print(f"[{tbl}] {total} rows synced ({total/(time.time()-t0):.0f}/s)")
-                  if batch:
+              tgt.close()
+              print(f"[{tbl}] resume cutoff_id={cutoff_id}")
+
+              cols = None
+              insert_sql = None
+              total = 0
+              t0 = time.time()
+              src = connect_src()
+              tgt = connect_tgt()
+              while True:
+                  try:
+                      with src.cursor(pymysql.cursors.DictCursor) as c:
+                          c.execute(
+                              f"SELECT * FROM {tbl} WHERE id > %s ORDER BY id LIMIT %s",
+                              (cutoff_id, BATCH),
+                          )
+                          rows = c.fetchall()
+                  except pymysql.err.OperationalError as e:
+                      print(f"[{tbl}] src reconnect after: {e}")
+                      src.close()
+                      src = connect_src()
+                      continue
+                  if not rows:
+                      break
+                  if cols is None:
+                      cols = list(rows[0].keys())
+                      placeholders = ",".join(["%s"] * len(cols))
+                      collist = ",".join(f"`{x}`" for x in cols)
+                      insert_sql = f"INSERT IGNORE INTO {tbl} ({collist}) VALUES ({placeholders})"
+                  payload = [[row[x] for x in cols] for row in rows]
+                  try:
                       with tgt.cursor() as tc:
-                          tc.executemany(insert_sql, batch)
+                          tc.executemany(insert_sql, payload)
                       tgt.commit()
-                      total += len(batch)
-                  print(f"[{tbl}] DONE — {total} rows in {time.time()-t0:.0f}s")
+                  except pymysql.err.OperationalError as e:
+                      print(f"[{tbl}] tgt reconnect after: {e}")
+                      tgt.close()
+                      tgt = connect_tgt()
+                      with tgt.cursor() as tc:
+                          tc.executemany(insert_sql, payload)
+                      tgt.commit()
+                  cutoff_id = rows[-1]["id"]
+                  total += len(payload)
+                  if total % 50000 == 0:
+                      elapsed = max(time.time() - t0, 1)
+                      print(f"[{tbl}] {total} rows synced ({total/elapsed:.0f}/s) last_id={cutoff_id}")
+                  # refresh connections every 100k rows to avoid server idle kill
+                  if total % 100000 == 0 and total > 0:
+                      src.close()
+                      tgt.close()
+                      src = connect_src()
+                      tgt = connect_tgt()
+              src.close()
+              tgt.close()
+              print(f"[{tbl}] DONE — {total} rows in {time.time()-t0:.0f}s (final_id={cutoff_id})")
           PY
 
       - name: Post SESSION_SUMMARY via gateway
