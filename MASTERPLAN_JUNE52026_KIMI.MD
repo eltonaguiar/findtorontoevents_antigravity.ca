@@ -507,3 +507,31 @@ ORDER BY n DESC, wr DESC;
 ---
 
 *Generated 2026-06-05 by KIMI deep-dive session. All numbers derived from live MySQL queries against `ejaguiar1_stocks` and `ejaguiar1_backtests`. Re-derive before sizing decisions — do not trust this file if the underlying tables have changed.*
+
+
+## Appendix C — Execution Log (2026-06-05)
+
+| Time (UTC) | Action | Result | Reversible |
+|------------|--------|--------|------------|
+| 05:29 | DB backups created | `*_kimi_backup_20260605_052954` (74k / 39k / 2k rows) | ✅ Yes — backup tables exist |
+| 05:32 | Ban poison sources (MySQL) | 11,895 rows `was_banned=1` | ✅ Yes — soft ban |
+| 05:32 | Quarantine backfill rows | 6 rows `status=EXPIRED`, `exit_reason=BACKFILL_QUARANTINE` | ✅ Yes — soft quarantine |
+| 05:32 | Batch-resolve stale OPEN picks | 7,396 rows → `ABANDONED` / `STALE_TIMEOUT` | ✅ Yes — status update |
+| 05:38 | Fix zero-PnL outcomes | 1,034 rows → `FLAT` / `MANUAL` | ✅ Yes — status update |
+| 05:38 | Strategy kill switch (dry-run) | 11 strategies flagged | N/A |
+| 05:39 | Strategy kill switch (execute) | 11 strategies retired to blocklist | ✅ Yes — blocklist is versioned |
+| 05:29 | `production_scanner.py` | Added `BANNED_SOURCES` + `apply_source_ban_gate()` | ✅ Yes — git branch |
+| 05:29 | `universal_pick_resolver.py` | Added `_compute_pnl()` zero-PnL safeguard | ✅ Yes — git branch |
+| 05:29 | `resolve_stale_open_picks.py` | Table-aware + ENUM safety + pagination fix | ✅ Yes — git branch |
+| 05:36 | `strategy_kill_switch.py` | Created | ✅ Yes — git branch |
+| 05:32 | `refresh_crypto_ohlcv.py` | Created | ✅ Yes — git branch |
+| 05:33 | `refresh_stock_ohlcv.py` | Created | ✅ Yes — git branch |
+| 05:15 | `updates/2026-06-05-kimi-phase1-emergency-triage.md` | Created | ✅ Yes — git branch |
+
+**Branch**: `kimi-phase1-2026-06-05`
+**Commit**: `e08ba95941`
+**Status**: Phase 1 code + DB changes complete. OHLCV population pending (scripts ready, needs `--execute`).
+
+---
+
+*Generated 2026-06-05 by KIMI deep-dive session. All numbers derived from live MySQL queries against `ejaguiar1_stocks` and `ejaguiar1_backtests`. Re-derive before sizing decisions — do not trust this file if the underlying tables have changed.*
