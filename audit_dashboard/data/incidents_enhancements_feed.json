@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T07:39:07Z",
+  "generated_at": "2026-06-05T12:19:24.362834Z",
   "incidents": {
     "OVERALL": [
       {
@@ -6677,6 +6677,97 @@
         ],
         "can_implement": true,
         "created_at": "2026-06-05T07:47:06.908457Z"
+      },
+      {
+        "enhancement_id": "ENH-145",
+        "asset_class": "OVERALL",
+        "source_ref": "peer Claude transcript 2026-06-05 + Grok claude2 tie-in",
+        "title": "Deep-Dive Series (commodity/forex/bond) + walk-forward --require-macro-join + total_pf>=1.0 gate + alpha_macro populator + 450d backfill + per-class T2 inventory",
+        "description": "3 deep-dives exposing backfill contamination and low-n (commodity 6 false T1 removed; forex batch/OOS; bond n=8 PF=0). Walk-forward hardened (macro-join prevents artifacts; total_pf gate demotes <1.0). New alpha_engine/populate_alpha_macro.py + cron + backfill (regime/SMA for all classes). Per-class T2 inventory post-filters confirms only mega_mutation::crypto T1. Ties to claude2 infra (resolver fix, scrutiny/OHLCV, bans, dedup, hard gates, equity factor, consult-grok, ENH-143/144, updates cards).",
+        "category": "infra",
+        "expected_impact": "HIGH",
+        "effort": "MEDIUM",
+        "status": "IN_PROGRESS",
+        "proposed_by": "peer Claude + Grok",
+        "related_persona_id": null,
+        "proposed_features": [
+          "deep_dive_commodity/forex/bond",
+          "walk_forward_per_strategy --require-macro-join + total_pf gate",
+          "populate_alpha_macro.py + daily cron",
+          "2026-06-05-PER-CLASS-T2-INVENTORY-POST-FILTER.md"
+        ],
+        "success_metric": "9 walk-forward PASS -> 1 (mega only); 0/9 MONEY_READY honest; alpha_macro fresh for regime-aware analysis across 9 classes.",
+        "target_release": "2026-06-06",
+        "review_notes": "Per consult-grok: recency first gate; net-costs/liquidity next; audit emit. PRs require evidence.",
+        "implementation_pr": "main (peer: 268161a8ed DEEP-DIVE entry, 04cba81b66 populator; feature: 71aa6d30 etc claude2 infra)",
+        "created_at": "2026-06-05T11:31:03.830034Z",
+        "updated_at": "2026-06-05T11:31:03.830034Z",
+        "implemented_at": null,
+        "link_md_path": "reports/2026-06-05-DEEP-DIVE-SERIES-WALKFORWARD-ALPHA-MACRO-POPULATOR.md; reports/deep_dive_*.md; reports/2026-06-05-PER-CLASS-T2-INVENTORY-POST-FILTER.md",
+        "link_url": null,
+        "link_github_ref": "268161a8ed, 04cba81b66, 71aa6d30db, 3aecab6715",
+        "enhancement_plan": "1. Daily alpha_macro cron live. 2. Enforce recency 14d/48h as first gate in passes_hard. 3. Add costs/ADV to walk-forward/intrabar. 4. Wire funding/COT factors with callers. 5. Re-resolve stale 32k. 6. Small pilots after 14d/48h verify."
+      },
+      {
+        "enhancement_id": "ENH-146",
+        "asset_class": "OVERALL",
+        "source_ref": "investigation 2026-06-06 + live money_ready_verdict/pick_funnel + deep-dives/inventory + consult-grok",
+        "title": "Fast path to trustworthy 'real money now' picks: enforce recency first gate + EQUITY fundamentals/analyst consensus emitter + net-costs/liquidity + ai-tournament quarantine + REAL_MONEY_READY surface",
+        "description": "Current: 0/9 classes ready (CRYPTO n=302 WR~35% PF<1 NOT_READY, disputed 78.9% banner, only mega_mutation T1 after 5-axis/OHLCV but fails live gates on conc/mdd/expectancy). Fast non-LLM path: extend equity_momentum_quality + value_screener with yf analyst (upside, #analysts), insider, short%, earnings surprise + QMJ/mom; wire via feature_signals orchestrator (FACTOR opt-in, Wire-Up) + full passes_hard (add recency 14d/48h as #1, net costs 0.15%+, ADV/liquidity). Quarantine ai-tournament as experimental. Add REAL_MONEY_CANDIDATE filter on /audit. Pilot EQUITY + mega subset paper first (0.25% risk, kill on 14d degrade). Refs: 2026-06-06-REAL-MONEY-READY-PICKS-FAST-ROADMAP.md, money_ready_verdict.json, per_class T2 inventory, deep dives, equity factor, orchestrator, gates.",
+        "category": "real-money",
+        "expected_impact": "HIGH",
+        "effort": "MEDIUM",
+        "status": "IN_PROGRESS",
+        "proposed_by": "Grok + session investigation",
+        "related_persona_id": null,
+        "proposed_features": [
+          "recency as first hard gate",
+          "equity_analyst_consensus emitter (yfinance analyst/insider/earnings + mom/QMJ)",
+          "net-costs + ADV/liquidity in gates/replay",
+          "REAL_MONEY_READY /audit surface",
+          "ai-tournament quarantine disclaimer",
+          "EQUITY+CRYPTO paper pilot with auto-kill"
+        ],
+        "success_metric": "First REAL_MONEY_CANDIDATE EQUITY picks (n>=30 clean 14d/48h post full gates+costs) on /audit within 7-14d; CRYPTO mega subset same; 0 disputed high-WR in real-money paths; small sleeve if forward holds.",
+        "target_release": "2026-06-10",
+        "review_notes": "P0 gates/recency + EQUITY fundamentals first (fastest per user examples). Use existing (equity_momentum_quality, value_screener, feature orchestrator, passes_hard, scrutiny) to avoid dup. Subagents for emitter + report.",
+        "implementation_pr": "pr/money-ready-bridge-truth + new (feature branch for emitters/gates)",
+        "created_at": "2026-06-05T12:16:16.315093Z",
+        "updated_at": "2026-06-05T12:16:16.315093Z",
+        "implemented_at": null,
+        "link_md_path": "reports/2026-06-06-REAL-MONEY-READY-PICKS-FAST-ROADMAP.md; reports/2026-06-05-PER-CLASS-T2-INVENTORY-POST-FILTER.md; reports/deep_dive_*.md",
+        "link_url": null,
+        "link_github_ref": null,
+        "enhancement_plan": "1. Recency first in passes_hard_money_gates + is_admissible (P0). 2. Extend equity factor + wire orchestrator/scanner (P0). 3. Add costs/liquidity gates (P0). 4. Quarantine note + surface on /audit (P1). 5. Pilot + feed/updates cards (this ENH). 6. More factors (PEAD, pro consensus clean, funding) after."
+      },
+      {
+        "enhancement_id": "ENH-147",
+        "asset_class": "OVERALL",
+        "source_ref": "weekly .MD review 2026-06-06 + solid picks investigation",
+        "title": "SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md: only mega_mutation crypto solid T1; P0 hygiene (backfill filter, alpha_macro daily, live gated forward, recency first gate); P0 EQUITY analyst consensus bootstrap (NVDA etc yf); kill losers; document in ai-tournament diagnostics + feed + updates card",
+        "description": "Review of ~15+ recent .MDs (deep dives commodity/forex/bond, PER-CLASS-T2-INVENTORY, PER-ASSET-WINNER-DIG with NVDA analyst, LIVE-FORWARD-TRIAGE, DEEP-DIVE-SERIES, kimi/grok masterplan updates, etc.) extracted 20+ action items for stat valid solid picks per class passing 5-axis/WF/gates/recency/OHLCV/dedup criteria. Current: only 1 (mega_mutation crypto). Roadmap in new .MD. Added to ai_tournament_model_diagnostics.json summary for visibility under /audit/ai-tournament.html. ENH-147 here + updates card + deploy.",
+        "category": "ai-tournament,real-money,picks",
+        "expected_impact": "HIGH",
+        "effort": "MEDIUM",
+        "status": "IN_PROGRESS",
+        "proposed_by": "Grok session",
+        "related_persona_id": null,
+        "proposed_features": [
+          "solid picks per class todos",
+          "weekly md review process",
+          "ai-tournament diagnostics enrichment"
+        ],
+        "success_metric": "Re-run scrutiny/WF show expanded solid list (EQUITY analyst etc.); ai-tournament page data includes the review/todos; first additional solid per class in pilot with n accumulating and all criteria pass.",
+        "target_release": "2026-06-13",
+        "review_notes": "Aggregated from deep_dive_*.md, inventory, winner-dig, triage, kimi updates, roadmap. Prioritize P0 backfill hygiene + EQUITY bootstrap + recency gate + documentation (done for this).",
+        "implementation_pr": "this commit + feed update + diagnostics json + updates card",
+        "created_at": "2026-06-05T12:19:24.362834Z",
+        "updated_at": "2026-06-05T12:19:24.362834Z",
+        "implemented_at": null,
+        "link_md_path": "reports/2026-06-06-SOLID-PICKS-PER-ASSET-CLASS-TODOS-AND-WEEKLY-MD-REVIEW.md",
+        "link_url": null,
+        "link_github_ref": null,
+        "enhancement_plan": "1. P0 exclude 2026-06-04 backfill everywhere + alpha_macro daily + live isolation flag. 2. P0 EQUITY yf analyst consensus emitter + pilot. 3. Enforce recency first. 4. Update ai-tourn diagnostics (done) + feed (this) + card (next). 5. Re-run tools and verify more solid candidates."
       }
     ],
     "STOCKS": [
@@ -7969,7 +8060,7 @@
   },
   "totals": {
     "incidents": 129,
-    "enhancements": 176,
+    "enhancements": 179,
     "findings": 16
   }
 }
