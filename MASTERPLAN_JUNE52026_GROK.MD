@@ -52,14 +52,14 @@ The multi-AI prediction stack is **operationally rich but statistically not mone
 
 **Tier-2 charter (Goal #1):** PF>1.5, WR>50%, MDD<20%, **n≥100** — **0/6–9 classes pass.**
 
-### 1.3 Recency panels (stale)
+### 1.3 Recency panels
 
-| File | generated_at | Blocker |
-|------|----------------|---------|
-| `pick_summary_stats_2w.json` | **2026-05-29** | ~7 days behind verdict |
-| `pick_summary_stats_48h.json` | **2026-05-29** | CRYPTO **0 closed / 310 active** in 48h |
+| File | generated_at (local refresh 2026-06-05) | Note |
+|------|----------------------------------------|------|
+| `pick_summary_stats_2w.json` | **2026-06-05** | CRYPTO 14d WR ~40%, PF inflated by leakage caveats in JSON |
+| `pick_summary_stats_48h.json` | **2026-06-05** | CRYPTO **0 closed / 137 active** — resolver backlog, not sizing-grade |
 
-**Do not size from 14d/48h UI until CI regenerates these on every audit-dashboard deploy.**
+**Do not size from 48h CRYPTO until closes appear; trust `money_ready_verdict` for class-level decisions.**
 
 ### 1.4 AI leaderboard (`ai_leaderboard_index.json`, as_of 2026-06-05T04:55Z)
 
@@ -334,6 +334,21 @@ This masterplan is **achieved** when all are true:
 | Resolver | `alpha_engine/outcome_resolver.py`, `audit_trail/universal_pick_resolver.py` |
 | Truth scan | `tools/audit_truth_scan.py` |
 | DB creds | `tools/db_env.py` (never commit `dbpasses.txt`) |
+
+---
+
+---
+
+## Progress log (Grok session)
+
+| When (UTC) | Item | Status |
+|------------|------|--------|
+| 2026-06-05 | Phase 1–2: clean_ingest_v2, promotion_gate tier2, CRYPTO LONG block, feature_signals | Shipped (`b9ffae732c` area) |
+| 2026-06-05 | Recency JSON refresh (`build_recency_summary.py`) | Local + deploy pick_funnel |
+| 2026-06-05 | luxalgo forward truth: n=827 deduped, WR 42%, PF 0.97 → **SHADOW** | Pilot state `promotion_status=SHADOW` |
+| 2026-06-05 | `inverse_ml_ada_forward_pilot.py` + tier2 on DB/virtual | Virtual n=0; bootstrap n=36 in pilot JSON |
+| 2026-06-05 | `tools/forward_n100_tracker.py` | `reports/forward_n100_tracker_latest.{json,md}` |
+| 2026-06-05 | `PROMOTED_STRATEGIES` | **Empty** (intentional) |
 
 ---
 
