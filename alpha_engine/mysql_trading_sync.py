@@ -781,6 +781,41 @@ def sync(dry_run=False):
         conn.close()
         return 1
 
+    # Pre-flight soft-dedup: the uq_trading_picks_dedup UNIQUE constraint uses created_at,
+    # but created_at is NULL for many sources (e.g. mega_mutation). MySQL treats NULL != NULL
+    # in UNIQUE indexes, so the constraint silently allows duplicate closed-state rows.
+    # Fix: before the upsert loop, fetch all (source_system, symbol, entry_price, exit_price,
+    # DATE(closed_at)) tuples for closed rows and skip rows that already exist.
+    _closed_rows = [r for r in rows if r.get("closed_at") is not None and r.get("exit_price") is not None]
+    _existing_closed_keys: set = set()
+    if _closed_rows:
+        try:
+            _src_syms = list({(r.get("source_system", ""), r["symbol"]) for r in _closed_rows})
+            for _src, _sym in _src_syms:
+                cursor.execute(
+                    "SELECT ROUND(entry_price,6), ROUND(exit_price,6), DATE(closed_at) "
+                    "FROM trading_picks WHERE source_system=%s AND symbol=%s "
+                    "AND closed_at IS NOT NULL AND exit_price IS NOT NULL "
+                    "AND status NOT IN ('OPEN','ABANDONED','FLAT')",
+                    (_src, _sym),
+                )
+                for _ex in cursor.fetchall():
+                    _existing_closed_keys.add((_src, _sym, float(_ex[0]), float(_ex[1]), str(_ex[2])))
+        except Exception as _de:
+            log_warn(f"Soft-dedup pre-fetch failed (non-fatal): {_de}")
+
+    def _soft_dedup_key(row: dict):
+        if row.get("closed_at") is None or row.get("exit_price") is None:
+            return None
+        from decimal import Decimal
+        try:
+            ep = round(float(row.get("entry_price") or 0), 6)
+            xp = round(float(row.get("exit_price") or 0), 6)
+            closed_date = str(row["closed_at"])[:10]
+            return (row.get("source_system", ""), row["symbol"], ep, xp, closed_date)
+        except Exception:
+            return None
+
     # Upsert rows in batches
     inserted = 0
     duplicates = 0
@@ -790,9 +825,18 @@ def sync(dry_run=False):
     for i in range(0, len(rows), batch_size):
         batch = rows[i : i + batch_size]
         for row in batch:
+            # Soft-dedup: skip closed rows that already exist under a different id
+            _sdk = _soft_dedup_key(row)
+            if _sdk and _sdk in _existing_closed_keys:
+                duplicates += 1
+                if duplicates <= 5:
+                    log_info(f"Soft-dedup skip for {row['id'][:50]}: closed key already in DB")
+                continue
             try:
                 cursor.execute(UPSERT_SQL, row)
                 inserted += 1
+                if _sdk:
+                    _existing_closed_keys.add(_sdk)  # prevent intra-batch duplicates
             except pymysql.Error as e:
                 errno = getattr(e, "args", [None])[0]
                 # 1062 = duplicate on uq_trading_picks_dedup — row already stored under another id
