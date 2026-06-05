@@ -9,6 +9,8 @@ Source: audit_dashboard/data/ai_tournament_picks_latest.json
 """
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 # ---------------------------------------------------------------------------
 # EAGLE-4 (negative side): kill noise personas, kill negative-edge directions,
 # flip CRYPTO LONG→SHORT (67% WR vs 33% WR).
@@ -574,7 +576,23 @@ def passes_hard_money_gates(
     strat = str(strategy_results.get("strategy") or "")
     cat = str(strategy_results.get("category") or "")
 
-    # Gate 1: Minimum n
+    # Gate 0: Recency check
+    picks = strategy_results.get('picks', [])
+    if not picks:
+        return False, "RECENCY_FAIL: No picks available in strategy_results"
+
+    now = datetime.now(timezone.utc)
+    recency_threshold = now - timedelta(days=14)
+    recent_picks = [p for p in picks if p.get('created_at') and p['created_at'] >= recency_threshold]
+    if not recent_picks:
+        return False, "RECENCY_FAIL: No picks within the last 14 days"
+
+    # Gate 0.5: Check most recent pick's timestamp (48h)
+    most_recent_pick_ts = max(p['created_at'] for p in recent_picks)
+    if now - most_recent_pick_ts > timedelta(hours=48):
+        return False, "RECENCY_FAIL: Most recent pick is older than 48 hours"
+
+    # Gate 2: Minimum n
     if n_trades < min_n:
         return False, f"INSUFFICIENT_N: need>={min_n} have={n_trades}"
 
