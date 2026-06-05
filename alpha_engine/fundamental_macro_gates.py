@@ -22,21 +22,83 @@ import logging
 import math
 from typing import Any, Optional
 
-from alpha_engine.fred_macro_context import get_macro_context
-from alpha_engine.equity_earnings_loader import load_pead_event_for_ticker
-from alpha_engine.fundamental_valuation_strategies import (
-    FUNDAMENTAL_VALUATION_STRATEGIES,
-    btc_power_law_deviation,
-    nvm_metcalfe_valuation,
-    eth_gas_fee_reversal,
-)
-from alpha_engine.walk_forward_validator import (
-    compute_consistency_score,
-    detect_edge_decay,
-    assess_regime_robustness,
-)
+import sys as _sys
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Lazy, fail-open imports.  On GHA runners (and any environment where a
+# transitive dependency is missing / network-gated) the top-level imports
+# used to crash the entire module.  The callers (money_ready_verdict.py,
+# eagle_gates.py) already have fail-open stubs, but those only fire if
+# THIS module itself fails to import — we fix the root cause here so the
+# real gate logic can actually run.
+# ---------------------------------------------------------------------------
+
+# fred_macro_context — provides get_macro_context().
+# Fail-open: returns empty dict → neutral regime scores (0.0).
+try:
+    from alpha_engine.fred_macro_context import get_macro_context as _get_macro_context
+except Exception:
+    _get_macro_context = None  # type: ignore[assignment]
+    print("WARN: fred_macro_context unavailable; macro regime scores default to 0.0",
+          file=_sys.stderr)
+
+def get_macro_context():  # noqa: N802 — public API name preserved
+    if _get_macro_context is not None:
+        return _get_macro_context()
+    return {}
+
+# equity_earnings_loader — provides load_pead_event_for_ticker().
+# Fail-open: returns None → heuristic keyword fallback already exists in
+# _compute_equity_fundamental_strength().
+try:
+    from alpha_engine.equity_earnings_loader import load_pead_event_for_ticker  # noqa: F401
+except Exception:
+    def load_pead_event_for_ticker(ticker, **_kw):  # type: ignore[misc]
+        return None
+    print("WARN: equity_earnings_loader unavailable; PEAD data disabled (heuristic fallback)",
+          file=_sys.stderr)
+
+# fundamental_valuation_strategies — symbols used only as strategy names in
+# _compute_crypto_fundamental_strength() (which matches on pick["strategy"]).
+# The module-level names are NEVER called directly; we only need the import
+# so that e.g. btc_power_law_deviation is importable by *other* consumers.
+# Fail-open: provide empty stubs.
+try:
+    from alpha_engine.fundamental_valuation_strategies import (  # noqa: F401
+        FUNDAMENTAL_VALUATION_STRATEGIES,
+        btc_power_law_deviation,
+        nvm_metcalfe_valuation,
+        eth_gas_fee_reversal,
+    )
+except Exception:
+    FUNDAMENTAL_VALUATION_STRATEGIES = []  # type: ignore[misc]
+    btc_power_law_deviation = None  # type: ignore[assignment]
+    nvm_metcalfe_valuation = None  # type: ignore[assignment]
+    eth_gas_fee_reversal = None  # type: ignore[assignment]
+    print("WARN: fundamental_valuation_strategies unavailable; crypto valuation stubs active",
+          file=_sys.stderr)
+
+# walk_forward_validator — symbols imported for future direct use but
+# currently only the pick-dict fields (consistency_score, edge_decay,
+# regime_robustness) are read by passes_long_term_stability_gate().
+# Fail-open: stubs that always "pass" (fail-open conservative).
+try:
+    from alpha_engine.walk_forward_validator import (  # noqa: F401
+        compute_consistency_score,
+        detect_edge_decay,
+        assess_regime_robustness,
+    )
+except Exception:
+    def compute_consistency_score(*a, **kw):  # type: ignore[misc]
+        return 0.0
+    def detect_edge_decay(*a, **kw):  # type: ignore[misc]
+        return {}
+    def assess_regime_robustness(*a, **kw):  # type: ignore[misc]
+        return {}
+    print("WARN: walk_forward_validator unavailable; long-term gate uses pick-dict fields only",
+          file=_sys.stderr)
 
 # ============================================================================
 # Fundamental Strength Gate

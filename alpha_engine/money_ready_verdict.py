@@ -400,13 +400,20 @@ def _load_picks_legacy() -> list[dict]:
     return json.loads(CLOSED_PATH.read_text())
 
 
-def _load_picks() -> list[dict]:
+def _load_picks(*, ci_mode: bool = False) -> list[dict]:
     """Canonical pick loader — the deduped, policy-clean per-pick rows that
     feed pf_registry.json (by_asset_class_policy_clean_net).
 
     Falls back to the legacy closed_picks.json loader if the build_pf_registry
     pipeline is unavailable.
+
+    ci_mode: when True, skip the build_pf_registry pipeline entirely and use
+    the legacy closed_picks.json path.  This avoids importing
+    audit_trail.dashboard_generator (which transitively pulls in MySQL-heavy
+    deps) that hangs on GHA runners with no DB access.
     """
+    if ci_mode:
+        return _load_picks_legacy()
     pipeline = _canonical_pipeline()
     if pipeline is None:
         return _load_picks_legacy()
@@ -1317,7 +1324,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
     Statistical tests (DSR/PBO/SPA) still require actual pick-level data and will
     show N/A when the closed_picks sample is too small.
     """
-    picks = _load_picks()
+    picks = _load_picks(ci_mode=ci_mode)
     class_stats = _class_stats(picks)
     dash_health = _load_dashboard_health()
     full_reg: dict = {}
