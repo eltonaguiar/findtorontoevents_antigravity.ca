@@ -6601,6 +6601,13 @@ function renderCryptoPanel() {
   closedPicks = closedPicks.filter(function(p) { return !isBlockedSystem(p.source_system); });
   closedPicks = closedPicks.filter(function(p) { return !_isCorruptedRow(p); });
   activePicks = activePicks.filter(function(p) { return !_isCorruptedRow(p); });
+  // 2026-06-04 (F2): parity with NC panel — drop FORCE_CLOSED_TOXIC /
+  // RESOLVE_FAILED_MAX_RETRIES (price-fetch-failure / admin closes, entry==exit,
+  // pnl=0). Not resolved trades; counting them dilutes crypto WR.
+  closedPicks = closedPicks.filter(function(p) {
+    var _er = String(p.exit_reason || '').toUpperCase();
+    return _er !== 'FORCE_CLOSED_TOXIC' && _er !== 'RESOLVE_FAILED_MAX_RETRIES';
+  });
 
   // 2026-04-12 conviction filter (shared with NC panel via _PERF_CONVICTION_FILTER)
   if (_PERF_CONVICTION_FILTER && _PERF_CONVICTION_FILTER !== 'all') {
@@ -6707,8 +6714,9 @@ function renderCryptoPanel() {
       var pnl = Number(p.pnl_pct || 0);
       var capped = Math.max(-500, Math.min(500, pnl));
       totalPnl += capped;
-      if (pnl > 0) wins++;
-      else if (pnl < 0) losses++;
+      // 2026-06-04 (F4): classify at ±FLAT_PNL_THRESHOLD (matches PF + NC panel + leaderboard), not >0.
+      if (pnl > FLAT_PNL_THRESHOLD) wins++;
+      else if (pnl < -FLAT_PNL_THRESHOLD) losses++;
       else flat++;
     });
     var resolved = wins + losses + flat;
@@ -6828,14 +6836,20 @@ function renderCryptoPanel() {
   }
 
   // ───── Aggregate header ─────
+  // 2026-06-04 (F1): apply the SAME Recent-N cap the per-cards use, so the
+  // aggregate matches the cards' window scope (was iterating full-history
+  // cryClosed while cards were recency-capped). (F4): classify W/L at
+  // ±FLAT_PNL_THRESHOLD (matches PF + the rest of the dashboard), not >0,
+  // so sub-1bp resolver dust isn't miscounted as a win.
   var aggWins = 0, aggLosses = 0, aggPnl = 0;
-  cryClosed.forEach(function(p) {
+  var aggClosedCR = (_recentN_CR > 0) ? _applyRecentN(cryClosed, _recentN_CR) : cryClosed;
+  aggClosedCR.forEach(function(p) {
     var pnl = Number(p.pnl_pct || 0);
     aggPnl += Math.max(-500, Math.min(500, pnl));
-    if (pnl > 0) aggWins++; else if (pnl < 0) aggLosses++;
+    if (pnl > FLAT_PNL_THRESHOLD) aggWins++; else if (pnl < -FLAT_PNL_THRESHOLD) aggLosses++;
   });
   var aggResolved = aggWins + aggLosses;
-  var aggWr = aggResolved > 0 ? Math.round(aggWins / aggResolved * 1000) / 10 : 0;
+  var aggWr = aggResolved > 0 ? Math.round(aggWins / aggResolved * 1000) / 10 : null;
   var aggWrColor = aggWr > 55 ? 'var(--green)' : aggWr >= 48 ? 'var(--yellow)' : 'var(--red)';
 
   // Split-by selector chips
@@ -13573,7 +13587,15 @@ el('f-score-tier').addEventListener('change', () => {
 
 // ?? WR Drill-Down Modal (v2 - age filter, strategy breakdown, includes flat trades) ??
 window.showWrDrillDown = function() {
-  const allClosed = (D.picks||{}).recent_closed || [];
+  // 2026-06-04 (F3): apply the same non-trade filters the perf panels use so the
+  // headline WR drill-down isn't polluted by blocked systems, the 2026-04-10
+  // corrupted rows, or FORCE_CLOSED_TOXIC / RESOLVE_FAILED_MAX_RETRIES non-trades.
+  const allClosed = ((D.picks||{}).recent_closed || []).filter(function(p) {
+    if (isBlockedSystem(p.source_system)) return false;
+    if (typeof _isCorruptedRow === 'function' && _isCorruptedRow(p)) return false;
+    var _er = String(p.exit_reason || '').toUpperCase();
+    return _er !== 'FORCE_CLOSED_TOXIC' && _er !== 'RESOLVE_FAILED_MAX_RETRIES';
+  });
   const active = (D.picks||{}).active || [];
   if (!allClosed.length) return;
 
