@@ -230,6 +230,10 @@ def _is_class_policy_frozen(asset_class: str) -> bool:
     from genuinely data-thin classes (lift via more picks). Both classes
     surface as INSUFFICIENT_DATA today which is misleading.
     """
+    # Skip in CI mode: the import triggers audit_trail.__init__ which transitively
+    # pulls in dashboard_generator (MySQL-heavy deps) and hangs on GHA runners.
+    if _CI_MODE:
+        return False
     try:
         from audit_trail.quality_gates import BLOCKED_ASSET_CLASSES
         return (asset_class or "").upper() in BLOCKED_ASSET_CLASSES
@@ -299,6 +303,9 @@ NB_TRIALS_BY_CLASS: dict[str, int] = {
 # Data loading (shared with whites_reality_check.py, deflated_sharpe.py)
 # ---------------------------------------------------------------------------
 
+_CI_MODE: bool = False  # set by money_ready_verdict() when ci_mode=True
+
+
 def _load_blocked(asset_class: str = "") -> set[str]:
     """Return set of blocked strategy names.
 
@@ -356,12 +363,15 @@ def _load_blocked(asset_class: str = "") -> set[str]:
     # data-accuracy exclusions (gate-blocked via BLOCKED_DIRECTION_TRIPLES for ALL
     # directions, but not in BLOCKED_ASSET_STRATEGY_PAIRS). Importing directly avoids
     # text parsing of the set literal.
-    try:
-        from audit_trail.quality_gates import PF_REGISTRY_POLICY_EXCLUDED
-        for name in PF_REGISTRY_POLICY_EXCLUDED:
-            blocked.add(str(name))
-    except Exception:
-        pass  # fail-open: never break verdict on import error
+    # Skip in CI mode: the import triggers audit_trail.__init__ which transitively
+    # pulls in dashboard_generator (MySQL-heavy deps) and hangs on GHA runners.
+    if not _CI_MODE:
+        try:
+            from audit_trail.quality_gates import PF_REGISTRY_POLICY_EXCLUDED
+            for name in PF_REGISTRY_POLICY_EXCLUDED:
+                blocked.add(str(name))
+        except Exception:
+            pass  # fail-open: never break verdict on import error
 
     return blocked
 
@@ -1324,6 +1334,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
     Statistical tests (DSR/PBO/SPA) still require actual pick-level data and will
     show N/A when the closed_picks sample is too small.
     """
+    global _CI_MODE
+    _CI_MODE = ci_mode
     picks = _load_picks(ci_mode=ci_mode)
     class_stats = _class_stats(picks)
     dash_health = _load_dashboard_health()
