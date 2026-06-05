@@ -23,19 +23,21 @@ from datetime import datetime, timedelta
 import pymysql
 
 # ---------------------------------------------------------------------------
-# Config
+# DB helpers
 # ---------------------------------------------------------------------------
-DB_CONFIG = {
-    "host": "mysql.50webs.com",
-    "user": "ejaguiar1_stocks",
-    "password": "stocks1234560",
-    "database": "ejaguiar1_stocks",
-    "charset": "utf8mb4",
-    "cursorclass": pymysql.cursors.DictCursor,
-    "connect_timeout": 30,
-    "read_timeout": 300,
-    "write_timeout": 300,
-}
+def get_conn(autocommit=False):
+    from tools.db_env import get_stocks_creds
+    conn = pymysql.connect(
+        **get_stocks_creds(),
+        charset="utf8mb4",
+        cursorclass=pymysql.cursors.DictCursor,
+        connect_timeout=30,
+        read_timeout=300,
+        write_timeout=300,
+    )
+    conn.autocommit(autocommit)
+    return conn
+
 
 BANNED_SOURCES = ("Predictions", "sandbox_opposite", "rapid_fire", "incubator_gainer")
 
@@ -47,14 +49,6 @@ CLEAN_STATUSES = (
     "SPLIT_AFFECTED",
     "STALE_RESOLVED",
 )
-
-# ---------------------------------------------------------------------------
-# DB helpers
-# ---------------------------------------------------------------------------
-def get_conn(autocommit=False):
-    conn = pymysql.connect(**DB_CONFIG)
-    conn.autocommit(autocommit)
-    return conn
 
 
 def run_sql(cursor, sql, dry_run, label=""):
