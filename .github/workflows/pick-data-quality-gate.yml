@@ -1,0 +1,58 @@
+# Pick-data-quality gate — daily CI check (MLOps research #1 rec, 2026-06-04).
+#
+# Runs tools/pick_data_quality_gate.py over the canonical closed-picks ledger and
+# fails if data-quality regresses past the caps (mislabels, missing-provenance %,
+# FORCE_CLOSED_TOXIC %, never-closed %). Catches the class of data rot that caused
+# the "all-red" episode (toxic/fetch-failure rows polluting WR) BEFORE it reaches
+# the dashboard. Report-only over the ledger — never mutates data.
+#
+# Non-blocking by default (continue-on-error) so it surfaces regressions in the run
+# summary without breaking unrelated CI; flip to a required check once thresholds
+# are tuned to the live baseline.
+
+name: Pick Data Quality Gate
+
+on:
+  schedule:
+    - cron: "15 13 * * *"   # 13:15 UTC daily (after the morning resolve/sync)
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "alpha_engine/data/closed_picks.json"
+      - "tools/pick_data_quality_gate.py"
+      - "tools/resolver_hygiene_check.py"
+      - "tools/backfill_provenance.py"
+
+permissions:
+  contents: read
+
+jobs:
+  data-quality:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run pick-data-quality gate
+        id: gate
+        continue-on-error: true
+        run: |
+          python tools/pick_data_quality_gate.py 2>&1 | tee /tmp/pdq.log
+          echo "rc=$?" >> "$GITHUB_OUTPUT"
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Pick Data Quality Gate"
+            echo '```json'
+            cat /tmp/pdq.log 2>/dev/null || echo "(no output)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Fail if gate failed
+        if: steps.gate.outputs.rc != '0'
+        run: |
+          echo "::warning::pick-data-quality gate FAILED — see summary. (non-blocking until thresholds tuned)"
