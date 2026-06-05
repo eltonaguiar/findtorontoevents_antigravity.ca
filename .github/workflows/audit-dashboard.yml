@@ -534,6 +534,8 @@ jobs:
           # MASTERPLAN 2026-06-05: keep pick_funnel 48h/14d panels fresh (was ~7d stale)
           python tools/audit_pick_funnel/build_recency_summary.py \
             || echo "::warning::build_recency_summary.py failed (soft-fail)"
+          python tools/build_audit_surface_truth.py \
+            || echo "::warning::build_audit_surface_truth.py failed (soft-fail)"
 
       - name: Run walk-forward validation (post-payload — INCIDENT #45 fix)
         id: walkforward_validation
