@@ -78,11 +78,17 @@ def _eligible_cells(cur, min_n: int, strategy_filter: str | None) -> list[dict]:
     if strategy_filter:
         where_extra = "AND strategy = %s"
         params = (strategy_filter,)
+    # Exclude 2026-06-04 resolver backfill (5,960 commodity rows in one day;
+    # see reports/deep_dive_commodity_2026-06-05.md). Without this, walk-forward
+    # reports spurious PASS for futures_bb_mean_reversion::commodity that
+    # contradicts the LOW_CONFIDENCE_STRATEGIES auto_tuner ban.
+    backfill_filter = "AND DATE(closed_at) != '2026-06-04'"
     cur.execute(f"""
         SELECT strategy, category, COUNT(*) n
         FROM trading_picks
         WHERE closed_at IS NOT NULL AND pnl_pct IS NOT NULL
           AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
+          {backfill_filter}
           {where_extra}
         GROUP BY strategy, category
         HAVING n >= %s
@@ -98,6 +104,7 @@ def walk_forward_one(cur, strategy: str, category: str,
         WHERE strategy=%s AND category=%s
           AND closed_at IS NOT NULL AND pnl_pct IS NOT NULL
           AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','WON')
+          AND DATE(closed_at) != '2026-06-04'
         ORDER BY closed_at ASC
     """, (strategy, category))
     pnls = [_f(r["pnl_pct"]) for r in cur.fetchall()]

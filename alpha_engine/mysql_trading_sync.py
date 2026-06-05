@@ -173,6 +173,10 @@ def log_err(msg):
     print(f"  [ERR] {msg}", file=sys.stderr)
 
 
+def log_warn(msg):
+    print(f"  [WARN] {msg}", file=sys.stderr)
+
+
 def log_info(msg):
     print(f"  [..] {msg}")
 
