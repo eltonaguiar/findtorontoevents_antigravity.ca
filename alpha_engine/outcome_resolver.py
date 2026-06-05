@@ -717,6 +717,36 @@ def is_unresolved(pick: dict) -> bool:
     return False
 
 
+def get_split_adjustment(symbol: str, entry_dt, exit_dt) -> float:
+    """Return cumulative split factor between entry_dt and exit_dt.
+
+    Only meaningful for EQUITY/ETF symbols. Returns 1.0 on any error or when
+    no splits occurred, so callers never need to guard against exceptions.
+    """
+    try:
+        if not symbol or entry_dt is None or exit_dt is None:
+            return 1.0
+        import yfinance as yf  # lazy import — not always installed
+        ticker = yf.Ticker(symbol)
+        splits = ticker.splits
+        if splits is None or splits.empty:
+            return 1.0
+        # Normalise tz to naive UTC for comparison
+        def _naive(dt):
+            if hasattr(dt, "tzinfo") and dt.tzinfo is not None:
+                return dt.replace(tzinfo=None)
+            return dt
+        entry_n, exit_n = _naive(entry_dt), _naive(exit_dt)
+        idx_naive = splits.index.tz_localize(None) if splits.index.tzinfo is not None else splits.index.tz_convert(None)
+        mask = (idx_naive > entry_n) & (idx_naive <= exit_n)
+        relevant = splits[mask]
+        if relevant.empty:
+            return 1.0
+        return float(relevant.prod())
+    except Exception:
+        return 1.0
+
+
 def compute_pnl(entry: float, exit_price: float, direction: str) -> float:
     """Compute PnL percentage.
 
