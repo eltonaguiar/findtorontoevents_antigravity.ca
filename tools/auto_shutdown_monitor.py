@@ -22,11 +22,9 @@ import pymysql
 
 def connect():
     from tools.db_env import get_stocks_creds
-    return pymysql.connect(
-        **get_stocks_creds(),
-        connect_timeout=15,
-        cursorclass=pymysql.cursors.DictCursor,
-    )
+    creds = get_stocks_creds()
+    creds.setdefault("cursorclass", pymysql.cursors.DictCursor)
+    return pymysql.connect(**creds)
 
 
 def rolling_sharpe(returns: list[float], window: int = 30) -> float:
@@ -69,13 +67,14 @@ def check_source(cursor, source: str, last_n: int = 100) -> dict:
     cursor.execute(
         """SELECT pnl_pct, closed_at FROM trading_picks
            WHERE source_system=%s AND pnl_pct IS NOT NULL
-           AND status NOT IN ('OPEN','ABANDONED','ACTIVE')
+           AND status IN ('LOST','SL_HIT','TP_HIT','WON','WIN','EXPIRED','LOSS')
            ORDER BY closed_at DESC LIMIT %s""",
         (source, last_n),
     )
     rows = cursor.fetchall()
     if not rows:
-        return {"source": source, "status": "NO_DATA", "n": 0}
+        return {"source": source, "status": "NO_DATA", "n": 0,
+                "wr": 0.0, "last10_wr": 0.0, "rolling_sharpe": 0.0, "reasons": []}
 
     # pnl_pct is stored as percentage (11.13 = 11.13%), convert to fraction
     returns = [float(r["pnl_pct"]) / 100.0 for r in reversed(rows)]
