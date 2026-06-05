@@ -137,12 +137,45 @@ def emit_commodity_momentum_picks() -> list[dict[str, Any]]:
     return out
 
 
+def _emit_via_factor_module(module_path: str, sleeve: str, asset_class: str) -> list[dict[str, Any]]:
+    """Import a feature_signals factor module and run its scan(); stamp + return picks.
+
+    Fail-soft: any import/runtime error returns []. Used to merge non-LLM
+    persona factor emitters (Jegadeesh-Titman/Asness/Antonacci/Faber).
+    """
+    try:
+        import importlib
+        mod = importlib.import_module(module_path)
+        out = mod.scan() if hasattr(mod, "scan") else {}
+    except Exception as exc:
+        print(f"  [FEATURE SIGNALS] {sleeve} emit failed: {exc}")
+        return []
+    stamped: list[dict[str, Any]] = []
+    for p in out.get("picks") or []:
+        # Inherit asset_class if missing; preserve emitter's asset_class otherwise
+        p.setdefault("asset_class", asset_class)
+        stamped.append(_stamp(p, sleeve))
+    return stamped
+
+
 def emit_all(*, include_funding: bool = True) -> dict[str, Any]:
     sleeves: dict[str, list] = {}
     if include_funding:
         sleeves["funding_rate_extreme"] = emit_funding_picks()
     sleeves["vix_regime_overlay"] = emit_vix_regime_picks()
     sleeves["commodity_momentum"] = emit_commodity_momentum_picks()
+    # 2026-06-05: persona factor emitters (Grok fast-track plan step 3).
+    # Each is opt-in via env var; default OFF to avoid silently amplifying noise
+    # without operator review of cross-AI skeptic per multi-agent-storm pattern.
+    if os.environ.get("FACTOR_EMITTERS_ENABLED", "0") in ("1", "true", "TRUE", "yes"):
+        sleeves["equity_momentum_quality"] = _emit_via_factor_module(
+            "tools.feature_signals.equity_momentum_quality", "equity_momentum_quality", "EQUITY")
+        sleeves["forex_carry_momentum"] = _emit_via_factor_module(
+            "tools.feature_signals.forex_carry_momentum", "forex_carry_momentum", "FOREX")
+        sleeves["etf_sector_rotation"] = _emit_via_factor_module(
+            "tools.feature_signals.etf_sector_rotation", "etf_sector_rotation", "ETF")
+        sleeves["commodity_term_cot"] = _emit_via_factor_module(
+            "tools.feature_signals.commodity_term_cot", "commodity_term_cot", "COMMODITY")
 
     picks: list[dict[str, Any]] = []
     for name, rows in sleeves.items():
