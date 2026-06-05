@@ -156,6 +156,9 @@ LOW_CONFIDENCE_STRATEGIES = {
     "cta_tsmom_blend",                  # 6/27=22.2% WR, 19 active picks wasting capital — CONFIRMED LOSER
     "futures_bb_mean_reversion",        # 1/5=20% WR — below random
     "futures_ema_stack_momentum",       # 0/4=0% WR — zero wins on 4 trades
+    # --- Added 2026-06-05: confirmed net-negative inverse ML strategies (RENDERUSDT) ---
+    "inverse_ml_enhanced_RENDERUSDT_4h_D",  # PF 0.12, avg -1.73% — worse than baseline
+    "inverse_ml_enhanced_RENDERUSDT_1h_D",  # insufficient data, same broken model family
 }
 
 # Backward-compat alias — callers that referenced HARD_DISABLED_STRATEGIES still work.
