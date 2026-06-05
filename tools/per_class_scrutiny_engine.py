@@ -47,13 +47,9 @@ except ImportError:
 # ── DB connection ─────────────────────────────────────────────────────────────
 
 def get_conn():
-    import os
-    pw = os.environ.get("DB_PASS_STOCKS", "stocks1234560")
+    from tools.db_env import get_stocks_creds
     return pymysql.connect(
-        host="mysql.50webs.com",
-        user="ejaguiar1_stocks",
-        password=pw,
-        database="ejaguiar1_stocks",
+        **get_stocks_creds(),
         port=3306,
         connect_timeout=20,
         charset="utf8mb4",

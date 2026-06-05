@@ -25,11 +25,9 @@ CLOSED_STATUSES = ("LOST", "SL_HIT", "TIME_EXIT", "TP_HIT", "EXPIRED",
 
 
 def connect():
+    from tools.db_env import get_stocks_creds
     return pymysql.connect(
-        host=os.environ.get("DB_HOST", "mysql.50webs.com"),
-        user=os.environ.get("DB_USER", "ejaguiar1_stocks"),
-        password=os.environ.get("DB_PASS_STOCKS", "stocks1234560"),
-        database=os.environ.get("DB_NAME", "ejaguiar1_stocks"),
+        **get_stocks_creds(),
         connect_timeout=15,
         cursorclass=pymysql.cursors.DictCursor,
     )

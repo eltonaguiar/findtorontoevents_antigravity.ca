@@ -12,12 +12,13 @@ from collections import defaultdict
 
 DB_HOST = 'mysql.50webs.com'
 DB_USER = 'ejaguiar1_stocks'
-DB_PASS = 'stocks1234560'
 DB_NAME = 'ejaguiar1_stocks'
 
+
 def connect():
+    from tools.db_env import get_stocks_creds
     return pymysql.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME,
+        **get_stocks_creds(),
         charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor
     )
 
