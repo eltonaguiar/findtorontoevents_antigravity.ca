@@ -49,23 +49,71 @@ _OUTPUT_FILE = _DATA_DIR / "skyrocket_picks.json"
 
 # ---------------------------------------------------------------------------
 # Default watchlist -- small/micro-cap tickers known for explosive moves
+# Updated 2026-06-06: added validated skyrockets (NVRS/VZZ/WISE) + 2026 runners
 # ---------------------------------------------------------------------------
 DEFAULT_WATCHLIST = [
-    # Recent runners / known penny movers
-    "SIDU", "FFIE", "MULN", "BIOR", "GFAI", "MARA", "RIOT",
-    "WULF", "CLSK", "BTBT", "SOS", "EBON", "CLOV", "WISH",
-    "BBIG", "ATER", "PROG", "FAMI", "CEI", "INDO",
-    "IMPP", "NILE", "HYMC", "RDBX", "TBLT", "MEGL",
-    "PRTY", "GOEV", "REV", "APRN", "TTOO", "MGAM",
-    "ENVB", "COSM", "OPAL", "VNET", "SNDL", "PLTR",
-    "SOFI", "LCID", "RIVN", "IONQ", "QUBT", "RGTI",
+    # === 2026 validated skyrockets (NVRS +120%, VZZ +52%, WISE +49%) ===
+    "NVRS", "VZZ", "WISE",
+    # === 2026 active small-cap movers / AI/quantum theme ===
+    "QUBT", "RGTI", "IONQ", "QBTS", "ARQQ", "DMNI",
+    "SOUN", "GFAI", "RNAZ", "BTOG", "LASE", "BTAI",
+    "NKLA", "FFIE", "WKHS", "SOLO", "IDEX", "AYRO",
+    # === Biotech catalysts (FDA dates drive spikes) ===
+    "BIOR", "ENVB", "COSM", "TTOO", "MGAM", "NVAX",
+    "ACST", "PRAX", "AGEN", "GTHX", "ADTX", "GHSI",
+    # === Energy / commodity micro-caps ===
+    "INDO", "FAMI", "CEI", "IMPP", "NILE", "SOS",
+    "WULF", "CLSK", "BTBT", "EBON", "MARA", "RIOT",
+    # === Tech / social / EV still in penny range ===
+    "WISH", "CLOV", "SNDL", "APRN", "GOEV",
+    "SOFI", "LCID", "RIVN", "OPAL", "VNET",
+    # === Legacy runners (may bounce) ===
+    "SIDU", "MULN", "GFAI", "ATER", "PROG",
+    "BBIG", "HYMC", "RDBX", "TBLT", "MEGL",
+    "PRTY", "REV", "PLTR", "BIOR",
 ]
+
+# ---------------------------------------------------------------------------
+# Dynamic universe expansion via Yahoo Finance screener
+# ---------------------------------------------------------------------------
+def _fetch_dynamic_universe(max_results: int = 40) -> list[str]:
+    """
+    Pull a dynamic list of small-cap high-volume movers from Yahoo Finance
+    screener API (day gainers + most active under $20).
+    Falls back silently — callers use DEFAULT_WATCHLIST on failure.
+    """
+    try:
+        import requests
+        headers = {"User-Agent": "Mozilla/5.0"}
+        # Yahoo Finance day-gainers screener
+        url = ("https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved"
+               "?formatted=false&lang=en-US&region=US&scrIds=day_gainers"
+               f"&count={max_results}&corsDomain=finance.yahoo.com")
+        r = requests.get(url, headers=headers, timeout=10)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        quotes = (data.get("finance", {})
+                      .get("result", [{}])[0]
+                      .get("quotes", []))
+        symbols = []
+        for q in quotes:
+            sym = q.get("symbol", "")
+            price = q.get("regularMarketPrice", 999)
+            # Only include sub-$25 movers with decent volume
+            if sym and price and price <= 25.0 and q.get("regularMarketVolume", 0) >= 100_000:
+                symbols.append(sym)
+        logger.info("Dynamic universe: %d symbols from Yahoo screener", len(symbols))
+        return symbols[:max_results]
+    except Exception as exc:
+        logger.debug("Dynamic universe fetch failed: %s", exc)
+        return []
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 # Pre-spike signal thresholds
-MAX_PRICE = 10.0            # Penny / small-cap territory
+MAX_PRICE = 20.0            # Raised from $10 — catches NVRS/VZZ/WISE pre-spike range
 VOL_DECLINE_DAYS = 3        # Days of declining volume before spike
 VOL_BREAKOUT_MULT = 2.0     # Volume >= 2x 20-day avg on breakout
 VOL_AVG_WINDOW = 20         # 20-day average volume window
@@ -274,9 +322,11 @@ def _score_symbol(symbol: str, df: pd.DataFrame) -> Optional[dict]:
 
     # ----- Minimum score threshold -----
     # Backtest: score>=50 = break-even/positive. score<35 = all losers.
-    # Raised from 25 to 50 based on SIDU backtest (30% WR at 25 → 50%+ at 50).
+    # 2026-06-06: lowered to 40 for pre-breakout setups (breakout halves score → 50 pre-breakout = 25 scored).
+    # This catches NVRS/VZZ/WISE-type setups earlier (tight consolidation + vol decline before confirmed breakout).
     score = min(100.0, round(score, 1))
-    if score < 50:
+    MIN_SCORE = 40.0
+    if score < MIN_SCORE:
         return None
 
     # ----- Compute entry / TP / SL -----
@@ -357,7 +407,12 @@ def scan(watchlist: Optional[list[str]] = None,
     List of pick dicts sorted by score descending.
     """
     if watchlist is None:
-        watchlist = DEFAULT_WATCHLIST
+        # Merge static watchlist + dynamic universe (deduped)
+        dynamic = _fetch_dynamic_universe(max_results=50)
+        combined = list(dict.fromkeys(DEFAULT_WATCHLIST + dynamic))
+        watchlist = combined
+        logger.info("Watchlist: %d static + %d dynamic = %d total",
+                    len(DEFAULT_WATCHLIST), len(dynamic), len(watchlist))
 
     # Drop delisted / renamed tickers — they return all-NaN from yfinance
     # and spam "possibly delisted; no price data found" warnings.
