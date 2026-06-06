@@ -56,7 +56,16 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pandas numpy requests
+        run: pip install pandas numpy requests pymysql
+
+      - name: Build crypto_data.db from MySQL
+        # crypto_data.db is gitignored (avoids repo bloat) and absent on runners.
+        # Materialize it fresh from the MySQL source of truth (crypto_ohlcv +
+        # stock_ohlcv) so the backtester has OHLCV. Without this the sweep dies
+        # in ~22s with "crypto_data.db not found" (run 27055166676).
+        env:
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+        run: python tools/build_crypto_data_db_from_mysql.py
 
       - name: Run mass backtest
         run: |
