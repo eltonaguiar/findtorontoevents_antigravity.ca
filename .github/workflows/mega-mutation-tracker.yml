@@ -51,6 +51,14 @@ jobs:
           echo "Running in mode: $MODE"
           python genome/mega_mutation_live_tracker.py "$MODE"
 
+      - name: Bridge genome OPEN picks → at_raw_picks
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.MYSQL_PASSWORD }}
+        run: |
+          pip install pymysql 2>/dev/null || true
+          python3 tools/genome_to_raw_picks_sync.py || echo "[genome_sync] skipped"
+
       - name: Sync to MySQL (audit page)
         continue-on-error: true
         env:

@@ -310,6 +310,15 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m prediction_market_agents.orchestrator || echo "Prediction market agents failed (non-fatal)"
 
+      #  PM Macro Overlay: Fed rate → FOREX/bond picks (IDEA-H Phase 1, 2026-06-06)
+      - name: Run PM Macro Overlay (Fed rate correlation)
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python prediction_market_agents/pm_macro_overlay.py || echo "PM macro overlay skipped (non-fatal)"
+        continue-on-error: true
+        timeout-minutes: 3
+
       #  LunarCrush/Social sentiment signals (galaxy score equivalent via free APIs)
       - name: Run LunarCrush social sentiment
         if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
