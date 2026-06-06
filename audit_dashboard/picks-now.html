@@ -176,97 +176,213 @@
 </div>
 
 <script>
-function fmtPrice(v) {
-  if (v==null||isNaN(v)) return '—';
-  const n=Number(v);
-  if (n<1) return n.toFixed(4);
-  if (n<100) return n.toFixed(2);
-  return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+// Stat definitions for every metric shown
+const DEFS = {
+  score: 'Composite score out of 100: Momentum (30pts) + Mean Reversion/RSI+BB (20pts) + Analyst Consensus (25pts) + Vol-Adjusted Safety (15pts) + DB Edge Overlay (10pts). Click for breakdown.',
+  rsi: ['RSI (Relative Strength Index)', 'Measures if an asset is overbought or oversold on a scale of 0-100.',
+    'Below 30 = Very oversold (strong bounce tendency). 30-45 = Oversold (mild bounce). 45-55 = Neutral. 55-70 = Overbought. Above 70 = Very overbought (drop risk).'],
+  bb_pct: ['Bollinger Band %B', 'Where price sits within its 20-day statistical envelope (bands = ±2 standard deviations).',
+    'Below 0 = Below lower band (oversold bounce zone). 0-0.2 = Near lower band. 0.4-0.6 = Middle (neutral). 0.8-1.0 = Near upper band. Above 1 = Above upper band (overbought).'],
+  rvol: ['Realized Volatility', 'Annualized standard deviation of daily returns. Measures how much an asset typically moves in a year.',
+    'Below 15% = Very low (bond-like). 15-30% = Moderate (blue-chip stock). 30-50% = Elevated (tech/growth). 50-80% = High (small-cap/crypto). Above 80% = Extreme (risky).'],
+  sharpe: ['Sharpe Ratio', 'Risk-adjusted return. Measures how much return you get per unit of risk.',
+    'Above 1.0 = Good. Above 2.0 = Very good. Above 3.0 = Excellent. 0.5-1.0 = Acceptable. Below 0.5 = Mediocre. Negative = Losing money risk-adjusted.'],
+  max_dd: ['Max Drawdown', 'Largest peak-to-trough decline in the last 6 months. Shows the worst you\'d have been down if you bought at the worst time.',
+    'Below 10% = Very stable. 10-20% = Normal for stocks. 20-35% = Significant. Above 35% = Severe (crypto/meme territory).'],
+  mom: ['Momentum', 'Price returns over 3 time windows. 3-month shows the primary trend. 1-month shows medium-term. 5-day shows immediate direction.',
+    '3m positive + 5d negative = TREND+DIP (buy the dip in an uptrend). 3m negative + 5d negative = Downtrend (avoid). Both positive = Strong trend.'],
+  analyst: ['Analyst Consensus (yfinance)', 'Aggregated ratings from Wall Street analysts. recommendationMean: 1.0 = Strong Buy, 2.0 = Buy, 3.0 = Hold, 4.0 = Sell, 5.0 = Strong Sell.',
+    'yfinance aggregates ratings from 40+ major investment banks and research firms. Only shows the consensus average, not individual analysts. Good for directional signal, but lates behind price action.'],
+  fwd_pe: ['Forward P/E', 'Price-to-Earnings ratio based on forecasted earnings for the next 12 months. Measures how much you\'re paying for each dollar of future earnings.',
+    'Below 15 = Potentially undervalued. 15-25 = Fair value (S&P 500 avg ~20). 25-40 = Growth premium. Above 40 = High growth expectations (risk of disappointment). Negative = Company expected to lose money.'],
+  peg: ['PEG Ratio', 'Price/Earnings to Growth ratio. Forward P/E divided by expected earnings growth rate. Adjusts P/E for growth — lower PEG means you\'re paying less for growth.',
+    'Below 1.0 = Undervalued relative to growth. 1.0-2.0 = Fair value. Above 2.0 = Expensive relative to growth. Negative = Negative earnings or declining earnings.'],
+  eps_growth: ['EPS Growth (YoY)', 'Year-over-year change in earnings per share. The single most important driver of stock prices long-term.',
+    'Above 20% = Strong growth. 10-20% = Moderate. 0-10% = Slow. Negative = Earnings declining.'],
+  roe: ['Return on Equity', 'Net income divided by shareholder equity. Measures how efficiently the company uses investor money to generate profit.',
+    'Above 20% = Excellent (competitive moat). 15-20% = Good. 10-15% = Average. Below 10% = Weak. Above 50% = Potentially financial leverage distorting.'],
+  div_yield: ['Dividend Yield', 'Annual dividend payment divided by stock price. The income return you get just from holding, before any price movement.',
+    'Below 1% = Minimal income. 1-3% = Normal for stocks. 3-5% = Good income. Above 5% = High yield (but may signal risk). Above 8% = Potentially unsustainable.'],
+  db_wr: ['Database Win Rate', 'Our own trading history on this symbol from ejaguiar1_stocks at_pick_outcomes. Shows actual closed-trade performance.',
+    'Above 55% = Strong. 45-55% = Average (near coin-flip). Below 45% = Below average. Higher n = more reliable. Single-digit n is not statistically meaningful.'],
+};
+
+function showScoreBreakdown(p) {
+  // Parse signals to extract factor info
+  const sig = (p.signals || '').toLowerCase();
+  let breakdown = [];
+  let momScore = 0, mrScore = 0, anlScore = 0, volScore = 0, dbScore = 0;
+  
+  if (sig.includes('trend+dip')) { momScore = 30; breakdown.push('📈 Momentum (30/30): TREND+DIP — strong uptrend with pullback = buy the dip'); }
+  else if (sig.includes('uptrend') || sig.includes('strong_trend')) { momScore = 15; breakdown.push('📈 Momentum (15/30): Uptrend detected'); }
+  else if (sig.includes('downtrend')) { momScore = -21; breakdown.push('📈 Momentum (-21/30): Downtrend — penalty applied'); }
+  else if (sig.includes('weak')) { momScore = -9; breakdown.push('📈 Momentum (-9/30): Weak trend'); }
+  else { momScore = 5; breakdown.push('📈 Momentum (5/30): Mixed/no clear trend'); }
+  
+  if (sig.includes('oversold') || sig.includes('rsi=') && sig.includes('bb_lower')) { mrScore = 20; breakdown.push('🔄 Mean Reversion (20/20): Oversold RSI + lower Bollinger Band'); }
+  else if (sig.includes('near_lower')) { mrScore = 12; breakdown.push('🔄 Mean Reversion (12/20): Near oversold territory'); }
+  else if (sig.includes('overbought')) { mrScore = -10; breakdown.push('🔄 Mean Reversion (-10/20): Overbought RSI + upper band — penalty'); }
+  else { mrScore = 5; breakdown.push('🔄 Mean Reversion (5/20): Neutral RSI/BB position'); }
+  
+  if (sig.includes('strong_buy')) { anlScore = 25; breakdown.push('🏦 Analyst Consensus (25/25): STRONG BUY from Wall Street'); }
+  else if (sig.includes('buy(')) { anlScore = 17; breakdown.push('🏦 Analyst Consensus (17/25): BUY rating'); }
+  else if (sig.includes('outperform')) { anlScore = 10; breakdown.push('🏦 Analyst Consensus (10/25): Outperform rating'); }
+  else if (sig.includes('sell')) { anlScore = -12; breakdown.push('🏦 Analyst Consensus (-12/25): SELL rating — penalty'); }
+  else { breakdown.push('🏦 Analyst Consensus (0/25): No analyst data available'); }
+  
+  if (sig.includes('tp+')) {
+    const tpMatch = sig.match(/tp\+(\d+)/);
+    if (tpMatch) { anlScore += Math.min(10, parseInt(tpMatch[1]) >= 25 ? 10 : 5); breakdown.push(`   +${tpMatch[1] >= 25 ? 10 : 5} bonus: ${tpMatch[1]}% upside to analyst target`); }
+  }
+  
+  if (sig.includes('low_vol')) { volScore = 15; breakdown.push('🛡️ Vol-Adjusted Safety (15/15): Low volatility = safe to size larger'); }
+  else if (sig.includes('mod_vol')) { volScore = 6; breakdown.push('🛡️ Vol-Adjusted Safety (6/15): Moderate volatility'); }
+  else if (sig.includes('high_vol')) { volScore = -5; breakdown.push('🛡️ Vol-Adjusted Safety (-5/15): High volatility — position size reduced'); }
+  else { volScore = 3; breakdown.push('🛡️ Vol-Adjusted Safety (3/15): Normal volatility'); }
+  
+  if (sig.includes('db_wr=')) {
+    const dbMatch = sig.match(/db_wr=(\d+)% n=(\d+)/);
+    if (dbMatch) { dbScore = 10; breakdown.push(`📚 DB Edge (10/10): Our history: ${dbMatch[1]}% WR over ${dbMatch[2]} trades`); }
+  } else if ((p.db_n || 0) >= 5) {
+    dbScore = 5; breakdown.push(`📚 DB Edge (5/10): Limited history (n=${p.db_n})`);
+  } else {
+    breakdown.push('📚 DB Edge (0/10): Insufficient DB trading history');
+  }
+  
+  const totalEst = Math.round(momScore + mrScore + anlScore + volScore + dbScore);
+  const actual = p.score || totalEst;
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;';
+  modal.onclick = () => document.body.removeChild(modal);
+  
+  modal.innerHTML = `<div onclick="event.stopPropagation()" style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;">
+    <h3 style="margin:0 0 12px;font-size:1.1rem;">📊 ${p.symbol} Score Breakdown</h3>
+    <div style="font-size:0.85rem;line-height:1.6;">
+      <div style="text-align:center;font-size:1.5rem;font-weight:700;color:#58a6ff;padding:8px 0 12px;">Score: ${actual}/100</div>
+      ${breakdown.map(b => '<div style="padding:4px 0;border-bottom:1px solid #21262d;">' + b + '</div>').join('')}
+      <div style="margin-top:12px;padding:8px;background:#0d1117;border-radius:6px;font-size:0.78rem;color:#8b949e;">
+        <strong>Data sources:</strong><br>
+        📈 Momentum: yfinance 3m/1m/5d returns · 🔄 RSI+BB: yfinance daily OHLCV · 🏦 Analysts: yfinance .info<br>
+        🛡️ Vol: yfinance RVOL/ATR · 📚 DB: ejaguiar1_stocks at_pick_outcomes
+      </div>
+      <div style="text-align:center;margin-top:12px;"><span style="cursor:pointer;color:#58a6ff;font-size:0.8rem;">Click anywhere to close</span></div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
 }
-function riskClass(rvol) {
-  if (!rvol||rvol<15) return {cls:'safe-haven',status:'🟢 SAFE',badge:'s-safe'};
-  if (rvol<35) return {cls:'approved',status:'✅ APPROVED',badge:'s-approved'};
-  return {cls:'disputed',status:'⚠️ WATCH',badge:'s-disputed'};
+
+function statChip(label, value, defKey, extra) {
+  const def = DEFS[defKey];
+  if (!def && !extra) return `<div class="score-chip">${label}: <strong>${value||'?'}</strong></div>`;
+  let tip = extra || '';
+  if (def) {
+    const title = typeof def[0] === 'string' ? def[0] : defKey;
+    const desc = typeof def[1] === 'string' ? def[1] : '';
+    const guide = typeof def[2] === 'string' ? def[2] : '';
+    tip = `<strong>${title}</strong>\n${desc}\n\n${value ? 'Current: ' + value + '\n\n' : ''}${guide}`;
+  }
+  const escapedTip = tip.replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+  return `<div class="score-chip" onclick="alert('${escapedTip}')" style="cursor:pointer;" title="${escapedTip.replace(/<br>/g,' · ')}">${label}: <strong>${value||'?'}</strong></div>`;
 }
+
+function $(sel) { return document.querySelector(sel); }
 
 function renderPicks(data) {
-  const picks=data.picks||[];
-  const c=document.getElementById('picks-container');
-  if(!c)return;
+  const picks = data.picks || [];
+  const c = document.getElementById('picks-container');
+  if (!c) return;
 
-  // Timestamps
-  const est=data.generated_at ? new Date(data.generated_at).toLocaleString('en-US',{timeZone:'America/New_York',month:'long',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
-  const el=$('#header-updated'); if(el) el.innerHTML='🔄 Last Updated: <strong>'+est+'</strong> EST';
-  const s=$('#header-scored'); if(s) s.textContent=data.n_scored||'—';
-  const pk=$('#header-picks'); if(pk) pk.textContent=picks.length||'—';
-  const lt=$('#live-timestamp');
-  if(lt) lt.innerHTML='⏱ Loaded: '+new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})+' EST';
+  const est = data.generated_at ? new Date(data.generated_at).toLocaleString('en-US',{timeZone:'America/New_York',month:'long',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+  const hdr = $('#header-updated'); if (hdr) hdr.innerHTML = '🔄 Last Updated: <strong>' + est + '</strong> EST';
+  const sc = $('#header-scored'); if (sc) sc.textContent = data.n_scored || '—';
+  const pk = $('#header-picks'); if (pk) pk.textContent = picks.length || '—';
+  const lt = $('#live-timestamp');
+  if (lt) lt.innerHTML = '⏱ Loaded: ' + new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) + ' EST';
 
   // Market bar
-  const mb=document.getElementById('market-bar');
-  if(mb && data.all){
-    const bench={SPY:'EQUITY',QQQ:'TECH',TLT:'BONDS',GLD:'GOLD','BTC-USD':'CRYPTO','EURUSD=X':'FX'};
-    let html='';
-    for(const[sym,label]of Object.entries(bench)){
-      const r=data.all.find(p=>p.symbol===sym);
-      if(r&&r.ret_5d!=null){
-        const cls=r.ret_5d<0?'mkt-dn':'mkt-up';
-        html+='<div class="mkt-item"><span class="mkt-sym">'+label+'</span><span class="'+cls+'">'+(r.ret_5d>0?'+':'')+r.ret_5d.toFixed(1)+'%</span></div>';
+  const mb = document.getElementById('market-bar');
+  if (mb && data.all) {
+    const bench = {SPY:'EQUITY',QQQ:'TECH',TLT:'BONDS',GLD:'GOLD','BTC-USD':'CRYPTO','EURUSD=X':'FX'};
+    let html = '';
+    for (const [sym,label] of Object.entries(bench)) {
+      const r = data.all.find(p => p.symbol === sym);
+      if (r && r.ret_5d != null) {
+        const cls = r.ret_5d < 0 ? 'mkt-dn' : 'mkt-up';
+        html += '<div class="mkt-item"><span class="mkt-sym">' + label + '</span><span class="' + cls + '">' + (r.ret_5d > 0 ? '+' : '') + r.ret_5d.toFixed(1) + '%</span></div>';
       }
     }
-    mb.innerHTML=html||mb.innerHTML;
+    mb.innerHTML = html || mb.innerHTML;
   }
 
   // Cards
-  c.innerHTML='';
-  picks.forEach(p=>{
-    const r=riskClass(p.rvol);
-    const cd=document.createElement('div');
-    cd.className='pick-card '+r.cls;
-    const entry=Number(p.price)||0;
-    const tpPct=p.suggested_tp_pct||0, slPct=p.suggested_sl_pct||0;
-    const tp=entry*(1+tpPct/100), sl=entry*(1-slPct/100);
-    const rr=slPct>0?(tpPct/slPct).toFixed(1):'—';
-    const anl=p.analyst?(p.analyst+(p.analyst_n?' ('+p.analyst_n+' analysts)':'')):'—';
-    const mom=[];
-    if(p.ret_5d!=null) mom.push('5d:'+(p.ret_5d>0?'+':'')+p.ret_5d.toFixed(1)+'%');
-    if(p.ret_1m!=null) mom.push('1m:'+(p.ret_1m>0?'+':'')+p.ret_1m.toFixed(1)+'%');
-    if(p.ret_3m!=null) mom.push('3m:'+(p.ret_3m>0?'+':'')+p.ret_3m.toFixed(1)+'%');
+  c.innerHTML = '';
+  picks.forEach(p => {
+    const r = p.rvol < 15 ? {cls:'safe-haven',status:'🟢 SAFE',badge:'s-safe'} : p.rvol < 35 ? {cls:'approved',status:'✅ APPROVED',badge:'s-approved'} : {cls:'disputed',status:'⚠️ WATCH',badge:'s-disputed'};
+    const cd = document.createElement('div');
+    cd.className = 'pick-card ' + r.cls;
+    const entry = Number(p.price) || 0;
+    const tpPct = p.suggested_tp_pct || 0, slPct = p.suggested_sl_pct || 0;
+    const tp = entry * (1 + tpPct/100), sl = entry * (1 - slPct/100);
+    const rr = slPct > 0 ? (tpPct / slPct).toFixed(1) : '—';
+    const rsiVal = p.rsi != null ? p.rsi.toFixed(0) : '?';
+    const anlDisp = p.analyst_n ? p.analyst_n + ' analysts say ' + (p.analyst||'').toUpperCase() : '';
+    const anlTarget = p.target_price ? 'Target: $' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '% upside)' : '';
 
-    cd.innerHTML=`
+    const sigParts = (p.signals || '').split('|');
+    const mom = [];
+    if (p.ret_5d != null) mom.push('5d:' + (p.ret_5d > 0 ? '+' : '') + p.ret_5d.toFixed(1) + '%');
+    if (p.ret_1m != null) mom.push('1m:' + (p.ret_1m > 0 ? '+' : '') + p.ret_1m.toFixed(1) + '%');
+    if (p.ret_3m != null) mom.push('3m:' + (p.ret_3m > 0 ? '+' : '') + p.ret_3m.toFixed(1) + '%');
+
+    const peVal = p.fwd_pe != null ? p.fwd_pe.toFixed(1) + 'x' : null;
+    const epsVal = p.eps_growth_pct != null ? '+' + p.eps_growth_pct.toFixed(0) + '% YoY' : null;
+    const dbVal = p.db_n && p.db_n >= 3 ? p.db_wr.toFixed(0) + '% WR (n=' + p.db_n + ')' : null;
+    const divVal = p.div_yield_pct != null && !isNaN(p.div_yield_pct) ? p.div_yield_pct.toFixed(2) + '%' : null;
+
+    // Rich stat helpers
+    function chip(label, val, tip) {
+      if (!val) return '';
+      const t = (tip || '').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+      return '<div class="score-chip" onclick="alert(\'' + t + '\')" style="cursor:pointer;" title="' + t.replace(/<br>/g,' · ') + '">' + label + ': <strong>' + val + '</strong></div>';
+    }
+
+    const jsonStr = JSON.stringify(p).replace(/'/g,"&#39;");
+
+    cd.innerHTML = `
       <div class="card-header">
         <div><div class="card-symbol">${p.symbol}</div><div class="card-class">${p.class||''} · ${p.direction||'LONG'}</div></div>
-        <div class="card-status ${r.badge}">${r.status} · Score ${p.score||'?'}</div>
+        <div class="card-status ${r.badge}" style="cursor:pointer;" onclick="showScoreBreakdown(${jsonStr})" title="Click for score breakdown">${r.status} · Score ${p.score||'?'}</div>
       </div>
       <div class="card-prices">
         <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$${fmtPrice(entry)}</div></div>
         <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$${fmtPrice(tp)} (+${tpPct.toFixed(1)}%)</div></div>
         <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$${fmtPrice(sl)} (-${slPct.toFixed(1)}%)</div></div>
       </div>
-      <div class="card-rr">R:R <span>${rr}:1</span> | Size: <span>${p.position_size_pct||0}%</span> | Vol: <span>${p.rvol?p.rvol.toFixed(1):'?'}%</span> annualized</div>
+      <div class="card-rr">R:R <span>${rr}:1</span> | Size: <span>${p.position_size_pct||0}%</span> of portfolio | Vol: <span>${p.rvol?p.rvol.toFixed(1):'?'}%</span> annualized</div>
 
       <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
-        <div class="score-chip">🧭 Signal: <strong>${p.signals?p.signals.split('|')[0].trim():'—'}</strong></div>
-        <div class="score-chip">📊 Score: <strong>${p.score||'?'}</strong>/100</div>
-        ${p.upside_pct?'<div class="score-chip">🎯 Target: <strong>$'+fmtPrice(p.target_price)+' (+'+p.upside_pct+'%)</strong></div>':''}
+        <div class="score-chip" style="cursor:pointer;" onclick="showScoreBreakdown(${jsonStr})" title="Click for detailed score breakdown">📊 <strong>Score ${p.score||'?'}/100</strong> — click for breakdown</div>
+        ${p.upside_pct ? chip('🎯 Target', '$' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '%)', 'Wall Street average analyst target price. From yfinance aggregating 40+ firms.\nCurrent: $' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '% upside)\n\nNote: targets lag price and change slowly. Good for directional thesis confirmation.') : ''}
       </div>
 
       <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
-        <div class="score-chip" title="RSI — below 35 = oversold">RSI: <strong>${p.rsi!=null?p.rsi.toFixed(0):'?'}</strong> ${p.rsi_signal||''}</div>
-        <div class="score-chip" title="Bollinger Band %B — below 0 = at lower band">BB%: <strong>${p.bb_pct!=null?p.bb_pct.toFixed(2):'?'}</strong></div>
-        <div class="score-chip" title="Realized Volatility (annualized)">RVOL: <strong>${p.rvol!=null?p.rvol.toFixed(1):'?'}%</strong></div>
-        <div class="score-chip" title="Sharpe Ratio">Sharpe: <strong>${p.sharpe!=null?p.sharpe.toFixed(2):'?'}</strong></div>
-        <div class="score-chip" title="Max Drawdown">MaxDD: <strong>${p.max_dd!=null?p.max_dd.toFixed(1):'?'}%</strong></div>
+        ${chip('RSI', rsiVal + ' ' + (p.rsi_signal||''), 'RSI (Relative Strength Index) 0-100. Measures if oversold or overbought.\nCurrent: ' + rsiVal + ' ' + (p.rsi_signal||'') + '\n\nBelow 30 = Very oversold (strong bounce tendency)\n30-45 = Oversold (mild bounce likely)\n45-55 = Neutral\n55-70 = Overbought\nAbove 70 = Very overbought (drop risk)')}
+        ${chip('BB%', p.bb_pct != null ? p.bb_pct.toFixed(2) : '?', 'Bollinger Band %B — where price sits within its 20-day ±2σ statistical envelope.\nCurrent: ' + (p.bb_pct != null ? p.bb_pct.toFixed(2) : '?') + '\n\nBelow 0 = Below lower band (oversold bounce zone)\n0-0.2 = Near lower band\n0.4-0.6 = Middle (neutral)\n0.8-1.0 = Near upper band\nAbove 1 = Above upper band (overbought)')}
+        ${chip('RVOL', (p.rvol != null ? p.rvol.toFixed(1) : '?') + '%', 'Realized Volatility — annualized std dev of daily returns.\nCurrent: ' + (p.rvol != null ? p.rvol.toFixed(1) : '?') + '%\n\nBelow 15% = Very low (bond-like)\n15-30% = Moderate (blue-chip)\n30-50% = Elevated (tech/growth)\n50-80% = High (small-cap/crypto)\nAbove 80% = Extreme\n\nDetermines position sizing: low vol = larger position.')}
+        ${chip('Sharpe', p.sharpe != null ? p.sharpe.toFixed(2) : '?', 'Sharpe Ratio — risk-adjusted return.\nCurrent: ' + (p.sharpe != null ? p.sharpe.toFixed(2) : '?') + '\n\nAbove 2.0 = Excellent\n1.0-2.0 = Good\n0.5-1.0 = Acceptable\n0-0.5 = Mediocre\nNegative = Losing risk-adjusted')}
+        ${chip('MaxDD', (p.max_dd != null ? p.max_dd.toFixed(1) : '?') + '%', 'Max Drawdown — largest peak-to-trough decline in 6 months.\nCurrent: ' + (p.max_dd != null ? p.max_dd.toFixed(1) : '?') + '%\n\nBelow 10% = Very stable\n10-20% = Normal for stocks\n20-35% = Significant\nAbove 35% = Severe')}
       </div>
 
       <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
-        <div class="score-chip">📈 Mom: ${mom.join(' · ')}</div>
-        ${p.analyst?'<div class="score-chip">🏦 '+anl+'</div>':''}
-        ${p.fwd_pe?'<div class="score-chip">P/E: <strong>'+p.fwd_pe.toFixed(1)+'x</strong></div>':''}
-        ${p.eps_growth_pct?'<div class="score-chip">EPS: <strong>+'+p.eps_growth_pct.toFixed(0)+'%</strong> YoY</div>':''}
-        ${p.db_n&&p.db_n>=5?'<div class="score-chip">📚 DB: <strong>'+p.db_wr.toFixed(0)+'%</strong> WR n='+p.db_n+'</div>':''}
-        ${p.peg?'<div class="score-chip">PEG: <strong>'+p.peg.toFixed(2)+'</strong></div>':''}
-        ${p.roe_pct?'<div class="score-chip">ROE: <strong>'+p.roe_pct.toFixed(1)+'%</strong></div>':''}
+        ${chip('📈 Mom', mom.join(' · '), 'Momentum — returns over 3 time windows.\n' + mom.join(' · ') + '\n\n3-month shows primary trend. 1-month medium-term. 5-day immediate direction.\n3m positive + 5d negative = TREND+DIP (buy the dip)\n3m negative + 5d negative = DOWNTREND (avoid)')}
+        ${p.analyst ? chip('🏦 ' + anlDisp, anlTarget, 'Analyst Consensus from yfinance (' + (p.analyst_n||'?') + ' analysts).\nRating: ' + (p.analyst||'').replace(/_/g,' ') + '\n\nScale: 1.0=StrongBuy, 2.0=Buy, 3.0=Hold, 4.0=Sell, 5.0=StrongSell\n'yfinance aggregates 40+ major investment banks.\n\n⚠️ Consensus LAGS price. Confirms thesis but doesn\'t predict short-term.') : ''}
+        ${peVal ? chip('P/E', peVal, 'Forward P/E — price ÷ forecasted next-12-month earnings.\nCurrent: ' + peVal + '\n\nBelow 15 = Potentially undervalued\n15-25 = Fair (S&P 500 avg ~20x)\n25-40 = Growth premium\nAbove 40 = High expectations (risk)') : ''}
+        ${epsVal ? chip('EPS', epsVal, 'EPS Growth YoY — year-over-year earnings per share change.\nCurrent: ' + epsVal + '\n\nAbove 20% = Strong growth\n10-20% = Moderate\n0-10% = Slow\nNegative = Declining\n\nThe #1 long-term stock price driver.') : ''}
+        ${dbVal ? chip('📚 DB', dbVal, 'Database Win Rate — our closed-trade history on this symbol from ejaguiar1_stocks at_pick_outcomes.\nCurrent: ' + dbVal + '\n\nAbove 55% = Strong\n45-55% = Average\nBelow 45% = Below average') : ''}
+        ${p.peg ? chip('PEG', p.peg.toFixed(2), 'PEG Ratio — P/E divided by earnings growth rate.\nCurrent: ' + p.peg.toFixed(2) + '\n\nBelow 1.0 = Undervalued relative to growth\n1.0-2.0 = Fair value\nAbove 2.0 = Expensive relative to growth') : ''}
+        ${p.roe_pct ? chip('ROE', p.roe_pct.toFixed(1) + '%', 'Return on Equity — net income ÷ shareholder equity.\nCurrent: ' + p.roe_pct.toFixed(1) + '%\n\nAbove 20% = Excellent (competitive moat)\n15-20% = Good\n10-15% = Average\nBelow 10% = Weak') : ''}
+        ${divVal ? chip('Div Yield', divVal, 'Dividend Yield — annual dividend ÷ price.\nCurrent: ' + divVal + '\n\nShows cash return from holding before price movement.\nBonds/ETFs: 3-5% is normal income yield.\nStocks: 1-3% is typical. Above 5% may signal risk.\n\nFor TLT/IEF: this is the interest (coupon) payment. The price can still go down if rates rise.') : ''}
       </div>
 
       <div class="card-eli5">
@@ -277,18 +393,17 @@ function renderPicks(data) {
     `;
     c.appendChild(cd);
   });
-  if(!picks.length){
-    c.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">No picks. Run <code>python3 tools/picks_now_professional.py</code>.</div>';
+  if (!picks.length) {
+    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">No picks. Run python3 tools/picks_now_professional.py</div>';
   }
 }
 
-const $=s=>document.querySelector(s);
-fetch('data/picks_now.json?_='+Date.now())
-  .then(r=>r.ok?r.json():null)
-  .then(d=>{if(d)renderPicks(d);})
-  .catch(()=>{
-    document.getElementById('picks-container').innerHTML=
-      '<div style="text-align:center;padding:40px;color:var(--red);grid-column:1/-1;">⚠️ Could not load picks_now.json.</div>';
+// Load and render
+fetch('data/picks_now.json?_=' + Date.now())
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { if (d) renderPicks(d); })
+  .catch(() => {
+    document.getElementById('picks-container').innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);grid-column:1/-1;">⚠️ Could not load picks_now.json.</div>';
   });
 </script>
 </body>
