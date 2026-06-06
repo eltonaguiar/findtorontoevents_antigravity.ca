@@ -329,6 +329,9 @@ def load_db_edge():
             WHERE status IN ('WON','LOST','EXPIRED','FLAT')
               AND (strategy IS NULL OR strategy NOT IN ({placeholders}))
               AND (resolver_version IS NULL OR resolver_version NOT LIKE 'backfill%%')
+              AND (pnl_pct IS NULL OR ABS(pnl_pct) <= CASE asset_class
+                    WHEN 'FOREX' THEN 20 WHEN 'COMMODITY' THEN 30
+                    WHEN 'BOND' THEN 25 WHEN 'CRYPTO' THEN 95 ELSE 50 END)
             GROUP BY symbol, asset_class
             HAVING COUNT(*) >= 5
         """, banned)

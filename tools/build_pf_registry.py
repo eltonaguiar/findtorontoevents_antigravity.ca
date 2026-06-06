@@ -593,13 +593,22 @@ def _load_outcomes_rows() -> tuple[list, dict]:
             # backfill_* resolver_version never validated against live price, and
             # that the same data yields a 4-6x PF spread by resolver version.
             # Including them launders measurement artifacts into the verdict.
+            # PER-CLASS SANE-PNL GUARD (2026-06-06): drop physically-implausible
+            # single-trade moves that are reverse-split artifacts or price-feed
+            # bugs, not real outcomes (e.g. CADJPY=X WON +428%, NZDUSD=X -100% —
+            # FX spot cannot move that far in one trade; a 1:10 reverse split
+            # shows the same ±90%+ signature). One +428% "win" alone can inflate
+            # a whole strategy's PF. Caps in PERCENT.
             cur.execute(
                 "SELECT pick_id, symbol, strategy, asset_class, status, pnl_pct, "
                 "resolved_at, resolver_version "
                 "FROM at_pick_outcomes "
                 "WHERE status IN ('WON','LOST') AND pnl_pct IS NOT NULL "
                 "AND resolved_at IS NOT NULL "
-                "AND (resolver_version IS NULL OR resolver_version NOT LIKE 'backfill%%')"
+                "AND (resolver_version IS NULL OR resolver_version NOT LIKE 'backfill%%') "
+                "AND ABS(pnl_pct) <= CASE asset_class "
+                "  WHEN 'FOREX' THEN 20 WHEN 'COMMODITY' THEN 30 "
+                "  WHEN 'BOND' THEN 25 WHEN 'CRYPTO' THEN 95 ELSE 50 END"
             )
             raw = list(cur.fetchall())
             # Count what the quarantine removed, for transparency in meta.
