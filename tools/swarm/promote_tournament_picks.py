@@ -38,6 +38,37 @@ SWARM_STORE = ROOT / "audit_dashboard" / "data" / "swarm_picks.json"
 MIN_CONSENSUS = 2  # minimum models agreeing on same (symbol, direction)
 MAX_AGE_DAYS = 3    # only consider submissions from the last N days
 
+# Tournament submissions use horizon labels (7d, 14d, equity_default) that are
+# not in swarm_pick_schema.VALID_TIMEFRAMES — map them before append.
+_TOURNEY_TF_MAP = {
+    "5m": "5m", "15m": "15m", "30m": "30m",
+    "1h": "1H", "1H": "1H", "4h": "4H", "4H": "4H",
+    "1d": "1D", "1D": "1D", "1w": "1W", "1W": "1W",
+    "1m": "1M", "1M": "1M", "3m": "3M", "3M": "3M",
+    "6m": "6M", "6M": "6M", "1y": "1Y", "1Y": "1Y",
+    "7d": "1W", "14d": "1M", "28d": "1M", "30d": "1M", "60d": "3M",
+    "equity_default": "1D",
+}
+
+
+def normalize_timeframe(raw: Any) -> str:
+    """Map tournament horizon labels to swarm_pick_schema timeframes."""
+    key = str(raw or "").strip()
+    if not key:
+        return "4H"
+    mapped = _TOURNEY_TF_MAP.get(key) or _TOURNEY_TF_MAP.get(key.lower())
+    if mapped:
+        return mapped
+    # Fallback: day-count horizons → weekly/monthly buckets
+    if key.endswith("d") and key[:-1].isdigit():
+        days = int(key[:-1])
+        if days <= 7:
+            return "1W"
+        if days <= 30:
+            return "1M"
+        return "3M"
+    return "4H"
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -134,7 +165,7 @@ def promote_consensus_picks(
             if pick.get("sl") or pick.get("stop_loss"):
                 entry["sls"].append(float(pick.get("sl") or pick.get("stop_loss")))
             if pick.get("timeframe"):
-                entry["timeframes"].append(str(pick["timeframe"]))
+                entry["timeframes"].append(normalize_timeframe(pick["timeframe"]))
             if sub.get("strategy_rationale"):
                 entry["rationales"].append(str(sub["strategy_rationale"])[:200])
 
@@ -162,7 +193,11 @@ def promote_consensus_picks(
         tp = _median(entry["tps"]) if entry["tps"] else None
         sl = _median(entry["sls"]) if entry["sls"] else None
         asset_class = derive_asset_class(sym)
-        timeframe = max(set(entry["timeframes"]), key=entry["timeframes"].count) if entry["timeframes"] else "4H"
+        timeframe = (
+            max(set(entry["timeframes"]), key=entry["timeframes"].count)
+            if entry["timeframes"] else "4H"
+        )
+        timeframe = normalize_timeframe(timeframe)
 
         models_list = sorted(entry["models"])
         n_models = len(models_list)
