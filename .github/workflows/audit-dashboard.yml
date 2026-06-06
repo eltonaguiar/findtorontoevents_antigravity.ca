@@ -539,7 +539,6 @@ jobs:
           # n=175 PF=1.82 lives here, not closed_picks.json). Revert: '0'.
           PF_REGISTRY_INCLUDE_OUTCOMES: '1'
         run: |
-          python -m alpha_engine.score_booster || echo "Score booster warning (non-fatal)"
           # 2026-05-28: refresh money_ready_verdict.json on every hourly dashboard
           # build (was daily-only via money-ready-snapshot.yml → 13h+ stale vs embed).
           python tools/money_ready_snapshot.py || echo "money_ready snapshot warning (non-fatal)"
@@ -549,6 +548,14 @@ jobs:
           python tools/build_pf_registry.py || echo "PF registry build warning (non-fatal)"
           python tools/sync_summary_picks_json.py || echo "summary_picks sync warning (non-fatal)"
           python -m audit_trail.dashboard_generator
+          # score_booster MUST run AFTER dashboard_generator — it reads
+          # audit_trail/data/dashboard_payload.json which dashboard_generator
+          # produces. Running it before (pre-2026-06-06) caused ERROR:
+          # payload_not_found on every fresh CI runner because the file did
+          # not yet exist. Moved here per score_booster.py docstring: "Runs
+          # every dashboard cycle, AFTER the dashboard generator produces the
+          # payload, BEFORE the HTML template is built." (INCIDENT fix 2026-06-06)
+          python -m alpha_engine.score_booster || echo "Score booster warning (non-fatal)"
           python -m audit_dashboard.blueprint_generator
           # MASTERPLAN 2026-06-05: keep pick_funnel 48h/14d panels fresh (was ~7d stale)
           python tools/audit_pick_funnel/build_recency_summary.py \
