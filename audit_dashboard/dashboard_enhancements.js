@@ -1067,7 +1067,11 @@
     setTimeout(initEnhancements, 1000);
   }
 
-  // Re-run once after external JSON lands (debounced — template fires a single event)
+  // Re-run once after external JSON lands (debounced — template may fire this event 2-3×
+  // in quick succession: external-data path, embedded-data path, load event.
+  // 3000ms debounce ensures only the last fire triggers a re-render.
+  // Nodes are faded (not removed) while re-render is in-flight so sections
+  // never flash blank — each render fn removes the faded node when ready.
   let _enhRefreshTimer = null;
   document.addEventListener('dashboard-data-loaded', function () {
     clearTimeout(_enhRefreshTimer);
@@ -1075,9 +1079,10 @@
       window._enhInitDone = false;
       ['enh-system-trends', 'enh-strategy-consensus', 'enh-time-window-leaderboard', 'enh-db-health', 'enh-top-n-rank-backtest', 'enh-ml-gatekeeper-ab'].forEach(id => {
         const node = document.getElementById(id);
-        if (node) node.remove();
+        // Fade rather than delete — keeps section visible during async re-fetch
+        if (node) { node.style.opacity = '0.45'; node.style.pointerEvents = 'none'; }
       });
       initEnhancements();
-    }, 250);
+    }, 3000);
   });
 })();

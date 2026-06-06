@@ -17745,7 +17745,8 @@ async function fetchBinanceKlinesWithFailover(symbol, interval, limit) {
     const endAt = Math.floor(Date.now() / 1000);
     const startAt = endAt - (limit + 5) * intervalSec;
     const kuUrl = `https://api.kucoin.com/api/v1/market/candles?type=${kuType}&symbol=${base}-USDT&startAt=${startAt}&endAt=${endAt}`;
-    const resp = await fetch(kuUrl, {signal: AbortSignal.timeout(5000)});
+    // KuCoin blocks browser CORS — route through allorigins proxy
+    const resp = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(kuUrl), {signal: AbortSignal.timeout(5000)});
     if (resp.ok) {
       const json = await resp.json();
       const entries = (json && json.data) || [];
