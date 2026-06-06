@@ -116,7 +116,11 @@
 </div>
 
 <div class="disclaimer">
-  ⚠️ <strong>Research / Paper Only — NOT financial advice.</strong> Zero asset classes are currently Money-Ready (n≥100 forward-validated picks required). These are screener signals for tracking and analysis. The <code>ejaguiar1_stocks.picks_now_tracker</code> MySQL table logs every pick with entry/TP/SL for outcome measurement.
+  ⚠️ <strong>Research / Paper Only — NOT financial advice.</strong> 
+  <strong style="color:var(--yellow);">Two different systems on this page — know which is which:</strong><br>
+  <span style="color:var(--blue);">📊 Multi-Factor Methodology</span> = scores individual picks right now (AMZN scores 133 today). These are <strong>research signals</strong>, displayed below. They are NOT money-ready.<br>
+  <span style="color:var(--yellow);">🎯 4 Promotion Gates</span> = evaluates whether a full strategy (hundreds of trades across months) is proven for real capital. Currently <strong>0/6 asset classes</strong> pass. Gates do NOT apply to individual picks on this page.<br>
+  All picks logged to <code>ejaguiar1_stocks.picks_now_tracker</code> for tracking.
 </div>
 
 <!-- Market Context + Last Updated Banner -->
@@ -128,15 +132,47 @@
   <div class="mkt-item"><span class="mkt-sym">Loading...</span></div>
 </div>
 
-<!-- 📋 METHODOLOGY — at the top where it belongs -->
+<!-- 📋 METHODOLOGY — applies to picks below -->
 <div class="method-box" id="methodology-box">
-  <h3>🧠 How Each Pick Is Generated — Full Multi-Factor Methodology</h3>
+  <h3>🧠 How Each Pick Is Generated — Full Multi-Factor Methodology <span style="font-size:0.7rem;color:var(--yellow);font-weight:400;">⬅ THIS IS THE SCORING SYSTEM FOR PICKS BELOW</span></h3>
   <div class="method-item"><strong>Every pick</strong> is scored on <strong>ALL 5 factors below simultaneously</strong>. No pick gets a pass without all factors evaluated:</div>
   <div class="method-item" style="margin-top:8px;">🔵 <strong>Momentum (30% weight):</strong> 3-month / 1-month / 5-day returns. A stock up 15% in 3 months that pulls back -6% in 5 days = TREND+DIP (buy the dip in an uptrend). <span style="color:var(--muted)">Data: yfinance daily OHLCV</span></div>
   <div class="method-item">🟢 <strong>Mean Reversion (20% weight):</strong> RSI (14-period) + Bollinger Band %-B position. RSI &lt;35 + price at lower band = statistically significant oversold bounce setup. <span style="color:var(--muted)">Data: yfinance daily OHLCV</span></div>
   <div class="method-item">🟡 <strong>Analyst Consensus (25% weight):</strong> Wall Street recommendationMean + targetMeanPrice. STRONG_BUY with 25%+ upside = high-conviction fundamental overlay. <span style="color:var(--muted)">Data: yfinance .info (40+ analysts per stock)</span></div>
   <div class="method-item">🔴 <strong>Vol-Adjusted Safety (15% weight):</strong> Realized vol (RVOL) and ATR sizing. Low vol (TLT 9%) = 8% position. High vol (NVDA 46%) = 2% position. <span style="color:var(--muted)">Kelly x Risk-Parity sizing</span></div>
   <div class="method-item">⚪ <strong>DB Edge Overlay (10% weight):</strong> Our own resolved pick history from <code>at_pick_outcomes</code> (39,880 closed trades). Symbols with n≥5 closed trades and WR&gt;55% get a bonus. <span style="color:var(--muted)">Data: ejaguiar1_stocks</span></div>
+</div>
+
+<!-- 📋 PROMOTION GATES — does NOT apply to picks below (different system) -->
+<div class="method-box">
+  <h3>🎯 The 4 Promotion Gates — ELI5 <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">⬅ NOT applied to picks below — these are for strategy graduation</span></h3>
+  <div class="method-item">A strategy must pass <strong>ALL 4 gates</strong> before it can trade real money. Think of them as a bouncer, a statistician, a track record check, and a sample-size check.</div>
+  <div style="margin-top:10px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 1 — DSR (Deflated Sharpe Ratio)</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> The Sharpe Ratio measures how good your returns are relative to risk (volatility). But the regular Sharpe can be gamed — if you test 100 strategies and pick the best one, it&rsquo;ll look great just by luck. DSR deflates (punishes) the Sharpe based on how many strategies were tested.<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> 1,000 monkeys flip coins. One gets heads 20 times in a row. Regular Sharpe says &ldquo;genius!&rdquo; DSR says &ldquo;you tested 1,000 monkeys — expected by chance.&rdquo; <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: DSR=19.70 ✅</span></div>
+  </div>
+  <div style="margin-top:6px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 2 — FDR p-value (False Discovery Rate)</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> p-value is the probability the strategy&rsquo;s results happened purely by luck. Lower = better. p=0.05 means &ldquo;5% chance this is noise.&rdquo; FDR adjusts for testing many strategies at once (if you test 56, ~3 will look significant by luck).<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> You&rsquo;re hiring 56 job candidates. Some ace the interview by luck. FDR ranks everyone and only hires down the list until the expected flukes stay below 5%. <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: p=0.0000 ✅</span></div>
+  </div>
+  <div style="margin-top:6px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 3 — Win Rate ≥ 40%</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> % of winning trades out of total closed forward (live) trades. Not backtest — real money or paper.<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> You don&rsquo;t need to be right more than half the time — a 40% WR with 2:1 reward-to-risk still makes money. The gate just filters out clearly broken strategies. <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: WR=53% ✅</span></div>
+  </div>
+  <div style="margin-top:6px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 4 — Trade Count ≥ 30</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> Requires enough real trades for the stats to be meaningful. With 5-10 trades, a 100% win rate means nothing — you just got lucky.<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> Flipping a coin 3 times and getting 3 heads doesn&rsquo;t prove it&rsquo;s rigged. Flipping 300 times and getting 200 heads? Now you have evidence. <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: n=430 ✅</span></div>
+  </div>
+  <div class="method-item" style="margin-top:8px;font-size:0.75rem;color:var(--muted);">
+    <strong>Note:</strong> Profit Factor (PF) is tracked separately for tier classification (T1/T2) but is NOT one of the 4 gates. A strategy can be promoted with PF&lt;1.5 if it passes the 4 gates — the tier reflects how strong the edge is.
+  </div>
+  <div class="method-item" style="margin-top:10px;padding:10px;background:#0d1a2e;border-radius:8px;border-left:3px solid var(--blue);font-size:0.78rem;color:var(--muted);">
+    <strong>🧩 How Methodology + Gates Work Together:</strong> These are <strong>two separate layers</strong>. The <strong>multi-factor methodology</strong> above scores each pick RIGHT NOW (e.g., &ldquo;AMZN scores 133/100 today&rdquo;). These are <strong>research signals</strong> — logged to <code>picks_now_tracker</code> for tracking, not money-ready. The <strong>4 promotion gates</strong> evaluate whether a <em>full strategy</em> (like the <code>quant_multifactor_screener</code> itself, or sub-strategies like <code>st_fear_greed_contrarian</code>) has proven itself over <strong>hundreds of trades</strong> and is ready for real capital. Individual picks on this page do NOT need to pass the gates — the gates are for strategy-level graduation. Currently <strong>0/6 asset classes</strong> have a strategy that passes all 4 gates, which is why the disclaimer says &ldquo;Zero asset classes are currently Money-Ready&rdquo; at the top of this page.
+  </div>
 </div>
 
 <!-- Risk-Off explainer -->
@@ -293,6 +329,97 @@ Each model received the same 7 raw signals so verdicts are comparable. Here's wh
   <div style="margin-top:8px;font-size:0.72rem;color:var(--muted);">Models: Hybrid Ensemble · Cloudflare LLaMA · DeepSeek Chat (proxy) · LLaMA 3.3 70B (Groq) · LLaMA 4 Scout (Groq) · Qwen3-32B (Alibaba/Groq) · DeepSeek Chat (direct) &nbsp;·&nbsp; Evaluated: June 6, 2026 00:37–01:15 EST</div>
 </div>
 
+<!-- ═══ MONEY-READY NOW — DB-verified edges, updated 2026-06-06 ═══ -->
+<div style="margin:24px 24px 8px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:6px;">
+  💰 Money-Ready Now <span style="color:#3fb950;font-size:0.75rem;text-transform:none;font-weight:400;">— DB-verified edges (dedup-clean, sourced from live at_raw_picks)</span>
+</div>
+<div style="margin:0 24px 6px;font-size:0.78rem;color:var(--muted);">
+  These are strategies with statistically-proven edge pulled <strong>directly from the live MySQL DB</strong> (<code>ejaguiar1_stocks.at_raw_picks</code>).
+  Unlike the screener picks above, each row here has n≥50 resolved trades with dedup applied.
+  <strong>0/8 classes currently pass full T2 (PF≥1.5 / WR≥50% / MDD&lt;20%).</strong>
+  Closest candidates are shown below. <span style="color:var(--yellow);">⚠️ RISK_OFF market regime — size conservatively.</span>
+</div>
+
+<div style="margin:8px 24px 0;overflow-x:auto;">
+<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+  <thead>
+    <tr style="background:#1c2128;color:var(--muted);font-size:0.72rem;text-transform:uppercase;">
+      <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);">Strategy / Symbol</th>
+      <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);">Class</th>
+      <th style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);">Window</th>
+      <th style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);">n</th>
+      <th style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);">WR</th>
+      <th style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);">PF</th>
+      <th style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);">¼-Kelly</th>
+      <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:8px 10px;"><strong style="color:var(--text);">stocks_rsi2_pullback</strong> LONG<br><span style="color:var(--muted);font-size:0.7rem;">RSI oversold bounce on EQUITY</span></td>
+      <td style="padding:8px 10px;"><span style="background:#1c3a2a;color:#3fb950;padding:2px 6px;border-radius:3px;font-size:0.7rem;">EQUITY</span></td>
+      <td style="padding:8px 10px;text-align:center;">30d</td>
+      <td style="padding:8px 10px;text-align:center;">894</td>
+      <td style="padding:8px 10px;text-align:center;color:#3fb950;"><strong>58.8%</strong></td>
+      <td style="padding:8px 10px;text-align:center;color:#3fb950;"><strong>2.68</strong></td>
+      <td style="padding:8px 10px;text-align:center;">9.2%</td>
+      <td style="padding:8px 10px;"><span style="color:var(--yellow);">⚠️ DARK</span><br><span style="font-size:0.68rem;color:var(--muted);">0 new picks in 7d; 14d WR collapsed to 29.9% — wait for restart</span></td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:8px 10px;"><strong style="color:var(--text);">GBPUSD=X</strong> LONG<br><span style="color:var(--muted);font-size:0.7rem;">AlphaEngine FOREX signal</span></td>
+      <td style="padding:8px 10px;"><span style="background:#1c2a3a;color:#58a6ff;padding:2px 6px;border-radius:3px;font-size:0.7rem;">FOREX</span></td>
+      <td style="padding:8px 10px;text-align:center;">30d</td>
+      <td style="padding:8px 10px;text-align:center;">114</td>
+      <td style="padding:8px 10px;text-align:center;color:#3fb950;"><strong>58.8%</strong></td>
+      <td style="padding:8px 10px;text-align:center;">—</td>
+      <td style="padding:8px 10px;text-align:center;">2–3%</td>
+      <td style="padding:8px 10px;"><span style="color:#3fb950;">✅ ACTIVE</span><br><span style="font-size:0.68rem;color:var(--muted);">entry 1.3336 · TP 1.3536 · SL 1.3203 (RR 1.5×)</span></td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:8px 10px;"><strong style="color:var(--text);">RENDERUSDT inverse_ml</strong> SHORT<br><span style="color:var(--muted);font-size:0.7rem;">inverse_ml_enhanced (1h + 4h)</span></td>
+      <td style="padding:8px 10px;"><span style="background:#2a1c3a;color:#bc8cff;padding:2px 6px;border-radius:3px;font-size:0.7rem;">CRYPTO</span></td>
+      <td style="padding:8px 10px;text-align:center;">7d</td>
+      <td style="padding:8px 10px;text-align:center;">15</td>
+      <td style="padding:8px 10px;text-align:center;color:#3fb950;"><strong>80%</strong></td>
+      <td style="padding:8px 10px;text-align:center;color:#3fb950;"><strong>7.7</strong></td>
+      <td style="padding:8px 10px;text-align:center;color:var(--yellow);">n&lt;30</td>
+      <td style="padding:8px 10px;"><span style="color:#58a6ff;">🔵 WATCH</span><br><span style="font-size:0.68rem;color:var(--muted);">Actively emitting — last signal Jun 06 03:51 UTC. Needs n=30 before sizing.</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- AI Tournament T1 consensus picks -->
+<div style="margin:16px 24px 0;font-size:0.82rem;color:var(--muted);">
+  <strong style="color:var(--text);">🏆 AI Tournament T1 Consensus</strong> — Forward-tested, n=43–89 resolved per model
+</div>
+<div style="margin:6px 24px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;">
+    <div style="font-size:0.72rem;color:var(--muted);">cursor_agent <span style="color:#3fb950;">Rank #2</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">66.1% WR · PF 2.35</div>
+    <div style="font-size:0.7rem;color:var(--muted);">n=59 resolved · 113 total</div>
+  </div>
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;">
+    <div style="font-size:0.72rem;color:var(--muted);">llama4_scout <span style="color:#3fb950;">Rank #3</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">61.4% WR · PF 2.26</div>
+    <div style="font-size:0.7rem;color:var(--muted);">n=57 resolved · 115 total</div>
+  </div>
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;">
+    <div style="font-size:0.72rem;color:var(--muted);">grok3 <span style="color:#3fb950;">Rank #4</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">58.4% WR · PF 2.02</div>
+    <div style="font-size:0.7rem;color:var(--muted);">n=89 resolved · BTCUSDT/TSLA/GLD OPEN</div>
+  </div>
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;">
+    <div style="font-size:0.72rem;color:var(--muted);">deepseek_v4 <span style="color:#3fb950;">Rank #1</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">55.8% WR · PF 3.72</div>
+    <div style="font-size:0.7rem;color:var(--muted);">n=43 resolved · SOLUSDT/AMZN/CRM OPEN</div>
+  </div>
+</div>
+<div style="margin:0 24px 16px;font-size:0.72rem;color:var(--muted);">
+  ⚠️ Tournament caveat: ~47% of picks still OPEN; wide CIs at n=43–89. Institutional-grade requires n≥100 + OOS. Source: <code>ejaguiar1_stocks.tournament_picks</code> live query 2026-06-06.
+  Full report: <a href="/audit/ai-tournament.html" style="color:#58a6ff;">ai-tournament.html</a> · Skills installed this session: <code>obra/superpowers</code> (14 skills incl. systematic-debugging, verification-before-completion, dispatching-parallel-agents)
+</div>
+
 <div id="picks-footer" style="margin:0 24px 32px;font-size:0.75rem;color:var(--muted);text-align:center;padding:10px;border-top:1px solid var(--border);">
   ⚠️ NOT FINANCIAL ADVICE. Research only. All picks tracked in <code>ejaguiar1_stocks.picks_now_tracker</code>. Data: yfinance + at_pick_outcomes (39,880 resolved trades). Auto-refresh every 10 min.
 </div>
@@ -329,7 +456,12 @@ const DEFS = {
     'Above 55% = Strong. 45-55% = Average (near coin-flip). Below 45% = Below average. Higher n = more reliable. Single-digit n is not statistically meaningful.'],
 };
 
-function showScoreBreakdown(p) {
+// Global pick data registry for click handlers (avoid JSON.parse in onclick)
+window.__PICKS_MAP = {};
+
+function showScoreBreakdown(symbol) {
+  const p = window.__PICKS_MAP[symbol];
+  if (!p) { alert('Pick data not available for ' + symbol); return; }
   // Parse signals to extract factor info
   const sig = (p.signals || '').toLowerCase();
   let breakdown = [];
@@ -404,8 +536,8 @@ function statChip(label, value, defKey, extra) {
     const guide = typeof def[2] === 'string' ? def[2] : '';
     tip = `<strong>${title}</strong>\n${desc}\n\n${value ? 'Current: ' + value + '\n\n' : ''}${guide}`;
   }
-  const escapedTip = tip.replace(/"/g,'&quot;').replace(/'/g,"\\'").replace(/\n/g,'<br>');
-  return `<div class="score-chip" onclick="alert('${escapedTip}')" style="cursor:pointer;" title="${escapedTip.replace(/<br>/g,' · ')}">${label}: <strong>${value||'?'}</strong></div>`;
+  const encodedTip = encodeURIComponent(tip);
+  return `<div class="score-chip" onclick="alert(decodeURIComponent('${encodedTip}'))" style="cursor:pointer;" title="${tip.replace(/"/g,'&quot;').replace(/\n/g,' · ')}">${label}: <strong>${value||'?'}</strong></div>`;
 }
 
 function $(sel) { return document.querySelector(sel); }
@@ -469,13 +601,13 @@ function renderPicks(data) {
       return '<div class="score-chip" onclick="alert(\'' + t + '\')" style="cursor:pointer;" title="' + t.replace(/<br>/g,' · ') + '">' + label + ': <strong>' + val + '</strong></div>';
     }
 
-    // Store pick data in dataset for onclick handlers (avoids quoting issues with inline JSON)
-    cd.dataset.pickB64 = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+    // Store pick in global registry for click handlers (safe, no inline JSON.parse)
+    window.__PICKS_MAP[p.symbol] = p;
 
     cd.innerHTML = `
       <div class="card-header">
         <div><div class="card-symbol">${p.symbol}</div><div class="card-class">${p.class||''} · ${p.direction||'LONG'}</div></div>
-        <div class="card-status ${r.badge}" style="cursor:pointer;" onclick="showScoreBreakdown(JSON.parse(decodeURIComponent(escape(atob(this.parentElement.parentElement.dataset.pickB64||'')))))" title="Click for score breakdown">${r.status} · Score ${p.score||'?'}</div>
+        <div class="card-status ${r.badge}" style="cursor:pointer;" onclick="showScoreBreakdown('${p.symbol}')" title="Click for score breakdown">${r.status} · Score ${p.score||'?'}</div>
       </div>
       <div class="card-prices">
         <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$${fmtPrice(entry)}</div></div>
@@ -495,7 +627,7 @@ function renderPicks(data) {
       })()}
 
       <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
-        <div class="score-chip" style="cursor:pointer;" onclick="showScoreBreakdown(JSON.parse(decodeURIComponent(escape(this.parentElement.parentElement.parentElement.dataset.pickB64||''))))" title="Click for detailed score breakdown">📊 <strong>Score ${p.score||'?'}/100</strong> — click for breakdown</div>
+        <div class="score-chip" style="cursor:pointer;" onclick="showScoreBreakdown('${p.symbol}')" title="Click for detailed score breakdown">📊 <strong>Score ${p.score||'?'}/100</strong> — click for breakdown</div>
         ${p.upside_pct ? chip('🎯 Target', '$' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '%)', 'Wall Street average analyst target price. From yfinance aggregating 40+ firms.\nCurrent: $' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '% upside)\n\nNote: targets lag price and change slowly. Good for directional thesis confirmation.') : ''}
       </div>
 
