@@ -230,6 +230,14 @@ class RealDataSweepRunner:
                 if isinstance(v, type) and k.endswith("Strategy") and k != "Strategy":
                     return v, None
             return None, "No Strategy class found"
+        except SystemExit as exc:
+            # Some non-strategy helper files in baby_strategies/ call
+            # `raise SystemExit("pip install ...")` at import time. SystemExit
+            # derives from BaseException, so a bare `except Exception` misses it
+            # and one bad file aborts the ENTIRE sweep (run 27056111987 died on
+            # baby_strategies/backtest_batch_round3.py). Treat it as a per-file
+            # import error so the sweep continues.
+            return None, f"Import aborted (SystemExit): {exc}"
         except Exception as exc:
             return None, f"Import error: {exc}"
 
