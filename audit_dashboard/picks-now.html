@@ -171,6 +171,124 @@
   <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">⏳ Loading picks from <code>picks_now.json</code>...</div>
 </div>
 
+<!-- ═══ MULTI-MODEL REVIEW PANEL — FYI only, does not change pick scores ═══ -->
+<div style="margin:0 24px 8px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:6px;">
+  🤖 Extended AI Model Panel <span style="color:#58a6ff;font-size:0.75rem;text-transform:none;font-weight:400;">— FYI only · does not change pick scores · each model saw the same raw data</span>
+</div>
+<div style="margin:0 24px 8px;font-size:0.78rem;color:var(--muted);">Each model received: RSI · Piotroski · Altman-Z · analyst count+target · EPS growth · RVOL · 3m momentum. No score anchoring — all verdicts are independent.</div>
+
+<div style="overflow-x:auto;margin:0 24px 16px;">
+<table style="width:100%;border-collapse:collapse;font-size:0.77rem;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+<thead>
+<tr style="background:#0d1117;color:var(--muted);text-align:left;">
+  <th style="padding:8px 12px;min-width:190px;">Model / Family</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">AMZN</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">NVDA</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">AAPL</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">META</th>
+  <th style="padding:8px 10px;min-width:200px;">Key Stats Cited</th>
+  <th style="padding:8px 10px;min-width:130px;">Framework Used</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">Hybrid Ensemble (large)</strong><div style="color:var(--muted);font-size:0.68rem;">Local proxy · multi-model blend</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38, 94 analysts, EPS+75%</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Altman-Z 51.4 great; RVOL 46% too high</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9; most resilient; low vol</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">3m=-8.3%; Piotroski 4/9; SL risk</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">Altman-Z, Piotroski, RVOL, 3m momentum, EPS</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality-resilience</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">Cloudflare LLaMA</strong><div style="color:var(--muted);font-size:0.68rem;">Cloudflare Workers AI</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38, 94 analysts, EPS+75%</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">79 analysts bull; RVOL 46% flagged</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9 but only +5.4% upside</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; 3m trend weak</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">Piotroski, analyst count, 3m trend, upside %</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality screening</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">DeepSeek Chat (proxy)</strong><div style="color:var(--muted);font-size:0.68rem;">Local proxy · DeepSeek-direct</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38 + 94 analysts = safe entry</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% great; RVOL 46% risky today</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9 + +0.3% today = safe haven</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; 3m=-8.3%</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RSI, Altman-Z, Piotroski, RVOL, 3m trend</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">mean-reversion + quality</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">LLaMA 3.3 70B (Groq)</strong><div style="color:var(--muted);font-size:0.68rem;">Meta AI · Groq inference</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38; 94 analysts STRONG_BUY</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% compelling; RVOL 46% → wait</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9; +0.3% defensive</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; 3m trend negative</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RSI, analyst consensus, Piotroski, 3m trend</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality-defensive</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">LLaMA 4 Scout (Groq)</strong><div style="color:var(--muted);font-size:0.68rem;">Meta MoE next-gen · Groq</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Strong fundamentals; risk-off day risk</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RVOL 46% in risk-off = catching a knife</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9; low vol; best risk-off pick</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; high ask in selloff</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RVOL, market regime, Piotroski, SL downside</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">risk-parity / regime-aware</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">Qwen3-32B (Alibaba/Groq)</strong><div style="color:var(--muted);font-size:0.68rem;">Alibaba DAMO Academy</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Analyst sentiment + fundamentals align</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% strong; sector volatile in selloff</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski + analyst support + low vol</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Weak Piotroski + high valuation ask</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">Analyst consensus, Piotroski, RVOL, valuation</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">fundamental screening</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">DeepSeek Chat (API direct)</strong><div style="color:var(--muted);font-size:0.68rem;">DeepSeek · direct API key</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38 + 94 analysts = compelling entry</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ HOLD<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% offset by 46% vol; RSI neutral</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Perfect quality + positive relative strength</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Weak fundamentals + negative momentum</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RSI, Altman-Z, Piotroski, 3m trend, analyst count</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality-momentum</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- Tally -->
+<div style="margin:0 24px 20px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">
+  <div style="font-size:0.82rem;font-weight:700;color:var(--blue);margin-bottom:10px;">📊 7-Model Aggregate Tally (informational — scores unchanged)</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:0.8rem;">
+    <div style="background:#0d1117;border-radius:6px;padding:10px;">
+      <div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:4px;">AMZN</div>
+      <div style="color:var(--green);font-weight:700;">✅ 6 / 7 APPROVE</div>
+      <div style="color:var(--disputed);">⚠️ 1 / 7 CAUTION</div>
+      <div style="color:var(--muted);font-size:0.68rem;margin-top:4px;font-style:italic;">Strong consensus buy</div>
+    </div>
+    <div style="background:#0d1117;border-radius:6px;padding:10px;">
+      <div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:4px;">NVDA</div>
+      <div style="color:var(--disputed);font-weight:700;">⚠️ 5 / 7 CAUTION/HOLD</div>
+      <div style="color:var(--red);">❌ 1 / 7 REJECT (LLaMA 4)</div>
+      <div style="color:var(--muted);font-size:0.68rem;margin-top:4px;font-style:italic;">Wait for market to stabilize</div>
+    </div>
+    <div style="background:#0d1117;border-radius:6px;padding:10px;">
+      <div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:4px;">AAPL</div>
+      <div style="color:var(--green);font-weight:700;">✅ 6 / 7 APPROVE</div>
+      <div style="color:var(--disputed);">⚠️ 1 / 7 CAUTION (Cloudflare)</div>
+      <div style="color:var(--muted);font-size:0.68rem;margin-top:4px;font-style:italic;">Near-unanimous — safest pick</div>
+    </div>
+    <div style="background:#0d1117;border-radius:6px;padding:10px;">
+      <div style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;margin-bottom:4px;">META</div>
+      <div style="color:var(--red);font-weight:700;">❌ 7 / 7 REJECT</div>
+      <div style="color:var(--muted);font-size:0.68rem;margin-top:4px;font-style:italic;">Unanimous across all models</div>
+    </div>
+  </div>
+  <div style="margin-top:8px;font-size:0.72rem;color:var(--muted);">Models: Hybrid Ensemble · Cloudflare LLaMA · DeepSeek Chat (proxy) · LLaMA 3.3 70B (Groq) · LLaMA 4 Scout (Groq) · Qwen3-32B (Alibaba/Groq) · DeepSeek Chat (direct) &nbsp;·&nbsp; Evaluated: June 6, 2026 00:37–01:15 EST</div>
+</div>
+
 <div id="picks-footer" style="margin:0 24px 32px;font-size:0.75rem;color:var(--muted);text-align:center;padding:10px;border-top:1px solid var(--border);">
   ⚠️ NOT FINANCIAL ADVICE. Research only. All picks tracked in <code>ejaguiar1_stocks.picks_now_tracker</code>. Data: yfinance + at_pick_outcomes (39,880 resolved trades). Auto-refresh every 10 min.
 </div>
@@ -282,7 +400,7 @@ function statChip(label, value, defKey, extra) {
     const guide = typeof def[2] === 'string' ? def[2] : '';
     tip = `<strong>${title}</strong>\n${desc}\n\n${value ? 'Current: ' + value + '\n\n' : ''}${guide}`;
   }
-  const escapedTip = tip.replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+  const escapedTip = tip.replace(/"/g,'&quot;').replace(/'/g,"\\'").replace(/\n/g,'<br>');
   return `<div class="score-chip" onclick="alert('${escapedTip}')" style="cursor:pointer;" title="${escapedTip.replace(/<br>/g,' · ')}">${label}: <strong>${value||'?'}</strong></div>`;
 }
 
@@ -343,16 +461,17 @@ function renderPicks(data) {
     // Rich stat helpers
     function chip(label, val, tip) {
       if (!val) return '';
-      const t = (tip || '').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+      const t = (tip || '').replace(/"/g,'&quot;').replace(/'/g,"&#39;").replace(/\n/g,'<br>');
       return '<div class="score-chip" onclick="alert(\'' + t + '\')" style="cursor:pointer;" title="' + t.replace(/<br>/g,' · ') + '">' + label + ': <strong>' + val + '</strong></div>';
     }
 
-    const jsonStr = JSON.stringify(p).replace(/'/g,"&#39;");
+    // Store pick data in dataset for onclick handlers (avoids quoting issues with inline JSON)
+    cd.dataset.pickB64 = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
 
     cd.innerHTML = `
       <div class="card-header">
         <div><div class="card-symbol">${p.symbol}</div><div class="card-class">${p.class||''} · ${p.direction||'LONG'}</div></div>
-        <div class="card-status ${r.badge}" style="cursor:pointer;" onclick="showScoreBreakdown(${jsonStr})" title="Click for score breakdown">${r.status} · Score ${p.score||'?'}</div>
+        <div class="card-status ${r.badge}" style="cursor:pointer;" onclick="showScoreBreakdown(JSON.parse(decodeURIComponent(escape(atob(this.parentElement.parentElement.dataset.pickB64||'')))))" title="Click for score breakdown">${r.status} · Score ${p.score||'?'}</div>
       </div>
       <div class="card-prices">
         <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$${fmtPrice(entry)}</div></div>
@@ -362,7 +481,7 @@ function renderPicks(data) {
       <div class="card-rr">R:R <span>${rr}:1</span> | Size: <span>${p.position_size_pct||0}%</span> of portfolio | Vol: <span>${p.rvol?p.rvol.toFixed(1):'?'}%</span> annualized</div>
 
       <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
-        <div class="score-chip" style="cursor:pointer;" onclick="showScoreBreakdown(${jsonStr})" title="Click for detailed score breakdown">📊 <strong>Score ${p.score||'?'}/100</strong> — click for breakdown</div>
+        <div class="score-chip" style="cursor:pointer;" onclick="showScoreBreakdown(JSON.parse(decodeURIComponent(escape(this.parentElement.parentElement.parentElement.dataset.pickB64||''))))" title="Click for detailed score breakdown">📊 <strong>Score ${p.score||'?'}/100</strong> — click for breakdown</div>
         ${p.upside_pct ? chip('🎯 Target', '$' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '%)', 'Wall Street average analyst target price. From yfinance aggregating 40+ firms.\nCurrent: $' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '% upside)\n\nNote: targets lag price and change slowly. Good for directional thesis confirmation.') : ''}
       </div>
 
@@ -376,7 +495,7 @@ function renderPicks(data) {
 
       <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
         ${chip('📈 Mom', mom.join(' · '), 'Momentum — returns over 3 time windows.\n' + mom.join(' · ') + '\n\n3-month shows primary trend. 1-month medium-term. 5-day immediate direction.\n3m positive + 5d negative = TREND+DIP (buy the dip)\n3m negative + 5d negative = DOWNTREND (avoid)')}
-        ${p.analyst ? chip('🏦 ' + anlDisp, anlTarget, 'Analyst Consensus from yfinance (' + (p.analyst_n||'?') + ' analysts).\nRating: ' + (p.analyst||'').replace(/_/g,' ') + '\n\nScale: 1.0=StrongBuy, 2.0=Buy, 3.0=Hold, 4.0=Sell, 5.0=StrongSell\n'yfinance aggregates 40+ major investment banks.\n\n⚠️ Consensus LAGS price. Confirms thesis but doesn\'t predict short-term.') : ''}
+        ${p.analyst ? chip('🏦 ' + anlDisp, anlTarget, 'Analyst Consensus from yfinance (' + (p.analyst_n||'?') + ' analysts).\nRating: ' + (p.analyst||'').replace(/_/g,' ') + '\n\nScale: 1.0=StrongBuy, 2.0=Buy, 3.0=Hold, 4.0=Sell, 5.0=StrongSell\n' + 'yfinance aggregates 40+ major investment banks.\n\n⚠️ Consensus LAGS price. Confirms thesis but doesn\'t predict short-term.') : ''}
         ${peVal ? chip('P/E', peVal, 'Forward P/E — price ÷ forecasted next-12-month earnings.\nCurrent: ' + peVal + '\n\nBelow 15 = Potentially undervalued\n15-25 = Fair (S&P 500 avg ~20x)\n25-40 = Growth premium\nAbove 40 = High expectations (risk)') : ''}
         ${epsVal ? chip('EPS', epsVal, 'EPS Growth YoY — year-over-year earnings per share change.\nCurrent: ' + epsVal + '\n\nAbove 20% = Strong growth\n10-20% = Moderate\n0-10% = Slow\nNegative = Declining\n\nThe #1 long-term stock price driver.') : ''}
         ${dbVal ? chip('📚 DB', dbVal, 'Database Win Rate — our closed-trade history on this symbol from ejaguiar1_stocks at_pick_outcomes.\nCurrent: ' + dbVal + '\n\nAbove 55% = Strong\n45-55% = Average\nBelow 45% = Below average') : ''}
