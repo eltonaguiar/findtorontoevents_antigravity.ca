@@ -285,6 +285,7 @@ def render_html(incidents, enhancements, findings, generated_at):
 
 <nav class="nav">
   <a href="/audit/">← Main Audit</a>
+  <a href="/audit/picks-now.html">⚡ Picks Now</a>
   <a href="/audit/ai-tournament.html">AI Tournament</a>
   <a href="/audit/pick_funnel.html">Pick Funnel</a>
   <a href="/updates/">Updates</a>
