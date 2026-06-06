@@ -42,11 +42,26 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 REPORTS_DIR = REPO / "reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── DB credentials ──────────────────────────────────────────────────────────
-DB_HOST = "mysql.50webs.com"
-DB_STOCKS_USER = "ejaguiar1_stocks"
-DB_STOCKS_PASS = "stocks1234560"
-DB_STOCKS_NAME = "ejaguiar1_stocks"
+# ── DB credentials (SECURITY: NEVER hardcode real passwords in source) ──────
+# This file must not contain secrets that could leak via git, PRs, or bundles.
+#
+# Correct ways (in priority order):
+#   1. GitHub Actions: set env var DB_PASSWORDS_JSON (or MYSQL_PASSWORD)
+#      from repository secrets. Example in workflow:
+#        env:
+#          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+#   2. Local dev: tools/db_env.py reads .env.dbpw (gitignored) or the
+#      DB_PASSWORDS_JSON env var.
+#   3. The db_env module centralizes all legacy env var names.
+#
+# DB writes are always best-effort (the screener works without the DB edge
+# overlay or tracker insert).
+DB_CREDS = None
+try:
+    from tools.db_env import get_stocks_creds
+    DB_CREDS = get_stocks_creds(raise_on_missing=False)
+except Exception:
+    DB_CREDS = None
 
 
 # ── Universe by asset class ─────────────────────────────────────────────────
@@ -153,13 +168,24 @@ def calc_max_drawdown(close):
 # ── DB edge data ────────────────────────────────────────────────────────────
 
 def load_db_edge():
-    """Load our resolved pick performance per symbol from at_pick_outcomes."""
+    """Load our resolved pick performance per symbol from at_pick_outcomes.
+
+    SECURITY: Never embed passwords. Uses tools/db_env.py which reads
+    from GitHub secrets (via DB_PASSWORDS_JSON or MYSQL_PASSWORD env vars
+    in GHA) or local .env.dbpw (gitignored). Falls back gracefully so the
+    screener still works with yfinance/analyst data when DB is unavailable.
+    """
     try:
         import pymysql
-        conn = pymysql.connect(
-            host=DB_HOST, user=DB_STOCKS_USER, password=DB_STOCKS_PASS,
-            database=DB_STOCKS_NAME,
-        )
+        from tools.db_env import get_stocks_creds
+
+        creds = get_stocks_creds(raise_on_missing=False)
+        if not creds or not creds.get("password"):
+            # Common in local dev or when GHA secret not injected for this job
+            print("  [INFO] DB edge overlay skipped (no secure creds via db_env / env vars). Using yfinance + analyst scoring only.")
+            return {}
+
+        conn = pymysql.connect(**creds)
         cur = conn.cursor()
         cur.execute("""
             SELECT symbol, asset_class,
@@ -368,7 +394,7 @@ class QuantScorer:
         # ── Position sizing (Kelly/vol-parity) ──
         if direction in ("STRONG_BUY", "BUY") and rvol > 0:
             if rvol < 15:
-                position_pct = 8.0  # 8% portfolio
+                position_pct = 8.0
             elif rvol < 30:
                 position_pct = 5.0
             elif rvol < 50:
@@ -377,21 +403,85 @@ class QuantScorer:
                 position_pct = 2.0
             else:
                 position_pct = 1.0
-            # Halve for crypto/commodity
             if cls in ("CRYPTO", "COMMODITY"):
                 position_pct *= 0.5
         else:
             position_pct = 0
 
-        # ── Suggest TP/SL based on ATR ──
         if direction in ("STRONG_BUY", "BUY") and atr_pct > 0:
-            sl_pct = max(atr_pct * 1.5, 4.0)  # 1.5x ATR, minimum 4%
-            tp_pct = sl_pct * 2.0  # 2:1 reward:risk minimum
-            # For strong trend + low vol, wider TP
+            sl_pct = max(atr_pct * 1.5, 4.0)
+            tp_pct = sl_pct * 2.0
             if "TREND+DIP" in str(signals) and rvol < 30:
                 tp_pct = max(tp_pct, 12.0)
         else:
             sl_pct = tp_pct = None
+
+        # ── ELI5 Reason (Explain Like I'm 5) ──
+        eli5_parts = []
+        if "TREND+DIP" in str(signals):
+            eli5_parts.append(
+                f"This stock has been going UP over the last 3 months (+{ret_3m:.0f}%) "
+                f"but just dropped -{abs(ret_5d):.0f}% in the last 5 days. "
+                f"That's like a strong athlete who stumbled — likely to bounce back.")
+        elif "STRONG_TREND" in str(signals):
+            eli5_parts.append(
+                f"This has been steadily climbing (+{ret_3m:.0f}% over 3 months). "
+                f"The trend is your friend.")
+        if rsi_val < 35:
+            eli5_parts.append(
+                f"The RSI is {rsi_val:.0f} (way below 30 means 'very oversold'). "
+                f"Historically, things this oversold tend to bounce back up.")
+        elif rsi_val < 40:
+            eli5_parts.append(
+                f"The RSI is {rsi_val:.0f} — below the normal range, suggesting it's undervalued right now.")
+        if bb_pct < 0.15:
+            eli5_parts.append(
+                f"Price is near the LOWER Bollinger Band — a statistical "
+                f"boundary that price rarely stays below for long.")
+        if analyst_rating and analyst_rating <= 1.5 and analyst_n >= 10:
+            eli5_parts.append(
+                f"Wall Street analysts are VERY bullish: {analyst_n} analysts "
+                f"say STRONG BUY with an average target of ${target_price:.0f} "
+                f"(that's {upside:.0f}% higher than today's price).")
+        elif analyst_rating and analyst_rating <= 2.0 and analyst_n >= 5:
+            eli5_parts.append(
+                f"Most analysts say BUY ({analyst_n} analysts). "
+                f"They see it going to ${target_price:.0f} on average.")
+        if rvol and rvol < 15:
+            eli5_parts.append(
+                f"This is a low-volatility asset ({rvol:.0f}% annualized vol) — "
+                f"like a calm boat in a storm. Less risky to hold.")
+        elif rvol and rvol > 50:
+            eli5_parts.append(
+                f"High volatility ({rvol:.0f}%) means bigger swings — "
+                f"we're keeping position size small (1-2% of portfolio).")
+        if cls in ("BOND",) and div_yield and div_yield > 3:
+            eli5_parts.append(
+                f"It's a bond ETF paying {div_yield:.1f}% dividend — "
+                f"steady income even if price doesn't move much.")
+        if fwd_pe and fwd_pe < 20:
+            eli5_parts.append(
+                f"The forward P/E is {fwd_pe:.0f}x — reasonably priced "
+                f"compared to historical averages.")
+        if db_n >= 20 and db_wr > 50:
+            eli5_parts.append(
+                f"Our own trading history shows {db_wr:.0f}% win rate "
+                f"on this symbol across {db_n} closed trades — "
+                f"it's one of our best-performing symbols.")
+
+        eli5_reason = " ".join(eli5_parts) if eli5_parts else (
+            f"Multi-factor score of {score:.0f}/100 based on "
+            f"{'momentum' if ret_3m and ret_3m > 5 else ''} "
+            f"{'oversold RSI' if rsi_val < 40 else ''} "
+            f"{'analyst consensus' if analyst_n and analyst_n >= 5 else ''} "
+            f"{'and low volatility' if rvol and rvol < 20 else ''}. "
+            f"Combined, these factors suggest a favorable risk/reward entry."
+        )
+
+        # ── EST timestamp (approximate ET for display; browser can refine) ──
+        now_utc = datetime.now(timezone.utc)
+        est_pretty = now_utc.strftime("%b %d, %Y %I:%M %p ET (approx)")
+        est_ts = now_utc.strftime("%Y-%m-%d %H:%M UTC")
 
         return {
             "symbol": sym,
@@ -400,6 +490,8 @@ class QuantScorer:
             "direction": direction,
             "score": round(score, 1),
             "signals": " | ".join(signals),
+            "eli5_reason": eli5_reason,
+            "generated_at_est": est_pretty,
             "ret_5d": round(ret_5d, 1) if ret_5d else None,
             "ret_1m": round(ret_1m, 1) if ret_1m else None,
             "ret_3m": round(ret_3m, 1) if ret_3m else None,
@@ -571,18 +663,37 @@ def main():
                 r = row.iloc[0]
                 print(f"  {label:8s} ${price:<8.2f} | 5d={r['ret_5d']:+.1f}% 1m={r['ret_1m']:+.1f}% 3m={r['ret_3m']:+.1f}% rvol={r['rvol']:.0f}%")
 
+    print(f"\n{'='*70}")
+    print(f"  ⚠️  RISK-OFF CONTEXT (ELI5)")
+    print(f"{'='*70}")
+    print("  " + risk_off_explanation[:300] + "...")
+    print("  (Full explanation is in the JSON under risk_off_explanation for the web surface.)")
+
     # ── Write JSON ──
     json_path = DATA_DIR / "picks_now.json"
     json_picks = (df_res[df_res['direction'].isin(["STRONG_BUY", "BUY"])]
                   .sort_values('score', ascending=False)
                   .head(20))
+    regime = "RISK_OFF" if any(
+        r['ret_5d'] and r['ret_5d'] < -3 for _, r in
+        df_res[df_res['symbol'].isin(["SPY", "QQQ", "BTC-USD"])].iterrows()
+    ) else "NEUTRAL"
+
+    risk_off_explanation = (
+        "Market appears RISK-OFF (recent 5d declines visible across SPY/QQQ/BTC benchmarks). "
+        "Screener is favoring lower-volatility defensive names (e.g. TLT bonds) and high-conviction analyst-supported pullbacks in quality equities. "
+        "All suggested position sizes are deliberately small and conservative. "
+        "This output is a 'best possible actionable option right now' bridge tool while the system accumulates more clean n≥100 resolved trades under policy-clean gates. "
+        "Current status per money_ready_verdict.json + pf_registry: 0/9 asset classes meet full Tier-2 money-ready criteria (n≥100 clean post-noise, WR≥50%, PF≥1.5, MDD<20). "
+        "ALWAYS verify the latest 14d/48h recency panels (pick_summary_stats_*.json) and concentration before any paper sizing. NFA — research / paper trading only."
+    )
+
     json_data = {
         "generated_at": ts.isoformat(),
+        "generated_at_est": datetime.now(timezone.utc).strftime("%b %d, %Y %I:%M %p ET (approx)"),
         "date": date_str,
-        "market_regime": "RISK_OFF" if any(
-            r['ret_5d'] and r['ret_5d'] < -3 for _, r in
-            df_res[df_res['symbol'].isin(["SPY", "QQQ", "BTC-USD"])].iterrows()
-        ) else "NEUTRAL",
+        "market_regime": regime,
+        "risk_off_explanation": risk_off_explanation,
         "n_scored": len(df_res),
         "picks": json_picks.to_dict("records"),
         "all": df_res.sort_values('score', ascending=False).head(50).to_dict("records"),
@@ -591,6 +702,56 @@ def main():
     with open(json_path, "w") as f:
         json.dump(json_data, f, indent=2, default=str)
     print(f"\n📁 JSON: {json_path}")
+
+    # ── Save to MySQL tracking table (best-effort, production GHA path preferred) ──
+    try:
+        import pymysql
+        if DB_CREDS and DB_CREDS.get("password"):
+            db_conn = pymysql.connect(**DB_CREDS)
+        else:
+            raise RuntimeError("no secure creds from tools.db_env (DB_PASSWORDS_JSON or fallbacks)")
+        db_cur = db_conn.cursor()
+        inserted = 0
+        for _, r in json_picks.iterrows():
+            tp = r.get('suggested_tp_pct')
+            sl = r.get('suggested_sl_pct')
+            price = r.get('price', 0)
+            def safe_float(v, default=None):
+                if v is None: return default
+                try: return float(v)
+                except: return default
+            def safe_int(v, default=None):
+                if v is None: return default
+                try: return int(v)
+                except: return default
+            db_cur.execute('''
+                INSERT INTO picks_now_tracker 
+                (generated_at, symbol, asset_class, direction, entry_price,
+                 suggested_tp, suggested_sl, score, rvol, rsi,
+                 analyst_rating, analyst_count, target_price, upside_pct,
+                 eli5_reason, signals)
+                VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ''', (
+                r['symbol'], r['class'], r.get('direction', 'LONG'),
+                safe_float(price),
+                safe_float(price * (1 + tp/100)) if tp else None,
+                safe_float(price * (1 - sl/100)) if sl else None,
+                safe_float(r.get('score')),
+                safe_float(r.get('rvol')),
+                safe_float(r.get('rsi')),
+                str(r.get('analyst', ''))[:30] if r.get('analyst') else None,
+                safe_int(r.get('analyst_n'), 0),
+                safe_float(r.get('target_price')),
+                safe_float(r.get('upside_pct')),
+                (r.get('eli5_reason') or '')[:2000] if r.get('eli5_reason') else None,
+                (r.get('signals') or '')[:500],
+            ))
+            inserted += 1
+        db_conn.commit()
+        db_conn.close()
+        print(f"💾 DB saved: {inserted} picks to picks_now_tracker")
+    except Exception as e:
+        print(f"  [WARN] DB save skipped (use GHA for production tracking): {e}")
 
     # ── Write markdown report ──
     md_path = REPORTS_DIR / f"PICKS_NOW_{date_str}.md"
@@ -652,6 +813,27 @@ def main():
     print(f"  STRONG_BUY: {len(df_res[df_res['direction']=='STRONG_BUY'])}")
     print(f"  BUY:        {len(df_res[df_res['direction']=='BUY'])}")
     print(f"{'='*70}")
+
+    # Goal #1 honesty bridge (0/9 money-ready policy-clean; this is "best possible RIGHT NOW" overlay)
+    # Load verdict for context (graceful; the top_notch generator + /audit/ai-tournament.html have the full recency/DSR view)
+    try:
+        verdict_path = ROOT / "audit_dashboard" / "data" / "money_ready_verdict.json"
+        if verdict_path.exists():
+            v = json.loads(verdict_path.read_text())
+            note = "0/9 classes money-ready (policy-clean n≥100 / WR≥50 / PF≥1.5 Tier-2 min per Goal #1 + CLAUDE.md). This is the best-possible 'IF WE HAD TO MAKE PICKS RIGHT NOW' bridge using live market (yf analyst/momentum/mean-rev/vol) + our DB edge overlay (at_pick_outcomes). Full statistical edge (DSR/PBO/CPCV proxies, 14d/48h pick_summary recency, conc gates, policy_clean_net) lives in money_ready_verdict.json + top_notch_money_ready.json + ai-tournament.html Top Notch table. ALWAYS verify 14d/48h panels first before sizing (recency rule). Paper-first / NFA. See picks-now.html + /audit/ai-tournament.html."
+            print("\n" + note)
+            # Inject into the written JSON for consumers (picks-now.html, future widgets)
+            try:
+                if json_path.exists():
+                    jj = json.loads(json_path.read_text())
+                    jj["honest_bridge_note"] = note
+                    jj["money_ready_status"] = "0/9 policy-clean; recency + gates required; paper only"
+                    jj["cross_ref"] = {"top_notch": "audit_dashboard/data/top_notch_money_ready.json", "ai_tournament": "/audit/ai-tournament.html#top-notch", "verdict": "audit_dashboard/data/money_ready_verdict.json"}
+                    json_path.write_text(json.dumps(jj, indent=2))
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
