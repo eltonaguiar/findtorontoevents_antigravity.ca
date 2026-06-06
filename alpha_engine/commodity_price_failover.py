@@ -245,8 +245,16 @@ def _adapter_fmp(symbol: str) -> Optional[dict]:
     if not key:
         return None
     s = _normalize_symbol(symbol)
-    # FMP uses GCUSD for gold futures, CLUSD for crude, etc.
-    # Try direct symbol first, then strip =F
+    # FMP lists metals/energy as <X>USD (GCUSD, CLUSD, SIUSD...) but does NOT
+    # list grains/softs that way (ZCUSD/KCUSD/CTUSD don't exist), so the naive
+    # s.replace('=F','USD') would silently 404 for corn/coffee/cotton. Restrict
+    # FMP to the contracts where the <X>USD convention is known to resolve;
+    # everything else falls through to the next source (Yahoo v8 already covers
+    # grains/softs at slot #1).
+    _FMP_USD_OK = {"GC=F", "SI=F", "CL=F", "NG=F", "HG=F", "PA=F", "PL=F",
+                   "RB=F", "HO=F", "BZ=F"}
+    if s not in _FMP_USD_OK:
+        return None
     fmp_sym = s.replace("=F", "USD")
     url = f"https://financialmodelingprep.com/api/v3/quote/{urllib.parse.quote(fmp_sym)}?apikey={key}"
     data = _HTTP_GET_JSON(url)
@@ -308,6 +316,24 @@ def _adapter_fred(symbol: str) -> Optional[dict]:
     series_id = _FRED_MAP.get(s)
     if not series_id:
         return None
+    # IMPORTANT: FRED series are macro SPOT/CASH prices (London gold fixing,
+    # WTI cash, Henry Hub spot, monthly copper) — NOT the front-month futures
+    # contract the pick was entered on. The futures price can differ from spot
+    # by the full basis (contango/backwardation), so using a FRED value as the
+    # "current" futures price produces phantom PnL and can falsely trip TP/SL.
+    # We therefore tag every FRED result is_proxy=True / price_basis="spot" and
+    # the enricher refuses to use proxy prices for PnL/closure (display-only).
+    def _fred_result(price, asof):
+        return {
+            "price": price,
+            "symbol": s,
+            "currency": "USD",
+            "asof": asof,
+            "source": "fred",
+            "is_proxy": True,
+            "price_basis": "spot",
+        }
+
     # Use FRED API key if available, fall back to anonymous CSV
     fred_key = os.environ.get("FRED_API_KEY")
     if fred_key:
@@ -323,13 +349,7 @@ def _adapter_fred(symbol: str) -> Optional[dict]:
                 if obs and obs[0].get("value") not in (".", None, ""):
                     price = float(obs[0]["value"])
                     if price > 0:
-                        return {
-                            "price": price,
-                            "symbol": s,
-                            "currency": "USD",
-                            "asof": obs[0].get("date", _today_iso()),
-                            "source": "fred",
-                        }
+                        return _fred_result(price, obs[0].get("date", _today_iso()))
             except Exception:
                 pass
 
@@ -345,13 +365,7 @@ def _adapter_fred(symbol: str) -> Optional[dict]:
             if val and val != ".":
                 price = float(val)
                 if price > 0:
-                    return {
-                        "price": price,
-                        "symbol": s,
-                        "currency": "USD",
-                        "asof": row.get("DATE", _today_iso()),
-                        "source": "fred",
-                    }
+                    return _fred_result(price, row.get("DATE", _today_iso()))
     except Exception as exc:
         logger.debug("fred parse failed for %s: %s", symbol, exc)
     return None

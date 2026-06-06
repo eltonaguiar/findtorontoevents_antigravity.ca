@@ -225,13 +225,26 @@ def _adapter_open_er_api(pair: str) -> Optional[dict]:
     if not rates:
         return None
     try:
-        # All OER rates are USD-based; compute cross if needed
+        # All OER rates are USD-based; compute cross if needed. Use .get with
+        # explicit None checks so a missing exotic/EM currency surfaces as a
+        # visible coverage gap rather than a KeyError swallowed by the broad
+        # except (which looked identical to a network failure).
+        rq, rb = rates.get(quote), rates.get(base)
         if base == "USD":
-            price = float(rates[quote])
+            if rq is None:
+                logger.info("open_er_api missing rate for %s", quote)
+                return None
+            price = float(rq)
         elif quote == "USD":
-            price = 1.0 / float(rates[base])
+            if rb is None:
+                logger.info("open_er_api missing rate for %s", base)
+                return None
+            price = 1.0 / float(rb)
         else:
-            price = float(rates[quote]) / float(rates[base])
+            if rq is None or rb is None:
+                logger.info("open_er_api missing cross rate %s/%s", base, quote)
+                return None
+            price = float(rq) / float(rb)
         if price <= 0:
             return None
         return {
@@ -276,12 +289,22 @@ def _adapter_finnhub_forex(pair: str) -> Optional[dict]:
     if not rates:
         return None
     try:
+        rq, rb = rates.get(quote), rates.get(base)
         if base == "USD":
-            price = float(rates[quote])
+            if rq is None:
+                logger.info("finnhub missing rate for %s", quote)
+                return None
+            price = float(rq)
         elif quote == "USD":
-            price = 1.0 / float(rates[base])
+            if rb is None:
+                logger.info("finnhub missing rate for %s", base)
+                return None
+            price = 1.0 / float(rb)
         else:
-            price = float(rates[quote]) / float(rates[base])
+            if rq is None or rb is None:
+                logger.info("finnhub missing cross rate %s/%s", base, quote)
+                return None
+            price = float(rq) / float(rb)
         if price <= 0:
             return None
         return {

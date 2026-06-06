@@ -198,6 +198,13 @@ def _fetch_all_binance_prices() -> dict[str, float]:
 # Price fetching: yfinance fallback
 # ---------------------------------------------------------------------------
 
+# Side-channel: records {symbol: {source, asof, is_proxy}} for the most recent
+# forex/commodity failover fetch. Lets callers attribute price provenance and
+# exclude proxy-priced closures from /audit WR/PF without changing the
+# price_map return shape. Safe to ignore if unused.
+LAST_PRICE_META: dict[str, dict] = {}
+
+
 def _fetch_yfinance_prices(symbols: list[str]) -> dict[str, float]:
     """Fetch prices for non-Binance symbols using yfinance.
 
@@ -226,12 +233,25 @@ def _fetch_yfinance_prices(symbols: list[str]) -> dict[str, float]:
                 result = fetch_forex_rate(sym)
                 if result and result.get("price", 0) > 0:
                     price_map[sym] = result["price"]
+                    LAST_PRICE_META[sym] = {"source": result.get("source"),
+                                            "asof": result.get("asof"),
+                                            "is_proxy": bool(result.get("is_proxy"))}
                     print(f"    [fx-failover] {sym} = {result['price']} [{result['source']}]")
             elif "=F" in sym.upper():
                 result = fetch_commodity_price(sym)
-                if result and result.get("price", 0) > 0:
+                # Skip is_proxy (FRED spot/cash) results: a macro spot price is
+                # NOT the front-month futures contract price and would create
+                # phantom basis PnL / false TP-SL closures. Let it fall through
+                # to yfinance instead of filling a wrong price.
+                if result and result.get("price", 0) > 0 and not result.get("is_proxy"):
                     price_map[sym] = result["price"]
+                    LAST_PRICE_META[sym] = {"source": result.get("source"),
+                                            "asof": result.get("asof"),
+                                            "is_proxy": False}
                     print(f"    [cmd-failover] {sym} = {result['price']} [{result['source']}]")
+                elif result and result.get("is_proxy"):
+                    print(f"    [cmd-failover] {sym}: skipped proxy/spot price from "
+                          f"{result.get('source')} (not the futures contract)")
 
     try:
         import yfinance as yf
