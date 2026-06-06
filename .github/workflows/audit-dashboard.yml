@@ -458,7 +458,23 @@ jobs:
         timeout-minutes: 30
         run: |
           pip install yfinance numpy pandas -q 2>/dev/null || true
-          python tools/ma_strategy_forward_tracker.py --asof "$(date -u +%Y-%m-%d)" || echo "MA strategy tracker failed (non-fatal)"
+          export ASOF="$(date -u +%Y-%m-%d)"
+          python tools/ma_strategy_forward_tracker.py --asof "$ASOF" || {
+            echo "::warning title=ma_strategy stale::MA strategy tracker failed — ai_leaderboard.html will show stale asof"
+            exit 0
+          }
+          python3 - <<'PY'
+          import json, os, sys
+          asof = os.environ.get("ASOF", "")
+          for path in ("audit_dashboard/data/ma_strategy_leaderboard.json",
+                       "audit_dashboard/data/ma_strategy_signals.json"):
+              d = json.load(open(path))
+              got = d.get("asof", "")
+              if got != asof:
+                  print(f"::warning title=ma_strategy asof mismatch::{path} asof={got!r} expected {asof!r}")
+                  sys.exit(1)
+          print(f"ma_strategy OK: asof={asof}")
+          PY
 
       - name: Generate dashboard payload and build HTML
         env:
@@ -566,6 +582,10 @@ jobs:
           for path, slug, max_h in [
               ("audit_dashboard/data/anti_overfit_audit.json", "anti_overfit", 24),
               ("alpha_engine/data/walkforward_results.json",   "walkforward",  24*8),
+              # MA strategy: daily refresh via ma_strategy_forward_tracker.py;
+              # 48h tolerates one missed hourly run without false alarms.
+              ("audit_dashboard/data/ma_strategy_leaderboard.json", "ma_strategy", 48),
+              ("audit_dashboard/data/ma_strategy_signals.json",     "ma_strategy_signals", 48),
           ]:
               fp = pathlib.Path(path)
               if not fp.exists():
@@ -806,7 +826,7 @@ jobs:
           # every run, and committing them added ~100MB/hr to .git history
           # (19GB repo → checkout hangs). They are .gitignored; do not re-add.
           # See reports/AUDIT_STAT_VALIDATION_2026-05-22.md.
-          for f in reports/pick_flow_snapshot.json audit_trail/data/non_crypto_pick_audit.json audit_trail/data/universal_resolved_picks.json audit_trail/data/stock_prices.json audit_trail/data/pipeline_health.json audit_trail/data/feed_health_report.json audit_dashboard/index.html audit_dashboard/data/summary_picks.json audit_dashboard/data/pf_registry.json audit_dashboard/data/money_ready_verdict.json audit_dashboard/data/db_health.json audit_dashboard/data/cot_paper_pilot_status.json audit_dashboard/data/crypto_mega_mutation_paper_pilot.json audit_dashboard/data/top_n_rank_backtest.json audit_dashboard/data/cot_step7_ror_mc.json audit_dashboard/data/ml_gatekeeper_ab_decision.json audit_dashboard/data/effective_n_report.json audit_dashboard/trading_blueprint.html audit_dashboard/data/ai_challenge_*.json audit_dashboard/data/hyro_quan_bridge.json audit_dashboard/data/hyrotrader_picks.json audit_dashboard/data/hyrotrader_enhanced_picks.json audit_dashboard/data/hyrotrader_short_term_entries.json audit_dashboard/data/hyro_live_strategies.json audit_dashboard/data/hyrotrader_journal.json audit_dashboard/data/hyro_backtest_results.json audit_dashboard/data/hyro_pick_performance.json audit_dashboard/data/hyro_ml_pick_rankings.json alpha_engine/data/active_picks.json alpha_engine/data/contrarian_picks.json alpha_engine/data/polymarket_signals.json alpha_engine/data/kalshi_signals.json alpha_engine/data/prediction_market_picks.json alpha_engine/data/system_trends.json alpha_engine/data/funding_rate_picks.json alpha_engine/data/btc_breakout_picks.json alpha_engine/data/regime_report.json alpha_engine/data/regime_flip_alert.json alpha_engine/data/cot_emitted_releases.json audit_dashboard/data/anti_overfit_audit.json alpha_engine/data/walkforward_results.json copy_trader_intel/data/technical_analysis.json copy_trader_intel/data/polymarket_trader_profiles.json copy_trader_intel/data/polymarket_picks.json copy_trader_intel/data/non_crypto_consensus_picks.json copy_trader_intel/data/non_crypto_enhanced_picks.json prediction_market_agents/data/*.json ml_gatekeeper/models/*.joblib ml_gatekeeper/models/*.json ml_gatekeeper/models/*.npy ml_consensus/models/*.json; do
+          for f in reports/pick_flow_snapshot.json audit_trail/data/non_crypto_pick_audit.json audit_trail/data/universal_resolved_picks.json audit_trail/data/stock_prices.json audit_trail/data/pipeline_health.json audit_trail/data/feed_health_report.json audit_dashboard/index.html audit_dashboard/data/summary_picks.json audit_dashboard/data/pf_registry.json audit_dashboard/data/money_ready_verdict.json audit_dashboard/data/db_health.json audit_dashboard/data/cot_paper_pilot_status.json audit_dashboard/data/crypto_mega_mutation_paper_pilot.json audit_dashboard/data/top_n_rank_backtest.json audit_dashboard/data/cot_step7_ror_mc.json audit_dashboard/data/ml_gatekeeper_ab_decision.json audit_dashboard/data/effective_n_report.json audit_dashboard/data/ma_strategy_leaderboard.json audit_dashboard/data/ma_strategy_signals.json audit_dashboard/trading_blueprint.html audit_dashboard/data/ai_challenge_*.json audit_dashboard/data/hyro_quan_bridge.json audit_dashboard/data/hyrotrader_picks.json audit_dashboard/data/hyrotrader_enhanced_picks.json audit_dashboard/data/hyrotrader_short_term_entries.json audit_dashboard/data/hyro_live_strategies.json audit_dashboard/data/hyrotrader_journal.json audit_dashboard/data/hyro_backtest_results.json audit_dashboard/data/hyro_pick_performance.json audit_dashboard/data/hyro_ml_pick_rankings.json alpha_engine/data/active_picks.json alpha_engine/data/contrarian_picks.json alpha_engine/data/polymarket_signals.json alpha_engine/data/kalshi_signals.json alpha_engine/data/prediction_market_picks.json alpha_engine/data/system_trends.json alpha_engine/data/funding_rate_picks.json alpha_engine/data/btc_breakout_picks.json alpha_engine/data/regime_report.json alpha_engine/data/regime_flip_alert.json alpha_engine/data/cot_emitted_releases.json audit_dashboard/data/anti_overfit_audit.json alpha_engine/data/walkforward_results.json copy_trader_intel/data/technical_analysis.json copy_trader_intel/data/polymarket_trader_profiles.json copy_trader_intel/data/polymarket_picks.json copy_trader_intel/data/non_crypto_consensus_picks.json copy_trader_intel/data/non_crypto_enhanced_picks.json prediction_market_agents/data/*.json ml_gatekeeper/models/*.joblib ml_gatekeeper/models/*.json ml_gatekeeper/models/*.npy ml_consensus/models/*.json; do
             # Guard: skip files that don't exist to avoid noisy pathspec errors
             # (e.g. funding_rate_picks.json may not be generated every run)
             [ -f "$f" ] || continue
@@ -1041,7 +1061,8 @@ jobs:
                   # alphabet; uploading it mid-loop exhausts the FTP session so
                   # later files (pf_registry.json, money_ready_verdict.json)
                   # never upload -> 404. Defer the big file to LAST.
-                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json"}
+                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json",
+                               "ma_strategy_leaderboard.json", "ma_strategy_signals.json"}
                   _jsons = sorted(data_dir.glob("*.json"),
                                   key=lambda p: (p.name == "dashboard_data.json", p.name))
                   for df in _jsons:
@@ -1163,7 +1184,8 @@ jobs:
               if data_dir.exists():
                   # 2026-05-19: defer 17.8MB dashboard_data.json to LAST so it
                   # doesn't exhaust the FTP session before critical files.
-                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json"}
+                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json",
+                               "ma_strategy_leaderboard.json", "ma_strategy_signals.json"}
                   _jsons = sorted(data_dir.glob("*.json"),
                                   key=lambda p: (p.name == "dashboard_data.json", p.name))
                   for df in _jsons:
@@ -1279,7 +1301,8 @@ jobs:
               if data_dir.exists():
                   # 2026-05-19: defer 17.8MB dashboard_data.json to LAST so it
                   # doesn't exhaust the FTP session before critical files.
-                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json"}
+                  _critical = {"pf_registry.json", "money_ready_verdict.json", "dashboard_data.json",
+                               "ma_strategy_leaderboard.json", "ma_strategy_signals.json"}
                   _jsons = sorted(data_dir.glob("*.json"),
                                   key=lambda p: (p.name == "dashboard_data.json", p.name))
                   for df in _jsons:

@@ -5,9 +5,11 @@ conviction_stack._is_crypto_pick, and conviction_stack._norm_sym into one module
 
 Usage:
     from alpha_engine.asset_class import (
-        normalize_asset_class, is_crypto, is_non_crypto,
+        normalize_asset_class, classify_pick_asset_class_upper,
+        is_crypto, is_non_crypto,
         asset_class_from_symbol, normalize_symbol,
         FOREX_CODES, BOND_SYMBOLS, ETF_SYMBOLS, EQUITY_SYMBOLS,
+        COMMODITY_SYMBOLS,
         CRYPTO_SOURCE_HINTS, CRYPTO_STRATEGY_HINTS,
     )
 """
@@ -54,7 +56,16 @@ EQUITY_SYMBOLS: frozenset[str] = frozenset({
     "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "TSLA", "META", "NVDA", "AMD",
     "NFLX", "DIS", "BA", "JPM", "GS", "V", "MA", "PYPL", "SQ", "COIN",
     "MSTR", "RIOT", "MARA", "HUT", "BITF", "BAC", "COST", "PFE", "JNJ",
-    "ABBV", "AVGO", "HD", "LLY", "TMO", "ORCL",
+    "ABBV", "AVGO", "HD", "LLY", "TMO", "ORCL", "LCID",
+})
+
+COMMODITY_SYMBOLS: frozenset[str] = frozenset({
+    # Precious / industrial metals (yfinance roots and spot tickers)
+    "GC", "SI", "HG", "PL", "PA", "ALI",
+    # Energy / ag roots commonly emitted without =F suffix
+    "CL", "NG", "HO", "RB", "ZC", "ZS", "ZW", "KC", "SB", "CC", "CT",
+    # Spot metal pairs
+    "XAUUSD", "XAGUSD", "XPTUSD", "XPDUSD",
 })
 
 CRYPTO_SOURCE_HINTS: tuple[str, ...] = (
@@ -66,8 +77,26 @@ CRYPTO_STRATEGY_HINTS: tuple[str, ...] = (
     "copy_hl_", "ct_consensus_", "cg_whale", "funding", "skyrocket", "onchain",
 )
 
+COMMODITY_STRATEGY_HINTS: tuple[str, ...] = (
+    "commodity", "metals", "metal", "palladium", "platinum", "gold", "silver",
+    "crude", "grain", "cot_", "cta_", "commod",
+)
+
+EQUITY_STRATEGY_HINTS: tuple[str, ...] = (
+    "equity", "vt_equity", "momentum_rider", "dividend", "earnings", "sector",
+    "analyst", "penny", "stock", "stocks",
+)
+
+FOREX_STRATEGY_HINTS: tuple[str, ...] = (
+    "forex", "fx_", "carry_trade", "oanda", "myfxbook",
+)
+
 # Stablecoin suffixes that unambiguously indicate crypto pairs
 _CRYPTO_SUFFIXES: tuple[str, ...] = ("USDT", "BUSD", "USDC", "DAI", "TUSD", "USDP")
+
+_UNKNOWN_CATEGORY_TOKENS: frozenset[str] = frozenset({
+    "", "unknown", "none", "null", "nan",
+})
 
 # Categories that map to each canonical class
 _CAT_MAP: dict[str, str] = {
@@ -75,8 +104,19 @@ _CAT_MAP: dict[str, str] = {
     "forex": "forex", "fx": "forex",
     "etf": "etf",
     "bond": "bond",
-    "commodity": "futures", "futures": "futures",
+    "commodity": "commodity", "futures": "futures",
     "equity": "equity", "stock": "equity", "stocks": "equity", "penny": "equity",
+}
+
+_LOWER_TO_UPPER: dict[str, str] = {
+    "crypto": "CRYPTO",
+    "forex": "FOREX",
+    "equity": "EQUITY",
+    "etf": "ETF",
+    "bond": "BOND",
+    "futures": "FUTURES",
+    "commodity": "COMMODITY",
+    "unknown": "UNKNOWN",
 }
 
 # ── Public API ───────────────────────────────────────────────────────────────
@@ -123,11 +163,29 @@ def asset_class_from_symbol(symbol: str | None) -> str:
     if sym_core in ETF_SYMBOLS:
         return "etf"
 
+    # ── Known commodity symbols ──
+    if sym_core in COMMODITY_SYMBOLS:
+        return "commodity"
+
     # ── Known equity symbols ──
     if sym_core in EQUITY_SYMBOLS:
         return "equity"
 
     return "unknown"
+
+
+def _strategy_hint_class(strategy: str, source: str) -> str | None:
+    """Infer asset class from strategy/source naming when symbol is ambiguous."""
+    blob = f"{strategy} {source}".strip().lower()
+    if not blob:
+        return None
+    if any(tag in blob for tag in COMMODITY_STRATEGY_HINTS):
+        return "commodity"
+    if any(tag in blob for tag in FOREX_STRATEGY_HINTS):
+        return "forex"
+    if any(tag in blob for tag in EQUITY_STRATEGY_HINTS):
+        return "equity"
+    return None
 
 
 def normalize_asset_class(pick: dict[str, Any]) -> str:
@@ -142,12 +200,14 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
       6. Known-symbol frozensets  (bond → ETF → equity, fallback when no category)
       7. Default fallback → equity
 
-    Returns: crypto | equity | forex | etf | bond | futures | unknown
+    Returns: crypto | equity | forex | etf | bond | futures | commodity | unknown
     """
     # ── Field extraction ──
     raw_cat = str(pick.get("category") or pick.get("asset_class") or "").strip().lower()
+    if raw_cat in _UNKNOWN_CATEGORY_TOKENS:
+        raw_cat = ""
     strategy = str(pick.get("strategy") or "").lower()
-    source = str(pick.get("source_system") or "").lower()
+    source = str(pick.get("source_system") or pick.get("source") or "").lower()
     sym = normalize_symbol(pick.get("symbol"))
 
     # ── Unambiguous symbol suffixes (=F → futures, =X → forex) — always trusted ──
@@ -185,13 +245,25 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
     # ── Known-symbol frozensets (fallback when no category set) ──
     if sym_core in BOND_SYMBOLS:
         return "bond"
+    if sym_core in COMMODITY_SYMBOLS:
+        return "commodity"
     if sym_core in ETF_SYMBOLS:
         return "etf"
     if sym_core in EQUITY_SYMBOLS:
         return "equity"
 
+    hinted = _strategy_hint_class(strategy, source)
+    if hinted:
+        return hinted
+
     # ── Default fallback ──
     return "equity"
+
+
+def classify_pick_asset_class_upper(pick: dict[str, Any]) -> str:
+    """Return uppercase canonical asset class for registry/dashboard surfaces."""
+    lowered = normalize_asset_class(pick if isinstance(pick, dict) else {})
+    return _LOWER_TO_UPPER.get(lowered, lowered.upper())
 
 
 def is_crypto(pick: dict[str, Any]) -> bool:

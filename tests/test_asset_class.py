@@ -6,6 +6,7 @@ Covers: USDT/USDC→crypto, =X→forex, =F→futures, known ETF/equity symbols,
 import pytest
 from alpha_engine.asset_class import (
     normalize_asset_class,
+    classify_pick_asset_class_upper,
     is_crypto,
     is_non_crypto,
     asset_class_from_symbol,
@@ -14,6 +15,7 @@ from alpha_engine.asset_class import (
     BOND_SYMBOLS,
     ETF_SYMBOLS,
     EQUITY_SYMBOLS,
+    COMMODITY_SYMBOLS,
 )
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -206,7 +208,7 @@ class TestNormalizeAssetClass:
 
     def test_category_commodity(self):
         pick = {"category": "commodity", "symbol": "XYZABC"}
-        assert normalize_asset_class(pick) == "futures"
+        assert normalize_asset_class(pick) == "commodity"
 
     def test_category_futures(self):
         pick = {"category": "futures", "symbol": "XYZABC"}
@@ -441,3 +443,46 @@ class TestConstants:
     def test_forex_codes_are_3chars(self):
         for code in FOREX_CODES:
             assert len(code) == 3, f"Forex code '{code}' is not 3 characters"
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# pf_registry UNKNOWN cohort regression (audit_surface_truth 2026-06-06)
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestPfRegistryUnknownRegression:
+    """Picks from alpha_engine closed ledger that were landing in UNKNOWN."""
+
+    @pytest.mark.parametrize(
+        "symbol,strategy,expected",
+        [
+            ("PA", "commodity_rsi_divergence", "COMMODITY"),
+            ("PL", "metals_mean_reversion", "COMMODITY"),
+            ("QQQ", "cta_golden_cross", "ETF"),
+            ("AMD", "momentum_rider_base", "EQUITY"),
+            ("LCID", "momentum_rider_base", "EQUITY"),
+            ("AAPL", "vt_equity_two_day_rsi_reversal", "EQUITY"),
+        ],
+    )
+    def test_alpha_engine_missing_asset_class_derives_upper(self, symbol, strategy, expected):
+        pick = {
+            "symbol": symbol,
+            "strategy": strategy,
+            "source_system": "alpha_engine",
+        }
+        assert classify_pick_asset_class_upper(pick) == expected
+
+    def test_unknown_stamped_category_is_rederived(self):
+        pick = {
+            "symbol": "SPY",
+            "strategy": "etf_risk_parity_rotation",
+            "asset_class": "UNKNOWN",
+            "source_system": "etf_all_strategies",
+        }
+        assert classify_pick_asset_class_upper(pick) == "ETF"
+
+    def test_build_pf_registry_asset_class_helper(self):
+        from tools.build_pf_registry import _asset_class
+
+        row = {"symbol": "AAPL", "strategy": "vt_equity_two_day_rsi_reversal"}
+        assert _asset_class(row) == "EQUITY"

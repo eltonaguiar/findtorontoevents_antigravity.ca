@@ -370,18 +370,33 @@ def _trade_date(row) -> str:
 
 
 def _asset_class(row) -> str:
+    """Resolve asset class via the canonical classifier when missing/UNKNOWN."""
     ac = _norm(row.get("asset_class"), default="")
+    if not ac:
+        ac = _norm(row.get("category"), default="")
     if ac:
-        # normalize a couple of known aliases
         up = ac.upper()
-        if up == "STOCKS":
+        if up in ("UNKNOWN", "NONE", "NULL", "NAN"):
+            ac = ""
+        elif up == "STOCKS":
             return "EQUITY"
-        return up
-    # Fast/battleground ledgers may lack asset_class — infer crudely.
+        else:
+            return up
+    if not isinstance(row, dict):
+        row = {}
+    try:
+        from alpha_engine.asset_class import classify_pick_asset_class_upper
+
+        derived = classify_pick_asset_class_upper(row)
+        if derived and derived not in ("UNKNOWN", "NONE"):
+            return derived
+    except Exception:
+        pass
+    # Last-resort legacy heuristic (crypto suffix only).
     sym = str(row.get("symbol", "")).upper()
-    if sym.endswith("USDT") or sym.endswith("USD") and len(sym) <= 8:
+    if sym.endswith("USDT") or (sym.endswith("USD") and len(sym) <= 8):
         return "CRYPTO"
-    return "UNKNOWN"
+    return "EQUITY"
 
 
 def _strategy(row) -> str:

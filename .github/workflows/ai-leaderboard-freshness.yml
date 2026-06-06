@@ -1,0 +1,133 @@
+name: AI Leaderboard Freshness (daily FTP + data rebuild)
+
+# Keeps /audit/ai_leaderboard.html live data fresh:
+#   - swarm_picks ingest + attribution leaderboard
+#   - MA strategy signals/leaderboard (yfinance daily)
+#   - audit_surface_truth money-ready bridge panel
+# 50webs has no shell — git commits alone do NOT update production.
+
+on:
+  schedule:
+    # 04:30 UTC daily — after swarm-pick-review (03:00) and before US pre-market
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas numpy pymysql
+
+      - name: Promote tournament consensus → swarm_picks
+        continue-on-error: true
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python tools/swarm/promote_tournament_picks.py
+
+      - name: Resolve open swarm picks
+        continue-on-error: true
+        run: python tools/swarm/outcome_resolver_swarm.py
+
+      - name: Build AI attribution leaderboard
+        run: python tools/ai_attribution/build_ai_leaderboard.py
+
+      - name: Run MA strategy forward-tracker
+        continue-on-error: true
+        run: |
+          export ASOF="$(date -u +%Y-%m-%d)"
+          python tools/ma_strategy_forward_tracker.py --asof "$ASOF"
+          python3 - <<'PY'
+          import json, os, sys
+          asof = os.environ.get("ASOF", "")
+          for path in ("audit_dashboard/data/ma_strategy_leaderboard.json",
+                       "audit_dashboard/data/ma_strategy_signals.json"):
+              d = json.load(open(path))
+              got = d.get("asof", "")
+              if got != asof:
+                  print(f"::warning title=ma_strategy asof::{path} asof={got!r} expected {asof!r}")
+                  sys.exit(0)
+          print(f"ma_strategy OK: asof={asof}")
+          PY
+
+      - name: Build audit surface truth panel
+        continue-on-error: true
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python tools/build_audit_surface_truth.py
+
+      - name: Freshness tripwire (fail if leaderboard >36h or MA >48h old)
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          def age_hours(iso: str) -> float:
+              if not iso:
+                  return 9999.0
+              dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+              return (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+
+          lb = json.loads(Path("audit_dashboard/data/ai_leaderboard/ai_leaderboard_index.json").read_text())
+          ma = json.loads(Path("audit_dashboard/data/ma_strategy_signals.json").read_text())
+          lb_h = age_hours(lb.get("as_of", ""))
+          ma_d = (datetime.now(timezone.utc).date() - datetime.fromisoformat(ma.get("asof", "1970-01-01")).date()).days
+          print(f"leaderboard age={lb_h:.1f}h  ma_signals asof={ma.get('asof')} ({ma_d}d behind today)")
+          if lb_h > 36:
+              print(f"::error title=leaderboard stale::ai_leaderboard_index.json is {lb_h:.0f}h old")
+              sys.exit(1)
+          if ma_d > 2:
+              print(f"::error title=ma_strategy stale::ma_strategy_signals.json asof={ma.get('asof')}")
+              sys.exit(1)
+          PY
+
+      - name: FTP deploy leaderboard + truth panel to findtorontoevents.ca
+        env:
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning title=ftp skip::FTP_USER/FTP_PASS not set — live site will stay stale until audit-dashboard FTP runs"
+            exit 0
+          fi
+          python3 tools/deploy_audit_files.py --only ai_leaderboard
+          python3 tools/deploy_audit_files.py --only audit_data
+
+      - name: Commit refreshed artifacts
+        run: |
+          if [ -f .github/scripts/safe_commit_push.sh ]; then
+            bash .github/scripts/safe_commit_push.sh \
+              "chore(ai-leaderboard): daily freshness $(date -u +%Y-%m-%d) [skip ci]" \
+              audit_dashboard/data/ai_leaderboard/ \
+              audit_dashboard/data/ma_strategy_leaderboard.json \
+              audit_dashboard/data/audit_surface_truth.json \
+              audit_dashboard/data/swarm_picks.json
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add audit_dashboard/data/ai_leaderboard/ \
+                    audit_dashboard/data/ma_strategy_leaderboard.json \
+                    audit_dashboard/data/audit_surface_truth.json \
+                    audit_dashboard/data/swarm_picks.json
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(ai-leaderboard): daily freshness $(date -u +%Y-%m-%d) [skip ci]"
+              git pull --rebase origin main
+              git push origin HEAD:main
+            fi
+          fi

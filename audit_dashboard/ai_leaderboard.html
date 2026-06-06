@@ -291,8 +291,13 @@ function loadMASignals() {
           nTot++; if (st.signal === 'LONG') { nLong++; if (st.days_held != null && st.days_held <= 5) fresh.push(sid + ' ' + key.split(':')[1] + ' (' + st.days_held + 'd)'); }
         });
       });
-      let h = '<div style="margin-top:10px"><h3 style="font-size:13px;margin:0 0 4px">📍 Today\'s MA signals <span class="small" style="color:#94a3b8">asof ' + esc(d.asof) + '</span></h3>' +
-        '<div class="small" style="color:#94a3b8">' + esc(nLong) + ' / ' + esc(nTot) + ' strategy×symbol signals currently <strong style="color:#22c55e">LONG</strong>. ' +
+      const maAgeD = d.asof ? Math.floor((Date.now() - new Date(d.asof + 'T12:00:00Z').getTime()) / 86400000) : 999;
+      const maStale = maAgeD > 2;
+      let h = '<div style="margin-top:10px"><h3 style="font-size:13px;margin:0 0 4px">📍 Today\'s MA signals <span class="small" style="color:#94a3b8">asof ' + esc(d.asof) + '</span></h3>';
+      if (maStale) {
+        h += '<div style="margin:6px 0;padding:8px 10px;background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.45);border-radius:6px;font-size:11px;color:#fde68a">⚠ MA signals are <b>' + maAgeD + 'd old</b>. Run <code>python tools/ma_strategy_forward_tracker.py --asof $(date -u +%Y-%m-%d)</code> and redeploy <code>ma_strategy_*.json</code> (daily via <code>ai-leaderboard-freshness.yml</code>).</div>';
+      }
+      h += '<div class="small" style="color:#94a3b8">' + esc(nLong) + ' / ' + esc(nTot) + ' strategy×symbol signals currently <strong style="color:#22c55e">LONG</strong>. ' +
         (fresh.length ? 'Fresh entries (≤5d): ' + esc(fresh.slice(0, 12).join(', ')) + (fresh.length > 12 ? ' …' : '') : '') + '</div></div>';
       el.insertAdjacentHTML('beforeend', h);
     }).catch(() => {});
