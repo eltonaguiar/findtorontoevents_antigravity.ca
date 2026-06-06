@@ -586,11 +586,29 @@ def _load_outcomes_rows() -> tuple[list, dict]:
         conn = pymysql.connect(**creds, connect_timeout=15,
                                cursorclass=pymysql.cursors.DictCursor)
         with conn.cursor() as cur:
+            # BACKFILL QUARANTINE (2026-06-06): exclude retroactive backfill_*
+            # resolver labels and NULL-resolved_at rows from the canonical
+            # registry. The per-class edge audit (reports/2026-06-06-per-asset-
+            # class-edge-reality-*) showed 68-100% of resolved rows carry a
+            # backfill_* resolver_version never validated against live price, and
+            # that the same data yields a 4-6x PF spread by resolver version.
+            # Including them launders measurement artifacts into the verdict.
             cur.execute(
-                "SELECT pick_id, symbol, strategy, asset_class, status, pnl_pct, resolved_at "
-                "FROM at_pick_outcomes WHERE status IN ('WON','LOST') AND pnl_pct IS NOT NULL"
+                "SELECT pick_id, symbol, strategy, asset_class, status, pnl_pct, "
+                "resolved_at, resolver_version "
+                "FROM at_pick_outcomes "
+                "WHERE status IN ('WON','LOST') AND pnl_pct IS NOT NULL "
+                "AND resolved_at IS NOT NULL "
+                "AND (resolver_version IS NULL OR resolver_version NOT LIKE 'backfill%%')"
             )
             raw = list(cur.fetchall())
+            # Count what the quarantine removed, for transparency in meta.
+            cur.execute(
+                "SELECT COUNT(*) AS c FROM at_pick_outcomes "
+                "WHERE status IN ('WON','LOST') AND pnl_pct IS NOT NULL "
+                "AND (resolved_at IS NULL OR resolver_version LIKE 'backfill%%')"
+            )
+            meta["backfill_quarantined"] = int((cur.fetchone() or {}).get("c", 0))
         conn.close()
     except Exception as exc:
         return rows, {"enabled": True, "loaded": 0, "error": type(exc).__name__}
