@@ -436,6 +436,10 @@ class QuantScorer:
               info: dict, db_edge: dict, prices: dict,
               fmp_scores: dict | None = None) -> dict:
         """Score one symbol across all factors. Returns result dict."""
+        # Normalize column names (fetch_ohlcv_failover returns lowercase, helpers expect Title)
+        col_map = {c: c.capitalize() for c in df.columns if c.lower() in ('open','high','low','close','volume')}
+        if col_map:
+            df = df.rename(columns=col_map)
         c = df['Close']
         p_now = float(c.iloc[-1])
 

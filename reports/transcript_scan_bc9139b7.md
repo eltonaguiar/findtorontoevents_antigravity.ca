@@ -1,0 +1,179 @@
+# Transcript action-item scan
+
+- transcript: `/home/eaguiar2015/.claude/projects/-home-eaguiar2015-findtorontoevents-antigravity-ca/bc9139b7-0b0b-4ba6-9f42-217cb8f97d9b.jsonl`
+- turns: 86 · chunks: 14 · provider: deepseek
+- deduped action items: 124
+
+## Action items (deduped across chunks)
+
+- [OPEN] Sync project to GitHub (git add/commit/push not shown)
+- [OPEN] Review wording on https://findtorontoevents.ca/audit/ for hydration issues
+- [OPEN] Inspect the audit page properly with Playwright
+- [OPEN] Review findtorontoevents.ca/audit extensively for React hydration causing items to disappear
+- [OPEN] Move unused items to an "other stats" folder instead of deleting them
+- [DONE] Fix KuCoin CORS errors (HYPE-USDT) by patching index.html to route through allorigins.win proxy, deployed via FTP
+- [DONE] Fix "Dashboard Enhancements Loaded" firing 4× / Top-10 text disappearing: raise debounce 250ms→3000ms, panels fade to 45% opacity instead of deletion
+- [DONE] Resolve `emitter_whitelist.py` merge conflict: keep both sides, move `multi_asset_cot` to `HARDCODED_TOXIC_PAIRS`, remove from `MANUAL_ALLOWLIST`
+- [DONE] Sync to GitHub (commit `1e4188e4e7`)
+- [DONE] Create Playwright test file `tests/audit_wording_audit.spec.ts`
+- [OPEN] Run Playwright test against live findtorontoevents.ca/audit/
+- [OPEN] Fix failing tests (test 2) and rerun
+- [OPEN] Provide "PICKS NOW" for each asset class (best possible picks, e.g. NVDA or safe ETF)
+- [DONE] Fix async render timing for "Top-10" flash (3000ms debounce)
+- [OPEN] Pull best current picks per asset class from live DB and supplement with analyst consensus
+- [OPEN] Build cross-asset pick list from best proven strategies + today's market context
+- [DONE] Raise debounce from 250ms to 3000ms in dashboard_enhancements.js
+- [DONE] Add fade instead of delete on re-init in dashboard_enhancements.js
+- [DONE] Deploy dashboard_enhancements.js via deploy_audit_files.py --only audit_js
+- [DONE] Patch KuCoin CORS in index.html (allorigins proxy)
+- [DONE] Deploy patched index.html via FTP
+- [DONE] Verify KuCoin CORS fix live (grep returns 1)
+- [DONE] Resolve merge conflict in emitter_whitelist.py
+- [DONE] Hard-ban multi_asset_cot + regime_terminal in production_scanner.py
+- [DONE] Add multi_asset_cot hard zero in per_source_volume_cap.py
+- [DONE] Add _normalize_category() in fundamental_macro_gates.py
+- [DONE] Add ws disconnect guard in cross_pc_protocol/gateway.py
+- [DONE] Add isinstance guards in cross_pc_protocol/storage.py
+- [DONE] Fix .env.example DEEPSEEK_API → DEEPSEEK_API_KEY
+- [UNCLEAR] Generate best possible picks NOW across all asset classes
+- [UNCLEAR] Summarize chat and what is next
+- [DONE] Run quant multi-factor analysis (yfinance, pandas, numpy, scipy)
+- [DONE] Compile final pick report and save to reports/PICKS_NOW_2026-06-06.md
+- [OPEN] Include date/time EST of each pick
+- [OPEN] Include TP (take profit) and SL (stop loss) for each pick
+- [DONE] Look at existing MySQL table schemas on ejaguiar1_stocks / ejaguiar1_backtests
+- [DONE] Insert picks into database (9 picks inserted)
+- [OPEN] Address plain English safety tiers
+- [OPEN] Address insider/earnings data using free APIs already available
+- [OPEN] Deploy subagents to handle "money-ready" gap
+- [OPEN] Pull FMP institutional-grade data (insider transactions, earnings surprises, analyst price targets, institutional ownership)
+- [OPEN] Update DB picks with FMP-verified scores
+- [OPEN] Write final human-readable report
+- [DONE] Insert 9 picks into `ejaguiar1_stocks.trading_picks` with full TP/SL/elite_score/trust_score/confidence, strategy = `quant_multifactor_screener`
+- [DONE] Add FMP_API_KEY to /home/eaguiar2015/dbpasses.txt
+- [DONE] Build picks tracking webpage at `https://findtorontoevents.ca/audit/picks-now.html`
+- [DONE] Run parallel subagents investigating NVRS/VZZ/WISE skyrocket pattern
+- [DONE] Cross-review picks with 3 AI families (LLaMA 3.3, LLaMA 4 Scout, Qwen3)
+- [DONE] Answer TP/SL risk question
+- [DONE] Push latest commit `c5e3f339bb` to `origin/main`
+- [DONE] Set up picks-refresh GitHub Actions workflow (`picks-now-refresh.yml`) to run daily at 06/12/18 UTC
+- [OPEN] Fix `picks-now-refresh.yml` workflow (YAML broken at line 65, two referenced scripts missing)
+- [OPEN] Write missing scripts referenced by `picks-now-refresh.yml`
+- [OPEN] Build a strategy based on skyrocket pattern (NVRS/VZZ/WISE) — reverse engineer with technicals/stats and deep research
+- [OPEN] Look for more skyrockets and reverse engineer them with technicals/stats and deep research
+- [DONE] Report LiteLLM proxy status (parallel commands)
+- [DONE] Run `/startvllmp`
+- [DONE] Run full multi-model verdict sweep
+- [DONE] Add direct API calls for more models
+- [DONE] Build expanded panel with all results
+- [DONE] Update webpage with full expanded model review panel
+- [DONE] Make page JS-driven from `picks_now.json`
+- [DONE] Inject model review panel as static section
+- [DONE] Fix workflow + missing scripts
+- [DONE] Generate quant picks per asset class (momentum, RSI, Bollinger, analyst consensus, Piotroski, Altman-Z, FMP API)
+- [DONE] Insert picks with EST timestamp, TP, SL into `ejaguiar1_stocks.trading_picks`
+- [DONE] Build picks tracking webpage at `/audit/picks-now.html` with ELI5 explanations, safety tiers, AI model cross-review
+- [DONE] Investigate NVRS (+120%), VZZ (+52%), WISE (+49%) skyrocket and build systematic detection strategy
+- [DONE] Expand model review panel to show 7+ AI model families as FYI side panel (not changing scores)
+- [OPEN] Inject 7-model review panel HTML into `picks-now.html` before `<div id="picks-footer"`
+- [OPEN] Fix `.github/workflows/picks-now-refresh.yml` YAML syntax error at line 65
+- [OPEN] Create `tools/picks_now_professional.py`
+- [OPEN] Create `tools/save_picks_to_db.py`
+- [DONE] Monitor and fix GitHub Actions workflows
+- [DONE] Manage LiteLLM proxy (started, 51 keys loaded)
+- [DONE] Fix misleading "only thing not selling is bonds" language
+- [DONE] Fix pymysql cursor.execute() TypeError
+- [DONE] Work around FMP earnings endpoint returning 0.00 (fallback to yfinance)
+- [DONE] Fix LiteLLM proxy down (restarted)
+- [DONE] Work around free-mode-large / paid-mode-large timeout (direct API calls)
+- [DONE] Inject 7-model review panel into picks-now.html
+- [DONE] Fix broken workflow YAML (picks-now-refresh.yml)
+- [DONE] Create missing scripts (tools/ftp_deploy_picks_now.py)
+- [DONE] Verify scripts parse cleanly
+- [DONE] Ensure picks_now.json exists
+- [DONE] Deploy picks-now.html and picks_now.json via FTP
+- [DONE] Commit everything
+- [DONE] Expand model review from 3 to 7+ AI model families as FYI sidebar in picks-now.html
+- [DONE] Fix YAML scanner error in .github/workflows/picks-now-refresh.yml
+- [DONE] Deploy updated picks-now.html via FTP
+- [DONE] Deploy picks_now.json via FTP
+- [DONE] Create tools/ftp_deploy_picks_now.py
+- [DONE] Commit tools/ftp_deploy_picks_now.py
+- [DONE] Generate picks_now.json via picks_now_professional.py
+- [DONE] Save picks to MySQL trading_picks table
+- [DONE] Skyrocket pattern screener (NVRS +120%, VZZ +52%, WISE +49%)
+- [DONE] DB tracking of picks
+- [DONE] ELI5 safety tiers
+- [DONE] EST timestamps
+- [DONE] Install skills.sh packages (14 obra/superpowers skills installed)
+- [OPEN] Run money-ready analysis on findtorontoevents.ca/audit or ai-tournament page
+- [UNCLEAR] Look for find-skills and see if any skill can improve picks
+- [OPEN] Produce proven, quantitatively-validated filters per asset class (EQUITY, CRYPTO, COMMODITY, ETF, FOREX, BOND) meeting all success criteria (WR≥50%, PF≥1.5, MDD≤20%, etc.)
+- [OPEN] Compute position size via `compute_position_size()` with DD-halt guard for all weekly filter picks
+- [OPEN] Plan first with numbered task list before any code
+- [OPEN] Work autonomously with no clarifying questions unless genuinely blocked
+- [OPEN] Self-verify after every step (run tests, inspect output, confirm it worked)
+- [OPEN] Debug failures independently
+- [OPEN] Use every tool (terminal, code exec, real data)
+- [OPEN] No placeholders — real components and real states only
+- [OPEN] Maintain progress log (completed / in-flight / decisions / blockers)
+- [OPEN] Stay on goal; note off-spec discoveries and keep moving
+- [OPEN] If blocked, log the wall and continue everything parallelizable
+- [OPEN] Check success criteria before stopping
+- [OPEN] Read credentials from `/home/eaguiar2015/dbpasses.txt` only to populate env vars or `db_env.py` fallbacks; never hardcode, echo, or commit secrets
+- [OPEN] Use `tools/db_env.py` for database connections; do not roll own
+- [OPEN] Reference live audit surfaces (dashboard JSON, live pages) as read-only ground truth
+- [DONE] Run money-maker-readyv2 protocol (freshness preflight, live DB queries)
+- [DONE] Validate window stability and find current OPEN picks for stocks_rsi2_pullback
+- [DONE] Generate weekly filter report
+- [DONE] Update picks-now.html with "Money-Ready Now" section
+- [DONE] Deploy HTML and report to production (FTP + commit)
+- [OPEN] Investigate stocks_rsi2_pullback scanner cron to restart emissions (P1 action flagged)
+- [OPEN] Run swarm-transcript-review skill on a transcript (user requested proceed on next steps)
+
+## OPEN (44)
+
+- [OPEN] Sync project to GitHub (git add/commit/push not shown)
+- [OPEN] Review wording on https://findtorontoevents.ca/audit/ for hydration issues
+- [OPEN] Inspect the audit page properly with Playwright
+- [OPEN] Review findtorontoevents.ca/audit extensively for React hydration causing items to disappear
+- [OPEN] Move unused items to an "other stats" folder instead of deleting them
+- [OPEN] Run Playwright test against live findtorontoevents.ca/audit/
+- [OPEN] Fix failing tests (test 2) and rerun
+- [OPEN] Provide "PICKS NOW" for each asset class (best possible picks, e.g. NVDA or safe ETF)
+- [OPEN] Pull best current picks per asset class from live DB and supplement with analyst consensus
+- [OPEN] Build cross-asset pick list from best proven strategies + today's market context
+- [OPEN] Include date/time EST of each pick
+- [OPEN] Include TP (take profit) and SL (stop loss) for each pick
+- [OPEN] Address plain English safety tiers
+- [OPEN] Address insider/earnings data using free APIs already available
+- [OPEN] Deploy subagents to handle "money-ready" gap
+- [OPEN] Pull FMP institutional-grade data (insider transactions, earnings surprises, analyst price targets, institutional ownership)
+- [OPEN] Update DB picks with FMP-verified scores
+- [OPEN] Write final human-readable report
+- [OPEN] Fix `picks-now-refresh.yml` workflow (YAML broken at line 65, two referenced scripts missing)
+- [OPEN] Write missing scripts referenced by `picks-now-refresh.yml`
+- [OPEN] Build a strategy based on skyrocket pattern (NVRS/VZZ/WISE) — reverse engineer with technicals/stats and deep research
+- [OPEN] Look for more skyrockets and reverse engineer them with technicals/stats and deep research
+- [OPEN] Inject 7-model review panel HTML into `picks-now.html` before `<div id="picks-footer"`
+- [OPEN] Fix `.github/workflows/picks-now-refresh.yml` YAML syntax error at line 65
+- [OPEN] Create `tools/picks_now_professional.py`
+- [OPEN] Create `tools/save_picks_to_db.py`
+- [OPEN] Run money-ready analysis on findtorontoevents.ca/audit or ai-tournament page
+- [OPEN] Produce proven, quantitatively-validated filters per asset class (EQUITY, CRYPTO, COMMODITY, ETF, FOREX, BOND) meeting all success criteria (WR≥50%, PF≥1.5, MDD≤20%, etc.)
+- [OPEN] Compute position size via `compute_position_size()` with DD-halt guard for all weekly filter picks
+- [OPEN] Plan first with numbered task list before any code
+- [OPEN] Work autonomously with no clarifying questions unless genuinely blocked
+- [OPEN] Self-verify after every step (run tests, inspect output, confirm it worked)
+- [OPEN] Debug failures independently
+- [OPEN] Use every tool (terminal, code exec, real data)
+- [OPEN] No placeholders — real components and real states only
+- [OPEN] Maintain progress log (completed / in-flight / decisions / blockers)
+- [OPEN] Stay on goal; note off-spec discoveries and keep moving
+- [OPEN] If blocked, log the wall and continue everything parallelizable
+- [OPEN] Check success criteria before stopping
+- [OPEN] Read credentials from `/home/eaguiar2015/dbpasses.txt` only to populate env vars or `db_env.py` fallbacks; never hardcode, echo, or commit secrets
+- [OPEN] Use `tools/db_env.py` for database connections; do not roll own
+- [OPEN] Reference live audit surfaces (dashboard JSON, live pages) as read-only ground truth
+- [OPEN] Investigate stocks_rsi2_pullback scanner cron to restart emissions (P1 action flagged)
+- [OPEN] Run swarm-transcript-review skill on a transcript (user requested proceed on next steps)
