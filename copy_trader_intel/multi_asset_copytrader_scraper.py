@@ -2200,7 +2200,22 @@ def scrape_myfxbook_sentiment(data_cache):
                 }
             ))
     else:
-        # ---- Fallback: RSI-based contrarian proxy (same logic as IG) ----
+        # ---- Fallback: RSI-based contrarian proxy (dormant since 2026-05-12) ----
+        # Myfxbook HTML scrape has been unavailable since 2026-05-12. The proxy
+        # below generates picks without real retail-positioning data, so it is
+        # strictly incubator-grade (no live myfxbook n to validate against).
+        #
+        # Threshold tightened 2026-06-06: RSI>70 / RSI<30 (was 65/35) to require
+        # genuine overbought/oversold extremes rather than moderate momentum.
+        # Rationale: the 65/35 threshold fires in ~40% of normal forex sessions;
+        # 70/30 restricts to the top/bottom ~15% of RSI readings, matching the
+        # actual "retail extreme" distribution that drives contrarian edge.
+        # Confidence capped at 0.58 (was 0.75): without real positioning data,
+        # this signal carries no positioning edge and should not compete with
+        # strategies that have live organic closes.
+        _PROXY_RSI_LONG_THRESHOLD = 30   # require genuine oversold extreme
+        _PROXY_RSI_SHORT_THRESHOLD = 70  # require genuine overbought extreme
+        _PROXY_CONF_CAP = 0.58           # no positioning data => lower ceiling
         for symbol, info in FOREX_SYMBOLS.items():
             ohlcv = data_cache.get(symbol)
             if not ohlcv or len(ohlcv["Close"]) < 60:
@@ -2225,18 +2240,18 @@ def scrape_myfxbook_sentiment(data_cache):
             extreme_pct = 0
             reasons = []
 
-            if rsi14 > 65 and current > sma50:
-                # Retail likely long -> contrarian SHORT
+            if rsi14 > _PROXY_RSI_SHORT_THRESHOLD and current > sma50:
+                # Retail likely extreme-long -> contrarian SHORT
                 direction = "SHORT"
                 extreme_pct = min(rsi14, 85)  # map RSI to pseudo-pct
-                reasons.append(f"RSI(14)={rsi14:.0f}>65 + price above 50 SMA")
-                reasons.append("Retail likely LONG => contrarian SHORT (proxy)")
-            elif rsi14 < 35 and current < sma50:
-                # Retail likely short -> contrarian LONG
+                reasons.append(f"RSI(14)={rsi14:.0f}>{_PROXY_RSI_SHORT_THRESHOLD} + price above 50 SMA")
+                reasons.append("Retail likely LONG extreme => contrarian SHORT (dormant proxy)")
+            elif rsi14 < _PROXY_RSI_LONG_THRESHOLD and current < sma50:
+                # Retail likely extreme-short -> contrarian LONG
                 direction = "LONG"
                 extreme_pct = min(100 - rsi14, 85)
-                reasons.append(f"RSI(14)={rsi14:.0f}<35 + price below 50 SMA")
-                reasons.append("Retail likely SHORT => contrarian LONG (proxy)")
+                reasons.append(f"RSI(14)={rsi14:.0f}<{_PROXY_RSI_LONG_THRESHOLD} + price below 50 SMA")
+                reasons.append("Retail likely SHORT extreme => contrarian LONG (dormant proxy)")
 
             if direction is None:
                 continue
@@ -2251,18 +2266,21 @@ def scrape_myfxbook_sentiment(data_cache):
                 tp = current - tp_dist
                 sl = current + sl_dist
 
-            conf = 0.55 + (extreme_pct - 65) * 0.01
-            conf = min(conf, 0.75)
+            # Confidence: start from 0.50 base (not 0.55) + RSI extremeness bonus,
+            # capped at 0.58 to reflect absence of real positioning data.
+            conf = 0.50 + (extreme_pct - 70) * 0.01
+            conf = min(conf, _PROXY_CONF_CAP)
 
             picks.append(_make_pick(
                 "myfxbook_retail_contrarian", symbol, "forex", "FOREX",
                 direction, current, tp, sl, conf,
-                f"Myfxbook contrarian (proxy): {'; '.join(reasons)}. {info['name']}.",
+                f"Myfxbook contrarian (dormant proxy): {'; '.join(reasons)}. {info['name']}.",
                 extra={
                     "rsi14": round(rsi14, 1),
                     "sma50": round(sma50, 6),
                     "atr": round(atr_val, 6),
-                    "data_source": "rsi_contrarian_proxy",
+                    "data_source": "rsi_contrarian_dormant_proxy",
+                    "myfxbook_dormant_since": "2026-05-12",
                 }
             ))
 
