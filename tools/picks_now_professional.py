@@ -328,6 +328,7 @@ def load_db_edge():
             FROM at_pick_outcomes
             WHERE status IN ('WON','LOST','EXPIRED','FLAT')
               AND (strategy IS NULL OR strategy NOT IN ({placeholders}))
+              AND (resolver_version IS NULL OR resolver_version NOT LIKE 'backfill%%')
             GROUP BY symbol, asset_class
             HAVING COUNT(*) >= 5
         """, banned)
