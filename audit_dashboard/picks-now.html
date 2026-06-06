@@ -116,7 +116,7 @@
 </div>
 
 <div class="disclaimer">
-  ⚠️ <strong>Research / Paper Only — NOT financial advice.</strong> Zero asset classes are currently Money-Ready (n≥100 forward-validated picks required). These are screener signals for tracking and analysis. The picks_now_tracker MySQL table logs every pick with entry/TP/SL for outcome measurement.
+  ⚠️ <strong>Research / Paper Only — NOT financial advice.</strong> Zero asset classes are currently Money-Ready (n≥100 forward-validated picks required). These are screener signals for tracking and analysis. The <code>ejaguiar1_stocks.picks_now_tracker</code> MySQL table logs every pick with entry/TP/SL for outcome measurement.
 </div>
 
 <!-- Market Context + Last Updated Banner -->
@@ -166,16 +166,20 @@
   <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">⏳ Loading picks from <code>picks_now.json</code>...</div>
 </div>
 
-<!-- DYNAMIC RENDER ENGINE — picks loaded from picks_now.json -->
-<div id="picks-container" class="picks-grid">
-  <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">⏳ Loading picks from <code>picks_now.json</code>...</div>
-</div>
-
 <!-- ═══ MULTI-MODEL REVIEW PANEL — FYI only, does not change pick scores ═══ -->
 <div style="margin:0 24px 8px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:6px;">
-  🤖 Extended AI Model Panel <span style="color:#58a6ff;font-size:0.75rem;text-transform:none;font-weight:400;">— FYI only · does not change pick scores · each model saw the same raw data</span>
+  🤖 Extended AI Model Panel <span style="color:#58a6ff;font-size:0.75rem;text-transform:none;font-weight:400;">— FYI only · does not change pick scores · covers top 4 EQUITY symbols</span>
 </div>
-<div style="margin:0 24px 8px;font-size:0.78rem;color:var(--muted);">Each model received: RSI · Piotroski · Altman-Z · analyst count+target · EPS growth · RVOL · 3m momentum. No score anchoring — all verdicts are independent.</div>
+<div style="margin:0 24px 8px;font-size:0.78rem;color:var(--muted);"><strong>Scope:</strong> 7 models reviewed AMZN · NVDA · AAPL · META (the 4 largest EQUITY picks). BOND/ETF/FOREX/COMMODITY picks are not reviewed by AI — they use quant-only scoring (RSI, Bollinger, momentum, vol).<br><br>
+Each model received the same 7 raw signals so verdicts are comparable. Here's what each means:<br>
+<span style="color:var(--blue);">RSI</span> = Relative Strength Index (0-100) — measures if a stock is oversold (&lt;35, might bounce) or overbought (&gt;70, might drop). Models use this to gauge short-term entry timing.<br>
+<span style="color:var(--green);">Piotroski F-Score</span> (0-9) — company financial health scorecard. 9/9 = excellent (profitable, growing, no bad debt). 4/9 = warning signs. Models weight this heavily because financially healthy companies survive selloffs.<br>
+<span style="color:var(--yellow);">Altman-Z</span> — bankruptcy risk score. Above 3.0 = very safe (will stay solvent). Below 1.8 = danger zone. NVDA at 51 is essentially indestructible; META at 7.9 is still safe but less so.<br>
+<span style="color:var(--blue);">Analyst count + target</span> — how many Wall Street analysts cover the stock and what their average 12-month price target is. More analysts + higher target = more institutional conviction. AMZN's 94 analysts with $307 target gives confidence.<br>
+<span style="color:var(--green);">EPS growth</span> — earnings per share growth year-over-year. The #1 driver of stock prices long-term. +215% (NVDA) means the business is exploding; models like this for growth thesis.<br>
+<span style="color:var(--yellow);">RVOL</span> (Realized Volatility) — how much the stock typically moves in a year. 9% (TLT) = calm; 46% (NVDA) = wild. Models use this for sizing: lower vol = safer to buy more.<br>
+<span style="color:var(--blue);">3-month momentum</span> — total return over the last 3 months. Positive with a recent dip (AMZN: +15% 3m, -9% 5d) = TREND+DIP = buy the pullback. Negative with more negative = downtrend = avoid.<br>
+<span style="color:var(--muted);">No score anchoring — all model verdicts are independent from the quant score above.</span></div>
 
 <div style="overflow-x:auto;margin:0 24px 16px;">
 <table style="width:100%;border-collapse:collapse;font-size:0.77rem;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
@@ -480,6 +484,16 @@ function renderPicks(data) {
       </div>
       <div class="card-rr">R:R <span>${rr}:1</span> | Size: <span>${p.position_size_pct||0}%</span> of portfolio | Vol: <span>${p.rvol?p.rvol.toFixed(1):'?'}%</span> annualized</div>
 
+      <!-- AI Contest Warning -->
+      ${(() => {
+        const t = TALLY[p.symbol];
+        if (!t) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#0d2137;border-radius:6px;font-size:0.72rem;color:var(--blue);font-weight:400;">🔍 Quant-only — not AI reviewed (see panel above for AAPL/AMZN/NVDA/META)</div>';
+        if (t.reject >= 5) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#3a1c1c;border-radius:6px;font-size:0.72rem;color:var(--red);font-weight:600;">❌ AI REJECTED — '+t.reject+'/7 models voted against this pick</div>';
+        if (t.caution >= 4) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#2e2a12;border-radius:6px;font-size:0.72rem;color:var(--yellow);font-weight:600;">⚠️ AI CONTESTED — '+t.caution+'/7 models urged caution</div>';
+        if (t.approve >= 5) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#1c3a2a;border-radius:6px;font-size:0.72rem;color:var(--green);font-weight:600;">✅ AI CONSENSUS — '+t.approve+'/7 models approved</div>';
+        return '';
+      })()}
+
       <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
         <div class="score-chip" style="cursor:pointer;" onclick="showScoreBreakdown(JSON.parse(decodeURIComponent(escape(this.parentElement.parentElement.parentElement.dataset.pickB64||''))))" title="Click for detailed score breakdown">📊 <strong>Score ${p.score||'?'}/100</strong> — click for breakdown</div>
         ${p.upside_pct ? chip('🎯 Target', '$' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '%)', 'Wall Street average analyst target price. From yfinance aggregating 40+ firms.\nCurrent: $' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '% upside)\n\nNote: targets lag price and change slowly. Good for directional thesis confirmation.') : ''}
@@ -516,6 +530,25 @@ function renderPicks(data) {
     c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">No picks. Run python3 tools/picks_now_professional.py</div>';
   }
 }
+
+// Format price with appropriate precision
+function fmtPrice(v) {
+  if (v == null) return '?';
+  const n = Number(v);
+  if (isNaN(n)) return '?';
+  if (n < 1) return n.toFixed(5);
+  if (n < 10) return n.toFixed(3);
+  if (n < 1000) return n.toFixed(2);
+  return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// 7-model contest tally for contest warnings
+const TALLY = {
+  'AMZN': {approve: 6, caution: 1, reject: 0},
+  'NVDA': {approve: 1, caution: 5, reject: 1},
+  'AAPL': {approve: 6, caution: 1, reject: 0},
+  'META': {approve: 0, caution: 0, reject: 7},
+};
 
 // Load and render
 fetch('data/picks_now.json?_=' + Date.now())

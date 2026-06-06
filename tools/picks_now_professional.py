@@ -36,6 +36,10 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+# FMP API for Piotroski, Altman-Z, analyst consensus
+FMP_API_KEY = os.environ.get("FMP_API_KEY", "iF4K10WedJZINDhUWGXlGAiA57rn4sRD")
+FMP_BASE = "https://financialmodelingprep.com/stable"
+
 REPO = Path(__file__).resolve().parent.parent
 DATA_DIR = REPO / "audit_dashboard" / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -64,24 +68,76 @@ except Exception:
     DB_CREDS = None
 
 
-# ── Universe by asset class ─────────────────────────────────────────────────
+# ── Universe by asset class (expanded 2026-06-06) ───────────────────────────
+# Added: more bonds (TIPS, municipal, international, floating-rate, ultrashort,
+# preferred, convertible), more ETFs (factor, dividend, international sector,
+# covered-call, infrastructure, REIT sectors), more equities.
 UNIVERSE = {
     "EQUITY": {
         "tickers": [
+            # Mega-cap tech
             "NVDA", "META", "MSFT", "GOOGL", "AMZN", "AAPL", "AMD",
-            "AVGO", "JPM", "BRK-B", "V", "MA", "UNH", "WMT", "COST",
-            "JNJ", "PG", "KO", "PEP", "XOM", "CVX", "CAT", "MCD",
-            "DIS", "NFLX", "ADBE", "CRM", "INTC", "QCOM", "TXN",
-            "AMAT", "LRCX", "MU", "NOW", "UBER", "ABNB", "GS", "MS",
+            "AVGO", "TSLA", "NFLX", "ADBE", "CRM", "ORCL", "IBM",
+            # Semis / hardware
+            "INTC", "QCOM", "TXN", "AMAT", "LRCX", "MU", "MRVL",
+            # Banks & financials
+            "JPM", "GS", "MS", "BAC", "WFC", "C", "AXP", "V", "MA",
+            "PYPL", "SQ", "BLK", "SCHW",
+            # Insurance
+            "BRK-B", "MET", "PRU", "AIG",
+            # Healthcare
+            "UNH", "JNJ", "PFE", "MRK", "ABBV", "TMO", "LLY",
+            "AMGN", "GILD", "VRTX", "ISRG", "BSX", "SYK", "ZTS",
+            # Consumer staples
+            "WMT", "COST", "PG", "KO", "PEP", "CL", "KMB", "SYY",
+            # Consumer discretionary
+            "MCD", "DIS", "SBUX", "CMG", "HD", "LOW", "TJX", "TGT",
+            "NKE", "LULU", "DECK", "AMZN",
+            # Energy
+            "XOM", "CVX", "COP", "EOG", "PSX", "VLO",
+            # Industrials
+            "CAT", "GE", "BA", "HON", "LMT", "RTX", "UPS", "FDX",
+            "DE", "CARR", "CSX", "UNP",
+            # Growth / tech
+            "NOW", "UBER", "ABNB", "DASH", "SNOW", "CRWD", "PANW",
+            "PLTR", "DDOG", "MDB", "NET", "ZM", "WDAY",
+            # Real estate
+            "AMT", "PLD", "CCI", "EQIX",
+            # Telecom
+            "VZ", "T", "TMUS", "CMCSA",
+            # Auto
+            "F", "GM", "RIVN", "LCID",
+            # Canadian
+            "SHOP", "CNQ", "SU", "BNS", "RY",
         ],
         "benchmark": "SPY",
     },
     "ETF": {
         "tickers": [
-            "SPY", "QQQ", "IWM", "GLD", "SLV", "TLT", "IEF", "SHY",
-            "LQD", "HYG", "XLK", "XLF", "XLE", "XLU", "XLV", "XLI",
-            "VGT", "VHT", "VNQ", "VB", "IVV", "VOO", "IJR", "EFA",
-            "EEM", "BND", "AGG", "BITO", "IBIT", "ARKK",
+            # Broad market
+            "SPY", "IVV", "VOO", "QQQ", "VGT", "IWM", "VB", "VTWO",
+            # International
+            "EFA", "EEM", "VXUS", "IXUS", "VWO", "VEA", "SCHE", "SCHF",
+            "FXI", "EWJ", "EWZ", "INDA", "EPI", "FLIN",
+            # Sector
+            "XLK", "XLF", "XLE", "XLU", "XLV", "XLI", "XLB", "XLRE", "XLC", "XLY", "XLP",
+            "VGT", "VHT", "VDC", "VIS", "VAW",
+            # Dividend
+            "SCHD", "VYM", "HDV", "VIG", "DGRO", "SDY", "SPYD", "DVY",
+            # Factor / smart beta
+            "SPLV", "USMV", "QUAL", "MTUM", "IVLU", "VLUE", "SIZE", "AVUV",
+            # Covered call income
+            "JEPI", "JEPQ", "DIVO", "QYLD", "XYLD", "RYLD",
+            # Real estate
+            "VNQ", "IYR", "REET", "SCHH",
+            # Infrastructure
+            "PAVE", "IFRA", "TBLU",
+            # Commodity
+            "GLD", "SLV", "DBC", "PDBC", "COPX", "LIT", "SOXX", "SMH",
+            # Thematic
+            "ARKK", "ARKG", "ARKW", "ICLN", "TAN", "IBUY", "ROBO",
+            # Crypto
+            "BITO", "IBIT",
         ],
         "benchmark": "SPY",
     },
@@ -90,26 +146,69 @@ UNIVERSE = {
             "BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD",
             "ADA-USD", "DOGE-USD", "AVAX-USD", "DOT-USD", "LINK-USD",
             "MATIC-USD", "UNI-USD", "ATOM-USD", "LTC-USD", "BCH-USD",
+            "TRX-USD", "FTM-USD", "NEAR-USD", "APT-USD", "SUI-USD",
+            "ARB-USD", "OP-USD", "AAVE-USD", "MKR-USD", "ENA-USD",
+            "PEPE-USD", "SHIB-USD", "CRO-USD", "VET-USD", "FIL-USD",
         ],
         "benchmark": "BTC-USD",
     },
     "FOREX": {
         "tickers": [
+            # Majors
             "EURUSD=X", "USDJPY=X", "GBPUSD=X", "AUDUSD=X",
             "USDCAD=X", "NZDUSD=X", "EURGBP=X", "EURJPY=X",
+            "GBPJPY=X", "EURAUD=X", "GBPAUD=X", "EURCHF=X",
+            # Crosses
+            "AUDJPY=X", "CHFJPY=X", "NZDJPY=X", "CADJPY=X",
+            # Scandies / exotics
+            "USDSEK=X", "USDNOK=X", "USDDKK=X", "USDZAR=X",
+            "USDSGD=X", "USDHKD=X", "USDMXN=X", "USDTRY=X",
         ],
         "benchmark": "EURUSD=X",
     },
     "COMMODITY": {
         "tickers": [
-            "GC=F", "SI=F", "CL=F", "NG=F", "ZW=F", "ZC=F",
-            "ZS=F", "HG=F", "PA=F", "PL=F",
+            # Precious metals
+            "GC=F", "SI=F", "PA=F", "PL=F",
+            # Energy
+            "CL=F", "NG=F", "HO=F", "RB=F",
+            # Grains
+            "ZW=F", "ZC=F", "ZS=F", "ZM=F", "ZL=F",
+            # Softs
+            "KC=F", "CT=F", "SB=F", "CC=F", "JO=F",
+            # Industrial metals
+            "HG=F", "ALI=F", "NIO=F",
+            # Livestock
+            "LE=F", "GF=F", "HE=F",
         ],
         "benchmark": "GC=F",
     },
     "BOND": {
         "tickers": [
-            "TLT", "IEF", "SHY", "LQD", "HYG", "AGG", "BND", "MBB",
+            # Treasuries by duration
+            "TLT", "IEF", "SHY", "GOVT", "SHV", "BIL", "SGOV",
+            # TIPS (inflation-protected)
+            "TIP", "STIP", "VTIP", "SCHP",
+            # Corporate bonds
+            "LQD", "HYG", "VCIT", "VCSH", "VCLT", "SPSB", "SPIB", "SPLB",
+            # Municipal bonds
+            "MUB", "SUB", "VTEB", "PZA", "HYD", "TFI",
+            # International bonds
+            "BNDX", "EMB", "PCY", "IGOV", "BWX", "WIP", "VWOB",
+            # Broad / aggregate
+            "AGG", "BND", "BIV", "BSV", "BLV",
+            # Mortgage-backed
+            "MBB", "MBS", "VMBS", "GNMA",
+            # Floating rate
+            "FLOT", "FLRN", "PULS", "GSY", "NEAR",
+            # Convertible
+            "CWB", "ICVT",
+            # Preferred
+            "PFF", "PFFD", "PFFA", "PFXF",
+            # Ultra-short
+            "JPST", "JPIE",
+            # Emerging market
+            "EMB", "VWOB", "PCY",
         ],
         "benchmark": "IEF",
     },
@@ -216,6 +315,74 @@ def load_db_edge():
         return {}
 
 
+# ── FMP financial scores (Piotroski, Altman-Z) ──────────────────────────────
+
+def load_fmp_scores(tickers: list[str]) -> dict[str, dict]:
+    """Fetch Piotroski F-Score and Altman-Z from FMP for tickers.
+
+    Uses per-symbol fetches with delay to respect free-tier rate limits.
+    Only fetches for a reasonable subset (up to 60 symbols) to avoid 429s.
+    """
+    try:
+        import requests
+        import time
+    except ImportError:
+        print("  [INFO] requests not installed — skipping FMP scores")
+        return {}
+
+    # Focus on EQUITY + ETF symbols (where fundamentals are available)
+    priority_tickers = [t for t in tickers if not t.endswith(("=F", "-USD", "=X"))]
+    # Limit to 30 symbols to avoid rate limits
+    fetch_list = [t for t in priority_tickers[:60]]
+
+    result: dict[str, dict] = {}
+    for sym in tickers:
+        result[sym] = {"piotroski": None, "altman_z": None}
+
+    fetched_count = 0
+    for sym in fetch_list:
+        if fetched_count >= 30:  # hard cap to avoid rate limits
+            break
+        try:
+            # Piotroski
+            r = requests.get(
+                f"{FMP_BASE}/financial-scores",
+                params={"symbol": sym, "apikey": FMP_API_KEY},
+                timeout=10,
+            )
+            if r.status_code == 200:
+                d = r.json()
+                if isinstance(d, list) and d:
+                    result[sym]["piotroski"] = d[0].get("piotroskiScore")
+            elif r.status_code == 429:
+                print(f"  [FMP] rate-limited at {sym}, stopping early")
+                break
+            time.sleep(0.3)  # 300ms delay between requests
+
+            # Altman-Z
+            r2 = requests.get(
+                f"{FMP_BASE}/key-metrics-ttm",
+                params={"symbol": sym, "apikey": FMP_API_KEY},
+                timeout=10,
+            )
+            if r2.status_code == 200:
+                d2 = r2.json()
+                if isinstance(d2, list) and d2:
+                    result[sym]["altman_z"] = d2[0].get("altmanZScoreTTM")
+            elif r2.status_code == 429:
+                print(f"  [FMP] rate-limited at {sym} (key-metrics), stopping early")
+                break
+            time.sleep(0.3)
+
+            fetched_count += 1
+        except Exception:
+            pass
+
+    ok = sum(1 for v in result.values() if v["piotroski"] is not None or v["altman_z"] is not None)
+    print(f"  [FMP] loaded scores for {ok}/{len(tickers)} symbols (fetched {fetched_count})")
+    return result
+
+
 # ── Scoring engine ──────────────────────────────────────────────────────────
 
 class QuantScorer:
@@ -229,10 +396,16 @@ class QuantScorer:
     W_DB_EDGE = 10
 
     def score(self, sym: str, cls: str, df: pd.DataFrame,
-              info: dict, db_edge: dict, prices: dict) -> dict:
+              info: dict, db_edge: dict, prices: dict,
+              fmp_scores: dict | None = None) -> dict:
         """Score one symbol across all factors. Returns result dict."""
         c = df['Close']
         p_now = float(c.iloc[-1])
+
+        # ── FMP scores (Piotroski, Altman-Z) ──
+        fmps = (fmp_scores or {}).get(sym.upper(), {})
+        piotroski = fmps.get("piotroski")
+        altman_z = fmps.get("altman_z")
 
         # ── Momentum factors ──
         ret_5d = float(c.iloc[-1] / c.iloc[-6] - 1) * 100 if len(c) >= 6 else None
@@ -518,6 +691,8 @@ class QuantScorer:
             "div_yield_pct": round(div_yield, 2) if div_yield else None,
             "market_cap": market_cap,
             "insider_shares": insider_shares,
+            "piotroski": piotroski,
+            "altman_z": round(altman_z, 2) if altman_z else None,
             "db_n": db_n,
             "db_wr": db_wr,
             "db_avg_pnl": db_avg_pnl,
@@ -543,6 +718,11 @@ def main():
     db_edge = load_db_edge()
     print(f"   Loaded {len(db_edge)} symbols with resolved edge data.")
 
+    # Load FMP financial scores (Piotroski, Altman-Z)
+    all_tickers = [t for cfg in UNIVERSE.values() for t in cfg["tickers"]]
+    print(f"\n📥 Loading FMP financial scores for {len(all_tickers)} symbols...")
+    fmp_scores = load_fmp_scores(all_tickers)
+
     all_results = []
     all_prices = {}
 
@@ -563,7 +743,7 @@ def main():
                 except Exception:
                     pass
 
-                result = scorer.score(sym, cls, df, info, db_edge, all_prices)
+                result = scorer.score(sym, cls, df, info, db_edge, all_prices, fmp_scores)
                 all_prices[sym] = result["price"]
                 all_results.append(result)
 
@@ -663,6 +843,15 @@ def main():
                 r = row.iloc[0]
                 print(f"  {label:8s} ${price:<8.2f} | 5d={r['ret_5d']:+.1f}% 1m={r['ret_1m']:+.1f}% 3m={r['ret_3m']:+.1f}% rvol={r['rvol']:.0f}%")
 
+    risk_off_explanation = (
+        "Market appears RISK-OFF (recent 5d declines visible across SPY/QQQ/BTC benchmarks). "
+        "Screener is favoring lower-volatility defensive names (e.g. TLT bonds) and high-conviction analyst-supported pullbacks in quality equities. "
+        "All suggested position sizes are deliberately small and conservative. "
+        "This output is a 'best possible actionable option right now' bridge tool while the system accumulates more clean n≥100 resolved trades under policy-clean gates. "
+        "Current status per money_ready_verdict.json + pf_registry: 0/9 asset classes meet full Tier-2 money-ready criteria (n≥100 clean post-noise, WR≥50%, PF≥1.5, MDD<20). "
+        "ALWAYS verify the latest 14d/48h recency panels (pick_summary_stats_*.json) and concentration before any paper sizing. NFA — research / paper trading only."
+    )
+
     print(f"\n{'='*70}")
     print(f"  ⚠️  RISK-OFF CONTEXT (ELI5)")
     print(f"{'='*70}")
@@ -679,15 +868,6 @@ def main():
         df_res[df_res['symbol'].isin(["SPY", "QQQ", "BTC-USD"])].iterrows()
     ) else "NEUTRAL"
 
-    risk_off_explanation = (
-        "Market appears RISK-OFF (recent 5d declines visible across SPY/QQQ/BTC benchmarks). "
-        "Screener is favoring lower-volatility defensive names (e.g. TLT bonds) and high-conviction analyst-supported pullbacks in quality equities. "
-        "All suggested position sizes are deliberately small and conservative. "
-        "This output is a 'best possible actionable option right now' bridge tool while the system accumulates more clean n≥100 resolved trades under policy-clean gates. "
-        "Current status per money_ready_verdict.json + pf_registry: 0/9 asset classes meet full Tier-2 money-ready criteria (n≥100 clean post-noise, WR≥50%, PF≥1.5, MDD<20). "
-        "ALWAYS verify the latest 14d/48h recency panels (pick_summary_stats_*.json) and concentration before any paper sizing. NFA — research / paper trading only."
-    )
-
     json_data = {
         "generated_at": ts.isoformat(),
         "generated_at_est": datetime.now(timezone.utc).strftime("%b %d, %Y %I:%M %p ET (approx)"),
@@ -699,6 +879,18 @@ def main():
         "all": df_res.sort_values('score', ascending=False).head(50).to_dict("records"),
         "safest": safest.to_dict("records"),
     }
+    # Clean NaN values before JSON serialization — NaN is NOT valid JSON
+    # and causes JavaScript JSON.parse() to throw SyntaxError.
+    def clean_nan(obj):
+        if isinstance(obj, dict):
+            return {k: clean_nan(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [clean_nan(v) for v in obj]
+        if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+            return None
+        return obj
+
+    json_data = clean_nan(json_data)
     with open(json_path, "w") as f:
         json.dump(json_data, f, indent=2, default=str)
     print(f"\n📁 JSON: {json_path}")
