@@ -35,138 +35,6 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
     <!-- Update: Jun 5, 2026 — P1 sleeves: forex carry unlock, DBMF/KMLM paper, crypto pilot policy -->
-    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="money-ready,forex,etf,commodity,crypto,pilot,goal-1" data-category="trading" data-types="analysis,feature">
-      <div class="update-date" style="line-height:1.5">Jun 5, 2026 2:45 PM EDT &mdash; <strong style="color:#22c55e;">P1 real-money sleeves: carry backtest unlock + commodity ETF proxy paper</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">Continued Goal #1 after P0 (PEAD shadow + equity blocks). Class verdict still <strong>0/9 money-ready</strong>; fast substitutes advanced on paper pilots and extended backtests.</p>
-        <ul>
-          <li><strong>FOREX:</strong> G10 carry 2010&ndash;2026 backtest <strong>n=197, WR=60.4%, PF=1.59</strong> (<code>UNLOCK_READY</code>). Class stays frozen until 30 forward monthly closes on <code>forex_carry_g10</code> paper.</li>
-          <li><strong>ETF:</strong> Dual-momentum paper holds <strong>XLK</strong> LONG (opened 2026-06-02); first rotation CLOSE starts forward n.</li>
-          <li><strong>COMMODITY:</strong> Beta via <code>etf_managed_futures_proxy</code> (DBMF/KMLM) &mdash; new daily paper pilot on verified-pilots cron.</li>
-          <li><strong>CRYPTO:</strong> Pilot policy for <code>crypto_liquidity_wick_reversal_v1</code> only (LONG bias, liquid-core + death-zone gates, &le;0.25&times; size).</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Doc: <code>updates/2026-06-05-p1-real-money-sleeves.md</code> | Repro: <code>python3 tools/research/forex_carry.py --backtest --start 2010-01-01</code></p>
-      </div>
-    </div>
-
-    <!-- Update: Jun 5, 2026 — Real-money edge hunt: PR swarm review + main integration -->
-    <div class="update-entry" style="--dot-color: #8b5cf6;" data-tags="money-ready,edge-hunt,pead,crypto,audit,goal-1" data-category="trading" data-types="feature,analysis,fix">
-      <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:21 AM EDT &mdash; <strong style="color:#8b5cf6;">Real-money edge hunt shipped: per-class filters, PEAD earnings wire-up, crypto HC gates</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">Six asset-class subagent audits + swarm review of PRs <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/550">#550</a> (merged) and <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/547">#547</a>&ndash;<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/549">549</a> (closed as superseded by main). <strong>0/9 classes money-ready</strong> on canonical verdict; closest pilot sleeve remains <code>crypto_liquidity_wick_reversal_v1</code> (n=30, WR=60%, PF=1.55).</p>
-        <ul>
-          <li><strong>EQUITY:</strong> <code>data/earnings/*/latest.json</code> &rarr; PEAD shadow via <code>equity_earnings_loader</code>; optional probation cap (<code>PEAD_EQUITY_PROBATION=1</code>, max 2). WF-verified <code>pead_equity</code> (62.2% OOS) still probation-only &mdash; block <code>regime_terminal</code> on new emits.</li>
-          <li><strong>CRYPTO:</strong> <code>apply_crypto_gates</code> stamps <code>network_metrics</code> for <code>fundamental_macro_gates</code> / high-conviction scoring on non-valuation sleeves.</li>
-          <li><strong>COMMODITY / FOREX:</strong> class frozen; commodity beta via DBMF/KMLM ETF proxy paper; forex_carry backtest extension queued.</li>
-          <li><strong>Swarm fix:</strong> PEAD loader now enforces <code>max_age_days</code> (default 14d); guidance no longer assumed on every beat.</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Reports: <code>reports/edge_hunt_REAL_MONEY_2026-06-05.md</code>, <code>reports/swarm_review_PR547-550_2026-06-05.md</code> | Repro: <code>python3 tools/strategy_tier_tracker.py</code></p>
-      </div>
-    </div>
-
-    <!-- Update: Jun 5, 2026 — Money-ready verdict script fix + live snapshot refresh -->
-    <div class="update-entry" style="--dot-color: #06b6d4;" data-tags="money-ready,audit,verdict,gates,goal-1" data-category="trading" data-types="fix,analysis">
-      <div class="update-date" style="line-height:1.5">Jun 5, 2026 14:15 UTC &mdash; <strong style="color:#06b6d4;">Money-ready verdict: import fix + sign-coherent stats + live JSON refresh</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">Fixed <code>money_ready_verdict.py</code> script invocation (repo on <code>sys.path</code> before <code>alpha_engine.*</code> imports) so <code>tools/money_ready_snapshot.py</code> and GHA can refresh <code>audit_dashboard/data/money_ready_verdict.json</code> without <code>ModuleNotFoundError</code>. Verdict cohort now drops sign-incoherent WON/LOST rows; snapshot re-run stamps <strong>recency</strong>, <strong>WF/BOOT shadow gates</strong>, and <strong>top_sleeves</strong> per class on <a href="/audit/">/audit</a>.</p>
-        <ul>
-          <li><strong>Canonical verdict:</strong> 0 classes <code>MONEY_READY</code> (honest). CRYPTO policy-clean n≈301, WR≈35%, PF≈0.99, <code>NOT_READY</code>.</li>
-          <li><strong>Closest T2 sleeve:</strong> <code>crypto_liquidity_wick_reversal_v1</code> (n=30, WR=60%, PF=1.55) — flagged <strong>single-source</strong>; monitor only, do not size.</li>
-          <li><strong>Tournament truth:</strong> MISPRICED_ENTRY banner now cites <strong>4,154</strong> live DB rows (was 914).</li>
-          <li><strong>mega_mutation:</strong> remains blocklisted; swarm HOLD until ~Jun 12 (clean window + one post-fix close).</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Doc: <code>updates/2026-06-05-money-ready-verdict-import-and-gates.md</code> | Repro: <code>python3 tools/money_ready_snapshot.py</code></p>
-      </div>
-    </div>
-
-    <!-- Update: Jun 5, 2026 — Deep-Dive Series: 3 Backfill-Contamination Findings -->
-    <div class="update-entry" style="--dot-color: #ef4444;" data-tags="deep-dive,backfill,data-quality,audit,walk-forward,scrutiny" data-category="trading" data-types="analysis,research,fix">
-      <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:30 UTC &mdash; <strong style="color:#ef4444;">🚨 DEEP-DIVE SERIES: 3 Backfill-Contamination Findings Force Walk-Forward Rewrite</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">Three sequential deep-dives against live <code>trading_picks</code> SQL each found a different kind of <strong>batch artifact</strong> masquerading as edge. All three fixes are <strong>shipped to main</strong>.</p>
-        <ul>
-          <li><strong>Commodity deep-dive</strong> (reports/deep_dive_commodity_2026-06-05.md): The 5,960 commodity rows on 2026-06-04 = resolver backfill, not edge. ALL commodity T2 candidates (futures_bb_mean_reversion, non_crypto_consensus, multi_asset_cot, combined_confidence_strategy) fail <code>batch_artifact</code> axis. Post-filter: <strong>0/6 commodity classes</strong> have T2 candidates. Contradiction with auto_tuner's LOW_CONFIDENCE_STRATEGIES ban was artifact-driven — auto_tuner is correct.</li>
-          <li><strong>Forex regime deep-dive</strong> (reports/deep_dive_forex_regime_2026-06-05.md): Walk-forward's 3/3 forex PASSes (myfxbook_retail_contrarian, cta_cross_asset_tsmom, non_crypto_consensus) were <strong>data-join artifacts</strong>. 88% of cta_cross_asset_tsmom forex closes are in 2026-05+ where <code>alpha_macro</code> ends. The "edge" was missing data, not regime-tunable. Added <code>--require-macro-join</code> flag + <code>total_pf &gt;= 1.0</code> hard-gate to walk-forward. Post-fix: 4 PASS → 1 PASS (only <code>mega_mutation::crypto</code>).</li>
-          <li><strong>Bond n-ramp analysis</strong> (reports/bond_n_ramp_analysis_2026-06-05.md): BOND is structurally low-n (8 post-filter trades). 167 closed trades exist but 159 are 2026-06-04 backfill; pre-backfill is 16 trades in 3 months. N-ramp requires generation-side investment (PIMCO replication / yield-curve momentum / TLT-IEF mean reversion with 10Y-2Y spread filter).</li>
-        </ul>
-        <p style="margin:0 0 8px;"><strong>Infrastructure shipped</strong> (commits 18f0c17c4b → 7cd7586238 → 49bffbb10c):</p>
-        <ul>
-          <li><code>BACKFILL_EXCLUDE_DATE = "2026-06-04"</code> filter in <code>tools/per_class_scrutiny_engine.py</code> + <code>tools/walk_forward_per_strategy.py</code></li>
-          <li><code>--require-macro-join</code> flag in walk-forward (data-join artifact gate)</li>
-          <li><code>total_pf &gt;= 1.0</code> hard-gate in walk-forward (no PASS for losing strategies)</li>
-          <li>New <code>total_pf</code> + <code>total_wr</code> fields in walk-forward cells</li>
-        </ul>
-        <p style="margin:0 0 8px;"><strong>Re-verified audit verdict</strong>: 0/9 money-ready, with <code>mega_mutation::crypto</code> (n=295 WR=64.1% PF=3.16) as the sole confirmed T1. The "78.9% CRYPTO Smart-Picks" cell on /audit/pick_funnel.html remains DISPUTED (per TRUE WINNERS scrutiny entry above).</p>
-        <p style="margin:8px 0 0;color:#999;">Reports: <code>reports/deep_dive_commodity_2026-06-05.md</code>, <code>reports/deep_dive_forex_regime_2026-06-05.md</code>, <code>reports/bond_n_ramp_analysis_2026-06-05.md</code> | Tools: <code>tools/per_class_scrutiny_engine.py</code>, <code>tools/walk_forward_per_strategy.py</code> | All claims verifiable via live DB SQL</p>
-      </div>
-    </div>
-
-    <!-- Update: Jun 5, 2026 — TRUE WINNERS Scrutiny: mega_mutation Only Verified CRYPTO Edge -->
-    <div class="update-entry" style="--dot-color: #10b981;" data-tags="scrutiny,crypto,winners,mega_mutation,analyst,equity,statistically-valid" data-category="trading" data-types="analysis,research">
-      <div class="update-date" style="line-height:1.5">Jun 5, 2026 06:30 UTC &mdash; <strong style="color:#10b981;">&#x2705; TRUE WINNERS SCRUTINY: Only 1 Source Passes All 5 Axes</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">5-axis live-DB scrutiny (concentration, fat-tail, OOS stability, batch-artifact, binomial p-value) applied to all T2 candidates. <strong>Only <code>mega_mutation</code> CRYPTO passes everything.</strong></p>
-        <ul>
-          <li><strong>mega_mutation (CRYPTO):</strong> n=296 WR=63.9% PF=3.12 — binomial p=0.000001, OOS H1/H2 both PF≈3.1, no fat-tail, 39 distinct dates, 8 symbols. ✅ PASS</li>
-          <li><strong>Best sub-symbols:</strong> JUPUSDT (WR=85.1% n=47), ENAUSDT (WR=80% n=30), ADAUSDT (WR=77.8% n=27), WIFUSDT (WR=68.9% n=45)</li>
-          <li><strong>KILL from source:</strong> AVAXUSDT (PF=0.75) and STXUSDT (WR=41.9%) — drag down the edge</li>
-          <li><strong>FAILED scrutiny:</strong> non_crypto_consensus FOREX (NZDUSD +79.56% fat-tail p=0.308), cta_replicator COMMODITY (50% conc p=0.500), ml_crypto_predictor (p=0.297), kimi/battleground (batch artifacts)</li>
-          <li><strong>Equity:</strong> NVDA STRONG BUY — 58 analysts, 36.3% upside to $298, PEG=0.66, 85% QoQ rev growth. No DB edge yet — paper only.</li>
-          <li><strong>Zoo MD audit corroborated:</strong> systematic "institutional-grade" overstatement across .MD files; 0/9 money-ready verdict confirmed</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Report: <code>reports/TRUE_WINNERS_SCRUTINY_2026-06-05.md</code> | Commit: e7716e1db2 | All claims verifiable via live DB SQL</p>
-      </div>
-    </div>
-
-    <div class="update-entry" style="border-left:4px solid #10b981;">
-      <div class="update-header">
-        <span class="update-date">2026-06-05</span>
-        <span class="update-title">mega_mutation unblocked — direction-blind checker was a false positive; 30-day paper pilot started</span>
-      </div>
-      <div class="update-body">
-        <ul>
-          <li><strong>False block retracted:</strong> June 2 block cited 141 sign-flip rows. Root cause: <code>sign_coherence_check.py</code> recomputed pnl assuming LONG for all picks — legitimate SHORT losses (negative pnl) were falsely flagged as positive anomalies. Current live DB: <strong>0 sign flips</strong>.</li>
-          <li><strong>Post-dedup stats:</strong> n=109 (raw 296, dedup 2.72×), WR=61.5%, PF=2.79 | h1_PF=2.65, h2_PF=2.93 (OOS-stable) | 8 symbols, 39 dates | fat-tail=4%, batch=7%, conc=16% — all 5 scrutiny axes pass</li>
-          <li><strong>Backfill contamination resolved:</strong> NULL rate=0% (closed_at+pnl_pct both populated for all 296 rows)</li>
-          <li><strong>30-day paper pilot:</strong> started 2026-06-05T06:40Z, wired into <code>tools/run_verified_pilots_daily.py</code>. Promotion gate: rolling_30d_n_closed≥30, WR≥55%, PF within 30% of 2.79. Expected review: 2026-07-05.</li>
-          <li><strong>production_enable=False</strong> in <code>mega_mutation_state.json</code> until pilot passes. Unblock only allows forward tracking.</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Swarm consult: 4/4 OPTION_A for wick-reversal | 3-1 HOLD on mega_mutation (overridden by NULL=0% evidence) | Commit: <code>e4d38711b4</code></p>
-      </div>
-    </div>
-
-    <!-- Update: 2026-06-05 — Tier-2 PROVEN honesty + dynamic targets (Goal #1) -->
-    <div class="update-entry" style="--dot-color: #a78bfa;" data-tags="audit,tier2,hero,generator,goal-1,honest,recency" data-category="trading" data-types="fix,analysis,ui">
-      <div class="update-date" style="line-height:1.5">2026-06-05 — <strong style="color:#a78bfa;">Tier-2 RESEARCH CANDIDATES honesty + dynamic targets (per plan §3 + subagent)</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;"><strong>Goal #1 priority:</strong> honest edge claims, no overpromotion on <code>/audit</code>. 0/6-9 classes pass strict Tier-2 (money_ready_verdict + pf_registry policy-clean net + verified_edge_status confirm; recency panels show e.g. CRYPTO 48h 0 closed).</p>
-        <ul>
-          <li><strong>1) template.html hero header rewrite</strong> (lines ~1283-1298): from "TIER-2 PROVEN Buried high-edge..." → neutral "TIER-2 RESEARCH CANDIDATES" framing. Added "0 clear strict Tier-2" emphasis (meta already computes strict count), links to <code>CHARTER &sect;2</code> + <code>MASTERPLAN_JUNE52026_GROK.MD §3</code> + <code>reports/</code>. Comment block updated with plan refs. Kept <code>#tier2-hero-flagged</code> + badges intact.</li>
-          <li><strong>2) dashboard_generator.py dynamic targets</strong> (<code>_TIER2_PROMOTION_TARGETS</code> 11491+, <code>_compute_tier2_proven_strategies</code> 11798+): now derives <code>targets_to_use</code> at runtime by scanning <code>systems[]</code> for those where <code>_classify_tier</code> returns "Tier 2", drops <code>claude_gainer*</code> until clean (per disputed conc in verified + pick_funnel), cross-refs trust hierarchy from plan §3 (money_ready_verdict/pf_ok, verified_edge, recency_ok from pick_summary + verdict). <code>promotion_targets</code> in payload is now the live list (not fixed 4). Updated callsite + error fallback + module comment. <code>_classify_tier</code> (CHARTER thresholds) untouched.</li>
-          <li><strong>3) recency/14d note on cards (feasible)</strong>: added <code>recency_note</code> to every card dict in compute; rendered in <code>renderTier2Heroes()</code> card HTML (small italic box with title="Per plan §3 + pick_summary..."). JS comments + header updated. Honest badges (<code>is_strict_tier2</code>, thin, stale, flagged_dropouts) + meta "X/Y clear strict" + <code>_tier2BadgeStyle</code> all preserved.</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Files: <code>audit_dashboard/template.html</code>, <code>audit_trail/dashboard_generator.py</code>. Data: <code>audit_dashboard/data/{money_ready_verdict.json,verified_edge_status.json,pick_summary_stats_{14d,48h}.json}</code>. Plan: MASTERPLAN §3 (trust: 1.money_ready+pf_registry 2.verified 3.pilots...); PERFORMANCE_CHARTER §2. Subagent findings incorporated (0 clear strict, recency collapse, concentration).</p>
-        <p style="margin:4px 0 0;color:#f59e0b;font-weight:600;">⚠️ NOTE FOR DEEP-DIVE SUBAGENT (spawn per CLAUDE.md Goal#1 deep-dive process when class PF&lt;1 or sub-30% real WR or MDD issues): Investigate mega sign-flip (see recent unblock of mega_mutation after sign_coherence_check false-positive on SHORTs; 0 flips now per updates), signal_validation collapse (why not passing strict in current systems[] despite prior goldmine?), claude_gainer_st concentration (91.7% disputed), batch artifacts in 14d panels, and why 0/6 classes post M-067. Produce <code>reports/deep_dive_&lt;class&gt;_*.md</code> + 30/60/90 rescue + risk register. Repro: <code>python3 -c "import json; d=json.load(open('audit_dashboard/data/money_ready_verdict.json')); print(d.get('generated_at')); [print(k,v.get('n_resolved'),v.get('wr'),v.get('pf'),v.get('verdict')) for k,v in d.get('classes',{}).items()]</code> + <code>python3 tools/strategy_tier_tracker.py</code>. Cross with <code>reports/edge_hunt_*_2026-06*.md</code> + <code>reports/deep_dive_*.md</code>.</p>
-        <p style="margin:4px 0 0;color:#999;">Per CLAUDE.md: edit template NOT index.html; read updates/index full before edit (done); entry BEFORE auto-marker (newest-first); post-merge run <code>python3 tools/deploy_audit_files.py --only updates</code> (no shell on 50webs). py_compile only for checks (no local generators).</p>
-      </div>
-    </div>
-
-<!-- 2026-06-06 review + integration of Copilot picks-now professional + Top Notch (Goal #1 bridge) -->
-<div class="update-entry">
-  <div class="update-date" style="line-height:1.5">2026-06-06 — <strong style="color:#a78bfa;">Review + integration: GitHub Copilot picks_now_professional.py + Top Notch money-ready (Goal #1 RIGHT NOW per-class + safest)</strong></div>
-  <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-    <p style="margin:0 0 8px;">Full review of Copilot work (multi-factor screener: mom/analyst/vol/DB-edge, 107 symbols, actionable TP/SL/size, per-class + safest like AMZN 133 / TLT 9% RVOL, reports, json, updates .md + PR #553) + gaps vs Goal #1 (heuristic scoring, missing DSR/PBO/recency/conc gates, basic risk, no baked 0/9 + "verify 14d/48h first" + paper/NFA). Evolution (subagent deep_dive_all + edge_hunt + top_notch generator + ai-tournament panel with per-class safest-why + 0/9 + HF risk notes from Lopez/Kelly/vol-parity/regime/CVaR + our patterns/garch) + this session's assists completed the loop.</p>
-    <ul style="margin:4px 0 8px 16px; font-size:0.95em;">
-      <li><strong>Cron + deploy:</strong> Extended <code>.github/workflows/ai-leaderboard-freshness.yml</code> (daily 04:30 step for professional screener + explicit picks_now.json + top_notch in audit_data FTP + commit lists). Fulfills "schedule daily cron".</li>
-      <li><strong>Wire to /audit/:</strong> ai-tournament.html now has dynamic JS fetch of picks_now.json (mini live market cards: top 5 analyst/TP/score/signals + link to dedicated picks-now.html) + top_notch as_of refresh. Complements the curated static Top Notch research table (per-class + "Safest Note + Why" + honest 0/9 + recency + risk/strategy). Wires both jsons into visible surface.</li>
-      <li><strong>Honesty + integration:</strong> Injected canonical Goal #1 bridge note ("0/9 policy-clean... best-possible RIGHT NOW... ALWAYS verify 14d/48h FIRST... cross-ref top_notch/ai-tournament/verdict") into professional tool prints + written json (honest_bridge_note + money_ready_status + cross_ref). Ties live overlay to statistical pipeline.</li>
-      <li><strong>Only own changes:</strong> 3 files (py + yml + ai-tournament.html) + this doc. py_compile OK. No generators run locally. No ownership of parallel drift (deep_dive/edge_hunt/inverse fastpath/backfills/toxic kills etc. — user to value-add per AGENTS).</li>
-    </ul>
-    <p style="margin:4px 0 0;color:#999;">New doc: <code>updates/2026-06-06-picks-now-copilot-review-integration.md</code> (full review + strengths/gaps + safest recs + risk/strategy from HF + our data + n≥100 path + refs). Standalone Copilot .md + progress report also present. Safest (top_notch): EQUITY (recency + T2-candidate), BOND (lowest vol), FUTURES; CRYPTO only high-WR inverse sleeves until clean n≥100 + 48h. After merge: <code>python3 tools/deploy_audit_files.py --only updates</code> (and/or audit_data) + curl verify. Rebase reminder before push. NFA/paper-first; verify recency/gates on FET/GOOGL/AMZN setups etc.</p>
-    <p style="margin:4px 0 0;color:#999;">Refs: CLAUDE.md (Goal #1 + recency rule + deep-dive + updates before-marker + FTP + Wire-Up + py_compile only), AGENTS.md (own changes + doc every), deep_dive_all_asset_classes...md + edge_hunt_* + money_ready_verdict + top_notch/picks_now jsons + ai-tournament Top Notch panel + picks-now.html. Subagents delivered per-class research + HF risk material.</p>
-  </div>
-</div>
-
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -199,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-06-05 02:00 EDT · <strong>73 open incidents</strong> (17 P0 · 41 P1) · <strong>140 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-06-06 01:48 EDT · <strong>73 open incidents</strong> (17 P0 · 41 P1) · <strong>140 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -353,7 +221,139 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-    <div class="update-entry">
+      <div class="update-entry" style="--dot-color: #22c55e;" data-tags="money-ready,forex,etf,commodity,crypto,pilot,goal-1" data-category="trading" data-types="analysis,feature">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 2:45 PM EDT &mdash; <strong style="color:#22c55e;">P1 real-money sleeves: carry backtest unlock + commodity ETF proxy paper</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Continued Goal #1 after P0 (PEAD shadow + equity blocks). Class verdict still <strong>0/9 money-ready</strong>; fast substitutes advanced on paper pilots and extended backtests.</p>
+        <ul>
+          <li><strong>FOREX:</strong> G10 carry 2010&ndash;2026 backtest <strong>n=197, WR=60.4%, PF=1.59</strong> (<code>UNLOCK_READY</code>). Class stays frozen until 30 forward monthly closes on <code>forex_carry_g10</code> paper.</li>
+          <li><strong>ETF:</strong> Dual-momentum paper holds <strong>XLK</strong> LONG (opened 2026-06-02); first rotation CLOSE starts forward n.</li>
+          <li><strong>COMMODITY:</strong> Beta via <code>etf_managed_futures_proxy</code> (DBMF/KMLM) &mdash; new daily paper pilot on verified-pilots cron.</li>
+          <li><strong>CRYPTO:</strong> Pilot policy for <code>crypto_liquidity_wick_reversal_v1</code> only (LONG bias, liquid-core + death-zone gates, &le;0.25&times; size).</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Doc: <code>updates/2026-06-05-p1-real-money-sleeves.md</code> | Repro: <code>python3 tools/research/forex_carry.py --backtest --start 2010-01-01</code></p>
+      </div>
+    </div>
+
+    <!-- Update: Jun 5, 2026 — Real-money edge hunt: PR swarm review + main integration -->
+    <div class="update-entry" style="--dot-color: #8b5cf6;" data-tags="money-ready,edge-hunt,pead,crypto,audit,goal-1" data-category="trading" data-types="feature,analysis,fix">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:21 AM EDT &mdash; <strong style="color:#8b5cf6;">Real-money edge hunt shipped: per-class filters, PEAD earnings wire-up, crypto HC gates</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Six asset-class subagent audits + swarm review of PRs <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/550">#550</a> (merged) and <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/547">#547</a>&ndash;<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/549">549</a> (closed as superseded by main). <strong>0/9 classes money-ready</strong> on canonical verdict; closest pilot sleeve remains <code>crypto_liquidity_wick_reversal_v1</code> (n=30, WR=60%, PF=1.55).</p>
+        <ul>
+          <li><strong>EQUITY:</strong> <code>data/earnings/*/latest.json</code> &rarr; PEAD shadow via <code>equity_earnings_loader</code>; optional probation cap (<code>PEAD_EQUITY_PROBATION=1</code>, max 2). WF-verified <code>pead_equity</code> (62.2% OOS) still probation-only &mdash; block <code>regime_terminal</code> on new emits.</li>
+          <li><strong>CRYPTO:</strong> <code>apply_crypto_gates</code> stamps <code>network_metrics</code> for <code>fundamental_macro_gates</code> / high-conviction scoring on non-valuation sleeves.</li>
+          <li><strong>COMMODITY / FOREX:</strong> class frozen; commodity beta via DBMF/KMLM ETF proxy paper; forex_carry backtest extension queued.</li>
+          <li><strong>Swarm fix:</strong> PEAD loader now enforces <code>max_age_days</code> (default 14d); guidance no longer assumed on every beat.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Reports: <code>reports/edge_hunt_REAL_MONEY_2026-06-05.md</code>, <code>reports/swarm_review_PR547-550_2026-06-05.md</code> | Repro: <code>python3 tools/strategy_tier_tracker.py</code></p>
+      </div>
+    </div>
+
+    <!-- Update: Jun 5, 2026 — Money-ready verdict script fix + live snapshot refresh -->
+    <div class="update-entry" style="--dot-color: #06b6d4;" data-tags="money-ready,audit,verdict,gates,goal-1" data-category="trading" data-types="fix,analysis">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 14:15 UTC &mdash; <strong style="color:#06b6d4;">Money-ready verdict: import fix + sign-coherent stats + live JSON refresh</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Fixed <code>money_ready_verdict.py</code> script invocation (repo on <code>sys.path</code> before <code>alpha_engine.*</code> imports) so <code>tools/money_ready_snapshot.py</code> and GHA can refresh <code>audit_dashboard/data/money_ready_verdict.json</code> without <code>ModuleNotFoundError</code>. Verdict cohort now drops sign-incoherent WON/LOST rows; snapshot re-run stamps <strong>recency</strong>, <strong>WF/BOOT shadow gates</strong>, and <strong>top_sleeves</strong> per class on <a href="/audit/">/audit</a>.</p>
+        <ul>
+          <li><strong>Canonical verdict:</strong> 0 classes <code>MONEY_READY</code> (honest). CRYPTO policy-clean n≈301, WR≈35%, PF≈0.99, <code>NOT_READY</code>.</li>
+          <li><strong>Closest T2 sleeve:</strong> <code>crypto_liquidity_wick_reversal_v1</code> (n=30, WR=60%, PF=1.55) — flagged <strong>single-source</strong>; monitor only, do not size.</li>
+          <li><strong>Tournament truth:</strong> MISPRICED_ENTRY banner now cites <strong>4,154</strong> live DB rows (was 914).</li>
+          <li><strong>mega_mutation:</strong> remains blocklisted; swarm HOLD until ~Jun 12 (clean window + one post-fix close).</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Doc: <code>updates/2026-06-05-money-ready-verdict-import-and-gates.md</code> | Repro: <code>python3 tools/money_ready_snapshot.py</code></p>
+      </div>
+    </div>
+
+    <!-- Update: Jun 5, 2026 — Deep-Dive Series: 3 Backfill-Contamination Findings -->
+    <div class="update-entry" style="--dot-color: #ef4444;" data-tags="deep-dive,backfill,data-quality,audit,walk-forward,scrutiny" data-category="trading" data-types="analysis,research,fix">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 10:30 UTC &mdash; <strong style="color:#ef4444;">🚨 DEEP-DIVE SERIES: 3 Backfill-Contamination Findings Force Walk-Forward Rewrite</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Three sequential deep-dives against live <code>trading_picks</code> SQL each found a different kind of <strong>batch artifact</strong> masquerading as edge. All three fixes are <strong>shipped to main</strong>.</p>
+        <ul>
+          <li><strong>Commodity deep-dive</strong> (reports/deep_dive_commodity_2026-06-05.md): The 5,960 commodity rows on 2026-06-04 = resolver backfill, not edge. ALL commodity T2 candidates (futures_bb_mean_reversion, non_crypto_consensus, multi_asset_cot, combined_confidence_strategy) fail <code>batch_artifact</code> axis. Post-filter: <strong>0/6 commodity classes</strong> have T2 candidates. Contradiction with auto_tuner's LOW_CONFIDENCE_STRATEGIES ban was artifact-driven — auto_tuner is correct.</li>
+          <li><strong>Forex regime deep-dive</strong> (reports/deep_dive_forex_regime_2026-06-05.md): Walk-forward's 3/3 forex PASSes (myfxbook_retail_contrarian, cta_cross_asset_tsmom, non_crypto_consensus) were <strong>data-join artifacts</strong>. 88% of cta_cross_asset_tsmom forex closes are in 2026-05+ where <code>alpha_macro</code> ends. The "edge" was missing data, not regime-tunable. Added <code>--require-macro-join</code> flag + <code>total_pf &gt;= 1.0</code> hard-gate to walk-forward. Post-fix: 4 PASS → 1 PASS (only <code>mega_mutation::crypto</code>).</li>
+          <li><strong>Bond n-ramp analysis</strong> (reports/bond_n_ramp_analysis_2026-06-05.md): BOND is structurally low-n (8 post-filter trades). 167 closed trades exist but 159 are 2026-06-04 backfill; pre-backfill is 16 trades in 3 months. N-ramp requires generation-side investment (PIMCO replication / yield-curve momentum / TLT-IEF mean reversion with 10Y-2Y spread filter).</li>
+        </ul>
+        <p style="margin:0 0 8px;"><strong>Infrastructure shipped</strong> (commits 18f0c17c4b → 7cd7586238 → 49bffbb10c):</p>
+        <ul>
+          <li><code>BACKFILL_EXCLUDE_DATE = "2026-06-04"</code> filter in <code>tools/per_class_scrutiny_engine.py</code> + <code>tools/walk_forward_per_strategy.py</code></li>
+          <li><code>--require-macro-join</code> flag in walk-forward (data-join artifact gate)</li>
+          <li><code>total_pf &gt;= 1.0</code> hard-gate in walk-forward (no PASS for losing strategies)</li>
+          <li>New <code>total_pf</code> + <code>total_wr</code> fields in walk-forward cells</li>
+        </ul>
+        <p style="margin:0 0 8px;"><strong>Re-verified audit verdict</strong>: 0/9 money-ready, with <code>mega_mutation::crypto</code> (n=295 WR=64.1% PF=3.16) as the sole confirmed T1. The "78.9% CRYPTO Smart-Picks" cell on /audit/pick_funnel.html remains DISPUTED (per TRUE WINNERS scrutiny entry above).</p>
+        <p style="margin:8px 0 0;color:#999;">Reports: <code>reports/deep_dive_commodity_2026-06-05.md</code>, <code>reports/deep_dive_forex_regime_2026-06-05.md</code>, <code>reports/bond_n_ramp_analysis_2026-06-05.md</code> | Tools: <code>tools/per_class_scrutiny_engine.py</code>, <code>tools/walk_forward_per_strategy.py</code> | All claims verifiable via live DB SQL</p>
+      </div>
+    </div>
+
+    <!-- Update: Jun 5, 2026 — TRUE WINNERS Scrutiny: mega_mutation Only Verified CRYPTO Edge -->
+    <div class="update-entry" style="--dot-color: #10b981;" data-tags="scrutiny,crypto,winners,mega_mutation,analyst,equity,statistically-valid" data-category="trading" data-types="analysis,research">
+      <div class="update-date" style="line-height:1.5">Jun 5, 2026 06:30 UTC &mdash; <strong style="color:#10b981;">&#x2705; TRUE WINNERS SCRUTINY: Only 1 Source Passes All 5 Axes</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">5-axis live-DB scrutiny (concentration, fat-tail, OOS stability, batch-artifact, binomial p-value) applied to all T2 candidates. <strong>Only <code>mega_mutation</code> CRYPTO passes everything.</strong></p>
+        <ul>
+          <li><strong>mega_mutation (CRYPTO):</strong> n=296 WR=63.9% PF=3.12 — binomial p=0.000001, OOS H1/H2 both PF≈3.1, no fat-tail, 39 distinct dates, 8 symbols. ✅ PASS</li>
+          <li><strong>Best sub-symbols:</strong> JUPUSDT (WR=85.1% n=47), ENAUSDT (WR=80% n=30), ADAUSDT (WR=77.8% n=27), WIFUSDT (WR=68.9% n=45)</li>
+          <li><strong>KILL from source:</strong> AVAXUSDT (PF=0.75) and STXUSDT (WR=41.9%) — drag down the edge</li>
+          <li><strong>FAILED scrutiny:</strong> non_crypto_consensus FOREX (NZDUSD +79.56% fat-tail p=0.308), cta_replicator COMMODITY (50% conc p=0.500), ml_crypto_predictor (p=0.297), kimi/battleground (batch artifacts)</li>
+          <li><strong>Equity:</strong> NVDA STRONG BUY — 58 analysts, 36.3% upside to $298, PEG=0.66, 85% QoQ rev growth. No DB edge yet — paper only.</li>
+          <li><strong>Zoo MD audit corroborated:</strong> systematic "institutional-grade" overstatement across .MD files; 0/9 money-ready verdict confirmed</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Report: <code>reports/TRUE_WINNERS_SCRUTINY_2026-06-05.md</code> | Commit: e7716e1db2 | All claims verifiable via live DB SQL</p>
+      </div>
+    </div>
+
+    <div class="update-entry" style="border-left:4px solid #10b981;">
+      <div class="update-header">
+        <span class="update-date">2026-06-05</span>
+        <span class="update-title">mega_mutation unblocked — direction-blind checker was a false positive; 30-day paper pilot started</span>
+      </div>
+      <div class="update-body">
+        <ul>
+          <li><strong>False block retracted:</strong> June 2 block cited 141 sign-flip rows. Root cause: <code>sign_coherence_check.py</code> recomputed pnl assuming LONG for all picks — legitimate SHORT losses (negative pnl) were falsely flagged as positive anomalies. Current live DB: <strong>0 sign flips</strong>.</li>
+          <li><strong>Post-dedup stats:</strong> n=109 (raw 296, dedup 2.72×), WR=61.5%, PF=2.79 | h1_PF=2.65, h2_PF=2.93 (OOS-stable) | 8 symbols, 39 dates | fat-tail=4%, batch=7%, conc=16% — all 5 scrutiny axes pass</li>
+          <li><strong>Backfill contamination resolved:</strong> NULL rate=0% (closed_at+pnl_pct both populated for all 296 rows)</li>
+          <li><strong>30-day paper pilot:</strong> started 2026-06-05T06:40Z, wired into <code>tools/run_verified_pilots_daily.py</code>. Promotion gate: rolling_30d_n_closed≥30, WR≥55%, PF within 30% of 2.79. Expected review: 2026-07-05.</li>
+          <li><strong>production_enable=False</strong> in <code>mega_mutation_state.json</code> until pilot passes. Unblock only allows forward tracking.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Swarm consult: 4/4 OPTION_A for wick-reversal | 3-1 HOLD on mega_mutation (overridden by NULL=0% evidence) | Commit: <code>e4d38711b4</code></p>
+      </div>
+    </div>
+
+    <!-- Update: 2026-06-05 — Tier-2 PROVEN honesty + dynamic targets (Goal #1) -->
+    <div class="update-entry" style="--dot-color: #a78bfa;" data-tags="audit,tier2,hero,generator,goal-1,honest,recency" data-category="trading" data-types="fix,analysis,ui">
+      <div class="update-date" style="line-height:1.5">2026-06-05 — <strong style="color:#a78bfa;">Tier-2 RESEARCH CANDIDATES honesty + dynamic targets (per plan §3 + subagent)</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;"><strong>Goal #1 priority:</strong> honest edge claims, no overpromotion on <code>/audit</code>. 0/6-9 classes pass strict Tier-2 (money_ready_verdict + pf_registry policy-clean net + verified_edge_status confirm; recency panels show e.g. CRYPTO 48h 0 closed).</p>
+        <ul>
+          <li><strong>1) template.html hero header rewrite</strong> (lines ~1283-1298): from "TIER-2 PROVEN Buried high-edge..." → neutral "TIER-2 RESEARCH CANDIDATES" framing. Added "0 clear strict Tier-2" emphasis (meta already computes strict count), links to <code>CHARTER &sect;2</code> + <code>MASTERPLAN_JUNE52026_GROK.MD §3</code> + <code>reports/</code>. Comment block updated with plan refs. Kept <code>#tier2-hero-flagged</code> + badges intact.</li>
+          <li><strong>2) dashboard_generator.py dynamic targets</strong> (<code>_TIER2_PROMOTION_TARGETS</code> 11491+, <code>_compute_tier2_proven_strategies</code> 11798+): now derives <code>targets_to_use</code> at runtime by scanning <code>systems[]</code> for those where <code>_classify_tier</code> returns "Tier 2", drops <code>claude_gainer*</code> until clean (per disputed conc in verified + pick_funnel), cross-refs trust hierarchy from plan §3 (money_ready_verdict/pf_ok, verified_edge, recency_ok from pick_summary + verdict). <code>promotion_targets</code> in payload is now the live list (not fixed 4). Updated callsite + error fallback + module comment. <code>_classify_tier</code> (CHARTER thresholds) untouched.</li>
+          <li><strong>3) recency/14d note on cards (feasible)</strong>: added <code>recency_note</code> to every card dict in compute; rendered in <code>renderTier2Heroes()</code> card HTML (small italic box with title="Per plan §3 + pick_summary..."). JS comments + header updated. Honest badges (<code>is_strict_tier2</code>, thin, stale, flagged_dropouts) + meta "X/Y clear strict" + <code>_tier2BadgeStyle</code> all preserved.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Files: <code>audit_dashboard/template.html</code>, <code>audit_trail/dashboard_generator.py</code>. Data: <code>audit_dashboard/data/{money_ready_verdict.json,verified_edge_status.json,pick_summary_stats_{14d,48h}.json}</code>. Plan: MASTERPLAN §3 (trust: 1.money_ready+pf_registry 2.verified 3.pilots...); PERFORMANCE_CHARTER §2. Subagent findings incorporated (0 clear strict, recency collapse, concentration).</p>
+        <p style="margin:4px 0 0;color:#f59e0b;font-weight:600;">⚠️ NOTE FOR DEEP-DIVE SUBAGENT (spawn per CLAUDE.md Goal#1 deep-dive process when class PF&lt;1 or sub-30% real WR or MDD issues): Investigate mega sign-flip (see recent unblock of mega_mutation after sign_coherence_check false-positive on SHORTs; 0 flips now per updates), signal_validation collapse (why not passing strict in current systems[] despite prior goldmine?), claude_gainer_st concentration (91.7% disputed), batch artifacts in 14d panels, and why 0/6 classes post M-067. Produce <code>reports/deep_dive_&lt;class&gt;_*.md</code> + 30/60/90 rescue + risk register. Repro: <code>python3 -c "import json; d=json.load(open('audit_dashboard/data/money_ready_verdict.json')); print(d.get('generated_at')); [print(k,v.get('n_resolved'),v.get('wr'),v.get('pf'),v.get('verdict')) for k,v in d.get('classes',{}).items()]</code> + <code>python3 tools/strategy_tier_tracker.py</code>. Cross with <code>reports/edge_hunt_*_2026-06*.md</code> + <code>reports/deep_dive_*.md</code>.</p>
+        <p style="margin:4px 0 0;color:#999;">Per CLAUDE.md: edit template NOT index.html; read updates/index full before edit (done); entry BEFORE auto-marker (newest-first); post-merge run <code>python3 tools/deploy_audit_files.py --only updates</code> (no shell on 50webs). py_compile only for checks (no local generators).</p>
+      </div>
+    </div>
+
+<!-- 2026-06-06 review + integration of Copilot picks-now professional + Top Notch (Goal #1 bridge) -->
+<div class="update-entry">
+  <div class="update-date" style="line-height:1.5">2026-06-06 — <strong style="color:#a78bfa;">Review + integration: GitHub Copilot picks_now_professional.py + Top Notch money-ready (Goal #1 RIGHT NOW per-class + safest)</strong></div>
+  <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+    <p style="margin:0 0 8px;">Full review of Copilot work (multi-factor screener: mom/analyst/vol/DB-edge, 107 symbols, actionable TP/SL/size, per-class + safest like AMZN 133 / TLT 9% RVOL, reports, json, updates .md + PR #553) + gaps vs Goal #1 (heuristic scoring, missing DSR/PBO/recency/conc gates, basic risk, no baked 0/9 + "verify 14d/48h first" + paper/NFA). Evolution (subagent deep_dive_all + edge_hunt + top_notch generator + ai-tournament panel with per-class safest-why + 0/9 + HF risk notes from Lopez/Kelly/vol-parity/regime/CVaR + our patterns/garch) + this session's assists completed the loop.</p>
+    <ul style="margin:4px 0 8px 16px; font-size:0.95em;">
+      <li><strong>Cron + deploy:</strong> Extended <code>.github/workflows/ai-leaderboard-freshness.yml</code> (daily 04:30 step for professional screener + explicit picks_now.json + top_notch in audit_data FTP + commit lists). Fulfills "schedule daily cron".</li>
+      <li><strong>Wire to /audit/:</strong> ai-tournament.html now has dynamic JS fetch of picks_now.json (mini live market cards: top 5 analyst/TP/score/signals + link to dedicated picks-now.html) + top_notch as_of refresh. Complements the curated static Top Notch research table (per-class + "Safest Note + Why" + honest 0/9 + recency + risk/strategy). Wires both jsons into visible surface.</li>
+      <li><strong>Honesty + integration:</strong> Injected canonical Goal #1 bridge note ("0/9 policy-clean... best-possible RIGHT NOW... ALWAYS verify 14d/48h FIRST... cross-ref top_notch/ai-tournament/verdict") into professional tool prints + written json (honest_bridge_note + money_ready_status + cross_ref). Ties live overlay to statistical pipeline.</li>
+      <li><strong>Only own changes:</strong> 3 files (py + yml + ai-tournament.html) + this doc. py_compile OK. No generators run locally. No ownership of parallel drift (deep_dive/edge_hunt/inverse fastpath/backfills/toxic kills etc. — user to value-add per AGENTS).</li>
+    </ul>
+    <p style="margin:4px 0 0;color:#999;">New doc: <code>updates/2026-06-06-picks-now-copilot-review-integration.md</code> (full review + strengths/gaps + safest recs + risk/strategy from HF + our data + n≥100 path + refs). Standalone Copilot .md + progress report also present. Safest (top_notch): EQUITY (recency + T2-candidate), BOND (lowest vol), FUTURES; CRYPTO only high-WR inverse sleeves until clean n≥100 + 48h. After merge: <code>python3 tools/deploy_audit_files.py --only updates</code> (and/or audit_data) + curl verify. Rebase reminder before push. NFA/paper-first; verify recency/gates on FET/GOOGL/AMZN setups etc.</p>
+    <p style="margin:4px 0 0;color:#999;">Refs: CLAUDE.md (Goal #1 + recency rule + deep-dive + updates before-marker + FTP + Wire-Up + py_compile only), AGENTS.md (own changes + doc every), deep_dive_all_asset_classes...md + edge_hunt_* + money_ready_verdict + top_notch/picks_now jsons + ai-tournament Top Notch panel + picks-now.html. Subagents delivered per-class research + HF risk material.</p>
+  </div>
+</div>
+
+<div class="update-entry">
   <h2>Jun 5, 2026 — luxalgo forward dedup truth (do not size)</h2>
   <p>Fixed <code>luxalgo_confluence_forward_pilot.py</code> MySQL (<code>closed_at</code> + dedupe). Forward 30d: <strong>n=827, WR 42%, PF 0.97</strong> — does not match lab 64%/2.36. Tier-2 on last 100: <strong>fail</strong>. Sleeve stays SHADOW.</p>
   <p>Doc: <code>updates/2026-06-05-luxalgo-forward-dedup-truth.md</code></p>
