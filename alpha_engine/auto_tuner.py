@@ -156,9 +156,6 @@ LOW_CONFIDENCE_STRATEGIES = {
     "cta_tsmom_blend",                  # 6/27=22.2% WR, 19 active picks wasting capital — CONFIRMED LOSER
     "futures_bb_mean_reversion",        # 1/5=20% WR — below random
     "futures_ema_stack_momentum",       # 0/4=0% WR — zero wins on 4 trades
-    # --- Added 2026-06-05: confirmed net-negative inverse ML strategies (RENDERUSDT) ---
-    "inverse_ml_enhanced_RENDERUSDT_4h_D",  # PF 0.12, avg -1.73% — worse than baseline
-    "inverse_ml_enhanced_RENDERUSDT_1h_D",  # insufficient data, same broken model family
 }
 
 # Backward-compat alias — callers that referenced HARD_DISABLED_STRATEGIES still work.
@@ -190,6 +187,9 @@ PERMANENTLY_KILLED: set = {
     "macd_crossover",                   # 25-31% WR on LONG/SHORT, confirmed loser — 139 leaked picks
     "rsi_overbought",                   # 29% WR SHORT-only branch of rsi_bounce, -17.1% PnL — 44 leaked picks
     "st_rsi_momentum_confluence",       # 10% WR (10W/95L), -296% PnL — killed per PEER_INTEL 2026-04-02
+    # --- Added 2026-06-06: RENDERUSDT inverse_ml 0% WR on 3 live closed trades (all SL_HIT -2%) ---
+    "inverse_ml_enhanced_RENDERUSDT_4h_D",  # 0% WR live; PF 0.12 in lab; broken model family
+    "inverse_ml_enhanced_RENDERUSDT_1h_D",  # same broken model family, insufficient data
 }
 
 # Pattern-based disables: strategies matching these patterns are auto-killed.

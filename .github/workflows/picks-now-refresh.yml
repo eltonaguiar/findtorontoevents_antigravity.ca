@@ -38,6 +38,11 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python3 tools/picks_now_professional.py
 
+      - name: Sync genome mega_mutation picks to at_raw_picks
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/genome_to_raw_picks_sync.py || echo "[genome_sync] skipped (no open picks)"
+
       - name: Save picks to MySQL tracking table
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}

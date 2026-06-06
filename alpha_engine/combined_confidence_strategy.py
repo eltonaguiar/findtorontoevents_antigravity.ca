@@ -34,6 +34,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# yfinance imported lazily in _fetch_dxy_regime to avoid hard dependency
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -66,10 +68,44 @@ MIN_TRADES_FOR_TE = 5    # Need at least N closed trades to trust WR
 STRATEGY_NAME = "combined_confidence"
 SOURCE_SYSTEM = "combined_confidence_strategy"
 
+# DXY Regime Gate: when DXY 5d return > +0.3%, LONG picks on these USD-bearish
+# pairs are suppressed (DXY rising = USD strengthening = headwind for EUR/GBP/NZD longs).
+_DXY_SUPPRESSED_LONG_SYMBOLS = frozenset({
+    "EURUSD=X", "EURUSD", "GBPUSD=X", "GBPUSD", "NZDUSD=X", "NZDUSD",
+    "EURGBP=X", "EURGBP", "AUDUSD=X", "AUDUSD",
+})
+_DXY_GATE_RETURN_THRESHOLD = 0.003   # +0.3% 5d return triggers suppression
+_DXY_TICKER = "DX-Y.NYB"
+
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _fetch_dxy_regime() -> bool:
+    """Return True if DXY 5d return > +0.3% (bullish USD → suppress FOREX LONG).
+
+    Uses yfinance with a 10-day window for reliability. Returns False (no gate)
+    on any data error so the strategy degrades gracefully without blocking picks.
+    """
+    try:
+        import yfinance as yf
+        ticker = yf.Ticker(_DXY_TICKER)
+        hist = ticker.history(period="10d", interval="1d")
+        if hist is None or len(hist) < 5:
+            logger.warning("DXY: insufficient data (%d rows), gate disabled", len(hist) if hist is not None else 0)
+            return False
+        closes = hist["Close"].dropna()
+        if len(closes) < 5:
+            return False
+        ret_5d = (closes.iloc[-1] - closes.iloc[-5]) / closes.iloc[-5]
+        gate_on = ret_5d > _DXY_GATE_RETURN_THRESHOLD
+        logger.info("DXY 5d return=%.3f%% → LONG gate %s", ret_5d * 100, "ON" if gate_on else "off")
+        return gate_on
+    except Exception as exc:
+        logger.warning("DXY regime fetch failed (%s) — gate disabled", exc)
+        return False
 def _load_json(path: Path) -> list | dict | None:
     """Load a JSON file, returning None if missing or corrupt."""
     if not path.exists():
@@ -246,6 +282,9 @@ def generate_combined_confidence_picks() -> list[dict]:
         len(pm_picks), len(noncrypto_picks), len(candidates),
     )
 
+    # DXY regime check (once per run, fail-open)
+    dxy_long_gate_on = _fetch_dxy_regime()
+
     results = []
     seen = set()
 
@@ -257,6 +296,11 @@ def generate_combined_confidence_picks() -> list[dict]:
         elif direction in ("SELL", "SHORT"):
             direction = "SHORT"
         else:
+            continue
+
+        # DXY regime gate: suppress LONG picks on USD-bearish pairs when DXY is rising
+        if dxy_long_gate_on and direction == "LONG" and symbol in _DXY_SUPPRESSED_LONG_SYMBOLS:
+            logger.info("DXY gate: suppressing LONG %s (DXY 5d return > +0.3%%)", symbol)
             continue
 
         # Dedup by symbol+direction

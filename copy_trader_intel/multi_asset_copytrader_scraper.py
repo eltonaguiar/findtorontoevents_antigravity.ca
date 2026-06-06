@@ -543,6 +543,8 @@ def scan_forex_zscore_200d(data_cache):
         highs = ohlcv["High"]
         lows = ohlcv["Low"]
         current = closes[-1]
+        if not current or current != current or current <= 0:
+            continue
 
         # 200d SMA
         sma_200 = sum(closes[-200:]) / 200
@@ -2391,7 +2393,7 @@ def scrape_openinsider_congress(data_cache):
             f"Volume {vol_ratio:.1f}x above 20d avg (institutional accumulation)",
         ]
 
-        picks.append(_make_pick(
+        pick = _make_pick(
             "smart_money_accumulation", symbol, "equity", "EQUITY",
             "LONG", current, tp, sl, conf,
             f"Smart money accumulation: {'; '.join(reasons)}.",
@@ -2402,7 +2404,12 @@ def scrape_openinsider_congress(data_cache):
                 "atr": round(atr_val, 4),
                 "sma_distance_pct": round(sma_distance_pct, 4),
             }
-        ))
+        )
+        # Day-level dedup: round signal_timestamp to start of UTC day so that
+        # repeated hourly runs for the same symbol+direction get the same
+        # dedup_hash and INSERT IGNORE catches the duplicate.
+        pick["signal_timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00+00:00")
+        picks.append(pick)
 
     return picks
 
