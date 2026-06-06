@@ -27,6 +27,61 @@ import sys as _sys
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
+# Category normalization  (stocks → equity, infer missing from symbol)
+# ---------------------------------------------------------------------------
+_CRYPTO_SUFFIXES = ("USDT", "USDC", "BUSD", "BTC", "ETH", "USD")
+_FX_PAIRS = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD",
+             "NZDUSD", "EURGBP", "EURJPY", "GBPJPY", "AUDJPY", "NZDJPY",
+             "EURNZD", "GBPAUD", "GBPCAD", "GBPNZD", "CADJPY", "CHFJPY",
+             "AUDCAD", "AUDCHF", "AUDNZD", "NZDCAD", "NZDCHF", "CADCHF",
+             "EURCHF", "EURAUD", "EURCAD", "XAUUSD", "XAGUSD", "WTICOUSD"}
+_FUTURES_ROOTS = {"ES", "NQ", "YM", "RTY", "GC", "SI", "CL", "NG", "ZB",
+                  "ZN", "ZF", "ZT", "6E", "6J", "6B", "6A", "6C"}
+
+def _normalize_category(pick: dict) -> str:
+    """Return a canonical asset-class string for *pick*.
+
+    Handles the three common data-quality issues:
+    1. category == 'stocks'  →  'equity'
+    2. category empty / NONE  →  infer from symbol format
+    3. known forex / futures symbols  →  'forex' / 'futures'
+    """
+    raw = (pick.get("category") or "").strip().lower()
+    if raw in ("equity", "etf", "bond", "index"):
+        return raw
+    if raw == "stocks":
+        return "equity"
+    if raw in ("crypto", "forex", "commodity", "futures", "penny_stock"):
+        return raw
+
+    # ---- Infer from symbol ----
+    sym = (pick.get("symbol") or "").upper().strip()
+    if not sym:
+        return ""
+    for suffix in _CRYPTO_SUFFIXES:
+        if sym.endswith(suffix) and len(sym) > len(suffix):
+            return "crypto"
+    if sym in _FX_PAIRS:
+        return "forex"
+    if len(sym) == 6 and sym.isalpha() and sym[:3] in (
+        "EUR", "GBP", "USD", "AUD", "NZD", "CAD", "CHF", "JPY"):
+        return "forex"
+    if sym in _FUTURES_ROOTS:
+        return "futures"
+
+    # ---- Infer from strategy name ----
+    strat = (pick.get("strategy") or "").lower()
+    if "crypto" in strat or "btc" in strat or "eth" in strat or "usdt" in strat:
+        return "crypto"
+    if "forex" in strat or "fx" in strat:
+        return "forex"
+    if "futures" in strat or "commodity" in strat:
+        return "futures"
+
+    # Default: treat 3-5 char alpha symbols as equity
+    if sym.isalpha() and 1 <= len(sym) <= 5:
+        return "equity"
+    return raw or ""
 # Lazy, fail-open imports.  On GHA runners (and any environment where a
 # transitive dependency is missing / network-gated) the top-level imports
 # used to crash the entire module.  The callers (money_ready_verdict.py,
@@ -114,7 +169,7 @@ def _compute_equity_fundamental_strength(pick: dict) -> Optional[float]:
     Returns:
         float: Score in range [0, 100], or None if insufficient data
     """
-    category = pick.get("category", "").lower()
+    category = _normalize_category(pick)
     if category != "equity":
         return None
     
@@ -181,18 +236,20 @@ def _compute_crypto_fundamental_strength(pick: dict) -> Optional[float]:
     Returns:
         float: Normalized deviation score (sigma), or None if insufficient data
     """
-    category = pick.get("category", "").lower()
+    category = _normalize_category(pick)
     if category != "crypto":
         return None
     
     strategy = pick.get("strategy", "").lower()
     extra = pick.get("extra", {})
+    if not isinstance(extra, dict):
+        extra = {}
     
+    # ---- Strategy-specific paths (original valuation strategies) ----
     # Power Law deviation (z-score)
     if strategy == "btc_power_law_deviation":
         z_score = extra.get("z_score")
         if z_score is not None:
-            # Normalize to sigma: higher absolute z = stronger signal
             sigma = abs(float(z_score))
             return round(sigma, 2)
     
@@ -200,17 +257,12 @@ def _compute_crypto_fundamental_strength(pick: dict) -> Optional[float]:
     elif strategy == "nvm_metcalfe_valuation":
         percentile = extra.get("nvm_percentile")
         if percentile is not None:
-            # Convert percentile to sigma-like score
-            # 25th percentile = 1.5 sigma undervalued
-            # 75th percentile = 1.5 sigma overvalued
             if percentile < 25:
-                # Undervalued: higher sigma for lower percentiles
                 sigma = 1.5 + (25 - percentile) * 0.02
             elif percentile > 75:
-                # Overvalued: higher sigma for higher percentiles
                 sigma = 1.5 + (percentile - 75) * 0.02
             else:
-                sigma = 0.5  # Neutral zone
+                sigma = 0.5
             return round(sigma, 2)
     
     # Gas fee reversal (z-score proxy)
@@ -219,7 +271,7 @@ def _compute_crypto_fundamental_strength(pick: dict) -> Optional[float]:
         if gas_z is not None:
             return round(abs(float(gas_z)), 2)
 
-    # Generic sleeves: on-chain snapshot from crypto_risk_gates (funding, FGI, SSR)
+    # ---- Generic on-chain snapshot (network_metrics dict) ----
     net = extra.get("network_metrics") if isinstance(extra.get("network_metrics"), dict) else {}
     if net:
         score = 0.0
@@ -240,6 +292,63 @@ def _compute_crypto_fundamental_strength(pick: dict) -> Optional[float]:
         if score >= 1.0:
             return round(score, 2)
 
+    # ---- Battleground / scanner extra fields ----
+    # These are the actual fields present in closed_picks.json for crypto
+    # picks: fast_regime_score, btc_granger_significant, btc_lead_boost, etc.
+    score = 0.0
+
+    # fast_regime_score: -1 (bearish) to +1 (bullish); use absolute as
+    # conviction signal
+    regime_score = extra.get("fast_regime_score")
+    if regime_score is not None:
+        try:
+            rs = abs(float(regime_score))
+            score += min(1.0, rs)
+        except (TypeError, ValueError):
+            pass
+
+    # fast_regime_confidence: 0-1 scale
+    regime_conf = extra.get("fast_regime_confidence")
+    if regime_conf is not None:
+        try:
+            rc = float(regime_conf)
+            if rc >= 0.7:
+                score += 0.8
+            elif rc >= 0.4:
+                score += 0.4
+        except (TypeError, ValueError):
+            pass
+
+    # btc_granger_significant: boolean — BTC leads this alt
+    if extra.get("btc_granger_significant"):
+        score += 0.5
+
+    # btc_lead_boost: numeric boost from BTC lead-lag
+    boost = extra.get("btc_lead_boost")
+    if boost is not None:
+        try:
+            b = abs(float(boost))
+            if b > 0:
+                score += min(1.0, b)
+        except (TypeError, ValueError):
+            pass
+
+    if score >= 1.0:
+        return round(score, 2)
+
+    # ---- Reason-keyword fallback for crypto ----
+    reason = (pick.get("reason") or "").lower()
+    _BULLISH_KW = ("breakout", "accumulation", "whale", "bullish", "oversold",
+                   "support bounce", "golden cross", "funding positive")
+    _BEARISH_KW = ("breakdown", "bearish", "overbought", "distribution",
+                   "death cross", "funding negative")
+    for kw in _BULLISH_KW:
+        if kw in reason:
+            return 1.2
+    for kw in _BEARISH_KW:
+        if kw in reason:
+            return 0.8
+
     return None
 
 
@@ -252,7 +361,7 @@ def compute_fundamental_strength(pick: dict) -> dict[str, Any]:
     - fundamental_strength_status: str ("high", "medium", "low", "none")
     - reason: explanation of the score
     """
-    category = pick.get("category", "").lower()
+    category = _normalize_category(pick)
     
     if category == "equity":
         score = _compute_equity_fundamental_strength(pick)
@@ -315,7 +424,7 @@ def _get_macro_regime_scores(pick: dict) -> dict[str, float]:
     """
     macro_context = get_macro_context()
     
-    if not macro_context or "regime" not in macro_context:
+    if not macro_context:
         return {
             "usd": 0.0,
             "curve": 0.0,
@@ -323,13 +432,16 @@ def _get_macro_regime_scores(pick: dict) -> dict[str, float]:
             "overall": 0.0,
         }
     
-    regime = macro_context["regime"]
+    regime = macro_context.get("regime", {})
+    indicators = macro_context.get("indicators", {})
+    deltas = macro_context.get("deltas", {})
+
     usd_regime = regime.get("usd", "neutral")
-    curve_regime = regime.get("curve", "steep")
+    curve_regime = regime.get("curve", "flat")
     vol_regime = regime.get("vol", "normal")
     
     # Asset class from pick
-    category = pick.get("category", "").lower()
+    category = _normalize_category(pick)
     
     # Default scores (neutral alignment)
     scores = {
@@ -339,46 +451,89 @@ def _get_macro_regime_scores(pick: dict) -> dict[str, float]:
         "overall": 0.0,
     }
     
-    # USD Regime Alignment
-    # Strong USD benefits: commodities, international equities, USD-pegged assets
-    # Weak USD benefits: commodities, export-heavy equities, crypto
-    if category in ["equity", "forex", "commodity"]:
-        if usd_regime == "strong":
-            scores["usd"] = 0.3  # Mild positive for most assets
-        elif usd_regime == "weak":
-            scores["usd"] = -0.3  # Mild negative for most assets
+    # --- USD Regime Alignment ---
+    # Use regime label + actual USD index delta for finer scoring
+    usd_delta = deltas.get("DTWEXBGS_30d_pct")  # 30d % change in USD index
+    if usd_regime == "strong":
+        base_usd = 0.3
+    elif usd_regime == "weak":
+        base_usd = -0.3
+    else:
+        base_usd = 0.0
+    # Amplify if USD is actually moving significantly
+    if usd_delta is not None:
+        try:
+            d = float(usd_delta)
+            if abs(d) > 1.0:
+                base_usd *= 1.5
+            elif abs(d) < 0.3:
+                base_usd *= 0.5  # Stable USD → less impact
+        except (TypeError, ValueError):
+            pass
+    if category in ("equity", "forex", "commodity"):
+        scores["usd"] = base_usd
     elif category == "crypto":
-        if usd_regime == "strong":
-            scores["usd"] = -0.4  # Negative for crypto (strong USD = risk-off)
-        elif usd_regime == "weak":
-            scores["usd"] = 0.4  # Positive for crypto (weak USD = risk-on)
+        scores["usd"] = -base_usd * 1.2  # Crypto inversely correlated with USD
+    elif category == "etf":
+        scores["usd"] = base_usd * 0.5
     
-    # Yield Curve Regime Alignment
-    # Steep curve: benefits financials, growth stocks
-    # Inverted curve: benefits defensive stocks, commodities
-    if category == "equity":
-        if curve_regime == "steep":
-            scores["curve"] = 0.4  # Positive for growth-oriented assets
-        elif curve_regime == "inverted":
-            scores["curve"] = -0.2  # Negative for growth, positive for defensive
-        elif curve_regime == "flat":
-            scores["curve"] = 0.1
+    # --- Yield Curve Regime Alignment ---
+    # Use actual T10Y2Y spread value for nuance
+    spread_entry = indicators.get("T10Y2Y", {})
+    spread_val = spread_entry.get("value") if isinstance(spread_entry, dict) else None
+    if curve_regime == "steep":
+        base_curve = 0.3
+    elif curve_regime == "inverted":
+        base_curve = -0.2
+    elif curve_regime == "flat":
+        # Flat but positive spread → mild positive; flat + near-zero → neutral
+        if spread_val is not None:
+            try:
+                base_curve = max(-0.2, min(0.3, float(spread_val) * 0.5))
+            except (TypeError, ValueError):
+                base_curve = 0.0
+        else:
+            base_curve = 0.0
+    else:
+        base_curve = 0.0
+    if category in ("equity", "etf"):
+        scores["curve"] = base_curve
+    elif category == "crypto":
+        scores["curve"] = base_curve * 0.5  # Crypto less curve-sensitive
+    elif category in ("commodity", "futures"):
+        scores["curve"] = -base_curve * 0.3  # Defensive assets inverse
     
-    # Volatility Regime Alignment
-    # Low vol: benefits high-beta assets
-    # High vol: benefits safe-haven assets
+    # --- Volatility Regime Alignment ---
+    # Use actual VIX value for precise scoring
+    vix_entry = indicators.get("VIXCLS", {})
+    vix_val = vix_entry.get("value") if isinstance(vix_entry, dict) else None
     if vol_regime == "low":
-        if category in ["equity", "crypto"]:
-            scores["vol"] = 0.3  # Positive for high-beta assets
-        elif category in ["forex", "commodity"]:
-            scores["vol"] = -0.2  # Negative for volatile pairs
+        base_vol = 0.3
     elif vol_regime == "elevated":
-        if category in ["forex", "commodity", "crypto"]:
-            scores["vol"] = 0.3  # Positive for safe-haven or mean-reversion
-        elif category == "equity":
-            scores["vol"] = -0.2  # Negative for high-beta during stress
-    elif vol_regime == "normal":
-        scores["vol"] = 0.0
+        base_vol = -0.2
+    else:
+        base_vol = 0.0
+    # Refine with actual VIX level
+    if vix_val is not None:
+        try:
+            v = float(vix_val)
+            if v < 15:
+                # Very low vol → amplify risk-on signal
+                base_vol = max(base_vol, 0.3) if category in ("equity", "crypto") else base_vol
+            elif v > 25:
+                # High vol → risk-off signal
+                base_vol = min(base_vol, -0.2) if category in ("equity", "crypto") else base_vol
+            elif v > 30:
+                # Extreme vol → strong risk-off
+                base_vol = min(base_vol, -0.4) if category == "equity" else base_vol
+        except (TypeError, ValueError):
+            pass
+    if category in ("equity", "crypto"):
+        scores["vol"] = base_vol
+    elif category in ("forex", "commodity"):
+        scores["vol"] = -base_vol * 0.5  # Flight to safety
+    elif category in ("etf", "bond"):
+        scores["vol"] = -base_vol * 0.3
     
     # Combine scores (weighted average)
     scores["overall"] = round(
@@ -476,7 +631,7 @@ def passes_high_conviction_gate(pick: dict) -> tuple[bool, dict[str, Any]]:
     cvar = float(cvar) if cvar is not None else 999
     
     # Determine if criteria are met
-    category = pick.get("category", "").lower()
+    category = _normalize_category(pick)
     
     # Check fundamental threshold
     fundamental_ok = False

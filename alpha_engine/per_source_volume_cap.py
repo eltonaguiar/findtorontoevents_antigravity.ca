@@ -40,6 +40,9 @@ PER_SOURCE_VOLUME_CAP: dict[str, dict[str, float]] = {
     "copy_trader_highscore":{"CRYPTO": 0.02},   # PF 0.80, WR 30.3%, n=99
     # EAGLE2 Phase 0 (2026-06-02): hard zero — policy-clean EQUITY PF 0.33, 40% concentration.
     "regime_terminal":      {"CRYPTO": 0.0, "EQUITY": 0.0, "FOREX": 0.0},
+    # EAGLE2 Phase 0 (2026-06-05): multi_asset_cot COMMODITY WR=17% (n=223 closed)
+    # + 91 OPEN losing positions. Hard zero on COMMODITY intake.
+    "multi_asset_cot":      {"COMMODITY": 0.0},
     # EAGLE2 Phase 0: 14d CRYPTO 66% single-source concentration via incubator_gainer.
     "incubator_gainer":     {"CRYPTO": 0.0},
     # Unverified mercury2 path — lab/tournament only until M-108 forward proof.

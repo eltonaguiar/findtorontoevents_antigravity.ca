@@ -1371,6 +1371,18 @@ BANNED_SOURCES = {
     "forex_copy_trader",
     # signal_validation: 322/353 active picks are ghost >7d stale (never resolves)
     "signal_validation",
+    # 2026-06-05: multi_asset_cot — COMMODITY live stats WR=17% (n=223 closed),
+    # 91 OPEN losing positions still active in trading_picks. Registry's
+    # policy_clean view excludes this source (single-source + flicker/dedup
+    # filters dropped it from n=2 view), so get_registry_toxic_pairs()
+    # CANNOT auto-detect. Hard-stop at intake.
+    "multi_asset_cot",
+    # 2026-06-05: regime_terminal — EAGLE2 Phase 0 (2026-06-02) already set
+    # PER_SOURCE_VOLUME_CAP to 0.0% for CRYPTO/EQUITY/FOREX (equity WR=16.67%,
+    # PF=0.19, n=18 in policy_clean registry; is_single_source_artifact=True).
+    # n=18 sits 2 below TOXIC_MIN_N=20 so auto-toxic detection misses it.
+    # Hard-stop at intake for symmetry with the 0.0% cap.
+    "regime_terminal",
 }
 
 # TP cap: max allowed distance from entry (as a fraction)

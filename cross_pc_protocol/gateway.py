@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
+import platform
 import threading
 import urllib.parse
 from dataclasses import dataclass
@@ -116,6 +118,9 @@ class ProtocolGateway:
             if ack_target:
                 ack_result = await self.register_ack(ack_target, from_peer=envelope.get("from", ""))
                 return {"ok": True, "status": "ack_processed", "message_id": ack_target, "ack": ack_result}
+        if envelope.get("topic") == "copilot.apply_lm":
+            applied = self._apply_copilot_lm_payload(envelope.get("payload") or {})
+            return {"ok": applied.get("ok", False), "status": "copilot_lm_applied", **applied}
         await self._route_envelope(envelope, transport=transport)
         if envelope.get("require_ack"):
             self.retry_tracker.track(envelope)
@@ -174,6 +179,34 @@ class ProtocolGateway:
     def _peer_registry_snapshot(self) -> Dict[str, Dict[str, Any]]:
         with self._peer_registry_lock:
             return dict(self._peer_registry)
+
+    def _apply_copilot_lm_payload(self, payload: Any) -> Dict[str, Any]:
+        """Write chatLanguageModels.json locally (gateway host = Windows desktop)."""
+        if not isinstance(payload, dict):
+            return {"ok": False, "error": "payload must be object"}
+        config = payload.get("config")
+        if config is None and payload.get("config_json"):
+            try:
+                config = json.loads(str(payload["config_json"]))
+            except json.JSONDecodeError as exc:
+                return {"ok": False, "error": f"invalid config_json: {exc}"}
+        if not isinstance(config, list):
+            return {"ok": False, "error": "config must be a JSON array"}
+
+        if platform.system() == "Windows":
+            appdata = os.environ.get("APPDATA", "")
+            if not appdata:
+                return {"ok": False, "error": "APPDATA not set"}
+            target = Path(appdata) / "Code" / "User" / "chatLanguageModels.json"
+        else:
+            target = Path.home() / ".vscode-server" / "data" / "User" / "chatLanguageModels.json"
+
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(config, indent="\t") + "\n", encoding="utf-8")
+            return {"ok": True, "path": str(target), "providers": len(config)}
+        except OSError as exc:
+            return {"ok": False, "error": str(exc)}
 
     def _update_peer_registry(self, envelope: Dict[str, Any], transport: str) -> None:
         sender = str(envelope.get("from") or "").strip()

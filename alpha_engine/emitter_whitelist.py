@@ -35,6 +35,9 @@ HARDCODED_TOXIC_PAIRS: frozenset[Pair] = frozenset({
     ("FOREX", "forex_rsi2_mean_reversion"),
     ("EQUITY", "multi_asset_copytrader"),
     ("EQUITY", "regime_terminal"),
+    # 2026-06-05: multi_asset_cot COMMODITY live stats WR=17% (n=223 closed) + 91 OPEN
+    # losing positions. Hard-code as toxic since policy_clean view has 0 rows.
+    ("COMMODITY", "multi_asset_cot"),
 })
 
 # Money-ready sleeve mode (INVERSE_ML_BTC_15M_ENABLED=1): only these CRYPTO strategies emit.
@@ -48,7 +51,6 @@ MANUAL_ALLOWLIST_PAIRS: frozenset[Pair] = frozenset({
     ("CRYPTO", "crypto_rsi_whaleconfirmed_v1"),
     ("CRYPTO", "inverse_ml_enhanced_BTCUSDT_15m_D"),
     ("CRYPTO", "inverse_ml_enhanced_ADAUSDT_15m_D"),
-    ("COMMODITY", "multi_asset_cot"),
     ("COMMODITY", "multi_asset_copytrader"),
     ("FOREX", "cta_replicator"),
 })
