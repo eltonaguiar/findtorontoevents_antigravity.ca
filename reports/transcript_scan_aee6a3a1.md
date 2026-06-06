@@ -1,0 +1,139 @@
+# Transcript action-item scan
+
+- transcript: `/home/eaguiar2015/.claude/projects/-home-eaguiar2015-findtorontoevents-antigravity-ca/aee6a3a1-775e-4048-a1fc-8d0f1bed678c.jsonl`
+- turns: 128 · chunks: 9 · provider: deepseek
+- deduped action items: 105
+
+## Action items (deduped across chunks)
+
+- [DONE] Check project for existing Obsidian-related files/directories
+- [DONE] Create proper Obsidian vault with config files, index, and organized structure
+- [DONE] Create vault notes: Home index, templates, asset-class stubs, strategy notes, incident notes
+- [DONE] Add `.gitignore` entries for Obsidian best practices
+- [DONE] Move existing session note into sessions folder and add today's session note
+- [DONE] Verify vault structure and gitignore behavior
+- [DONE] Install Obsidian Skills plugin from github.com/kepano/obsidian-skills
+- [DONE] Build custom `/obsidian-search` command
+- [DONE] Build custom `/obsidian-note` command
+- [DONE] Build `obsidian-memory` skill
+- [DONE] Create vault notes integrating recent `.md` files from last 2 weeks
+- [DONE] Run `/obsidian-search` test (searching for best strategies vs forward-test)
+- [DONE] Install obsidian-skills (5 skills from kepano/obsidian-skills)
+- [DONE] Create custom slash commands (/obsidian-search, /obsidian-note, /obsidian-sync, /obsidian-status)
+- [DONE] Create obsidian-memory skill
+- [DONE] Populate vault with 24 notes across 5 folders
+- [DONE] Test search functionality (/obsidian-search ready-to-trade, tag:strategy tier:T1, forward-test, status:candidate)
+- [DONE] Summarize search test results for user
+- [OPEN] Map codebase structure (baby_strategies, mutation protocol, backtesting pipeline)
+- [OPEN] Read graveyard, backtest results, promotion gates, and mutation protocol
+- [OPEN] Read trapped strategies in tier system and one working strategy for code format reference
+- [OPEN] Run promotion audit and pending SPA scan to see real backlog
+- [OPEN] Check one near-graduation strategy's code before creating mutations
+- [DONE] Promote st_fear_greed_contrarian (DSR=19.70, p=0.0, WR=53%, n=430)
+- [DONE] Write three DNA mutation variants
+- [DONE] Write meta.json for all three mutations and syntax-check
+- [DONE] Write Obsidian investigation note capturing everything
+- [DONE] Write out the 4 gates with ELI5 explanations in the Obsidian note (baby-strategies-investigation-2026-06-06.md)
+- [OPEN] Search Obsidian vault for yfinance failover data sources
+- [DONE] Add yfinance failover chain documentation to the Obsidian vault
+- [DONE] Save research findings to data-sources-price-failover.md (file written)
+- [OPEN] Wire forex failover (Finnhub, Twelve Data) via forex_price_failover.py
+- [OPEN] Wire commodity failover (EIA API, Barchart) via commodity_price_failover.py
+- [OPEN] Test forex and commodity failover modules
+- [OPEN] If data quality is poor, run agent swarm to find additional sources (especially open, no-API-key sources)
+- [DONE] Create Obsidian knowledge vault for trading project
+- [DONE] Make vault searchable and properly gitignored to avoid API key leaks
+- [DONE] Install kepano/obsidian-skills from GitHub
+- [DONE] Add /obsidian-search, /obsidian-note, /obsidian-sync, /obsidian-status slash commands
+- [DONE] Add obsidian-memory skill
+- [DONE] Integrate recent .md files (past 2 weeks) into vault
+- [DONE] Test /obsidian-search for best strategies vs forward-test queue
+- [DONE] Write ELI5 explanations of the 4 promotion gates
+- [DONE] Investigate DNA mutation variants of top strategies, add to baby_strategies/
+- [DONE] Find trapped strategies, check backtest backlog
+- [DONE] Use /obsidian-search for yfinance failover data sources
+- [OPEN] Wire forex and commodity price failover chains
+- [OPEN] Extract FINNHUB key from /home/eaguiar2015/dbpasses.txt (line 286-287)
+- [OPEN] Extract FMP_API_KEY from /home/eaguiar2015/dbpasses.txt (line 283-284)
+- [OPEN] Prioritize open sources with no API key needed for failover chains
+- [OPEN] Use swarms if struggling with failover chains
+- [DONE] Write `alpha_engine/forex_price_failover.py` and `alpha_engine/commodity_price_failover.py`
+- [DONE] Wire failover modules into `universal_price_enricher.py`
+- [DONE] Run live end-to-end test of both modules
+- [DONE] Update Obsidian note and commit
+- [DONE] Add GitHub secrets (FINNHUB, FINNHUB_API_KEY, FMP_API_KEY, ALPHA_VANTAGE_API_KEY)
+- [DONE] Refresh FDR file (was stale, now fresh)
+- [DONE] Promote `macd_rsi_m048` to anti_overfit registry
+- [DONE] Demote `cta_golden_cross` from elite tier
+- [DONE] Trigger mass backtest for 3 DNA variants
+- [OPEN] Review findtorontoevents.ca/audit and linked pages
+- [OPEN] Document issues/enhancements in database (ejaguiar1_stocks INCIDENT_* and ENHANCEMENT_* tables)
+- [OPEN] Verify all baby strategies are backtested properly with no trapped ones
+- [DONE] Identify why babies backtest fails in CI (missing crypto_data.db)
+- [DONE] Test DB connectivity from runner (MySQL 8.4.7 works)
+- [DONE] Confirm crypto_data.db is gitignored and absent on runner
+- [DONE] Verify picks-now.html is linked and live
+- [DONE] Validate MySQL crypto_ohlcv table maps to klines schema
+- [DONE] Check timestamp format expected by runner (ISO string, not epoch-ms)
+- [DONE] Check pair format expected by runner (slash format, e.g. BTC/USDT)
+- [DONE] Build and locally test SQLite materializer from MySQL
+- [DONE] Fix fx_prices date type issue (trade_date is date, not datetime)
+- [DONE] Locally test end-to-end babies sweep with materialized DB (277 strategies, 167 passed)
+- [DONE] Patch both CI workflows (part1 and part2) to add pymysql and build step with DB secret
+- [DONE] Commit and push CI fix
+- [DONE] Re-trigger babies backtest in CI (run 27056076305)
+- [OPEN] Fix CI build failure: db_env can't extract stocks password from secret
+- [OPEN] Fix both build steps to use proven pattern (secrets.MYSQL_PASSWORD via AUDIT_DB_* env vars)
+- [DONE] Trigger new baby strategies backtest run (capped at 15 strategies)
+- [DONE] Fix sweep loader to catch `SystemExit` on import
+- [DONE] Verify SystemExit fix locally (exit code 0)
+- [DONE] Read background review workflow findings (25 confirmed, 5 refuted, 1 dup)
+- [DONE] Fix price-failover modules (#19 FRED proxy, #21 cross-rate KeyError, #24 FMP grain symbols)
+- [DONE] Verify proxy-tagging code path via injection
+- [DONE] Fix picks-now generator (#9 EXPIRED in WR, #11 banned sources, #15 negative-expectancy gate, #10 TP/SL caps)
+- [DONE] Compile-check and verify `load_db_edge` fix (GBPUSD 58.8%→6.9%)
+- [DONE] Commit price-failover hardening
+- [DONE] Commit picks-now generator fixes
+- [DONE] Re-trigger babies backtest on main with all fixes (run 27056319122)
+- [DONE] Document all 25 confirmed findings into DB (8 marked fixed with commit refs)
+- [DONE] Add RESOLVED incident rows for two CI fixes
+- [DONE] Remove one-shot script
+- [DONE] Check babies backtest run (succeeded in CI, 1m21s)
+- [OPEN] Handle local stash conflicts with CI results (colliding `*.meta.json` files)
+- [OPEN] Ensure three DNA mutation strategy files are not deleted and check if on remote
+- [DONE] Build tools/build_crypto_data_db_from_mysql.py to materialize SQLite klines from MySQL tables
+- [DONE] Wire the build script into both backtest workflows
+- [DONE] Fix second crash (non-strategy file raising SystemExit on import)
+- [DONE] Recover and commit the 3 DNA strategy files lost to shared-tree churn
+- [DONE] Push the 3 DNA strategies to remote
+- [DONE] Trigger incidents-page regeneration so live /audit/incidents.html reflects new rows
+- [DONE] Fix picks-now.html generator: GBPUSD WR 58.8%→6.9% (EXPIRED now counted), banned/refuted sources filtered out, TP/SL clamped to production caps, negative-expectancy symbols demoted from STRONG_BUY
+- [DONE] Write all 27 findings to DB INCIDENT_*/ENHANCEMENT_* tables (8 marked RESOLVED/IN_PROGRESS with commit refs, rest OPEN/BACKLOG)
+- [DONE] Set GitHub secrets
+- [OPEN] Run swarm-transcript-scan on the current session transcript (aee6a3a1) — user requested via /swarm-transcript-review
+
+## OPEN (23)
+
+- [OPEN] Map codebase structure (baby_strategies, mutation protocol, backtesting pipeline)
+- [OPEN] Read graveyard, backtest results, promotion gates, and mutation protocol
+- [OPEN] Read trapped strategies in tier system and one working strategy for code format reference
+- [OPEN] Run promotion audit and pending SPA scan to see real backlog
+- [OPEN] Check one near-graduation strategy's code before creating mutations
+- [OPEN] Search Obsidian vault for yfinance failover data sources
+- [OPEN] Wire forex failover (Finnhub, Twelve Data) via forex_price_failover.py
+- [OPEN] Wire commodity failover (EIA API, Barchart) via commodity_price_failover.py
+- [OPEN] Test forex and commodity failover modules
+- [OPEN] If data quality is poor, run agent swarm to find additional sources (especially open, no-API-key sources)
+- [OPEN] Wire forex and commodity price failover chains
+- [OPEN] Extract FINNHUB key from /home/eaguiar2015/dbpasses.txt (line 286-287)
+- [OPEN] Extract FMP_API_KEY from /home/eaguiar2015/dbpasses.txt (line 283-284)
+- [OPEN] Prioritize open sources with no API key needed for failover chains
+- [OPEN] Use swarms if struggling with failover chains
+- [OPEN] Review findtorontoevents.ca/audit and linked pages
+- [OPEN] Document issues/enhancements in database (ejaguiar1_stocks INCIDENT_* and ENHANCEMENT_* tables)
+- [OPEN] Verify all baby strategies are backtested properly with no trapped ones
+- [OPEN] Fix CI build failure: db_env can't extract stocks password from secret
+- [OPEN] Fix both build steps to use proven pattern (secrets.MYSQL_PASSWORD via AUDIT_DB_* env vars)
+- [OPEN] Handle local stash conflicts with CI results (colliding `*.meta.json` files)
+- [OPEN] Ensure three DNA mutation strategy files are not deleted and check if on remote
+- [OPEN] Run swarm-transcript-scan on the current session transcript (aee6a3a1) — user requested via /swarm-transcript-review
