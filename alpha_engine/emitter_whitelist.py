@@ -28,14 +28,26 @@ HARDCODED_TOXIC_PAIRS: frozenset[Pair] = frozenset({
     ("CRYPTO", "quan_engine_scalp"),
     ("CRYPTO", "quan_engine_swing"),
     ("CRYPTO", "quan_engine_position"),
+    ("CRYPTO", "prediction_market_consensus"),
+    ("CRYPTO", "copy_trader_intel"),
     ("COMMODITY", "cta_replicator"),
     ("FOREX", "multi_asset_copytrader"),
+    ("FOREX", "forex_rsi2_mean_reversion"),
     ("EQUITY", "multi_asset_copytrader"),
+    ("EQUITY", "regime_terminal"),
+})
+
+# Money-ready sleeve mode (INVERSE_ML_BTC_15M_ENABLED=1): only these CRYPTO strategies emit.
+INVERSE_ML_SLEEVE_STRATEGIES: frozenset[str] = frozenset({
+    "inverse_ml_enhanced_BTCUSDT_15m_D",
+    "inverse_ml_enhanced_ADAUSDT_15m_D",
 })
 
 # Seeds when registry n is below whitelist floor but forward track is approved
 MANUAL_ALLOWLIST_PAIRS: frozenset[Pair] = frozenset({
     ("CRYPTO", "crypto_rsi_whaleconfirmed_v1"),
+    ("CRYPTO", "inverse_ml_enhanced_BTCUSDT_15m_D"),
+    ("CRYPTO", "inverse_ml_enhanced_ADAUSDT_15m_D"),
     ("COMMODITY", "multi_asset_cot"),
     ("COMMODITY", "multi_asset_copytrader"),
     ("FOREX", "cta_replicator"),
@@ -58,6 +70,24 @@ def registry_gate_enabled() -> bool:
 
 def whitelist_enforce_enabled() -> bool:
     return _truthy("EMITTER_WHITELIST_ENFORCE", "0")
+
+
+def inverse_ml_sleeve_enabled() -> bool:
+    return _truthy("INVERSE_ML_BTC_15M_ENABLED", "0")
+
+
+def passes_inverse_ml_sleeve_gate(pick: Dict[str, Any]) -> bool:
+    """When sleeve mode is on, block all CRYPTO picks except inverse_ml BTC/ADA."""
+    if not inverse_ml_sleeve_enabled():
+        return True
+    ac = str(pick.get("asset_class") or pick.get("category") or "CRYPTO").upper()
+    if ac != "CRYPTO":
+        return True
+    strat = str(pick.get("strategy") or pick.get("strategy_name") or "").strip()
+    if strat in INVERSE_ML_SLEEVE_STRATEGIES:
+        return True
+    pick["_hf_quality_gate_reason"] = f"inverse_ml_sleeve_block:{strat or '?'}"
+    return False
 
 
 def _pick_pair(pick: Dict[str, Any]) -> Pair:

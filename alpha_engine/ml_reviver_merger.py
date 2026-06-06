@@ -41,6 +41,8 @@ def merge_reviver_picks() -> int:
 
     added = 0
     for p in reviver_picks:
+        p["category"] = "CRYPTO"
+        p["asset_class"] = "CRYPTO"
         k = (p.get("strategy", ""), p.get("symbol", ""))
         if k not in existing_keys:
             existing.append(p)

@@ -936,7 +936,7 @@ def _generate_inverse_pick(strategy_name: str, config: dict) -> Optional[dict]:
         "take_profit": take_profit,
         "stop_loss": stop_loss,
         "confidence": round(config["confidence"], 4),
-        "category": config.get("category", "crypto"),
+        "category": "CRYPTO",
         "asset_class": "CRYPTO",
         "source_system": "ml_strategy_reviver_inverse",
         "timeframe": timeframe,

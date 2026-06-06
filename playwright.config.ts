@@ -77,6 +77,7 @@ export default defineConfig({
     /(?:^|\/)tests\/unified_dashboard_console_network\.spec\.ts$/,
     /(?:^|\/)tests\/unified_dashboard_verify\.spec\.ts$/,
     /(?:^|\/)tests\/ms3_browse_play\.spec\.ts$/,
+    /(?:^|\/)tests\/audit_wording_audit\.spec\.ts$/,
     /(?:^|\/)tests\/audit_dashboard_quality\.spec\.ts$/,
     /(?:^|\/)tests\/audit_dashboard_mobile\.spec\.ts$/,
     /(?:^|\/)tests\/alpha_audit_validation\.spec\.ts$/,

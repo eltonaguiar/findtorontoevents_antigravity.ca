@@ -8478,6 +8478,29 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
             pass
         return False
 
+    # ── INVERSE_ML sleeve mode (INVERSE_ML_BTC_15M_ENABLED=1): CRYPTO-only BTC/ADA ──
+    try:
+        from alpha_engine.emitter_whitelist import passes_inverse_ml_sleeve_gate
+        if not passes_inverse_ml_sleeve_gate(pick):
+            logger.debug(
+                "Pick rejected: inverse_ml_sleeve_gate %s",
+                pick.get("_hf_quality_gate_reason", ""),
+            )
+            try:
+                if _pll_tracer_m110 and _pll_pick_id_m110:
+                    _pll_tracer_m110.log_filter(
+                        _pll_pick_id_m110,
+                        "inverse_ml_sleeve_gate",
+                        str(pick.get("_hf_quality_gate_reason", "blocked")),
+                        rule_id="RULE-INVERSE-ML-SLEEVE",
+                        pick_values={"symbol": pick.get("symbol"), "strategy": strategy},
+                    )
+            except Exception:
+                pass
+            return False
+    except Exception as _inv_sleeve_err:
+        logger.warning("inverse_ml_sleeve_gate import/call failed (fail-open): %s", _inv_sleeve_err)
+
     # ── T2-01 emitter registry gate (pf_registry whitelist + toxic kill, 2026-05-19) ──
     try:
         from alpha_engine.emitter_whitelist import passes_emitter_registry_gate

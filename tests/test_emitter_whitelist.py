@@ -5,9 +5,11 @@ import pytest
 
 from alpha_engine.emitter_whitelist import (
     HARDCODED_TOXIC_PAIRS,
+    INVERSE_ML_SLEEVE_STRATEGIES,
     evaluate_emitter_registry_gate,
     is_toxic_pair,
     passes_emitter_registry_gate,
+    passes_inverse_ml_sleeve_gate,
 )
 
 
@@ -66,3 +68,29 @@ def test_manual_allowlist_seed(monkeypatch):
         "symbol": "EURUSD=X",
     }
     assert passes_emitter_registry_gate(pick) is True
+
+
+def test_inverse_ml_sleeve_off_is_noop(monkeypatch):
+    monkeypatch.delenv("INVERSE_ML_BTC_15M_ENABLED", raising=False)
+    pick = {"asset_class": "CRYPTO", "strategy": "quan_engine", "symbol": "BTCUSDT"}
+    assert passes_inverse_ml_sleeve_gate(pick) is True
+
+
+def test_inverse_ml_sleeve_blocks_non_sleeve_crypto(monkeypatch):
+    monkeypatch.setenv("INVERSE_ML_BTC_15M_ENABLED", "1")
+    pick = {"asset_class": "CRYPTO", "strategy": "quan_engine", "symbol": "BTCUSDT"}
+    assert passes_inverse_ml_sleeve_gate(pick) is False
+    assert "inverse_ml_sleeve_block" in (pick.get("_hf_quality_gate_reason") or "")
+
+
+@pytest.mark.parametrize("strategy", sorted(INVERSE_ML_SLEEVE_STRATEGIES))
+def test_inverse_ml_sleeve_allows_btc_ada(monkeypatch, strategy):
+    monkeypatch.setenv("INVERSE_ML_BTC_15M_ENABLED", "1")
+    pick = {"asset_class": "CRYPTO", "strategy": strategy, "symbol": "BTCUSDT"}
+    assert passes_inverse_ml_sleeve_gate(pick) is True
+
+
+def test_inverse_ml_sleeve_allows_non_crypto(monkeypatch):
+    monkeypatch.setenv("INVERSE_ML_BTC_15M_ENABLED", "1")
+    pick = {"asset_class": "EQUITY", "strategy": "quan_engine", "symbol": "AAPL"}
+    assert passes_inverse_ml_sleeve_gate(pick) is True

@@ -554,12 +554,12 @@
     }
     html += '</div>';
 
-    const host = el('enhancements-host') || document.body;
+    const host = el('enhancements-host') || el('tab-overview') || document.body;
     const existing = el('enh-ml-gatekeeper-ab');
     if (existing) existing.remove();
     const wrapper = document.createElement('div');
     wrapper.innerHTML = html;
-    host.insertBefore(wrapper.firstElementChild, host.firstChild);
+    host.appendChild(wrapper.firstElementChild);
   }
 
   // ── DB Health Cards (async; reads audit_dashboard/data/db_health.json) ──
@@ -729,7 +729,10 @@
   // realized pnl_pct). Answers user's question: "if I bought the top-10
   // ranked scores today / yesterday / 1 month ago, would I have been
   // profitable?" Cron emits via tools/top_n_rank_backtest.py.
+  let _topNRenderGen = 0;
+
   async function renderTopNRankBacktest() {
+    const gen = ++_topNRenderGen;
     let payload;
     try {
       const resp = await fetch('data/top_n_rank_backtest.json', {cache: 'no-cache'});
@@ -739,6 +742,7 @@
       console.warn('[Enhancements] top_n_rank_backtest.json fetch failed:', e);
       return;
     }
+    if (gen !== _topNRenderGen) return;
     const windows = payload.windows || {};
     const detail = payload.per_day_detail || {};
     function pnlColor(v) {
@@ -841,13 +845,14 @@
             '</div>';
     html += '</div>';
 
-    const host = el('enhancements-host') || document.querySelector('.tab-content[data-tab="overview"]') || document.body;
+    const host = el('enhancements-host') || el('tab-overview') || document.body;
     const existing = el('enh-top-n-rank-backtest');
     if (existing) existing.remove();
     const wrapper = document.createElement('div');
     wrapper.innerHTML = html;
     const node = wrapper.firstElementChild;
-    host.insertBefore(node, host.firstChild);
+    if (gen !== _topNRenderGen) return;
+    host.appendChild(node);
   }
 
   // ── Commodity / Futures friendly-name tooltips ───────────────
@@ -1062,14 +1067,17 @@
     setTimeout(initEnhancements, 1000);
   }
 
-  // Also re-run when data refreshes (if the dashboard triggers a custom event)
+  // Re-run once after external JSON lands (debounced — template fires a single event)
+  let _enhRefreshTimer = null;
   document.addEventListener('dashboard-data-loaded', function () {
-    window._enhInitDone = false;
-    // Clean up old sections
-    ['enh-system-trends', 'enh-strategy-consensus', 'enh-time-window-leaderboard', 'enh-db-health', 'enh-top-n-rank-backtest', 'enh-ml-gatekeeper-ab'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.remove();
-    });
-    initEnhancements();
+    clearTimeout(_enhRefreshTimer);
+    _enhRefreshTimer = setTimeout(function () {
+      window._enhInitDone = false;
+      ['enh-system-trends', 'enh-strategy-consensus', 'enh-time-window-leaderboard', 'enh-db-health', 'enh-top-n-rank-backtest', 'enh-ml-gatekeeper-ab'].forEach(id => {
+        const node = document.getElementById(id);
+        if (node) node.remove();
+      });
+      initEnhancements();
+    }, 250);
   });
 })();

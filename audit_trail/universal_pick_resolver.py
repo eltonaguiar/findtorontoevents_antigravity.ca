@@ -247,6 +247,10 @@ SYSTEM_SOURCES = [
     # past-max-hold OPEN backlog closes out. Mirrors the tradingagents/stocksunify2
     # retrofit pattern above.
     ("forex_futures_orphan",            "audit_dashboard/data/forex_futures_picks.json"),
+    # ── ML Strategy Reviver inverse sleeve (2026-06-06) ──
+    # Registered in JSON_PICK_SOURCES but was missing here — inverse_ml picks
+    # never got TP/SL/TIME_EXIT resolution on the standalone reviver file.
+    ("ml_strategy_reviver_inverse",     "alpha_engine/data/ml_reviver_picks.json"),
 ]
 
 

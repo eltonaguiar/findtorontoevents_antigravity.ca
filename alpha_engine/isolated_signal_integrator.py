@@ -423,8 +423,8 @@ def _normalize_ml_reviver(pick: dict) -> dict | None:
     """Normalize (passthrough) an ml_reviver pick."""
     # Ensure standard fields exist
     pick["source_system"] = pick.get("source_system", "ml_reviver")
-    pick["category"] = pick.get("category", "crypto")
-    pick["asset_class"] = pick.get("asset_class", "CRYPTO")
+    pick["category"] = "CRYPTO"
+    pick["asset_class"] = "CRYPTO"
     # Convert direction/signal_type if needed
     if "direction" in pick:
         pick["direction"] = _normalize_direction(pick["direction"])

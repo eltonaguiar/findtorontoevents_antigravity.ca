@@ -1007,9 +1007,13 @@ a:hover { text-decoration: underline; }
               var s0 = sleeves[0];
               sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>';
             }
-            span.innerHTML = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
+            if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
+            var liveLine = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
               '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + gateBadges + ' ' +
               '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' policy-clean resolved)</span>' + sleeveTxt;
+            span.innerHTML = liveLine +
+              '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
+              '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
           });
           var asof = document.getElementById('major-goal-asof');
           if (asof) asof.innerHTML = 'Live &mdash; <code>money_ready_verdict.json</code> policy-clean closed-pick cohort, generated ' +
@@ -1030,6 +1034,7 @@ a:hover { text-decoration: underline; }
       if (pf == null && wr == null && n == null) return;
       var t = tier(pf, wr, n);
       var labelColor = t.color;
+      if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
       var html = '<strong style="color:' + labelColor + '">' + key + '</strong> &mdash; ' +
         t.label + ' (PF ' + fmt(pf, 2) + ', WR ' + fmt(wr, 1) + '%, n=' + (n != null ? n : '—') + ').';
       var cRow = (conc && conc[key]) || null;
@@ -1042,7 +1047,9 @@ a:hover { text-decoration: underline; }
                 badgeColor + ';border:1px solid ' + badgeColor + ';cursor:help" title="' +
                 String(label).replace(/"/g, '&quot;') + '">' + cRow.tier + ' single-symbol</span>';
       }
-      span.innerHTML = html;
+      span.innerHTML = html +
+        '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
+        '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
     });
     var asof = document.getElementById('major-goal-asof');
     var ts = window.DASHBOARD_DATA && (window.DASHBOARD_DATA.generated_at || (window.DASHBOARD_DATA.meta && window.DASHBOARD_DATA.meta.generated_at));
@@ -1624,7 +1631,7 @@ a:hover { text-decoration: underline; }
   </div>
 </div>
 
-<div id="tab-overview" class="tab-content active"></div>
+<div id="tab-overview" class="tab-content active"><div id="enhancements-host"></div></div>
 <!-- HIGH CONVICTION explainer: shown when the HC button is clicked. Explains the
      per-asset-class validated-edge filters applied and which classes still need
      more data before they can be traded with conviction. See hcEdgeManifest() in
@@ -3127,8 +3134,6 @@ async function loadExternalDashboardDataIfFresher() {
     if (!_embedded || !_embedded.generated_at || _ext.generated_at > _embedded.generated_at || _extActive > _embActive) {
       window.DASHBOARD_DATA = _ext;
       D = _ext;
-      // Notify late-mounted renderers (e.g., walkforward by_class card) that data is now available.
-      try { document.dispatchEvent(new Event('dashboard-data-loaded')); } catch(_) {}
         // Rebuild verified edge index with new closed-pick data
         if (typeof buildVerifiedEdgeIndex === "function") {
           try { buildVerifiedEdgeIndex(); } catch(e) { console.warn("[Audit] buildVerifiedEdgeIndex rebuild failed:", e); }
@@ -17745,7 +17750,8 @@ async function fetchBinanceKlinesWithFailover(symbol, interval, limit) {
     const endAt = Math.floor(Date.now() / 1000);
     const startAt = endAt - (limit + 5) * intervalSec;
     const kuUrl = `https://api.kucoin.com/api/v1/market/candles?type=${kuType}&symbol=${base}-USDT&startAt=${startAt}&endAt=${endAt}`;
-    const resp = await fetch(kuUrl, {signal: AbortSignal.timeout(5000)});
+    // KuCoin blocks browser CORS — route through allorigins like the Binance fallback above.
+    const resp = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(kuUrl), {signal: AbortSignal.timeout(5000)});
     if (resp.ok) {
       const json = await resp.json();
       const entries = (json && json.data) || [];

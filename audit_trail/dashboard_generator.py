@@ -4210,6 +4210,14 @@ JSON_PICK_SOURCES.append((
     None,  # closed outcomes settle via universal resolver; validity_hours=1 → EXPIRED in-memory
 ))
 
+# ML Strategy Reviver inverse sleeve (BTC/ADA 15m). Direct path so picks reach
+# trading_picks even if isolated_signal_integrator merge is skipped.
+JSON_PICK_SOURCES.append((
+    "ml_strategy_reviver_inverse",
+    "alpha_engine/data/ml_reviver_picks.json",
+    None,
+))
+
 PORTFOLIO_SOURCES = [
     ("paper_trading", "paper_trading/data/portfolios.json"),
     ("kimi_algorithms", "KIMI_RISEOFTHECLAW/data/portfolio_state.json"),

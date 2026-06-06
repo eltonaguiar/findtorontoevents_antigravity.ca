@@ -449,6 +449,11 @@ def pick_to_row(pick):
                 )
                 raw_cat = detected
 
+    # Canonical CRYPTO bucket for pf_registry / forward n trackers (2026-06-06).
+    _ac_upper = str(pick.get("asset_class") or "").upper().strip()
+    if _ac_upper == "CRYPTO" or raw_cat == "crypto":
+        raw_cat = "CRYPTO"
+
     return {
         "id": pick.get("id", "")[:100],
         "symbol": (pick.get("symbol") or "")[:20],
@@ -667,10 +672,18 @@ def sync(dry_run=False):
         # before DB upsert. The 'FOREX_HIGH_CONVICTION' carve-out (cta_replicator only, PF
         # 2.51 n=97 per commit e9dcfdca8) is preserved by the explicit category match. See
         # reports/2026-05-25_forex_zero_allocate_filter_DRAFT.md.
-        _raw_cat = str(pick.get("category") or "").strip().upper()
+        _raw_cat = str(pick.get("category") or pick.get("asset_class") or "").strip().upper()
         if _raw_cat == "FOREX" and _ae_config.FOREX_HARD_DISABLE:
             _forex_skipped = locals().get("_forex_skipped", 0) + 1
             continue
+        # INVERSE_ML sleeve-only CRYPTO mode: suppress non-sleeve crypto at DB funnel.
+        try:
+            from alpha_engine.emitter_whitelist import passes_inverse_ml_sleeve_gate
+            if not passes_inverse_ml_sleeve_gate(pick):
+                _sleeve_skipped = locals().get("_sleeve_skipped", 0) + 1
+                continue
+        except Exception:
+            pass
         if os.environ.get("CLEAN_INGEST_V2_ENFORCE", "0") in ("1", "true", "TRUE", "yes"):
             try:
                 from tools.clean_ingest_v2 import validate_pick_row
@@ -697,6 +710,12 @@ def sync(dry_run=False):
     if _forex_skipped:
         log_info(f"[FOREX_ZERO_ALLOCATE] suppressed {_forex_skipped} FOREX picks "
                  f"(FOREX_HIGH_CONVICTION preserved per EDGE_CRITERIA_ACTION_PLAN_2026-05-24.md)")
+    _sleeve_skipped = locals().get("_sleeve_skipped", 0)
+    if _sleeve_skipped:
+        log_info(
+            f"[INVERSE_ML_SLEEVE] suppressed {_sleeve_skipped} non-sleeve CRYPTO picks "
+            f"(set INVERSE_ML_BTC_15M_ENABLED=0 to disable sleeve-only mode)"
+        )
     _clean_skipped = locals().get("_clean_skipped", 0)
     if _clean_skipped:
         log_info(f"[CLEAN_INGEST_V2] suppressed {_clean_skipped} picks (set CLEAN_INGEST_V2_ENFORCE=0 to disable)")
