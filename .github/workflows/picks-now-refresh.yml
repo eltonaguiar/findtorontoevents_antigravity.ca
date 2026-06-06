@@ -29,19 +29,18 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip -q
-          python3 -m pip install yfinance pandas numpy pymysql -q
+          python3 -m pip install yfinance pandas numpy pymysql requests -q
 
       - name: Generate picks
         env:
-          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-        run: |
-          python3 tools/picks_now_professional.py 2>&1
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: python3 tools/picks_now_professional.py
 
       - name: Save picks to MySQL tracking table
         env:
-          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-        run: |
-          python3 tools/save_picks_to_db.py 2>&1
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/save_picks_to_db.py
 
       - name: Commit updated picks JSON
         run: |
@@ -60,30 +59,4 @@ jobs:
         env:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
-        run: |
-          python3 -c "
-import ftplib, ssl, os
-host = 'ftps2.50webs.com'
-user = os.environ.get('FTP_USER', '')
-pw = os.environ.get('FTP_PASS', '')
-if not user or not pw:
-    print('FTP creds not set, skipping deploy')
-    exit(0)
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
-ftp = ftplib.FTP_TLS(host, user, pw, context=ctx)
-ftp.prot_p()
-# picks_now.json
-ftp.cwd('/findtorontoevents.ca/audit/data')
-with open('audit_dashboard/data/picks_now.json', 'rb') as f:
-    ftp.storbinary('STOR picks_now.json', f)
-    print('picks_now.json deployed')
-# picks-now.html
-ftp.cwd('/findtorontoevents.ca/audit')
-with open('audit_dashboard/picks-now.html', 'rb') as f:
-    ftp.storbinary('STOR picks-now.html', f)
-    print('picks-now.html deployed')
-ftp.quit()
-print('FTP deploy complete')
-"
+        run: python3 tools/ftp_deploy_picks_now.py
