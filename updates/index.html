@@ -135,6 +135,22 @@
       </div>
     </div>
 
+    <!-- Update: 2026-06-05 — Tier-2 PROVEN honesty + dynamic targets (Goal #1) -->
+    <div class="update-entry" style="--dot-color: #a78bfa;" data-tags="audit,tier2,hero,generator,goal-1,honest,recency" data-category="trading" data-types="fix,analysis,ui">
+      <div class="update-date" style="line-height:1.5">2026-06-05 — <strong style="color:#a78bfa;">Tier-2 RESEARCH CANDIDATES honesty + dynamic targets (per plan §3 + subagent)</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;"><strong>Goal #1 priority:</strong> honest edge claims, no overpromotion on <code>/audit</code>. 0/6-9 classes pass strict Tier-2 (money_ready_verdict + pf_registry policy-clean net + verified_edge_status confirm; recency panels show e.g. CRYPTO 48h 0 closed).</p>
+        <ul>
+          <li><strong>1) template.html hero header rewrite</strong> (lines ~1283-1298): from "TIER-2 PROVEN Buried high-edge..." → neutral "TIER-2 RESEARCH CANDIDATES" framing. Added "0 clear strict Tier-2" emphasis (meta already computes strict count), links to <code>CHARTER &sect;2</code> + <code>MASTERPLAN_JUNE52026_GROK.MD §3</code> + <code>reports/</code>. Comment block updated with plan refs. Kept <code>#tier2-hero-flagged</code> + badges intact.</li>
+          <li><strong>2) dashboard_generator.py dynamic targets</strong> (<code>_TIER2_PROMOTION_TARGETS</code> 11491+, <code>_compute_tier2_proven_strategies</code> 11798+): now derives <code>targets_to_use</code> at runtime by scanning <code>systems[]</code> for those where <code>_classify_tier</code> returns "Tier 2", drops <code>claude_gainer*</code> until clean (per disputed conc in verified + pick_funnel), cross-refs trust hierarchy from plan §3 (money_ready_verdict/pf_ok, verified_edge, recency_ok from pick_summary + verdict). <code>promotion_targets</code> in payload is now the live list (not fixed 4). Updated callsite + error fallback + module comment. <code>_classify_tier</code> (CHARTER thresholds) untouched.</li>
+          <li><strong>3) recency/14d note on cards (feasible)</strong>: added <code>recency_note</code> to every card dict in compute; rendered in <code>renderTier2Heroes()</code> card HTML (small italic box with title="Per plan §3 + pick_summary..."). JS comments + header updated. Honest badges (<code>is_strict_tier2</code>, thin, stale, flagged_dropouts) + meta "X/Y clear strict" + <code>_tier2BadgeStyle</code> all preserved.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Files: <code>audit_dashboard/template.html</code>, <code>audit_trail/dashboard_generator.py</code>. Data: <code>audit_dashboard/data/{money_ready_verdict.json,verified_edge_status.json,pick_summary_stats_{14d,48h}.json}</code>. Plan: MASTERPLAN §3 (trust: 1.money_ready+pf_registry 2.verified 3.pilots...); PERFORMANCE_CHARTER §2. Subagent findings incorporated (0 clear strict, recency collapse, concentration).</p>
+        <p style="margin:4px 0 0;color:#f59e0b;font-weight:600;">⚠️ NOTE FOR DEEP-DIVE SUBAGENT (spawn per CLAUDE.md Goal#1 deep-dive process when class PF&lt;1 or sub-30% real WR or MDD issues): Investigate mega sign-flip (see recent unblock of mega_mutation after sign_coherence_check false-positive on SHORTs; 0 flips now per updates), signal_validation collapse (why not passing strict in current systems[] despite prior goldmine?), claude_gainer_st concentration (91.7% disputed), batch artifacts in 14d panels, and why 0/6 classes post M-067. Produce <code>reports/deep_dive_&lt;class&gt;_*.md</code> + 30/60/90 rescue + risk register. Repro: <code>python3 -c "import json; d=json.load(open('audit_dashboard/data/money_ready_verdict.json')); print(d.get('generated_at')); [print(k,v.get('n_resolved'),v.get('wr'),v.get('pf'),v.get('verdict')) for k,v in d.get('classes',{}).items()]</code> + <code>python3 tools/strategy_tier_tracker.py</code>. Cross with <code>reports/edge_hunt_*_2026-06*.md</code> + <code>reports/deep_dive_*.md</code>.</p>
+        <p style="margin:4px 0 0;color:#999;">Per CLAUDE.md: edit template NOT index.html; read updates/index full before edit (done); entry BEFORE auto-marker (newest-first); post-merge run <code>python3 tools/deploy_audit_files.py --only updates</code> (no shell on 50webs). py_compile only for checks (no local generators).</p>
+      </div>
+    </div>
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
