@@ -1247,11 +1247,30 @@ def scrape_cot_positioning(data_cache):
 def scan_stocks_rsi2_pullback(data_cache):
     """RSI(2) pullback in uptrend on top stocks.
 
-    Breadth throttle (added 2026-06-06): when >10 stocks in the universe
-    simultaneously have RSI(2)<10, the entire universe is in a downtrend
-    (not a pullback). Empirical basis: May 7-12 n=5-22 triggers → WR=75-84%;
-    May 21-25 n=28-46 triggers → WR=14-21%. Skip all if breadth_oversold>10.
+    Breadth throttle (updated 2026-06-06): when >5 stocks in the universe
+    simultaneously have RSI(2)<10 AND are above their 200d SMA, the market is
+    in a broad downswing (not an isolated pullback). Empirical basis: May 7-12
+    n=4-6 unique symbol triggers → WR=75-84%; May 21-25 n=6-8 unique symbol
+    triggers → WR=14-25%. The prior threshold of >10 was calibrated on raw
+    duplicated DB rows (28-46 rows = 4-8 unique symbols after dedup), so it
+    never fired during the worst crash period. Lowered to >5 to capture the
+    real unique-symbol count. Skip all if breadth_oversold>5.
+
+    Sector blocklist (added 2026-06-06): GOOGL/WMT/AMZN/UNH/QCOM/PEP
+    showed consistent 0-17% WR in per-asset audit, dragging overall WR from
+    ~65% to 57%. Excluded from RSI-2 picks until n>=30 post-fix data shows
+    recovery. These remain in the universe for breadth counting.
+
+    RSI(14) > 30 filter (added 2026-06-06): RSI(2) can dip below 10 during
+    a prolonged downtrend even while a stock is technically above its 200d SMA
+    (200d SMA lags by design). RSI(14) < 30 = stocks in long-term distress,
+    not mean-reversion candidates. Require RSI(14) >= 30 to confirm the
+    pullback is against a healthy trend, not a falling knife.
     """
+    # Symbols with persistent poor WR (0-17%) in per-asset audit 2026-06-06.
+    # Excluded from pick emission but still counted for breadth throttle.
+    RSI2_SECTOR_BLOCKLIST = {"GOOGL", "WMT", "AMZN", "UNH", "QCOM", "PEP"}
+
     picks = []
 
     # Pass 1: compute RSI(2) for all symbols, count breadth
@@ -1269,8 +1288,11 @@ def scan_stocks_rsi2_pullback(data_cache):
             breadth_oversold += 1
         symbol_data.append((symbol, ohlcv, rsi2, sma_200, current))
 
-    # Breadth throttle: >10 simultaneous triggers = market downtrend, not pullback
-    if breadth_oversold > 10:
+    # Breadth throttle: >5 simultaneous triggers = market downswing, not pullback.
+    # Threshold lowered from >10 to >5 (2026-06-06): the >10 value was based on
+    # raw duplicated DB rows, not unique symbols. Unique symbol count during the
+    # May 21-25 crash period was 4-8, which never crossed >10.
+    if breadth_oversold > 5:
         return picks
 
     for symbol, ohlcv, rsi2, sma_200, current in symbol_data:
@@ -1282,7 +1304,12 @@ def scan_stocks_rsi2_pullback(data_cache):
         atr_val = _compute_atr(highs, lows, closes, 14)
 
         # Only BUY pullbacks in stocks above 200 SMA (uptrend context)
-        if rsi2 < 10 and current > sma_200:
+        # RSI(14) >= 30 guards against falling-knife entries in long downtrends
+        # Sector blocklist excludes persistent underperformers (0-17% WR in audit)
+        if (rsi2 < 10
+                and current > sma_200
+                and rsi14 >= 30
+                and symbol not in RSI2_SECTOR_BLOCKLIST):
             # TP/SL with equity-appropriate percentage caps (5% TP, 3% SL)
             tp_dist = min(2.0 * atr_val, current * 0.05)
             sl_dist = min(1.5 * atr_val, current * 0.03)
@@ -1294,9 +1321,10 @@ def scan_stocks_rsi2_pullback(data_cache):
                 "stocks_rsi2_pullback", symbol, "stocks", "EQUITY",
                 "LONG", current, tp, sl, conf,
                 f"RSI(2)={rsi2:.1f} pullback in uptrend (above 200d SMA={sma_200:.2f}). "
-                f"Connors RSI-2 equity variant.",
+                f"RSI(14)={rsi14:.1f}>=30 (healthy trend). Connors RSI-2 equity variant.",
                 extra={"rsi2": round(rsi2, 1), "rsi14": round(rsi14, 1),
-                       "sma_200": round(sma_200, 2)}
+                       "sma_200": round(sma_200, 2),
+                       "breadth_oversold": breadth_oversold}
             ))
 
     return picks
@@ -2305,10 +2333,14 @@ def scrape_openinsider_congress(data_cache):
         # Smart money accumulation criteria:
         # 1. Price above 200d SMA (uptrend)
         # 2. RSI(14) between 40-60 (healthy pullback, not overbought)
-        # 3. Volume > 1.3x 20-day average (unusual activity)
+        # 3. Volume > 1.5x 20-day average (raised from 1.3x, 2026-06-06:
+        #    dedup audit found ~10x write-duplication making apparent 100% WR
+        #    an artifact; tighter vol filter reduces marginal/noise signals
+        #    until the DB insertion dedup fix lands; true deduped n=24 WR=54%
+        #    is sub-T2 so we are NOT promoting this strategy yet)
         in_uptrend = current > sma200
         healthy_pullback = 40 <= rsi14 <= 60
-        high_volume = vol_ratio > 1.3
+        high_volume = vol_ratio > 1.5  # raised from 1.3x to reduce noise
 
         if not (in_uptrend and healthy_pullback and high_volume):
             continue
