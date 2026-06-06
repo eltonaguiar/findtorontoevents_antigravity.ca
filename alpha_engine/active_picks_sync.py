@@ -119,7 +119,7 @@ def fetch_active_picks(cur, asset_class: str, max_rows: int = 5000):
                signal_timestamp, recorded_at, strategy
         FROM at_raw_picks
         WHERE asset_class = %s
-          AND status IN ('OPEN', 'ACTIVE')
+          AND (status IN ('OPEN', 'ACTIVE') OR status IS NULL)
           AND entry_price IS NOT NULL
           AND entry_price > 0
         ORDER BY signal_timestamp DESC
