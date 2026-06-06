@@ -34,16 +34,13 @@ jobs:
       # finds picks with >=2-model consensus on same (symbol, direction), and
       # promotes them into the live swarm_picks.json store. Idempotent.
       - name: Promote tournament consensus picks
+        continue-on-error: true
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "::group::Tournament consensus promotion"
           python tools/swarm/promote_tournament_picks.py
-          _promo_rc=$?
           echo "::endgroup::"
-          if [ $_promo_rc -ne 0 ]; then
-            echo "::warning title=swarm_promotion::tournament promotion returned $_promo_rc (non-fatal — resolver still runs below)"
-          fi
 
       - name: Resolve open swarm picks
         run: python tools/swarm/outcome_resolver_swarm.py

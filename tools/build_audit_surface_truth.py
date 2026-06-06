@@ -213,6 +213,30 @@ def build_report() -> dict:
             )
 
     mysql = _mysql_surfaces()
+    lb_totals = lb.get("totals") or {}
+    lb_picks = int(lb_totals.get("picks") or 0)
+    lb_resolved = int(lb_totals.get("resolved") or 0)
+    lb_newest = (lb.get("pick_date_range") or {}).get("newest")
+    lb_age_d = 999.0
+    if lb_newest:
+        try:
+            ts = datetime.fromisoformat(str(lb_newest).replace("Z", "+00:00"))
+            lb_age_d = (datetime.now(timezone.utc) - ts).total_seconds() / 86400
+        except (TypeError, ValueError):
+            pass
+    if lb_picks < 50 or lb_age_d > 14:
+        lb_banner = (
+            "Frozen/thin book — not Goal #1 sizing. "
+            f"n={lb_resolved} vs Tier-2 n≥100."
+        )
+    elif lb_resolved < TIER2["min_n"]:
+        lb_banner = (
+            f"Research only — ingest active ({lb_picks} picks, {lb_resolved} resolved). "
+            "Tier-2 n≥100 not met; do not size on leaderboard WR."
+        )
+    else:
+        lb_banner = "ILLUSTRATIVE_ONLY — verify policy-clean ledger before sizing."
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "tier2_charter": TIER2,
@@ -233,15 +257,12 @@ def build_report() -> dict:
         "forward_track": sorted(forward_candidates, key=lambda x: -x["n_closed"])[:15],
         "ai_leaderboard": {
             "as_of": lb.get("as_of"),
-            "picks": (lb.get("totals") or {}).get("picks"),
-            "resolved": (lb.get("totals") or {}).get("resolved"),
-            "engines": (lb.get("totals") or {}).get("engines"),
+            "picks": lb_picks,
+            "resolved": lb_resolved,
+            "engines": lb_totals.get("engines"),
             "overall_wr": (lb.get("engines") or [{}])[0].get("overall", {}).get("wr") if lb.get("engines") else None,
             "sizing_grade": "ILLUSTRATIVE_ONLY",
-            "banner": (
-                "Frozen/thin book — not Goal #1 sizing. "
-                f"n={(lb.get('totals') or {}).get('resolved', 0)} vs Tier-2 n≥100."
-            ),
+            "banner": lb_banner,
         },
         **mysql,
         "disputed_surfaces": [

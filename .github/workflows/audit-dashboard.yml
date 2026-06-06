@@ -1002,6 +1002,7 @@ jobs:
 
               SITE_ROOT = "findtorontoevents.ca"
               label = "findtorontoevents.ca"
+              # 2026-06-06: also deploy data/ai_leaderboard/*.json (subdir not in *.json glob)
               # 2026-05-19: timeout 30->300s. The 17-22MB dashboard_data.json
               # upload exceeded the 30s socket timeout -> socket.timeout caught
               # by the per-file except -> big file silently never uploaded ->
@@ -1051,6 +1052,16 @@ jobs:
                               print(f"::warning title=audit-deploy::[{label}] CRITICAL file {df.name} failed to upload: {e}")
                           else:
                               print(f"  [{label}] Failed {df.name}: {e}")
+
+              # ai_leaderboard subdirectory (not matched by data/*.json glob)
+              lb_dir = data_dir / "ai_leaderboard"
+              if lb_dir.exists():
+                  ensure_dir(ftp, "data/ai_leaderboard")
+                  for jf in lb_dir.glob("*.json"):
+                      try:
+                          ftp_upload(ftp, str(jf), f"/{SITE_ROOT}/audit/data/ai_leaderboard", jf.name, label)
+                      except Exception as e:
+                          print(f"  [{label}] Failed ai_leaderboard/{jf.name}: {e}")
 
               # Extra data from audit_trail
               for src_path, name in [
@@ -1164,6 +1175,16 @@ jobs:
                           else:
                               print(f"  [{label}] Failed {df.name}: {e}")
 
+              # ai_leaderboard subdirectory (not matched by data/*.json glob)
+              lb_dir = data_dir / "ai_leaderboard"
+              if lb_dir.exists():
+                  ensure_dir(ftp, "data/ai_leaderboard")
+                  for jf in lb_dir.glob("*.json"):
+                      try:
+                          ftp_upload(ftp, str(jf), "/audit/data/ai_leaderboard", jf.name, label)
+                      except Exception as e:
+                          print(f"  [{label}] Failed ai_leaderboard/{jf.name}: {e}")
+
               # Extra data from audit_trail
               for src_path, name in [
                   ("audit_trail/data/dashboard_payload.json", "dashboard_payload.json"),
@@ -1221,6 +1242,7 @@ jobs:
 
               SITE_ROOT = "tdotevent.ca"
               label = "tdotevent.ca"
+              # 2026-06-06: also deploy data/ai_leaderboard/*.json (subdir not in *.json glob)
               ftp = ftplib.FTP(host, timeout=300)
               ftp.login(user, pwd)
               ftp.cwd(SITE_ROOT)
@@ -1268,6 +1290,16 @@ jobs:
                               print(f"::warning title=audit-deploy::[{label}] CRITICAL file {df.name} failed to upload: {e}")
                           else:
                               print(f"  [{label}] Failed {df.name}: {e}")
+
+              # ai_leaderboard subdirectory (not matched by data/*.json glob)
+              lb_dir = data_dir / "ai_leaderboard"
+              if lb_dir.exists():
+                  ensure_dir(ftp, "data/ai_leaderboard")
+                  for jf in lb_dir.glob("*.json"):
+                      try:
+                          ftp_upload(ftp, str(jf), f"/{SITE_ROOT}/audit/data/ai_leaderboard", jf.name, label)
+                      except Exception as e:
+                          print(f"  [{label}] Failed ai_leaderboard/{jf.name}: {e}")
 
               # Extra data from audit_trail
               for src_path, name in [

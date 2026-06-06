@@ -100,7 +100,7 @@ def generate_blueprint():
 
     # ── System-level analysis ──
     sys_with_data = [s for s in crypto_systems if (s.get("closed_picks", 0) or 0) > 0 or (s.get("active_picks", 0) or 0) > 0]
-    sys_with_data.sort(key=lambda s: s.get("total_pnl_pct", 0), reverse=True)
+    sys_with_data.sort(key=lambda s: s.get("total_pnl_pct") or 0, reverse=True)
 
     # ── Strategy-level from active picks ──
     strat_data = defaultdict(lambda: {
