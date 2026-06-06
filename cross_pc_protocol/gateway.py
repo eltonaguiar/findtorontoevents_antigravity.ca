@@ -286,34 +286,38 @@ class ProtocolGateway:
     async def _ws_handler(self, websocket: Any) -> None:
         peer_id = ""
         try:
-            async for raw in websocket:
-                try:
-                    payload = json.loads(raw)
-                except json.JSONDecodeError:
-                    continue
-                if payload.get("topic") == "peer.register":
-                    peer_id = str(payload.get("from") or "").strip()
-                    if not peer_id:
+            try:
+                async for raw in websocket:
+                    try:
+                        payload = json.loads(raw)
+                    except json.JSONDecodeError:
                         continue
-                    with self._sessions_lock:
-                        self._sessions[peer_id] = PeerSession(
-                            peer_id=peer_id,
-                            ws=websocket,
-                            connected_ts_utc=_utc_now_iso(),
-                            last_seen_ts_utc=_utc_now_iso(),
+                    if payload.get("topic") == "peer.register":
+                        peer_id = str(payload.get("from") or "").strip()
+                        if not peer_id:
+                            continue
+                        with self._sessions_lock:
+                            self._sessions[peer_id] = PeerSession(
+                                peer_id=peer_id,
+                                ws=websocket,
+                                connected_ts_utc=_utc_now_iso(),
+                                last_seen_ts_utc=_utc_now_iso(),
+                            )
+                        await websocket.send(
+                            json.dumps(
+                                {
+                                    "ok": True,
+                                    "status": "registered",
+                                    "peer_id": peer_id,
+                                    "ts_utc": _utc_now_iso(),
+                                }
+                            )
                         )
-                    await websocket.send(
-                        json.dumps(
-                            {
-                                "ok": True,
-                                "status": "registered",
-                                "peer_id": peer_id,
-                                "ts_utc": _utc_now_iso(),
-                            }
-                        )
-                    )
-                    continue
-                await self.process_inbound(payload, transport="ws")
+                        continue
+                    await self.process_inbound(payload, transport="ws")
+            except Exception:
+                # Client sockets can disappear mid-frame; treat disconnects as non-fatal.
+                pass
         finally:
             if peer_id:
                 with self._sessions_lock:

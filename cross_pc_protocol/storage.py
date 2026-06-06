@@ -82,10 +82,14 @@ class EventStore:
         out: List[Dict[str, Any]] = []
         for row in self._iter_events():
             # Filter to broadcast-type events only
+            if not isinstance(row, dict):
+                continue
             status = row.get("status", "")
             if status not in ("broadcasted", "accepted"):
                 continue
             env = row.get("envelope") or {}
+            if not isinstance(env, dict):
+                continue
             # Must be a broadcast (to="" or to="all")
             target = str(env.get("to") or "").strip().lower()
             if target not in ("", "all"):
