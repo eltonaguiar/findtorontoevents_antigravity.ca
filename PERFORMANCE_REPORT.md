@@ -1,6 +1,6 @@
 # Autonomous Trading Bot - Performance Report
 
-**Last Updated:** 2026-06-06 00:26:16 UTC
+**Last Updated:** 2026-06-06 05:15:56 UTC
 
 ## Portfolio Summary
 
@@ -21,9 +21,9 @@
 
 | Symbol | Direction | Entry Price | Stop Loss | Take Profit | Strategy |
 |--------|-----------|-------------|-----------|-------------|----------|
-| SOL-USD | LONG | $64.27 | $62.98 | $68.13 | MeanReversion |
-| ADA-USD | LONG | $0.16 | $0.16 | $0.17 | MeanReversion |
-| DOT-USD | LONG | $0.95 | $0.93 | $1.01 | MeanReversion |
+| BTC-USD | LONG | $60,021.07 | $58,820.65 | $63,622.33 | MeanReversion |
+| ETH-USD | LONG | $1,522.18 | $1,491.74 | $1,613.51 | MeanReversion |
+| SOL-USD | LONG | $60.85 | $59.63 | $64.50 | MeanReversion |
 
 ---
 
