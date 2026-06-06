@@ -1,21 +1,76 @@
 {
   "metadata": {
-    "timestamp": "2026-06-06T07:17:25.333590+00:00",
+    "timestamp": "2026-06-06T10:00:48.400544+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 2,
+    "mutations_triggered": 2,
+    "mutations_silent": 3,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_rapid_fire_mutations"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "rapid_trend_only_mut",
+      "symbol": "SUIUSDT",
+      "signal_type": "SELL",
+      "direction": "SELL",
+      "entry_price": 0.7017,
+      "take_profit": 0.662674,
+      "stop_loss": 0.730969,
+      "confidence": 0.7188,
+      "risk_reward": 1.33,
+      "reason": "RapidFire trend-only: SELL with 200-EMA trend, price below EMA200=$0.8250 (14.94% distance) \u2014 no counter-trend trades",
+      "timestamp": "2026-06-06T10:00:48.383782+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "trend_filter",
+      "ema_200": 0.824957,
+      "trend_distance": 0.1494,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "rapid_rsi_filter_mut",
+      "symbol": "SUIUSDT",
+      "signal_type": "SELL",
+      "direction": "SELL",
+      "entry_price": 0.7017,
+      "take_profit": 0.662674,
+      "stop_loss": 0.730969,
+      "confidence": 0.4861,
+      "risk_reward": 1.33,
+      "reason": "RapidFire RSI-filtered: SELL, RSI=46.9 (>40 room to fall) \u2014 not chasing extremes",
+      "timestamp": "2026-06-06T10:00:48.398656+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "rsi_filter",
+      "rsi_14": 46.9,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "rapid_trend_only_mut",
+      "parent": "rapid_fire",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "rapid_rsi_filter_mut",
+      "parent": "rapid_fire",
+      "mutation": "rsi_filter",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "rapid_trend_only_mut",
     "rapid_momentum_filter_mut",
     "rapid_volume_gate_mut",
-    "rapid_top10_only_mut",
-    "rapid_rsi_filter_mut"
+    "rapid_top10_only_mut"
   ]
 }
