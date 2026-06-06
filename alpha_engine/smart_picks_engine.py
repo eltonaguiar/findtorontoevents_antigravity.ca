@@ -306,6 +306,7 @@ BANNED_SYSTEMS = {
 CRYPTO_PROVEN_STRATEGIES = {
     "st_fear_greed_contrarian",
     "claude_ml_moderate_mut",
+    "battleground_ml_relaxed_mut",   # 2026-06-06: n=31 WR=71% PF=4.35 live (workflow audit)
     "vwap_deviation_reversion_eth_v1",
     "macd_rsi_m048",
     "atr_percentile_gate",
