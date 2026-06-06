@@ -202,21 +202,48 @@ def _fetch_yfinance_prices(symbols: list[str]) -> dict[str, float]:
     """Fetch prices for non-Binance symbols using yfinance.
 
     Returns dict of {symbol: price}.
+
+    For =X (forex) and =F (commodity futures) symbols, the dedicated failover
+    modules are tried first — they use stdlib urllib only and work on GHA runners
+    where yfinance fails with 401.
     """
     if not symbols:
         return {}
 
     price_map = {}
+
+    # ── Try dedicated failover chains for forex and commodity first ──
+    try:
+        from alpha_engine.forex_price_failover import fetch_forex_rate
+        from alpha_engine.commodity_price_failover import fetch_commodity_price
+        _failover_available = True
+    except ImportError:
+        _failover_available = False
+
+    if _failover_available:
+        for sym in list(symbols):
+            if "=X" in sym.upper():
+                result = fetch_forex_rate(sym)
+                if result and result.get("price", 0) > 0:
+                    price_map[sym] = result["price"]
+                    print(f"    [fx-failover] {sym} = {result['price']} [{result['source']}]")
+            elif "=F" in sym.upper():
+                result = fetch_commodity_price(sym)
+                if result and result.get("price", 0) > 0:
+                    price_map[sym] = result["price"]
+                    print(f"    [cmd-failover] {sym} = {result['price']} [{result['source']}]")
+
     try:
         import yfinance as yf
     except ImportError:
         print("  [WARN] yfinance not installed, skipping stock/forex/commodity prices")
-        return {}
+        return price_map
 
     # ── Priority: fetch forex/commodity =X/=F symbols individually first ──
     # These often fail in batch mode (fast_info returns None for forex).
     # Use history(period="5d") to handle weekends/holidays where "1d" is empty.
-    priority_syms = [s for s in symbols if "=X" in s or "=F" in s]
+    # Only try yfinance for symbols the failover chain didn't already cover.
+    priority_syms = [s for s in symbols if ("=X" in s or "=F" in s) and s not in price_map]
     regular_syms = [s for s in symbols if s not in set(priority_syms)]
 
     for sym in priority_syms:
