@@ -27,7 +27,9 @@ Dependencies: yfinance, pandas, numpy, scipy, pymysql
 import json
 import math
 import os
+import re
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from collections import defaultdict
@@ -36,7 +38,21 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-# FMP API for Piotroski, Altman-Z, analyst consensus
+# ── API failover imports (see obsidian-notes/reference/data-sources.md) ─────
+try:
+    from alpha_engine.equity_price_failover import fetch_market_cap, fetch_quote
+    HAS_EQUITY_FAILOVER = True
+except ImportError:
+    HAS_EQUITY_FAILOVER = False
+
+try:
+    from alpha_engine.api_failover import fetch_price as crypto_fetch_price
+    from alpha_engine.api_failover import fetch_klines as crypto_fetch_klines
+    HAS_CRYPTO_FAILOVER = True
+except ImportError:
+    HAS_CRYPTO_FAILOVER = False
+
+# FMP API for Piotroski, Altman-Z, analyst consensus, historical prices
 FMP_API_KEY = os.environ.get("FMP_API_KEY", "iF4K10WedJZINDhUWGXlGAiA57rn4sRD")
 FMP_BASE = "https://financialmodelingprep.com/stable"
 
@@ -286,27 +302,47 @@ def load_db_edge():
 
         conn = pymysql.connect(**creds)
         cur = conn.cursor()
-        cur.execute("""
+        # Banned/refuted strategies must NOT corroborate a pick's WR. Mirrors
+        # alpha_engine.production_scanner.BANNED_SOURCES plus two sources flagged
+        # in project memory (myfxbook/ig contrarian). Defined locally to avoid a
+        # heavy production_scanner import in this generator.
+        banned = (
+            "Predictions", "sandbox_opposite", "rapid_fire", "incubator_gainer",
+            "luxalgo_filters", "multi_asset_copytrader", "forex_copy_trader",
+            "signal_validation", "multi_asset_cot", "regime_terminal",
+            "myfxbook_retail_contrarian", "ig_contrarian_sentiment",
+        )
+        placeholders = ",".join(["%s"] * len(banned))
+        # WR DENOMINATOR FIX: count EXPIRED/FLAT as non-wins. Previously the
+        # query filtered status IN ('WON','LOST'), silently dropping EXPIRED and
+        # inflating WR (e.g. GBPUSD 58.8% displayed vs ~6% true — ~89% of FX
+        # picks EXPIRE). avg_pnl/avg_win/avg_loss ignore NULLs automatically.
+        cur.execute(f"""
             SELECT symbol, asset_class,
                    COUNT(*) as n,
                    SUM(CASE WHEN status='WON' THEN 1 ELSE 0 END) as wins,
+                   SUM(CASE WHEN status='EXPIRED' THEN 1 ELSE 0 END) as expired,
                    ROUND(AVG(pnl_pct), 4) as avg_pnl,
                    ROUND(AVG(CASE WHEN status='WON' THEN pnl_pct END), 4) as avg_win,
                    ROUND(AVG(CASE WHEN status='LOST' THEN pnl_pct END), 4) as avg_loss
             FROM at_pick_outcomes
-            WHERE status IN ('WON','LOST') AND pnl_pct IS NOT NULL
+            WHERE status IN ('WON','LOST','EXPIRED','FLAT')
+              AND (strategy IS NULL OR strategy NOT IN ({placeholders}))
             GROUP BY symbol, asset_class
             HAVING COUNT(*) >= 5
-        """)
+        """, banned)
         data = {}
         for r in cur.fetchall():
-            symbol, ac, n, wins, avg_pnl, avg_win, avg_loss = r
+            symbol, ac, n, wins, expired, avg_pnl, avg_win, avg_loss = r
             n = int(n)
             wins = int(wins)
+            expired = int(expired or 0)
             wr = wins / n * 100 if n > 0 else 0
             data[symbol.upper()] = {
                 "n": n, "wr": round(wr, 1), "avg_pnl": float(avg_pnl or 0),
                 "avg_win": float(avg_win or 0), "avg_loss": float(avg_loss or 0),
+                "expired": expired,
+                "expired_pct": round(expired / n * 100, 1) if n > 0 else 0,
             }
         conn.close()
         return data
@@ -564,6 +600,14 @@ class QuantScorer:
         else:
             direction = "AVOID"
 
+        # ── Negative-expectancy guard ──
+        # A symbol whose OWN resolved (EXPIRED-inclusive) average PnL is negative
+        # with a meaningful sample must not carry a BUY/STRONG_BUY label or full
+        # size, regardless of the technical/analyst score. Demote to WATCH.
+        if direction in ("STRONG_BUY", "BUY") and db_n >= 20 and db_avg_pnl < 0:
+            signals.append(f"DB_NEG_EXPECTANCY(avg={db_avg_pnl:.2%},n={db_n})")
+            direction = "WATCH"
+
         # ── Position sizing (Kelly/vol-parity) ──
         if direction in ("STRONG_BUY", "BUY") and rvol > 0:
             if rvol < 15:
@@ -586,6 +630,20 @@ class QuantScorer:
             tp_pct = sl_pct * 2.0
             if "TREND+DIP" in str(signals) and rvol < 30:
                 tp_pct = max(tp_pct, 12.0)
+            # ── Per-class TP/SL caps (mirror production_scanner) ──
+            # FX/COMMODITY were emitting a flat 8%/4% — ~5x the enforced FX cap,
+            # which is itself why ~89% of FX picks EXPIRE before TP. Clamp to the
+            # production caps so picks-now TP/SL is achievable within horizon.
+            _TP_CAP = {"FOREX": 1.5, "COMMODITY": 12.0, "EQUITY": 10.0,
+                       "ETF": 10.0, "CRYPTO": 15.0}
+            _SL_CAP = {"FOREX": 1.0, "COMMODITY": 8.0, "EQUITY": 7.0,
+                       "ETF": 7.0, "CRYPTO": 10.0}
+            cap_tp = _TP_CAP.get(cls)
+            cap_sl = _SL_CAP.get(cls)
+            if cap_sl is not None:
+                sl_pct = min(sl_pct, cap_sl)
+            if cap_tp is not None:
+                tp_pct = min(tp_pct, cap_tp)
         else:
             sl_pct = tp_pct = None
 
@@ -699,6 +757,161 @@ class QuantScorer:
         }
 
 
+# ── API failover helpers (per CLAUDE.md API Failover Rule) ──────────────────
+# These wrap yfinance with fallback chains so picks_now keeps working even
+# when yfinance rate-limits or fails in CI.
+
+_IS_CRYPTO_RE = re.compile(r"-USD$", re.I)
+_IS_FOREX_RE = re.compile(r"=X$", re.I)
+_IS_COMMODITY_RE = re.compile(r"=F$", re.I)
+
+def _class_for_symbol(sym: str) -> str:
+    """Return the asset-class key for a symbol (crypto/equity/forex/commodity)."""
+    if _IS_CRYPTO_RE.search(sym): return "crypto"
+    if _IS_FOREX_RE.search(sym):  return "forex"
+    if _IS_COMMODITY_RE.search(sym): return "commodity"
+    return "equity"
+
+
+def fetch_ohlcv_failover(sym: str) -> tuple[pd.DataFrame | None, dict]:
+    """Fetch 6-month daily OHLCV + info dict with multi-source failover.
+
+    Failover chain per class:
+      CRYPTO:  api_failover.fetch_klines() → yfinance
+      EQUITY:  yfinance → FMP historical-price-eod → None
+      FOREX:   yfinance → None
+      COMMOD:  yfinance → None
+
+    Returns (DataFrame | None, info_dict)
+    """
+    cls = _class_for_symbol(sym)
+    info = {}
+
+    # ── CRYPTO: Binance mirrors → CoinGecko → yfinance ───────────────────
+    if cls == "crypto" and HAS_CRYPTO_FAILOVER:
+        try:
+            klines = crypto_fetch_klines(sym, interval="1d", limit=180)
+            if klines and len(klines) >= 60:
+                df = pd.DataFrame(klines, columns=[
+                    "timestamp", "open", "high", "low", "close", "volume"
+                ])
+                for c in ["open","high","low","close","volume"]:
+                    df[c] = pd.to_numeric(df[c], errors="coerce")
+                df.index = pd.to_datetime(df["timestamp"], unit="ms")
+                df = df.sort_index()
+                info["source"] = "api_failover(binance→coingecko)"
+                return df, info
+        except Exception:
+            pass
+
+    # ── Primary: yfinance ────────────────────────────────────────────────
+    try:
+        tk = yf.Ticker(sym)
+        df = tk.history(period="6mo", interval="1d", auto_adjust=True)
+        if df is not None and len(df) >= 60:
+            # Normalize column names to lowercase
+            df.columns = [c.lower() for c in df.columns]
+            try:
+                info = tk.info or {}
+            except Exception:
+                pass
+            info["source"] = "yfinance"
+            return df, info
+    except Exception:
+        pass  # fall through
+
+    # ── EQUITY fallback: FMP historical prices ────────────────────────────
+    if cls == "equity":
+        try:
+            import requests as req
+            from datetime import timedelta
+            r = req.get(
+                f"{FMP_BASE}/historical-price-eod/{sym}",
+                params={"apikey": FMP_API_KEY, "from": (
+                    datetime.now(timezone.utc) - timedelta(days=200)
+                ).strftime("%Y-%m-%d")},
+                timeout=10,
+            )
+            if r.status_code == 200:
+                rows = r.json()
+                if isinstance(rows, list) and len(rows) >= 60:
+                    df = pd.DataFrame(rows)
+                    df = df.rename(columns={
+                        "date": "Date", "open": "Open", "high": "High",
+                        "low": "Low", "close": "Close", "volume": "Volume",
+                    })
+                    df["Date"] = pd.to_datetime(df["Date"])
+                    df = df.set_index("Date").sort_index()
+                    for c in ["Open","High","Low","Close","Volume"]:
+                        df[c] = pd.to_numeric(df[c], errors="coerce")
+                    info = {"source": "fmp_historical"}
+                    return df, info
+        except Exception:
+            pass
+
+    return None, info
+
+
+def fetch_analyst_info_failover(sym: str) -> dict:
+    """Fetch analyst consensus + key metrics with failover.
+
+    Chain: yfinance → FMP profile/rating → Finnhub → empty dict
+    """
+    cls = _class_for_symbol(sym)
+
+    # Skip analyst data for forex/commodity/crypto (no Wall St coverage)
+    if cls in ("forex", "commodity"):
+        return {}
+
+    # ── Primary: yfinance ────────────────────────────────────────────────
+    try:
+        tk = yf.Ticker(sym)
+        info = tk.info or {}
+        if info.get("recommendationMean") is not None:
+            info["source"] = "yfinance"
+            return info
+    except Exception:
+        pass
+
+    # ── Fallback: FMP profile + rating ───────────────────────────────────
+    try:
+        import requests as req
+        profile = req.get(
+            f"{FMP_BASE}/profile/{sym}",
+            params={"apikey": FMP_API_KEY}, timeout=8,
+        )
+        rating = req.get(
+            f"{FMP_BASE}/rating/{sym}",
+            params={"apikey": FMP_API_KEY}, timeout=8,
+        )
+        info = {"source": "fmp"}
+        if profile.status_code == 200:
+            pd_ = profile.json()
+            if isinstance(pd_, list) and pd_:
+                info["marketCap"] = pd_[0].get("mktCap")
+                info["forwardPE"] = pd_[0].get("peRatio")
+                info["dividendYield"] = pd_[0].get("lastDiv")
+                info["sector"] = pd_[0].get("sector")
+                info["industry"] = pd_[0].get("industry")
+        if rating.status_code == 200:
+            rd_ = rating.json()
+            if isinstance(rd_, list) and rd_:
+                info["recommendationMean"] = {
+                    "strong_buy": 1, "buy": 2, "hold": 3,
+                    "sell": 4, "strong_sell": 5,
+                }.get(rd_[0].get("rating", "").lower(), None)
+                info["targetMeanPrice"] = rd_[0].get("targetMeanPrice") or \
+                                          rd_[0].get("priceTargetMean")
+                info["numberOfAnalystOpinions"] = rd_[0].get("ratingDetailsSCORE", {}).get(
+                    "totalAnalyst", rd_[0].get("numberOfAnalystOpinions"))
+        if info.get("recommendationMean") is not None or info.get("marketCap"):
+            return info
+    except Exception:
+        pass
+
+    return {}
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
@@ -732,16 +945,20 @@ def main():
 
         for sym in tickers:
             try:
-                tk = yf.Ticker(sym)
-                df = tk.history(period="6mo", interval="1d", auto_adjust=True)
+                # Use multi-source failover chain instead of bare yfinance
+                df, info = fetch_ohlcv_failover(sym)
                 if df is None or len(df) < 60:
+                    # Also try fetching analyst info for scoring even without OHLCV
+                    if not info:
+                        info = fetch_analyst_info_failover(sym)
                     continue
 
-                info = {}
-                try:
-                    info = tk.info or {}
-                except Exception:
-                    pass
+                # Supplement info with analyst failover if yfinance didn't provide it
+                if not info or info.get("recommendationMean") is None:
+                    analyst_info = fetch_analyst_info_failover(sym)
+                    for k, v in analyst_info.items():
+                        if k not in info or info[k] is None:
+                            info[k] = v
 
                 result = scorer.score(sym, cls, df, info, db_edge, all_prices, fmp_scores)
                 all_prices[sym] = result["price"]
