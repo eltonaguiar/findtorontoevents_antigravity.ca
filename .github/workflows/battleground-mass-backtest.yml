@@ -64,6 +64,12 @@ jobs:
         # stock_ohlcv) so the backtester has OHLCV. Without this the sweep dies
         # in ~22s with "crypto_data.db not found" (run 27055166676).
         env:
+          # Proven pattern from now-scanner.yml — MYSQL_PASSWORD is the working
+          # stocks-DB secret; AUDIT_DB_* are resolved by tools/db_env.py.
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          AUDIT_DB_NAME: ejaguiar1_stocks
           DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
         run: python tools/build_crypto_data_db_from_mysql.py
 
