@@ -85,6 +85,8 @@ jobs:
       - name: Forex builtin walk-forward (yfinance)
         env:
           PYTHONPATH: ${{ github.workspace }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           pip install --quiet yfinance
           python -m alpha_engine.forex_walk_forward_builtins

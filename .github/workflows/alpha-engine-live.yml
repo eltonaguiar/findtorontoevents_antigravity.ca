@@ -48,6 +48,12 @@ jobs:
       run:
         shell: bash
     timeout-minutes: 90  # 2026-04-17 Phase A: 55 -> 90 to fit 45-60min scan + 17min MySQL sync (was cancelling)
+    env:
+      # API failover keys — equity_price_failover.py + api_failover.py use these
+      # to fall through their multi-source chains when yfinance fails on GHA.
+      # Add more keys here as they become available as GitHub secrets.
+      FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
     steps:
       - name: Checkout repository

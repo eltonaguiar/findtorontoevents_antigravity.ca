@@ -29,12 +29,13 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip -q
-          python3 -m pip install yfinance pandas numpy pymysql requests -q
+          python3 -m pip install yfinance pandas numpy pymysql requests scipy -q
 
       - name: Generate picks
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python3 tools/picks_now_professional.py
 
       - name: Save picks to MySQL tracking table
