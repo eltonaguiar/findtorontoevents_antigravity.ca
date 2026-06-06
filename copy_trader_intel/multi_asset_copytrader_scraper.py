@@ -1245,22 +1245,40 @@ def scrape_cot_positioning(data_cache):
 # ============================================================
 
 def scan_stocks_rsi2_pullback(data_cache):
-    """RSI(2) pullback in uptrend on top stocks."""
+    """RSI(2) pullback in uptrend on top stocks.
+
+    Breadth throttle (added 2026-06-06): when >10 stocks in the universe
+    simultaneously have RSI(2)<10, the entire universe is in a downtrend
+    (not a pullback). Empirical basis: May 7-12 n=5-22 triggers → WR=75-84%;
+    May 21-25 n=28-46 triggers → WR=14-21%. Skip all if breadth_oversold>10.
+    """
     picks = []
 
+    # Pass 1: compute RSI(2) for all symbols, count breadth
+    symbol_data = []
+    breadth_oversold = 0
     for symbol in STOCK_SYMBOLS:
         ohlcv = data_cache.get(symbol)
         if not ohlcv or len(ohlcv["Close"]) < 200:
             continue
+        closes = ohlcv["Close"]
+        rsi2 = _compute_rsi(closes, 2)
+        sma_200 = sum(closes[-200:]) / 200
+        current = closes[-1]
+        if rsi2 < 10 and current > sma_200:
+            breadth_oversold += 1
+        symbol_data.append((symbol, ohlcv, rsi2, sma_200, current))
 
+    # Breadth throttle: >10 simultaneous triggers = market downtrend, not pullback
+    if breadth_oversold > 10:
+        return picks
+
+    for symbol, ohlcv, rsi2, sma_200, current in symbol_data:
         closes = ohlcv["Close"]
         highs = ohlcv["High"]
         lows = ohlcv["Low"]
-        current = closes[-1]
 
-        rsi2 = _compute_rsi(closes, 2)
         rsi14 = _compute_rsi(closes, 14)
-        sma_200 = sum(closes[-200:]) / 200
         atr_val = _compute_atr(highs, lows, closes, 14)
 
         # Only BUY pullbacks in stocks above 200 SMA (uptrend context)
