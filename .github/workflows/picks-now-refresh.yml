@@ -1,0 +1,89 @@
+# Refreshes /audit/picks-now.html daily with fresh quant screener results
+# Runs: picks_now_professional.py → save to DB → FTP deploy
+name: Picks NOW Refresh
+
+on:
+  schedule:
+    # 06:00 / 12:00 / 18:00 UTC = 02:00 / 08:00 / 14:00 EST
+    - cron: "0 6,12,18 * * *"
+  workflow_dispatch:  # manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip -q
+          python3 -m pip install yfinance pandas numpy pymysql -q
+
+      - name: Generate picks
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+        run: |
+          python3 tools/picks_now_professional.py 2>&1
+
+      - name: Save picks to MySQL tracking table
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+        run: |
+          python3 tools/save_picks_to_db.py 2>&1
+
+      - name: Commit updated picks JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/picks_now.json
+          git diff --cached --quiet || \
+            git commit -m "chore(picks-now): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+
+      - name: Push data commit
+        run: |
+          git pull --rebase origin main || true
+          git push origin main
+
+      - name: FTP deploy picks-now assets to production
+        env:
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python3 -c "
+import ftplib, ssl, os
+host = 'ftps2.50webs.com'
+user = os.environ.get('FTP_USER', '')
+pw = os.environ.get('FTP_PASS', '')
+if not user or not pw:
+    print('FTP creds not set, skipping deploy')
+    exit(0)
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+ftp = ftplib.FTP_TLS(host, user, pw, context=ctx)
+ftp.prot_p()
+# picks_now.json
+ftp.cwd('/findtorontoevents.ca/audit/data')
+with open('audit_dashboard/data/picks_now.json', 'rb') as f:
+    ftp.storbinary('STOR picks_now.json', f)
+    print('picks_now.json deployed')
+# picks-now.html
+ftp.cwd('/findtorontoevents.ca/audit')
+with open('audit_dashboard/picks-now.html', 'rb') as f:
+    ftp.storbinary('STOR picks-now.html', f)
+    print('picks-now.html deployed')
+ftp.quit()
+print('FTP deploy complete')
+"
