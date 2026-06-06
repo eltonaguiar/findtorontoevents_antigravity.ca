@@ -106,25 +106,37 @@
 <body>
 
 <div class="header">
-  <h1>📊 Top Picks <span>Right Now</span> — Multi-Asset Screener</h1>
-  <div class="meta">Generated: June 6, 2026 at 12:37 AM EST &nbsp;|&nbsp; Strategy: quant_multifactor_screener &nbsp;|&nbsp; Cross-reviewed: 4 AI model families &nbsp;|&nbsp; DB: ejaguiar1_stocks.trading_picks</div>
+  <h1>📊 Top Picks <span>Right Now</span> — Multi-Asset Quant Screener</h1>
+  <div class="meta">
+    <span id="header-updated">🔄 Last Updated: <strong>Loading...</strong> EST</span> &nbsp;|&nbsp; 
+    Strategy: <code>quant_multifactor_screener</code> &nbsp;|&nbsp; 
+    <span id="header-scored">—</span> symbols scored, <span id="header-picks">—</span> picks &nbsp;|&nbsp;
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/picks_now_professional.py" target="_blank" style="color:var(--blue)">Source</a>
+  </div>
 </div>
 
 <div class="disclaimer">
-  ⚠️ <strong>Research / Paper Only — NOT financial advice.</strong> Zero asset classes are currently Money-Ready (n≥100 forward-validated picks required). These are screener signals for tracking and analysis. Verify all picks before acting.
+  ⚠️ <strong>Research / Paper Only — NOT financial advice.</strong> Zero asset classes are currently Money-Ready (n≥100 forward-validated picks required). These are screener signals for tracking and analysis. The picks_now_tracker MySQL table logs every pick with entry/TP/SL for outcome measurement.
 </div>
 
-<!-- Market Context -->
-<div style="margin: 0 24px 8px; font-size: 0.82rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Today's Market</div>
-<div class="market-bar">
-  <div class="mkt-item"><span class="mkt-sym">SPY</span><span class="mkt-dn">-2.6%</span></div>
-  <div class="mkt-item"><span class="mkt-sym">QQQ</span><span class="mkt-dn">-4.8%</span></div>
-  <div class="mkt-item"><span class="mkt-sym">NVDA</span><span class="mkt-dn">-6.2%</span></div>
-  <div class="mkt-item"><span class="mkt-sym">META</span><span class="mkt-dn">-5.5%</span></div>
-  <div class="mkt-item"><span class="mkt-sym">BTC</span><span class="mkt-dn">-15.6%</span></div>
-  <div class="mkt-item"><span class="mkt-sym">ETH</span><span class="mkt-dn">-22.9%</span></div>
-  <div class="mkt-item"><span class="mkt-sym">TLT</span><span class="mkt-dn">-0.5%</span></div>
-  <div class="mkt-item"><span class="mkt-sym">USD/CAD</span><span class="mkt-up">+0.7%</span></div>
+<!-- Market Context + Last Updated Banner -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin:0 24px 8px;flex-wrap:wrap;">
+  <div style="font-size:0.82rem;color:var(--muted);font-weight:600;text-transform:uppercase;">📈 Today's Market Context</div>
+  <div id="live-timestamp" style="font-size:0.78rem;color:var(--blue);font-weight:600;">⏱ Loaded: —</div>
+</div>
+<div class="market-bar" id="market-bar">
+  <div class="mkt-item"><span class="mkt-sym">Loading...</span></div>
+</div>
+
+<!-- 📋 METHODOLOGY — at the top where it belongs -->
+<div class="method-box" id="methodology-box">
+  <h3>🧠 How Each Pick Is Generated — Full Multi-Factor Methodology</h3>
+  <div class="method-item"><strong>Every pick</strong> is scored on <strong>ALL 5 factors below simultaneously</strong>. No pick gets a pass without all factors evaluated:</div>
+  <div class="method-item" style="margin-top:8px;">🔵 <strong>Momentum (30% weight):</strong> 3-month / 1-month / 5-day returns. A stock up 15% in 3 months that pulls back -6% in 5 days = TREND+DIP (buy the dip in an uptrend). <span style="color:var(--muted)">Data: yfinance daily OHLCV</span></div>
+  <div class="method-item">🟢 <strong>Mean Reversion (20% weight):</strong> RSI (14-period) + Bollinger Band %-B position. RSI &lt;35 + price at lower band = statistically significant oversold bounce setup. <span style="color:var(--muted)">Data: yfinance daily OHLCV</span></div>
+  <div class="method-item">🟡 <strong>Analyst Consensus (25% weight):</strong> Wall Street recommendationMean + targetMeanPrice. STRONG_BUY with 25%+ upside = high-conviction fundamental overlay. <span style="color:var(--muted)">Data: yfinance .info (40+ analysts per stock)</span></div>
+  <div class="method-item">🔴 <strong>Vol-Adjusted Safety (15% weight):</strong> Realized vol (RVOL) and ATR sizing. Low vol (TLT 9%) = 8% position. High vol (NVDA 46%) = 2% position. <span style="color:var(--muted)">Kelly x Risk-Parity sizing</span></div>
+  <div class="method-item">⚪ <strong>DB Edge Overlay (10% weight):</strong> Our own resolved pick history from <code>at_pick_outcomes</code> (39,880 closed trades). Symbols with n≥5 closed trades and WR&gt;55% get a bonus. <span style="color:var(--muted)">Data: ejaguiar1_stocks</span></div>
 </div>
 
 <!-- Risk-Off explainer -->
@@ -142,308 +154,142 @@
 <!-- Safety Tiers -->
 <div class="tiers">
   <h3>🎿 Safety Tiers — Like a Ski Hill</h3>
-  <div class="tier-row"><div class="tier-badge t-green">🟢 GREEN</div><div class="tier-desc"><strong>TLT, IEF</strong> — US Government Bonds. You get paid ~4-5%/year just to hold them. When markets crash, these usually go UP as people flee to safety. Lowest daily price swings of anything on this list. Anyone can hold these.</div></div>
-  <div class="tier-row"><div class="tier-badge t-yellow">🟡 YELLOW</div><div class="tier-desc"><strong>AAPL, EUR/USD, USD/CAD</strong> — Moderate. Apple is the most resilient big tech stock (barely moved today). Forex plays are small moves with tight stop-losses. Fine for most investors.</div></div>
-  <div class="tier-row"><div class="tier-badge t-red">🔴 RED</div><div class="tier-desc"><strong>AMZN, Wheat (ZW=F)</strong> — Higher volatility. AMZN dropped 6% this week but the fundamentals are strong (82 analyst consensus target). Size smaller — don't put more in than you're OK seeing drop 10% first.</div></div>
-  <div class="tier-row"><div class="tier-badge t-black">⚫ BLACK</div><div class="tier-desc"><strong>NVDA</strong> — Can move 10% in one day, easily. Highest upside (+51% analyst target) but also highest volatility. The AI debate around its valuation is real. Expert/advanced investors only.</div></div>
+  <div class="tier-row"><div class="tier-badge t-green">🟢 GREEN</div><div class="tier-desc"><strong>TLT, IEF, SHY</strong> — US Government Bonds. You get paid ~4-5%/year just to hold them. When markets crash, these usually go UP as people flee to safety. Lowest daily price swings. Anyone can hold these.</div></div>
+  <div class="tier-row"><div class="tier-badge t-yellow">🟡 YELLOW</div><div class="tier-desc"><strong>AAPL, EUR/USD, GBP/USD</strong> — Moderate. Resilient stocks or small-move forex plays with tight stop-losses. Fine for most investors.</div></div>
+  <div class="tier-row"><div class="tier-badge t-red">🔴 RED</div><div class="tier-desc"><strong>AMZN, GOOGL, MU</strong> — Higher volatility. Strong fundamentals but 5-10% weekly swings. Size smaller — don't put in more than you're OK seeing drop 10% first.</div></div>
+  <div class="tier-row"><div class="tier-badge t-black">⚫ BLACK</div><div class="tier-desc"><strong>NVDA, AVGO, AMD</strong> — Can move 10% in one day. Highest upside and highest volatility. Expert/advanced investors only.</div></div>
 </div>
 
-<!-- Picks -->
-<div class="section-title">✅ APPROVED Picks (AI-reviewed)</div>
-<div class="picks-grid">
-
-  <!-- AMZN -->
-  <div class="pick-card approved">
-    <div class="card-header">
-      <div><div class="card-symbol">AMZN</div><div class="card-class">EQUITY · LONG · Amazon</div></div>
-      <div class="card-status s-approved">✅ APPROVED</div>
-    </div>
-    <div class="card-prices">
-      <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$246.03</div></div>
-      <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$280.00</div></div>
-      <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$234.00</div></div>
-    </div>
-    <div class="card-rr">R:R <span>2.8:1</span> &nbsp;|&nbsp; Max gain <span>+13.8%</span> &nbsp;|&nbsp; Max loss <span>-4.9%</span> &nbsp;|&nbsp; Timeframe <span>4–8 weeks</span></div>
-    <div class="card-scores">
-      <div class="score-chip">Elite <strong>82</strong></div>
-      <div class="score-chip">Trust <strong>85</strong></div>
-      <div class="score-chip">Confidence <strong>85%</strong></div>
-      <div class="score-chip">Piotroski <strong>6/9</strong></div>
-      <div class="score-chip">Altman-Z <strong>5.1 ✓</strong></div>
-      <div class="score-chip">94 Analysts <strong>89% Bull</strong></div>
-      <div class="score-chip">Target <strong>$307 (+25%)</strong></div>
-    </div>
-    <div class="card-ai"><span class="ai-label">AI Swarm (4 models): </span><span class="ai-val ai-approved">APPROVED 2/3 (LLaMA 3.3 + Qwen3) · paid-mode-large: HOLD/CAUTION</span></div>
-    <div class="card-eli5">
-      <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why this pick? (plain English)</div>
-      <div class="eli5-body">
-        Amazon's stock dropped ~6% this week because the whole market sold off — not because anything went wrong with the business. The business is actually growing fast: earnings are up 75% vs last year thanks to AWS cloud growth. Out of 94 Wall Street analysts, 84 say STRONG BUY with an average price target of $307 — that's 25% above today's $245. The RSI indicator (a measure of recent price momentum) is at 38, which means the stock is in oversold territory — like a stretched elastic band that tends to snap back. The Altman-Z score of 5.1 means Amazon is financially very safe (any score above 3.0 means no meaningful bankruptcy risk).
-        <div class="eli5-risk">⚠️ Risk: If the market keeps falling next week, AMZN could dip further before recovering. Your stop-loss at $234 means your maximum loss on this trade is ~4.9% of the amount you invest.</div>
-        <div class="eli5-tier">🔴 RED tier — Experienced investors</div>
-      </div>
-    </div>
-    <div class="pick-date">📅 Picked: June 6, 2026 at 12:37 AM EST &nbsp;|&nbsp; RSI: 38 · BB: lower band · 3m return: +15.2%</div>
-  </div>
-
-  <!-- AAPL -->
-  <div class="pick-card approved">
-    <div class="card-header">
-      <div><div class="card-symbol">AAPL</div><div class="card-class">EQUITY · LONG · Apple</div></div>
-      <div class="card-status s-approved">✅ APPROVED 3/3</div>
-    </div>
-    <div class="card-prices">
-      <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$307.34</div></div>
-      <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$325.00</div></div>
-      <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$295.00</div></div>
-    </div>
-    <div class="card-rr">R:R <span>1.4:1</span> &nbsp;|&nbsp; Max gain <span>+5.7%</span> &nbsp;|&nbsp; Max loss <span>-4.0%</span> &nbsp;|&nbsp; Timeframe <span>4–8 weeks</span></div>
-    <div class="card-scores">
-      <div class="score-chip">Elite <strong>72</strong></div>
-      <div class="score-chip">Trust <strong>88</strong></div>
-      <div class="score-chip">Piotroski <strong>9/9 PERFECT</strong></div>
-      <div class="score-chip">Altman-Z <strong>12.8 ✓</strong></div>
-      <div class="score-chip">110 Analysts <strong>64% Bull</strong></div>
-      <div class="score-chip">RVOL <strong>18.5%</strong> (lowest)</div>
-    </div>
-    <div class="card-ai"><span class="ai-label">AI Swarm (4 models): </span><span class="ai-val ai-approved">APPROVED 3/3 UNANIMOUS — LLaMA 3.3 + LLaMA 4 Scout + Qwen3</span></div>
-    <div class="card-eli5">
-      <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why this pick? (plain English)</div>
-      <div class="eli5-body">
-        Apple is the most boring (in a good way) large tech stock. Today when everything crashed 3-6%, Apple barely moved (-0.3%). It has a <strong>perfect Piotroski financial health score of 9/9</strong> — the only company in our universe to achieve this. What that means: Apple is profitable, growing, has manageable debt, and is generating more cash than it spends. It generates $101 billion in free cash per year and uses much of it to buy back its own shares (which increases value for shareholders). With 110 Wall Street analysts covering it and Altman-Z of 12.8 (extremely safe), all 3 AI models independently agreed: APPROVE. Lower upside than AMZN or NVDA, but much safer.
-        <div class="eli5-risk">⚠️ Risk: Lower reward — analyst consensus target is only 5.7% above entry. If you want big gains, look at AMZN. If you want safety, AAPL is your pick.</div>
-        <div class="eli5-tier">🟡 YELLOW tier — Suitable for most investors</div>
-      </div>
-    </div>
-    <div class="pick-date">📅 Picked: June 6, 2026 at 12:37 AM EST &nbsp;|&nbsp; RSI: 61 · 5d return: +0.3% (most resilient) · 3m return: +18.4%</div>
-  </div>
-
-  <!-- TLT -->
-  <div class="pick-card safe-haven">
-    <div class="card-header">
-      <div><div class="card-symbol">TLT</div><div class="card-class">ETF · LONG · US Treasury 20yr Bond</div></div>
-      <div class="card-status s-safe">🟢 SAFE HAVEN</div>
-    </div>
-    <div class="card-prices">
-      <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$85.06</div></div>
-      <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$92.00</div></div>
-      <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$81.00</div></div>
-    </div>
-    <div class="card-rr">R:R <span>1.7:1</span> &nbsp;|&nbsp; Max gain <span>+8.2%</span> &nbsp;|&nbsp; Max loss <span>-4.8%</span> &nbsp;|&nbsp; Timeframe <span>8–16 weeks</span></div>
-    <div class="card-scores">
-      <div class="score-chip">Elite <strong>52</strong></div>
-      <div class="score-chip">Trust <strong>55</strong></div>
-      <div class="score-chip">RVOL <strong>9.3%</strong> (lowest in universe)</div>
-      <div class="score-chip">Yield <strong>~4.7%/yr</strong></div>
-      <div class="score-chip">5d change <strong>-0.5%</strong></div>
-    </div>
-    <div class="card-ai"><span class="ai-label">AI Swarm: </span><span class="ai-val" style="color:var(--blue)">Not contested — consensus safe-haven play</span></div>
-    <div class="card-eli5">
-      <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why this pick? (plain English)</div>
-      <div class="eli5-body">
-        TLT is an ETF (a basket) of US government bonds with ~20 years to maturity. When you buy it, you're effectively lending money to the US federal government. In return, you get paid about 4.7% per year in interest — just for holding it. What makes it special right now: when investors panic and sell stocks, they typically move their money into government bonds (seen as the safest asset in the world). This means bonds often go UP when stocks go DOWN. Today, while everything else crashed 3-6%, TLT only fell 0.5%. It is the lowest-volatility asset in our entire pick universe (9.3% annualized — vs NVDA at 46%).
-        <div class="eli5-risk">⚠️ Risk: If inflation unexpectedly surges back up, interest rates rise, and bond prices drop. Also: lower gains than stocks in bull markets.</div>
-        <div class="eli5-tier">🟢 GREEN tier — Safe for anyone</div>
-      </div>
-    </div>
-    <div class="pick-date">📅 Picked: June 6, 2026 at 12:37 AM EST &nbsp;|&nbsp; RSI: 50 · 5d: -0.5% · RVOL: 9.3% annualized</div>
-  </div>
-
-  <!-- IEF -->
-  <div class="pick-card safe-haven">
-    <div class="card-header">
-      <div><div class="card-symbol">IEF</div><div class="card-class">ETF · LONG · US Treasury 7-10yr Bond</div></div>
-      <div class="card-status s-safe">🟢 SAFE HAVEN</div>
-    </div>
-    <div class="card-prices">
-      <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$93.62</div></div>
-      <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$99.00</div></div>
-      <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$90.00</div></div>
-    </div>
-    <div class="card-rr">R:R <span>1.5:1</span> &nbsp;|&nbsp; Max gain <span>+5.7%</span> &nbsp;|&nbsp; Max loss <span>-3.9%</span> &nbsp;|&nbsp; Timeframe <span>8–16 weeks</span></div>
-    <div class="card-scores">
-      <div class="score-chip">RVOL <strong>5.4%</strong> (ultra-low)</div>
-      <div class="score-chip">Yield <strong>~4.5%/yr</strong></div>
-      <div class="score-chip">5d <strong>-0.6%</strong></div>
-    </div>
-    <div class="card-ai"><span class="ai-label">AI Swarm: </span><span class="ai-val" style="color:var(--blue)">Safe haven — not reviewed</span></div>
-    <div class="card-eli5">
-      <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why this pick? (plain English)</div>
-      <div class="eli5-body">
-        IEF is similar to TLT but with shorter-maturity bonds (7-10 years vs 20 years). This makes it even more stable — 5.4% annualized volatility, barely moves day-to-day. Think of it as the safest option if you're nervous about interest rate changes (shorter maturity = less sensitive to rates). Pays ~4.5%/year interest. Good for the portion of a portfolio you absolutely cannot afford to lose.
-        <div class="eli5-risk">⚠️ Risk: Almost none for short-term holds. Very small interest rate sensitivity.</div>
-        <div class="eli5-tier">🟢 GREEN tier — Safe for anyone</div>
-      </div>
-    </div>
-    <div class="pick-date">📅 Picked: June 6, 2026 at 12:37 AM EST</div>
-  </div>
-
+<!-- DYNAMIC PICKS — rendered from picks_now.json -->
+<div class="section-title">✅ TOP PICKS BY ASSET CLASS</div>
+<div id="picks-container" class="picks-grid">
+  <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">⏳ Loading picks from <code>picks_now.json</code>...</div>
 </div>
 
-<div class="section-title">⚠️ DISPUTED Picks (watch only — do not size up)</div>
-<div class="picks-grid">
-
-  <!-- NVDA DISPUTED -->
-  <div class="pick-card disputed">
-    <div class="card-header">
-      <div><div class="card-symbol">NVDA</div><div class="card-class">EQUITY · LONG · Nvidia (AI Chips)</div></div>
-      <div class="card-status s-disputed">⚠️ DISPUTED</div>
-    </div>
-    <div class="card-prices">
-      <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$205.10</div></div>
-      <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$235.00</div></div>
-      <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$190.00</div></div>
-    </div>
-    <div class="card-rr">R:R <span>2.0:1</span> &nbsp;|&nbsp; Max gain <span>+14.6%</span> &nbsp;|&nbsp; Max loss <span>-7.4%</span></div>
-    <div class="card-scores">
-      <div class="score-chip">Piotroski <strong>7/9</strong></div>
-      <div class="score-chip">Altman-Z <strong>51.4 ✓✓</strong></div>
-      <div class="score-chip">EPS growth <strong>+215% YoY</strong></div>
-      <div class="score-chip">79 Analysts <strong>76% Bull</strong></div>
-      <div class="score-chip">Target <strong>$309 (+51%)</strong></div>
-      <div class="score-chip">RVOL <strong>46%</strong> HIGH</div>
-    </div>
-    <div class="card-ai"><span class="ai-label">AI Swarm (5 models): </span><span class="ai-val ai-disputed">SPLIT — 1 APPROVE / 1 CAUTION / 1 REJECT / paid-mode-large: HOLD / debate: unresolved</span></div>
-    <div class="card-eli5">
-      <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why disputed? (plain English)</div>
-      <div class="eli5-body">
-        Nvidia is the company making the chips that power every major AI system (ChatGPT, Google Gemini, etc). Fundamentally it's extraordinary — earnings grew 215% vs last year, and financially it's almost impossible to go bankrupt (Altman-Z 51.4 = exceptional). But here's the disagreement: <strong>in risk-off selloffs, AI and semiconductor stocks are usually the FIRST and hardest to be sold</strong>. So even though the long-term story is great, buying right now in a market selloff could mean catching a falling knife. The 3 AI models split 1-1-1. Our most powerful model (paid-mode-large) said HOLD — wait for market to stabilize first.
-        <div class="eli5-risk">⚠️ Risk: HIGH VOLATILITY — can move 10% in a single day. The SL at $190 is 7.4% below entry. If market continues selling, could breach SL before recovering. Only buy a small amount you'd be OK watching drop 15% before it triples.</div>
-        <div class="eli5-tier">⚫ BLACK tier — Advanced/Expert only</div>
-      </div>
-    </div>
-    <div class="pick-date">📅 Picked: June 6, 2026 at 12:37 AM EST &nbsp;|&nbsp; Status: DISPUTED — Monitor, do not add</div>
-  </div>
-
-  <!-- EURUSD -->
-  <div class="pick-card disputed">
-    <div class="card-header">
-      <div><div class="card-symbol">EUR/USD</div><div class="card-class">FOREX · LONG · Euro vs US Dollar</div></div>
-      <div class="card-status s-disputed">WATCH</div>
-    </div>
-    <div class="card-prices">
-      <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">1.15270</div></div>
-      <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">1.17000</div></div>
-      <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">1.14200</div></div>
-    </div>
-    <div class="card-rr">R:R <span>1.6:1</span> &nbsp;|&nbsp; Max gain <span>+1.5%</span> &nbsp;|&nbsp; Max loss <span>-0.9%</span></div>
-    <div class="card-scores">
-      <div class="score-chip">RSI <strong>33 oversold</strong></div>
-      <div class="score-chip">Bollinger <strong>below lower band</strong></div>
-      <div class="score-chip">RVOL <strong>4.5%</strong> (very low)</div>
-    </div>
-    <div class="card-ai"><span class="ai-label">AI Swarm: </span><span class="ai-val" style="color:var(--muted)">Not reviewed — technical mean-reversion only</span></div>
-    <div class="card-eli5">
-      <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why this pick? (plain English)</div>
-      <div class="eli5-body">
-        The US Dollar got very strong today because when investors are scared they buy USD (the world's "safe" currency). EUR/USD at 1.1527 means 1 Euro buys $1.15. The RSI is at 33 — meaning the USD strength has stretched too far in one direction, like a rubber band. Our most proven FOREX strategy (cta_cross_asset_tsmom, 59.6% win rate over 151 trades) signals USD exhaustion. This is a bet the EUR bounces back to ~1.17 over the next few weeks as fear subsides.
-        <div class="eli5-risk">⚠️ Risk: If bad economic news keeps coming (more fear = more USD buying), this could lose. Max loss is only 0.9% — forex moves are small. Good for testing small size.</div>
-        <div class="eli5-tier">🟡 YELLOW tier — Some forex knowledge helps</div>
-      </div>
-    </div>
-    <div class="pick-date">📅 Picked: June 6, 2026 at 12:37 AM EST</div>
-  </div>
-
+<!-- DYNAMIC RENDER ENGINE — picks loaded from picks_now.json -->
+<div id="picks-container" class="picks-grid">
+  <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">⏳ Loading picks from <code>picks_now.json</code>...</div>
 </div>
 
-<div class="section-title">❌ REJECTED Picks (do not enter now)</div>
-<div class="picks-grid">
-
-  <!-- META REJECTED -->
-  <div class="pick-card rejected">
-    <div class="card-header">
-      <div><div class="card-symbol">META</div><div class="card-class">EQUITY · LONG · Meta (Facebook/Instagram)</div></div>
-      <div class="card-status s-rejected">❌ REJECTED 3/3</div>
-    </div>
-    <div class="card-prices">
-      <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$593.00</div></div>
-      <div class="price-cell"><div class="price-label">Target</div><div class="price-val p-tp">$826.00</div></div>
-      <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$560.00</div></div>
-    </div>
-    <div class="card-scores">
-      <div class="score-chip">Piotroski <strong>4/9</strong> ← weak</div>
-      <div class="score-chip">Altman-Z <strong>7.9</strong></div>
-      <div class="score-chip">60 analysts <strong>83% bull</strong></div>
-      <div class="score-chip">Target <strong>$826 (+39%)</strong></div>
-    </div>
-    <div class="card-ai"><span class="ai-label">AI Swarm: </span><span class="ai-val ai-rejected">REJECTED 3/3 — LLaMA 3.3, LLaMA 4, Qwen3 all rejected. paid-mode-large: AVOID.</span></div>
-    <div class="card-eli5">
-      <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why rejected? (plain English)</div>
-      <div class="eli5-body">
-        Meta has strong revenue growth and analysts like it long-term. But the Piotroski score of 4/9 is the weakest in our pick universe — it means the company's short-term financial signals (cash flow, debt trends, profitability ratios) are below average right now. All 4 AI models independently rejected it for this reason. The upside is real (+39% to $826) but this is NOT the right day to enter — buying into a selloff with weak financial signals is higher risk than the reward justifies. <strong>Better entry: wait for the market to stabilize and META to show a bounce with higher volume.</strong>
-        <div class="eli5-risk">⚠️ Why 4 AIs agreed: Piotroski 4/9 + entering on a risk-off day = asymmetric downside. The $826 target is a long-horizon call, not a near-term catalyst.</div>
-        <div class="eli5-tier">❌ HOLD — Better entry coming. Watch $560 support.</div>
-      </div>
-    </div>
-    <div class="pick-date">📅 Evaluated: June 6, 2026 at 12:37 AM EST &nbsp;|&nbsp; DB Status: DISPUTED</div>
-  </div>
-
-</div>
-
-<!-- Methodology -->
-<div class="method-box">
-  <h3>📐 Methodology — What We Check (How Sure Are We?)</h3>
-  <div class="method-item"><strong>1. Momentum (30% weight):</strong> We look at 3-month, 1-month, and 5-day price returns. A stock that's been going up for 3 months but dropped this week = "TREND+DIP" — historically a buy signal (used by AQR Capital, one of the world's largest quant hedge funds).</div>
-  <div class="method-item"><strong>2. RSI — Relative Strength Index (20%):</strong> Measures if a stock got sold too hard recently. Below 35 = oversold = rubber band stretched. Above 70 = overbought = might drop. Same indicator used by every major trading desk.</div>
-  <div class="method-item"><strong>3. Bollinger Bands (15%):</strong> A statistical envelope around the price. When price hits the lower band, it's 2 standard deviations below recent average — historically bounces back ~60-70% of the time.</div>
-  <div class="method-item"><strong>4. Wall Street Analyst Consensus (25%):</strong> We use FMP API to count how many of 50-110 professional analysts say BUY vs HOLD vs SELL and what their average price target is. 84/94 saying STRONG_BUY with $307 target is meaningful signal.</div>
-  <div class="method-item"><strong>5. Piotroski Score (company health, 0-9):</strong> A checklist of 9 financial health signals: Is the company profitable? Growing? Reducing debt? Generating cash? AAPL scores 9/9 (perfect). META scores 4/9 (below average).</div>
-  <div class="method-item"><strong>6. Altman-Z (bankruptcy risk):</strong> Formula combining 5 financial ratios. Above 3.0 = very safe. All our approved picks score above 5.0.</div>
-  <div class="method-item"><strong>7. AI Swarm Cross-Review:</strong> Each equity pick was reviewed by 4+ independent AI models from different families (Meta LLaMA 3.3, Meta LLaMA 4 Scout, Alibaba Qwen3-32b, and paid-mode-large via local proxy). A pick needs 2/3+ to APPROVE to be recommended. META was unanimously rejected (4/4).</div>
-  <div class="method-item" style="margin-top:10px; color: #f0883e;"><strong>Confidence: Medium.</strong> All signals point the same direction for AAPL and AMZN. However 0 of 8 asset classes are "Money-Ready" (defined as n≥100 forward-validated live trades with WR≥50%, PF≥1.5). These are screener picks, not live-system picks. Track outcomes here and in the DB to build evidence.</div>
-</div>
-
-<!-- Skyrocket Patterns -->
-<div class="method-box">
-  <h3>🚀 Skyrocket Pattern Alert — NVRS (+120%), VZZ (+52%), WISE (+49%)</h3>
-  <div class="method-item"><strong>NVRS.CN (Noveris Health — psychedelic biotech, CSE):</strong> Float 58.5M shares, micro-cap. Rebranded from Mydecine Innovations June 5 2026. 35.7× avg volume spike. Pattern: beaten-down micro-cap + name change + sector narrative (mental health biotech). Pre-conditions: 2 weeks quiet accumulation, volume 3× avg 2 days before main spike.</div>
-  <div class="method-item"><strong>VZZ.V (Val-d'Or Mining, TSX-V):</strong> Float 59M shares, CAD $22M market cap. +52% in 1 day, 5.3× avg volume. Day before: only 2,700 shares traded (dead calm = sellers exhausted). Pattern: beaten-down micro-cap mining, volume washout day before spike.</div>
-  <div class="method-item"><strong>WISE (Themes GenAI ETF, NASDAQ):</strong> Different pattern — 49% gain over 2 months riding the Apr-Jun AI recovery. Not a single-day spike. Just bought the right sector at the right time.</div>
-  <div class="method-item" style="color: var(--yellow);"><strong>Common pre-conditions for micro-cap spikes:</strong> Float &lt;75M shares · Near 52-week low (&lt;20% above it) · 2-3 quiet accumulation days · Volume collapses to near-zero the day before the spike · Pending catalyst (rebrand, news release, sector theme). <em>Note: execution risk is extreme — these are illiquid Canadian micro-caps where getting in/out at reasonable prices is nearly impossible without moving the market.</em></div>
-</div>
-
-<div style="margin: 0 24px 32px; font-size: 0.75rem; color: var(--muted); text-align: center; padding: 10px; border-top: 1px solid var(--border);">
-  ⚠️ NOT FINANCIAL ADVICE. Research only. All picks tracked in ejaguiar1_stocks.trading_picks (source: quant_multifactor_screener). Outcomes updated as positions close. Cross-reviewed by 4 AI model families: Meta LLaMA 3.3 70b, Meta LLaMA 4 Scout, Alibaba Qwen3-32b, paid-mode-large (local proxy). FMP API data: Piotroski, Altman-Z, analyst consensus. Price data: yfinance.
+<div id="picks-footer" style="margin:0 24px 32px;font-size:0.75rem;color:var(--muted);text-align:center;padding:10px;border-top:1px solid var(--border);">
+  ⚠️ NOT FINANCIAL ADVICE. Research only. All picks tracked in <code>ejaguiar1_stocks.picks_now_tracker</code>. Data: yfinance + at_pick_outcomes (39,880 resolved trades). Auto-refresh every 10 min.
 </div>
 
 <script>
-// Live data integration from picks_now.json (generated by the professional screener)
-// Shows risk-off explanation + demonstrates how eli5_reason from the JSON can power cards.
-document.addEventListener('DOMContentLoaded', () => {
-  const ts = document.querySelector('.header .meta');
-  if (ts) {
-    const now = new Date();
-    const est = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Toronto',
-      year: 'numeric', month: 'long', day: 'numeric',
-      hour: '2-digit', minute: '2-digit', hour12: true
-    }).format(now);
-    ts.textContent = ts.textContent.replace('June 6, 2026 at 12:37 AM EST', est + ' EST (page loaded)');
+function fmtPrice(v) {
+  if (v==null||isNaN(v)) return '—';
+  const n=Number(v);
+  if (n<1) return n.toFixed(4);
+  if (n<100) return n.toFixed(2);
+  return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function riskClass(rvol) {
+  if (!rvol||rvol<15) return {cls:'safe-haven',status:'🟢 SAFE',badge:'s-safe'};
+  if (rvol<35) return {cls:'approved',status:'✅ APPROVED',badge:'s-approved'};
+  return {cls:'disputed',status:'⚠️ WATCH',badge:'s-disputed'};
+}
+
+function renderPicks(data) {
+  const picks=data.picks||[];
+  const c=document.getElementById('picks-container');
+  if(!c)return;
+
+  // Timestamps
+  const est=data.generated_at ? new Date(data.generated_at).toLocaleString('en-US',{timeZone:'America/New_York',month:'long',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+  const el=$('#header-updated'); if(el) el.innerHTML='🔄 Last Updated: <strong>'+est+'</strong> EST';
+  const s=$('#header-scored'); if(s) s.textContent=data.n_scored||'—';
+  const pk=$('#header-picks'); if(pk) pk.textContent=picks.length||'—';
+  const lt=$('#live-timestamp');
+  if(lt) lt.innerHTML='⏱ Loaded: '+new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})+' EST';
+
+  // Market bar
+  const mb=document.getElementById('market-bar');
+  if(mb && data.all){
+    const bench={SPY:'EQUITY',QQQ:'TECH',TLT:'BONDS',GLD:'GOLD','BTC-USD':'CRYPTO','EURUSD=X':'FX'};
+    let html='';
+    for(const[sym,label]of Object.entries(bench)){
+      const r=data.all.find(p=>p.symbol===sym);
+      if(r&&r.ret_5d!=null){
+        const cls=r.ret_5d<0?'mkt-dn':'mkt-up';
+        html+='<div class="mkt-item"><span class="mkt-sym">'+label+'</span><span class="'+cls+'">'+(r.ret_5d>0?'+':'')+r.ret_5d.toFixed(1)+'%</span></div>';
+      }
+    }
+    mb.innerHTML=html||mb.innerHTML;
   }
 
-  // Attempt to load live generator output and surface the new risk_off + ELI5 fields
-  fetch('data/picks_now.json?_=' + Date.now())
-    .then(r => r.ok ? r.json() : null)
-    .then(data => {
-      if (!data) return;
+  // Cards
+  c.innerHTML='';
+  picks.forEach(p=>{
+    const r=riskClass(p.rvol);
+    const cd=document.createElement('div');
+    cd.className='pick-card '+r.cls;
+    const entry=Number(p.price)||0;
+    const tpPct=p.suggested_tp_pct||0, slPct=p.suggested_sl_pct||0;
+    const tp=entry*(1+tpPct/100), sl=entry*(1-slPct/100);
+    const rr=slPct>0?(tpPct/slPct).toFixed(1):'—';
+    const anl=p.analyst?(p.analyst+(p.analyst_n?' ('+p.analyst_n+' analysts)':'')):'—';
+    const mom=[];
+    if(p.ret_5d!=null) mom.push('5d:'+(p.ret_5d>0?'+':'')+p.ret_5d.toFixed(1)+'%');
+    if(p.ret_1m!=null) mom.push('1m:'+(p.ret_1m>0?'+':'')+p.ret_1m.toFixed(1)+'%');
+    if(p.ret_3m!=null) mom.push('3m:'+(p.ret_3m>0?'+':'')+p.ret_3m.toFixed(1)+'%');
 
-      // Show risk-off explanation if present (new field from enhanced generator)
-      if (data.risk_off_explanation) {
-        const riskBox = document.createElement('div');
-        riskBox.style.cssText = 'margin:16px 24px;padding:12px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;font-size:0.85rem;line-height:1.45;';
-        riskBox.innerHTML = `<strong>⚠️ Live Risk-Off Context (from generator):</strong><br>${data.risk_off_explanation}`;
-        const method = document.querySelector('.method-box');
-        if (method && method.parentNode) {
-          method.parentNode.insertBefore(riskBox, method);
-        }
-      }
+    cd.innerHTML=`
+      <div class="card-header">
+        <div><div class="card-symbol">${p.symbol}</div><div class="card-class">${p.class||''} · ${p.direction||'LONG'}</div></div>
+        <div class="card-status ${r.badge}">${r.status} · Score ${p.score||'?'}</div>
+      </div>
+      <div class="card-prices">
+        <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$${fmtPrice(entry)}</div></div>
+        <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$${fmtPrice(tp)} (+${tpPct.toFixed(1)}%)</div></div>
+        <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$${fmtPrice(sl)} (-${slPct.toFixed(1)}%)</div></div>
+      </div>
+      <div class="card-rr">R:R <span>${rr}:1</span> | Size: <span>${p.position_size_pct||0}%</span> | Vol: <span>${p.rvol?p.rvol.toFixed(1):'?'}%</span> annualized</div>
 
-      // Example: if you want fully dynamic cards, you can build them here using
-      // data.picks[].eli5_reason, data.picks[].generated_at_est, etc.
-      // The static cards above are illustrative; the JSON now carries real ELI5 per pick.
-      console.log('[picks-now] Loaded live data with', data.n_scored, 'scored picks. risk_off_explanation and per-pick eli5_reason available.');
-    })
-    .catch(() => { /* silent — static demo cards are always visible */ });
-});
+      <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
+        <div class="score-chip">🧭 Signal: <strong>${p.signals?p.signals.split('|')[0].trim():'—'}</strong></div>
+        <div class="score-chip">📊 Score: <strong>${p.score||'?'}</strong>/100</div>
+        ${p.upside_pct?'<div class="score-chip">🎯 Target: <strong>$'+fmtPrice(p.target_price)+' (+'+p.upside_pct+'%)</strong></div>':''}
+      </div>
+
+      <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
+        <div class="score-chip" title="RSI — below 35 = oversold">RSI: <strong>${p.rsi!=null?p.rsi.toFixed(0):'?'}</strong> ${p.rsi_signal||''}</div>
+        <div class="score-chip" title="Bollinger Band %B — below 0 = at lower band">BB%: <strong>${p.bb_pct!=null?p.bb_pct.toFixed(2):'?'}</strong></div>
+        <div class="score-chip" title="Realized Volatility (annualized)">RVOL: <strong>${p.rvol!=null?p.rvol.toFixed(1):'?'}%</strong></div>
+        <div class="score-chip" title="Sharpe Ratio">Sharpe: <strong>${p.sharpe!=null?p.sharpe.toFixed(2):'?'}</strong></div>
+        <div class="score-chip" title="Max Drawdown">MaxDD: <strong>${p.max_dd!=null?p.max_dd.toFixed(1):'?'}%</strong></div>
+      </div>
+
+      <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
+        <div class="score-chip">📈 Mom: ${mom.join(' · ')}</div>
+        ${p.analyst?'<div class="score-chip">🏦 '+anl+'</div>':''}
+        ${p.fwd_pe?'<div class="score-chip">P/E: <strong>'+p.fwd_pe.toFixed(1)+'x</strong></div>':''}
+        ${p.eps_growth_pct?'<div class="score-chip">EPS: <strong>+'+p.eps_growth_pct.toFixed(0)+'%</strong> YoY</div>':''}
+        ${p.db_n&&p.db_n>=5?'<div class="score-chip">📚 DB: <strong>'+p.db_wr.toFixed(0)+'%</strong> WR n='+p.db_n+'</div>':''}
+        ${p.peg?'<div class="score-chip">PEG: <strong>'+p.peg.toFixed(2)+'</strong></div>':''}
+        ${p.roe_pct?'<div class="score-chip">ROE: <strong>'+p.roe_pct.toFixed(1)+'%</strong></div>':''}
+      </div>
+
+      <div class="card-eli5">
+        <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why this pick? (ELI5) — click to expand</div>
+        <div class="eli5-body">${p.eli5_reason||'Multi-factor score of '+p.score+'/100.'}</div>
+      </div>
+      <div class="pick-date">📅 <strong>Pick generated:</strong> ${est} EST | Page: ${new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})} EST</div>
+    `;
+    c.appendChild(cd);
+  });
+  if(!picks.length){
+    c.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">No picks. Run <code>python3 tools/picks_now_professional.py</code>.</div>';
+  }
+}
+
+const $=s=>document.querySelector(s);
+fetch('data/picks_now.json?_='+Date.now())
+  .then(r=>r.ok?r.json():null)
+  .then(d=>{if(d)renderPicks(d);})
+  .catch(()=>{
+    document.getElementById('picks-container').innerHTML=
+      '<div style="text-align:center;padding:40px;color:var(--red);grid-column:1/-1;">⚠️ Could not load picks_now.json.</div>';
+  });
 </script>
 </body>
 </html>
