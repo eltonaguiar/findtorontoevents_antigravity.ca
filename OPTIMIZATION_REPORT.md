@@ -1,9 +1,9 @@
 # 🎛️ Optimization Report
 
-**Generated:** 2026-06-07T20:32:21.604298
+**Generated:** 2026-06-07T22:22:31.106440
 
 ## 📊 Overall Accuracy
-- **Total Signals:** 399
+- **Total Signals:** 400
 - **Accuracy:** 58.5%
 - **Target:** 65.0%
 
@@ -12,7 +12,7 @@
 ### Crypto
 - ❌ **BTC-USD**: 50.0% (46 signals)
 - ⚠️ **ETH-USD**: 64.0% (54 signals)
-- ❌ **SOL-USD**: 47.1% (32 signals)
+- ❌ **SOL-USD**: 47.1% (33 signals)
 - ✅ **ADA-USD**: 66.7% (32 signals)
 - ✅ **DOT-USD**: 66.7% (35 signals)
 
@@ -23,7 +23,7 @@
 
 ## 🔧 Recent Tweaks
 
-**2026-06-07T20:32:21**
+**2026-06-07T22:22:30**
 - SYMBOL_DISABLE: BTC-USD
   - Reason: Accuracy 50.0% below minimum 55.0%
   - Change: enabled → disabled
