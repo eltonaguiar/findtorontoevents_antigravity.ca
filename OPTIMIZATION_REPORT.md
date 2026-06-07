@@ -1,10 +1,10 @@
 # 🎛️ Optimization Report
 
-**Generated:** 2026-06-07T16:36:11.790428
+**Generated:** 2026-06-07T18:24:37.070921
 
 ## 📊 Overall Accuracy
-- **Total Signals:** 397
-- **Accuracy:** 58.8%
+- **Total Signals:** 398
+- **Accuracy:** 58.5%
 - **Target:** 65.0%
 
 ## 📈 Accuracy by Asset Class
@@ -17,13 +17,13 @@
 - ✅ **DOT-USD**: 66.7% (35 signals)
 
 ### Forex
-- ✅ **EUR-USD**: 65.0% (21 signals)
+- ⚠️ **EUR-USD**: 61.9% (22 signals)
 - ❌ **GBP-USD**: 54.2% (25 signals)
 - ⚠️ **USD-JPY**: 58.8% (17 signals)
 
 ## 🔧 Recent Tweaks
 
-**2026-06-07T16:36:11**
+**2026-06-07T18:24:36**
 - SYMBOL_DISABLE: BTC-USD
   - Reason: Accuracy 50.0% below minimum 55.0%
   - Change: enabled → disabled
@@ -36,6 +36,9 @@
 - SYMBOL_DISABLE: DOGE-USD
   - Reason: Accuracy 33.3% below minimum 55.0%
   - Change: enabled → disabled
+- TIMEFRAME_OPTIMIZATION: EUR-USD
+  - Reason: Accuracy 61.9% below target, best at 48h
+  - Change: default → 48h
 - SYMBOL_DISABLE: GBP-USD
   - Reason: Accuracy 54.2% below minimum 55.0%
   - Change: enabled → disabled
