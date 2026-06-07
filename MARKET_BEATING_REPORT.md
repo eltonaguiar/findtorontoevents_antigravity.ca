@@ -1,14 +1,14 @@
 # 🎯 Market Beating Trading System Report
 
-**Generated:** 2026-06-07T14:41:00.984454
+**Generated:** 2026-06-07T16:36:11.796645
 **Status:** ⏳ OPTIMIZING
 
 ---
 
 ## 📊 Overall Performance
 - **Total Signals Tracked:** 403
-- **Signals Validated:** 396
-- **Overall Accuracy:** 59.1%
+- **Signals Validated:** 397
+- **Overall Accuracy:** 58.8%
 - **Target Accuracy:** 60%
 - **Status:** ⏳ BELOW TARGET
 
@@ -30,7 +30,7 @@
 
 ## 🎯 Road to Beating the Market
 - **Signals:** 403/50 (806%)
-- **Accuracy:** 59.1%/65.0%
+- **Accuracy:** 58.8%/65.0%
 
 ### ⏳ Continuing Optimization
 The system is gathering more data and refining parameters.
