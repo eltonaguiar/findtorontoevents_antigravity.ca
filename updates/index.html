@@ -67,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-06-06 09:20 EDT · <strong>86 open incidents</strong> (17 P0 · 43 P1) · <strong>149 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-06-07 02:01 EDT · <strong>92 open incidents</strong> (20 P0 · 46 P1) · <strong>153 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -82,15 +82,15 @@
     <tbody>
       <tr>
         <td class="cls">OVERALL</td>
-        <td>47</td>
-        <td class="p0">7</td>
-        <td class="top-issue">Live DB password stocks1234560 hardcoded repo-wide (rotate + scrub)</td>
-        <td>111</td>
+        <td>52</td>
+        <td class="p0">10</td>
+        <td class="top-issue">Backfill contamination: forward_test_only=0 on ALL crypto+equity rows; 68-100% backfill re…</td>
+        <td>115</td>
         <td class="top-issue">Backfill 1034 zero-PnL rows in at_pick_outcomes after _compute_pnl fix</td>
       </tr>
       <tr>
         <td class="cls">STOCKS</td>
-        <td>8</td>
+        <td>9</td>
         <td class="p0">2</td>
         <td class="top-issue">EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3…</td>
         <td>5</td>
@@ -157,6 +157,18 @@
 
 <h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
   <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>Backfill contamination: forward_test_only=0 on ALL crypto+equity rows; 68-100% backfill resolver labels</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>resolver/measurement layer</code> · reporter: claude-opus-4-8 (per-class edge workflow wxdjdjztu 2026-06-06) · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>Resolver-version selection bias: same data yields 4-6x PF spread -&gt; no class has a defensible edge</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>resolver/measurement layer</code> · reporter: claude-opus-4-8 (per-class edge workflow wxdjdjztu 2026-06-06) · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>70-95% TIME_EXPIRED across all classes invalidates the resolved-outcome dataset</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>resolver/measurement layer</code> · reporter: claude-opus-4-8 (per-class edge workflow wxdjdjztu 2026-06-06) · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>Live DB password stocks1234560 hardcoded repo-wide (rotate + scrub)</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>multiple (SKILL.md, alpha_engine/forward_test.py, rigorous_backtest_harness.py, +)</code> · reporter: claude-opus-4-8 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
@@ -165,12 +177,12 @@
     <div class="ie-card-meta">P0 · TRIAGED · component: <code>audit_dashboard/data/money_ready_verdict.json</code> · reporter: claude-opus-4-8 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>HC JS/Python parity drift can change eligibility by surface</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>Profitable-but-filtered picks are not surfaced anywhere</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>audit_trail/quality_gates.py + dashboard_generator.py audit surfaces</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>HC JS/Python parity drift can change eligibility by surface</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard/hc_filter.js / tools/dashboard_hc_rules.py</code> · reporter: gpt-5.4/openai · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>sync_active_mysql_picks_to_json upstream writer missing — root cause of 0.09% raw-pick outcome coverage</strong>
@@ -183,18 +195,6 @@
   <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>COT paper pilot over-emission</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>cot_paper_pilot.py / cot_positioning strategy</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">Stocks</span> <strong>EQUITY emission unlocked (1,424 outcomes) but all strategies PROBATION-tier (trust_score=3)</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>at_signal_outcomes, alpha_engine/equity strategies</code> · reporter: kilo-xiaomi-mimo · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">STOCKS</span> <strong>PEAD equity strategy stuck in shadow mode</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/pead_equity (shadow mode)</code> · reporter: ring-2.6-1t · target: 2026-06-01 17:00 EST · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">CRYPTO</span> <strong>CRYPTO directional bug: production emits LONG (33% WR) when SHORT edge is 67% WR</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/production_scanner.py</code> · reporter: claude-opus-4-7 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
 <h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
   <div class="enhancement-card ie-card">
