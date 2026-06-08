@@ -1,13 +1,13 @@
 # 🎯 Market Beating Trading System Report
 
-**Generated:** 2026-06-07T22:28:31.553838
+**Generated:** 2026-06-08T01:03:19.274439
 **Status:** ⏳ OPTIMIZING
 
 ---
 
 ## 📊 Overall Performance
-- **Total Signals Tracked:** 404
-- **Signals Validated:** 400
+- **Total Signals Tracked:** 408
+- **Signals Validated:** 402
 - **Overall Accuracy:** 58.5%
 - **Target Accuracy:** 60%
 - **Status:** ⏳ BELOW TARGET
@@ -15,7 +15,7 @@
 ## 💎 Crypto Performance (Priority)
 | Asset | Accuracy | Signals | Status |
 |-------|----------|---------|--------|
-| BTC-USD | 50.0% | 46 | ⚠️ |
+| BTC-USD | 50.0% | 48 | ⚠️ |
 | ETH-USD | 64.0% | 54 | ⚠️ |
 | SOL-USD | 47.1% | 33 | ❌ |
 | ADA-USD | 66.7% | 32 | ✅ |
@@ -29,7 +29,7 @@
 | USD-JPY | 58.8% | 17 | ⚠️ |
 
 ## 🎯 Road to Beating the Market
-- **Signals:** 404/50 (808%)
+- **Signals:** 408/50 (816%)
 - **Accuracy:** 58.5%/65.0%
 
 ### ⏳ Continuing Optimization
