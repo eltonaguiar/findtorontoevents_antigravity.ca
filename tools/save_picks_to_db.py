@@ -26,7 +26,19 @@ creds = get_stocks_creds()
 conn = pymysql.connect(**creds)
 cur = conn.cursor()
 inserted = 0
+skipped = 0
+# Per-symbol-day dedup: picks-now refreshes hourly; without this guard every
+# refresh inserts a fresh row, so one symbol picked all day becomes 20+ rows
+# (516 rows / 36 symbols / 95 symbol-days observed 2026-06-09 — AMZN x46).
+# That double-counts the track record. Keep ONE row per symbol per UTC day.
+cur.execute("SELECT DISTINCT symbol FROM picks_now_tracker WHERE DATE(generated_at)=CURDATE()")
+todays_symbols = {r[0] for r in cur.fetchall()}
 for p in picks:
+    sym = p["symbol"]
+    if sym in todays_symbols:
+        skipped += 1
+        continue
+    todays_symbols.add(sym)  # guard against in-batch dupes too
     price = sn(p.get("price"))
     tp, sl = p.get("suggested_tp_pct"), p.get("suggested_sl_pct")
     cur.execute("""
@@ -48,4 +60,4 @@ for p in picks:
     inserted += 1
 conn.commit()
 conn.close()
-print(f"✅ Saved {inserted} picks to DB")
+print(f"✅ Saved {inserted} picks to DB ({skipped} skipped — already tracked today)")

@@ -48,6 +48,19 @@ jobs:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
         run: python3 tools/save_picks_to_db.py
 
+      # Self-healing track record: ensure the tracker's symbols have OHLC bars
+      # (17/36 had none on 2026-06-09 -> never resolvable), then fill outcomes
+      # for any pick that has matured (first-touch TP vs SL, intrabar).
+      - name: Refresh OHLC coverage for tracker symbols
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/refresh_stock_ohlcv.py --execute --period 30d --include-picks-now || echo "[ohlcv] non-fatal"
+
+      - name: Resolve matured picks-now outcomes
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/resolve_picks_now.py --apply || echo "[resolve] non-fatal"
+
       - name: Commit updated picks JSON
         run: |
           git config user.name "github-actions[bot]"
@@ -58,8 +71,16 @@ jobs:
 
       - name: Push data commit
         run: |
-          git pull --rebase origin main || true
-          git push origin main
+          # main is hot (many agents/crons push). A single pull+push loses the
+          # race; retry rebase+push up to 5x before giving up (FTP deploy below
+          # still ships the data, and the next cron re-pushes).
+          pushed=0
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || true
+            if git push origin main; then echo "pushed on attempt $i"; pushed=1; break; fi
+            echo "push attempt $i lost the race — retrying"; sleep 5
+          done
+          [ "$pushed" = 1 ] || echo "::warning::picks-now data push failed after 5 retries; FTP deploy still ran, next cron will re-push"
 
       - name: FTP deploy picks-now assets to production
         env:
