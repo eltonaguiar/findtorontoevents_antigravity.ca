@@ -94,6 +94,22 @@ def get_stock_symbols(conn) -> List[str]:
     return sorted({normalize_yf_symbol(r[0]) for r in rows if r[0] and normalize_yf_symbol(r[0])})
 
 
+def get_picks_now_symbols(conn) -> List[str]:
+    """Pull distinct EQUITY/ETF symbols from picks_now_tracker so the picks-now
+    resolver (tools/resolve_picks_now.py) always has bars to resolve against.
+    Without this, 17/36 picks-now symbols had zero stock_ohlcv bars on
+    2026-06-09 and could never get a right/wrong outcome (coverage gap)."""
+    sql = """
+        SELECT DISTINCT symbol FROM picks_now_tracker
+        WHERE asset_class NOT IN ('CRYPTO','MEMECOIN','FOREX','SPORTS','UNKNOWN')
+          AND symbol IS NOT NULL AND symbol != ''
+    """
+    with conn.cursor() as cur:
+        cur.execute(sql)
+        rows = cur.fetchall()
+    return sorted({normalize_yf_symbol(r[0]) for r in rows if r[0] and normalize_yf_symbol(r[0])})
+
+
 def _ms_timestamp(dt) -> int:
     """Convert a pandas Timestamp to Unix milliseconds."""
     if pd.isna(dt):
@@ -253,6 +269,9 @@ def main() -> int:
     parser.add_argument("--execute", action="store_true", help="Actually write to DB")
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="Symbols per yfinance batch")
     parser.add_argument("--period", default=PERIOD, help="yfinance period (e.g., 60d, 30d)")
+    parser.add_argument("--symbols", default="", help="Comma-separated symbol override (instead of at_raw_picks)")
+    parser.add_argument("--include-picks-now", action="store_true",
+                        help="Union in distinct picks_now_tracker EQUITY/ETF symbols (unblocks the picks-now resolver)")
     args = parser.parse_args()
 
     dry_run = not args.execute
@@ -264,8 +283,17 @@ def main() -> int:
     conn = get_db_conn()
     create_table_if_missing(conn)
 
-    symbols = get_stock_symbols(conn)
-    logger.info("Found %d distinct non-crypto symbols in at_raw_picks", len(symbols))
+    if args.symbols.strip():
+        symbols = sorted({normalize_yf_symbol(s.strip()) for s in args.symbols.split(",") if s.strip()})
+        logger.info("Using %d symbols from --symbols override", len(symbols))
+    else:
+        symbols = get_stock_symbols(conn)
+        logger.info("Found %d distinct non-crypto symbols in at_raw_picks", len(symbols))
+    if args.include_picks_now:
+        pn = get_picks_now_symbols(conn)
+        before = len(symbols)
+        symbols = sorted(set(symbols) | set(pn))
+        logger.info("Unioned %d picks_now_tracker symbols (+%d new)", len(pn), len(symbols) - before)
 
     total_rows_upserted = 0
     success_symbols = 0
