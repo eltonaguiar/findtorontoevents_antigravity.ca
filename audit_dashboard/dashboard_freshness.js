@@ -210,6 +210,12 @@
   function injectSectionBadges(sourceId, timestamp) {
     var targets = sectionTimestamps[sourceId];
     if (!targets) return;
+    // 2026-06-09: label each inline badge with its section so co-located badges
+    // don't read as a meaningless "FRESH FRESH FRESH" cluster (operator feedback).
+    var srcLabel = '';
+    for (var si = 0; si < sources.length; si++) {
+      if (sources[si].id === sourceId) { srcLabel = sources[si].label; break; }
+    }
     targets.forEach(function(targetId) {
       var el = document.getElementById(targetId);
       if (!el) return;
@@ -223,8 +229,8 @@
       span.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:' +
         f.bg + ';color:' + f.color + ';border:1px solid ' + f.color + '40;margin-left:8px;white-space:nowrap';
       span.innerHTML = '<span style="width:5px;height:5px;border-radius:50%;background:' + f.color + '"></span>' +
-        esc(f.label) + ' · ' + esc(age);
-      span.title = 'Generated: ' + esc(est) + ' EST';
+        (srcLabel ? esc(srcLabel) + ' · ' : '') + esc(f.label) + ' · ' + esc(age);
+      span.title = (srcLabel ? srcLabel + ' — ' : '') + 'Generated: ' + esc(est) + ' EST';
       el.appendChild(span);
     });
   }

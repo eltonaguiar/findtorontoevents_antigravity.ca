@@ -78,6 +78,50 @@ The only fix is **time + breadth of clean forward resolutions**:
   per-class WR/PF as provisional. **No class should be sized up on the current
   6-day snapshot** — consistent with `money_ready_verdict` 0/9.
 
+## APPENDIX — verified against the `at_signal_outcomes` intrabar ledger (later same day)
+
+A money-ready swarm built a **self-contained intrabar ledger `at_signal_outcomes`** (its own
+entry/tp/sl/exit columns + `intrabar_pnl_pct`/`intrabar_status`/`intrabar_ambiguous`). Verifying its
+claim against the live DB **refines the "6-day snapshot" framing above** (which was specific to
+`at_pick_outcomes`):
+
+- **1,553 intrabar-resolved signals spanning 93 distinct closed-days (2026-02-24 → 06-09)** — NOT a
+  snapshot. (The intrabar replay was batch-run 2026-06-09 over temporally-distributed signals, so the
+  underlying sample is decorrelated.) Top closed-days are spread (151/104/103/79/65/57/51/50…), not
+  83%-in-one-window.
+- Per-class clean intrabar (non-banned, per-class sane-pnl cap):
+
+  | class | n | WR | PF | verdict |
+  |-------|--:|---:|---:|---------|
+  | CRYPTO | 1040 | 36.0% | 0.74 | net loser |
+  | FOREX | 82 | 35.4% | 0.50 | net loser |
+  | MEMECOIN | 73 | 26.0% | 0.59 | net loser |
+  | **EQUITY** | **72** | **58.3%** | **2.13** | **T2-shaped, fails only n≥100** |
+  | **COMMODITY** | **98** | **40.8%** | **1.73** | close, n<100 |
+  | (null class) | 58 | 10.3% | 0.09 | garbage / unlabeled |
+
+**Corrected conclusion:** the "0 classes clear Tier-2" result **holds on a second, broader (93-day)
+intrabar dataset** — so it is robust, not a snapshot artifact. BUT the framing "we only have ~1 week of
+data" was too pessimistic: EQUITY (58.3%/PF2.13) and COMMODITY (40.8%/PF1.73) are **genuine n→100
+watch candidates blocked on sample size, not calendar time**. These match `greedy-mixing-puppy.md`'s
+claims exactly. The wiring of `money_ready_verdict` to read this ledger (that plan's Workstream F) is
+peer-owned — this appendix independently confirms the data source is sound and the per-class numbers.
+
+### Scrutiny of the two leads (decomposition) — both weaker than the aggregate suggests
+- **EQUITY n=72 58%/PF2.13 is an aggregate ARTIFACT.** Surface-diversified (31 symbols, 18
+  strategies, HHI 0.074) but the WR/PF is inflated by small-n perfect-record sub-strategies:
+  `vt_equity_two_day_rsi_reversal` **n=14 100% WR** (14-0 = red flag), `regime_accumulation` n=5 80%,
+  `stocks_rsi2_pullback` n=8 88% — while `bond_yield_momentum` (mislabeled into EQUITY, 0%) and
+  `smart_money_accumulation` (33%) lose. **Not a coherent edge** — do not treat EQUITY-as-a-class as a
+  lead.
+- **COMMODITY n=98 41%/PF1.73 is really `futures_momentum` n=57 58%/PF2.59** (57 of 98; the rest —
+  commodity_momentum 0%, commodity_tsmom_12m 25% — are losers). 2-week window (2026-05-27..06-09),
+  concentrated in correlated metals/energy (SI=F/PL=F/NG=F). `futures_momentum` is **BANNED
+  (2026-05-06)**; intrabar-true now partially vindicates it → it is the genuine **re-audit candidate**
+  (plan Workstream D / mutation-before-kill), still n<100 + short-window so NOT money-ready.
+- **Net:** the single most credible artifact-free lead in the system is `COMMODITY::futures_momentum`
+  (re-audit the ban as forward-track-only). EQUITY's apparent edge dissolves under decomposition.
+
 ## Method (reproducible)
 Same filters as `…intrabar-edge-hunt-and-resolver-keyspace-gap.md` (intrabar COALESCE,
 non-backfill, 20 banned sources + `prediction_market_consensus`/`hs_lb_None`/`unknown`,
