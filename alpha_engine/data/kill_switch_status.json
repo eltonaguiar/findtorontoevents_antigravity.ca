@@ -1,8 +1,8 @@
 {
-  "is_killed": false,
-  "kill_reason": "Dead features: 30/32 (94%) -- health_score=0.06",
-  "severity": "warning",
-  "recommended_action": "reduce_size",
+  "is_killed": true,
+  "kill_reason": "27 consecutive losses across all strategies",
+  "severity": "emergency",
+  "recommended_action": "close_all",
   "conditions": [
     {
       "condition": "feature_health_collapse",
@@ -10,10 +10,20 @@
       "detail": "Dead features: 30/32 (94%) -- health_score=0.06"
     },
     {
-      "condition": "win_rate_low",
-      "severity": "warning",
-      "detail": "Rolling 20-trade WR: 4/20 (20%) -- baseline ~35%"
+      "condition": "sl_hit_rate_spike",
+      "severity": "critical",
+      "detail": "SL hit rate: 10/10 (100%) -- baseline <30%"
+    },
+    {
+      "condition": "win_rate_collapse",
+      "severity": "critical",
+      "detail": "Rolling 20-trade WR: 0/20 (0%) -- baseline ~35%"
+    },
+    {
+      "condition": "consecutive_losses",
+      "severity": "emergency",
+      "detail": "27 consecutive losses across all strategies"
     }
   ],
-  "checked_at": "2026-06-09T22:16:57.218043+00:00"
+  "checked_at": "2026-06-09T22:56:30.819496+00:00"
 }
