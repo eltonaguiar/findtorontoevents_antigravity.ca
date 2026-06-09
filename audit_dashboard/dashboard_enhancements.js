@@ -1065,9 +1065,13 @@
     // after enhancements rendered. Cheap idempotent walk; safe to re-run on
     // dashboard-data-loaded.
     try { attachCommodityTooltips(document.body); } catch (e) { console.warn('[Enhancements] Commodity tooltips error:', e); }
-    renderEagle2PolicyStrip().catch(e => console.warn('[Enhancements] EAGLE2 policy strip error:', e));
+    // 2026-06-09: EAGLE2 policy strip REMOVED per operator (verbose, duplicated the
+    // MAJOR GOAL / Money-ready bridge messaging). The honest "size on policy-clean
+    // only / 0-9 money-ready" message is preserved by the kept Money-ready bridge.
+    // Function renderEagle2PolicyStrip() retained below but no longer invoked.
+    // renderEagle2PolicyStrip().catch(e => console.warn('[Enhancements] EAGLE2 policy strip error:', e));
 
-    console.log('[Dashboard Enhancements] Loaded: System Trends, Strategy Consensus, Time-Window Leaderboard, DB Health, Top-N Backtest, Commodity Tooltips, EAGLE2 Policy Strip');
+    console.log('[Dashboard Enhancements] Loaded: System Trends, Strategy Consensus, Time-Window Leaderboard, DB Health, Top-N Backtest, Commodity Tooltips');
   }
 
   // Start on DOM ready or immediately
