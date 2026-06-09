@@ -20,11 +20,13 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[asset-classes/BOND]]
 
 ### 🧠 Strategies
+- [[strategies/strategy-catalog-clean-cohort]] — ⭐ live DB clean-cohort per-strategy stats (honest WR/PF)
 - [[strategies/mega_mutation]] — ⚠️ T1 REFUTED on clean data (raw n=204 is NULL-timestamp; clean n=13/30.8%)
 - [[strategies/fx_smart_carry_trade_momentum]] — T2 candidate (PF 1.85 / n=25 OOS-robust)
 - [[strategies/etf_verified_dual_momentum]] — ETF pilot wired (PF 1.60)
 
 ### 🔥 Incidents & Decisions
+- [[incidents/incidents-live-summary]] — ⭐ live INCIDENT_*/ENHANCEMENT_* counts + /audit/incidents.html
 - [[incidents/resolver-intrabar-blocker]] — upstream T2 blocker
 - [[incidents/ai-tournament-wr-artifact]] — 73-91% WR = single-snapshot artifact
 
@@ -33,6 +35,7 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[sessions/2026-06-05-session4-deliverables]]
 - [[sessions/2026-06-06-money-ready-picks]]
 - [[sessions/2026-06-06-edge-audit-and-resolver-fix]] — ⚠️ edge reality check: 0 confirmed edges
+- [[sessions/2026-06-09-rescue-fixes-and-benefits]] — ⭐ recent fixes + their benefits (changelog)
 
 ### 📋 Reference
 - [[reference/edge-rescue-roadmap]] — ⚠️ how we get from 0 edge to money-ready (SAVE-1..5)
