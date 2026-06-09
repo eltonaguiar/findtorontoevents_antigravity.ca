@@ -48,6 +48,19 @@ jobs:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
         run: python3 tools/save_picks_to_db.py
 
+      # Self-healing track record: ensure the tracker's symbols have OHLC bars
+      # (17/36 had none on 2026-06-09 -> never resolvable), then fill outcomes
+      # for any pick that has matured (first-touch TP vs SL, intrabar).
+      - name: Refresh OHLC coverage for tracker symbols
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/refresh_stock_ohlcv.py --execute --period 30d --include-picks-now || echo "[ohlcv] non-fatal"
+
+      - name: Resolve matured picks-now outcomes
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/resolve_picks_now.py --apply || echo "[resolve] non-fatal"
+
       - name: Commit updated picks JSON
         run: |
           git config user.name "github-actions[bot]"
@@ -57,9 +70,29 @@ jobs:
             git commit -m "chore(picks-now): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
 
       - name: Push data commit
+        # continue-on-error so a lost push race NEVER blocks the FTP deploy below
+        # (FINDING #14: without this, a conflicted rebase exit-1'd the step and the
+        # FTP step was SKIPPED — picks-now neither pushed NOR deployed on race runs).
+        continue-on-error: true
         run: |
-          git pull --rebase origin main || true
-          git push origin main
+          # main is hot (many agents/crons push). A single pull+push loses the
+          # race; retry rebase+push up to 5x. picks_now.json is fully regenerated
+          # each run, so on a rebase conflict we KEEP our freshly-built version and
+          # continue (never leave a conflicted rebase stuck, which made all 5
+          # retries no-op before).
+          pushed=0
+          for i in 1 2 3 4 5; do
+            if ! git pull --rebase origin main; then
+              # conflict (almost always the regenerated picks_now.json) — take OURS
+              git checkout --theirs audit_dashboard/data/picks_now.json 2>/dev/null \
+                || git checkout --ours audit_dashboard/data/picks_now.json 2>/dev/null || true
+              git add audit_dashboard/data/picks_now.json 2>/dev/null || true
+              GIT_EDITOR=true git rebase --continue 2>/dev/null || git rebase --abort 2>/dev/null || true
+            fi
+            if git push origin main; then echo "pushed on attempt $i"; pushed=1; break; fi
+            echo "push attempt $i lost the race — retrying"; sleep 5
+          done
+          [ "$pushed" = 1 ] || echo "::warning::picks-now data push failed after 5 retries; FTP deploy still ships the data, next cron re-pushes"
 
       - name: FTP deploy picks-now assets to production
         env:
