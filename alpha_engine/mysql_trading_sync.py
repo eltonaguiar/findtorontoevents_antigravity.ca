@@ -575,6 +575,54 @@ def connect_with_retry():
     raise last_err
 
 
+# ── Entry-price scale validation ────────────────────────────────────────────
+# 2026-06-09 — defense-in-depth: validate entry_price against the symbol's
+# latest OHLCV close before INSERT. 7 scale-corrupt rows (|pnl|>1000%,
+# e.g. JUPUSDT entry=0.00025 vs real ~0.18, EURUSD exit=735 vs real ~1.16)
+# inflated CRYPTO raw PF from 1.02→13.63 and were quarantined. This guard
+# rejects future mis-scaled entries at the DB funnel so the clamp + quarantine
+# are belt-and-suspenders, not the only defense.
+#
+# Skipped gracefully when stock_ohlcv has no bar for the symbol.
+_ENTRY_SCALE_THRESHOLD_BY_CLASS: dict[str, float] = {
+    "FOREX": 100.0,
+    "COMMODITY": 50.0,
+    "FUTURES": 50.0,
+    "EQUITY": 10.0,
+    "ETF": 10.0,
+    "BOND": 10.0,
+    "STOCK": 10.0,
+    "INDEX": 10.0,
+}
+_ENTRY_SCALE_THRESHOLD_DEFAULT = 10.0
+
+
+def _validate_entry_price_scale(
+    symbol: str,
+    entry_price: float,
+    category: str,
+    price_cache: dict[str, float],
+) -> tuple[bool, str]:
+    """Return (pass, reason). Pass=False means the entry_price is implausible."""
+    if entry_price is None or not symbol or symbol not in price_cache:
+        return True, ""  # no OHLCV data → pass gracefully
+    close_price = price_cache[symbol]
+    if close_price is None or close_price <= 0 or entry_price <= 0:
+        return True, ""
+    cat = (category or "").upper()
+    # Crypto spans extreme ranges (micro-cap → BTC); skip scale validation.
+    if cat == "CRYPTO":
+        return True, ""
+    threshold = _ENTRY_SCALE_THRESHOLD_BY_CLASS.get(cat, _ENTRY_SCALE_THRESHOLD_DEFAULT)
+    ratio = max(entry_price / close_price, close_price / entry_price)
+    if ratio > threshold:
+        return False, (
+            f"entry_price={entry_price} vs latest OHLCV close={close_price} "
+            f"(ratio {ratio:.1f}x > {threshold:.0f}x threshold for class={cat})"
+        )
+    return True, ""
+
+
 # ── Main sync logic ─────────────────────────────────────────────────────────
 
 def sync(dry_run=False):
@@ -735,6 +783,64 @@ def sync(dry_run=False):
     log_ok(f"Connected to MySQL ({DB_HOST})")
 
     cursor = conn.cursor()
+
+    # ── Entry-price scale validation (2026-06-09) ───────────────────────────
+    # Query stock_ohlcv for the latest close per symbol in the batch, then
+    # filter out rows whose entry_price is implausible vs market price.
+    # Uses the main DB connection (no second connect).  Skipped gracefully
+    # when stock_ohlcv has no bar for the symbol.
+    #
+    # Crypto is BYPASSED (spans micro-cap to BTC); the pnl anomaly clamp
+    # [-100,200] + pnl_pct verification are the crypto-only defenses.
+    _scale_skipped = 0
+    symbols_in_batch = {r.get("symbol") for r in rows if r.get("symbol")}
+    price_cache: dict[str, float] = {}
+    if symbols_in_batch:
+        try:
+            placeholders = ",".join(["%s"] * len(symbols_in_batch))
+            # Subquery for latest bar per symbol (not ORDER BY scan).
+            cursor.execute(
+                f"SELECT o.symbol, o.close FROM stock_ohlcv o "
+                f"JOIN (SELECT symbol, MAX(timestamp) mt FROM stock_ohlcv "
+                f"      WHERE symbol IN ({placeholders}) GROUP BY symbol) m "
+                f"ON o.symbol=m.symbol AND o.timestamp=m.mt "
+                f"WHERE o.close IS NOT NULL",
+                tuple(symbols_in_batch),
+            )
+            for row in cursor.fetchall():
+                sym = row["symbol"]
+                if sym not in price_cache:
+                    price_cache[sym] = float(row["close"])
+            log_info(
+                f"Entry-scale price cache: {len(price_cache)} of "
+                f"{len(symbols_in_batch)} symbols have OHLCV data"
+            )
+        except Exception as e:
+            log_warn(f"Could not load stock_ohlcv price cache (non-fatal): {e}")
+
+    validated_rows: list[dict] = []
+    for r in rows:
+        ok, reason = _validate_entry_price_scale(
+            r.get("symbol", ""),
+            r.get("entry_price"),
+            r.get("category", ""),
+            price_cache,
+        )
+        if ok:
+            validated_rows.append(r)
+        else:
+            _scale_skipped += 1
+            log_warn(
+                f"[ENTRY_SCALE] Suppressing {r.get('id', '?')[:50]} "
+                f"symbol={r.get('symbol')}: {reason}"
+            )
+    if _scale_skipped:
+        rows = validated_rows
+        log_info(
+            f"[ENTRY_SCALE] Suppressed {_scale_skipped} pick(s) with "
+            f"implausible entry_price (belt-and-suspenders with the pnl "
+            f"anomaly clamp). {len(rows)} rows remain for upsert."
+        )
 
     # Create table if not exists
     try:
