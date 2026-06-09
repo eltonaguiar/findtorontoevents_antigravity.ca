@@ -58,7 +58,19 @@ Direct re-validation **does NOT confirm** the swarm's "clean divergent COMMODITY
   FOREX-block casualty, never strategy-specifically killed) — but n=19 intrabar is tiny; treat as
   low-priority shadow with the same auto-expire guardrails.
 
-## Status
-DECISION recorded + guardrail #5 executed. NET: shadow-track is **NOT activated** — futures_momentum
-is on HOLD pending subset-divergence investigation; forex_rsi2 is a low-priority defensible shadow.
-This is the "investigate before resurrect" discipline working. Swarm output: `swarm_runs/wsg_unban_2026-06-09/`.
+## SUBSET-DIVERGENCE INVESTIGATION (2026-06-09) — both leads are ARTIFACTS
+- **`futures_momentum` intrabar subset (n=46):** the 63% is driven by **2 precious-metals symbols
+  in a ~1-week window** — SI=F (silver) n=17 WR 82% [Jun 2–5], PL=F (platinum) n=16 WR 94%
+  [May 28–Jun 5] = 33/46. The other 4 commodities (HG=F, GC=F, SB=F, KC=F) are **all 0% WR**.
+  → recency/regime luck in 2 symbols, NOT a strategy edge. Bulk raw COMMODITY = 42%. **NO.**
+- **`forex_rsi2` intrabar subset (n=19):** spread across 8 pairs at **1–3 trades each** (the
+  100%-WR symbols are n=1–2 coin-flips). More diversified, but far too small to infer an edge. **NO.**
+
+## FINAL VERDICT
+**Neither lead is shadow-tracked** — both are small-window / small-n artifacts. This fully matches
+the session's central finding (no measurable durable edge yet; the apparent leads dissolve under
+per-symbol/per-window scrutiny). **Action: do NOT resurrect either.** Let honest n accumulate
+naturally — Option A's per-class cap already lets the *unblocked* classes (EQUITY etc.) grow; re-run
+the looser-bar + DSR/PBO/HHI sweep in 3–6 weeks. The "investigate-before-resurrect" discipline
+(swarm → guardrail #5 → subset analysis) correctly prevented two false resurrections.
+Swarm output: `swarm_runs/wsg_unban_2026-06-09/`.
