@@ -1357,7 +1357,23 @@ def main():
             raise RuntimeError("no secure creds from tools.db_env (DB_PASSWORDS_JSON or fallbacks)")
         db_cur = db_conn.cursor()
         inserted = 0
+        skipped = 0
+        # Per-symbol-day dedup guard (mirrors tools/save_picks_to_db.py). This is
+        # the SECOND writer of picks_now_tracker and runs first in the workflow;
+        # without the guard here the generator re-inserts a row for every symbol
+        # on every run (06/12/18 cron + intra-run retries), so one symbol becomes
+        # many rows/day and double-counts the track record (observed 2026-06-09:
+        # 20 symbols with 3-4 rows for the same day). The table has no UNIQUE
+        # constraint to enforce this, so BOTH writers must guard. Keep ONE row
+        # per symbol per UTC-session day.
+        db_cur.execute("SELECT DISTINCT symbol FROM picks_now_tracker WHERE DATE(generated_at)=CURDATE()")
+        _todays_syms = {row[0] for row in db_cur.fetchall()}
         for _, r in json_picks.iterrows():
+            _sym = r['symbol']
+            if _sym in _todays_syms:
+                skipped += 1
+                continue
+            _todays_syms.add(_sym)  # guard against in-run dupes too
             tp = r.get('suggested_tp_pct')
             sl = r.get('suggested_sl_pct')
             price = r.get('price', 0)
@@ -1394,7 +1410,7 @@ def main():
             inserted += 1
         db_conn.commit()
         db_conn.close()
-        print(f"💾 DB saved: {inserted} picks to picks_now_tracker")
+        print(f"💾 DB saved: {inserted} picks to picks_now_tracker ({skipped} skipped — already tracked today)")
     except Exception as e:
         print(f"  [WARN] DB save skipped (use GHA for production tracking): {e}")
 
