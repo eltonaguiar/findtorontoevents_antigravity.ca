@@ -3,22 +3,38 @@
     {
       "type": "MODEL_FLAT",
       "severity": "WARNING",
-      "message": "Prediction variance 0.0056 < 0.01 -- model not discriminating between good and bad picks",
-      "timestamp": "2026-06-09T18:57:34.741642+00:00"
+      "message": "Prediction variance 0.0089 < 0.01 -- model not discriminating between good and bad picks",
+      "timestamp": "2026-06-09T20:27:54.618984+00:00"
     },
     {
       "type": "PSI_SHIFT",
+      "severity": "CRITICAL",
+      "message": "PSI = 0.448 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-06-09T20:27:54.618984+00:00"
+    },
+    {
+      "type": "OUT_OF_DISTRIBUTION",
       "severity": "WARNING",
-      "message": "PSI = 0.355 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
-      "timestamp": "2026-06-09T18:57:34.741642+00:00"
+      "message": "PL=F (futures_bb_mean_reversion) is OOD -- 2 features beyond 3.0 sigma, confidence reduced by 0.05",
+      "symbol": "PL=F",
+      "strategy": "futures_bb_mean_reversion",
+      "timestamp": "2026-06-09T20:27:54.699829+00:00"
+    },
+    {
+      "type": "CONSECUTIVE_LOSSES",
+      "severity": "WARNING",
+      "message": "Strategy 'prediction_market_consensus' has 5 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
+      "strategy": "prediction_market_consensus",
+      "streak": 5,
+      "timestamp": "2026-06-09T20:27:54.713992+00:00"
     }
   ],
   "summary": {
-    "total_alerts": 2,
-    "critical": 0,
-    "warning": 2,
+    "total_alerts": 4,
+    "critical": 1,
+    "warning": 3,
     "info": 0,
-    "sizing_multiplier": 1.0
+    "sizing_multiplier": 0.5
   },
   "spc": {
     "status": "ERROR",
@@ -26,9 +42,9 @@
     "center_line": null
   },
   "prediction_dist": {
-    "psi": 0.3554,
-    "mean_shift": 0.0196,
-    "current_var": 0.0056
+    "psi": 0.448,
+    "mean_shift": 0.0345,
+    "current_var": 0.0089
   },
-  "updated_at": "2026-06-09T18:57:34.741642+00:00"
+  "updated_at": "2026-06-09T20:27:54.618984+00:00"
 }
