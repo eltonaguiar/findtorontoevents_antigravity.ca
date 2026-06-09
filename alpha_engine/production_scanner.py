@@ -1399,14 +1399,22 @@ BANNED_SOURCES = {
     # 2026-06-08: n=25 WR=24% PF=0.077; audit_surface_truth bridge="FAIL — mutate
     # or kill emitters; no real money"). Its sibling multi_asset_* sources
     # (multi_asset_copytrader, multi_asset_cot, forex_copy_trader) are ALREADY
-    # banned above — this completes that family. The orphaned emitter_discipline.py
-    # already lists it for kill but has zero importers so never runs. Investigation
+    # banned above — this completes that family. (Update 2026-06-09: emitter_discipline.py
+    # is NO LONGER orphaned — commit 3b269c04f5 wired apply_emitter_discipline into
+    # production_scanner intake (~line 4117), so its kill-list now runs too.) Investigation
     # record: reports/research_index_and_forex_diagnosis_2026-06-09.md.
     "multi_asset_scanner",
-    # 2026-06-09: FOREX bleeder family migrated from the orphaned
-    # emitter_discipline.HARD_KILL_STRATEGIES (which has zero importers — never
-    # runs) into the already-wired apply_source_ban_gate. Verified on the clean
-    # at_pick_outcomes cohort, NOT just trusting the kill-list:
+    # 2026-06-09: FOREX bleeder family. NAMESPACE NOTE (peer-review wdgkflcrt):
+    # apply_source_ban_gate matches the SOURCE_SYSTEM field. The 5 STRATEGY-named
+    # entries below (forex_carry_momentum, forex_rsi2_mean_reversion, carry_trade_
+    # momentum, forex_carry_ppp, forex_carry_bb_hybrid) are therefore INERT here for
+    # normally-tagged rows — their REAL kill is emitter_discipline.HARD_KILL_STRATEGIES
+    # (matches the `strategy` field), which IS now wired into intake via commit
+    # 3b269c04f5 (production_scanner ~line 4117). These BANNED_SOURCES copies are kept
+    # as belt-and-suspenders for legacy rows where strategy collapsed into source_system.
+    # The 3 REAL source_systems below (binance_smart_money, myfxbook_retail_contrarian,
+    # ig_contrarian_sentiment) DO fire here. Verified on the clean at_pick_outcomes
+    # cohort, NOT just trusting the kill-list:
     #   forex_carry_momentum     n=1183 WR 1.0%  (PF "9.0" is ONE +428% CADJPY
     #                                              feed-bug win — catastrophic)
     #   forex_rsi2_mean_reversion n=2441 WR 12.7% PF 0.39 (incl −100% NZDUSD feed bug)
