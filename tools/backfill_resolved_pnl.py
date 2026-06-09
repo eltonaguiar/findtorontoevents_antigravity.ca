@@ -79,6 +79,9 @@ def _fetch_candidates(conn, *, strategy: str | None, limit: int) -> list[dict]:
 
 
 def _recompute(row: dict) -> float | None:
+    """Recompute pnl_pct, returning None if the result would violate
+    the chk_pnl_sign_coherence constraint (status says WON but pnl < 0, or
+    status says LOST but pnl > 0)."""
     entry = float(row.get("entry_price") or 0)
     exit_p = row.get("exit_price")
     if exit_p is None:
@@ -87,7 +90,19 @@ def _recompute(row: dict) -> float | None:
     if exit_p <= 0:
         return None
     d = _direction_norm(row.get("direction"))
-    return _compute_pnl(entry, exit_p, d)
+    new_pnl = _compute_pnl(entry, exit_p, d)
+
+    # chk_pnl_sign_coherence: WON/TP_HIT/closed_win must have pnl >= -0.01;
+    # LOST/SL_HIT/closed_loss must have pnl <= 0.01. Skip rows where the
+    # recomputed pnl would violate this — the status label is the ground truth
+    # and we should not overwrite it.
+    status = (row.get("status") or "").upper()
+    if status in ("WON", "TP_HIT", "CLOSED_WIN") and new_pnl < -0.01:
+        return None
+    if status in ("LOST", "SL_HIT", "CLOSED_LOSS") and new_pnl > 0.01:
+        return None
+
+    return new_pnl
 
 
 def _json_archive(where: str, archive_name: str, n: int, mysql_err: Exception) -> None:
@@ -199,7 +214,9 @@ def main() -> int:
             for pnl, row_id in updates:
                 cur.execute(
                     "UPDATE trading_picks SET pnl_pct=%s WHERE id=%s "
-                    "AND (pnl_pct IS NULL OR ABS(COALESCE(pnl_pct,0)) < 0.0001)",
+                    "AND (pnl_pct IS NULL OR ABS(COALESCE(pnl_pct,0)) < 0.0001) "
+                    "AND (pnl_pct IS NULL OR status NOT IN ('WON', 'TP_HIT', 'CLOSED_WIN') OR pnl_pct <= 0.01) "
+                    "AND (pnl_pct IS NULL OR status NOT IN ('LOST', 'SL_HIT', 'CLOSED_LOSS') OR pnl_pct >= -0.01)",
                     (pnl, row_id),
                 )
                 fixed += cur.rowcount
