@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T18:45:04.994432+00:00",
+  "generated_at": "2026-06-09T20:35:09.732696+00:00",
   "strategy": "cot_positioning",
   "symbol": "CT=F",
   "method": "bootstrap 10000 sequences of 50 trades each, sampled with replacement from the 100-pick realized pnl_pct distribution. Per-trade USD = pnl_pct/100 \u00d7 $35k notional \u2212 $10 round-trip cost.",
@@ -12,72 +12,72 @@
     "maintenance_margin_usd": 1500.0
   },
   "pnl_distribution": {
-    "n": 7,
-    "mean_pct": 0.5064,
-    "stdev_pct": 3.5646,
-    "min_pct": -5.7,
+    "n": 9,
+    "mean_pct": -1.0005,
+    "stdev_pct": 4.2984,
+    "min_pct": -6.41,
     "max_pct": 5.08,
     "wins": 2,
-    "losses": 5
+    "losses": 7
   },
   "tiers": {
     "$5000": {
       "starter": 5000,
       "sims": 10000,
       "seq_trades": 50,
-      "margin_call_count": 3092,
-      "margin_call_pct": 30.92,
-      "final_equity_mean": 11595.8,
-      "final_equity_p05": 190.43,
-      "final_equity_p50": 12144.98,
-      "final_equity_p95": 26507.23,
-      "max_drawdown_mean_pct": 57.552,
-      "max_drawdown_p95_pct": 97.197
+      "margin_call_count": 9728,
+      "margin_call_pct": 97.28,
+      "final_equity_mean": 723.51,
+      "final_equity_p05": -427.19,
+      "final_equity_p50": 587.5,
+      "final_equity_p95": 1467.37,
+      "max_drawdown_mean_pct": 90.695,
+      "max_drawdown_p95_pct": 105.922
     },
     "$10000": {
       "starter": 10000,
       "sims": 10000,
       "seq_trades": 50,
-      "margin_call_count": 647,
-      "margin_call_pct": 6.47,
-      "final_equity_mean": 18181.73,
-      "final_equity_p05": 1301.34,
-      "final_equity_p50": 18446.25,
-      "final_equity_p95": 31673.37,
-      "max_drawdown_mean_pct": 40.771,
-      "max_drawdown_p95_pct": 88.515
+      "margin_call_count": 9003,
+      "margin_call_pct": 90.03,
+      "final_equity_mean": 1410.18,
+      "final_equity_p05": -466.65,
+      "final_equity_p50": 818.82,
+      "final_equity_p95": 7977.39,
+      "max_drawdown_mean_pct": 91.642,
+      "max_drawdown_p95_pct": 104.105
     },
     "$25000": {
       "starter": 25000,
       "sims": 10000,
       "seq_trades": 50,
-      "margin_call_count": 1,
-      "margin_call_pct": 0.01,
-      "final_equity_mean": 33423.42,
-      "final_equity_p05": 19524.44,
-      "final_equity_p50": 33501.72,
-      "final_equity_p95": 46740.47,
-      "max_drawdown_mean_pct": 20.11,
-      "max_drawdown_p95_pct": 41.955
+      "margin_call_count": 3420,
+      "margin_call_pct": 34.2,
+      "final_equity_mean": 8402.1,
+      "final_equity_p05": -235.78,
+      "final_equity_p50": 6872.29,
+      "final_equity_p95": 23544.12,
+      "max_drawdown_mean_pct": 75.005,
+      "max_drawdown_p95_pct": 100.932
     },
     "$50000": {
       "starter": 50000,
       "sims": 10000,
       "seq_trades": 50,
-      "margin_call_count": 0,
-      "margin_call_pct": 0.0,
-      "final_equity_mean": 58423.72,
-      "final_equity_p05": 44527.06,
-      "final_equity_p50": 58499.17,
-      "final_equity_p95": 71740.05,
-      "max_drawdown_mean_pct": 10.957,
-      "max_drawdown_p95_pct": 22.06
+      "margin_call_count": 15,
+      "margin_call_pct": 0.15,
+      "final_equity_mean": 31983.08,
+      "final_equity_p05": 15260.8,
+      "final_equity_p50": 31913.41,
+      "final_equity_p95": 48533.97,
+      "max_drawdown_mean_pct": 42.286,
+      "max_drawdown_p95_pct": 71.235
     }
   },
   "verdicts": {
     "$5k_at_<10pct": "FAIL",
     "$10k_at_<5pct (plan target)": "FAIL",
-    "$25k_at_<1pct (plan target)": "PASS",
+    "$25k_at_<1pct (plan target)": "FAIL",
     "overall": "FAIL"
   },
   "caveat": "Hindsight MC. Empirical pnl distribution carries the fold_1 regime outlier from Step 3 (worst-fold 10% WR). If forward regime reverts to that state, true ror is higher than this MC reports. Pair with regime-gate add before sizing.",
