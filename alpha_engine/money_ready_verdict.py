@@ -511,17 +511,35 @@ def _top_sleeves_from_outcomes(asset_class: str, min_n: int = 30) -> list[dict]:
             **creds, connect_timeout=10, cursorclass=pymysql.cursors.DictCursor,
         )
         cur = conn.cursor()
+        # Intrabar-truth COALESCE: at_pick_outcomes.pnl_pct is the CANONICAL
+        # resolver value, which mislabels first-touch (it tags ~58% of CRYPTO
+        # TIME_EXIT as SL_HIT and produces single-snapshot WR/PF artifacts).
+        # Where reresolve_intrabar wrote an *unambiguous* intrabar_pnl_pct to
+        # trading_picks (joined on trading_picks.id = at_pick_outcomes.pick_id;
+        # 3215/9874 WON-LOST rows covered, 616 clean win/loss flips measured
+        # 2026-06-09), prefer the intrabar value. Ambiguous SL-first ties
+        # (intrabar_ambiguous=1, 10 rows) fall back to canonical. Net effect is
+        # conservative: it deflated prediction_market_consensus PF 13.2->2.0,
+        # ml_enhanced_DYDXUSDT_15m 8.87->1.91, and surfaced DYDXUSDT 0.13->1.67.
         cur.execute(
             """
             SELECT strategy,
                    COUNT(*) AS n,
-                   SUM(CASE WHEN pnl_pct > 0 THEN 1 ELSE 0 END) AS wins,
-                   SUM(CASE WHEN pnl_pct > 0 THEN pnl_pct ELSE 0 END) AS gw,
-                   SUM(CASE WHEN pnl_pct < 0 THEN ABS(pnl_pct) ELSE 0 END) AS gl
-            FROM at_pick_outcomes
-            WHERE asset_class = %s
-              AND status IN ('WON', 'LOST')
-              AND pnl_pct IS NOT NULL
+                   SUM(CASE WHEN eff_pnl > 0 THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN eff_pnl > 0 THEN eff_pnl ELSE 0 END) AS gw,
+                   SUM(CASE WHEN eff_pnl < 0 THEN ABS(eff_pnl) ELSE 0 END) AS gl
+            FROM (
+                SELECT apo.strategy AS strategy,
+                       COALESCE(
+                         CASE WHEN tp.intrabar_ambiguous = 0 THEN tp.intrabar_pnl_pct END,
+                         apo.pnl_pct
+                       ) AS eff_pnl
+                FROM at_pick_outcomes apo
+                LEFT JOIN trading_picks tp ON tp.id = apo.pick_id
+                WHERE apo.asset_class = %s
+                  AND apo.status IN ('WON', 'LOST')
+                  AND apo.pnl_pct IS NOT NULL
+            ) z
             GROUP BY strategy
             HAVING n >= %s
             """,

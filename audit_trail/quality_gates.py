@@ -2028,6 +2028,22 @@ BLOCKED_SOURCE_SYSTEMS = {
     # data corruption), (b) one XRPUSDT row literally tagged SL_HIT
     # (REPAIRED_PNL_CONTRADIC) worth +80.37%. RETIRE.
     "prediction_market_consensus",
+    # copy_trader_intel: RE-BLOCKED 2026-06-09 after class-scoped DIRECT trading_picks
+    #   query (ground truth — NOT pf_registry, NOT a subagent claim): CRYPTO n=248,
+    #   WR 38.3%, PF 0.37, avg -2.25%/trade = REAL net loser (wins tiny, losses big).
+    #   The earlier "n=281, 34.5% WR, PF 2.12" that triggered an interim revert was a
+    #   FABRICATED subagent PF (recomputed wrong); the pf_registry "n=32, 0%" was a
+    #   policy-clean slice. All three reconcile to: unprofitable. (commodity/equity
+    #   tails are n=3 each, coincidental.) See reports/registry_block_verification_2026-06-09.md.
+    "copy_trader_intel",
+    # approach_b_ml_breakout: n=45 CRYPTO (24 UNKNOWN + 21 ml_breakout), 0% WR,
+    #   PF=0.0. Zero-win placeholder pattern across 2+ strategy names. Same root
+    #   cause as breakout_b_ml (already blocked). Blocking at source level for
+    #   defense-in-depth — pipeline paths that check source_system.
+    "approach_b_ml_breakout",
+    # copy_trader_bybit: n=5 CRYPTO, 0% WR, PF=0.0, all tiny losses.
+    #   n=5 is below n>=10 statistical floor but 0% WR is unambiguous.
+    "copy_trader_bybit",
 }
 
 # ── REQUIRES_WALKAHEAD_AUDIT (set): Systems flagged for mandatory walk-forward before live use ──
@@ -2302,8 +2318,22 @@ BLOCKED_STRATEGIES = {
     # All 66 picks LONG direction, no SHORT. WR=36% < 50% floor; no direction rescue.
     # Largest-n rapid_fire sub-strategy; consistently below floor. Session DA autopsy.
     ("macd_rsi_confluence", "CRYPTO"),
+    # 2026-06-09 money-ready bridge sweep: pf_registry by_asset_class_strategy_policy_clean_net.
+    # cta_replicator EQUITY: n=6, 0% WR, PF=0.0, -0.15% cum PnL. All losses, no wins.
+    ("cta_replicator", "EQUITY"),
+    # etf_all_strategies ETF: n=5, 0% WR, PF=0.0, all losses. No winning segment.
+    ("etf_all_strategies", "ETF"),
+    # etf_scanner ETF: n=4, 0% WR, PF=0.0, all losses. Small n but 0% WR consistent.
+    ("etf_scanner", "ETF"),
+    # cftc_socrata COMMODITY: INTENDED to block but REVERTED after live intrabar
+    #   ledger contradicts pf_registry: peer shows n=8, 25% WR, PF 2.71 vs
+    #   pf_registry n=5, 0% WR. Small sample but non-zero WR — do not block.
+    #   See greedy-mixing-puppy.md.
+    # multi_asset_scanner FOREX: n=11, WR=9.1% (1W/10L), PF=0.21. Near-zero WR.
+    # Top source for FOREX policy-clean (45.8% concentration). Blocking the FOREX
+    # variant; other asset classes unaffected.
+    ("multi_asset_scanner", "FOREX"),
 }
-
 
 def _blocked_name_matches(haystack_upper: str, needle_upper: str) -> bool:
     """True if needle appears as a whole phrase (token boundaries), not as a substring of a larger token.
@@ -9159,9 +9189,19 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     if not passes_active_gate(pick):
         return False
 
-    # ── Anti-overfit validator (DSR/PBO) — OPT-IN, default-OFF ──
-    # Kimi P1 wire-up 2026-05-12. Engage with ANTI_OVERFIT_VALIDATOR_ENABLED=1.
-    # Rejects when DSR < 0.95 OR PBO > 0.50 given pick.returns_history.
+    # ── Anti-overfit validator (DSR/PBO) — ENABLED BY DEFAULT ──
+    # Kimi P1 wire-up 2026-05-12. This gate is ON unless explicitly disabled with
+    # ANTI_OVERFIT_VALIDATOR_ENABLED=0 (the env default inside _anti_overfit_reject
+    # is "1"). The previous "OPT-IN, default-OFF" comment here was STALE and
+    # contradicted the code — corrected 2026-06-09 after live verification.
+    # Rejects when DSR < 0.95 OR PBO > 0.50 given pick.returns_history (or the
+    # closed_picks.json strategy-returns cache); fail-open when <20 returns.
+    # Verified 2026-06-09: active + biting — rejects 8/9 cached strategies with
+    # >=20 history (volume_spike_breakout, macd_rsi_confluence,
+    # forex_rsi2_mean_reversion, futures_momentum, ...). NOTE: SPA
+    # (reality_check_pvalue in anti_overfit_validator.py) is computed-capable but
+    # NOT wired as a gate here — only DSR+PBO are enforced. The Global PBO gate
+    # below is separately default-OFF (global_pbo=1.0 would block all picks).
     if _anti_overfit_reject(pick):
         return False
 

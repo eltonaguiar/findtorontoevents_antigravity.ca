@@ -696,23 +696,34 @@ class AdmissibilityPipeline:
             else:
                 verdict.steps_passed += 1
 
-        # Concentration check
+        # Concentration check — FAIL-CLOSED (2026-06-09).
+        # Previously a failing HHI only appended a warning, so a concentrated
+        # strategy (HHI >= 0.25, e.g. single-symbol) could still reach TIER_CORE.
+        # That is the open P0 in CLAUDE.md ("Concentration gate is not enforced
+        # before DSR/SPA -> 2 false-Tier-1 PASSes on 2026-05-17"). Now it blocks
+        # the two ADMITTING tiers (CORE, PROBATION). A concentrated strategy
+        # falls through to INCUBATOR (watch-only, not sized) — honoring the
+        # never-kill / mutate-or-watch policy while denying live sizing until it
+        # diversifies.
         conc = self.compute_concentration(trades)
         verdict.concentration_hhi = conc["hhi"]
-        if not conc["pass"]:
-            verdict.warnings.append(f"Concentration HHI={conc['hhi']:.3f}")
+        conc_ok = bool(conc["pass"])
+        if not conc_ok:
+            verdict.failures.append(
+                f"Concentration: HHI={conc['hhi']:.3f} >= 0.25 — too concentrated "
+                f"for live sizing (admission blocked, watch-only)")
 
         # Determine tier
         min_pf = MIN_PF_BY_CLASS.get(asset_class, 1.20)
         min_wr = MIN_WR_BY_CLASS.get(asset_class, 0.48)
         max_dd = MAX_DD_BY_CLASS.get(asset_class, 0.25)
 
-        if verdict.steps_passed >= 9 and verdict.pf >= min_pf and \
+        if conc_ok and verdict.steps_passed >= 9 and verdict.pf >= min_pf and \
            verdict.wr >= min_wr and verdict.max_dd <= max_dd:
             verdict.tier = TIER_CORE
             verdict.admitted = True
             verdict.recommended_sizing = "tiny"
-        elif verdict.steps_passed >= 7:
+        elif conc_ok and verdict.steps_passed >= 7:
             verdict.tier = TIER_PROBATION
             verdict.admitted = True
             verdict.recommended_sizing = "shadow"
