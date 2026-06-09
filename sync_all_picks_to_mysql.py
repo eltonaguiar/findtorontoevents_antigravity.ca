@@ -485,6 +485,23 @@ class PickSyncer:
 
         pick_id = str(uuid.uuid4())
         dedup = _compute_dedup(symbol, direction, entry, signal_ts)
+        # CHOKEPOINT (2026-06-09): SECOND raw-insert path that bypasses
+        # mysql_record_raw_pick. Enforce the same per-class TP/SL caps so
+        # multi_asset FX (3% TP) / copy_trader (8% TP) picks via active_picks.json
+        # don't land uncapped and resolve TIME_EXPIRED. CRYPTO skipped to preserve
+        # genome/mega_mutation ATR-tuned targets. Fail-open.
+        if str(asset_class or "").upper() != "CRYPTO":
+            try:
+                from alpha_engine.non_crypto_policy import clamp_non_crypto_tp_sl
+                _clamped = clamp_non_crypto_tp_sl({
+                    "entry_price": entry, "take_profit": tp, "stop_loss": sl,
+                    "direction": direction, "asset_class": asset_class,
+                    "symbol": symbol,
+                })
+                tp = _clamped.get("take_profit", tp)
+                sl = _clamped.get("stop_loss", sl)
+            except Exception:
+                pass  # fail-open: never block the sync on a cap error
         rr = _compute_rr(direction, entry, tp, sl)
         parsed_ts = _parse_ts(signal_ts)
 

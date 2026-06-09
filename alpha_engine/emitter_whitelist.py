@@ -35,6 +35,15 @@ HARDCODED_TOXIC_PAIRS: frozenset[Pair] = frozenset({
     ("FOREX", "forex_rsi2_mean_reversion"),
     ("EQUITY", "multi_asset_copytrader"),
     ("EQUITY", "regime_terminal"),
+    # 2026-06-09: cta_replicator EQUITY dead-weight quarantine (per-class, NOT global).
+    # pf_registry policy_clean_net (2026-06-06): EQUITY cta_replicator n=6 WR=0.0% PF=0.0
+    # — zero wins in six trades, pure drag on the closest-to-T2 class. SURGICAL by
+    # asset_class: _pick_pair() keys on pick['asset_class'], so FOREX cta_replicator
+    # (in MANUAL_ALLOWLIST_PAIRS) and COMMODITY/ETF cta legs are NOT touched. Held back
+    # the broader cta_* EQUITY kill the scope agent proposed: cta_golden_cross EQUITY is
+    # only n=3 (too small to judge) and cta_tsmom_blend/donchian_55/cross_asset_tsmom have
+    # ZERO EQUITY rows in the registry (mutation-before-kill: cannot kill what never traded).
+    ("EQUITY", "cta_replicator"),
     # 2026-06-05: multi_asset_cot COMMODITY live stats WR=17% (n=223 closed) + 91 OPEN
     # losing positions. Hard-code as toxic since policy_clean view has 0 rows.
     ("COMMODITY", "multi_asset_cot"),
