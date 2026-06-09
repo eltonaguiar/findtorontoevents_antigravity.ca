@@ -305,8 +305,14 @@ BANNED_SYSTEMS = {
 # We boost proven families and penalize toxic ones to invert scoring bias.
 CRYPTO_PROVEN_STRATEGIES = {
     "st_fear_greed_contrarian",
-    "claude_ml_moderate_mut",
-    "battleground_ml_relaxed_mut",   # 2026-06-06: n=31 WR=71% PF=4.35 live (workflow audit)
+    # 2026-06-09 REMOVED claude_ml_moderate_mut + battleground_ml_relaxed_mut:
+    # forward_paper_pilot (intrabar, out-of-sample) REFUTES the historical edge —
+    # claude_ml_moderate_mut forward 39-43% WR / PF<1 (also incident #15: its
+    # bootstrap PASS was a single-row JUPUSDT 945x outlier); battleground_ml_relaxed_mut
+    # forward-INSUFFICIENT (n<20). "PROVEN" requires forward validation, not just a
+    # historical clean-cohort pass (which is a small-clean-subset artifact —
+    # see updates/2026-06-09-forward-pilot-luxalgo.md). Re-add only if a forward
+    # pilot HOLDS (n>=20, WR>=50, PF>1.5).
     "vwap_deviation_reversion_eth_v1",
     "macd_rsi_m048",
     "atr_percentile_gate",
