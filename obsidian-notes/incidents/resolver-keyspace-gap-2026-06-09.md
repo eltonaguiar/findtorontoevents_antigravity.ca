@@ -18,21 +18,25 @@ keyspaces.
 ## Consequence
 - The intrabar `COALESCE` in `money_ready_verdict` (commit `acc551cd8f`) is correct
   but in the **clean** (non-backfill) cohort only reaches `signflip_purge` + `v2.2_sync`
-  (692 rows). The dominant clean resolver `universal_v2` (1528 WON/LOST rows) is
-  **unreachable** → clean-cohort PF/WR is **not** intrabar-validated.
-- Intrabar edge-hunt (2026-06-09) found **0 trustworthy T2 leads**; the 2
-  survivors (`hs_lb_None` 3d-window null-artifact, `MeanReversionBB` 5d/8-symbol)
-  are refuted, both `n_intrabar=0`.
-- Hard evidence: **measurement layer is the bottleneck, not alpha.**
+  (692 rows). The hourly `trading_picks` intrabar truth **cannot** be COALESCEd onto
+  the dominant `universal_v2` cohort (1528 rows, 0% join).
 
-## Next step
-Run an intrabar pass **directly over `at_pick_outcomes`** (replay OHLC by
-symbol+entry+tp+sl+timestamp, write back keyed by its own `pick_id`) — not via
-`trading_picks`. `tools/reresolve_intrabar.py` only knows the `trading_picks`
-keyspace today.
+## CORRECTION (deeper trace 07:45Z) — gap is smaller than first stated
+`universal_v2` (`outcome_resolver.py:561-611`, `walk_daily_bars`) **already does a
+conservative SL-first, gap-aware first-touch replay** at **daily** granularity — NOT
+the naive TIME_EXIT-mislabel resolver. So the clean cohort **IS** validly resolved
+(conservatively, SL-biased). My first "not intrabar-validated → don't size up" was
+too strong.
+- Residual gap vs hourly = only **same-day-both-touched** bars, resolved SL-first
+  (pessimistic) → hourly could only **raise** borderline WR/PF, never fake an edge.
+- So the edge-hunt **0-T2-leads** result is **robust**; no-signal conclusion stands.
+- A standalone `reresolve_intrabar_outcomes.py` is **blocked** (`at_pick_outcomes`
+  has no entry/tp/sl; `pick_id` is an unjoinable content hash) **and unnecessary**.
 
-## Don't
-Size up any class on current clean-cohort PF/WR — none are intrabar-validated.
+## Next step (optional, low priority)
+Scoped resolver enhancement: have `walk_daily_bars` use **hourly** bars
+(`crypto_ohlcv`/`stock_ohlcv`) for same-day-both-touched disambiguation + set an
+`intrabar_ambiguous` flag. NOT a prerequisite for trusting current clean numbers.
 
 ## Related
 - [[incidents/resolver-intrabar-blocker]]

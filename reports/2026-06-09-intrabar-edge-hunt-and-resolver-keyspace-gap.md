@@ -72,14 +72,38 @@ So `universal_v2` outcomes map to **neither** intrabar-bearing table.
    is the bottleneck** — even our best resolution upgrade can't see the cohort that
    matters.
 
-## Next step (resolver-plumbing, for a future iteration)
-Intrabar-resolve `at_pick_outcomes` rows **directly** — replay OHLC by
-`(symbol, entry, tp, sl, resolved_at/created_at)` and write the result back keyed by
-`at_pick_outcomes.pick_id` (its own hash keyspace), instead of joining `trading_picks`.
-`tools/reresolve_intrabar.py` currently only knows the `trading_picks` keyspace; a
-sibling pass over `at_pick_outcomes` (the universal_v2 population) would unlock
-intrabar truth for the clean cohort. Until then, no clean-cohort PF/WR is
-intrabar-validated and **no class should be sized up on these numbers**.
+## CORRECTION (same session, deeper trace 07:45Z) — the gap is smaller than first stated
+
+A follow-up trace of `outcome_resolver.py` (the `universal_v2` writer) shows the
+first framing above OVERSTATED the problem. **`universal_v2` already performs a
+conservative, SL-first, gap-aware first-touch replay** — see
+`outcome_resolver.py:561-611` (`walk_daily_bars`): it walks OHLC bars from entry
+forward, checks SL before TP on a same-bar tie ("assume worst case if both
+possible"), and credits gap-through opens (the fix for the +3.0% ghost-row
+artifact). It is NOT the naive resolver that mislabels TIME_EXIT as SL_HIT.
+
+So the corrected reading:
+- The clean (`universal_v2`) cohort **IS** validly first-touch-resolved, just at
+  **daily** granularity, and **conservatively biased toward SL**. The earlier line
+  "no clean-cohort PF/WR is intrabar-validated → do not size up" was too strong.
+- The genuine residual gap vs **hourly** is only **same-day-both-touched** bars
+  (one daily bar where `low≤SL` and `high≥TP`). The resolver resolves those
+  SL-first (pessimistic), so hourly refinement could only **raise** WR/PF for the
+  affected borderline strategies — it cannot manufacture a false edge.
+- Therefore the **0-T2-leads result is robust**: even a conservative first-touch
+  resolver clears nothing. The "no durable signal" conclusion stands; the
+  measurement layer is not hiding edge here.
+
+### Revised next step (lower priority than first implied)
+Plan #4 (a standalone `reresolve_intrabar_outcomes.py` replaying `at_pick_outcomes`)
+is **blocked AND largely unnecessary**: `at_pick_outcomes` stores no entry/tp/sl
+(it is a terminal outcomes table) and `pick_id = build_canonical_outcomes_pick_id`
+is a content hash with no FK back to a source table, so the replay inputs cannot be
+recovered cleanly. The only worthwhile refinement is **inside the resolver**: have
+`walk_daily_bars` use **hourly** bars (from `crypto_ohlcv`/`stock_ohlcv`, where
+available) for the same-day-both-touched disambiguation, persisting an
+`intrabar_ambiguous` flag. That is a scoped, optional resolver enhancement — not a
+prerequisite for trusting the current clean numbers.
 
 ## Method (reproducible)
 - DB: `ejaguiar1_stocks` via `tools.db_env.get_stocks_creds()`.
