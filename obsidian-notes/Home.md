@@ -41,6 +41,7 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[sessions/2026-06-09-8h-quant-gaps-and-edge-diagnosis]] — ⭐ 8h loop: 10 commits, HHI P0 closed, daily-breaker restored, 6-day-snapshot finding
 
 ### 📋 Reference
+- [[reference/reports-map]] — ⭐ MOC: navigable index of the decision-grade `reports/*.md` (of 1,546)
 - [[reference/personas-and-research-index]] — ⭐ per-class web-research state + hedge-fund persona catalog
 - [[reference/edge-rescue-roadmap]] — ⚠️ how we get from 0 edge to money-ready (SAVE-1..5)
 - [[reference/performance-tiers]] — T1/T2/T3 thresholds
