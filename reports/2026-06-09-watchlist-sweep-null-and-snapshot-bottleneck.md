@@ -107,6 +107,21 @@ watch candidates blocked on sample size, not calendar time**. These match `greed
 claims exactly. The wiring of `money_ready_verdict` to read this ledger (that plan's Workstream F) is
 peer-owned — this appendix independently confirms the data source is sound and the per-class numbers.
 
+### Scrutiny of the two leads (decomposition) — both weaker than the aggregate suggests
+- **EQUITY n=72 58%/PF2.13 is an aggregate ARTIFACT.** Surface-diversified (31 symbols, 18
+  strategies, HHI 0.074) but the WR/PF is inflated by small-n perfect-record sub-strategies:
+  `vt_equity_two_day_rsi_reversal` **n=14 100% WR** (14-0 = red flag), `regime_accumulation` n=5 80%,
+  `stocks_rsi2_pullback` n=8 88% — while `bond_yield_momentum` (mislabeled into EQUITY, 0%) and
+  `smart_money_accumulation` (33%) lose. **Not a coherent edge** — do not treat EQUITY-as-a-class as a
+  lead.
+- **COMMODITY n=98 41%/PF1.73 is really `futures_momentum` n=57 58%/PF2.59** (57 of 98; the rest —
+  commodity_momentum 0%, commodity_tsmom_12m 25% — are losers). 2-week window (2026-05-27..06-09),
+  concentrated in correlated metals/energy (SI=F/PL=F/NG=F). `futures_momentum` is **BANNED
+  (2026-05-06)**; intrabar-true now partially vindicates it → it is the genuine **re-audit candidate**
+  (plan Workstream D / mutation-before-kill), still n<100 + short-window so NOT money-ready.
+- **Net:** the single most credible artifact-free lead in the system is `COMMODITY::futures_momentum`
+  (re-audit the ban as forward-track-only). EQUITY's apparent edge dissolves under decomposition.
+
 ## Method (reproducible)
 Same filters as `…intrabar-edge-hunt-and-resolver-keyspace-gap.md` (intrabar COALESCE,
 non-backfill, 20 banned sources + `prediction_market_consensus`/`hs_lb_None`/`unknown`,
