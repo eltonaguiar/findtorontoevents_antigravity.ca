@@ -1,14 +1,14 @@
 # 🎯 Market Beating Trading System Report
 
-**Generated:** 2026-06-09T05:29:00.259266
+**Generated:** 2026-06-09T07:23:10.367296
 **Status:** ⏳ OPTIMIZING
 
 ---
 
 ## 📊 Overall Performance
 - **Total Signals Tracked:** 409
-- **Signals Validated:** 405
-- **Overall Accuracy:** 58.5%
+- **Signals Validated:** 406
+- **Overall Accuracy:** 58.3%
 - **Target Accuracy:** 60%
 - **Status:** ⏳ BELOW TARGET
 
@@ -19,7 +19,7 @@
 | ETH-USD | 64.0% | 55 | ⚠️ |
 | SOL-USD | 47.1% | 33 | ❌ |
 | ADA-USD | 66.7% | 32 | ✅ |
-| DOT-USD | 66.7% | 36 | ✅ |
+| DOT-USD | 60.0% | 37 | ⚠️ |
 
 ## 💱 Forex Performance
 | Pair | Accuracy | Signals | Status |
@@ -30,7 +30,7 @@
 
 ## 🎯 Road to Beating the Market
 - **Signals:** 409/50 (818%)
-- **Accuracy:** 58.5%/65.0%
+- **Accuracy:** 58.3%/65.0%
 
 ### ⏳ Continuing Optimization
 The system is gathering more data and refining parameters.
