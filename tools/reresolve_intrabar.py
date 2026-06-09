@@ -46,7 +46,7 @@ except ImportError as exc:  # pragma: no cover
     print(f"missing deps: {exc}", file=sys.stderr)
     raise SystemExit(1)
 
-MAX_HOLD_BARS_DEFAULT = 720  # safety cap (~30d of 1h bars) if closed_at is far out
+MAX_HOLD_BARS_DEFAULT = 4320  # ~180d of 1h bars (matches deep OHLCV backfill)
 
 
 def _to_ms(dt) -> int | None:

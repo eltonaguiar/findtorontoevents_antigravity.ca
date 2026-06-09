@@ -9,8 +9,10 @@ status: active
 > Source: `reports/REAL_MONEY_MASTER_2026-06-05.md` + `reports/PICKS_NOW_2026-06-06.md`
 > NFA — Research/Paper Only
 
-> [!warning] SUPERSEDED by the 2026-06-06 edge audit — DO NOT trade on these
-> The [[sessions/2026-06-06-edge-audit-and-resolver-fix|2026-06-06 edge reality check]] found **no confirmed money-ready edge in any asset class**. The "intrabar-aware fills" claimed below were NOT actually produced by the production resolver (it doesn't replay intrabar OHLC — confirmed: 26.4% of CRYPTO picks had SL touched before TP; CRYPTO true WR 42.9% / PF 1.22 = coin flip). The clean-cohort money-ready screen returned **0 confirmed survivors**. Treat everything below as UNVALIDATED until intrabar re-resolution runs on deep OHLCV history. See `reports/2026-06-06-money-ready-screen-clean-cohort.md`.
+> [!warning] SUPERSEDED by the 2026-06-09 audit — DO NOT trade on these
+> Clean cohort + intrabar replay (2026-06-09): **0 confirmed money-ready survivors** across all classes. CRYPTO class true WR **39.7%** after intrabar (15k picks). FOREX clean 14d WR **5.0%**. See `reports/OBS_FINDING_JUNE8.MD`, `reports/reresolve_intrabar_latest.json`, `updates/2026-06-09-ohlcv-deep-backfill.md`.
+
+> Prior warning (2026-06-06) still applies: production resolver does not replay intrabar OHLC.
 
 ## Why these qualify
 

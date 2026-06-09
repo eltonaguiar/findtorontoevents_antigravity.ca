@@ -6,15 +6,18 @@ status: fail
 
 # COMMODITY
 
-## Current Status (2026-06-06)
+## Current Status (2026-06-09 — clean cohort)
 
 | Metric | Value |
 |--------|-------|
-| PF | 0.31 |
-| WR | 11% |
-| n (closed) | 28 |
-| Tier | FAIL + INSUFF-N |
-| Concentration | CT=F 57% |
+| PF (clean) | 1.04 |
+| WR (clean) | 50.0% |
+| n (clean closed) | 46 |
+| Tier | **INSUFF-N** |
+
+> PF ~1.04 on n=46 is coin-flip territory. CT=F concentration still a risk.
+
+## Prior Status (2026-06-06 — superseded)
 
 ## Issues
 
