@@ -27,6 +27,8 @@ Central index for all trading research, strategy analysis, incident logs, and se
 
 ### 🔥 Incidents & Decisions
 - [[incidents/incidents-live-summary]] — ⭐ live INCIDENT_*/ENHANCEMENT_* counts + /audit/incidents.html
+- [[incidents/clean-cohort-6day-snapshot-2026-06-09]] — ⭐ WHY no edge is measurable: clean cohort is 83% one 6-day window
+- [[incidents/resolver-keyspace-gap-2026-06-09]] — universal_v2 outcomes orphaned from trading_picks intrabar (but already conservative first-touch)
 - [[incidents/resolver-intrabar-blocker]] — upstream T2 blocker
 - [[incidents/ai-tournament-wr-artifact]] — 73-91% WR = single-snapshot artifact
 
@@ -36,6 +38,7 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[sessions/2026-06-06-money-ready-picks]]
 - [[sessions/2026-06-06-edge-audit-and-resolver-fix]] — ⚠️ edge reality check: 0 confirmed edges
 - [[sessions/2026-06-09-rescue-fixes-and-benefits]] — ⭐ recent fixes + their benefits (changelog)
+- [[sessions/2026-06-09-8h-quant-gaps-and-edge-diagnosis]] — ⭐ 8h loop: 10 commits, HHI P0 closed, daily-breaker restored, 6-day-snapshot finding
 
 ### 📋 Reference
 - [[reference/personas-and-research-index]] — ⭐ per-class web-research state + hedge-fund persona catalog
@@ -66,7 +69,8 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - **T1 REFUTED (2026-06-09):** `mega_mutation` "PF 2.86/n=204" is raw `trading_picks` (100% NULL created_at). Clean `at_pick_outcomes` = n=13, 30.8% WR, PF 0.57 (honest June resolver: 4/9 LOST). NOT money-ready.
 - **T2 candidates:** `fx_smart_carry_trade_momentum` (FOREX, n→100 ~5-6wk)
 - **Paper pilots active:** ETF dual-momentum (daily cron 06:15Z)
-- **Blockers:** intrabar OHLC resolver not shipped → 4 CRYPTO sleeves blocked at Stage 0
+- **Blockers:** intrabar truth now wired into the verdict (`acc551cd8f`), BUT the **clean cohort is a ~6-day snapshot** (83% resolved 2026-05-31→06-05) → no durable edge is *measurable* yet regardless of strategy. The lever is calendar time, not code. See [[incidents/clean-cohort-6day-snapshot-2026-06-09]]; re-run the edge sweep in 3-6 weeks.
+- **Gates hardened 2026-06-09:** HHI fail-closed (P0 closed), daily-loss breaker re-enabled (guarded), DSR/PBO confirmed enabled. See [[sessions/2026-06-09-8h-quant-gaps-and-edge-diagnosis]].
 
 ---
 
