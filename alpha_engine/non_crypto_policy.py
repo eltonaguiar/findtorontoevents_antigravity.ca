@@ -107,7 +107,15 @@ def count_trades_today(now: Optional[datetime] = None, asset_class: Optional[str
     if _now.tzinfo is None:
         _now = _now.replace(tzinfo=timezone.utc)
     today = _now.date().isoformat()
-    want = asset_class.strip().upper() if asset_class else None
+    # Canonical lowercase (matches normalize_asset_class output) so the messy
+    # category casing ("stock"/"stocks"/"equity" all -> "equity") counts correctly.
+    want = asset_class.strip().lower() if asset_class else None
+    _norm = None
+    if want is not None:
+        try:
+            from alpha_engine.asset_class import normalize_asset_class as _norm
+        except Exception:
+            _norm = None
     count = 0
     for path in (_CLOSED_PICKS_PATH, _ACTIVE_PICKS_PATH):
         data = _load_json(path)
@@ -134,7 +142,13 @@ def count_trades_today(now: Optional[datetime] = None, asset_class: Optional[str
             if str(entry_ts)[:10] != today:
                 continue
             if want is not None:
-                pc = str(p.get("category") or p.get("asset_class") or p.get("class") or "").strip().upper()
+                if _norm is not None:
+                    try:
+                        pc = _norm(p)  # canonical lowercase (equity/crypto/forex/...)
+                    except Exception:
+                        pc = str(p.get("category") or p.get("asset_class") or p.get("class") or "").strip().lower()
+                else:
+                    pc = str(p.get("category") or p.get("asset_class") or p.get("class") or "").strip().lower()
                 if pc != want:
                     continue
             count += 1
