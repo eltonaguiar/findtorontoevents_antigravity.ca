@@ -489,9 +489,13 @@ class QuantScorer:
         eps_growth = info.get("earningsQuarterlyGrowth", None)
         roe = info.get("returnOnEquity", None)
         market_cap = info.get("marketCap", None)
+        # yfinance info['dividendYield'] is ALREADY a percent-like value
+        # (probe 2026-06-09: GOOGL 0.24 == 0.24%, SBUX 2.62 == 2.62%, PLD 3.0 == 3.0%;
+        # cf. info['trailingAnnualDividendYield'] which is the FRACTIONAL form 0.00228).
+        # The previous `div_yield *= 100` produced impossible yields (GOOGL 24%, SBUX 262%,
+        # PLD 300%) and also handed a spurious +5 score bonus (gate `div_yield > 3`)
+        # to nearly every payer, corrupting the ranking. Do NOT scale.
         div_yield = info.get("dividendYield", 0)
-        if div_yield:
-            div_yield *= 100
 
         # Insider data
         insider_shares = None
@@ -614,6 +618,16 @@ class QuantScorer:
         # size, regardless of the technical/analyst score. Demote to WATCH.
         if direction in ("STRONG_BUY", "BUY") and db_n >= 20 and db_avg_pnl < 0:
             signals.append(f"DB_NEG_EXPECTANCY(avg={db_avg_pnl:.2%},n={db_n})")
+            direction = "WATCH"
+
+        # ── Negative analyst-target guard ──
+        # The analyst block grants full +W_ANALYST for recommendationMean<=1.5 with NO
+        # upside check, while a negative target only subtracts -5. A strongly-rated name
+        # whose mean analyst target is BELOW today's price (e.g. MU at -22% upside) could
+        # still reach score>=75 -> STRONG_BUY. A BUY/STRONG_BUY label must not contradict
+        # a materially negative consensus target. Demote to WATCH.
+        if direction in ("STRONG_BUY", "BUY") and upside is not None and upside < -10:
+            signals.append(f"NEG_TARGET_UPSIDE({upside:.0f}%)")
             direction = "WATCH"
 
         # ── Position sizing (Kelly/vol-parity) ──
@@ -1050,7 +1064,14 @@ def main():
     print(f"\n{'='*70}")
     print(f"  🛡️  SAFEST PICKS (lowest volatility)")
     print(f"{'='*70}")
-    safest = df_res[df_res['rvol'].notna()].nsmallest(5, 'rvol')
+    # Require a real (positive) realized vol and exclude AVOID/WATCH-grade names so a
+    # stale/flat price series with a degenerate ~0 rvol cannot float to the top of "SAFEST".
+    _safe_pool = df_res[
+        df_res['rvol'].notna()
+        & (df_res['rvol'] > 0)
+        & (~df_res['direction'].isin(["AVOID", "WATCH"]))
+    ]
+    safest = _safe_pool.nsmallest(5, 'rvol')
     for _, r in safest.iterrows():
         print(f"  {r['symbol']:8s} [{r['class']:9s}] RVOL={r['rvol']:.0f}% DRW_DN={r['max_dd']:.1f}% score={r['score']:.0f} {r['direction']}")
 
