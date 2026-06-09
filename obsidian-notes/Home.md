@@ -32,9 +32,11 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[sessions/2026-05-18-autonomous-audit-completion]]
 - [[sessions/2026-06-05-session4-deliverables]]
 - [[sessions/2026-06-06-money-ready-picks]]
+- [[sessions/2026-06-06-edge-audit-and-resolver-fix]]
 - [[sessions/2026-06-06-edge-audit-and-resolver-fix]] — ⚠️ edge reality check: 0 confirmed edges
 
 ### 📋 Reference
+- [[reference/edge-rescue-roadmap]] — ⚠️ how we get from 0 edge to money-ready (SAVE-1..5)
 - [[reference/performance-tiers]] — T1/T2/T3 thresholds
 - [[reference/banned-sources]] — BANNED_SOURCES gate list
 - [[reference/data-quality-checklist]] — admissibility pipeline
@@ -53,7 +55,10 @@ Central index for all trading research, strategy analysis, incident logs, and se
 
 ---
 
-## Current Status (2026-06-06)
+## Current Status (2026-06-09)
+
+> **0/9 asset classes pass Tier-2 money-ready gates.** Clean-cohort screen: **0 confirmed survivors.**
+> Full vault cross-check: `reports/OBS_FINDING_JUNE8.MD` | Roadmap: [/audit/edge_validation_roadmap.html](https://findtorontoevents.ca/audit/edge_validation_roadmap.html)
 
 - **T1 confirmed:** `mega_mutation` (CRYPTO, PF 2.86)
 - **T2 candidates:** `fx_smart_carry_trade_momentum` (FOREX, n→100 ~5-6wk)
