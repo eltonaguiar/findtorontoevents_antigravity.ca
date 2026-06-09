@@ -108,7 +108,7 @@ UNIVERSE = {
             "WMT", "COST", "PG", "KO", "PEP", "CL", "KMB", "SYY",
             # Consumer discretionary
             "MCD", "DIS", "SBUX", "CMG", "HD", "LOW", "TJX", "TGT",
-            "NKE", "LULU", "DECK", "AMZN",
+            "NKE", "LULU", "DECK",
             # Energy
             "XOM", "CVX", "COP", "EOG", "PSX", "VLO",
             # Industrials
@@ -352,6 +352,110 @@ def load_db_edge():
         return data
     except Exception as e:
         print(f"  [WARN] DB edge load failed: {e}")
+        return {}
+
+
+def load_db_edge_forward(decay_half_life_days: int = 14, max_age_days: int = 60):
+    """Forward-weighted DB edge with exponential decay by `resolved_at` recency.
+
+    The legacy `load_db_edge()` reads ALL-time WR/avg_pnl — which is contaminated
+    by 77.8% backfill labels and stale strategies. This replacement restricts
+    to picks resolved in the last `max_age_days`, weighting each by
+        w = 0.5 ** (age_days / decay_half_life_days)
+    so 14d-old data has weight 0.5, 28d-old has weight 0.25, 60d-old has weight
+    ~0.16. Strategies that haven't been seen in 60d contribute ~nothing and
+    the scoring naturally demotes them.
+
+    Returns dict[symbol_upper] = {
+        'wr': float (0-100),          # decay-weighted win rate
+        'n_weighted': float,           # sum of weights (effective sample size)
+        'avg_pnl': float,              # decay-weighted avg PnL
+        'staleness_days': float,       # days since most-recent resolution
+        'n_raw_60d': int,              # raw row count in the 60d window
+    }
+    """
+    try:
+        import pymysql
+        import math
+        from datetime import datetime, timezone
+        from tools.db_env import get_stocks_creds
+
+        creds = get_stocks_creds(raise_on_missing=False)
+        if not creds or not creds.get("password"):
+            print("  [INFO] forward-edge overlay skipped (no DB creds).")
+            return {}
+
+        conn = pymysql.connect(**creds, cursorclass=pymysql.cursors.DictCursor)
+        cur = conn.cursor()
+        # Same banned set + sane-pnl guard as legacy; ONLY add a resolved_at
+        # recency window so we don't double-count ancient picks.
+        banned = (
+            "Predictions", "sandbox_opposite", "rapid_fire", "incubator_gainer",
+            "luxalgo_filters", "multi_asset_copytrader", "forex_copy_trader",
+            "signal_validation", "multi_asset_cot", "regime_terminal",
+            "myfxbook_retail_contrarian", "ig_contrarian_sentiment",
+        )
+        placeholders = ",".join(["%s"] * len(banned))
+        cur.execute(f"""
+            SELECT symbol, asset_class,
+                   status, pnl_pct, resolved_at
+            FROM at_pick_outcomes
+            WHERE status IN ('WON','LOST','EXPIRED','FLAT')
+              AND resolved_at IS NOT NULL
+              AND resolved_at >= (NOW() - INTERVAL {int(max_age_days)} DAY)
+              AND (strategy IS NULL OR strategy NOT IN ({placeholders}))
+              AND (resolver_version IS NULL OR resolver_version NOT LIKE 'backfill%%')
+              AND (pnl_pct IS NULL OR ABS(pnl_pct) <= CASE asset_class
+                    WHEN 'FOREX' THEN 20 WHEN 'COMMODITY' THEN 30
+                    WHEN 'BOND' THEN 25 WHEN 'CRYPTO' THEN 95 ELSE 50 END)
+        """, banned)
+        rows = cur.fetchall()
+        conn.close()
+
+        now = datetime.now(timezone.utc)
+        per_sym = {}
+        for r in rows:
+            sym = (r.get("symbol") or "").upper()
+            if not sym: continue
+            res_at = r.get("resolved_at")
+            if not res_at: continue
+            try:
+                age = (now - (res_at if res_at.tzinfo else res_at.replace(tzinfo=timezone.utc))).total_seconds() / 86400.0
+            except Exception:
+                continue
+            if age < 0 or age > max_age_days: continue
+            w = 0.5 ** (age / float(decay_half_life_days))
+            rec = per_sym.setdefault(sym, {
+                "_wins_w": 0.0, "_losses_w": 0.0, "_expired_w": 0.0, "_flat_w": 0.0,
+                "_n_w": 0.0, "_pnl_w": 0.0, "_most_recent_age": 1e9, "_n_raw": 0,
+            })
+            st = (r.get("status") or "").upper()
+            if st == "WON":    rec["_wins_w"]   += w
+            elif st == "LOST": rec["_losses_w"] += w
+            elif st == "EXPIRED": rec["_expired_w"] += w
+            elif st == "FLAT":   rec["_flat_w"]  += w
+            rec["_n_w"] += w
+            try: rec["_pnl_w"] += w * float(r.get("pnl_pct") or 0)
+            except Exception: pass
+            rec["_most_recent_age"] = min(rec["_most_recent_age"], age)
+            rec["_n_raw"] += 1
+
+        out = {}
+        for sym, rec in per_sym.items():
+            n_w = rec["_n_w"]
+            if n_w < 1.0: continue
+            non_expire = rec["_wins_w"] + rec["_losses_w"]  # EXPIRED honest denom
+            wr = rec["_wins_w"] / non_expire * 100 if non_expire > 0 else 0.0
+            out[sym] = {
+                "wr": round(wr, 1),
+                "n_weighted": round(n_w, 2),
+                "avg_pnl": round(rec["_pnl_w"] / n_w, 4),
+                "staleness_days": round(rec["_most_recent_age"], 1),
+                "n_raw_60d": rec["_n_raw"],
+            }
+        return out
+    except Exception as e:
+        print(f"  [WARN] load_db_edge_forward failed: {e}")
         return {}
 
 
@@ -1000,6 +1104,9 @@ def main():
         print("\n❌ No data collected. Check yfinance connectivity.")
         return
 
+    # De-dupe by symbol+class (e.g. AMZN appeared twice in universe list)
+    df_res = df_res.drop_duplicates(subset=['symbol', 'class'], keep='first')
+
     # Rank by score within each class
     df_res['rank_in_class'] = df_res.groupby('class')['score'].rank(ascending=False)
     df_res = df_res.sort_values(['class', 'rank_in_class']).reset_index(drop=True)
@@ -1114,6 +1221,21 @@ def main():
         df_res[df_res['symbol'].isin(["SPY", "QQQ", "BTC-USD"])].iterrows()
     ) else "NEUTRAL"
 
+    # BULLETPROOF OUTPUT DEDUP (2026-06-09): the live page showed AMZN twice.
+    # Each record carries a per-symbol generated_at_est stamped as the multi-minute
+    # scoring loop progresses, and a duplicate symbol slipped past the upstream
+    # df_res dedup in the deployed path. Dedup the FINAL record lists by symbol
+    # (keep highest score) so NO duplicate symbol can reach the page, regardless of
+    # how records were produced/merged.
+    def _dedup_by_symbol(records):
+        seen, out = set(), []
+        for r in sorted(records, key=lambda x: (x.get("score") if x.get("score") is not None else -1e9), reverse=True):
+            sym = str(r.get("symbol") or "").upper()
+            if sym and sym in seen:
+                continue
+            seen.add(sym); out.append(r)
+        return out
+
     json_data = {
         "generated_at": ts.isoformat(),
         "generated_at_est": datetime.now(timezone.utc).strftime("%b %d, %Y %I:%M %p ET (approx)"),
@@ -1121,9 +1243,9 @@ def main():
         "market_regime": regime,
         "risk_off_explanation": risk_off_explanation,
         "n_scored": len(df_res),
-        "picks": json_picks.to_dict("records"),
-        "all": df_res.sort_values('score', ascending=False).head(50).to_dict("records"),
-        "safest": safest.to_dict("records"),
+        "picks": _dedup_by_symbol(json_picks.to_dict("records")),
+        "all": _dedup_by_symbol(df_res.sort_values('score', ascending=False).head(60).to_dict("records"))[:50],
+        "safest": _dedup_by_symbol(safest.to_dict("records")),
     }
     # Clean NaN values before JSON serialization — NaN is NOT valid JSON
     # and causes JavaScript JSON.parse() to throw SyntaxError.
