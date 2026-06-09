@@ -1383,6 +1383,16 @@ BANNED_SOURCES = {
     # n=18 sits 2 below TOXIC_MIN_N=20 so auto-toxic detection misses it.
     # Hard-stop at intake for symmetry with the 0.0% cap.
     "regime_terminal",
+    # 2026-06-09: multi_asset_scanner — dominant FOREX emitter (~50% of FOREX
+    # share) at ~9% WR / PF 0.21 per policy-clean source split. FOREX class is a
+    # verified catastrophic fail across BOTH trust sources (money_ready_verdict
+    # 2026-06-08: n=25 WR=24% PF=0.077; audit_surface_truth bridge="FAIL — mutate
+    # or kill emitters; no real money"). Its sibling multi_asset_* sources
+    # (multi_asset_copytrader, multi_asset_cot, forex_copy_trader) are ALREADY
+    # banned above — this completes that family. The orphaned emitter_discipline.py
+    # already lists it for kill but has zero importers so never runs. Investigation
+    # record: reports/research_index_and_forex_diagnosis_2026-06-09.md.
+    "multi_asset_scanner",
 }
 
 # TP cap: max allowed distance from entry (as a fraction)
