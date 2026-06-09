@@ -51,3 +51,30 @@ jobs:
             sleep $((i * 5))
           done
           [ "$pushed" = 1 ] || { echo "::error::push failed after 5 attempts"; exit 1; }
+      - name: FTP-deploy refreshed JSONs to live /audit
+        # Git push does NOT update the live site (50webs has no shell). Without
+        # this the /audit "Edge Stability" freshness source stays stale (was 27d
+        # behind: regenerated+committed daily but never deployed). Deploy here.
+        if: always()
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          pip install --quiet pymysql >/dev/null 2>&1 || true
+          python - <<'PY'
+          import os, ssl, ftplib, glob
+          u=os.environ.get("FTP_USER"); p=os.environ.get("FTP_PASS"); h=os.environ.get("FTP_HOST","ftps2.50webs.com")
+          if not (u and p):
+              print("::warning::FTP creds absent — skipping edge-stability deploy"); raise SystemExit(0)
+          ctx=ssl.create_default_context(); ctx.check_hostname=False; ctx.verify_mode=ssl.CERT_NONE
+          f=ftplib.FTP_TLS(context=ctx); f.connect(h,21,timeout=30); f.login(u,p); f.prot_p()
+          try: f.mkd("/findtorontoevents.ca/audit/data/edge_stability")
+          except Exception: pass
+          n=0
+          for local in sorted(glob.glob("audit_dashboard/data/edge_stability/*.json")):
+              with open(local,"rb") as fh:
+                  f.storbinary("STOR /findtorontoevents.ca/audit/data/edge_stability/"+os.path.basename(local), fh)
+              n+=1
+          print("deployed", n, "edge_stability files"); f.quit()
+          PY
