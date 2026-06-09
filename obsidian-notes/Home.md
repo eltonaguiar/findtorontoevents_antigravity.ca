@@ -38,6 +38,7 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[sessions/2026-06-09-rescue-fixes-and-benefits]] — ⭐ recent fixes + their benefits (changelog)
 
 ### 📋 Reference
+- [[reference/personas-and-research-index]] — ⭐ per-class web-research state + hedge-fund persona catalog
 - [[reference/edge-rescue-roadmap]] — ⚠️ how we get from 0 edge to money-ready (SAVE-1..5)
 - [[reference/performance-tiers]] — T1/T2/T3 thresholds
 - [[reference/banned-sources]] — BANNED_SOURCES gate list
