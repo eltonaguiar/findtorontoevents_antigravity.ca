@@ -29,7 +29,12 @@ jobs:
         run: pip install yfinance pandas numpy
 
       - name: Run competition backtester
-        run: python3 STOCKS/competition/run_competition.py
+        run: |
+          if [ -f STOCKS/competition/run_competition.py ]; then
+            python3 STOCKS/competition/run_competition.py
+          else
+            echo "::warning title=missing-script::STOCKS/competition/run_competition.py was lost in the 2026-05-23 history strip (INCIDENT #126) — restore from a pre-strip clone. Skipping backtest so this scheduled workflow stops hard-failing daily."
+          fi
         timeout-minutes: 10
 
       - name: Create slim JSON for dashboard
