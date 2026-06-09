@@ -2333,6 +2333,36 @@ BLOCKED_STRATEGIES = {
     # Top source for FOREX policy-clean (45.8% concentration). Blocking the FOREX
     # variant; other asset classes unaffected.
     ("multi_asset_scanner", "FOREX"),
+    # ── 2026-06-09 intrabar-truth bleeder sweep (cross-ledger verified) ──
+    # Evidence: reports/INTRABAR_BLEEDER_KILLS_2026-06-09.md. Each verified in BOTH
+    # the at_signal_outcomes intrabar ledger (first-touch, geometry-guarded,
+    # unambiguous rows only) AND the trading_picks resolved cohort where present.
+    # Three-axis checked (direction + symbol); no rescuable segment >= n=10 floor.
+    # commodity_momentum COMMODITY: intrabar n=18 WR 0% PF 0.00 (LONG 0/14, SHORT
+    # 0/4; NG=F 0/14, CL=F 0/4). Zero wins ever on the intrabar ledger.
+    ("commodity_momentum", "COMMODITY"),
+    # beta_adjusted_residual_momentum CRYPTO: intrabar n=20 WR 10% PF 0.08 avg
+    # -2.15%; trading_picks corroborates (n=23 WR 34.8% PF 0.63). All LONG; symbol
+    # axis BNB 1/6, FIL 0/5, SUI 0/5 — no rescue.
+    ("beta_adjusted_residual_momentum", "CRYPTO"),
+    # regime_mild_bull (all classes): intrabar n=43 WR 20.9% PF 0.17 (all LONG);
+    # trading_picks corroborates (n=49 WR 40.8% PF 0.30, last30d PF 0.33). AMD
+    # 0/17, OPEN 2/11 — concentrated catastrophic window 2026-05-28..06-06.
+    # NOTE: NOT an inversion candidate — AMD-concentrated single-window anti-edge
+    # fails diversification (see scrutiny reports same date).
+    ("regime_mild_bull", None),
+    # regime_accumulation (all classes): intrabar n=29 WR 20.7% PF 0.50;
+    # trading_picks corroborates (n=72 WR 33.3% PF 0.20). AMD 0/7, LCID 0/7;
+    # SOFI 4/4 is below the n>=10 rescue floor.
+    ("regime_accumulation", None),
+    # stochrsi_macd_combo CRYPTO: intrabar n=23 WR 26.1% PF 0.50 avg -0.65%
+    # (all LONG; TAO 1/5, NOM 1/3, U 1/3 — no symbol rescue).
+    ("stochrsi_macd_combo", "CRYPTO"),
+    # NOT killed, MUTATE instead — bollinger_squeeze CRYPTO: intrabar n=51 WR
+    # 52.9% but PF 0.10. Direction is right >half the time; the TP/SL geometry is
+    # broken (tiny wins, huge losses). Kill would destroy a working signal —
+    # needs R:R repair per docs/MUTATION_THREE_AXIS_PROTOCOL.md. Tracked in the
+    # 2026-06-09 bleeder report.
 }
 
 def _blocked_name_matches(haystack_upper: str, needle_upper: str) -> bool:
