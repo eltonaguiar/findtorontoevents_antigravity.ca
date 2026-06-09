@@ -332,6 +332,16 @@ try:
 except ImportError:
     _HAS_PROMOTION_GATE = False
 
+# Emitter Discipline — quality gates BEFORE main pipeline (blocks KILL/MONITOR_ONLY strategies)
+try:
+    from alpha_engine.emitter_discipline import apply_emitter_discipline
+
+    _HAS_EMITTER_DISCIPLINE = True
+except ImportError:
+    _HAS_EMITTER_DISCIPLINE = False
+    def apply_emitter_discipline(picks):
+        return picks, []
+
 # Drawdown Tracker -- per-strategy drawdown + loss streak penalties
 try:
     from drawdown_tracker import compute_all_drawdowns
@@ -4104,6 +4114,9 @@ def main():
     active = sanitize_symbols(active)
     active = filter_bad_symbols(active)
     active = apply_source_ban_gate(active)
+    # Emitter Discipline: block KILL/MONITOR_ONLY strategies before they enter the pipeline
+    if _HAS_EMITTER_DISCIPLINE:
+        active, _rejected = apply_emitter_discipline(active)
     active = backfill_direction_and_timestamp(active)
     active = deduplicate_picks(active)
     active = resolve_direction_conflicts(active)
