@@ -973,11 +973,18 @@
   window.attachCommodityTooltips = attachCommodityTooltips;
 
   // ── EAGLE2 Phase 0: policy-clean honesty strip (sizes from money_ready only) ──
+  // Render-once. Guarded against the async race that duplicated the strip on
+  // /audit: initEnhancements runs twice (DOMContentLoaded + dashboard-data-loaded),
+  // and the getElementById guard was checked BEFORE the await fetch — so both
+  // calls passed it and both inserted. _eagle2Started is a SYNCHRONOUS flag set
+  // before the await, so the second concurrent call returns immediately.
+  let _eagle2Started = false;
   async function renderEagle2PolicyStrip() {
-    if (document.getElementById('enh-eagle2-policy-strip')) return;
+    if (_eagle2Started || document.getElementById('enh-eagle2-policy-strip')) return;
+    _eagle2Started = true;
     try {
       const resp = await fetch('./data/strategy_admissibility.json?_=' + Date.now());
-      if (!resp.ok) return;
+      if (!resp.ok) { _eagle2Started = false; return; }
       const data = await resp.json();
       const mr = (data.live_money_ready || {});
       const verifiedLab = (((data.edge_surfaces || {}).verified_lab) || {});
@@ -1017,6 +1024,8 @@
         ready.length + '/9 money-ready)</div>' +
         '<div style="line-height:1.6">Tournament &amp; pick_funnel cells are discovery/paper — not sizing surfaces. ' +
         rows + '</div>' + pilotLine;
+      // Belt-and-suspenders: re-check synchronously immediately before insert.
+      if (document.getElementById('enh-eagle2-policy-strip')) return;
       const anchor = document.querySelector('.header') || document.querySelector('header') || document.body.firstChild;
       if (anchor && anchor.parentNode) {
         anchor.parentNode.insertBefore(banner, anchor.nextSibling);
@@ -1024,6 +1033,7 @@
         document.body.prepend(banner);
       }
     } catch (e) {
+      _eagle2Started = false;
       console.warn('[Enhancements] EAGLE2 policy strip error:', e);
     }
   }
