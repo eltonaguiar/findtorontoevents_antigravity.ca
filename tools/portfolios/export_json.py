@@ -51,13 +51,30 @@ DATA_DIR = REPO_ROOT / "audit_dashboard" / "data"
 def _connect():
     import pymysql
 
-    return pymysql.connect(
-        host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
-        user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
-        password=os.environ.get("DB_PASS_STOCKS", "") or os.environ.get("MYSQL_PASSWORD", ""),
-        database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
-        port=3306, connect_timeout=20, cursorclass=pymysql.cursors.DictCursor,
-    )
+    # 2026-06-09 FIX: use the canonical tools/db_env resolver (env-first, then
+    # verified-default + ~/dbpasses.txt fallback). The old env-only path silently
+    # fell back to password="" when DB_PASS_STOCKS/MYSQL_PASSWORD were unset/wrong,
+    # producing "Access denied (using password: NO)". Combined with the step's
+    # continue-on-error, that masked the failure and FROZE pf_portfolios.json at
+    # 2026-06-03 on the live site while PF_NAV_SNAPSHOT advanced to 2026-06-08.
+    try:
+        from tools.db_env import get_stocks_creds
+        creds = get_stocks_creds()
+        return pymysql.connect(
+            **{k: v for k, v in creds.items()
+               if k in ("host", "user", "password", "database", "port", "connect_timeout")},
+            cursorclass=pymysql.cursors.DictCursor,
+        )
+    except Exception:
+        # Last-resort fallback to the legacy env-only path (keeps behavior if
+        # db_env is unavailable in some runner).
+        return pymysql.connect(
+            host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
+            user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
+            password=os.environ.get("DB_PASS_STOCKS", "") or os.environ.get("MYSQL_PASSWORD", ""),
+            database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
+            port=3306, connect_timeout=20, cursorclass=pymysql.cursors.DictCursor,
+        )
 
 
 def _now_iso() -> str:
