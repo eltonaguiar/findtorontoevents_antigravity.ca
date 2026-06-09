@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Edge Validation Roadmap · findtorontoevents.ca/audit</title>
+<style>
+:root {
+  --bg: #0a0a12;
+  --card: #1a1a2e;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --green: #4caf50;
+  --red: #f44336;
+  --blue: #60a5fa;
+  --yellow: #f59e0b;
+  --purple: #a78bfa;
+}
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
+}
+.container { max-width: 1100px; margin: 0 auto; }
+header {
+  text-align: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+h1 { font-size: 28px; margin: 0 0 8px; }
+.subtitle { color: var(--text-dim); font-size: 14px; }
+.nav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.nav a {
+  background: rgba(255,255,255,0.05);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+}
+.nav a:hover { background: rgba(96,165,250,0.15); }
+.phase {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.phase h2 {
+  margin-top: 0;
+  color: var(--blue);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.phase .week { 
+  background: var(--yellow); 
+  color: #0a0a12; 
+  font-size: 11px; 
+  padding: 2px 8px; 
+  border-radius: 4px; 
+  font-weight: 700;
+}
+.eli5 {
+  background: rgba(96,165,250,0.08);
+  border-left: 4px solid var(--blue);
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+}
+.eli5 strong { color: var(--blue); }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+th { background: rgba(255,255,255,0.04); font-weight: 600; }
+.warning {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.4);
+  color: #fca5a5;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+}
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.b-critical { background: #ef4444; color: white; }
+.b-warning { background: #f59e0b; color: #0a0a12; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>🔬 Real Edge Validation Roadmap</h1>
+  <div class="subtitle">From 32 million backtest rows to statistically validated, production-ready trading edge</div>
+  <div style="margin-top:8px">
+    <span class="badge b-critical">NO CURRENT EDGE</span>
+    <span class="badge b-warning">ALL ASSET CLASSES FAIL TIER-2 GATES</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="/audit/">← Main Audit Dashboard</a>
+  <a href="/audit/picks-now.html">Picks Now</a>
+  <a href="/audit/ai_leaderboard.html">AI Leaderboard</a>
+  <a href="/audit/ai-tournament.html">AI Tournament</a>
+  <a href="/audit/research_index.html">Research Index</a>
+</nav>
+
+<div class="warning">
+  <strong>⚠️ Skeptical Premise:</strong> After exhaustive review of <code>money_ready_verdict.json</code>, the 32.6M-row <code>bt_backtest_trades</code> table, and all audit pages, <strong>zero asset classes pass Tier-2 statistical gates</strong>. The "Forex is winning" narrative collapses under scrutiny (24% WR, 0.077 PF on n=25). This roadmap is the only defensible path from current state to ROI-positive edge.
+</div>
+
+<h2 style="margin:24px 0 12px">ELI5 Summary (Explain Like I'm 5)</h2>
+<div class="eli5">
+  <p><strong>Imagine you have a giant box of 32 million old lottery tickets.</strong> Some look like winners on paper, but you don't know which ones were bought with real money vs. ones someone just made up to look good.</p>
+  <p><strong>Right now:</strong> We can't tell the real winners from the fake ones. Every "winning strategy" we have fails basic math tests (too few real trades, loses more money than it makes, or blows up in bad markets).</p>
+  <p><strong>The plan:</strong> First, figure out which tickets were actually bought with real money. Then, only trust strategies that win in multiple different ways (not just one lucky trick). Then, test them with pretend money for months. Only after they pass all the hard tests do we risk real money. If after 6 months we still have nothing, we stop spending thousands on AI and try something else.</p>
+</div>
+
+<h2 style="margin:32px 0 16px">The 5-Phase Protocol</h2>
+
+<div class="phase">
+  <h2><span class="week">WEEK 1</span> Phase 1: Data Integrity Audit — Separate Signal from Noise</h2>
+  <p><strong>Problem:</strong> The 32.6 million rows in <code>bt_backtest_trades</code> (<code>ejaguiar1_backtests</code>) are mostly synthetic backtests, not live fills. The 15-row <code>eagle2_consensus_picks</code> table (also <code>ejaguiar1_backtests</code>) is a tiny production-consensus signal. Verified 2026-06-09: row counts and the Forex 24% WR / 0.077 PF / n=25 figures all reconcile to the live DB.</p>
+  
+  <div class="eli5">
+    <strong>ELI5:</strong> Before you count your lottery winnings, you need to know which tickets were actually bought at the store vs. which ones your friend printed at home. Phase 1 finds the "real money" trades.
+  </div>
+  
+  <p><strong>Actions:</strong></p>
+  <ul>
+    <li>Query <code>source_db</code> and <code>source_table</code> provenance on the 32M rows</li>
+    <li>Identify the "production" subset (status='FILLED', source contains 'live' or 'production')</li>
+    <li>Calculate true out-of-sample win rates, profit factors, and sample sizes per asset class on <em>only</em> the live subset</li>
+  </ul>
+  <p><strong>Deliverable:</strong> <code>production_edge_audit.md</code> — verified live metrics, not backtest artifacts.</p>
+  <p><strong>Defense:</strong> Without this step, every downstream conclusion is built on sand. The "Forex winner" claim is a perfect example of mistaking backtest overfitting for live edge.</p>
+</div>
+
+<div class="phase">
+  <h2><span class="week">WEEKS 2-3</span> Phase 2: Gate-Passing Strategy Discovery</h2>
+  <p><strong>Problem:</strong> No strategy currently passes all Tier-2 gates (n≥100, WR≥50%, PF≥1.5, MDD≤20%, DSR≥1.0, PBO/SPA/FDR, single-source, recency).</p>
+  
+  <div class="eli5">
+    <strong>ELI5:</strong> A strategy has to be good in <em>many different ways</em> at once — not just win sometimes, but also not lose too much when it loses, work on lots of different stocks, and still work months later. Most strategies only pass 2-3 of these tests.
+  </div>
+  
+  <p><strong>Actions:</strong></p>
+  <ul>
+    <li>Systematic sweep across all asset classes and strategies in the production subset</li>
+    <li>Flag any combination meeting <em>all</em> Tier-2 criteria</li>
+    <li>Populate <code>ai_leaderboard.html</code> with only gate-passing entries (currently empty)</li>
+  </ul>
+  <p><strong>Deliverable:</strong> Updated leaderboard showing only strategies that survive statistical scrutiny.</p>
+  <p><strong>Defense:</strong> The current leaderboard shows AI model accuracy (e.g., 75% WR on 60 picks), not trading P&L after slippage and drawdowns. Gate-passing is the minimum bar for real-money consideration.</p>
+</div>
+
+<div class="phase">
+  <h2><span class="week">WEEK 4</span> Phase 3: Single-Source vs. Multi-Source Validation</h2>
+  <p><strong>Problem:</strong> The <code>single_source_ok</code> gate fails everywhere because profitable sleeves are single-source artifacts (e.g., <code>stocks_rsi2_pullback</code> alone).</p>
+  
+  <div class="eli5">
+    <strong>ELI5:</strong> If a strategy only works because one specific person or one specific trick made it work, that's suspicious — it might be luck or cheating the test. We want strategies that work even when multiple different people or methods try them.
+  </div>
+  
+  <p><strong>Actions:</strong></p>
+  <ul>
+    <li>Require <code>n_profitable_multi_source ≥ 2</code> for any production candidate</li>
+    <li>Reject single-source "edges" as likely data artifacts or overfitting</li>
+    <li>Document rejected strategies in <code>single_source_rejects.md</code></li>
+  </ul>
+  <p><strong>Deliverable:</strong> Shortlist of multi-source validated strategies only.</p>
+  <p><strong>Defense:</strong> Single-source profitability is the classic signature of overfitting or data snooping. The <code>money_ready_verdict.json</code> explicitly flags this as a failure mode across EQUITY, CRYPTO, and others.</p>
+</div>
+
+<div class="phase">
+  <h2><span class="week">ONGOING</span> Phase 4: Forward-Test Protocol (Minimum 3 Months)</h2>
+  <p><strong>Problem:</strong> Even gate-passing backtests can fail in live markets due to regime shifts, execution friction, or hidden lookahead bias.</p>
+  
+  <div class="eli5">
+    <strong>ELI5:</strong> Before you bet your allowance on a game, you should play it with pretend money for a long time to make sure the rules didn't secretly change or that you didn't just get lucky the first few times.
+  </div>
+  
+  <p><strong>Actions:</strong></p>
+  <ul>
+    <li>Paper-trade every gate-passing strategy for ≥3 months / ≥100 resolved live trades</li>
+    <li>Track fills in dedicated <code>live_trades</code> table with real slippage and latency</li>
+    <li>Reject if live vs. backtest divergence >20% on any key metric</li>
+    <li>Only after 100+ live resolved trades with passing metrics: consider small capital allocation</li>
+  </ul>
+  <p><strong>Deliverable:</strong> <code>forward_test_log.md</code> with live vs. backtest comparison tables.</p>
+  <p><strong>Defense:</strong> This is the only honest way to validate edge. The 32M backtest rows are cheap; live fills are expensive. We must prove the edge survives the transition.</p>
+</div>
+
+<div class="phase">
+  <h2><span class="week">WEEK 5</span> Phase 5: ROI Dashboard & Kill Switch</h2>
+  <p><strong>Problem:</strong> We have invested substantial recurring spend across a large fleet of AI API providers with zero validated edge to show for it.</p>
+  
+  <div class="eli5">
+    <strong>ELI5:</strong> If after all this work we still don't have a strategy that makes more money than it costs to run, we need to stop spending money on the fancy AI toys and try something simpler or cheaper.
+  </div>
+  
+  <p><strong>Actions:</strong></p>
+  <ul>
+    <li>Build <code>/audit/roi_dashboard.html</code> showing: total AI spend (from provider usage logs), cumulative live P&L, cost per validated edge, break-even timeline</li>
+    <li>Define kill criteria: if no gate-passing live strategy after 6 months → halt paid API spend</li>
+    <li>Document pivot options (lower-cost data sources, manual strategy development, or strategy retirement)</li>
+  </ul>
+  <p><strong>Deliverable:</strong> Public ROI dashboard + documented kill switch policy.</p>
+  <p><strong>Defense:</strong> Sunk-cost fallacy is the enemy of ROI. If the 5-phase protocol yields nothing, continuing to burn API credits is irrational. The kill switch protects capital.</p>
+</div>
+
+<h2 style="margin:32px 0 12px">Why This Plan Is Defensible</h2>
+<table>
+<tr><th>Criticism</th><th>Response</th></tr>
+<tr><td>"We already have 32 million trades — why not just mine them?"</td><td>Because 99%+ are backtests. Mining synthetic data produces synthetic edges. Phase 1 explicitly separates live from backtest.</td></tr>
+<tr><td>"Forex is winning according to another analyst."</td><td>24% win rate and 0.077 profit factor on n=25 is not winning — it's statistical noise. The plan demands n≥100 + all gates passed.</td></tr>
+<tr><td>"This will take months. We need edge now."</td><td>Speed without statistical rigor is how you lose real money. The current state (all classes INSUFFICIENT_DATA or NOT_READY) proves the "now" approach has failed.</td></tr>
+<tr><td>"What if we never find edge?"</td><td>That's why Phase 5 includes an explicit kill switch and pivot plan. The goal is ROI, not perpetual AI spend.</td></tr>
+</table>
+
+<footer>
+  <p><strong>Disclaimer:</strong> This is NOT financial advice. All analysis, plans, and roadmaps are for educational and research purposes only. Past performance does not guarantee future results. Trading involves substantial risk of loss.</p>
+  <p style="margin-top:8px">Document created: 2026-06-09 · Based on <code>money_ready_verdict.json</code> (2026-06-08) + MySQL deep dive on <code>ejaguiar1_backtests</code></p>
+</footer>
+</div>
+</body>
+</html>
