@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import os
+import re
 import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -103,6 +104,11 @@ def backup_table(scon, bcon, source_db: str, table: str, row_limit: int, suffix:
     try:
         scur.execute(f"SHOW CREATE TABLE `{table}`")
         ddl = scur.fetchone()[1].replace(f"CREATE TABLE `{table}`", f"CREATE TABLE `{backup_name}`", 1)
+        # Named constraints (CHECK / FK) must be unique PER SCHEMA in MySQL-8, so a
+        # verbatim DDL collides across backup snapshots (e.g. chk_pnl_sign_coherence).
+        # Rename every named constraint with the backup suffix so the snapshot DDL is
+        # always unique. (A snapshot doesn't need enforced constraints anyway.)
+        ddl = re.sub(r"CONSTRAINT `([^`]+)`", lambda m: "CONSTRAINT `" + (m.group(1) + "_b" + suffix)[:60] + "`", ddl)
         bcur.execute(f"DROP TABLE IF EXISTS `{backup_name}`")
         bcur.execute(ddl)
         scur.execute(f"SELECT * FROM `{table}`")
