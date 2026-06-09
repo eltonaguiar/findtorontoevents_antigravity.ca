@@ -46,7 +46,11 @@ except ImportError as exc:  # pragma: no cover
     print(f"missing deps: {exc}", file=sys.stderr)
     raise SystemExit(1)
 
-MAX_HOLD_BARS_DEFAULT = 4320  # ~180d of 1h bars (matches deep OHLCV backfill)
+# De-biased horizon. The ACTIVE default is the --max-hold-bars arg (168 = 7d):
+# replaying far beyond a pick's intended hold is look-ahead bias (peer review
+# 2026-06-09, deepseek+ofox unanimous). 4320 (=OHLCV backfill depth) is NOT a
+# valid hold and must never be the default — data depth != intended trade life.
+MAX_HOLD_BARS_DEFAULT = 168  # ~7d of 1h bars (defensible intended-hold proxy)
 
 
 def _to_ms(dt) -> int | None:
@@ -93,7 +97,7 @@ def replay(entry, tp, sl, direction, bars):
     """First-touch replay using the pick's actual TP/SL prices.
     Returns (true_status, true_pnl_frac, bars_used) or (None, None, 0) if no data."""
     if not bars:
-        return None, None, 0
+        return None, None, 0, False
     is_long = str(direction or "BUY").upper() in ("LONG", "BUY", "STRONG_BUY")
     for i, b in enumerate(bars):
         h, l = float(b["high"]), float(b["low"])
@@ -101,15 +105,22 @@ def replay(entry, tp, sl, direction, bars):
             sl_hit, tp_hit = l <= sl, h >= tp
         else:
             sl_hit, tp_hit = h >= sl, l <= tp
-        if sl_hit:  # conservative: if both in same bar, SL first (v2 spec §7)
+        # AMBIGUOUS: both TP and SL touched within the same 1h bar — intrabar
+        # order is unknown at this timeframe. We resolve conservatively to SL
+        # (v2 spec §7) but FLAG it (ambiguous=True) so downstream isn't silently
+        # over-penalized (peer review 2026-06-09 flagged the tie-break as biased).
+        if sl_hit and tp_hit:
             pnl = (sl - entry) / entry if is_long else (entry - sl) / entry
-            return "SL_HIT", pnl, i + 1
+            return "SL_HIT", pnl, i + 1, True
+        if sl_hit:
+            pnl = (sl - entry) / entry if is_long else (entry - sl) / entry
+            return "SL_HIT", pnl, i + 1, False
         if tp_hit:
             pnl = (tp - entry) / entry if is_long else (entry - tp) / entry
-            return "TP_HIT", pnl, i + 1
+            return "TP_HIT", pnl, i + 1, False
     last = float(bars[-1]["close"])
     pnl = (last - entry) / entry if is_long else (entry - last) / entry
-    return "TIME_EXIT", pnl, len(bars)
+    return "TIME_EXIT", pnl, len(bars), False
 
 
 def _orig_is_win(status, pnl):
@@ -166,7 +177,7 @@ def main():
         end = start + horizon_ms
         bars = fetch_ohlcv(cur, sym, start, end)
         entry = float(p["entry_price"]); tp = float(p["take_profit"]); sl = float(p["stop_loss"])
-        ts, tpnl, used = replay(entry, tp, sl, p["direction"], bars)
+        ts, tpnl, used, ambiguous = replay(entry, tp, sl, p["direction"], bars)
         strat = p.get("strategy") or "(none)"
         rec = per_strat[strat]
         if ts is None:
@@ -180,9 +191,13 @@ def main():
         if orig_w and ts == "SL_HIT":
             rec["reclass_tp_to_sl"] += 1; overall["reclass_tp_to_sl"] += 1
         rec["true_pnls"].append(tpnl); overall["true_pnls"].append(tpnl)
-        if args.apply and str(p["status"]).upper() != ts:
+        if args.apply:
+            # Write EVERY replayed pick's intrabar verdict (not only changes) to
+            # parallel columns so the corrected layer is complete + queryable.
             corrections.append({"id": p["id"], "old_status": p["status"],
-                                "new_status": ts, "true_pnl_pct": round(tpnl * 100, 4)})
+                                "new_status": ts, "true_pnl_pct": round((tpnl or 0) * 100, 4),
+                                "ambiguous": 1 if ambiguous else 0,
+                                "horizon_bars": args.max_hold_bars})
 
     def wr_pf(pnls, w, n):
         gw = sum(x for x in pnls if x > 0); gl = abs(sum(x for x in pnls if x < 0))
@@ -221,29 +236,66 @@ def main():
     print(f"\nReport: {args.out}")
 
     if args.apply:
-        print(f"\n[APPLY] {len(corrections)} corrections to write — backing up first")
-        # Backup affected rows to ejaguiar1_backups, then UPDATE. (Implemented but
-        # intentionally not exercised in this session — requires operator greenlight.)
+        # NON-DESTRUCTIVE per peer review (2026-06-09, deepseek+ofox unanimous):
+        # write corrected verdicts to PARALLEL columns; NEVER overwrite the
+        # canonical trading_picks.status/pnl_pct (that was the previous design and
+        # the review rejected it). The untouched original IS the backup
+        # (rollback = NULL the intrabar_* cols); a full original snapshot also goes
+        # to ejaguiar1_backups. Ambiguous (TP&SL same bar) rows are flagged, not
+        # silently penalized.
+        print(f"\n[APPLY] writing {len(corrections)} intrabar verdicts to PARALLEL columns (canonical row UNTOUCHED)")
+        BATCH = 500
         try:
-            from tools.db_env import get_backups_creds
-            bconn = pymysql.connect(**get_backups_creds())
-            bcur = bconn.cursor()
-            bcur.execute("""CREATE TABLE IF NOT EXISTS reresolve_intrabar_backup
-                (id BIGINT, old_status VARCHAR(20), new_status VARCHAR(20),
-                 true_pnl_pct DECIMAL(12,4), backed_up_at DATETIME)""")
-            for c in corrections:
-                bcur.execute("INSERT INTO reresolve_intrabar_backup VALUES (%s,%s,%s,%s,NOW())",
-                             (c["id"], c["old_status"], c["new_status"], c["true_pnl_pct"]))
-            bconn.commit(); bconn.close()
-            for c in corrections:
-                cur.execute("UPDATE trading_picks SET status=%s, pnl_pct=%s, "
-                            "exit_reason='intrabar_reresolve', tp_fill_method='INTRABAR_V3' "
-                            "WHERE id=%s", (c["new_status"], c["true_pnl_pct"], c["id"]))
+            for ddl in (
+                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_status VARCHAR(20) NULL",
+                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_pnl_pct DECIMAL(12,4) NULL",
+                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_ambiguous TINYINT NULL",
+                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_horizon_bars INT NULL",
+                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_resolved_at DATETIME NULL",
+            ):
+                try: cur.execute(ddl)
+                except Exception as e: print(f"  [ddl] {e}")
             conn.commit()
-            print(f"[APPLY] wrote {len(corrections)} corrections (backup in ejaguiar1_backups.reresolve_intrabar_backup)")
+
+            # Full original snapshot (status+pnl) to ejaguiar1_backups for audit.
+            from tools.db_env import get_backups_creds
+            ids = [c["id"] for c in corrections]
+            orig = {}
+            for i in range(0, len(ids), BATCH):
+                chunk = ids[i:i + BATCH]
+                cur.execute(f"SELECT id, status, pnl_pct FROM trading_picks WHERE id IN ({','.join(['%s']*len(chunk))})", chunk)
+                for r in cur.fetchall(): orig[r["id"]] = (r["status"], r["pnl_pct"])
+            bconn = pymysql.connect(**get_backups_creds()); bcur = bconn.cursor()
+            bcur.execute("""CREATE TABLE IF NOT EXISTS reresolve_intrabar_backup
+                (id BIGINT, orig_status VARCHAR(20), orig_pnl_pct DECIMAL(12,4),
+                 new_intrabar_status VARCHAR(20), new_intrabar_pnl_pct DECIMAL(12,4),
+                 ambiguous TINYINT, horizon_bars INT, backed_up_at DATETIME)""")
+            bcur.execute("DELETE FROM reresolve_intrabar_backup")  # idempotent re-runs
+            backup_rows = [(c["id"], orig.get(c["id"], (None, None))[0], orig.get(c["id"], (None, None))[1],
+                            c["new_status"], c["true_pnl_pct"], c["ambiguous"], c["horizon_bars"]) for c in corrections]
+            for i in range(0, len(backup_rows), BATCH):
+                bcur.executemany(
+                    "INSERT INTO reresolve_intrabar_backup (id,orig_status,orig_pnl_pct,new_intrabar_status,new_intrabar_pnl_pct,ambiguous,horizon_bars) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                    backup_rows[i:i + BATCH])
+            bconn.commit(); bconn.close()
+
+            n_chunks = (len(corrections) + BATCH - 1) // BATCH
+            for i in range(0, len(corrections), BATCH):
+                chunk = corrections[i:i + BATCH]
+                for c in chunk:
+                    cur.execute(
+                        "UPDATE trading_picks SET intrabar_status=%s, intrabar_pnl_pct=%s, "
+                        "intrabar_ambiguous=%s, intrabar_horizon_bars=%s, intrabar_resolved_at=NOW() "
+                        "WHERE id=%s",
+                        (c["new_status"], c["true_pnl_pct"], c["ambiguous"], c["horizon_bars"], c["id"]))
+                conn.commit()
+                print(f"[APPLY] committed chunk {i//BATCH + 1}/{n_chunks} ({len(chunk)} rows)")
+            print(f"[APPLY] wrote {len(corrections)} intrabar_* parallel rows. Canonical status/pnl_pct UNCHANGED.")
+            print("[APPLY] rollback: UPDATE trading_picks SET intrabar_status=NULL,intrabar_pnl_pct=NULL,intrabar_ambiguous=NULL,intrabar_horizon_bars=NULL,intrabar_resolved_at=NULL; snapshot in ejaguiar1_backups.reresolve_intrabar_backup")
         except Exception as exc:
-            print(f"[APPLY] FAILED (no rows changed): {exc}", file=sys.stderr)
-            conn.rollback()
+            print(f"[APPLY] FAILED (rolled back main conn): {exc}", file=sys.stderr)
+            try: conn.rollback()
+            except Exception: pass
     conn.close()
     return 0
 
