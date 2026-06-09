@@ -32,7 +32,6 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[sessions/2026-05-18-autonomous-audit-completion]]
 - [[sessions/2026-06-05-session4-deliverables]]
 - [[sessions/2026-06-06-money-ready-picks]]
-- [[sessions/2026-06-06-edge-audit-and-resolver-fix]]
 - [[sessions/2026-06-06-edge-audit-and-resolver-fix]] — ⚠️ edge reality check: 0 confirmed edges
 
 ### 📋 Reference
