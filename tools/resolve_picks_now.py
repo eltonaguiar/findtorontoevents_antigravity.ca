@@ -64,7 +64,7 @@ def fetch_bars(cur, asset_class, symbol, start_ms, end_ms):
     else:  # EQUITY / ETF / others -> stock_ohlcv
         cur.execute("SELECT high,low,close FROM stock_ohlcv WHERE symbol=%s AND timeframe='1h' "
                     "AND timestamp>=%s AND timestamp<=%s ORDER BY timestamp", (symbol, start_ms, end_ms))
-    return [(float(r[0]), float(r[1]), float(r[2])) for r in cur.fetchall()]
+    return [(float(r["high"]), float(r["low"]), float(r["close"])) for r in cur.fetchall()]
 
 
 def resolve(entry, tp, sl, direction, bars, max_bars):
