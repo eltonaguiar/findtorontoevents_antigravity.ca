@@ -95,12 +95,19 @@ def is_symbol_cooling_down(symbol: str, now: Optional[datetime] = None) -> dict[
     return {"blocked": False, "reason": "", "minutes_since": delta_min}
 
 
-def count_trades_today(now: Optional[datetime] = None) -> int:
-    """Count picks entered today (UTC day) across active + closed ledgers."""
+def count_trades_today(now: Optional[datetime] = None, asset_class: Optional[str] = None) -> int:
+    """Count picks entered today (UTC day) across active + closed ledgers.
+
+    asset_class (optional): when set, count ONLY picks of that class (case-insensitive
+    match on category/asset_class/class). Enables the per-class sized cap (Option A,
+    swarm-settled 2026-06-09). Shadow / forward_test_only picks are excluded from the
+    count so they never consume a sized-lane slot.
+    """
     _now = now or datetime.now(timezone.utc)
     if _now.tzinfo is None:
         _now = _now.replace(tzinfo=timezone.utc)
     today = _now.date().isoformat()
+    want = asset_class.strip().upper() if asset_class else None
     count = 0
     for path in (_CLOSED_PICKS_PATH, _ACTIVE_PICKS_PATH):
         data = _load_json(path)
@@ -112,6 +119,9 @@ def count_trades_today(now: Optional[datetime] = None) -> int:
         for p in picks:
             if not isinstance(p, dict):
                 continue
+            # Shadow lane never consumes a sized-lane slot.
+            if p.get("forward_test_only") in (True, 1, "1", "true", "True"):
+                continue
             entry_ts = (
                 p.get("entry_date")
                 or p.get("entry_time")
@@ -121,30 +131,90 @@ def count_trades_today(now: Optional[datetime] = None) -> int:
             )
             if not entry_ts:
                 continue
-            if str(entry_ts)[:10] == today:
-                count += 1
+            if str(entry_ts)[:10] != today:
+                continue
+            if want is not None:
+                pc = str(p.get("category") or p.get("asset_class") or p.get("class") or "").strip().upper()
+                if pc != want:
+                    continue
+            count += 1
     return count
 
 
-def is_daily_cap_reached(now: Optional[datetime] = None) -> dict[str, Any]:
-    """Block when count_trades_today >= MAX_TRADES_PER_DAY (default 3)."""
-    try:
-        cap = int(os.environ.get("MAX_TRADES_PER_DAY", "3"))
-    except Exception:
-        cap = 3
-    n = count_trades_today(now=now)
-    if n >= cap:
-        return {"blocked": True, "reason": "daily_cap_reached", "count": n, "cap": cap}
-    return {"blocked": False, "reason": "", "count": n, "cap": cap}
+# ── Option A (swarm-settled 2026-06-09, deepseek+gemini unanimous): per-class
+# sized cap + shadow-lane uncap. A single global cap starved EQUITY (the best
+# class) while giving NO protection against the over-emission that FALSIFIED the
+# CT=F DSR=1.0 (6.33x). Per-class caps let each class grow at its own honest
+# rate; forward_test_only (shadow) picks bypass the cap entirely (they're never
+# sized, so over-emission can't corrupt the money-ready DSR/PBO verdict — they
+# only build measurement-n, deduped at the emitter). Env override per class:
+# MAX_TRADES_PER_DAY_EQUITY=15 etc.; MAX_TRADES_PER_DAY = global backstop total.
+PER_CLASS_DAILY_CAP: dict[str, int] = {
+    "EQUITY": 15,      # best/closest class — let it breathe toward n>=100
+    "COMMODITY": 10,
+    "FOREX": 8,
+    "ETF": 8,
+    "BOND": 8,
+    "FUTURES": 8,
+}
+_DEFAULT_CLASS_CAP = 8
 
 
-def check_emission_gates(symbol: str, now: Optional[datetime] = None) -> dict[str, Any]:
-    """Unified gate: cooldown + daily cap. Returns status dict.
+def _class_cap(asset_class: Optional[str]) -> int:
+    if not asset_class:
+        return int(os.environ.get("MAX_TRADES_PER_DAY", "10") or 10)
+    ac = asset_class.strip().upper()
+    env = os.environ.get(f"MAX_TRADES_PER_DAY_{ac}")
+    if env:
+        try:
+            return int(env)
+        except Exception:
+            pass
+    return PER_CLASS_DAILY_CAP.get(ac, _DEFAULT_CLASS_CAP)
 
-    Callers at the pick-emission path should invoke this and, if blocked, tag
-    the pick with status="cooldown_blocked" or status="daily_cap_reached".
+
+def is_daily_cap_reached(now: Optional[datetime] = None, asset_class: Optional[str] = None,
+                         forward_test_only: bool = False) -> dict[str, Any]:
+    """Per-class sized cap (Option A). Shadow lane (forward_test_only) is uncapped.
+
+    - forward_test_only=True  -> never blocked (shadow lane; dedup is the emitter's job).
+    - asset_class set         -> per-class cap (PER_CLASS_DAILY_CAP / env override).
+    - asset_class None        -> legacy global MAX_TRADES_PER_DAY (back-compat).
+    A global backstop (MAX_TRADES_PER_DAY_TOTAL, default 40) still bounds total daily
+    sized exposure across all classes.
     """
-    cap = is_daily_cap_reached(now=now)
+    if forward_test_only:
+        return {"blocked": False, "reason": "shadow_lane_uncapped", "count": 0,
+                "cap": None, "lane": "shadow"}
+    cap = _class_cap(asset_class)
+    n = count_trades_today(now=now, asset_class=asset_class)
+    # Global backstop across all sized classes.
+    try:
+        total_cap = int(os.environ.get("MAX_TRADES_PER_DAY_TOTAL", "40") or 40)
+    except Exception:
+        total_cap = 40
+    total_n = count_trades_today(now=now)
+    if total_n >= total_cap:
+        return {"blocked": True, "reason": "daily_total_cap_reached", "count": total_n,
+                "cap": total_cap, "asset_class": asset_class, "lane": "sized"}
+    if n >= cap:
+        return {"blocked": True, "reason": "daily_cap_reached", "count": n, "cap": cap,
+                "asset_class": asset_class, "lane": "sized"}
+    return {"blocked": False, "reason": "", "count": n, "cap": cap,
+            "asset_class": asset_class, "lane": "sized"}
+
+
+def check_emission_gates(symbol: str, now: Optional[datetime] = None,
+                         asset_class: Optional[str] = None,
+                         forward_test_only: bool = False) -> dict[str, Any]:
+    """Unified gate: cooldown + per-class daily cap (Option A). Returns status dict.
+
+    Callers at the pick-emission path should pass the pick's asset_class (and
+    forward_test_only flag) so the per-class sized cap applies and shadow-lane
+    picks bypass it. If blocked, tag the pick with status="cooldown_blocked" or
+    "daily_cap_reached"/"daily_total_cap_reached".
+    """
+    cap = is_daily_cap_reached(now=now, asset_class=asset_class, forward_test_only=forward_test_only)
     if cap.get("blocked"):
         return {"blocked": True, "status": "daily_cap_reached", "reason": cap["reason"], "detail": cap}
     cool = is_symbol_cooling_down(symbol, now=now)
