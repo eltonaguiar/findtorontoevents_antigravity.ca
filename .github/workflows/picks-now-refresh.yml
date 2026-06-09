@@ -70,17 +70,29 @@ jobs:
             git commit -m "chore(picks-now): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
 
       - name: Push data commit
+        # continue-on-error so a lost push race NEVER blocks the FTP deploy below
+        # (FINDING #14: without this, a conflicted rebase exit-1'd the step and the
+        # FTP step was SKIPPED — picks-now neither pushed NOR deployed on race runs).
+        continue-on-error: true
         run: |
           # main is hot (many agents/crons push). A single pull+push loses the
-          # race; retry rebase+push up to 5x before giving up (FTP deploy below
-          # still ships the data, and the next cron re-pushes).
+          # race; retry rebase+push up to 5x. picks_now.json is fully regenerated
+          # each run, so on a rebase conflict we KEEP our freshly-built version and
+          # continue (never leave a conflicted rebase stuck, which made all 5
+          # retries no-op before).
           pushed=0
           for i in 1 2 3 4 5; do
-            git pull --rebase origin main || true
+            if ! git pull --rebase origin main; then
+              # conflict (almost always the regenerated picks_now.json) — take OURS
+              git checkout --theirs audit_dashboard/data/picks_now.json 2>/dev/null \
+                || git checkout --ours audit_dashboard/data/picks_now.json 2>/dev/null || true
+              git add audit_dashboard/data/picks_now.json 2>/dev/null || true
+              GIT_EDITOR=true git rebase --continue 2>/dev/null || git rebase --abort 2>/dev/null || true
+            fi
             if git push origin main; then echo "pushed on attempt $i"; pushed=1; break; fi
             echo "push attempt $i lost the race — retrying"; sleep 5
           done
-          [ "$pushed" = 1 ] || echo "::warning::picks-now data push failed after 5 retries; FTP deploy still ran, next cron will re-push"
+          [ "$pushed" = 1 ] || echo "::warning::picks-now data push failed after 5 retries; FTP deploy still ships the data, next cron re-pushes"
 
       - name: FTP deploy picks-now assets to production
         env:
