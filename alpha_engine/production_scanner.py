@@ -1393,6 +1393,27 @@ BANNED_SOURCES = {
     # already lists it for kill but has zero importers so never runs. Investigation
     # record: reports/research_index_and_forex_diagnosis_2026-06-09.md.
     "multi_asset_scanner",
+    # 2026-06-09: FOREX bleeder family migrated from the orphaned
+    # emitter_discipline.HARD_KILL_STRATEGIES (which has zero importers — never
+    # runs) into the already-wired apply_source_ban_gate. Verified on the clean
+    # at_pick_outcomes cohort, NOT just trusting the kill-list:
+    #   forex_carry_momentum     n=1183 WR 1.0%  (PF "9.0" is ONE +428% CADJPY
+    #                                              feed-bug win — catastrophic)
+    #   forex_rsi2_mean_reversion n=2441 WR 12.7% PF 0.39 (incl −100% NZDUSD feed bug)
+    #   carry_trade_momentum     n=6   WR 0%   PF 0.36
+    #   binance_smart_money      n=20  WR 0%
+    #   forex_carry_ppp / forex_carry_bb_hybrid  n=0 (preventive)
+    # Together these emitted ~3,600 garbage FOREX picks. myfxbook/ig contrarian
+    # are already banned in the read-side gates (picks_now/pf_registry) — add here
+    # too for emitter-intake symmetry. Completes kilo session-ses_155a FIX-1.
+    "forex_carry_momentum",
+    "forex_rsi2_mean_reversion",
+    "carry_trade_momentum",
+    "forex_carry_ppp",
+    "forex_carry_bb_hybrid",
+    "binance_smart_money",
+    "myfxbook_retail_contrarian",
+    "ig_contrarian_sentiment",
 }
 
 # TP cap: max allowed distance from entry (as a fraction)
