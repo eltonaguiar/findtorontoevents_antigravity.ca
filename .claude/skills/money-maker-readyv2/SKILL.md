@@ -36,6 +36,19 @@ Inherits all hard rules from `/money-maker-ready` (v1.1). This v2 adds:
 9. **IF BLOCKED** — log the wall, continue everything parallelizable.
 10. **CHECK SUCCESS BEFORE STOPPING** — re-read criteria, confirm each is met.
 
+## MANDATORY DATA-INTEGRITY FILTERS (added 2026-06-09 — DO NOT skip)
+
+The 2026-06-06 per-asset-class edge audit proved that **raw `at_pick_outcomes` win-rates are inflated artifacts**, not edge. Before you compute ANY WR/PF/verdict, apply ALL of these or your numbers are worthless (a strategy showing "63% WR / PF 5.35" was really 73 of 2040 clean rows). Reference fixes: `tools/build_pf_registry.py`, `tools/picks_now_professional.py:load_db_edge`, `tools/reresolve_intrabar.py`, `reports/2026-06-06-per-asset-class-edge-reality-and-academic-roadmap.md`, `reports/2026-06-06-money-ready-screen-clean-cohort.md`.
+
+1. **Exclude backfill labels** — `resolver_version NOT LIKE 'backfill%'` AND `resolved_at IS NOT NULL`. 68–100% of resolved rows per class are retroactive backfill never validated against live price; including them removed ~78% of WON/LOST rows as contamination.
+2. **Exclude banned sources** — `strategy NOT IN (Predictions, sandbox_opposite, rapid_fire, incubator_gainer, luxalgo_filters, multi_asset_copytrader, forex_copy_trader, signal_validation, multi_asset_cot, regime_terminal, multi_asset_scanner, myfxbook_retail_contrarian, ig_contrarian_sentiment)`.
+3. **Per-class sane-pnl guard** — `ABS(pnl_pct) <= CASE asset_class WHEN 'FOREX' THEN 20 WHEN 'COMMODITY' THEN 30 WHEN 'BOND' THEN 25 WHEN 'CRYPTO' THEN 95 ELSE 50 END`. Drops reverse-split + price-feed-bug artifacts (e.g. CADJPY=X WON +428%, NZDUSD=X −100%) — one such "win" alone inflates a strategy's PF.
+4. **Count EXPIRED as a NON-WIN** — WR = `WON / (WON+LOST+EXPIRED+FLAT)`. 70–95% of picks are `TIME_EXPIRED`; dropping them (the old `status IN ('WON','LOST')`) inflated FX from a true ~6% to a displayed 58.8%.
+5. **Require intrabar validation before trusting a WR** — the production resolver does NOT replay intrabar OHLC, so a "TP_HIT" may have hit SL first. `tools/reresolve_intrabar.py` (de-biased, fixed-horizon) showed CRYPTO drops from 52.3% → 42.9% WR / PF 1.22, with 26.4% of picks reclassified TP→SL. A WR is not money-grade until it survives intrabar replay.
+6. **Reject single-snapshot / resolver-version artifacts** — require ≥3 distinct months at n≥30/month. The same data yields a 4–6× PF spread by resolver version (CRYPTO June PF 0.51 vs 2.15). A strong recent month is usually selection bias, not edge.
+
+**Money-ready bar (only after 1–6):** n≥100 clean, ≥3 months, PF>1.5, WR>52% (EXPIRED-inclusive), intrabar-validated, multi-source — THEN paper-pilot ≥4 weeks forward before any real capital. As of 2026-06-09 the clean-cohort screen returns **0 confirmed survivors** in any class. The gating dependency is OHLCV history depth (`crypto_ohlcv` holds only ~30 days of 1h bars) — backfill it before full intrabar re-resolution.
+
 ## Essentials — Where Everything Lives (read this FIRST if you're a fresh IDE agent)
 
 You start with no context. Here is where the real data and credentials are. **Never hardcode or echo a password; never commit a secret.**

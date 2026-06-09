@@ -11,6 +11,8 @@ description: Use when user wants to audit findtorontoevents.ca/audit (+ /audit/h
 
 **Every performance claim must be labeled `(asset_class | n | timeframe)`.** Reject any claim missing any of these. Cite source path + line number from actual data files (`audit_dashboard/data/dashboard_data.json::path.to.field`).
 
+**MANDATORY DATA-INTEGRITY FILTERS (added 2026-06-09).** Raw `at_pick_outcomes` WR/PF are inflated artifacts. Before computing ANY metric you MUST: (1) exclude `resolver_version LIKE 'backfill%'` + NULL `resolved_at`; (2) exclude BANNED_SOURCES; (3) apply the per-class sane-pnl guard (drops reverse-split / feed-bug rows like CADJPY +428%); (4) count EXPIRED as a non-win (WR = WON/(WON+LOST+EXPIRED+FLAT)); (5) treat any WR as provisional until intrabar-validated (`tools/reresolve_intrabar.py` — resolver doesn't replay intrabar; 26% of CRYPTO TP_HITs hit SL first); (6) require ≥3 months n≥30/mo (reject single-snapshot / resolver-version artifacts). Full recipe + thresholds: see `/money-maker-readyv2` → "MANDATORY DATA-INTEGRITY FILTERS" and `reports/2026-06-06-money-ready-screen-clean-cohort.md`. Clean-cohort screen as of 2026-06-09: **0 confirmed money-ready survivors** in any class.
+
 **`n`-citation discipline (added v1.1, 2026-05-15).** The verdict-grade count is
 `asset_class_health.<CLASS>.n` (= `resolved_n` = `wins + losses` after the
 `_is_valid_resolved_pick` filter). It is a deterministic pure-function output —
