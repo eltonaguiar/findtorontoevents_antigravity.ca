@@ -40,7 +40,25 @@ SHADOW_TRACK_STRATEGIES = {"futures_momentum", "forex_rsi2_mean_reversion"}  # b
 - Add the auto-expire + n-cap checks (guardrails 1–2) at the emit point or a nightly monitor.
 - Coordinates with DeepSeek WS3 (emission queue) — the shadow lane is the natural home for these.
 
+## GUARDRAIL #5 EXECUTED (2026-06-09, live trading_picks) — AMENDS the decision
+Direct re-validation **does NOT confirm** the swarm's "clean divergent COMMODITY edge" premise:
+- **FUTURES-class `futures_momentum`: n=0** resolved rows in current `trading_picks` — the
+  "0% WR on 56 closed" kill cohort is no longer present (it lived in a different table/snapshot),
+  so the FUTURES-vs-COMMODITY "distinct cohort" claim can't be confirmed against live data.
+- **COMMODITY-class `futures_momentum`: n=2029, WR 42.0%** (symbols CT=F,GC=F,HG=F,KC=F,NG=F,
+  PL=F,SB=F,SI=F,ZC=F,ZS=F,ZW=F; 2026-03-26..06-05) — **sub-coin-flip in bulk**. The encouraging
+  intrabar "n=57, WR 63%, PF 2.68" is only **2.8% of the 2029 raw trades** — a small subset, not
+  a divergence the bulk supports.
+
+**Amended verdict:**
+- `futures_momentum` → **HOLD (do NOT shadow-track yet).** First investigate WHY the 57-row
+  intrabar subset (63%) diverges from the 2029-row bulk (42%) — recency? single-symbol? resolver
+  subset bias? Resurrecting on a 2.8% subset would repeat the "small-n artifact" trap.
+- `forex_rsi2_mean_reversion` → shadow-track remains **more defensible** (it was a *blanket*
+  FOREX-block casualty, never strategy-specifically killed) — but n=19 intrabar is tiny; treat as
+  low-priority shadow with the same auto-expire guardrails.
+
 ## Status
-DECISION recorded. Implementation is **gated on guardrail #5 (kill re-validation)** + building the
-auto-expire/cap monitor. Swarm output: `swarm_runs/wsg_unban_2026-06-09/`. Leads already documented
-in `intrabar_truth_by_class.json` (t2_shaped_strategy_leads) + `registry_block_verification_2026-06-09.md`.
+DECISION recorded + guardrail #5 executed. NET: shadow-track is **NOT activated** — futures_momentum
+is on HOLD pending subset-divergence investigation; forex_rsi2 is a low-priority defensible shadow.
+This is the "investigate before resurrect" discipline working. Swarm output: `swarm_runs/wsg_unban_2026-06-09/`.
