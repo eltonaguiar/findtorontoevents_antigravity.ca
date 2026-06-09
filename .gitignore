@@ -672,3 +672,9 @@ audit_dashboard/data/ab_router_observability.jsonl
 mlflow.db
 mlruns_artifacts/
 .worktrees/
+
+# Transient DB-archive fallback dumps written by tools/backfill_resolved_pnl.py and
+# tools/db_backup_to_backups.py when the cross-DB archive is denied. The durable backup
+# lives in ejaguiar1_backups; these JSON slices must NOT be committed (one leaked +30k
+# lines into PR #557, 2026-06-09). Added 2026-06-09.
+reports/db_archive_slices/
