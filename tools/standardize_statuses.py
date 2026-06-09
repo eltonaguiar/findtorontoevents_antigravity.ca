@@ -62,6 +62,17 @@ STATUS_MAPPINGS = [
     ("FLAT",       "1=1",              "TIME_EXIT", "STATUS_STANDARDIZED"),
     # STALE: aged out → EXPIRED
     ("STALE",      "1=1",              "EXPIRED",   "STATUS_STANDARDIZED"),
+    # 2026-06-09: FORCE_CLOSED_TOXIC leaked into the status column (3,504 rows) —
+    # it's a legitimate exit_reason (kill-switch / crypto_risk_gates force-close a
+    # toxic-source position) but NOT a canonical status. Honest canonical mapping:
+    # a forced early close is NOT a take-profit, so pnl<0 -> LOST (real loss),
+    # pnl>=0/NULL -> TIME_EXIT (non-TP exit; PnL preserved, but not counted a win).
+    # Original intent retained in exit_reason.
+    ("FORCE_CLOSED_TOXIC", "pnl_pct < 0",                    "LOST",      "FORCE_CLOSED_TOXIC"),
+    ("FORCE_CLOSED_TOXIC", "pnl_pct >= 0 OR pnl_pct IS NULL", "TIME_EXIT", "FORCE_CLOSED_TOXIC"),
+    # DISPUTED (1 row): same pnl-driven canonicalization.
+    ("DISPUTED",           "pnl_pct < 0",                    "LOST",      "DISPUTED_STANDARDIZED"),
+    ("DISPUTED",           "pnl_pct >= 0 OR pnl_pct IS NULL", "TIME_EXIT", "DISPUTED_STANDARDIZED"),
 ]
 
 

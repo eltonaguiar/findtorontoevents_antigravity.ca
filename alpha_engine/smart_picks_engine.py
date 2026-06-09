@@ -315,7 +315,11 @@ CRYPTO_PROVEN_STRATEGIES = {
     # pilot HOLDS (n>=20, WR>=50, PF>1.5).
     "vwap_deviation_reversion_eth_v1",
     "macd_rsi_m048",
-    "atr_percentile_gate",
+    # 2026-06-09 REMOVED atr_percentile_gate: intrabar-true data shows n=2
+    # (artifact, not proven). Despite pf_registry showing n=29 WR 58.6%, the
+    # honest intrabar ledger (at_signal_outcomes) contradicts. The strategy IS
+    # wired to production_scanner as a live emitter (run_atr_gate.py) but must
+    # NOT be tagged "PROVEN". Re-add only after forward n>=20 WR>=50% PF>1.5.
     "vwap_deviation_reversion_sol_v1",
     "crypto_kalman_trend_residual_reversion_v1",
 }
