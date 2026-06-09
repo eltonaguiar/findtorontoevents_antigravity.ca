@@ -110,7 +110,9 @@ def night_session_scalper(
 
     for symbol in all_symbols:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 50:
             continue
 
@@ -201,7 +203,9 @@ def fear_greed_short_contrarian(
 
     for symbol in SHORT_CONTRARIAN_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 210:
             continue
 
@@ -285,7 +289,9 @@ def high_trust_momentum(
 
     for symbol in MOMENTUM_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 210:
             continue
 
@@ -500,7 +506,9 @@ def vwma_momentum_trend(
 
     for symbol in VWMA_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 50:
             continue
 
@@ -627,7 +635,9 @@ def supertrend_optimized(
 
     for symbol in SUPERTREND_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 30:
             continue
 
@@ -728,7 +738,9 @@ def macd_divergence_scanner(
 
     for symbol in MACD_DIV_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 40:
             continue
 
@@ -909,7 +921,9 @@ def atr_percentile_gate_scanner(
 
     for symbol in ATR_GATE_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 110:
             continue
 
@@ -1062,7 +1076,9 @@ def early_exit_wrapper(
 
     for symbol in early_exit_symbols:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 210:
             continue
 
@@ -1210,7 +1226,9 @@ def keltner_rsi2_squeeze_multi(
 
     for symbol in KELTNER_RSI2_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 60:
             continue
 
@@ -1329,7 +1347,9 @@ def supertrend_vwma_confluence(
 
     for symbol in SUPERTREND_VWMA_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 40:
             continue
 
@@ -1439,7 +1459,9 @@ def short_only_contrarian(
 
     for symbol in SHORT_CONTRARIAN_SYMBOLS:
         sym_key = symbol.replace("USDT", "-USD")
-        df = data.get(sym_key) or data.get(symbol)
+        df = data.get(sym_key)
+        if df is None:
+            df = data.get(symbol)
         if df is None or len(df) < 210:
             continue
 

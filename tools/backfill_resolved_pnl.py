@@ -79,6 +79,9 @@ def _fetch_candidates(conn, *, strategy: str | None, limit: int) -> list[dict]:
 
 
 def _recompute(row: dict) -> float | None:
+    """Recompute pnl_pct, returning None if the result would violate
+    the chk_pnl_sign_coherence constraint (status says WON but pnl < 0, or
+    status says LOST but pnl > 0)."""
     entry = float(row.get("entry_price") or 0)
     exit_p = row.get("exit_price")
     if exit_p is None:
@@ -87,7 +90,19 @@ def _recompute(row: dict) -> float | None:
     if exit_p <= 0:
         return None
     d = _direction_norm(row.get("direction"))
-    return _compute_pnl(entry, exit_p, d)
+    new_pnl = _compute_pnl(entry, exit_p, d)
+
+    # chk_pnl_sign_coherence: WON/TP_HIT/closed_win must have pnl >= -0.01;
+    # LOST/SL_HIT/closed_loss must have pnl <= 0.01.  Skip rows where the
+    # recomputed pnl would violate this — the status label is the ground truth
+    # and we should not overwrite it.
+    status = (row.get("status") or "").upper()
+    if status in ("WON", "TP_HIT", "CLOSED_WIN") and new_pnl < -0.01:
+        return None
+    if status in ("LOST", "SL_HIT", "CLOSED_LOSS") and new_pnl > 0.01:
+        return None
+
+    return new_pnl
 
 
 def _json_archive(where: str, archive_name: str, n: int, mysql_err: Exception) -> None:
@@ -132,18 +147,13 @@ def _archive_before_apply(where: str) -> None:
             raise RuntimeError("Refusing apply: zero rows to back up")
         if n > 500_000:
             raise RuntimeError(f"Refusing apply: {n} rows > 500k — narrow --strategy or --limit")
-        stocks_db = creds["database"]
         with src.cursor() as cur:
-            try:
-                cur.execute(
-                    f"CREATE TABLE `{backup_db}`.`{archive_name}` AS "
-                    f"SELECT * FROM `{stocks_db}`.`trading_picks` WHERE {where}"
-                )
-                src.commit()
-                print(f"[backfill] archived {n} rows → {backup_db}.{archive_name}")
-            except Exception as exc:
-                src.rollback()
-                _json_archive(where, archive_name, n, exc)
+            cur.execute(
+                f"CREATE TABLE {backup_db}.{archive_name} AS SELECT * FROM trading_picks WHERE {where}"
+            )
+            print(f"[backfill] Archived {n} rows to {backup_db}.{archive_name}")
+    except pymysql.err.OperationalError as e:
+        _json_archive(where, archive_name, n, e)
     finally:
         src.close()
 
@@ -188,6 +198,11 @@ def main() -> int:
     if dry:
         print("(dry-run)")
         return 0
+
+    # Filter out updates that would violate the constraint, as _recompute now returns None for them
+    # This ensures the 'updates' list only contains valid PnL values to apply.
+    updates = [(pnl, row_id) for pnl, row_id in updates if pnl is not None]
+
 
     if not args.skip_backup:
         _archive_before_apply(where)

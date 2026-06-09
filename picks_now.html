@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Picks Now — Live Tracker | Antigravity</title>
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --border: #30363d;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922;
+    --blue: #58a6ff; --purple: #bc8cff; --text: #e6edf3;
+    --muted: #8b949e; --disputed: #e3b341; --rejected: #f85149;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  a { color: var(--blue); text-decoration: underline; }
+  .header { background: linear-gradient(135deg, #1a1f2e, #0d1117); border-bottom: 1px solid var(--border); padding: 20px 24px; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; }
+  .header h1 span { color: var(--blue); }
+  .header .meta { color: var(--muted); font-size: 0.82rem; margin-top: 6px; }
+  .disclaimer { background: #161b22; border-left: 4px solid var(--yellow); padding: 10px 16px; margin: 16px 24px; font-size: 0.82rem; color: var(--muted); border-radius: 4px; }
+
+  /* --- Risk-off explainer --- */
+  .explainer { margin: 0 24px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .expl-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .expl-card h3 { font-size: 0.85rem; color: var(--blue); margin-bottom: 6px; }
+  .expl-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .expl-card strong { color: var(--text); }
+
+  /* --- Safety tier legend --- */
+  .tiers { margin: 0 24px 20px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .tiers h3 { font-size: 0.88rem; color: var(--blue); margin-bottom: 10px; }
+  .tier-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 0.82rem; }
+  .tier-badge { min-width: 90px; font-weight: 600; padding: 2px 8px; border-radius: 4px; text-align: center; }
+  .t-green  { background: #1c3a2a; color: var(--green); }
+  .t-yellow { background: #2e2a12; color: var(--yellow); }
+  .t-red    { background: #3a1c1c; color: var(--red); }
+  .t-black  { background: #1a1a2e; color: var(--purple); }
+  .tier-desc { color: var(--muted); line-height: 1.4; }
+
+  /* --- Picks section --- */
+  .section-title { margin: 0 24px 10px; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; margin: 0 24px 24px; }
+
+  .pick-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .pick-card.approved  { border-left: 4px solid var(--green); }
+  .pick-card.disputed  { border-left: 4px solid var(--yellow); }
+  .pick-card.rejected  { border-left: 4px solid var(--red); opacity: 0.75; }
+  .pick-card.safe-haven{ border-left: 4px solid #58a6ff; }
+
+  .card-header { padding: 12px 14px 8px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .card-symbol { font-size: 1.1rem; font-weight: 700; }
+  .card-class  { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .card-status { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+  .s-approved  { background: #1c3a2a; color: var(--green); }
+  .s-disputed  { background: #2e2a12; color: var(--disputed); }
+  .s-rejected  { background: #3a1c1c; color: var(--red); }
+  .s-safe      { background: #0d2137; color: var(--blue); }
+
+  .card-prices { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 0 14px 10px; }
+  .price-cell  { background: #0d1117; border-radius: 4px; padding: 6px 8px; text-align: center; }
+  .price-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; }
+  .price-val   { font-size: 0.92rem; font-weight: 600; margin-top: 1px; }
+  .p-entry { color: var(--text); }
+  .p-tp    { color: var(--green); }
+  .p-sl    { color: var(--red); }
+
+  .card-scores { display: flex; gap: 6px; padding: 0 14px 10px; flex-wrap: wrap; }
+  .score-chip { font-size: 0.72rem; background: #0d1117; border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px; color: var(--muted); }
+  .score-chip strong { color: var(--text); }
+
+  .card-rr { padding: 0 14px 8px; font-size: 0.75rem; color: var(--muted); }
+  .card-rr span { color: var(--text); font-weight: 600; }
+
+  .card-ai { padding: 6px 14px 8px; background: #0d1117; font-size: 0.75rem; border-top: 1px solid var(--border); }
+  .ai-label { color: var(--muted); }
+  .ai-val   { font-weight: 600; }
+  .ai-approved { color: var(--green); }
+  .ai-disputed { color: var(--disputed); }
+  .ai-rejected { color: var(--red); }
+
+  .card-eli5 { padding: 10px 14px; border-top: 1px solid var(--border); }
+  .eli5-toggle { font-size: 0.75rem; color: var(--blue); cursor: pointer; user-select: none; }
+  .eli5-toggle:hover { text-decoration: underline; }
+  .eli5-body { display: none; font-size: 0.79rem; color: var(--muted); line-height: 1.5; margin-top: 8px; }
+  .eli5-body.open { display: block; }
+  .eli5-risk { color: #f0883e; margin-top: 6px; }
+  .eli5-tier { font-size: 0.72rem; margin-top: 6px; font-weight: 600; }
+
+  .pick-date { padding: 6px 14px 10px; font-size: 0.7rem; color: var(--muted); }
+
+  /* --- Market context bar --- */
+  .market-bar { display: flex; gap: 12px; flex-wrap: wrap; margin: 0 24px 16px; padding: 10px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; font-size: 0.78rem; }
+  .mkt-item { display: flex; gap: 6px; }
+  .mkt-sym  { color: var(--muted); }
+  .mkt-up   { color: var(--green); font-weight: 600; }
+  .mkt-dn   { color: var(--red); font-weight: 600; }
+
+  /* --- methodology panel --- */
+  .method-box { margin: 0 24px 20px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .method-box h3 { font-size: 0.88rem; color: var(--blue); margin-bottom: 10px; }
+  .method-item { margin-bottom: 6px; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .method-item strong { color: var(--text); }
+  @media (max-width: 700px) { .explainer { grid-template-columns: 1fr; } .picks-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Top Picks <span>Right Now</span> — Multi-Asset Quant Screener</h1>
+  <div class="meta">
+    <span id="header-updated">🔄 Last Updated: <strong>Loading...</strong> EST</span> &nbsp;|&nbsp; 
+    Strategy: <code>quant_multifactor_screener</code> &nbsp;|&nbsp; 
+    <span id="header-scored">—</span> symbols scored, <span id="header-picks">—</span> picks &nbsp;|&nbsp;
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/tools/picks_now_professional.py" target="_blank" style="color:var(--blue)">Source</a>
+  </div>
+</div>
+
+<div class="disclaimer">
+  ⚠️ <strong>Research / Paper Only — NOT financial advice.</strong> 
+  <strong style="color:var(--yellow);">Two different systems on this page — know which is which:</strong><br>
+  <span style="color:var(--blue);">📊 Multi-Factor Methodology</span> = scores individual picks right now (AMZN scores 133 today). These are <strong>research signals</strong>, displayed below. They are NOT money-ready.<br>
+  <span style="color:var(--yellow);">🎯 4 Promotion Gates</span> = evaluates whether a full strategy (hundreds of trades across months) is proven for real capital. Currently <strong>0/6 asset classes</strong> pass. Gates do NOT apply to individual picks on this page.<br>
+  All picks logged to <code>ejaguiar1_stocks.picks_now_tracker</code> for tracking.
+</div>
+
+<!-- Market Context + Last Updated Banner -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin:0 24px 8px;flex-wrap:wrap;">
+  <div style="font-size:0.82rem;color:var(--muted);font-weight:600;text-transform:uppercase;">📈 Today's Market Context</div>
+  <div id="live-timestamp" style="font-size:0.78rem;color:var(--blue);font-weight:600;">⏱ Loaded: —</div>
+</div>
+<div class="market-bar" id="market-bar">
+  <div class="mkt-item"><span class="mkt-sym">Loading...</span></div>
+</div>
+
+<!-- 📋 METHODOLOGY — applies to picks below -->
+<div class="method-box" id="methodology-box">
+  <h3>🧠 How Each Pick Is Generated — Full Multi-Factor Methodology <span style="font-size:0.7rem;color:var(--yellow);font-weight:400;">⬅ THIS IS THE SCORING SYSTEM FOR PICKS BELOW</span></h3>
+  <div class="method-item"><strong>Every pick</strong> is scored on <strong>ALL 5 factors below simultaneously</strong>. No pick gets a pass without all factors evaluated:</div>
+  <div class="method-item" style="margin-top:8px;">🔵 <strong>Momentum (30% weight):</strong> 3-month / 1-month / 5-day returns. A stock up 15% in 3 months that pulls back -6% in 5 days = TREND+DIP (buy the dip in an uptrend). <span style="color:var(--muted)">Data: yfinance daily OHLCV</span></div>
+  <div class="method-item">🟢 <strong>Mean Reversion (20% weight):</strong> RSI (14-period) + Bollinger Band %-B position. RSI &lt;35 + price at lower band = statistically significant oversold bounce setup. <span style="color:var(--muted)">Data: yfinance daily OHLCV</span></div>
+  <div class="method-item">🟡 <strong>Analyst Consensus (25% weight):</strong> Wall Street recommendationMean + targetMeanPrice. STRONG_BUY with 25%+ upside = high-conviction fundamental overlay. <span style="color:var(--muted)">Data: yfinance .info (40+ analysts per stock)</span></div>
+  <div class="method-item">🔴 <strong>Vol-Adjusted Safety (15% weight):</strong> Realized vol (RVOL) and ATR sizing. Low vol (TLT 9%) = 8% position. High vol (NVDA 46%) = 2% position. <span style="color:var(--muted)">Kelly x Risk-Parity sizing</span></div>
+  <div class="method-item">⚪ <strong>DB Edge Overlay (10% weight):</strong> Our own resolved pick history from <code>at_pick_outcomes</code> (39,880 closed trades). Symbols with n≥5 closed trades and WR&gt;55% get a bonus. <span style="color:var(--muted)">Data: ejaguiar1_stocks</span></div>
+</div>
+
+<!-- 📋 PROMOTION GATES — does NOT apply to picks below (different system) -->
+<div class="method-box">
+  <h3>🎯 The 4 Promotion Gates — ELI5 <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">⬅ <strong><u>NOT</u></strong> applied to picks below — these are for strategy graduation</span></h3>
+  <div class="method-item">A strategy must pass <strong>ALL 4 gates</strong> before it can trade real money. Think of them as a bouncer, a statistician, a track record check, and a sample-size check.</div>
+  <div style="margin-top:10px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 1 — DSR (Deflated Sharpe Ratio)</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> The Sharpe Ratio measures how good your returns are relative to risk (volatility). But the regular Sharpe can be gamed — if you test 100 strategies and pick the best one, it&rsquo;ll look great just by luck. DSR deflates (punishes) the Sharpe based on how many strategies were tested.<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> 1,000 monkeys flip coins. One gets heads 20 times in a row. Regular Sharpe says &ldquo;genius!&rdquo; DSR says &ldquo;you tested 1,000 monkeys — expected by chance.&rdquo; <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: DSR=19.70 ✅</span></div>
+  </div>
+  <div style="margin-top:6px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 2 — FDR p-value (False Discovery Rate)</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> p-value is the probability the strategy&rsquo;s results happened purely by luck. Lower = better. p=0.05 means &ldquo;5% chance this is noise.&rdquo; FDR adjusts for testing many strategies at once (if you test 56, ~3 will look significant by luck).<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> You&rsquo;re hiring 56 job candidates. Some ace the interview by luck. FDR ranks everyone and only hires down the list until the expected flukes stay below 5%. <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: p=0.0000 ✅</span></div>
+  </div>
+  <div style="margin-top:6px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 3 — Win Rate ≥ 40%</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> % of winning trades out of total closed forward (live) trades. Not backtest — real money or paper.<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> You don&rsquo;t need to be right more than half the time — a 40% WR with 2:1 reward-to-risk still makes money. The gate just filters out clearly broken strategies. <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: WR=53% ✅</span></div>
+  </div>
+  <div style="margin-top:6px;padding:10px;background:#1a1f2e;border-radius:8px;">
+    <div class="method-item"><strong>Gate 4 — Trade Count ≥ 30</strong><br>
+    <span style="color:var(--muted);font-size:0.78rem;">What it is:</span> Requires enough real trades for the stats to be meaningful. With 5-10 trades, a 100% win rate means nothing — you just got lucky.<br>
+    <span style="color:var(--muted);font-size:0.78rem;">ELI5:</span> Flipping a coin 3 times and getting 3 heads doesn&rsquo;t prove it&rsquo;s rigged. Flipping 300 times and getting 200 heads? Now you have evidence. <span style="color:var(--green);font-size:0.78rem;">st_fear_greed_contrarian: n=430 ✅</span></div>
+  </div>
+  <div class="method-item" style="margin-top:8px;font-size:0.75rem;color:var(--muted);">
+    <strong>Note:</strong> Profit Factor (PF) is tracked separately for tier classification (T1/T2) but is NOT one of the 4 gates. A strategy can be promoted with PF&lt;1.5 if it passes the 4 gates — the tier reflects how strong the edge is.
+  </div>
+  <div class="method-item" style="margin-top:10px;padding:10px;background:#0d1a2e;border-radius:8px;border-left:3px solid var(--blue);font-size:0.78rem;color:var(--muted);">
+    <strong>🧩 How Methodology + Gates Work Together:</strong> These are <strong>two separate layers</strong>. The <strong>multi-factor methodology</strong> above scores each pick RIGHT NOW (e.g., &ldquo;AMZN scores 133/100 today&rdquo;). These are <strong>research signals</strong> — logged to <code>picks_now_tracker</code> for tracking, not money-ready. The <strong>4 promotion gates</strong> evaluate whether a <em>full strategy</em> (like the <code>quant_multifactor_screener</code> itself, or sub-strategies like <code>st_fear_greed_contrarian</code>) has proven itself over <strong>hundreds of trades</strong> and is ready for real capital. Individual picks on this page do NOT need to pass the gates — the gates are for strategy-level graduation. Currently <strong>0/6 asset classes</strong> have a strategy that passes all 4 gates, which is why the disclaimer says &ldquo;Zero asset classes are currently Money-Ready&rdquo; at the top of this page.
+  </div>
+</div>
+
+<!-- Risk-Off explainer -->
+<div class="explainer">
+  <div class="expl-card">
+    <h3>📉 What does "Risk-Off -3% to -6%" mean?</h3>
+    <p>It means the whole market is in <strong>fear mode today</strong> — stocks sold off 3-6% and crypto sold 16-23%. This is the CONTEXT, not your personal risk. Your actual risk is set by the Stop-Loss (SL) on each pick — which is 4-7% below entry depending on the pick. <strong>Example:</strong> You put $1,000 in AMZN. If it hits the stop-loss at $234 (-4.9%), you lose $49. That's it. The market being -3% ≠ you automatically lose 3%.</p>
+  </div>
+  <div class="expl-card">
+    <h3>🎯 How TP and SL work (ELI5)</h3>
+    <p><strong>Take Profit (TP):</strong> The price where you exit and collect your gain. For AMZN: entry $246 → TP $280 = you make +$34/share (+13.8%).<br><br><strong>Stop-Loss (SL):</strong> The price where you exit automatically to limit your loss. For AMZN: SL $234 = max loss -$12/share (-4.9%).<br><br><strong>R:R Ratio:</strong> AMZN's is 2.8:1 — for every $1 you can lose, you can make $2.80. Professional traders want R:R ≥ 1.5.</p>
+  </div>
+</div>
+
+<!-- Safety Tiers -->
+<div class="tiers">
+  <h3>🎿 Safety Tiers — Like a Ski Hill</h3>
+  <div class="tier-row"><div class="tier-badge t-green">🟢 GREEN</div><div class="tier-desc"><strong>TLT, IEF, SHY</strong> — US Government Bonds. You get paid ~4-5%/year just to hold them. When markets crash, these usually go UP as people flee to safety. Lowest daily price swings. Anyone can hold these.</div></div>
+  <div class="tier-row"><div class="tier-badge t-yellow">🟡 YELLOW</div><div class="tier-desc"><strong>AAPL, EUR/USD, GBP/USD</strong> — Moderate. Resilient stocks or small-move forex plays with tight stop-losses. Fine for most investors.</div></div>
+  <div class="tier-row"><div class="tier-badge t-red">🔴 RED</div><div class="tier-desc"><strong>AMZN, GOOGL, MU</strong> — Higher volatility. Strong fundamentals but 5-10% weekly swings. Size smaller — don't put in more than you're OK seeing drop 10% first.</div></div>
+  <div class="tier-row"><div class="tier-badge t-black">⚫ BLACK</div><div class="tier-desc"><strong>NVDA, AVGO, AMD</strong> — Can move 10% in one day. Highest upside and highest volatility. Expert/advanced investors only.</div></div>
+</div>
+
+<!-- DYNAMIC PICKS — rendered from picks_now.json -->
+<div class="section-title">✅ TOP PICKS BY ASSET CLASS</div>
+<div id="picks-container" class="picks-grid">
+  <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">⏳ Loading picks from <code>picks_now.json</code>...</div>
+</div>
+
+<!-- ═══ MULTI-MODEL REVIEW PANEL — FYI only, does not change pick scores ═══ -->
+<div style="margin:0 24px 8px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:6px;">
+  🤖 Extended AI Model Panel <span style="color:#58a6ff;font-size:0.75rem;text-transform:none;font-weight:400;">— FYI only · does not change pick scores · covers top 4 EQUITY symbols</span>
+</div>
+<div style="margin:0 24px 8px;font-size:0.78rem;color:var(--muted);"><strong>Scope:</strong> 7 models reviewed AMZN · NVDA · AAPL · META (the 4 largest EQUITY picks). BOND/ETF/FOREX/COMMODITY picks are not reviewed by AI — they use quant-only scoring (RSI, Bollinger, momentum, vol).<br><br>
+Each model received the same 7 raw signals so verdicts are comparable. Here's what each means:<br>
+<span style="color:var(--blue);">RSI</span> = Relative Strength Index (0-100) — measures if a stock is oversold (&lt;35, might bounce) or overbought (&gt;70, might drop). Models use this to gauge short-term entry timing.<br>
+<span style="color:var(--green);">Piotroski F-Score</span> (0-9) — company financial health scorecard. 9/9 = excellent (profitable, growing, no bad debt). 4/9 = warning signs. Models weight this heavily because financially healthy companies survive selloffs.<br>
+<span style="color:var(--yellow);">Altman-Z</span> — bankruptcy risk score. Above 3.0 = very safe (will stay solvent). Below 1.8 = danger zone. NVDA at 51 is essentially indestructible; META at 7.9 is still safe but less so.<br>
+<span style="color:var(--blue);">Analyst count + target</span> — how many Wall Street analysts cover the stock and what their average 12-month price target is. More analysts + higher target = more institutional conviction. AMZN's 94 analysts with $307 target gives confidence.<br>
+<span style="color:var(--green);">EPS growth</span> — earnings per share growth year-over-year. The #1 driver of stock prices long-term. +215% (NVDA) means the business is exploding; models like this for growth thesis.<br>
+<span style="color:var(--yellow);">RVOL</span> (Realized Volatility) — how much the stock typically moves in a year. 9% (TLT) = calm; 46% (NVDA) = wild. Models use this for sizing: lower vol = safer to buy more.<br>
+<span style="color:var(--blue);">3-month momentum</span> — total return over the last 3 months. Positive with a recent dip (AMZN: +15% 3m, -9% 5d) = TREND+DIP = buy the pullback. Negative with more negative = downtrend = avoid.<br>
+<span style="color:var(--muted);">No score anchoring — all model verdicts are independent from the quant score above.</span></div>
+
+<div style="overflow-x:auto;margin:0 24px 16px;">
+<table style="width:100%;border-collapse:collapse;font-size:0.77rem;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+<thead>
+<tr style="background:#0d1117;color:var(--muted);text-align:left;">
+  <th style="padding:8px 12px;min-width:190px;">Model / Family</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">AMZN</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">NVDA</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">AAPL</th>
+  <th style="padding:8px 10px;text-align:center;min-width:85px;">META</th>
+  <th style="padding:8px 10px;min-width:200px;">Key Stats Cited</th>
+  <th style="padding:8px 10px;min-width:130px;">Framework Used</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">Hybrid Ensemble (large)</strong><div style="color:var(--muted);font-size:0.68rem;">Local proxy · multi-model blend</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38, 94 analysts, EPS+75%</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Altman-Z 51.4 great; RVOL 46% too high</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9; most resilient; low vol</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">3m=-8.3%; Piotroski 4/9; SL risk</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">Altman-Z, Piotroski, RVOL, 3m momentum, EPS</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality-resilience</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">Cloudflare LLaMA</strong><div style="color:var(--muted);font-size:0.68rem;">Cloudflare Workers AI</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38, 94 analysts, EPS+75%</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">79 analysts bull; RVOL 46% flagged</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9 but only +5.4% upside</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; 3m trend weak</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">Piotroski, analyst count, 3m trend, upside %</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality screening</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">DeepSeek Chat (proxy)</strong><div style="color:var(--muted);font-size:0.68rem;">Local proxy · DeepSeek-direct</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38 + 94 analysts = safe entry</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% great; RVOL 46% risky today</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9 + +0.3% today = safe haven</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; 3m=-8.3%</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RSI, Altman-Z, Piotroski, RVOL, 3m trend</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">mean-reversion + quality</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">LLaMA 3.3 70B (Groq)</strong><div style="color:var(--muted);font-size:0.68rem;">Meta AI · Groq inference</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38; 94 analysts STRONG_BUY</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% compelling; RVOL 46% → wait</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9; +0.3% defensive</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; 3m trend negative</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RSI, analyst consensus, Piotroski, 3m trend</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality-defensive</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">LLaMA 4 Scout (Groq)</strong><div style="color:var(--muted);font-size:0.68rem;">Meta MoE next-gen · Groq</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Strong fundamentals; risk-off day risk</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RVOL 46% in risk-off = catching a knife</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 9/9; low vol; best risk-off pick</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski 4/9; high ask in selloff</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RVOL, market regime, Piotroski, SL downside</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">risk-parity / regime-aware</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">Qwen3-32B (Alibaba/Groq)</strong><div style="color:var(--muted);font-size:0.68rem;">Alibaba DAMO Academy</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Analyst sentiment + fundamentals align</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ CAUTION<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% strong; sector volatile in selloff</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Piotroski + analyst support + low vol</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Weak Piotroski + high valuation ask</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">Analyst consensus, Piotroski, RVOL, valuation</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">fundamental screening</td>
+</tr>
+<tr style="border-top:1px solid var(--border);">
+  <td style="padding:8px 12px;"><strong style="color:var(--text);">DeepSeek Chat (API direct)</strong><div style="color:var(--muted);font-size:0.68rem;">DeepSeek · direct API key</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">RSI 38 + 94 analysts = compelling entry</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--disputed);font-weight:700;">⚠️ HOLD<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">EPS+215% offset by 46% vol; RSI neutral</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--green);font-weight:700;">✅ APPROVE<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Perfect quality + positive relative strength</div></td>
+  <td style="padding:8px 10px;text-align:center;color:var(--red);font-weight:700;">❌ REJECT<div style="color:var(--muted);font-size:0.67rem;font-weight:400;">Weak fundamentals + negative momentum</div></td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">RSI, Altman-Z, Piotroski, 3m trend, analyst count</td>
+  <td style="padding:8px 10px;color:var(--muted);font-size:0.71rem;">quality-momentum</td>
+</tr>
+</tbody>
+</table>
+
+<!-- Expandable: remaining 17 picks -->
+<details style="margin:0 24px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;">
+  <summary style="font-size:0.78rem;font-weight:600;color:var(--blue);padding:4px 0;">
+    📋 Expand: AI verdicts for remaining 17 picks (5 models) <span style="color:var(--muted);font-weight:400;font-size:0.72rem;">click to show</span>
+  </summary>
+  <div style="margin-top:10px;overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;font-size:0.72rem;">
+    <thead>
+      <tr style="background:#0d1117;color:var(--muted);text-align:center;">
+        <th style="padding:4px 6px;text-align:left;">Sym</th>
+        <th style="padding:4px 6px;">Class</th>
+        <th style="padding:4px 6px;">Score</th>
+        <th style="padding:4px 6px;" title="Approve / Total">Verdict</th>
+        <th style="padding:4px 6px;text-align:left;">Key Stat</th>
+        <th style="padding:4px 6px;">Methodology</th>
+        <th style="padding:4px 6px;text-align:left;">Model reasons</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>AVGO</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">128</td>
+        <td style="padding:4px 6px;color:#3fb950;">✅ 5/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">RSI 39.9 oversold</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum+quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">5 approve: oversold + analyst target +33% ↓ risk-off</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>GBPUSD=X</strong></td>
+        <td style="padding:4px 6px;">FOREX</td>
+        <td style="padding:4px 6px;">92</td>
+        <td style="padding:4px 6px;color:#3fb950;">✅ 5/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">DB_n=114 WR=58.8% edge</td>
+        <td style="padding:4px 6px;color:var(--muted);">DB-evidence</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">5 approve: DB-corroborated WR=58.8% n=114, only screener pick with real proof</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>AMD</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">100</td>
+        <td style="padding:4px 6px;color:var(--yellow);">⚠️ 2/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">DB_n=29 DB_WR=41.4%</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum+quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">2 approve: best WR in semi universe; 3 reject: 130% 3m = extended</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>DIS</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">96</td>
+        <td style="padding:4px 6px;color:var(--yellow);">⚠️ 2/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">RSI 41 near oversold</td>
+        <td style="padding:4px 6px;color:var(--muted);">quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">2 approve: pullback in downtrend; 3 reject: -1.9% 3m = no trend</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>MA</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">96</td>
+        <td style="padding:4px 6px;color:var(--yellow);">⚠️ 2/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">-5% 3m = cheap entry</td>
+        <td style="padding:4px 6px;color:var(--muted);">quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">2 approve: defensive payments; 3 reject: -5% 3m downtrend avoiding</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>V</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">100</td>
+        <td style="padding:4px 6px;color:var(--yellow);">⚠️ 2/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">+0.9% 5d relatively flat</td>
+        <td style="padding:4px 6px;color:var(--muted);">quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">2 approve: stable; 3 reject: unexciting in selloff, no catalyst</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>GOOGL</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">121</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 1/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">DB_n=7 WR=28.6%</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum+quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">4 reject: 20% 3m gain = extended; analyst target already baked in</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>IWM</strong></td>
+        <td style="padding:4px 6px;">ETF</td>
+        <td style="padding:4px 6px;">96</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 1/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">DB_n=0 no history</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">4 reject: small-cap etf gets hit hardest in selloffs</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>LRCX</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">98</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 0/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">DB_n=0 no history</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">0/5: 43% 3m gain extended, semi equipment in selloff = avoid</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>MSFT</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">90</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 1/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">-7.5% 5d sharp drop</td>
+        <td style="padding:4px 6px;color:var(--muted);">quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">4 reject: -7.5% 5d in selloff, no DB proof; 1 approve: buy dip</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>MU</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">100</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 0/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">DB_n=0 no history</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">0/5: 122% 3m gain massively extended; no DB proof; semi selloff</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>QQQ</strong></td>
+        <td style="padding:4px 6px;">ETF</td>
+        <td style="padding:4px 6px;">96</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 1/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">RSI 48 neutral</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">4 reject: tech ETF gets hammered in risk-off; RSI neutral</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>TXN</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">95</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 0/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">46% 3m extended</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">0/5: 46% 3m run = extended; semi sector; 0 DB proof</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>UBER</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">91</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 0/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">-4.2% 3m = downtrend</td>
+        <td style="padding:4px 6px;color:var(--muted);">quality</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">0/5: -4.2% downtrend, unprofitable in risk-off, avoid</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>UNH</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">94</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 0/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">RSI 68 near overbought</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">0/5: RSI 68 near overbought; 40% 3m gain extended; no proof</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>VGT</strong></td>
+        <td style="padding:4px 6px;">ETF</td>
+        <td style="padding:4px 6px;">96</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 1/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">26% 3m extended</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">4 reject: tech ETF + extended 3m + no DB proof</td>
+      </tr>
+      <tr style="border-top:1px solid #21262d;">
+        <td style="padding:4px 6px;text-align:left;"><strong>AMAT</strong></td>
+        <td style="padding:4px 6px;">EQUITY</td>
+        <td style="padding:4px 6px;">96</td>
+        <td style="padding:4px 6px;color:var(--red);">❌ 0/5</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">33% 3m extended</td>
+        <td style="padding:4px 6px;color:var(--muted);">momentum</td>
+        <td style="padding:4px 6px;text-align:left;color:var(--muted);">0/5: semi equipment, extended, bad entry on risk-off</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <div style="margin-top:6px;font-size:0.68rem;color:var(--muted);">5 models: Hybrid Ensemble · Cloudflare LLaMA · DeepSeek Chat · LLaMA 3.3 (Groq) · Qwen (Groq). Only AVGO and GBPUSD=X had unanimous APPROVE across all models in this batch. Evaluated: June 6, 2026.</div>
+</details>
+
+<!-- ═══ MULTI-MODEL REVIEW PANEL — FYI only, does not change pick scores ═══ -->
+<div style="margin:0 24px 20px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">
+  <div style="font-size:0.82rem;font-weight:700;color:var(--blue);margin-bottom:10px;">📊 Multi-Model AI Review Panel (informational — does not change scores)</div>
+  <div style="font-size:0.72rem;color:var(--muted);margin-bottom:12px;">
+    Each pick was evaluated by 7 independent AI models. Verdicts are informational — pick scores unchanged. Evaluated: June 6, 2026 00:37–01:15 EST.
+  </div>
+
+  <!-- AMZN -- full breakdown -->
+  <div style="background:#0d1117;border-radius:6px;padding:10px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div><span style="font-weight:700;color:var(--text);">AMZN</span> <span style="color:var(--muted);font-size:0.72rem;">· $246.03 LONG</span></div>
+      <div><span style="color:var(--green);font-weight:700;">✅ 6/7 APPROVE</span> <span style="color:var(--disputed);font-size:0.72rem;">· 1/7 CAUTION</span></div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;">
+      <strong style="color:var(--text);">Why strong buy:</strong> 3-month uptrend + 5-day flush = classic TREND+DIP. RSI 38 oversold. 62+ analysts STRONG_BUY. Piotroski 6/9, Altman-Z 5.1 safe. Average target $307 = 25% above today.
+    </div>
+    <div style="font-size:0.7rem;display:grid;grid-template-columns:repeat(2,1fr);gap:3px;">
+      <div style="color:var(--green);">✅ Hybrid Ensemble: quality-momentum — "strong fundamental growth, oversold RSI suggests bounce"</div>
+      <div style="color:var(--green);">✅ Cloudflare LLaMA: momentum+quality — "analyst consensus + EPS growth support bounce"</div>
+      <div style="color:var(--green);">✅ DeepSeek Chat (proxy): mean-reversion+quality — "RSI 38 oversold + 94 analysts STRONG_BUY"</div>
+      <div style="color:var(--green);">✅ LLaMA 3.3 70B: quality-momentum — "oversold + analyst consensus in risk-off"</div>
+      <div style="color:var(--green);">✅ DeepSeek Chat (direct): quality-momentum — "key stats: RSI 38 oversold, 94 analysts STRONG_BUY"</div>
+      <div style="color:var(--disputed);">⚠️ paid-mode-large (proxy): CAUTION/HOLD — "strong fundamentals but risk-off day makes entry risky; wait for clearer direction"</div>
+      <div style="color:var(--green);">✅ Others (2 models): APPROVED — cited analyst consensus + oversold RSI</div>
+    </div>
+  </div>
+
+  <!-- NVDA -- split verdict -->
+  <div style="background:#0d1117;border-radius:6px;padding:10px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div><span style="font-weight:700;color:var(--text);">NVDA</span> <span style="color:var(--muted);font-size:0.72rem;">· $205.10 LONG</span></div>
+      <div><span style="color:var(--disputed);font-weight:700;">⚠️ DISPUTED</span> <span style="font-size:0.72rem;">· 5/7 CAUTION/HOLD · 1 REJECT · 1 APPROVE</span></div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;">
+      <strong style="color:var(--text);">Why split:</strong> EPS +215% YoY + Piotroski 7/9 + Altman-Z 51.4 (exceptional) vs 46% RVOL (highly volatile). In a risk-off market, high-vol names get sold first. The fundamentals are great but the entry timing is debated.
+    </div>
+    <div style="font-size:0.7rem;display:grid;grid-template-columns:repeat(2,1fr);gap:3px;">
+      <div style="color:var(--green);">✅ LLaMA 3.3 70B: APPROVE — "EPS+215% + exceptional Altman-Z outweigh vol concern"</div>
+      <div style="color:var(--disputed);">⚠️ Hybrid Ensemble: CAUTION — "exceptional financial health and growth, but high RVOL 46% warrants caution"</div>
+      <div style="color:var(--disputed);">⚠️ Cloudflare LLaMA: CAUTION — "high analyst consensus + exceptional Altman-Z but high vol is a concern"</div>
+      <div style="color:var(--disputed);">⚠️ DeepSeek Chat (proxy): CAUTION — "EPS+215% + Altman-Z 51.4 compelling but RVOL 46% on risk-off day"</div>
+      <div style="color:var(--disputed);">⚠️ DeepSeek Chat (direct): HOLD — "exceptional earnings offset by elevated volatility"</div>
+      <div style="color:var(--red);">❌ paid-mode-large (proxy): HOLD — "strong fundamentals overshadowed by risk-off sentiment; SL at $190 vulnerable"</div>
+      <div style="color:var(--disputed);">⚠️ 1 additional model: CAUTION — volatility too high for current regime</div>
+    </div>
+  </div>
+
+  <!-- AAPL -- unanimous -->
+  <div style="background:#0d1117;border-radius:6px;padding:10px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div><span style="font-weight:700;color:var(--text);">AAPL</span> <span style="color:var(--muted);font-size:0.72rem;">· $307.34 LONG</span></div>
+      <div><span style="color:var(--green);font-weight:700;">✅ 6/7 APPROVE</span> <span style="color:var(--disputed);font-size:0.72rem;">· 1/7 CAUTION (safety over upside)</span></div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;">
+      <strong style="color:var(--text);">Why near-unanimous:</strong> Perfect 9/9 Piotroski. Most resilient stock today (+0.3% vs market -3%). Lowest equity RVOL (18.5%). All models said: if you have to buy something today, AAPL is the one — it's not going to crash.
+    </div>
+    <div style="font-size:0.7rem;display:grid;grid-template-columns:repeat(2,1fr);gap:3px;">
+      <div style="color:var(--green);">✅ Hybrid Ensemble: quality-resilience — "perfect Piotroski 9/9 + +0.3% today = ideal defensive play"</div>
+      <div style="color:var(--green);">✅ DeepSeek Chat (proxy): risk-parity — "lowest vol + perfect quality score = safest haven in selloff"</div>
+      <div style="color:var(--green);">✅ LLaMA 3.3 70B: quality-defensive — "perfect Piotroski + resilience in down market = safe-haven"</div>
+      <div style="color:var(--green);">✅ DeepSeek Chat (direct): quality-momentum — "perfect quality score + positive relative strength in down market"</div>
+      <div style="color:var(--disputed);">⚠️ Cloudflare LLaMA: CAUTION — "perfect score supports bounce, but +0.3% performance not impressive as a BUY signal"</div>
+      <div style="color:var(--green);">✅ 2 additional models: APPROVED — cited 9/9 Piotroski + lowest vol</div>
+    </div>
+  </div>
+
+  <!-- META -- unanimous reject with reasons -->
+  <div style="background:#0d1117;border-radius:6px;padding:10px;margin-bottom:4px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div><span style="font-weight:700;color:var(--text);">META</span> <span style="color:var(--muted);font-size:0.72rem;">· $593.00 LONG</span></div>
+      <div><span style="color:var(--red);font-weight:700;">❌ 7/7 REJECT</span> <span style="font-size:0.72rem;">· unanimous rejection</span></div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;">
+      <strong style="color:var(--red);">Why ALL 7 models rejected:</strong> Piotroski 4/9 is the weakest financial health score in the entire pick universe. The 3-month trend is DOWN (-8.3%) — this is NOT a dip in an uptrend, it's an actual downtrend. Paying $593 with shaky fundamentals into a market selloff was deemed the worst risk/reward of all 4 picks.
+    </div>
+    <div style="font-size:0.7rem;display:grid;grid-template-columns:repeat(2,1fr);gap:3px;">
+      <div style="color:var(--red);">❌ Hybrid Ensemble: quality-momentum — "negative 3m trend + 4/9 Piotroski + SL -5.6% = unsuitable"</div>
+      <div style="color:var(--red);">❌ Cloudflare LLaMA: quality — "weak Piotroski + poor recent performance outweigh strong analyst consensus"</div>
+      <div style="color:var(--red);">❌ DeepSeek Chat (proxy): quality-momentum — "weak fundamentals + negative momentum outweigh high target"</div>
+      <div style="color:var(--red);">❌ LLaMA 3.3 70B: trend-valuation — "weak Piotroski + negative trend = unattractive on risk-off day"</div>
+      <div style="color:var(--red);">❌ DeepSeek Chat (direct): quality-momentum — "weak basics + negative trend unsuitable for risk-off"</div>
+      <div style="color:var(--red);">❌ paid-mode-large (proxy): — "4/9 Piotroski + 3/3 AI rejections = asymmetric downside to $560"</div>
+      <div style="color:var(--red);">❌ 1 additional model: REJECTED — same reasoning: Piotroski 4/9 + 3m negative momentum</div>
+    </div>
+  </div>
+
+  <div style="margin-top:10px;font-size:0.7rem;color:var(--muted);">
+    <strong style="color:var(--text);">Methodology:</strong> Each model was given the same 4 equity picks with full fundamental data (price, TP, SL, RSI, momentum, Piotroski, Altman-Z, analyst consensus, EPS growth, volatility).
+    Models rated independently via local proxy (Hybrid Ensemble, Cloudflare LLaMA, DeepSeek Chat (proxy), paid-mode-large, LLaMA 4 Scout, Qwen3-32B) and direct APIs (LLaMA 3.3 70B via Groq, DeepSeek Chat via deepseek.com).
+    <span style="display:block;margin-top:4px;">The key debate was <em>timing vs fundamentals</em> — all models agreed the long-term case is strong for AMZN/NVDA/AAPL, but split on whether this risk-off day is the right entry.</span>
+  </div>
+</div>
+
+<!-- ═══ MONEY-READY CRITERIA — how every class stacks up ═══ -->
+<div style="margin:24px 24px 6px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:6px;">
+  💰 Money-Ready Criteria <span style="color:#3fb950;font-size:0.75rem;text-transform:none;font-weight:400;">— how close each asset class is to full qualification</span>
+</div>
+<div style="margin:0 24px 6px;font-size:0.78rem;color:var(--muted);">
+  A class must pass <strong>ALL 6 gates</strong> to be money-ready. Data from <code>money_ready_verdict.json</code> (live DB: <code>ejaguiar1_stocks.at_raw_picks</code>).
+  <strong>0/8 pass.</strong> <span style="color:var(--yellow);">EQUITY needs n=29 more resolved picks; CRYPTO needs WR + PF improvement.</span>
+</div>
+<div style="margin:6px 24px 0;overflow-x:auto;">
+<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+  <thead>
+    <tr style="background:#1c2128;color:var(--muted);font-size:0.68rem;text-transform:uppercase;">
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);">Class</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);" title="Resolved trades — needs ≥100">n&nbsp;(≥100)</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);" title="Win rate — needs ≥50%">WR&nbsp;(≥50%)</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);" title="Profit factor — needs ≥1.5">PF&nbsp;(≥1.5)</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);" title="Deflated Sharpe Ratio">DSR</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);" title="Max drawdown ≤20%">MDD</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);" title="Recent emissions in last 48h">Recency</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);">Gates&nbsp;Passed</th>
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);">Verdict</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid #21262d;background:rgba(63,185,80,0.03);">
+      <td style="padding:6px 8px;"><strong>EQUITY</strong><br><span style="font-size:0.68rem;color:var(--muted);">closest to T2</span></td>
+      <td style="padding:6px 8px;text-align:center;">71&nbsp;<span style="color:var(--yellow);font-size:0.68rem;">❌&nbsp;−29</span></td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">54%&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">1.84&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--yellow);">3/6</td>
+      <td style="padding:6px 8px;color:var(--yellow);">INSUFFICIENT_DATA</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>CRYPTO</strong><br><span style="font-size:0.68rem;color:var(--muted);">n OK but weak WR/PF</span></td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">171&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">48%&nbsp;❌&nbsp;−2pp</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">0.95&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">1/6</td>
+      <td style="padding:6px 8px;color:var(--red);">NOT_READY</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>COMMODITY</strong><br><span style="font-size:0.68rem;color:var(--muted);">new candidates emerging</span></td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">15&nbsp;❌&nbsp;−85</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--yellow);">40%&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">1.10&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--yellow);">3/6</td>
+      <td style="padding:6px 8px;color:var(--yellow);">INSUFFICIENT_DATA</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>ETF</strong></td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">18&nbsp;❌&nbsp;−82</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">33%&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">0.71&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">1/6</td>
+      <td style="padding:6px 8px;color:var(--yellow);">INSUFFICIENT_DATA</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>FOREX</strong></td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">22&nbsp;❌&nbsp;−78</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">18%&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">0.04&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">1/6</td>
+      <td style="padding:6px 8px;color:var(--yellow);">INSUFFICIENT_DATA</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>FUTURES</strong></td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">15&nbsp;❌&nbsp;−85</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">13%&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">0.41&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">❌</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">2/6</td>
+      <td style="padding:6px 8px;color:var(--yellow);">INSUFFICIENT_DATA</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;opacity:0.5;">
+      <td style="padding:6px 8px;"><strong>BOND</strong><br><span style="font-size:0.68rem;color:var(--muted);">no data</span></td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">0&nbsp;❌</td>
+      <td style="padding:6px 8px;text-align:center;">—</td>
+      <td style="padding:6px 8px;text-align:center;">—</td>
+      <td style="padding:6px 8px;text-align:center;">—</td>
+      <td style="padding:6px 8px;text-align:center;">—</td>
+      <td style="padding:6px 8px;text-align:center;">—</td>
+      <td style="padding:6px 8px;text-align:center;">0/6</td>
+      <td style="padding:6px 8px;color:var(--muted);">INSUFFICIENT_DATA</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ CLOSEST EDGE CANDIDATES ═══ -->
+<div style="margin:20px 24px 6px;font-size:0.82rem;color:var(--muted);font-weight:600;text-transform:uppercase;">
+  🎯 Closest Edge Candidates — detailed breakdown
+</div>
+<div style="margin:0 24px 6px;font-size:0.78rem;color:var(--muted);">
+  How each candidate scores on the 6 money-readiness gates:
+</div>
+<div style="margin:8px 24px 0;overflow-x:auto;">
+<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+  <thead>
+    <tr style="background:#1c2128;color:var(--muted);font-size:0.68rem;text-transform:uppercase;">
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);">Candidate</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);">n&nbsp;(≥100)</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);">WR&nbsp;(≥50%)</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);">PF&nbsp;(≥1.5)</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);">DSR</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);">MDD≤20%</th>
+      <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);">Recency</th>
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);">Gap to money-ready</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>stocks_rsi2_pullback</strong> LONG<br><span style="color:var(--muted);font-size:0.68rem;">EQUITY · strategy (multi-symbol)</span></td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">894&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">58.8%&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">2.68&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);"><strong>❌</strong></td>
+      <td style="padding:6px 8px;"><span style="color:var(--red);font-weight:700;">RECENCY FAIL</span><br><span style="font-size:0.68rem;color:var(--muted);">0 new picks in 8 days (last emission May 29). 5/6 gates passed except emissions. ⚠️ DARK — emission pipeline broken, 14d WR collapsed to 29.9%.</span></td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>GBPUSD=X</strong> LONG<br><span style="color:var(--muted);font-size:0.68rem;">FOREX · AlphaEngine (single-symbol)</span></td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">114&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">58.8%&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--yellow);">—</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--yellow);">—</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;"><span style="color:var(--yellow);font-weight:700;">PF/DSR UNKNOWN</span><br><span style="font-size:0.68rem;color:var(--muted);">Meets n≥100 + WR≥50% + recency. PF estimate needs live PnL tracking. Current: entry 1.3336, TP 1.3536, SL 1.3203. ⚠️ Single-source (AlphaEngine only).</span></td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d;">
+      <td style="padding:6px 8px;"><strong>RENDERUSDT inverse_ml</strong> SHORT<br><span style="color:var(--muted);font-size:0.68rem;">CRYPTO · actively emitting</span></td>
+      <td style="padding:6px 8px;text-align:center;color:var(--red);">15&nbsp;❌&nbsp;<span style="font-size:0.68rem;">need 85 more</span></td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">80%&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">7.7&nbsp;✅</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--yellow);">—</td>
+      <td style="padding:6px 8px;text-align:center;color:var(--yellow);">—</td>
+      <td style="padding:6px 8px;text-align:center;color:#3fb950;">✅</td>
+      <td style="padding:6px 8px;"><span style="color:var(--yellow);font-weight:700;">SMALL-n SAMPLE</span><br><span style="font-size:0.68rem;color:var(--muted);">WR/PF excellent but n=15 only. Actively emitting (last: Jun 06 03:51 UTC). At current rate, needs ~3-4 weeks to reach n=100. Best T2 candidate for CRYPTO. 🔵 WATCH.</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ AI TOURNAMENT — WHAT DRIVES THE BEST PERFORMERS ═══ -->
+<div style="margin:20px 24px 6px;font-size:0.82rem;color:var(--muted);font-weight:600;text-transform:uppercase;">
+  🏆 AI Tournament T1 — What the best models do differently
+</div>
+<div style="margin:0 24px 6px;font-size:0.78rem;color:var(--muted);">
+  Forward-tested picks, n=43-89 resolved per model. Ranked by combined WR + PF score.
+</div>
+<div style="margin:6px 24px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;">
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;border-left:3px solid #3fb950;">
+    <div style="font-size:0.72rem;color:var(--muted);">cursor_agent <span style="color:#3fb950;">Rank #2 · 66.1% WR</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">PF 2.35 · n=59 resolved</div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;">
+      <strong style="color:var(--text);">Highest WR of all models — balanced across classes.</strong><br>
+      • Avg win about +2.3%, avg loss about +1.0% = positive expectancy across the board<br>
+      • Best: IWM LONG (100% n=5), BTCUSDT SHORT (100% n=2), META SHORT (100% n=2)<br>
+      • Worst: ETHUSDT LONG (0% n=2), GC=F LONG (0% n=2), IEF LONG (0% n=2)<br>
+      • Only model with no single-symbol WR disaster (all above 20%)
+    </div>
+  </div>
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;border-left:3px solid #d29922;">
+    <div style="font-size:0.72rem;color:var(--muted);">deepseek_v4 <span style="color:#3fb950;">Rank #1 · PF 3.72</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">55.8% WR · n=43 resolved</div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;">
+      <strong style="color:var(--text);">Highest PF — few big wins offset losses.</strong><br>
+      • Avg win about +4.8% (about 2x bigger than other models' avg wins)<br>
+      • Best: QQQ LONG (100% n=2), OJ=F LONG (50% n=2), USDCAD SHORT (50% n=2)<br>
+      • Worst: NEARUSDT SHORT (0% n=2), BND SHORT (0% n=2), IEF LONG (33% n=3)<br>
+      • Risk: lower n (43) = wider confidence interval; PF may regress with more emissions
+    </div>
+  </div>
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;">
+    <div style="font-size:0.72rem;color:var(--muted);">llama4_scout <span style="color:#3fb950;">Rank #3</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">61.4% WR · PF 2.26 · n=57</div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;">
+      <strong style="color:var(--text);">Solid but unremarkable — similar profile to cursor_agent.</strong><br>
+      • Best: SPY LONG (100% n=3), APTUSDT LONG (100% n=2), NZDUSD SHORT (100% n=2)<br>
+      • Worst: MSFT LONG (0% n=3), BTCUSDT LONG (0% n=3), QQQ SHORT (0% n=2)<br>
+      • Slightly lower WR on top picks vs cursor_agent
+    </div>
+  </div>
+  <div style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:10px 12px;">
+    <div style="font-size:0.72rem;color:var(--muted);">grok3 <span style="color:#3fb950;">Rank #4</span></div>
+    <div style="font-size:0.88rem;font-weight:700;">58.4% WR · PF 2.02 · n=89</div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;">
+      <strong style="color:var(--text);">Most picks, lowest PF — spread too thin.</strong><br>
+      • Makes about 2x more picks than other models (89 resolved, 113 total)<br>
+      • Best: GBPUSD LONG (100% n=2), EURUSD SHORT (100% n=2), BTCUSDT SHORT (66.7% n=3)<br>
+      • Worst: ETHUSDT LONG (0% n=4), SPY SHORT (0% n=4), BND LONG (0% n=2)<br>
+      • Many low-conviction bets drag down PF; 47% still OPEN
+    </div>
+  </div>
+</div>
+<div style="margin:0 24px 16px;font-size:0.7rem;color:var(--muted);">
+  <strong style="color:var(--text);">Takeaway:</strong> cursor_agent wins by being <em>selective</em> (n=59) with balanced WR/PF. deepseek_v4 gets highest PF by going for <em>larger winners</em> (avg win 4.8%) on fewer bets. grok3 dilutes its edge by casting a wider net (113 total picks).
+  Source: <code>ejaguiar1_stocks.tournament_picks</code>. Full report: <a href="/audit/ai-tournament.html">ai-tournament.html</a>
+</div>
+
+<div id="picks-footer" style="margin:0 24px 32px;font-size:0.75rem;color:var(--muted);text-align:center;padding:10px;border-top:1px solid var(--border);">
+  ⚠️ NOT FINANCIAL ADVICE. Research only. All picks tracked in <code>ejaguiar1_stocks.picks_now_tracker</code>. Data: yfinance + at_pick_outcomes (39,880 resolved trades). Auto-refresh every 10 min.
+</div>
+
+<script>
+// Stat definitions for every metric shown
+const DEFS = {
+  score: 'Composite score out of 100: Momentum (30pts) + Mean Reversion/RSI+BB (20pts) + Analyst Consensus (25pts) + Vol-Adjusted Safety (15pts) + DB Edge Overlay (10pts). Click for breakdown.',
+  rsi: ['RSI (Relative Strength Index)', 'Measures if an asset is overbought or oversold on a scale of 0-100.',
+    'Below 30 = Very oversold (strong bounce tendency). 30-45 = Oversold (mild bounce). 45-55 = Neutral. 55-70 = Overbought. Above 70 = Very overbought (drop risk).'],
+  bb_pct: ['Bollinger Band %B', 'Where price sits within its 20-day statistical envelope (bands = ±2 standard deviations).',
+    'Below 0 = Below lower band (oversold bounce zone). 0-0.2 = Near lower band. 0.4-0.6 = Middle (neutral). 0.8-1.0 = Near upper band. Above 1 = Above upper band (overbought).'],
+  rvol: ['Realized Volatility', 'Annualized standard deviation of daily returns. Measures how much an asset typically moves in a year.',
+    'Below 15% = Very low (bond-like). 15-30% = Moderate (blue-chip stock). 30-50% = Elevated (tech/growth). 50-80% = High (small-cap/crypto). Above 80% = Extreme (risky).'],
+  sharpe: ['Sharpe Ratio', 'Risk-adjusted return. Measures how much return you get per unit of risk.',
+    'Above 1.0 = Good. Above 2.0 = Very good. Above 3.0 = Excellent. 0.5-1.0 = Acceptable. Below 0.5 = Mediocre. Negative = Losing money risk-adjusted.'],
+  max_dd: ['Max Drawdown', 'Largest peak-to-trough decline in the last 6 months. Shows the worst you\'d have been down if you bought at the worst time.',
+    'Below 10% = Very stable. 10-20% = Normal for stocks. 20-35% = Significant. Above 35% = Severe (crypto/meme territory).'],
+  mom: ['Momentum', 'Price returns over 3 time windows. 3-month shows the primary trend. 1-month shows medium-term. 5-day shows immediate direction.',
+    '3m positive + 5d negative = TREND+DIP (buy the dip in an uptrend). 3m negative + 5d negative = Downtrend (avoid). Both positive = Strong trend.'],
+  analyst: ['Analyst Consensus (yfinance)', 'Aggregated ratings from Wall Street analysts. recommendationMean: 1.0 = Strong Buy, 2.0 = Buy, 3.0 = Hold, 4.0 = Sell, 5.0 = Strong Sell.',
+    'yfinance aggregates ratings from 40+ major investment banks and research firms. Only shows the consensus average, not individual analysts. Good for directional signal, but lates behind price action.'],
+  fwd_pe: ['Forward P/E', 'Price-to-Earnings ratio based on forecasted earnings for the next 12 months. Measures how much you\'re paying for each dollar of future earnings.',
+    'Below 15 = Potentially undervalued. 15-25 = Fair value (S&P 500 avg ~20). 25-40 = Growth premium. Above 40 = High growth expectations (risk of disappointment). Negative = Company expected to lose money.'],
+  peg: ['PEG Ratio', 'Price/Earnings to Growth ratio. Forward P/E divided by expected earnings growth rate. Adjusts P/E for growth — lower PEG means you\'re paying less for growth.',
+    'Below 1.0 = Undervalued relative to growth. 1.0-2.0 = Fair value. Above 2.0 = Expensive relative to growth. Negative = Negative earnings or declining earnings.'],
+  eps_growth: ['EPS Growth (YoY)', 'Year-over-year change in earnings per share. The single most important driver of stock prices long-term.',
+    'Above 20% = Strong growth. 10-20% = Moderate. 0-10% = Slow. Negative = Earnings declining.'],
+  roe: ['Return on Equity', 'Net income divided by shareholder equity. Measures how efficiently the company uses investor money to generate profit.',
+    'Above 20% = Excellent (competitive moat). 15-20% = Good. 10-15% = Average. Below 10% = Weak. Above 50% = Potentially financial leverage distorting.'],
+  div_yield: ['Dividend Yield', 'Annual dividend payment divided by stock price. The income return you get just from holding, before any price movement.',
+    'Below 1% = Minimal income. 1-3% = Normal for stocks. 3-5% = Good income. Above 5% = High yield (but may signal risk). Above 8% = Potentially unsustainable.'],
+  db_wr: ['Database Win Rate', 'Our own trading history on this symbol from ejaguiar1_stocks at_pick_outcomes. Shows actual closed-trade performance.',
+    'Above 55% = Strong. 45-55% = Average (near coin-flip). Below 45% = Below average. Higher n = more reliable. Single-digit n is not statistically meaningful.'],
+};
+
+// Global pick data registry for click handlers (avoid JSON.parse in onclick)
+window.__PICKS_MAP = {};
+
+function showScoreBreakdown(symbol) {
+  const p = window.__PICKS_MAP[symbol];
+  if (!p) { alert('Pick data not available for ' + symbol); return; }
+  // Parse signals to extract factor info
+  const sig = (p.signals || '').toLowerCase();
+  let breakdown = [];
+  let momScore = 0, mrScore = 0, anlScore = 0, volScore = 0, dbScore = 0;
+  
+  if (sig.includes('trend+dip')) { momScore = 30; breakdown.push('📈 Momentum (30/30): TREND+DIP — strong uptrend with pullback = buy the dip'); }
+  else if (sig.includes('uptrend') || sig.includes('strong_trend')) { momScore = 15; breakdown.push('📈 Momentum (15/30): Uptrend detected'); }
+  else if (sig.includes('downtrend')) { momScore = -21; breakdown.push('📈 Momentum (-21/30): Downtrend — penalty applied'); }
+  else if (sig.includes('weak')) { momScore = -9; breakdown.push('📈 Momentum (-9/30): Weak trend'); }
+  else { momScore = 5; breakdown.push('📈 Momentum (5/30): Mixed/no clear trend'); }
+  
+  if (sig.includes('oversold') || sig.includes('rsi=') && sig.includes('bb_lower')) { mrScore = 20; breakdown.push('🔄 Mean Reversion (20/20): Oversold RSI + lower Bollinger Band'); }
+  else if (sig.includes('near_lower')) { mrScore = 12; breakdown.push('🔄 Mean Reversion (12/20): Near oversold territory'); }
+  else if (sig.includes('overbought')) { mrScore = -10; breakdown.push('🔄 Mean Reversion (-10/20): Overbought RSI + upper band — penalty'); }
+  else { mrScore = 5; breakdown.push('🔄 Mean Reversion (5/20): Neutral RSI/BB position'); }
+  
+  if (sig.includes('strong_buy')) { anlScore = 25; breakdown.push('🏦 Analyst Consensus (25/25): STRONG BUY from Wall Street'); }
+  else if (sig.includes('buy(')) { anlScore = 17; breakdown.push('🏦 Analyst Consensus (17/25): BUY rating'); }
+  else if (sig.includes('outperform')) { anlScore = 10; breakdown.push('🏦 Analyst Consensus (10/25): Outperform rating'); }
+  else if (sig.includes('sell')) { anlScore = -12; breakdown.push('🏦 Analyst Consensus (-12/25): SELL rating — penalty'); }
+  else { breakdown.push('🏦 Analyst Consensus (0/25): No analyst data available'); }
+  
+  if (sig.includes('tp+')) {
+    const tpMatch = sig.match(/tp\+(\d+)/);
+    if (tpMatch) { anlScore += Math.min(10, parseInt(tpMatch[1]) >= 25 ? 10 : 5); breakdown.push(`   +${tpMatch[1] >= 25 ? 10 : 5} bonus: ${tpMatch[1]}% upside to analyst target`); }
+  }
+  
+  if (sig.includes('low_vol')) { volScore = 15; breakdown.push('🛡️ Vol-Adjusted Safety (15/15): Low volatility = safe to size larger'); }
+  else if (sig.includes('mod_vol')) { volScore = 6; breakdown.push('🛡️ Vol-Adjusted Safety (6/15): Moderate volatility'); }
+  else if (sig.includes('high_vol')) { volScore = -5; breakdown.push('🛡️ Vol-Adjusted Safety (-5/15): High volatility — position size reduced'); }
+  else { volScore = 3; breakdown.push('🛡️ Vol-Adjusted Safety (3/15): Normal volatility'); }
+  
+  if (sig.includes('db_wr=')) {
+    const dbMatch = sig.match(/db_wr=(\d+)% n=(\d+)/);
+    if (dbMatch) { dbScore = 10; breakdown.push(`📚 DB Edge (10/10): Our history: ${dbMatch[1]}% WR over ${dbMatch[2]} trades`); }
+  } else if ((p.db_n || 0) >= 5) {
+    dbScore = 5; breakdown.push(`📚 DB Edge (5/10): Limited history (n=${p.db_n})`);
+  } else {
+    breakdown.push('📚 DB Edge (0/10): Insufficient DB trading history');
+  }
+  
+  const totalEst = Math.round(momScore + mrScore + anlScore + volScore + dbScore);
+  const actual = p.score || totalEst;
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;';
+  modal.onclick = () => document.body.removeChild(modal);
+  
+  modal.innerHTML = `<div onclick="event.stopPropagation()" style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;">
+    <h3 style="margin:0 0 12px;font-size:1.1rem;">📊 ${p.symbol} Score Breakdown</h3>
+    <div style="font-size:0.85rem;line-height:1.6;">
+      <div style="text-align:center;font-size:1.5rem;font-weight:700;color:#58a6ff;padding:8px 0 12px;">Score: ${actual}/100</div>
+      ${breakdown.map(b => '<div style="padding:4px 0;border-bottom:1px solid #21262d;">' + b + '</div>').join('')}
+      <div style="margin-top:12px;padding:8px;background:#0d1117;border-radius:6px;font-size:0.78rem;color:#8b949e;">
+        <strong>Data sources:</strong><br>
+        📈 Momentum: yfinance 3m/1m/5d returns · 🔄 RSI+BB: yfinance daily OHLCV · 🏦 Analysts: yfinance .info<br>
+        🛡️ Vol: yfinance RVOL/ATR · 📚 DB: ejaguiar1_stocks at_pick_outcomes
+      </div>
+      <div style="text-align:center;margin-top:12px;"><span style="cursor:pointer;color:#58a6ff;font-size:0.8rem;">Click anywhere to close</span></div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function statChip(label, value, defKey, extra) {
+  const def = DEFS[defKey];
+  if (!def && !extra) return `<div class="score-chip">${label}: <strong>${value||'?'}</strong></div>`;
+  let tip = extra || '';
+  if (def) {
+    const title = typeof def[0] === 'string' ? def[0] : defKey;
+    const desc = typeof def[1] === 'string' ? def[1] : '';
+    const guide = typeof def[2] === 'string' ? def[2] : '';
+    tip = `<strong>${title}</strong>\n${desc}\n\n${value ? 'Current: ' + value + '\n\n' : ''}${guide}`;
+  }
+  const encodedTip = encodeURIComponent(tip);
+  return `<div class="score-chip" onclick="alert(decodeURIComponent('${encodedTip}'))" style="cursor:pointer;" title="${tip.replace(/"/g,'&quot;').replace(/\n/g,' · ')}">${label}: <strong>${value||'?'}</strong></div>`;
+}
+
+function $(sel) { return document.querySelector(sel); }
+
+function renderPicks(data) {
+  const picks = data.picks || [];
+  const c = document.getElementById('picks-container');
+  if (!c) return;
+
+  const est = data.generated_at ? new Date(data.generated_at).toLocaleString('en-US',{timeZone:'America/New_York',month:'long',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+  const hdr = $('#header-updated'); if (hdr) hdr.innerHTML = '🔄 Last Updated: <strong>' + est + '</strong> EST';
+  const sc = $('#header-scored'); if (sc) sc.textContent = data.n_scored || '—';
+  const pk = $('#header-picks'); if (pk) pk.textContent = picks.length || '—';
+  const lt = $('#live-timestamp');
+  if (lt) lt.innerHTML = '⏱ Loaded: ' + new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) + ' EST';
+
+  // Market bar
+  const mb = document.getElementById('market-bar');
+  if (mb && data.all) {
+    const bench = {SPY:'EQUITY',QQQ:'TECH',TLT:'BONDS',GLD:'GOLD','BTC-USD':'CRYPTO','EURUSD=X':'FX'};
+    let html = '';
+    for (const [sym,label] of Object.entries(bench)) {
+      const r = data.all.find(p => p.symbol === sym);
+      if (r && r.ret_5d != null) {
+        const cls = r.ret_5d < 0 ? 'mkt-dn' : 'mkt-up';
+        html += '<div class="mkt-item"><span class="mkt-sym">' + label + '</span><span class="' + cls + '">' + (r.ret_5d > 0 ? '+' : '') + r.ret_5d.toFixed(1) + '%</span></div>';
+      }
+    }
+    mb.innerHTML = html || mb.innerHTML;
+  }
+
+  // Cards
+  c.innerHTML = '';
+  picks.forEach(p => {
+    const r = p.rvol < 15 ? {cls:'safe-haven',status:'🟢 SAFE',badge:'s-safe'} : p.rvol < 35 ? {cls:'approved',status:'✅ APPROVED',badge:'s-approved'} : {cls:'disputed',status:'⚠️ WATCH',badge:'s-disputed'};
+    const cd = document.createElement('div');
+    cd.className = 'pick-card ' + r.cls;
+    const entry = Number(p.price) || 0;
+    const tpPct = p.suggested_tp_pct || 0, slPct = p.suggested_sl_pct || 0;
+    const tp = entry * (1 + tpPct/100), sl = entry * (1 - slPct/100);
+    const rr = slPct > 0 ? (tpPct / slPct).toFixed(1) : '—';
+    const rsiVal = p.rsi != null ? p.rsi.toFixed(0) : '?';
+    const anlDisp = p.analyst_n ? p.analyst_n + ' analysts say ' + (p.analyst||'').toUpperCase() : '';
+    const anlTarget = p.target_price ? 'Target: $' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '% upside)' : '';
+
+    const sigParts = (p.signals || '').split('|');
+    const mom = [];
+    if (p.ret_5d != null) mom.push('5d:' + (p.ret_5d > 0 ? '+' : '') + p.ret_5d.toFixed(1) + '%');
+    if (p.ret_1m != null) mom.push('1m:' + (p.ret_1m > 0 ? '+' : '') + p.ret_1m.toFixed(1) + '%');
+    if (p.ret_3m != null) mom.push('3m:' + (p.ret_3m > 0 ? '+' : '') + p.ret_3m.toFixed(1) + '%');
+
+    const peVal = p.fwd_pe != null ? p.fwd_pe.toFixed(1) + 'x' : null;
+    const epsVal = p.eps_growth_pct != null ? '+' + p.eps_growth_pct.toFixed(0) + '% YoY' : null;
+    const dbVal = p.db_n && p.db_n >= 3 ? p.db_wr.toFixed(0) + '% WR (n=' + p.db_n + ')' : null;
+    const divVal = p.div_yield_pct != null && !isNaN(p.div_yield_pct) ? p.div_yield_pct.toFixed(2) + '%' : null;
+
+    // Rich stat helpers
+    function chip(label, val, tip) {
+      if (!val) return '';
+      const t = (tip || '').replace(/"/g,'&quot;').replace(/'/g,"&#39;").replace(/\n/g,'<br>');
+      return '<div class="score-chip" onclick="alert(\'' + t + '\')" style="cursor:pointer;" title="' + t.replace(/<br>/g,' · ') + '">' + label + ': <strong>' + val + '</strong></div>';
+    }
+
+    // Store pick in global registry for click handlers (safe, no inline JSON.parse)
+    window.__PICKS_MAP[p.symbol] = p;
+
+    cd.innerHTML = `
+      <div class="card-header">
+        <div><div class="card-symbol">${p.symbol}</div><div class="card-class">${p.class||''} · ${p.direction||'LONG'}</div></div>
+        <div class="card-status ${r.badge}" style="cursor:pointer;" onclick="showScoreBreakdown('${p.symbol}')" title="Click for score breakdown">${r.status} · Score ${p.score||'?'}</div>
+      </div>
+      <div class="card-prices">
+        <div class="price-cell"><div class="price-label">Entry</div><div class="price-val p-entry">$${fmtPrice(entry)}</div></div>
+        <div class="price-cell"><div class="price-label">Take Profit</div><div class="price-val p-tp">$${fmtPrice(tp)} (+${tpPct.toFixed(1)}%)</div></div>
+        <div class="price-cell"><div class="price-label">Stop Loss</div><div class="price-val p-sl">$${fmtPrice(sl)} (-${slPct.toFixed(1)}%)</div></div>
+      </div>
+      <div class="card-rr">R:R <span>${rr}:1</span> | Size: <span>${p.position_size_pct||0}%</span> of portfolio | Vol: <span>${p.rvol?p.rvol.toFixed(1):'?'}%</span> annualized</div>
+
+      <!-- AI Contest Warning -->
+      ${(() => {
+        const t = TALLY[p.symbol];
+        if (!t) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#0d2137;border-radius:6px;font-size:0.72rem;color:var(--blue);font-weight:400;">🔍 Quant-only — not AI reviewed (see panel above for AAPL/AMZN/NVDA/META)</div>';
+        if (t.reject >= 5) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#3a1c1c;border-radius:6px;font-size:0.72rem;color:var(--red);font-weight:600;">❌ AI REJECTED — '+t.reject+'/7 models voted against this pick</div>';
+        if (t.caution >= 4) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#2e2a12;border-radius:6px;font-size:0.72rem;color:var(--yellow);font-weight:600;">⚠️ AI CONTESTED — '+t.caution+'/7 models urged caution</div>';
+        if (t.approve >= 5) return '<div style="margin:0 14px 8px;padding:6px 10px;background:#1c3a2a;border-radius:6px;font-size:0.72rem;color:var(--green);font-weight:600;">✅ AI CONSENSUS — '+t.approve+'/7 models approved</div>';
+        return '';
+      })()}
+
+      <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
+        <div class="score-chip" style="cursor:pointer;" onclick="showScoreBreakdown('${p.symbol}')" title="Click for detailed score breakdown">📊 <strong>Score ${p.score||'?'}/100</strong> — click for breakdown</div>
+        ${p.upside_pct ? chip('🎯 Target', '$' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '%)', 'Wall Street average analyst target price. From yfinance aggregating 40+ firms.\nCurrent: $' + fmtPrice(p.target_price) + ' (+' + p.upside_pct + '% upside)\n\nNote: targets lag price and change slowly. Good for directional thesis confirmation.') : ''}
+      </div>
+
+      <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
+        ${chip('RSI', rsiVal + ' ' + (p.rsi_signal||''), 'RSI (Relative Strength Index) 0-100. Measures if oversold or overbought.\nCurrent: ' + rsiVal + ' ' + (p.rsi_signal||'') + '\n\nBelow 30 = Very oversold (strong bounce tendency)\n30-45 = Oversold (mild bounce likely)\n45-55 = Neutral\n55-70 = Overbought\nAbove 70 = Very overbought (drop risk)')}
+        ${chip('BB%', p.bb_pct != null ? p.bb_pct.toFixed(2) : '?', 'Bollinger Band %B — where price sits within its 20-day ±2σ statistical envelope.\nCurrent: ' + (p.bb_pct != null ? p.bb_pct.toFixed(2) : '?') + '\n\nBelow 0 = Below lower band (oversold bounce zone)\n0-0.2 = Near lower band\n0.4-0.6 = Middle (neutral)\n0.8-1.0 = Near upper band\nAbove 1 = Above upper band (overbought)')}
+        ${chip('RVOL', (p.rvol != null ? p.rvol.toFixed(1) : '?') + '%', 'Realized Volatility — annualized std dev of daily returns.\nCurrent: ' + (p.rvol != null ? p.rvol.toFixed(1) : '?') + '%\n\nBelow 15% = Very low (bond-like)\n15-30% = Moderate (blue-chip)\n30-50% = Elevated (tech/growth)\n50-80% = High (small-cap/crypto)\nAbove 80% = Extreme\n\nDetermines position sizing: low vol = larger position.')}
+        ${chip('Sharpe', p.sharpe != null ? p.sharpe.toFixed(2) : '?', 'Sharpe Ratio — risk-adjusted return.\nCurrent: ' + (p.sharpe != null ? p.sharpe.toFixed(2) : '?') + '\n\nAbove 2.0 = Excellent\n1.0-2.0 = Good\n0.5-1.0 = Acceptable\n0-0.5 = Mediocre\nNegative = Losing risk-adjusted')}
+        ${chip('MaxDD', (p.max_dd != null ? p.max_dd.toFixed(1) : '?') + '%', 'Max Drawdown — largest peak-to-trough decline in 6 months.\nCurrent: ' + (p.max_dd != null ? p.max_dd.toFixed(1) : '?') + '%\n\nBelow 10% = Very stable\n10-20% = Normal for stocks\n20-35% = Significant\nAbove 35% = Severe')}
+      </div>
+
+      <div style="padding:0 14px 6px;display:flex;flex-wrap:wrap;gap:4px;">
+        ${chip('📈 Mom', mom.join(' · '), 'Momentum — returns over 3 time windows.\n' + mom.join(' · ') + '\n\n3-month shows primary trend. 1-month medium-term. 5-day immediate direction.\n3m positive + 5d negative = TREND+DIP (buy the dip)\n3m negative + 5d negative = DOWNTREND (avoid)')}
+        ${p.analyst ? chip('🏦 ' + anlDisp, anlTarget, 'Analyst Consensus from yfinance (' + (p.analyst_n||'?') + ' analysts).\nRating: ' + (p.analyst||'').replace(/_/g,' ') + '\n\nScale: 1.0=StrongBuy, 2.0=Buy, 3.0=Hold, 4.0=Sell, 5.0=StrongSell\n' + 'yfinance aggregates 40+ major investment banks.\n\n⚠️ Consensus LAGS price. Confirms thesis but doesn\'t predict short-term.') : ''}
+        ${peVal ? chip('P/E', peVal, 'Forward P/E — price ÷ forecasted next-12-month earnings.\nCurrent: ' + peVal + '\n\nBelow 15 = Potentially undervalued\n15-25 = Fair (S&P 500 avg ~20x)\n25-40 = Growth premium\nAbove 40 = High expectations (risk)') : ''}
+        ${epsVal ? chip('EPS', epsVal, 'EPS Growth YoY — year-over-year earnings per share change.\nCurrent: ' + epsVal + '\n\nAbove 20% = Strong growth\n10-20% = Moderate\n0-10% = Slow\nNegative = Declining\n\nThe #1 long-term stock price driver.') : ''}
+        ${dbVal ? chip('📚 DB', dbVal, 'Database Win Rate — our closed-trade history on this symbol from ejaguiar1_stocks at_pick_outcomes.\nCurrent: ' + dbVal + '\n\nAbove 55% = Strong\n45-55% = Average\nBelow 45% = Below average') : ''}
+        ${p.peg ? chip('PEG', p.peg.toFixed(2), 'PEG Ratio — P/E divided by earnings growth rate.\nCurrent: ' + p.peg.toFixed(2) + '\n\nBelow 1.0 = Undervalued relative to growth\n1.0-2.0 = Fair value\nAbove 2.0 = Expensive relative to growth') : ''}
+        ${p.roe_pct ? chip('ROE', p.roe_pct.toFixed(1) + '%', 'Return on Equity — net income ÷ shareholder equity.\nCurrent: ' + p.roe_pct.toFixed(1) + '%\n\nAbove 20% = Excellent (competitive moat)\n15-20% = Good\n10-15% = Average\nBelow 10% = Weak') : ''}
+        ${divVal ? chip('Div Yield', divVal, 'Dividend Yield — annual dividend ÷ price.\nCurrent: ' + divVal + '\n\nShows cash return from holding before price movement.\nBonds/ETFs: 3-5% is normal income yield.\nStocks: 1-3% is typical. Above 5% may signal risk.\n\nFor TLT/IEF: this is the interest (coupon) payment. The price can still go down if rates rise.') : ''}
+      </div>
+
+      <div class="card-eli5">
+        <div class="eli5-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▶ Why this pick? (ELI5) — click to expand</div>
+        <div class="eli5-body">${p.eli5_reason||'Multi-factor score of '+p.score+'/100.'}</div>
+      </div>
+      <div class="pick-date">📅 <strong>Pick generated:</strong> ${est} EST | Page: ${new Date().toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})} EST</div>
+    `;
+    c.appendChild(cd);
+  });
+  if (!picks.length) {
+    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">No picks. Run python3 tools/picks_now_professional.py</div>';
+  }
+}
+
+// Format price with appropriate precision
+function fmtPrice(v) {
+  if (v == null) return '?';
+  const n = Number(v);
+  if (isNaN(n)) return '?';
+  if (n < 1) return n.toFixed(5);
+  if (n < 10) return n.toFixed(3);
+  if (n < 1000) return n.toFixed(2);
+  return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// 7-model contest tally for contest warnings
+const TALLY = {
+  'AMZN': {approve: 6, caution: 1, reject: 0},
+  'NVDA': {approve: 1, caution: 5, reject: 1},
+  'AAPL': {approve: 6, caution: 1, reject: 0},
+  'META': {approve: 0, caution: 0, reject: 7},
+};
+
+// Load and render
+fetch('data/picks_now.json?_=' + Date.now())
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { if (d) renderPicks(d); })
+  .catch(() => {
+    document.getElementById('picks-container').innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);grid-column:1/-1;">⚠️ Could not load picks_now.json.</div>';
+  });
+</script>
+</body>
+</html>
