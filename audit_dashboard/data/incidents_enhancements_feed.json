@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09 00:35 EDT",
+  "generated_at": "2026-06-09 01:02 EDT",
   "incidents": {
     "OVERALL": [
       {
@@ -675,6 +675,31 @@
         "resolved_at": "2026-05-31 02:10:32",
         "link_md_path": null,
         "link_url": null,
+        "link_github_ref": null
+      },
+      {
+        "incident_id": 124,
+        "asset_class": "OVERALL",
+        "source_ref": null,
+        "title": "Money-Ready button shows forward-UNVALIDATED strategies as \"Tier-1 Renaissance\"",
+        "description": "audit_dashboard/money_ready_filter.js SUPREME_EDGE_REAL hard-codes a list gated on HISTORICAL anti_overfit_audit DSR>=0.95, NOT forward validation. It surfaces ml_enhanced_INJUSDT/FETUSDT_1d_B_lightgbm (n=25-27, 100% WR, the file itself tags \"placeholder-stat suspect\" + 89% concentration), ml_enhanced_RENDERUSDT/DYDXUSDT ensemble_stack, stocks_rsi2_pullback (62.9% stale; actual 33.9% per incident #96), and cot_positioning (whose own caveat says COMMODITY class is NOT_READY). forward_paper_pilot (intrabar OOS) REFUTES historical clean-cohort edges (luxalgo 69->42%, claude_ml_moderate 39-43% PF<1); intrabar dry-run shows CRYPTO true WR 39.7% with 21.9% TP->SL reclass. So the button contradicts money_ready_verdict.json (0/9 money-ready) and edge_stability (CRYPTO DECAYING, EQUITY recent 36.8%).",
+        "severity": "P1",
+        "status": "OPEN",
+        "affected_component": "audit_dashboard/money_ready_filter.js",
+        "reported_by": "claude-opus-4-8",
+        "assigned_to": null,
+        "recommended_fix": "Gate the Money-Ready filter on a forward_paper_pilot HOLD (n>=20, forward WR>=50, forward PF>1.5) NOT just historical DSR. Until a strategy forward-HOLDS, relabel the badge \"DSR-verified (HISTORICAL backtest only \u2014 NOT forward-validated)\" and drop the \"Renaissance-grade / safe to size\" framing. Small-n 100%-WR lightgbm sleeves should be removed pending 30d forward proof.",
+        "target_release": null,
+        "evidence": null,
+        "resolution_notes": null,
+        "duplicate_of": null,
+        "created_at": "2026-06-09 04:44:30",
+        "date_est": null,
+        "time_est": null,
+        "updated_at": "2026-06-09 04:44:30",
+        "resolved_at": null,
+        "link_md_path": "updates/2026-06-09-forward-pilot-luxalgo.md",
+        "link_url": "https://findtorontoevents.ca/audit/",
         "link_github_ref": null
       },
       {
@@ -1978,6 +2003,31 @@
         "link_github_ref": null
       },
       {
+        "incident_id": 125,
+        "asset_class": "OVERALL",
+        "source_ref": null,
+        "title": "kimi_direct 66.1% WR is stale + losing-tail (correctly excludes MISPRICED but misleading)",
+        "description": "model.html?id=kimi_direct WR=66.1% (37W/19L). VERIFIED it correctly EXCLUDES 46 MISPRICED_ENTRY picks (model.html resolved=WIN/LOSS/EXPIRED only; live DB WR incl/excl mispriced both 66.1%). BUT misleading: (1) data ends 2026-05-22 \u2014 model dark 18 days; (2) the 3 most-recent resolved picks were ALL LOSSES (NZDUSD -1.89% x2 [duplicate row], APTUSDT -5.47%); (3) 46 of 102 non-open picks (45%) discarded as mispriced = unreliable entry logic; (4) duplicate NZDUSD row inflates counts. The 66.1% holds little forward weight.",
+        "severity": "P2",
+        "status": "OPEN",
+        "affected_component": "audit_dashboard/model.html / tournament_picks(model_id=kimi_direct)",
+        "reported_by": "claude-opus-4-8",
+        "assigned_to": null,
+        "recommended_fix": "Add a recency/staleness badge + \"last resolved N days ago\" to model.html; flag models dark >14d as STALE; dedup tournament_picks NZDUSD row; surface most-recent-3 outcome strip so a losing tail is visible despite a high lifetime WR.",
+        "target_release": null,
+        "evidence": null,
+        "resolution_notes": null,
+        "duplicate_of": null,
+        "created_at": "2026-06-09 04:50:40",
+        "date_est": null,
+        "time_est": null,
+        "updated_at": "2026-06-09 04:50:40",
+        "resolved_at": null,
+        "link_md_path": null,
+        "link_url": "https://findtorontoevents.ca/audit/model.html?id=kimi_direct",
+        "link_github_ref": null
+      },
+      {
         "incident_id": 119,
         "asset_class": "OVERALL",
         "source_ref": "GHA health audit w6gd2l9nj",
@@ -3107,6 +3157,31 @@
         "link_md_path": "reports/EAGLE_SWARM_SYNTHESIS_2026-06-02.md",
         "link_url": null,
         "link_github_ref": "PR #439 (Pillar 1 freeze landed)"
+      },
+      {
+        "incident_id": 18,
+        "asset_class": "CRYPTO",
+        "source_ref": null,
+        "title": "A/S-tier crypto scoring tiles are resolver artifacts (100%/72.6% WR vs ~38% intrabar-true)",
+        "description": "Swarm cross-review (4 dimensions, HIGH confidence, forward intrabar replay): the /audit crypto S-Tier (score>=70, 100% WR 16/0/0) and A-Tier (55-70, 72.6% WR PF4.0) tiles are a survivorship+labeling ARTIFACT, NOT a tradable edge. (1) SELECTION: tiles bucket the curated recent_closed slice (template.html:6597-6617 reads dashboard_data.json), surfacing fresh TP_HIT winners while excluding 72-96% of same-band TIME_EXIT/EXPIRED/OPEN picks. (2) FIXED-TP LABELING: snapshot resolver stamps TP_HIT at the TP price WITHOUT an intrabar SL-first check (smoking gun: identical PnL clusters +3.948% x8/+3.55% x3, exit_price==take_profit exactly). (3) INTRABAR FLIP: where intrabar_status exists, 23-24% of S+A snapshot wins flip TP_HIT->SL_HIT; the S-tier +3.5% clone_hl picks flip 8/8 EXPIRED->SL_HIT = 0% true WR. Honest forward: CRYPTO 47.7% WR / PF 0.945 / neg expectancy (money_ready_verdict 2026-06-09); luxalgo_confluence 40.4%/PF1.086 REFUTED, prediction_market_consensus 38.2%/PF1.36 REFUTED. NO strategy HOLDS. Intrabar-true band WR: S ~34%, A ~38%.",
+        "severity": "P1",
+        "status": "OPEN",
+        "affected_component": "audit_dashboard/template.html:6597-6617 + dashboard_data.json + snapshot resolver",
+        "reported_by": "claude-opus-4-8 (swarm w976lbctb)",
+        "assigned_to": null,
+        "recommended_fix": "Add a prominent tile DISCLAIMER (like the DISPUTED 78.9% cell): score-band WR is survivorship-biased; intrabar-true band WR ~34-38%, full-pop CRYPTO 47.7%/PF0.945. Switch tile WR to intrabar_status TP/(TP+SL) over full band population + surface the 23-24% TP->SL reclass rate. Fix upstream: snapshot resolver must do intrabar first-touch (SL wins ties) before marking TP_HIT. Quarantine -USD/alpha_engine rows unmatchable to crypto_ohlcv. Keep clone_hl/luxalgo/prediction_market_consensus/hoffman OUT of money-ready.",
+        "target_release": null,
+        "evidence": null,
+        "resolution_notes": null,
+        "duplicate_of": null,
+        "created_at": "2026-06-09 05:00:14",
+        "date_est": null,
+        "time_est": null,
+        "updated_at": "2026-06-09 05:00:14",
+        "resolved_at": null,
+        "link_md_path": "updates/2026-06-09-forward-pilot-luxalgo.md",
+        "link_url": "https://findtorontoevents.ca/audit/",
+        "link_github_ref": null
       },
       {
         "incident_id": 15,
@@ -9337,7 +9412,7 @@
     "PENNY": []
   },
   "totals": {
-    "incidents": 167,
+    "incidents": 170,
     "enhancements": 196,
     "findings": 16
   }
