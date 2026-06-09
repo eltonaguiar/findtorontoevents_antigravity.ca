@@ -84,27 +84,64 @@ You start with no context. Here is where the real data and credentials are. **Ne
   - **Anti-Overfit:** `/audit/anti_overfit.html` — DSR/PBO/SPA statistical gate results per strategy
 - Models cannot fetch these reliably — pull the local JSON and reason on it (never let a model claim it "fetched" a URL).
 
-## Current Asset Class Snapshot (VERIFIED against money_ready_verdict.json, 2026-05-28T21:12 UTC)
+## Current Asset Class Snapshot (RE-VERIFY every session — two layers)
 
-> **0/8 classes pass Tier-2.** This is the ground truth — do not cite dashboard headline cells that contradict this.
-> Every row below was **re-derived directly from the JSON** on 2026-05-28 (`n`=`n_resolved`), not hand-copied. **Re-derive before reuse — never carry a typed table forward.**
+> **Layer A — official gates:** `money_ready_verdict.json` (`n_resolved` = policy-clean closed picks). **0/9 pass Tier-2** as of 2026-06-08.
+> **Layer B — honest clean cohort:** `at_pick_outcomes` with ALL mandatory filters (§ MANDATORY DATA-INTEGRITY FILTERS). Use Layer B to answer "do we REALLY have edge?"
 
-| Class | n_resolved | WR | PF | Verdict | Top Issue |
-|-------|-----------|-----|------|---------|-----------|
-| CRYPTO | 652 | 41.4% | 1.31 | NOT_READY | WR<50%, MDD 100%, CVaR -86% (closest to viable) |
-| UNKNOWN | 36 | 50.0% | 1.54 | INSUFFICIENT_DATA | n<100, source concentration, unclassified |
-| EQUITY | 24 | 25.0% | 0.04 | INSUFFICIENT_DATA | n<100, MDD 97%, CVaR -84% |
-| FUTURES | 11 | 9.1% | 0.48 | INSUFFICIENT_DATA | n<100, ~95% single-engine (alpha_engine family) |
-| COMMODITY | 9 | 44.4% | 1.81 | INSUFFICIENT_DATA | n<100, gold concentration |
-| ETF | 3 | 33.3% | 0.19 | INSUFFICIENT_DATA | n<100 |
-| FOREX | 20 | 30.0% | 0.92 | INSUFFICIENT_DATA | n<100, PF<1, USDJPY concentration |
-| PENNY_STOCK | 1 | 0.0% | 0.00 | INSUFFICIENT_DATA | n<100 |
+### Layer A — money_ready_verdict.json (2026-06-08T08:09 UTC)
 
-**Source:** `audit_dashboard/data/money_ready_verdict.json` (generated 2026-05-28T21:12 UTC). Pull this file fresh before any session — don't trust this table if >24h old.
+| Class | n_resolved | WR | PF | Verdict | Top blocker |
+|-------|-----------|-----|------|---------|-------------|
+| CRYPTO | 175 | 48.6% | 0.92 | NOT_READY | WR<50%, MDD 100%, PF<1.5 |
+| EQUITY | 71 | 53.5% | 1.84 | INSUFFICIENT_DATA | n<100, MDD 33% |
+| FOREX | 25 | 24.0% | 0.077 | INSUFFICIENT_DATA | catastrophic PF; KILL/MUTATE |
+| COMMODITY | 18 | 27.8% | 0.28 | INSUFFICIENT_DATA | n<100 |
+| ETF | 20 | 25.0% | 0.37 | INSUFFICIENT_DATA | n<100 |
+| FUTURES | 20 | 30.0% | 1.05 | INSUFFICIENT_DATA | n<100, WR<50% |
+| BOND | 1 | 100% | — | INSUFFICIENT_DATA | n<100 |
 
-> **Drift warning (do not regress):** an earlier skill revision listed FOREX 53/40%/0.55 (NOT_READY), COMMODITY 5/40%, and a BOND 8/0% row. Those are **stale**. As of 2026-05-28 the policy-clean verdict has **no BOND row** (no decisive bonds in window), FOREX has shrunk to n=20 / INSUFFICIENT_DATA, and FUTURES + PENNY_STOCK are tracked separately. The reproducer: `python3 -c "import json;d=json.load(open('audit_dashboard/data/money_ready_verdict.json'));[print(k,v['n_resolved'],v['wr'],v['pf'],v['verdict']) for k,v in d['classes'].items()]"`.
+Reproducer: `python3 -c "import json;d=json.load(open('audit_dashboard/data/money_ready_verdict.json'));print(d['generated_at']);[print(k,v['n_resolved'],round(v['wr']*100,1),v['pf'],v['verdict']) for k,v in d['classes'].items()]"`
 
-**What this means for IDE agents:** Every class needs work. CRYPTO is closest (PF 1.31, needs WR>50% + MDD fix). EQUITY/ETF/PENNY/BOND need raw signal volume first. FOREX/COMMODITY/FUTURES need concentration mitigation before any number is trustworthy.
+### Layer B — clean cohort (at_pick_outcomes, filters 1–4, 2026-06-09)
+
+| Class | n (clean) | WR (EXPIRED-inclusive) | PF | Verdict |
+|-------|-----------|------------------------|-----|---------|
+| CRYPTO | 1773 | 46.6% | 1.25 | NO_EDGE (intrabar ~43%/PF 1.22) |
+| EQUITY | 358 | 32.4% | 1.30 | NO_EDGE |
+| FOREX | 117 | 8.5% | 0.63 | NO_EDGE |
+| COMMODITY | 46 | 50.0% | 1.04 | INSUFFICIENT_DATA |
+| ETF | 2 | 0% | 0 | INSUFFICIENT_DATA |
+
+**Money-ready survivors (n≥50, ≥3mo, PF>1.5, WR>52%, intrabar): 0.** See `reports/OBS_FINDING_JUNE8.MD`.
+
+### REJECT without re-verify (known false claims)
+
+| Claim | Why reject |
+|-------|------------|
+| FOREX 14d WR 64% / PF 2.43 | Clean 14d FOREX WR **5.0%** |
+| GBPUSD WR 58.8%, n=114 | True ~7%; 87% expired |
+| stocks_rsi2_pullback n=894 / PF 2.68 | 14d WR 29.9% |
+| mega_mutation T1 without intrabar | Resolver does not replay intrabar |
+| bt_backtest_trades 32.6M as live edge | Backtest overfit trap |
+
+## SAVE THE SYSTEM — Rescue protocol (coin-flip → statistical edge)
+
+Execute in order. **Do NOT wire academic sleeves or size up until P0 completes.**
+
+| Priority | Action | Tool / file | Status |
+|----------|--------|-------------|--------|
+| **P0** | Quarantine backfill from verdict math | `build_pf_registry.py` | ✅ shipped |
+| **P0** | Sane-pnl + EXPIRED-honest overlays | `picks_now_professional.py` | ✅ shipped |
+| **P0** | Intrabar OHLC replay resolver | `reresolve_intrabar.py` | dry-run done; `--apply` gated |
+| **P0** | Deepen OHLCV history (≥180d 1h) | `crypto_ohlcv` ingest | **BLOCKED** — ~30d today |
+| **P0** | TP/SL vs horizon calibration | `production_scanner.py` | caps wired; legacy 80%+ expire |
+| **P1** | Re-screen on clean+intrabar cohort | SQL + reresolve report | pending OHLCV |
+| **P1** | Paper-pilot survivors (≥4wk forward) | `forward_test_only=1` | not started |
+| **P2** | Wire TSMOM / residual momentum / carry | sidecar modules | after P0 only |
+| **P3** | FOREX kill/mutate + ban unverified sizing | incidents + roadmap page | in progress |
+
+**Roadmap:** `/audit/edge_validation_roadmap.html` | **Vault audit:** `reports/OBS_FINDING_JUNE8.MD` | **Obsidian:** `obsidian-notes/reference/edge-rescue-roadmap.md`
 
 ## Data Sources (read, never invent)
 
