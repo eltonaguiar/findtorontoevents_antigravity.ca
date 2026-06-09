@@ -3,12 +3,16 @@
 refresh_crypto_ohlcv.py — Populate ejaguiar1_stocks.crypto_ohlcv with 1h Binance klines.
 
 Queries at_raw_picks for the active CRYPTO + MEMECOIN symbol universe, normalizes
-tickers to Binance spot format, fetches 720 bars (30 days) of 1h klines from the
-public Binance API, and bulk-upserts into MySQL.
+tickers to Binance spot format, fetches 1h klines from Binance mirrors (3+ failover),
+and bulk-upserts into MySQL.
+
+Default refresh: 720 bars (~30 days). Deep backfill: ``--days 180 --execute`` paginates
+1000-bar chunks (required for intrabar re-resolution of the full pick book).
 
 Usage:
-    python3 tools/refresh_crypto_ohlcv.py --dry-run   # preview only
-    python3 tools/refresh_crypto_ohlcv.py --execute   # write to DB
+    python3 tools/refresh_crypto_ohlcv.py --dry-run
+    python3 tools/refresh_crypto_ohlcv.py --execute
+    python3 tools/refresh_crypto_ohlcv.py --execute --days 180 --top-symbols 80
 """
 from __future__ import annotations
 
@@ -37,8 +41,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+BINANCE_HOSTS = (
+    "api.binance.com", "api1.binance.com",
+    "api2.binance.com", "api3.binance.com",
+)
 BINANCE_KLINES_URL = "https://api.binance.com/api/v3/klines"
 DEFAULT_LIMIT = 720  # ~30 days of 1h bars
+MAX_KLINE_LIMIT = 1000  # Binance per-request cap
 TIMEFRAME = "1h"
 RATE_LIMIT_SLEEP = 0.25  # seconds between requests
 
@@ -80,6 +89,11 @@ def normalize_binance_symbol(raw: str) -> Optional[str]:
     if not raw:
         return None
     s = raw.strip().upper()
+    # Yahoo-style crypto tickers: ETH-USD -> ETHUSDT (not ETHUSDUSDT)
+    if s.endswith("-USD") or s.endswith("/USD") or s.endswith("_USD"):
+        base = s.rsplit("-", 1)[0].split("/")[0].split("_")[0]
+        if base and not base.endswith("USDT"):
+            return base + "USDT"
     # Already looks like a Binance pair (ends with common quote assets)
     if any(s.endswith(q) for q in ("USDT", "BUSD", "BTC", "ETH", "USDC", "FDUSD", "TUSD")):
         return s
@@ -93,24 +107,67 @@ def normalize_binance_symbol(raw: str) -> Optional[str]:
     return s + "USDT"
 
 
-def fetch_binance_klines(symbol: str, interval: str = TIMEFRAME, limit: int = DEFAULT_LIMIT) -> List[list]:
-    """Fetch klines from Binance public API. Returns raw JSON list or empty list on failure."""
-    url = f"{BINANCE_KLINES_URL}?symbol={symbol}&interval={interval}&limit={limit}"
-    req = urllib.request.Request(url, headers={"User-Agent": "refresh_crypto_ohlcv/1.0"})
-    try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        if isinstance(data, list):
-            return data
-        # Binance error envelope
-        if isinstance(data, dict) and data.get("code"):
-            logger.warning("Binance API error for %s: %s %s", symbol, data.get("code"), data.get("msg"))
-            return []
-    except urllib.error.HTTPError as exc:
-        logger.warning("Binance HTTP error for %s: %s", symbol, exc.code)
-    except Exception as exc:
-        logger.warning("Binance fetch failed for %s: %s", symbol, exc)
+def fetch_binance_klines(
+    symbol: str,
+    interval: str = TIMEFRAME,
+    limit: int = DEFAULT_LIMIT,
+    start_time_ms: Optional[int] = None,
+    end_time_ms: Optional[int] = None,
+) -> List[list]:
+    """Fetch klines from Binance mirrors. Returns raw JSON list or empty on failure."""
+    params = f"symbol={symbol}&interval={interval}&limit={min(limit, MAX_KLINE_LIMIT)}"
+    if start_time_ms is not None:
+        params += f"&startTime={int(start_time_ms)}"
+    if end_time_ms is not None:
+        params += f"&endTime={int(end_time_ms)}"
+    for host in BINANCE_HOSTS:
+        url = f"https://{host}/api/v3/klines?{params}"
+        req = urllib.request.Request(url, headers={"User-Agent": "refresh_crypto_ohlcv/1.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=25) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            if isinstance(data, list):
+                return data
+            if isinstance(data, dict) and data.get("code"):
+                logger.warning(
+                    "Binance API error for %s on %s: %s %s",
+                    symbol, host, data.get("code"), data.get("msg"),
+                )
+        except urllib.error.HTTPError as exc:
+            logger.warning("Binance HTTP error for %s on %s: %s", symbol, host, exc.code)
+        except Exception as exc:
+            logger.warning("Binance fetch failed for %s on %s: %s", symbol, host, exc)
     return []
+
+
+def fetch_binance_klines_days(symbol: str, days: int, interval: str = TIMEFRAME) -> List[list]:
+    """Paginate Binance klines for ``days`` of history (1h bars)."""
+    if days <= 0:
+        return []
+    end_ms = int(time.time() * 1000)
+    start_ms = end_ms - int(days * 24 * 3600 * 1000)
+    merged: List[list] = []
+    cursor = start_ms
+    hour_ms = 3600 * 1000
+    while cursor < end_ms:
+        chunk = fetch_binance_klines(
+            symbol, interval=interval, limit=MAX_KLINE_LIMIT,
+            start_time_ms=cursor, end_time_ms=end_ms,
+        )
+        if not chunk:
+            break
+        merged.extend(chunk)
+        last_open = int(chunk[-1][0])
+        next_cursor = last_open + hour_ms
+        if next_cursor <= cursor:
+            break
+        cursor = next_cursor
+        if len(chunk) < MAX_KLINE_LIMIT:
+            break
+        time.sleep(RATE_LIMIT_SLEEP)
+    # Dedupe by open time (pagination overlap guard)
+    by_ts = {int(k[0]): k for k in merged}
+    return [by_ts[t] for t in sorted(by_ts)]
 
 
 def klines_to_rows(symbol: str, klines: List[list]) -> List[Tuple]:
@@ -130,8 +187,21 @@ def klines_to_rows(symbol: str, klines: List[list]) -> List[Tuple]:
     return rows
 
 
-def get_crypto_symbols(conn) -> List[str]:
-    """Pull distinct CRYPTO + MEMECOIN symbols from at_raw_picks."""
+def get_crypto_symbols(conn, top_n: Optional[int] = None) -> List[str]:
+    """Distinct CRYPTO/MEMECOIN symbols; optional top-N by trading_picks volume."""
+    if top_n:
+        sql = """
+            SELECT symbol, COUNT(*) AS n
+            FROM trading_picks
+            WHERE (category = 'crypto' OR symbol LIKE '%%USDT')
+              AND symbol IS NOT NULL AND symbol != ''
+            GROUP BY symbol
+            ORDER BY n DESC
+            LIMIT %s
+        """
+        with conn.cursor() as cur:
+            cur.execute(sql, (int(top_n),))
+            return [r[0] for r in cur.fetchall() if r[0]]
     sql = """
         SELECT DISTINCT symbol
         FROM at_raw_picks
@@ -181,20 +251,27 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Refresh crypto_ohlcv from Binance 1h klines")
     parser.add_argument("--dry-run", action="store_true", help="Preview only; do not write")
     parser.add_argument("--execute", action="store_true", help="Actually write to DB")
-    parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help="Klines limit per symbol")
+    parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help="Klines limit per symbol (ignored if --days set)")
+    parser.add_argument("--days", type=int, default=0, help="Deep backfill: paginate N days of 1h bars")
+    parser.add_argument("--top-symbols", type=int, default=0, help="Only top N symbols by trading_picks count")
     args = parser.parse_args()
 
     dry_run = not args.execute
     if args.dry_run:
         dry_run = True
 
-    logger.info("Starting refresh_crypto_ohlcv | dry_run=%s | limit=%s", dry_run, args.limit)
+    mode = f"days={args.days}" if args.days else f"limit={args.limit}"
+    logger.info(
+        "Starting refresh_crypto_ohlcv | dry_run=%s | %s | top_symbols=%s",
+        dry_run, mode, args.top_symbols or "all",
+    )
 
     conn = get_db_conn()
     create_table_if_missing(conn)
 
-    raw_symbols = get_crypto_symbols(conn)
-    logger.info("Found %d distinct CRYPTO/MEMECOIN symbols in at_raw_picks", len(raw_symbols))
+    top_n = args.top_symbols if args.top_symbols > 0 else None
+    raw_symbols = get_crypto_symbols(conn, top_n=top_n)
+    logger.info("Found %d symbols to refresh", len(raw_symbols))
 
     total_rows_upserted = 0
     success_symbols = 0
@@ -208,7 +285,10 @@ def main() -> int:
             skipped_no_normalize += 1
             continue
 
-        klines = fetch_binance_klines(binance_sym, limit=args.limit)
+        if args.days:
+            klines = fetch_binance_klines_days(binance_sym, days=args.days)
+        else:
+            klines = fetch_binance_klines(binance_sym, limit=args.limit)
         if not klines:
             logger.warning("No data returned for %s (Binance: %s)", raw_sym, binance_sym)
             fail_symbols += 1

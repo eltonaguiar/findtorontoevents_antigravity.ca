@@ -168,11 +168,19 @@ def main():
         ftps.login(user, pw)
         ftps.prot_p()
 
-    ok = fail = 0
+    ok = fail = skipped = 0
     verify_results = []
     for local_rel, remote, tag in targets:
         local = REPO / local_rel
         success, msg = upload(ftps, local, remote, args.dry_run)
+        # A missing LOCAL source is a SKIP, not a failure: most of these data
+        # files are gitignored and may legitimately be absent on a CI runner
+        # (e.g. regime_report.json reddened AI-Leaderboard-Freshness). Only real
+        # upload errors should fail the run; a missing source isn't an upload error.
+        if not success and msg == "local missing":
+            print(f"  SKIP  [{tag:14s}] {remote}  (local missing — not built on this runner)")
+            skipped += 1
+            continue
         marker = "  OK  " if success else "  FAIL"
         print(f"{marker}  [{tag:14s}] {remote}  ({msg})")
         ok += int(success); fail += int(not success)
@@ -192,7 +200,7 @@ def main():
             if not ok_v:
                 fail += 1 # content mismatch counts as failure
 
-    print(f"\n{ok} uploaded, {fail} failed")
+    print(f"\n{ok} uploaded, {fail} failed, {skipped} skipped (local missing)")
     sys.exit(0 if fail == 0 else 1)
 
 

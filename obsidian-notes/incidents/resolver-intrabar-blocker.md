@@ -34,7 +34,17 @@ Fresh evidence and read-side fixes landed this session ([[sessions/2026-06-06-ed
 - **Quantified intrabar inflation:** `tools/validate_intrabar_fills.py` (read-only) → 63% of sampled CRYPTO TP_HITs actually hit SL first; all 4 sleeves FAIL_RECLASSIFY. New de-biased tool `tools/reresolve_intrabar.py` → CRYPTO orig WR 52.3% → **intrabar-true 42.9% / PF 1.22**, 26.4% TP→SL reclassification.
 - **Resolver-version selection bias** is the sharper framing: same June CRYPTO data gives PF 0.51 (v2.2_sync) vs 2.15 (universal_v2) — a verdict inversion driven by which resolver ran, not alpha.
 - **Read-side mitigations shipped** (don't fix the resolver, but stop laundering artifacts into verdicts): backfill quarantine in `build_pf_registry.py` (77.8% of WON/LOST rows excluded) + per-class sane-pnl guard (drops CADJPY +428% feed bugs / reverse-split signatures).
-- **Still open:** the resolver itself doesn't replay intrabar in production; `reresolve_intrabar.py --apply` is gated; and the gating dependency is **`crypto_ohlcv` only has 30 days of 1h history** — need ~6–12 months backfilled before the full book can be re-resolved.
+- **Still open:** production resolver does not replay intrabar on write path; `reresolve_intrabar.py --apply` is gated behind operator greenlight + backup.
+- **OHLCV depth (partial fix 2026-06-09):** `tools/refresh_crypto_ohlcv.py --days 180 --top-symbols 80` backfilled **227k rows**; BTCUSDT now **4320 bars** (~180d). Top-80 replay: 15,021 picks, 1,177 no_data (down from full-book block). Remaining gap: symbols with `-USD` ticker aliases + full 312-symbol book.
+
+## Update 2026-06-09 — backfill + full-book dry-run
+
+```bash
+python3 tools/refresh_crypto_ohlcv.py --execute --days 180 --top-symbols 80
+python3 tools/reresolve_intrabar.py   # dry-run → reports/reresolve_intrabar_latest.json
+```
+
+Overall CRYPTO intrabar (15,021 replayed): orig WR **47.1%** → true WR **39.7%**; 21.9% TP→SL reclassification. **0 asset classes money-ready.**
 
 ## Related
 

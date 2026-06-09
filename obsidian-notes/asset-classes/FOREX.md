@@ -6,15 +6,19 @@ status: fail
 
 # FOREX
 
-## Current Status (2026-06-06)
+## Current Status (2026-06-09 — clean cohort)
 
 | Metric | Value |
 |--------|-------|
-| PF | 0.55 |
-| WR | 40% |
-| n (closed) | 53 |
-| Tier | FAIL |
-| Concentration | USDJPY 55% |
+| PF (clean) | 0.63 |
+| WR (clean) | 8.5% |
+| n (clean closed) | 117 |
+| 14d clean WR | **5.0%** |
+| Tier | **FAIL** |
+
+> **Refuted:** Copilot/session claim of FOREX 14d 64.2% WR / PF 2.43 and GBPUSD n=114 WR 58.8%. See `reports/OBS_FINDING_JUNE8.MD`.
+
+## Prior Status (2026-06-06 — superseded)
 
 ## T2 Candidate
 

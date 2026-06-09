@@ -476,10 +476,32 @@ def mysql_record_raw_pick(
     # yfinance suffix so new inserts don't re-create the EURUSD vs EURUSD=X split.
     _ac = _derive_asset_class(symbol)
     symbol = canonicalize_symbol(symbol, _ac)
+    # CHOKEPOINT (2026-06-09): enforce per-class TP/SL caps on EVERY raw insert for
+    # NON-CRYPTO classes. Emitters (copy_trader 8%/4% whale picks, multi_asset 3% FX TP)
+    # write here uncapped and otherwise resolve TIME_EXPIRED because targets are
+    # unreachable in the holding window (56-94% expiry per the 2026-06-06 edge audit).
+    # CRYPTO is intentionally SKIPPED: genome/mega_mutation + other crypto sleeves carry
+    # ATR-tuned targets >5% that the 5%/2% crypto cap would clobber. (NOTE: mega_mutation's
+    # "T1" claim was REFUTED on clean data 2026-06-09 — it is NOT a money-ready edge; the
+    # skip is to preserve ATR-target geometry for paper-pilot/forward measurement, not an
+    # endorsement.) Fail-open.
+    _tp_capped, _sl_capped = take_profit, stop_loss
+    if str(_ac or "").upper() != "CRYPTO":
+        try:
+            from alpha_engine.non_crypto_policy import clamp_non_crypto_tp_sl
+            _clamped = clamp_non_crypto_tp_sl({
+                "entry_price": entry_price, "take_profit": take_profit,
+                "stop_loss": stop_loss, "direction": direction, "asset_class": _ac,
+                "symbol": symbol,
+            })
+            _tp_capped = _clamped.get("take_profit", take_profit)
+            _sl_capped = _clamped.get("stop_loss", stop_loss)
+        except Exception as _cap_err:
+            logger.warning("TP/SL cap skipped for %s: %s", symbol, _cap_err)
     return _execute_with_retry(sql, (
         pick_id, run_id, source_system, symbol, _ac,
-        direction, _safe_float(entry_price), _safe_float(take_profit),
-        _safe_float(stop_loss), _safe_float(risk_reward), _safe_float(confidence),
+        direction, _safe_float(entry_price), _safe_float(_tp_capped),
+        _safe_float(_sl_capped), _safe_float(risk_reward), _safe_float(confidence),
         strategy, _json_dumps(raw_payload), sig_ts, now, dedup_hash,
         int(was_stale), int(was_banned), int(was_demoted), int(was_wr_suppressed),
     ))

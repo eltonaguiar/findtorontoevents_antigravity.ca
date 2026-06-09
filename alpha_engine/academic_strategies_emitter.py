@@ -79,6 +79,23 @@ try:
 except Exception as e:
     logger.debug("keltner_bounce_v2_wide not available: %s", e)
 
+# TSMOM volatility-scaled (Moskowitz-Ooi-Pedersen 2012) — time-series momentum on
+# top-volume crypto with a BTC 50-SMA regime filter + volatility targeting. Exits on
+# momentum sign-flip (SIGNAL-BASED), which structurally avoids the TIME_EXPIRED
+# failure mode that sinks fixed-TP/SL sleeves (56-94% expiry per 2026-06-06 audit).
+# Wired 2026-06-09: was a genuine orphan (zero importers); stdlib-only deps; no-arg
+# callable; emits signal_type BUY/SELL (direction injected in the emit loop below).
+# Paper-pilot only (forward_test_only=True) until PF_LB95 > 1.05 on rolling 60d.
+# residual_momentum was deliberately NOT added here — it already emits live via
+# scanner.run_strategies (forward_validator cron); re-registering would double-count
+# its pf_registry attribution. basis_carry / bond_strategy_harness excluded (broken
+# imports / non-pick return shape per workflow wxvpxigh2 adversarial verify).
+try:
+    from alpha_engine.tsmom_strategy import generate_tsmom_picks as _gen_tsmom
+    _register("tsmom_volscaled", "CRYPTO", _gen_tsmom)
+except Exception as e:
+    logger.debug("tsmom_volscaled not available: %s", e)
+
 
 # ---------------------------------------------------------------------------
 # EQUITY (5/5 wired)
@@ -281,6 +298,13 @@ def generate_academic_picks() -> list[dict[str, Any]]:
         for raw in raw_list:
             raw.setdefault("asset_class", asset_class)
             raw.setdefault("strategy", strategy_name)
+            # Direction injection (2026-06-09): TSMOM/CTA sleeves emit signal_type
+            # BUY/SELL but normalize_pick_for_emitter reads ONLY `direction`
+            # (defaults LONG), so a SELL pick would be silently mislabeled LONG and
+            # given backwards TP/SL. Map signal_type -> direction before normalize.
+            if not raw.get("direction") and raw.get("signal_type"):
+                _st = str(raw["signal_type"]).upper()
+                raw["direction"] = "SHORT" if _st in ("SELL", "SHORT") else "LONG"
             # 2026-06-01 wire-up: distinct source_system per strategy so
             # pf_registry / dashboard can attribute WR/PF per academic strategy.
             # Without this, all 30+ academic strategies collapse into one

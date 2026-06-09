@@ -6,14 +6,18 @@ status: fail
 
 # EQUITY
 
-## Current Status (2026-06-06)
+## Current Status (2026-06-09 — clean cohort)
 
 | Metric | Value |
 |--------|-------|
-| PF | 0.90 |
-| WR | 33% |
-| n (closed) | 33 |
-| Tier | FAIL + INSUFF-N |
+| PF (clean) | 1.30 |
+| WR (clean) | 32.4% |
+| n (clean closed) | 358 |
+| Tier | **FAIL** (WR sub-50) |
+
+> 14d recency improvement (37%→67%) **not yet verified** on clean+intrabar cohort. Do not size up.
+
+## Prior Status (2026-06-06 — superseded)
 
 ## Improving Signal
 
