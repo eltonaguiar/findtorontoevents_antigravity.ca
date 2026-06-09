@@ -1,11 +1,14 @@
 ---
 tags: [strategy, asset-class/CRYPTO]
 created: 2026-06-06
-status: paper-pilot
-tier: T1
+status: refuted
+tier: REFUTED
 ---
 
 # mega_mutation
+
+> [!danger] T1 claim REFUTED on clean data (2026-06-09)
+> The "PF 2.86 / WR 63.9% / n=204" figure is the RAW `trading_picks` cohort (source_system='mega_mutation', 296 rows, **100% NULL created_at**). On the canonical `at_pick_outcomes` clean cohort it is **n=13, 30.8% WR, PF 0.57** — and the only month resolved by the honest v2.2_sync resolver (June) is **4/9 LOST**. The naive-fill subset (65% WR) over-reports vs the intrabar-OBSERVED subset (60.3%), decaying Apr 69%→May 63%→Jun 31%. The per-symbol "ready" picks (NEARUSDT 90.9%, INJUSDT 90.5%, ATOMUSDT 75.8%) are **NOT in the mega_mutation cohort at all** (its symbols are JUP/WIF/AVAX/DOT/RENDER/STX/ENA/ADA) — fabricated/mis-attributed. **Do NOT size real money.** Source: workflow w7x37pkzk, `reports/OBS_FINDING_JUNE8.MD`.
 
 ## Stats (2026-06-05, post-dedup)
 

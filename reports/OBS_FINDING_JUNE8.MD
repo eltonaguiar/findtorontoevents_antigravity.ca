@@ -95,3 +95,17 @@ python3 tools/reresolve_intrabar.py --max 3000 --max-hold-bars 168 --min-strateg
 ```
 
 **Related reports:** `2026-06-06-per-asset-class-edge-reality-and-academic-roadmap.md`, `2026-06-06-money-ready-screen-clean-cohort.md`, `UPDATED_MONEY_READY_RECOMMENDATION_2026-06-09.md`
+
+---
+
+## Appendix B — Deep verification (workflow w7x37pkzk, 9 agents, 2026-06-09)
+
+A 9-agent inventory→verify→synthesize pass cross-checked **55 documented vault claims** against the canonical `at_pick_outcomes` clean cohort. New findings beyond the body above:
+
+- **mega_mutation T1 REFUTED (the headline claim):** "PF 2.86 / WR 63.9% / n=204" is the raw `trading_picks` cohort (source_system='mega_mutation', 296 rows, **created_at 100% NULL**). Clean `at_pick_outcomes` = **n=13, 30.8% WR, PF 0.57**; honest June v2.2_sync resolver = **4/9 LOST**. Naive-fill subset (65% WR) over-reports vs intrabar-OBSERVED (60.3%), decaying Apr 69%→May 63%→Jun 31%. **Not money-ready.**
+- **Fabricated/mis-attributed per-symbol picks:** READY-TO-TRADE listed mega_mutation::NEARUSDT (90.9%), ::INJUSDT (90.5%), ::ATOMUSDT (75.8%). These symbols are **NOT in the mega_mutation cohort** (JUP/WIF/AVAX/DOT/RENDER/STX/ENA/ADA). All-strategy reality: NEAR 32.9%, INJ 38.6%, ATOM 34.9%. **NOT_FOUND_IN_DB.**
+- **st_fear_greed_contrarian "n=430 forward / DSR 19.7" REFUTED:** only 2 rows in `at_pick_outcomes`, both backfill-labeled → 0 clean rows. The forward cohort is phantom.
+- **st_rsi_vol_bounce (93.8%/n=16), crypto_liquidity_wick_reversal_v1, RENDER_ensemble:** NOT_FOUND_IN_DB — lab/harness-only figures with zero forward outcomes.
+- **HOLDS:** class-level CRYPTO sub-T2 (clean n=1850, WR 46.8%, PF 1.20); the raw-90d leakage characterization; the intrabar-haircut thesis (naive-fill vs OBSERVED split directly demonstrates TP→SL reclassification).
+
+**Net:** every promoted/"ready" vault claim that asserted a tradeable edge is refuted, not-found, or insufficient on clean data. Class-level numbers (sub-T2 coin-flips) are the only ones that hold. Vault notes (Home, mega_mutation, READY-TO-TRADE) corrected to match.

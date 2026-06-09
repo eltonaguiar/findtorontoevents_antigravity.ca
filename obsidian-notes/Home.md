@@ -20,7 +20,7 @@ Central index for all trading research, strategy analysis, incident logs, and se
 - [[asset-classes/BOND]]
 
 ### 🧠 Strategies
-- [[strategies/mega_mutation]] — T1 confirmed (PF 2.86 / WR 63.9% / n=204)
+- [[strategies/mega_mutation]] — ⚠️ T1 REFUTED on clean data (raw n=204 is NULL-timestamp; clean n=13/30.8%)
 - [[strategies/fx_smart_carry_trade_momentum]] — T2 candidate (PF 1.85 / n=25 OOS-robust)
 - [[strategies/etf_verified_dual_momentum]] — ETF pilot wired (PF 1.60)
 
@@ -59,7 +59,7 @@ Central index for all trading research, strategy analysis, incident logs, and se
 > **0/9 asset classes pass Tier-2 money-ready gates.** Clean-cohort screen: **0 confirmed survivors.**
 > Full vault cross-check: `reports/OBS_FINDING_JUNE8.MD` | Roadmap: [/audit/edge_validation_roadmap.html](https://findtorontoevents.ca/audit/edge_validation_roadmap.html)
 
-- **T1 confirmed:** `mega_mutation` (CRYPTO, PF 2.86)
+- **T1 REFUTED (2026-06-09):** `mega_mutation` "PF 2.86/n=204" is raw `trading_picks` (100% NULL created_at). Clean `at_pick_outcomes` = n=13, 30.8% WR, PF 0.57 (honest June resolver: 4/9 LOST). NOT money-ready.
 - **T2 candidates:** `fx_smart_carry_trade_momentum` (FOREX, n→100 ~5-6wk)
 - **Paper pilots active:** ETF dual-momentum (daily cron 06:15Z)
 - **Blockers:** intrabar OHLC resolver not shipped → 4 CRYPTO sleeves blocked at Stage 0

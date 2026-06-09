@@ -28,6 +28,10 @@ snapshot numbers that go stale within days and have shipped self-contradictions
 (BOND PF 0.66 vs 1.72). NEVER quote a plan's PF/WR/n as current — re-read
 `asset_class_health` live and treat the plan only as intent/direction.
 
+**REJECT-without-reverify (2026-06-09):** FOREX 14d 64%/PF 2.43, GBPUSD 58.8%, stocks_rsi2_pullback n=894, RENDERUSDT inverse_ml, AI tournament WR as trading edge, 32.6M backtest rows as live edge. Full list: `reports/OBS_FINDING_JUNE8.MD`.
+
+**SAVE THE SYSTEM:** See `/money-maker-readyv2` → SAVE THE SYSTEM. Honest answer today: **0 confirmed money-ready edges**; fix measurement layer first.
+
 ## Inputs (read, never invent)
 
 | Source | What | Status to verify |
@@ -220,28 +224,24 @@ Final output P0-P5 ranked list:
 | Priority | Action | Asset class impact | Effort (hr) | Risk | Reversibility | Expected lift |
 ```
 
-Starter kit (current verified state, 2026-05-15 — per
-`reports/asset_class_action_items_2026-05-15.md` + verification):
-- P0: Re-derive COMMODITY PF/WR on post-PR-#994 (COT-dedup) picks — headline
-  PF 2.37 / n=326 carries pre-dedup over-emission; do NOT make a Tier-1 claim
-  on it first.
-- P0: Add a class-wide `PENNY_STOCK` + `MEMECOIN` gate — `PENNY_STOCK` is
-  entirely absent from `quality_gates.py` (zero gating today).
-- P0: Fix the `quan_engine` cap desync — `per_source_volume_cap.py`=5% vs
-  `quarantine_manifest.json` + tests=12%; pin one.
-- P1: Cap `luxalgo_filters` CRYPTO volume (uncapped, PF 1.12, ~17.5% vol) +
-  give `enforce_cap()` a `production_scanner.py` caller (one caller today).
-- P1: Debug the ETF sector emitter — it is default-ON but emits 0 picks
-  (silent failure), not "opt-in".
-- P1: Drift auto-pause logic (KS D > 0.10); mark dead systems INACTIVE.
-- P2: Wire the FOREX directional gate (LONG bias is the drag — `BLOCKED_ASSET_STRATEGY_TRIPLES` has no FOREX rows).
-- P2: Lower `BOND_ELITE_FLOOR` (default 40) to unblock the BOND emitter (n=11).
-- P2: Fix FUTURES `=F`→COMMODITY misclassification + `conf_floor` 0.50→0.40.
-- P3: Wire `kill_gate.evaluate_kill()` into `quality_gates.passes_active_gate`
-  (it is wired into the kill switches but not the active gate).
-- P3: Standardize the cited verdict metric on `resolved_n`; UI/filter fixes.
-- P4: Set `FRED_API_KEY` (unblocks macro data for BOND + EQUITY + COMMODITY).
-- P5: Pilot paper-trade real-time variance test.
+Starter kit (re-based 2026-06-09 — measurement first; see SAVE THE SYSTEM in v2):
+
+**P0 — measurement (blocks everything)**
+- Intrabar re-resolution: `tools/reresolve_intrabar.py` (dry-run → `--apply` after OHLCV backfill).
+- Backfill `crypto_ohlcv` ≥180d 1h bars (gating dependency; ~30d today).
+- Backfill quarantine + sane-pnl guard ✅ (`build_pf_registry.py`, `picks_now_professional.py`).
+
+**P1 — re-baseline & paper-pilot**
+- Clean+intrabar screen (`reports/OBS_FINDING_JUNE8.MD`); forward paper-pilot ≥4wk only.
+- Ban FOREX bleeders; wire `apply_emitter_discipline`.
+
+**P2 — academic sleeves (after P0)**
+- TSMOM, residual momentum, carry — dormant modules; trailing-stop exits fix expiry trap.
+
+**P3 — legacy open**
+- PENNY/MEMECOIN gate; quan_engine cap desync; ETF emitter; drift auto-pause; FRED_API_KEY.
+
+**Never promote from:** `pick_summary_stats_14d` alone, Obsidian T1 claims, AI tournament leaderboard, `low_hanging_fruit_report.md`.
 
 ## Output destination + persistence
 
