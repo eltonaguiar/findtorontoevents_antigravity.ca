@@ -480,8 +480,11 @@ def mysql_record_raw_pick(
     # NON-CRYPTO classes. Emitters (copy_trader 8%/4% whale picks, multi_asset 3% FX TP)
     # write here uncapped and otherwise resolve TIME_EXPIRED because targets are
     # unreachable in the holding window (56-94% expiry per the 2026-06-06 edge audit).
-    # CRYPTO is intentionally SKIPPED: genome/mega_mutation picks (our sole T1 candidate)
-    # carry ATR-tuned targets >5% that the 5%/2% crypto cap would clobber. Fail-open.
+    # CRYPTO is intentionally SKIPPED: genome/mega_mutation + other crypto sleeves carry
+    # ATR-tuned targets >5% that the 5%/2% crypto cap would clobber. (NOTE: mega_mutation's
+    # "T1" claim was REFUTED on clean data 2026-06-09 — it is NOT a money-ready edge; the
+    # skip is to preserve ATR-target geometry for paper-pilot/forward measurement, not an
+    # endorsement.) Fail-open.
     _tp_capped, _sl_capped = take_profit, stop_loss
     if str(_ac or "").upper() != "CRYPTO":
         try:
