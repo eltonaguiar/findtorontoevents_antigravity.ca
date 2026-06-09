@@ -3703,7 +3703,20 @@ def open_new_picks(signals: list[dict], db: SQLiteStore,
         # Prevents per-symbol re-entry churn and >MAX_TRADES_PER_DAY bursts.
         try:
             from alpha_engine.non_crypto_policy import check_emission_gates as _ceg
-            _gate = _ceg(str(signal.get("symbol") or ""))
+            # Option A activation (2026-06-09): per-class sized cap for non-crypto so the
+            # best class (EQUITY) isn't starved by a shared global budget; crypto keeps the
+            # legacy global cap here (it's governed separately elsewhere); shadow picks
+            # (forward_test_only) bypass the sized cap to build measurement-n.
+            try:
+                from alpha_engine.asset_class import normalize_asset_class as _nac
+                _ac = _nac(signal)
+            except Exception:
+                _ac = None
+            _gate = _ceg(
+                str(signal.get("symbol") or ""),
+                asset_class=(None if _ac in (None, "crypto") else _ac),
+                forward_test_only=bool(signal.get("forward_test_only")),
+            )
             if _gate.get("blocked"):
                 logger.debug(
                     "emission_gate_blocked %s %s: %s",
