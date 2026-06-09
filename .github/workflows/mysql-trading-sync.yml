@@ -44,7 +44,11 @@ jobs:
         run: |
           success=false
           for i in 1 2 3; do
-            if python alpha_engine/mysql_trading_sync.py; then
+            # Invoke as a module so the repo root is on sys.path — the script's
+            # top-level `from alpha_engine import config` (line 22) crashed with
+            # ModuleNotFoundError when run by path (its own sys.path.insert is at
+            # ~line 590, far too late). Failed all 3 retries every run (~66x).
+            if python -m alpha_engine.mysql_trading_sync; then
               success=true
               break
             fi

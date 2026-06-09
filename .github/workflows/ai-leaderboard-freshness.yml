@@ -19,6 +19,16 @@ jobs:
   refresh-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Job-level DB creds so every DB-reading step (promote/resolve/build
+    # leaderboard/truth panel) inherits them. Previously these steps had no DB
+    # password env -> tools.db_env raised "no DB password found" and the job
+    # failed. AUDIT_DB_* mirrors the proven now-scanner pattern.
+    env:
+      AUDIT_DB_HOST: mysql.50webs.com
+      AUDIT_DB_USER: ejaguiar1_stocks
+      AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+      AUDIT_DB_NAME: ejaguiar1_stocks
+      DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
     steps:
       - uses: actions/checkout@v6
         with:

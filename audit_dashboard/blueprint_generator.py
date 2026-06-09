@@ -321,7 +321,11 @@ def generate_blueprint():
 
     # ── Leaderboard (top strategies) ──
     crypto_lb = [l for l in leaderboard if l.get("fwd_trades", 0) and l.get("fwd_trades", 0) >= 3]
-    crypto_lb.sort(key=lambda x: x.get("fwd_total_pnl", 0), reverse=True)
+    # None-safe: fwd_total_pnl may be present-but-None, so .get(...,0) returns
+    # None (not 0) and the sort crashes "'<' not supported between NoneType and
+    # float" (documented dict-get-default trap). Coerce with `or 0`. This crash
+    # was failing the Unified Audit Dashboard ~60x and starving dashboard_data.json.
+    crypto_lb.sort(key=lambda x: (x.get("fwd_total_pnl") or 0), reverse=True)
 
     # ── Build HTML ──
     html = build_html(
