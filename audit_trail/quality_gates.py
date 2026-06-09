@@ -9159,9 +9159,19 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     if not passes_active_gate(pick):
         return False
 
-    # ── Anti-overfit validator (DSR/PBO) — OPT-IN, default-OFF ──
-    # Kimi P1 wire-up 2026-05-12. Engage with ANTI_OVERFIT_VALIDATOR_ENABLED=1.
-    # Rejects when DSR < 0.95 OR PBO > 0.50 given pick.returns_history.
+    # ── Anti-overfit validator (DSR/PBO) — ENABLED BY DEFAULT ──
+    # Kimi P1 wire-up 2026-05-12. This gate is ON unless explicitly disabled with
+    # ANTI_OVERFIT_VALIDATOR_ENABLED=0 (the env default inside _anti_overfit_reject
+    # is "1"). The previous "OPT-IN, default-OFF" comment here was STALE and
+    # contradicted the code — corrected 2026-06-09 after live verification.
+    # Rejects when DSR < 0.95 OR PBO > 0.50 given pick.returns_history (or the
+    # closed_picks.json strategy-returns cache); fail-open when <20 returns.
+    # Verified 2026-06-09: active + biting — rejects 8/9 cached strategies with
+    # >=20 history (volume_spike_breakout, macd_rsi_confluence,
+    # forex_rsi2_mean_reversion, futures_momentum, ...). NOTE: SPA
+    # (reality_check_pvalue in anti_overfit_validator.py) is computed-capable but
+    # NOT wired as a gate here — only DSR+PBO are enforced. The Global PBO gate
+    # below is separately default-OFF (global_pbo=1.0 would block all picks).
     if _anti_overfit_reject(pick):
         return False
 
