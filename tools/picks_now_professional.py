@@ -541,8 +541,16 @@ class QuantScorer:
 
     def score(self, sym: str, cls: str, df: pd.DataFrame,
               info: dict, db_edge: dict, prices: dict,
-              fmp_scores: dict | None = None) -> dict:
-        """Score one symbol across all factors. Returns result dict."""
+              fmp_scores: dict | None = None,
+              db_edge_forward: dict | None = None) -> dict:
+        """Score one symbol across all factors. Returns result dict.
+
+        Phase B (2026-06-09): now consumes a `db_edge_forward` overlay that
+        uses a 60d-window, decay-weighted WR (w=0.5^(age/14d)). The legacy
+        `db_edge` is kept for the symbols/fields it surfaces that the forward
+        overlay does not (e.g. raw n, expired_pct) but the SCORING weight on
+        the DB-edge block is now driven entirely by the forward overlay.
+        """
         # Normalize column names (fetch_ohlcv_failover returns lowercase, helpers expect Title)
         col_map = {c: c.capitalize() for c in df.columns if c.lower() in ('open','high','low','close','volume')}
         if col_map:
@@ -610,11 +618,26 @@ class QuantScorer:
         except Exception:
             pass
 
-        # ── DB edge overlay ──
+        # ── DB edge overlay (legacy, kept for back-compat fields) ──
         db = db_edge.get(sym.upper(), {})
         db_n = db.get("n", 0)
         db_wr = db.get("wr", 0)
         db_avg_pnl = db.get("avg_pnl", 0)
+
+        # ── Forward-weighted DB edge (Phase B step 1, 2026-06-09) ──
+        # Replaces contaminated all-time WR with a 60d-window, decay-weighted
+        # WR using `resolved_at` recency (w=0.5^(age/14d)). Stale strategies
+        # contribute ~nothing; new strategies with n_weighted>=10 get the
+        # full 10-pt W_DB_EDGE bonus. Without this, the W_DB_EDGE block was
+        # contaminated by 77.8% backfill labels + stale strategies that no
+        # longer have edge.
+        dbf = (db_edge_forward or {}).get(sym.upper(), {})
+        dbf_wr = dbf.get("wr", 0)
+        dbf_n_w = dbf.get("n_weighted", 0)
+        dbf_avg_pnl = dbf.get("avg_pnl", 0)
+        dbf_staleness = dbf.get("staleness_days", 999)
+        dbf_active = dbf_n_w >= 10  # require effective sample size
+        dbf_n_raw_60d = dbf.get("n_raw_60d", 0)
 
         # ── COMPOSITE SCORE (range: -100 to +150) ──
         score = 50  # baseline neutral
@@ -693,14 +716,29 @@ class QuantScorer:
             score += 5
             signals.append(f"DIV={div_yield:.1f}%")
 
-        # 5. DB edge overlay (10 pts)
-        if db_n >= 20:
-            if db_wr > 55:
-                score += self.W_DB_EDGE
-                signals.append(f"DB_WR={db_wr:.0f}% n={db_n}")
-            elif db_wr > 45:
-                score += self.W_DB_EDGE * 0.4
-                signals.append(f"DB_WR={db_wr:.0f}% n={db_n}")
+        # 5. DB edge overlay (10 pts) — FORWARD-WEIGHTED with staleness penalty
+        # Phase B step 1 (2026-06-09): was reading contaminated all-time WR; now
+        # reads the 60d-window decay-weighted overlay. Effective sample size
+        # must be >= 10 (decay-weighted) before any bonus fires.
+        if dbf_active:
+            base = 0.0
+            if dbf_wr > 55:
+                base = self.W_DB_EDGE
+                signals.append(f"DB_FWD_WR={dbf_wr:.0f}% n_w={dbf_n_w:.1f}")
+            elif dbf_wr > 45:
+                base = self.W_DB_EDGE * 0.4
+                signals.append(f"DB_FWD_WR={dbf_wr:.0f}% n_w={dbf_n_w:.1f}")
+            # Staleness penalty: >14d since most-recent resolution -> 50% off.
+            # 28d+ -> 25%. A symbol that was great 3 months ago is NOT great
+            # now; decay the bonus aggressively so the page doesn't surface
+            # long-dead edges.
+            if base > 0 and dbf_staleness > 14:
+                if dbf_staleness > 28:
+                    base *= 0.25
+                else:
+                    base *= 0.5
+                signals.append(f"STALE(dbf_age={dbf_staleness:.0f}d)")
+            score += base
 
         # ── Direction ──
         if score >= 75:
@@ -720,8 +758,11 @@ class QuantScorer:
         # A symbol whose OWN resolved (EXPIRED-inclusive) average PnL is negative
         # with a meaningful sample must not carry a BUY/STRONG_BUY label or full
         # size, regardless of the technical/analyst score. Demote to WATCH.
-        if direction in ("STRONG_BUY", "BUY") and db_n >= 20 and db_avg_pnl < 0:
-            signals.append(f"DB_NEG_EXPECTANCY(avg={db_avg_pnl:.2%},n={db_n})")
+        if direction in ("STRONG_BUY", "BUY") and dbf_active and dbf_avg_pnl < 0:
+            # Phase B step 1: requires n_weighted>=10 (effective sample) instead
+            # of the legacy raw-n>=20 — a small set of fresh picks can be more
+            # trustworthy than a large set of ancient, contaminated ones.
+            signals.append(f"DB_FWD_NEG_EXPECTANCY(avg={dbf_avg_pnl:.2%},n_w={dbf_n_w:.1f})")
             direction = "WATCH"
 
         # ── Negative analyst-target guard ──
@@ -770,8 +811,31 @@ class QuantScorer:
                 sl_pct = min(sl_pct, cap_sl)
             if cap_tp is not None:
                 tp_pct = min(tp_pct, cap_tp)
+            # ── TP/SL quality score (Phase B step 1, 2026-06-09) ──
+            # ATR-relative scoring: does the suggested TP/SL make sense for
+            # THIS symbol's actual volatility?
+            #   TP sweet spot: 2-4 ATRs (best 3 ATRs)
+            #   SL sweet spot: 1-2 ATRs (best 1.5 ATRs)
+            #   Penalties:     TP > 6 ATRs (unreachable) -> 0
+            #                  SL < 1 ATR (too tight)    -> 0
+            # Per the 2026-06-08 quant audit: 78.9% of SL hits came from SLs
+            # too tight for the symbol's volatility. 94% of signals EXPIRED
+            # before hitting either. This score quantifies the issue per-pick.
+            tp_sl_quality_score = None
+            if atr_pct > 0 and tp_pct and sl_pct and tp_pct > 0 and sl_pct > 0:
+                tp_atr_ratio = tp_pct / atr_pct
+                sl_atr_ratio = sl_pct / atr_pct
+                # Linear penalty from peak; zero at the cutoff.
+                tp_score = max(0.0, min(100.0, 100.0 - abs(tp_atr_ratio - 3.0) * 25.0))
+                if tp_atr_ratio > 6.0:
+                    tp_score = 0.0
+                sl_score = max(0.0, min(100.0, 100.0 - abs(sl_atr_ratio - 1.5) * 50.0))
+                if sl_atr_ratio < 1.0:
+                    sl_score = 0.0
+                tp_sl_quality_score = round((tp_score + sl_score) / 2.0, 1)
         else:
             sl_pct = tp_pct = None
+            tp_sl_quality_score = None
 
         # ── ELI5 Reason (Explain Like I'm 5) ──
         eli5_parts = []
@@ -880,6 +944,19 @@ class QuantScorer:
             "db_n": db_n,
             "db_wr": db_wr,
             "db_avg_pnl": db_avg_pnl,
+            # Phase B step 1 (2026-06-09) — forward-weighted overlay fields.
+            # `dbf_active` = True iff n_weighted>=10 (i.e. effective sample
+            # size is meaningful). `dbf_wr` is the decay-weighted WR, NOT
+            # the contaminated all-time WR that `db_wr` carries.
+            "dbf_active": dbf_active,
+            "dbf_wr": dbf_wr,
+            "dbf_n_weighted": dbf_n_w,
+            "dbf_n_raw_60d": dbf_n_raw_60d,
+            "dbf_avg_pnl": dbf_avg_pnl,
+            "dbf_staleness_days": dbf_staleness,
+            # Phase B step 1 — ATR-relative TP/SL quality (0-100; None when
+            # BUY/STRONG_BUY didn't fire or atr_pct was zero).
+            "tp_sl_quality_score": tp_sl_quality_score,
         }
 
 
@@ -1052,10 +1129,17 @@ def main():
     print(f"  {time_str}")
     print(f"{'='*70}")
 
-    # Load DB edge data
-    print("\n📥 Loading DB edge data...")
+    # Load DB edge data (legacy all-time overlay — kept for back-compat fields)
+    print("\n📥 Loading DB edge data (legacy all-time overlay)...")
     db_edge = load_db_edge()
     print(f"   Loaded {len(db_edge)} symbols with resolved edge data.")
+
+    # Load FORWARD-weighted DB edge overlay (Phase B step 1, 2026-06-09).
+    # This is the data that now drives the W_DB_EDGE scoring block and the
+    # negative-expectancy guard, replacing the contaminated all-time WR.
+    print("\n📥 Loading FORWARD-weighted DB edge overlay (60d window, 14d half-life)...")
+    db_edge_forward = load_db_edge_forward(decay_half_life_days=14, max_age_days=60)
+    print(f"   Loaded {len(db_edge_forward)} symbols with forward-weighted edge.")
 
     # Load FMP financial scores (Piotroski, Altman-Z)
     all_tickers = [t for cfg in UNIVERSE.values() for t in cfg["tickers"]]
@@ -1086,7 +1170,8 @@ def main():
                         if k not in info or info[k] is None:
                             info[k] = v
 
-                result = scorer.score(sym, cls, df, info, db_edge, all_prices, fmp_scores)
+                result = scorer.score(sym, cls, df, info, db_edge, all_prices,
+                                      fmp_scores, db_edge_forward)
                 all_prices[sym] = result["price"]
                 all_results.append(result)
 
