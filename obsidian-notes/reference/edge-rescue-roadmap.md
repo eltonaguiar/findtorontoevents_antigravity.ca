@@ -33,6 +33,18 @@ status: active
 
 > **Rule:** real capital only after a sleeve holds the full bar on a FORWARD (post-fix) cohort for ≥4 weeks.
 
+## Latest reports & runs (2026-06-09)
+- `reports/EDGE_RESCUE_PLAN_2026-06-09.md` — consolidated P0→P3 rescue plan (cursor).
+- `reports/UPDATED_MONEY_READY_RECOMMENDATION_2026-06-09.md` — refreshed money-ready verdict (0/9).
+- `reports/OBS_FINDING_JUNE8.MD` — vault edge claims vs clean DB (+ workflow w7x37pkzk Appendix B).
+- `reports/2026-06-06-per-asset-class-edge-reality-and-academic-roadmap.md` — per-class audit + academic sleeves.
+- `reports/2026-06-06-money-ready-screen-clean-cohort.md` — clean-cohort screen (0 survivors).
+- `updates/2026-06-09-ohlcv-deep-backfill.md` — SAVE-1 OHLCV deep backfill (180d).
+- `reports/reresolve_intrabar_latest.json` — full-book intrabar dry-run (CRYPTO 47.1%→39.6%).
+
+### Intrabar apply outcome (2026-06-09)
+`reresolve_intrabar.py --apply` (peer-reviewed, non-destructive) wrote intrabar verdicts to **parallel `trading_picks.intrabar_*` columns** for 15,027 picks — canonical `status`/`pnl_pct` preserved (downstream opt-in). A pre-refactor in-place run had overwritten 2000 canonical rows; 1921 restored from the 06-05 snapshot, 79 newer stragglers documented. See [[incidents/resolver-intrabar-blocker]].
+
 ## Related
 - [[sessions/2026-06-06-edge-audit-and-resolver-fix]]
 - [[incidents/resolver-intrabar-blocker]]
