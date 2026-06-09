@@ -394,16 +394,31 @@ def apply_daily_loss_limit(
 
 
 def is_daily_blocked() -> bool:
-    return False # Patched to bypass
+    """Check if daily loss limit has been hit, blocking new pick generation.
 
-    """Check if daily loss limit has been hit, blocking new pick generation."""
+    Re-enabled 2026-06-09: the prior `return False # Patched to bypass` was swept
+    into an automated 'Rapid Fire scan' bot commit on 2026-05-31 (733a86fe22),
+    NOT a reviewed disable. Restoring the control, but guarded against the known
+    leverage/dir-blind realized-PnL bug: daily_pnl_tracker.json showed
+    realized_pnl=-110% on 2026-05-27, physically impossible against the
+    -2%/-3% DAILY_BLOCK/DAILY_CLOSE thresholds. We ignore implausible realized
+    PnL so a buggy number can't spuriously suppress forward-pick generation
+    (the very sample we're trying to build). Remove the guard once realized_pnl
+    is leverage-aware + direction-correct.
+    """
     try:
         tracker = _load_json(DAILY_PNL_PATH)
         if tracker.get("date") != _today_str():
             return False  # New day, reset
+        realized = tracker.get("realized_pnl")
+        if realized is None or realized < -50.0:
+            # Implausible vs -2%/-3% breaker thresholds -> PnL-bug artifact; do
+            # not block on garbage. (Real diversified daily realized loss should
+            # never approach -50% when DAILY_CLOSE fires at -3%.)
+            return False
         status = tracker.get("circuit_breaker_status", "NORMAL")
         if status in ("DAILY_BLOCK", "DAILY_CLOSE"):
-            print(f"  [DAILY LIMIT] Blocked: {status} (realized={tracker.get('realized_pnl', 0):.2f}%)")
+            print(f"  [DAILY LIMIT] Blocked: {status} (realized={realized:.2f}%)")
             return True
     except Exception:
         pass
