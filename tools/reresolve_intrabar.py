@@ -246,15 +246,22 @@ def main():
         print(f"\n[APPLY] writing {len(corrections)} intrabar verdicts to PARALLEL columns (canonical row UNTOUCHED)")
         BATCH = 500
         try:
-            for ddl in (
-                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_status VARCHAR(20) NULL",
-                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_pnl_pct DECIMAL(12,4) NULL",
-                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_ambiguous TINYINT NULL",
-                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_horizon_bars INT NULL",
-                "ALTER TABLE trading_picks ADD COLUMN IF NOT EXISTS intrabar_resolved_at DATETIME NULL",
-            ):
-                try: cur.execute(ddl)
-                except Exception as e: print(f"  [ddl] {e}")
+            # MySQL 8 has NO `ADD COLUMN IF NOT EXISTS` (that's MariaDB). Check
+            # information_schema and add only the missing columns.
+            cur.execute("SELECT COLUMN_NAME FROM information_schema.COLUMNS "
+                        "WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='trading_picks'")
+            existing_cols = {r["COLUMN_NAME"] for r in cur.fetchall()}
+            want_cols = {
+                "intrabar_status": "VARCHAR(20) NULL",
+                "intrabar_pnl_pct": "DECIMAL(12,4) NULL",
+                "intrabar_ambiguous": "TINYINT NULL",
+                "intrabar_horizon_bars": "INT NULL",
+                "intrabar_resolved_at": "DATETIME NULL",
+            }
+            for col, typ in want_cols.items():
+                if col not in existing_cols:
+                    cur.execute(f"ALTER TABLE trading_picks ADD COLUMN {col} {typ}")
+                    print(f"  [ddl] added column {col}")
             conn.commit()
 
             # Full original snapshot (status+pnl) to ejaguiar1_backups for audit.
@@ -266,11 +273,14 @@ def main():
                 cur.execute(f"SELECT id, status, pnl_pct FROM trading_picks WHERE id IN ({','.join(['%s']*len(chunk))})", chunk)
                 for r in cur.fetchall(): orig[r["id"]] = (r["status"], r["pnl_pct"])
             bconn = pymysql.connect(**get_backups_creds()); bcur = bconn.cursor()
-            bcur.execute("""CREATE TABLE IF NOT EXISTS reresolve_intrabar_backup
+            # DROP+CREATE (not CREATE IF NOT EXISTS) — a prior run left an
+            # OLD-schema table (id,old_status,new_status,true_pnl_pct) that broke
+            # the orig_status insert. Recreate with the current schema.
+            bcur.execute("DROP TABLE IF EXISTS reresolve_intrabar_backup")
+            bcur.execute("""CREATE TABLE reresolve_intrabar_backup
                 (id BIGINT, orig_status VARCHAR(20), orig_pnl_pct DECIMAL(12,4),
                  new_intrabar_status VARCHAR(20), new_intrabar_pnl_pct DECIMAL(12,4),
                  ambiguous TINYINT, horizon_bars INT, backed_up_at DATETIME)""")
-            bcur.execute("DELETE FROM reresolve_intrabar_backup")  # idempotent re-runs
             backup_rows = [(c["id"], orig.get(c["id"], (None, None))[0], orig.get(c["id"], (None, None))[1],
                             c["new_status"], c["true_pnl_pct"], c["ambiguous"], c["horizon_bars"]) for c in corrections]
             for i in range(0, len(backup_rows), BATCH):
