@@ -104,3 +104,9 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
   - **luxalgo_short: all-recency** (entire n=37 inside last 30d) — needs time-split before belief upgrade.
   - **EQUITY vol-regime SIGNS FLIPPED vs the experiment snapshot** once full bar history was used — the negative-filter claim is fragile; exactly the failure mode this lane exists to catch.
 - OHLCV universe backfill ~halfway (H-symbols); re-resolve + truth rebuild on completion (scheduled).
+
+## TICK 06:45-07:05 — honest ledger +221 (universe backfill chain complete)
+- **OHLCV full-universe backfill DONE: 827,882 bars upserted** (315 symbols; 132 failed = delisted/garbage).
+- **Re-resolve: +221 new intrabar shadow rows** (built-in backup; canonical untouched; rollback documented).
+- **Refreshed honest ledger (committed):** CRYPTO n=1154 (32.4%/PF0.73 FAIL), EQUITY n=107 (34.6%/PF0.47 FAIL) — TWO classes now clear the n>=100 bar and BOTH fail honestly; COMMODITY n=90 / FOREX n=88 approaching. Leads unchanged (futures_momentum n47 — concentration caveat stands; forex_rsi2 n20). The honest verdict is STABLE under data growth — measurement layer working as designed.
+- Live verdict intrabar_truth: 05:45 env-fixed dashboard run still in flight; verify next tick.
