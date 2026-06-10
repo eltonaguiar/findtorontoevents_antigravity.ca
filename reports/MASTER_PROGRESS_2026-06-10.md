@@ -116,3 +116,9 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **Sign-Coherence Gate failure diagnosed + FIXED**: not my scrub — the gate correctly caught 2 NEW mega_mutation ADAUSDT sign-flips (stored +3.28%/WON, real -3.48%). Purged via audit_trail/sign_flip_purge.py --apply (backup + manifest committed); re-check = 0 flips; gate redispatched.
 - Live verdict intrabar_truth: the 05:45 env-fixed dashboard run STILL in flight (long build) — rolls again.
 - Other GHA failures: CI Tests (chronic, known), Picks-Now Live PnL hourly (freebuff's new workflow — theirs), masking/leak-guard (old PR-era runs). Nothing else actionable.
+
+## TICK 08:00-08:15 — 🎯 HONEST TRUTH IS LIVE ON /audit (chain complete)
+- **ROOT CAUSE of the frozen live verdict found + fixed — it was MY bug**: the verdict's new top-level `generated_at` STRING crashed money_ready_snapshot.py's validate() ("class 'generated_at' record is not an object"); the `|| non-fatal` guard swallowed it, freezing the live JSON at the 04:21 build. (My earlier "live" probes were also reading the wrong JSON level — the snapshot nests under `classes`.) Fix: meta-strip non-dict keys (23bbf508db). Honest accounting: the GHA env fix was necessary but NOT the blocker.
+- **LIVE + VERIFIED on findtorontoevents.ca**: `classes.CRYPTO.intrabar_truth {n:1154, wr:32.4%, pf:0.73}`, `classes.EQUITY.intrabar_truth {n:107, 34.6%, 0.47}` — the full honest chain (entry-anchored resolver -> at_signal_outcomes ledger -> verdict -> live site) is END-TO-END COMPLETE. FTP'd + curl-verified (f7758d157f).
+- Sign-Coherence Gate re-run: **GREEN** (post-purge). Money-Ready Snapshot workflow redispatched with the fix.
+- Forward lane: crypto_rsi5070_us n=108 47.2%/1.54 (keep measuring, no promote); luxalgo_short 38 @ 71.1%/2.21 (recency).
