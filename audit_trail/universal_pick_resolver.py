@@ -585,7 +585,12 @@ def _parse_ts_ms(ts_str):
 
 # Entry-anchored resolution (Bug 1A) is gated OFF by default so production behavior is
 # byte-identical until a reviewed shadow-diff (PR2). Flip RESOLVER_ENTRY_ANCHORED=1 to enable.
-_ENTRY_ANCHORED = os.environ.get("RESOLVER_ENTRY_ANCHORED", "0").strip() == "1"
+# PR2 (2026-06-10): default flipped ON after the pre-registered shadow-diff PASSED
+# (reports/shadow_diff_entry_anchored_2026-06-10.json: T1 flip-rate 29.4%<=30, T2 78%<=90,
+# T3 no class WR inflation; 60/77 stale-window CRYPTO picks now honestly degrade to tagged
+# close_approx instead of fake-resolving). Historical rows: left as-is + /audit dispute
+# banners (recorded decision). Set RESOLVER_ENTRY_ANCHORED=0 to roll back instantly.
+_ENTRY_ANCHORED = os.environ.get("RESOLVER_ENTRY_ANCHORED", "1").strip() == "1"
 
 
 def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
