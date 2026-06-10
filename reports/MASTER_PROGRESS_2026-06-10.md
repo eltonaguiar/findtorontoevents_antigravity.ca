@@ -179,3 +179,9 @@ Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid)
 - **FILED: bond_strategy_harness wiring debt** (ENHANCEMENT_BONDS #9) — deliberate deferral now unblocked by PR2; BOND n=6 needs supply.
 - **RESOLVED 5 stale incidents** verified fixed-but-open (OVERALL #12 ghosts, #7 signal_time, #64+#85 EXPIRED-mislabel, #79 stale-OPEN backlog) — feed accuracy restored; page regen + FTP live (181/206/19).
 - **REFUTED (not filed): verify_system_pf "zero callers"** — it runs daily via ab_analysis.yml (succeeded today) and commits its output. Test-rot claim corrected: files live in tools/ (18F+16F, born-broken at creation), folded into the #129 reconciliation incident scope.
+
+## TICK 19:10-19:35 — two reds diagnosed to root cause + fixed
+- **ci-tests red was a REAL catch by my new pytest-timeout**: test_money_ready_verdict transitively called the LIVE FRED API (passes_high_conviction_gate -> get_macro_context -> fetch_fred_series) and hung >120s on runners. Fix: FRED_MACRO_DISABLED=1 in the gating env (module's own kill-switch; verified no-op in 0.0s locally). Committed d6fde92859, redispatched.
+- **Picks NOW Refresh red = SyntaxError in freebuff's FTP helper** (ftp.prot_p()uploads jammed on one line, paste artifact in e9ef1ed882) — broke the 3x-daily deploy step. 1-newline infra fix (a42eab4e79), redispatched. (Their content files untouched.)
+- Forward lane: rsi5070 stable n=108 47.2%/1.54 (no material change, not re-committed); ledger steady (COMMODITY 90 / FOREX 88); live verdict SELF-SUSTAINING (18:02 build, intrabar populated, no manual deploy).
+- Deferred to next tick: CRYPTO ADV-gate wire-up (is_liquid_crypto shadow-tag into emission path).
