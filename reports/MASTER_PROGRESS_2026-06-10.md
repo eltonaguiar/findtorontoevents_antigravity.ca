@@ -92,3 +92,8 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
   3. **Negative entry filters the gates don't check:** EQUITY high-vol entries hold 64.3% of class losses (low-vol remainder 62.9%/PF2.48, fragile n); FOREX trend-contrarian entries hold 75.7% of losses (remainder 64.3%/PF4.74 n=14). MEMECOIN = do-not-trade (nothing conditions it).
 - Corroborates the σ-experiment: wrong-way LONG selection is the disease; entry conditioning is the cure path.
 - NEXT: spec + wire the shadow entry-gate (forward_test_only stamps: entry_condition_met flags on emissions; verdict-excluded) so forward n accrues on conditions 1-2 + the two negative filters; re-test at n>=100/condition.
+
+## TICK 06:20-06:35 — forward-measurement lane spinning up
+- **crypto_ohlcv FULL-UNIVERSE 180d backfill RUNNING** (--top-symbols 0; idempotent upserts of regenerable exchange bars — backup rule applies to trade records, not reproducible market data). Will shrink the 1,173 no_data picks; then re-resolve at_signal_outcomes + rebuild intrabar_truth to grow the honest ledger.
+- **Shadow entry-gate stamper DELEGATED** (background build): tools/stamp_entry_conditions.py — read-only DB -> audit_dashboard/data/entry_conditions_forward.json sidecar tracking the validated conditions (crypto_rsi5070_us, luxalgo_short, equity_lowvol/highvol-negative, forex_aligned/contrarian-negative) + per-class baselines + rolling 30d forward windows. Measurement-only; never a sizing input until n>=100/condition re-passes R1/R2/R3.
+- Live intrabar_truth: 05:19 run STILL in flight (long hourly build); env fix rides the queued 05:45 run.
