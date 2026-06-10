@@ -24,12 +24,16 @@ jobs:
         with:
           update-environment: false
           python-version: '3.12'
-      - run: pip install numpy scipy
+      - run: pip install numpy scipy pymysql
       - name: Generate money-ready snapshot
         env:
           # 2026-05-19 resolver step 3: enforce monotone-conservative shadow gates (downgrade-only).
           MDD_GATE_ENFORCE: '1'
           ML_ENHANCED_CRYPTO_QUARANTINE: '1'
+          # 2026-06-10: DB creds so money_ready_verdict's _intrabar_truth_map() +
+          # DB-backed sleeves populate (this workflow's build was writing
+          # intrabar_truth: null and clobbering the audit-dashboard build).
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
         run: python tools/money_ready_snapshot.py
       - name: Commit snapshot + archive
         run: |

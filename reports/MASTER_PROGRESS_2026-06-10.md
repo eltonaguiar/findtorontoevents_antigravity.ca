@@ -149,3 +149,6 @@ Live updates card (honest-measurement milestone) · pick_funnel 9/9 filter docs 
 6. **Option-A leftovers**: thread asset_class/forward_test_only through ml_crypto_predictor/claude_gainer/crypto_signal_engine callers + implement the signal-week dedup (protects DSR/PBO IID).
 7. **CI Tests chronic timeout** (33/40 fails — split the suite); Binance HTTP-451 runner flake (region-block) intermittently times out the hourly resolver step — consider a job-level timeout + skip-grace.
 8. **MEMECOIN = do-not-trade** (nothing conditions it); EQUITY/CRYPTO honest baselines FAIL — the path remains: honest n + entry-criteria forward lanes, not resurrection of refuted sleeves (the full do-not-relitigate list is in the 72h-sweep section).
+
+## POST-CLOSE HEARTBEAT 09:44 — second verdict-writer env-fixed
+- Live regressed to an 08:06 build with intrabar_truth:null — root cause: the DEDICATED money-ready-snapshot.yml (the OTHER verdict-writing workflow) also lacked DB_PASS_STOCKS (+pymysql), so its post-meta-strip builds wrote null intrabar and clobbered the good build. Fixed (6a2a1a8140), dispatched, band-aid re-FTP'd. BOTH verdict writers now env-complete. One final 30-min confirm scheduled; no new GHA failures otherwise.
