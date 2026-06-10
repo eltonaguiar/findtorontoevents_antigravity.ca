@@ -64,3 +64,36 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **profitable_filtered_observer WIRED (f73fcec34b)** — the P0 "profitable-but-filtered picks not surfaced" incident now records a daily JSONL false-negative lane (observational-only, fully guarded; verbatim-anchored subagent implementation, reviewed + committed).
 - **PBO regen (gem #1):** global PBO 1.0 (stale June-2, degenerate) -> 0.8222 on the post-PR2+quarantine cohort (pool honestly 56->17 strategies). Still FAIL>=0.7 — CORRECTLY blocking promotion, consistent with the edge audit's null. The gate is no longer frozen on pre-fix data.
 - picks-now ROOT fix (42c5db0c73) + 93-row contamination quarantine logged previous tick.
+
+## TICK 05:15-05:40 — live wiring fixed + deliverables shipped
+- **Live verdict diagnosis + fix**: live money_ready_verdict.json had generated_at ✓ but intrabar_truth:null — root cause = the money_ready_snapshot step in audit-dashboard.yml was MISSING DB_PASS_STOCKS (5 sibling steps have it) → _intrabar_truth_map() fail-opened in GHA. Env added (1e1efea80f), regen redispatched; verify next tick.
+- **pead_equity gem resolved**: ALREADY enabled in alpha-engine-live.yml (note: early vs its own 2026-06-14 review-gate comment). Shadow-only by design (0 DB rows correct). REAL issue found: shadow log pead_shadow_picks.json is overwrite-mode ("w") → no durable history for the 06-14 review. Queued: make it append/dated before the gate.
+- **updates/index.html card SHIPPED + FTP-deployed (8431062f7a, HTTP 200)** — the honest-measurement milestone is publicly documented above the AUTO-INJECTED block per convention.
+- **Memory protocol done**: personal memory file + MEMORY.md pointer written (project-honest-measurement-live-2026-06-10); agentmemory POST attempted (server quiet); holographic append deferred (agent_shared_memory.json has live peer edits — avoiding clobber).
+- REMAINING QUEUE: verify live intrabar_truth post-regen; #553 rebase+gitignore; pick_funnel Money-Ready/Proven-Only doc gaps; pead shadow-log durability; 709 NULL-pnl + 82 asset_class + ohlcv-universe backfills; entry-criteria research swarm return.
+
+## TICK 05:36-06:00 — surface docs live + pead history durable + local-fleet skill
+- **pick_funnel.html: 9/9 filters now documented + DEPLOYED** (f9a629bef2) — added the two gaps: Money-Ready policy-clean sizing gate (n>=100/WR>=50/PF>=1.5 + DSR/PBO/SPA/expectancy/HHI/recency + intrabar_truth; "0/6 pass — nothing sized") and Proven-Only manual registry (_TRUST_PROVEN_*).
+- **pead shadow history made durable** — pead_shadow_picks.json overwrote every run ("w" mode), so the 2026-06-14 review gate had no history; now appends per-signal pead_shadow_history.jsonl, persisted by the workflow's `git add alpha_engine/data/`. Verified my 11-line edit was the ONLY local delta on the hot file before committing.
+- **/consult-local skill created** (.claude/skills/consult-local) — wraps the now-fully-up local fleet (vLLM :8000 Qwen2.5-14B, Ollama :11434 incl. deepseek-r1:32b + llama3.3:70b, LiteLLM :4000) for second opinions/refutation passes with the repo's anti-fabrication rules baked in.
+- Live intrabar_truth: still null — the 04:11 hourly run (pre-env-fix) is in flight with the 05:19 run queued; verification rolls to next tick.
+
+## TICK 05:50-06:10 — honest-n grew +591; #553 closed; selection-attack launched
+- **591 NULL-pnl rows RECOVERED** (terminal NULL-pnl 709->131; the 107 remaining are sign-incoherent rows the #559 guard correctly skips). Backup first: ejaguiar1_backups.trading_picks_20260610T055138Z (47,927 rows). Honest n grew accordingly.
+- **82-row asset_class backfill: verified ALREADY APPLIED** (idempotency check; manifest ids 0 blank) — peer had landed it; no double-apply.
+- **#553 CLOSED as superseded** — all deliverables (picks_now_professional.py incl. newer ROOT fix, save_picks_to_db.py, picks-now.html incl. freebuff LIVE-PnL) already live on main; merging June-6 versions would regress them.
+- **ENTRY-CONDITIONING EXPERIMENT LAUNCHED** (background): the σ-experiment proved selection (not geometry) is the deficit, so this tests entry-time features (trend-alignment, momentum, RSI band, vol regime, session) per class on the honest cohort, with the same R1/R2/R3 discipline + negative-selection filters. Report -> reports/entry_conditioning_experiment_2026-06-10.json.
+- Live intrabar_truth: the 05:19 run predates the env-fix commit; the fix rides the 05:45 queued run — verify ~06:45.
+
+## TICK 06:10-06:25 — FIRST DISCIPLINED ENTRY-EDGE CANDIDATES (the selection attack pays off)
+- **Entry-conditioning experiment returned the session's first R1/R2/R3-passing candidates** (935 deduped honest picks, 101 slices, Bonferroni-honest; DIRECT-SQL VERIFIED within tolerance):
+  1. **CRYPTO: RSI(14,1h) 50-70 × US-session entries** — n=84, WR 52.4% (+18.8pp vs 33.6% baseline), PF 1.73; passes time-split (both halves), concentration (top sym 7%), p=3e-4 (family-wise ~0.03); survived ex-ensemble + long-only re-tests. **FORWARD-TEST candidate, not a sizing trigger.**
+  2. **Strategy-direction cell: luxalgo_confluence SHORT** — verified n=41, 68.3% WR, PF 1.96 (all-CRYPTO-shorts 63.6% is mostly this cell). NOTE: this is SELECTION (which emissions to take), NOT the rejected Copilot direction-FLIP (mutating picks) — distinction matters.
+  3. **Negative entry filters the gates don't check:** EQUITY high-vol entries hold 64.3% of class losses (low-vol remainder 62.9%/PF2.48, fragile n); FOREX trend-contrarian entries hold 75.7% of losses (remainder 64.3%/PF4.74 n=14). MEMECOIN = do-not-trade (nothing conditions it).
+- Corroborates the σ-experiment: wrong-way LONG selection is the disease; entry conditioning is the cure path.
+- NEXT: spec + wire the shadow entry-gate (forward_test_only stamps: entry_condition_met flags on emissions; verdict-excluded) so forward n accrues on conditions 1-2 + the two negative filters; re-test at n>=100/condition.
+
+## TICK 06:20-06:35 — forward-measurement lane spinning up
+- **crypto_ohlcv FULL-UNIVERSE 180d backfill RUNNING** (--top-symbols 0; idempotent upserts of regenerable exchange bars — backup rule applies to trade records, not reproducible market data). Will shrink the 1,173 no_data picks; then re-resolve at_signal_outcomes + rebuild intrabar_truth to grow the honest ledger.
+- **Shadow entry-gate stamper DELEGATED** (background build): tools/stamp_entry_conditions.py — read-only DB -> audit_dashboard/data/entry_conditions_forward.json sidecar tracking the validated conditions (crypto_rsi5070_us, luxalgo_short, equity_lowvol/highvol-negative, forex_aligned/contrarian-negative) + per-class baselines + rolling 30d forward windows. Measurement-only; never a sizing input until n>=100/condition re-passes R1/R2/R3.
+- Live intrabar_truth: 05:19 run STILL in flight (long hourly build); env fix rides the queued 05:45 run.

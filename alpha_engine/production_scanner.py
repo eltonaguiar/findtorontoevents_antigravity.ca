@@ -4360,6 +4360,17 @@ def main():
                                 _psf,
                                 indent=2,
                             )
+                        # 2026-06-10: the snapshot above OVERWRITES each run, so the
+                        # 2026-06-14 review gate had NO durable shadow history. Append
+                        # each signal to a JSONL history (one line per signal per run)
+                        # so the >=100-pick / PF>=1.5 / WR>=50 promotion review has data.
+                        _pead_hist_path = _pead_shadow_path.with_name("pead_shadow_history.jsonl")
+                        _run_ts = datetime.now(timezone.utc).isoformat()
+                        with open(_pead_hist_path, "a", encoding="utf-8") as _phf:
+                            for _ps in _pead_signals:
+                                if isinstance(_ps, dict):
+                                    _phf.write(json.dumps({"run_ts": _run_ts, **_ps},
+                                                          separators=(",", ":"), default=str) + "\n")
                     except Exception as _pead_write_err:
                         print(f"  [PEAD_SHADOW] Failed to write shadow log: {_pead_write_err}")
                     _PEAD_PROBATION = os.environ.get("PEAD_EQUITY_PROBATION", "0") == "1"
