@@ -185,3 +185,8 @@ Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid)
 - **Picks NOW Refresh red = SyntaxError in freebuff's FTP helper** (ftp.prot_p()uploads jammed on one line, paste artifact in e9ef1ed882) — broke the 3x-daily deploy step. 1-newline infra fix (a42eab4e79), redispatched. (Their content files untouched.)
 - Forward lane: rsi5070 stable n=108 47.2%/1.54 (no material change, not re-committed); ledger steady (COMMODITY 90 / FOREX 88); live verdict SELF-SUSTAINING (18:02 build, intrabar populated, no manual deploy).
 - Deferred to next tick: CRYPTO ADV-gate wire-up (is_liquid_crypto shadow-tag into emission path).
+
+## TICK 19:50-20:05 — CI GATE GREEN + ADV shadow-tag wired
+- **BOTH redispatched runs GREEN**: ci-tests SUCCESS (the merge gate is restored after the 33/40-chronic-red era — quarantine + FRED kill-switch fixes held) and picks-now-refresh SUCCESS (FTP helper fixed; freebuff's lane deploys again).
+- **ADV liquidity shadow-tag WIRED (68dab0a4dc)** — INCIDENT_CRYPTO #20 phase 1: scanner.py now tags illiquid CRYPTO emissions (_adv_illiquid=True, fail-open, never blocks) + logs each. Measure-before-enforce: phase 2 hard gate after ~1 week of tag counts + tagged-pick performance. Incident updated to IN_PROGRESS.
+- Ledger: COMMODITY 90 / FOREX 88 (steady — verdicts due as the hourly resolver accrues n).
