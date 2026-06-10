@@ -77,3 +77,42 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **pead shadow history made durable** — pead_shadow_picks.json overwrote every run ("w" mode), so the 2026-06-14 review gate had no history; now appends per-signal pead_shadow_history.jsonl, persisted by the workflow's `git add alpha_engine/data/`. Verified my 11-line edit was the ONLY local delta on the hot file before committing.
 - **/consult-local skill created** (.claude/skills/consult-local) — wraps the now-fully-up local fleet (vLLM :8000 Qwen2.5-14B, Ollama :11434 incl. deepseek-r1:32b + llama3.3:70b, LiteLLM :4000) for second opinions/refutation passes with the repo's anti-fabrication rules baked in.
 - Live intrabar_truth: still null — the 04:11 hourly run (pre-env-fix) is in flight with the 05:19 run queued; verification rolls to next tick.
+
+## TICK 05:50-06:10 — honest-n grew +591; #553 closed; selection-attack launched
+- **591 NULL-pnl rows RECOVERED** (terminal NULL-pnl 709->131; the 107 remaining are sign-incoherent rows the #559 guard correctly skips). Backup first: ejaguiar1_backups.trading_picks_20260610T055138Z (47,927 rows). Honest n grew accordingly.
+- **82-row asset_class backfill: verified ALREADY APPLIED** (idempotency check; manifest ids 0 blank) — peer had landed it; no double-apply.
+- **#553 CLOSED as superseded** — all deliverables (picks_now_professional.py incl. newer ROOT fix, save_picks_to_db.py, picks-now.html incl. freebuff LIVE-PnL) already live on main; merging June-6 versions would regress them.
+- **ENTRY-CONDITIONING EXPERIMENT LAUNCHED** (background): the σ-experiment proved selection (not geometry) is the deficit, so this tests entry-time features (trend-alignment, momentum, RSI band, vol regime, session) per class on the honest cohort, with the same R1/R2/R3 discipline + negative-selection filters. Report -> reports/entry_conditioning_experiment_2026-06-10.json.
+- Live intrabar_truth: the 05:19 run predates the env-fix commit; the fix rides the 05:45 queued run — verify ~06:45.
+
+## TICK 06:10-06:25 — FIRST DISCIPLINED ENTRY-EDGE CANDIDATES (the selection attack pays off)
+- **Entry-conditioning experiment returned the session's first R1/R2/R3-passing candidates** (935 deduped honest picks, 101 slices, Bonferroni-honest; DIRECT-SQL VERIFIED within tolerance):
+  1. **CRYPTO: RSI(14,1h) 50-70 × US-session entries** — n=84, WR 52.4% (+18.8pp vs 33.6% baseline), PF 1.73; passes time-split (both halves), concentration (top sym 7%), p=3e-4 (family-wise ~0.03); survived ex-ensemble + long-only re-tests. **FORWARD-TEST candidate, not a sizing trigger.**
+  2. **Strategy-direction cell: luxalgo_confluence SHORT** — verified n=41, 68.3% WR, PF 1.96 (all-CRYPTO-shorts 63.6% is mostly this cell). NOTE: this is SELECTION (which emissions to take), NOT the rejected Copilot direction-FLIP (mutating picks) — distinction matters.
+  3. **Negative entry filters the gates don't check:** EQUITY high-vol entries hold 64.3% of class losses (low-vol remainder 62.9%/PF2.48, fragile n); FOREX trend-contrarian entries hold 75.7% of losses (remainder 64.3%/PF4.74 n=14). MEMECOIN = do-not-trade (nothing conditions it).
+- Corroborates the σ-experiment: wrong-way LONG selection is the disease; entry conditioning is the cure path.
+- NEXT: spec + wire the shadow entry-gate (forward_test_only stamps: entry_condition_met flags on emissions; verdict-excluded) so forward n accrues on conditions 1-2 + the two negative filters; re-test at n>=100/condition.
+
+## TICK 06:20-06:35 — forward-measurement lane spinning up
+- **crypto_ohlcv FULL-UNIVERSE 180d backfill RUNNING** (--top-symbols 0; idempotent upserts of regenerable exchange bars — backup rule applies to trade records, not reproducible market data). Will shrink the 1,173 no_data picks; then re-resolve at_signal_outcomes + rebuild intrabar_truth to grow the honest ledger.
+- **Shadow entry-gate stamper DELEGATED** (background build): tools/stamp_entry_conditions.py — read-only DB -> audit_dashboard/data/entry_conditions_forward.json sidecar tracking the validated conditions (crypto_rsi5070_us, luxalgo_short, equity_lowvol/highvol-negative, forex_aligned/contrarian-negative) + per-class baselines + rolling 30d forward windows. Measurement-only; never a sizing input until n>=100/condition re-passes R1/R2/R3.
+- Live intrabar_truth: 05:19 run STILL in flight (long hourly build); env fix rides the queued 05:45 run.
+
+## TICK 06:35-06:45 — shadow entry-gate lane COMMITTED
+- **tools/stamp_entry_conditions.py + entry_conditions_forward.json on main (6d9b0e1895, 0d79e82138)** — read-only (0 write stmts verified), strict no-look-ahead, mirrors the experiment features. The forward lane already teaches:
+  - **crypto_rsi5070_us HOLDS in the forward window**: last-30d n=52, 51.9% WR / PF 1.60 vs CRYPTO baseline 28.9% / 0.55. n=52/100 toward the re-test bar.
+  - **luxalgo_short: all-recency** (entire n=37 inside last 30d) — needs time-split before belief upgrade.
+  - **EQUITY vol-regime SIGNS FLIPPED vs the experiment snapshot** once full bar history was used — the negative-filter claim is fragile; exactly the failure mode this lane exists to catch.
+- OHLCV universe backfill ~halfway (H-symbols); re-resolve + truth rebuild on completion (scheduled).
+
+## TICK 06:45-07:05 — honest ledger +221 (universe backfill chain complete)
+- **OHLCV full-universe backfill DONE: 827,882 bars upserted** (315 symbols; 132 failed = delisted/garbage).
+- **Re-resolve: +221 new intrabar shadow rows** (built-in backup; canonical untouched; rollback documented).
+- **Refreshed honest ledger (committed):** CRYPTO n=1154 (32.4%/PF0.73 FAIL), EQUITY n=107 (34.6%/PF0.47 FAIL) — TWO classes now clear the n>=100 bar and BOTH fail honestly; COMMODITY n=90 / FOREX n=88 approaching. Leads unchanged (futures_momentum n47 — concentration caveat stands; forex_rsi2 n20). The honest verdict is STABLE under data growth — measurement layer working as designed.
+- Live verdict intrabar_truth: 05:45 env-fixed dashboard run still in flight; verify next tick.
+
+## TICK 07:16-07:35 — forward lane honest-tracking + sign-flip gate restored
+- **crypto_rsi5070_us crossed n=100 (108): WR 47.2% / PF 1.54** (last-30d 49.2%/1.50 vs baseline 28.9%/0.55). Still ~+15pp/3xPF over baseline but WR<50 — the honest call: KEEP MEASURING, do not promote. Sidecar refreshed+committed (9869c9e687). luxalgo_short 38 @ 71.1%/2.21 (recency caveat stands).
+- **Sign-Coherence Gate failure diagnosed + FIXED**: not my scrub — the gate correctly caught 2 NEW mega_mutation ADAUSDT sign-flips (stored +3.28%/WON, real -3.48%). Purged via audit_trail/sign_flip_purge.py --apply (backup + manifest committed); re-check = 0 flips; gate redispatched.
+- Live verdict intrabar_truth: the 05:45 env-fixed dashboard run STILL in flight (long build) — rolls again.
+- Other GHA failures: CI Tests (chronic, known), Picks-Now Live PnL hourly (freebuff's new workflow — theirs), masking/leak-guard (old PR-era runs). Nothing else actionable.

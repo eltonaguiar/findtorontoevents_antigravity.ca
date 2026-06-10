@@ -1,0 +1,250 @@
+{
+  "generated_at": "2026-06-10T07:17:33.092887+00:00",
+  "read_only": true,
+  "source_experiment": "reports/entry_conditioning_experiment_2026-06-10.json",
+  "cohort_sql_note": "at_signal_outcomes intrabar_resolved_at IS NOT NULL AND intrabar_status IN ('TP_HIT','SL_HIT'); dedup (symbol,direction,day) MIN id; LIMIT 4000 ORDER BY opened_at DESC",
+  "cohort_n": 1173,
+  "stamped_n": 1134,
+  "skips": {
+    "FOREX:entry_scale_mismatch": 6,
+    "CRYPTO:entry_scale_mismatch": 7,
+    "UNKNOWN:entry_scale_mismatch": 1,
+    "FUTURES:entry_scale_mismatch": 3,
+    "EQUITY:entry_scale_mismatch": 5,
+    "COMMODITY:entry_scale_mismatch": 2,
+    "CRYPTO:no_bars": 5,
+    "UNKNOWN:insufficient_pre_bars": 1,
+    "EQUITY:insufficient_pre_bars": 2,
+    "BOND:insufficient_pre_bars": 1,
+    "BOND:entry_scale_mismatch": 1,
+    "FOREX:no_bars": 5
+  },
+  "conditions": {
+    "crypto_rsi5070_us": {
+      "class": "CRYPTO",
+      "definition": "F3 RSI(14,1h)=50-70 AND F5 session=US",
+      "n": 108,
+      "wr": 47.2,
+      "pf": 1.535,
+      "avg_pnl": 0.5882,
+      "last30d": {
+        "n": 59,
+        "wr": 49.2,
+        "pf": 1.497,
+        "avg_pnl": 0.5848
+      },
+      "verdict_note": "n>=100 reached \u2014 re-run R1/R2/R3 before any sizing decision"
+    },
+    "luxalgo_short": {
+      "class": "*",
+      "definition": "strategy=luxalgo_confluence AND direction=SHORT",
+      "n": 38,
+      "wr": 71.1,
+      "pf": 2.211,
+      "avg_pnl": 1.2936,
+      "last30d": {
+        "n": 38,
+        "wr": 71.1,
+        "pf": 2.211,
+        "avg_pnl": 1.2936
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "equity_lowvol": {
+      "class": "EQUITY",
+      "definition": "class=EQUITY AND F4 vol regime=LOW",
+      "n": 22,
+      "wr": 36.4,
+      "pf": 1.328,
+      "avg_pnl": 0.4081,
+      "last30d": {
+        "n": 22,
+        "wr": 36.4,
+        "pf": 1.328,
+        "avg_pnl": 0.4081
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "equity_highvol_NEGATIVE": {
+      "class": "EQUITY",
+      "definition": "NEGATIVE filter: class=EQUITY AND F4=HIGH (64% of losses)",
+      "n": 30,
+      "wr": 53.3,
+      "pf": 0.805,
+      "avg_pnl": -0.323,
+      "last30d": {
+        "n": 30,
+        "wr": 53.3,
+        "pf": 0.805,
+        "avg_pnl": -0.323
+      },
+      "verdict_note": "negative filter \u2014 high n here means the avoid-rule keeps firing; verify WR stays low"
+    },
+    "forex_trend_aligned": {
+      "class": "FOREX",
+      "definition": "class=FOREX AND F1 trend=ALIGNED (close vs SMA50 x dir)",
+      "n": 14,
+      "wr": 64.3,
+      "pf": 4.736,
+      "avg_pnl": 0.4962,
+      "last30d": {
+        "n": 14,
+        "wr": 64.3,
+        "pf": 4.736,
+        "avg_pnl": 0.4962
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "forex_contrarian_NEGATIVE": {
+      "class": "FOREX",
+      "definition": "NEGATIVE filter: class=FOREX AND F1=CONTRARIAN (76% of losses)",
+      "n": 24,
+      "wr": 29.2,
+      "pf": 0.525,
+      "avg_pnl": -0.1209,
+      "last30d": {
+        "n": 23,
+        "wr": 26.1,
+        "pf": 0.46,
+        "avg_pnl": -0.1435
+      },
+      "verdict_note": "negative filter \u2014 high n here means the avoid-rule keeps firing; verify WR stays low"
+    },
+    "baseline_BOND": {
+      "class": "BOND",
+      "definition": "all BOND picks in cohort (class baseline)",
+      "n": 4,
+      "wr": 0.0,
+      "pf": 0.0,
+      "avg_pnl": -0.6234,
+      "last30d": {
+        "n": 4,
+        "wr": 0.0,
+        "pf": 0.0,
+        "avg_pnl": -0.6234
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "baseline_COMMODITY": {
+      "class": "COMMODITY",
+      "definition": "all COMMODITY picks in cohort (class baseline)",
+      "n": 32,
+      "wr": 25.0,
+      "pf": 0.713,
+      "avg_pnl": -0.4046,
+      "last30d": {
+        "n": 32,
+        "wr": 25.0,
+        "pf": 0.713,
+        "avg_pnl": -0.4046
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "baseline_CRYPTO": {
+      "class": "CRYPTO",
+      "definition": "all CRYPTO picks in cohort (class baseline)",
+      "n": 923,
+      "wr": 32.1,
+      "pf": 0.715,
+      "avg_pnl": -0.429,
+      "last30d": {
+        "n": 432,
+        "wr": 28.9,
+        "pf": 0.551,
+        "avg_pnl": -0.7966
+      },
+      "verdict_note": "n>=100 reached \u2014 re-run R1/R2/R3 before any sizing decision"
+    },
+    "baseline_EQUITY": {
+      "class": "EQUITY",
+      "definition": "all EQUITY picks in cohort (class baseline)",
+      "n": 52,
+      "wr": 46.2,
+      "pf": 0.991,
+      "avg_pnl": -0.0137,
+      "last30d": {
+        "n": 52,
+        "wr": 46.2,
+        "pf": 0.991,
+        "avg_pnl": -0.0137
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "baseline_ETF": {
+      "class": "ETF",
+      "definition": "all ETF picks in cohort (class baseline)",
+      "n": 11,
+      "wr": 0.0,
+      "pf": 0.0,
+      "avg_pnl": -2.8396,
+      "last30d": {
+        "n": 11,
+        "wr": 0.0,
+        "pf": 0.0,
+        "avg_pnl": -2.8396
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "baseline_FOREX": {
+      "class": "FOREX",
+      "definition": "all FOREX picks in cohort (class baseline)",
+      "n": 38,
+      "wr": 42.1,
+      "pf": 1.507,
+      "avg_pnl": 0.1064,
+      "last30d": {
+        "n": 37,
+        "wr": 40.5,
+        "pf": 1.457,
+        "avg_pnl": 0.0986
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "baseline_FUTURES": {
+      "class": "FUTURES",
+      "definition": "all FUTURES picks in cohort (class baseline)",
+      "n": 4,
+      "wr": 0.0,
+      "pf": 0.0,
+      "avg_pnl": -1.6123,
+      "last30d": {
+        "n": 4,
+        "wr": 0.0,
+        "pf": 0.0,
+        "avg_pnl": -1.6123
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "baseline_MEMECOIN": {
+      "class": "MEMECOIN",
+      "definition": "all MEMECOIN picks in cohort (class baseline)",
+      "n": 65,
+      "wr": 27.7,
+      "pf": 0.605,
+      "avg_pnl": -0.4162,
+      "last30d": {
+        "n": 18,
+        "wr": 11.1,
+        "pf": 0.234,
+        "avg_pnl": -1.2262
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    },
+    "baseline_UNKNOWN": {
+      "class": "UNKNOWN",
+      "definition": "all UNKNOWN picks in cohort (class baseline)",
+      "n": 5,
+      "wr": 0.0,
+      "pf": 0.0,
+      "avg_pnl": -1.777,
+      "last30d": {
+        "n": 5,
+        "wr": 0.0,
+        "pf": 0.0,
+        "avg_pnl": -1.777
+      },
+      "verdict_note": "accruing forward n; below the n>=100 gate"
+    }
+  },
+  "discipline_note": "forward-test measurement only; never a sizing input until n>=100/condition + re-passes R1/R2/R3 (split-half, concentration, binomial p<0.005)"
+}
