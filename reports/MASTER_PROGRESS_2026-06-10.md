@@ -77,3 +77,10 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **pead shadow history made durable** — pead_shadow_picks.json overwrote every run ("w" mode), so the 2026-06-14 review gate had no history; now appends per-signal pead_shadow_history.jsonl, persisted by the workflow's `git add alpha_engine/data/`. Verified my 11-line edit was the ONLY local delta on the hot file before committing.
 - **/consult-local skill created** (.claude/skills/consult-local) — wraps the now-fully-up local fleet (vLLM :8000 Qwen2.5-14B, Ollama :11434 incl. deepseek-r1:32b + llama3.3:70b, LiteLLM :4000) for second opinions/refutation passes with the repo's anti-fabrication rules baked in.
 - Live intrabar_truth: still null — the 04:11 hourly run (pre-env-fix) is in flight with the 05:19 run queued; verification rolls to next tick.
+
+## TICK 05:50-06:10 — honest-n grew +591; #553 closed; selection-attack launched
+- **591 NULL-pnl rows RECOVERED** (terminal NULL-pnl 709->131; the 107 remaining are sign-incoherent rows the #559 guard correctly skips). Backup first: ejaguiar1_backups.trading_picks_20260610T055138Z (47,927 rows). Honest n grew accordingly.
+- **82-row asset_class backfill: verified ALREADY APPLIED** (idempotency check; manifest ids 0 blank) — peer had landed it; no double-apply.
+- **#553 CLOSED as superseded** — all deliverables (picks_now_professional.py incl. newer ROOT fix, save_picks_to_db.py, picks-now.html incl. freebuff LIVE-PnL) already live on main; merging June-6 versions would regress them.
+- **ENTRY-CONDITIONING EXPERIMENT LAUNCHED** (background): the σ-experiment proved selection (not geometry) is the deficit, so this tests entry-time features (trend-alignment, momentum, RSI band, vol regime, session) per class on the honest cohort, with the same R1/R2/R3 discipline + negative-selection filters. Report -> reports/entry_conditioning_experiment_2026-06-10.json.
+- Live intrabar_truth: the 05:19 run predates the env-fix commit; the fix rides the 05:45 queued run — verify ~06:45.
