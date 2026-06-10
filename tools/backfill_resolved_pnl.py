@@ -194,9 +194,27 @@ def main() -> int:
 
     conn = _connect()
     fixed = 0
+    skipped_coherence = 0
     try:
         with conn.cursor() as cur:
             for pnl, row_id in updates:
+                # 2026-06-10: skip rows where computed PnL would violate
+                # chk_pnl_sign_coherence constraint (WON must have pnl>0,
+                # LOST must have pnl<0). Prevents the backfill blocker.
+                # We re-fetch the row to get current status, since `updates`
+                # doesn't carry it.
+                cur.execute(
+                    "SELECT status FROM trading_picks WHERE id=%s", (row_id,)
+                )
+                _row = cur.fetchone()
+                if _row:
+                    _status = str(_row[0] or "").upper()
+                    if _status in ("WON", "TP_HIT", "CLOSED_WIN") and (pnl is None or pnl <= 0):
+                        skipped_coherence += 1
+                        continue
+                    if _status in ("LOST", "SL_HIT", "CLOSED_LOSS") and (pnl is None or pnl >= 0):
+                        skipped_coherence += 1
+                        continue
                 cur.execute(
                     "UPDATE trading_picks SET pnl_pct=%s WHERE id=%s "
                     "AND (pnl_pct IS NULL OR ABS(COALESCE(pnl_pct,0)) < 0.0001)",
@@ -206,7 +224,9 @@ def main() -> int:
         conn.commit()
     finally:
         conn.close()
-    print(f"APPLIED: {fixed} rows updated")
+    print(f"APPLIED: {fixed} rows updated, {skipped_coherence} skipped (sign-coherence guard)")
+    if skipped_coherence:
+        print(f"  [INFO] {skipped_coherence} rows skipped because computed PnL would violate chk_pnl_sign_coherence")
     return 0
 
 

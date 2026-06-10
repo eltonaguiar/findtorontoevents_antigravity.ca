@@ -905,6 +905,32 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
     _orig_exit_reason = str(exit_reason or "").upper()
     _orig_status = str(pick.get("status", "") or "").upper()
 
+    # ── Geometry guard (2026-06-10): reject corrupt TP/SL before replay ──
+    # ~12% of rows have stop-loss on the WRONG side of entry (e.g. LONG
+    # entry=0.01231 sl=0.6953 = 56x above entry), making first-touch
+    # trivially fire SL_HIT and compute a fake +5548% pnl. Ported from
+    # tools/reresolve_intrabar_signal_outcomes.py::valid_geometry().
+    # Skip the check if exit_price already resolved (has a meaningful exit).
+    if not (exit_p > 0 and entry > 0 and abs(exit_p - entry) / entry > 0.00001):
+        if entry > 0 and tp > 0 and sl > 0:
+            dir_upper = direction.upper()
+            if dir_upper in ("BUY", "LONG"):
+                geo_ok = sl < entry < tp
+            elif dir_upper in ("SELL", "SHORT"):
+                geo_ok = tp < entry < sl
+            else:
+                geo_ok = False
+            if not geo_ok:
+                out = dict(pick)
+                out["status"] = "CLOSED"
+                out["exit_reason"] = "BAD_GEOMETRY"
+                out["pnl_pct"] = 0.0
+                out["_bad_geometry"] = (
+                    f"LONG requires sl<entry<tp, SHORT requires tp<entry<sl; "
+                    f"got entry={entry} tp={tp} sl={sl} dir={direction}"
+                )
+                return out
+
     # If exit_price meaningfully differs from entry, use it
     if exit_p > 0 and entry > 0 and abs(exit_p - entry) / entry > 0.00001:
         effective_exit = exit_p
