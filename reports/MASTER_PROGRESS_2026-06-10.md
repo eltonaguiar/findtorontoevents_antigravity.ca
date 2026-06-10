@@ -152,3 +152,6 @@ Live updates card (honest-measurement milestone) · pick_funnel 9/9 filter docs 
 
 ## POST-CLOSE HEARTBEAT 09:44 — second verdict-writer env-fixed
 - Live regressed to an 08:06 build with intrabar_truth:null — root cause: the DEDICATED money-ready-snapshot.yml (the OTHER verdict-writing workflow) also lacked DB_PASS_STOCKS (+pymysql), so its post-meta-strip builds wrote null intrabar and clobbered the good build. Fixed (6a2a1a8140), dispatched, band-aid re-FTP'd. BOTH verdict writers now env-complete. One final 30-min confirm scheduled; no new GHA failures otherwise.
+
+## 10:17 — ✅ ALL-CLEAR, RUN COMPLETE
+Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid), classes.CRYPTO.intrabar_truth populated (n=1154 32.4%/PF0.73), snapshot run GREEN. The honest measurement chain is live and self-maintaining. Loop ended; operator handoff is in SESSION CLOSE above.
