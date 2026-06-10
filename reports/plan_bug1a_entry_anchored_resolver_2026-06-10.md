@@ -75,3 +75,70 @@ edits — so: test harness first, behind a verification gate, shadow-diff before
 - Max horizon cap (14d?) — picks older than that: resolve as EXPIRED/TIME_EXIT or close_approx?
 - Should the entry filter use bar OPEN time or CLOSE time as the "≥ entry" boundary (off-by-one-bar)?
 - Default `RESOLVER_ENTRY_ANCHORED` ON immediately after harness-green, or hold for a shadow-diff cycle?
+
+---
+
+## v2 — POST-DEBATE REVISIONS (2026-06-10 swarm: Meta → R1[PRO 74/RED 52/RISK 58] → R2 → Synthesis)
+**Verdict: REVISE / NO-GO as written.** The diagnosis is verbatim-verified, but the v1 design had
+two CRITICAL look-ahead REINTRODUCTION vectors + a crash bug + a fictional-observability claim.
+These revisions SUPERSEDE the conflicting parts above. Full debate: `reports/bug1a_debate_outcome_2026-06-10.md`.
+
+### Corrected claims (v1 was wrong)
+- **NOT a "port" of `reresolve_intrabar.py`.** That tool entry-anchors via a SQL range query
+  (`fetch_ohlcv(start=created_at)`); its `replay()` does NO internal entry filter. The production
+  resolver hits the **LIVE yfinance/binance API** (yfinance 1h intraday caps ~60d). So the entry
+  filter must live INSIDE the production helper + handle the API-can't-reach-back case.
+- **DB observability claim was fictional.** The JSON `resolution_method` (`:1288` = intrabar/close_approx)
+  NEVER reaches `at_pick_outcomes` — the DB column is a STATUS enum mapped from `exit_reason` (`:901-920`).
+  No `intrabar_ambiguous`/`intrabar_bad_geometry` columns exist. → either add additive nullable columns
+  (backup-table first) OR explicitly DEFER to a JSON sidecar + logs; stop claiming DB-level /audit attribution.
+
+### MUST-FIX before implementing (the 11, resolved as decisions)
+1. **[CRITICAL] DELETE the "fall back to recent-window if entry unparseable" branch** — `_parse_timestamp`
+   returns None for offset timestamps (`+00:00`/`-05:00`, judge-verified), so it'd replay unfiltered stale
+   bars = Bug 1A reintroduced. Unparseable entry → **None → close_approx, never an unfiltered window.**
+2. **[CRITICAL] Also fix `_parse_timestamp`** to accept ISO offsets (try `datetime.fromisoformat` first,
+   normalize to UTC ms) so most picks ARE entry-anchored, not silently dumped to close_approx.
+3. **[CRITICAL] Partial-API degrade rule:** if the OLDEST returned bar's ts > `entry_ms` (+1-bar tol),
+   or the response is empty/short → treat as zero entry-forward bars → **None → close_approx** (don't
+   fake-resolve on a window that starts after entry). Designed code + test, not an "open question".
+4. **[HIGH] Keep the 3-tuple return.** The sole caller (`:1275`) strict-unpacks `reason, exit_price,
+   pnl_pct`. Carry `ambiguous`/`bad_geometry` on the **pick dict** (`pick["_intrabar_ambiguous"]` etc.),
+   not a 4th tuple element (would ValueError on the hot path). Derive `entry_ms` INSIDE the function;
+   `(pick, bars)` signature unchanged.
+5. **[HIGH] tz/ms:** `entry_ms = int(_parse_timestamp(pick["timestamp"]).timestamp()*1000)` with a None
+   guard. yfinance index must be tz-aware (localize UTC if naive) before `*1000`; binance `int(k[0])`.
+6. **[HIGH] No-touch MUST keep returning None** (do NOT adopt the reference `replay()` TIME_EXIT return —
+   a truthy value blocks the close_approx fallback at `:1270`).
+7. **[HIGH] BAD_GEOMETRY on BOTH paths:** the close_approx `check_tp_sl` (`:761-785`) has no geometry
+   guard, so a corrupt LONG (sl>entry) still fires a trivial SL_HIT there. On geometry-fail → return None
+   AND set `pick["_intrabar_bad_geometry"]=True` so the caller skips `check_tp_sl` too; surface as
+   BAD_GEOMETRY (not silently mapped to EXPIRED via the `:918-920` else-branch).
+8. **[HIGH] Backward-compat proof:** with `RESOLVER_ENTRY_ANCHORED` OFF the resolver is **byte-for-byte
+   identical** to today (status/pnl_pct/JSON resolution_method). Ship logic flag-OFF.
+9. **[HIGH] Shadow-diff blocking gate (PR2):** pre-register a numeric threshold (HOLD default-ON if
+   >X% intrabar→close_approx flips, OR any class WR moves >Y abs pts, OR any class crosses a money-ready
+   T2 boundary). Run vs a **CLEAN snapshot** (not the contaminated live DB). Persist per-class +
+   per-T2-lead before/after WR/PF/n to `reports/`. Default-ON is a SEPARATE PR.
+10. **[HIGH] Historical rows:** this resolver IS the measurement layer (~83% of the clean cohort
+    resolved in a 6-day burst), so flipping the flag forward does NOT fix the dominant /audit term.
+    Decide: (a) leave historical fake-intrabar rows + /audit dispute banner, OR (b) one-time backup-table
+    + reverse-SQL re-resolve (mirror `reresolve_intrabar.py:267-304`). Guardrail: NO money-ready
+    promotion off the un-migrated window.
+11. **[MEDIUM] Fetch cost / entry boundary:** symbol-level fetch keyed on the oldest unresolved pick's
+    entry per symbol, built in the SAME pass that populates `all_syms_ohlc` (`:1034-1050`); max-horizon
+    cap (e.g. 336 1h-bars, within the ~60d intraday ceiling); picks older than cap → close_approx/EXPIRED.
+    Entry boundary: **first eligible bar = open_time ≥ entry_ms** (drop the partial entry bar).
+
+### Two-PR rollout (consensus)
+- **PR1 (logic, flag default-OFF):** the entry-anchored helper + the 3 critical degrade rules + the
+  3-tuple-with-dict-flags contract; harness flipped RED→GREEN (xfail markers → strict/plain asserts);
+  prove OFF-path byte-identical. NO DB writes change.
+- **PR2 (default-ON):** gated on the reviewed shadow-diff (clean snapshot, pre-registered blocking
+  threshold) + quant sign-off that no class silently crosses a T2 boundary + the historical-row decision.
+
+### Harness — status (debate-mandated cases ADDED this pass)
+`tests/test_resolver_intrabar_accuracy.py` now 14 cases: 7 pass (current-correct incl. gap-through #8 +
+un-timestamped defensive-keep) + 7 xfail (offset-entry, partial-API, entry==bar, stale-window, pre-entry,
+ambiguous-via-dict-flag, bad-geometry). Remaining harness TODO for the fix PR: a DB-upsert-mapping test
+(BAD_GEOMETRY not silently written as EXPIRED — needs the caller/DB path), and flip all xfail→strict.
