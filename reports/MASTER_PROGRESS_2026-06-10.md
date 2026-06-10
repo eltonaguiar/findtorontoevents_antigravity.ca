@@ -122,3 +122,30 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **LIVE + VERIFIED on findtorontoevents.ca**: `classes.CRYPTO.intrabar_truth {n:1154, wr:32.4%, pf:0.73}`, `classes.EQUITY.intrabar_truth {n:107, 34.6%, 0.47}` — the full honest chain (entry-anchored resolver -> at_signal_outcomes ledger -> verdict -> live site) is END-TO-END COMPLETE. FTP'd + curl-verified (f7758d157f).
 - Sign-Coherence Gate re-run: **GREEN** (post-purge). Money-Ready Snapshot workflow redispatched with the fix.
 - Forward lane: crypto_rsi5070_us n=108 47.2%/1.54 (keep measuring, no promote); luxalgo_short 38 @ 71.1%/2.21 (recency).
+
+═══════════════════════════════════════════════════════════════════
+## SESSION CLOSE — 12-hour Top-Notch-Picks run (2026-06-10, ~02:00-09:00 UTC core)
+═══════════════════════════════════════════════════════════════════
+
+### What this run PROVED (the scoreboard no longer lies)
+1. **PR1+PR2: entry-anchored intrabar resolution is the production DEFAULT** — debate-gated (11 must-fixes), shadow-diff-gated (pre-registered T1-T3, PASSED), harness 15/15, instant rollback env. The 23-24% WR-inflation class of bugs is closed.
+2. **Definitive edge audit (1,278 slices, Bonferroni)**: NO hidden repeatable edge in the historical data; narrowing lifts PF mechanically but NOTHING survives the time-split. Why-not-profitable proof: 60-98% TIME_EXIT drag + zero payoff asymmetry + corruption (now quarantined).
+3. **σ-geometry NULL with the key insight**: losses are DIRECTION/SELECTION losses, not exit-geometry — vol-scaled exits trade TIME_EXIT for WR one-for-one. Effort correctly redirected to ENTRY criteria.
+4. **Entry-conditioning: the first disciplined candidates** — CRYPTO RSI(14,1h) 50-70 × US-session (R1/R2/R3-pass; now n=108 @ 47.2%/PF1.54 vs baseline 32.1%/0.72 — tracking honestly BELOW the 50% promote bar); luxalgo_confluence SHORT (n=38 71.1%/2.21, all-recency caveat); negative filters (FOREX contrarian = ~76% of losses; EQUITY vol-claim flipped on fuller data = fragility caught by the forward lane, as designed).
+5. **The full honest chain is LIVE**: resolver → at_signal_outcomes ledger (now n=1154 CRYPTO / 107 EQUITY, both FAIL honestly) → money_ready_verdict classes.*.intrabar_truth → findtorontoevents.ca/audit (curl-verified).
+
+### Data hygiene totals (all backed up to ejaguiar1_backups first)
++591 NULL-pnl recovered · 93 wrong-symbol sign-flip rows + 7 scale-monsters quarantined (CRYPTO raw PF 13.6→1.02) · 2 fresh sign-flips purged (gate back to 0-baseline GREEN) · 827,882 OHLCV bars backfilled (full universe) · +221 honest intrabar rows · 82 asset_class rows verified applied · PBO unfrozen 1.0→0.822 · status standardization GREEN.
+
+### Surfaces + plumbing shipped
+Live updates card (honest-measurement milestone) · pick_funnel 9/9 filter docs · profitable-but-filtered observational lane (P0) · picks-now ROOT 1-char fix · pead shadow history durable · stamp_entry_conditions forward lane (read-only, no-look-ahead-verified) · consult-local skill · credential scrub COMPLETE repo-wide · #553/#556/#557 all resolved · snapshot meta-strip fix (own-bug, honestly attributed).
+
+### HANDOFF — next session priorities
+1. **OPERATOR (only you can): ROTATE the 50webs DB passwords** (history exposure; live code is clean).
+2. **rsi5070 re-test at n≥150 across ≥3 regime-weeks** — promote to probation ONLY if WR≥50 & PF≥1.5 & R1/R2/R3 re-pass; it's at 47.2% — let it prove itself or die honestly.
+3. **luxalgo_short time-split** once it spans >30d (all-recency today).
+4. **COMMODITY (n=90) + FOREX (n=88) cross n=100 soon** — first honest verdicts due within days; do NOT pre-promote on the sub-100 leads (futures_momentum concentration caveat stands).
+5. **PR2 historical rows**: decision recorded = leave + dispute banners; optional one-time re-resolve via the documented backup-table path if the operator wants history cleaned.
+6. **Option-A leftovers**: thread asset_class/forward_test_only through ml_crypto_predictor/claude_gainer/crypto_signal_engine callers + implement the signal-week dedup (protects DSR/PBO IID).
+7. **CI Tests chronic timeout** (33/40 fails — split the suite); Binance HTTP-451 runner flake (region-block) intermittently times out the hourly resolver step — consider a job-level timeout + skip-grace.
+8. **MEMECOIN = do-not-trade** (nothing conditions it); EQUITY/CRYPTO honest baselines FAIL — the path remains: honest n + entry-criteria forward lanes, not resurrection of refuted sleeves (the full do-not-relitigate list is in the 72h-sweep section).
