@@ -59,7 +59,7 @@ def _connect_backups():
     return mysql.connector.connect(
         host=os.environ.get("DB_HOST", "mysql.50webs.com"),
         user="ejaguiar1_backups",
-        password=os.environ.get("DB_BACKUPS_PASS") or "backups1234560",
+        password=os.environ.get("DB_BACKUPS_PASS", ""),  # 2026-06-10 scrub: removed convention-literal fallback (was a committed secret)
         database="ejaguiar1_backups",
         connection_timeout=15,
     )
