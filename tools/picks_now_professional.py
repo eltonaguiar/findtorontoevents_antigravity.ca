@@ -1485,7 +1485,7 @@ def main():
     # Goal #1 honesty bridge (0/9 money-ready policy-clean; this is "best possible RIGHT NOW" overlay)
     # Load verdict for context (graceful; the top_notch generator + /audit/ai-tournament.html have the full recency/DSR view)
     try:
-        verdict_path = ROOT / "audit_dashboard" / "data" / "money_ready_verdict.json"
+        verdict_path = REPO / "audit_dashboard" / "data" / "money_ready_verdict.json"  # 2026-06-10: was undefined ROOT (NameError swallowed by outer except -> honesty fields never reached live JSON)
         if verdict_path.exists():
             v = json.loads(verdict_path.read_text())
             note = "0/9 classes money-ready (policy-clean n≥100 / WR≥50 / PF≥1.5 Tier-2 min per Goal #1 + CLAUDE.md). This is the best-possible 'IF WE HAD TO MAKE PICKS RIGHT NOW' bridge using live market (yf analyst/momentum/mean-rev/vol) + our DB edge overlay (at_pick_outcomes). Full statistical edge (DSR/PBO/CPCV proxies, 14d/48h pick_summary recency, conc gates, policy_clean_net) lives in money_ready_verdict.json + top_notch_money_ready.json + ai-tournament.html Top Notch table. ALWAYS verify 14d/48h panels first before sizing (recency rule). Paper-first / NFA. See picks-now.html + /audit/ai-tournament.html."

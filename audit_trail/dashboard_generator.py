@@ -17183,6 +17183,36 @@ def generate():
             key=lambda x: _float(x.get("score", 0)),
             reverse=True,
         )
+        # ── PROFITABLE-BUT-FILTERED OBSERVATIONAL LANE (P0 incident:
+        # "Profitable-but-filtered picks are not surfaced anywhere").
+        # Purely observational: joins gate-rejects (_gate_passed=False) against
+        # the closed pool and appends later-profitable rejects to a daily JSONL
+        # (audit_dashboard/data/profitable_but_filtered_YYYY-MM-DD.jsonl).
+        # Never changes gates, scoring, or any payload field. Fully guarded —
+        # zero behavior change on any failure.
+        try:
+            from audit_trail.profitable_filtered_observer import (
+                record_if_later_profitable,
+                _pick_key as _pfo_key,
+            )
+            _pfo_closed = {}
+            for _cp in all_closed_including_expired:
+                if isinstance(_cp, dict):
+                    _k = _pfo_key(_cp)
+                    if _k and _k not in _pfo_closed:
+                        _pfo_closed[_k] = _cp
+            _pfo_n = 0
+            for _rp in _active_raw_snapshot:
+                if isinstance(_rp, dict) and _rp.get("_gate_passed") is False:
+                    if record_if_later_profitable(_rp, _pfo_closed):
+                        _pfo_n += 1
+            if _pfo_n:
+                log.info(
+                    "profitable-but-filtered lane: %d observations recorded",
+                    _pfo_n,
+                )
+        except Exception as _pfo_e:  # noqa: BLE001
+            logging.debug("profitable_filtered_observer skipped: %s", _pfo_e)
         # Tag any raw-pool pick the gate loop never saw (auto-expired before the
         # gate ran) so the Show All Picks UI marks it gate-rejected, not unknown.
         for _rp in payload["picks"]["active_raw"]:

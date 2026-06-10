@@ -538,6 +538,11 @@ jobs:
           # 2026-06-06: resolver-grade at_pick_outcomes ingest (MeanReversionBB
           # n=175 PF=1.82 lives here, not closed_picks.json). Revert: '0'.
           PF_REGISTRY_INCLUDE_OUTCOMES: '1'
+          # 2026-06-10: DB creds were MISSING from this step (5 sibling steps have
+          # them), so money_ready_verdict's _intrabar_truth_map() + DB-backed sleeves
+          # fail-open in GHA -> live JSON had intrabar_truth: null. This makes the
+          # honest at_signal_outcomes.intrabar_* per-class block reach /audit.
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
         run: |
           # 2026-05-28: refresh money_ready_verdict.json on every hourly dashboard
           # build (was daily-only via money-ready-snapshot.yml → 13h+ stale vs embed).
