@@ -69,6 +69,14 @@ def run_verdict() -> dict:
                  f"--- stdout (first 500) ---\n{proc.stdout[:500]}")
     if not isinstance(data, dict) or not data:
         sys.exit("ERROR: verdict JSON is empty or not a class-keyed dict")
+    # 2026-06-10: the verdict's --json output now carries top-level META keys
+    # (generated_at string, _intrabar_source note — commit 110722812e). Strip any
+    # non-dict value so validate()/iteration only ever see class records. This
+    # crashed the snapshot ("class 'generated_at' record is not an object") and
+    # silently froze the live verdict JSON until fixed.
+    data = {k: v for k, v in data.items() if isinstance(v, dict)}
+    if not data:
+        sys.exit("ERROR: verdict JSON contained no class records after meta-strip")
     return data
 
 
