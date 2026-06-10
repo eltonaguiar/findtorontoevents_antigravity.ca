@@ -35,38 +35,6 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
     <!-- Update: Jun 10, 2026 — Honest measurement layer LIVE: entry-anchored resolver default-ON; definitive edge audit -->
-    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="money-ready,audit,resolver,intrabar,data-integrity,goal-1" data-category="trading" data-types="fix,analysis,milestone">
-      <div class="update-date" style="line-height:1.5">Jun 10, 2026 1:15 AM EDT &mdash; <strong style="color:#22c55e;">Honest measurement layer LIVE</strong> &mdash; entry-anchored resolver default-ON + definitive per-class edge audit</div>
-      <div class="update-content">
-        <p><strong>The scoreboard no longer lies.</strong> 12-hour autonomous run, key milestones (all committed to main, every number verified by direct SQL):</p>
-        <ul>
-          <li><strong>PR2 — entry-anchored intrabar resolution is the production default</strong> (<code>universal_pick_resolver.py</code>, commit <code>0bac396a88</code>). Shadow-diff passed pre-registered gates (T1 flip 29.4%&le;30 / T2 78%&le;90 / T3 no WR inflation, 400 open picks). Old stale-window picks now honestly degrade to tagged <code>close_approx</code> instead of fake-resolving. Rollback: <code>RESOLVER_ENTRY_ANCHORED=0</code>.</li>
-          <li><strong>money_ready_verdict now carries per-class <code>intrabar_truth</code></strong> from the honest <code>at_signal_outcomes</code> ledger + the long-missing <code>generated_at</code> (<code>110722812e</code>; workflow env fix <code>1e1efea80f</code>).</li>
-          <li><strong>Definitive edge audit (1,278 slices, Bonferroni-disciplined): NO hidden repeatable edge survives.</strong> The sole triple-pass was a synthetic-pnl artifact. Narrowing to best filters lifts PF to 1.2-1.8 mechanically, but <em>every</em> narrowed slice fails the time-split — not repeatable. Why-not-profitable proof: 60-98% TIME_EXIT resolution drag + zero payoff asymmetry + (now-quarantined) corruption.</li>
-          <li><strong>&sigma;-scaled TP/SL experiment (operator question): honest NULL.</strong> Vol-scaled exits cut TIME_EXIT + manufacture asymmetry, but WR drops in exact compensation &mdash; <strong>the losses are direction/selection losses, not geometry losses</strong>. Effort redirects to per-class ENTRY criteria.</li>
-          <li><strong>Data integrity:</strong> 93 sign-flipped wrong-symbol contamination rows quarantined (e.g. BTCUSDT "TP_HIT +98%" with exit prices that crashed 80-98%; backed up to <code>ejaguiar1_backups</code>). EQUITY honest cohort crossed n&ge;100 and FAILS (WR 34.6% / PF 0.48) &mdash; the small-n "lead" dissolved, confirming the supply+time thesis. PBO gate un-froze: 1.0 (stale Jun-2) &rarr; 0.822 on honest data (still correctly blocking promotion).</li>
-          <li><strong>Plumbing:</strong> profitable-but-filtered observational lane wired (P0 incident); picks-now <code>ROOT</code> 1-char NameError fixed (honesty fields now reach the live JSON); credential scrub completed repo-wide (operator: rotate 50webs passwords &mdash; history exposure).</li>
-        </ul>
-        <p style="color:#94a3b8;font-size:0.9em">Honest verdict unchanged: <strong>0/6 classes Tier-2</strong>. The path is honest-n growth + per-class entry criteria &mdash; not new exit math, not resurrecting refuted sleeves. Sources: <code>reports/MASTER_PROGRESS_2026-06-10.md</code>, <code>reports/shadow_diff_entry_anchored_2026-06-10.json</code>, <code>reports/sigma_geometry_experiment_2026-06-10.json</code>. Reproduce: <code>python3 -m pytest tests/test_resolver_intrabar_accuracy.py</code> (15/15).</p>
-      </div>
-    </div>
-
-    <!-- Update: Jun 9, 2026 — Honest-measurement sweep: crypto score-tiles = artifact; Model Portfolios un-stuck -->
-    <div class="update-entry" style="--dot-color: #ef4444;" data-tags="money-ready,audit,data-integrity,crypto,intrabar,goal-1" data-category="trading" data-types="analysis,fix">
-      <div class="update-date" style="line-height:1.5">Jun 9, 2026 8:45 AM EDT &mdash; <strong style="color:#ef4444;">Honest-measurement sweep: crypto score-tiles are an artifact (not edge); Model Portfolios un-stuck</strong></div>
-      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
-        <p style="margin:0 0 8px;">A multi-agent cross-review (4 dimensions + intrabar forward replay) found the headline crypto <strong>S-Tier &ldquo;100% WR&rdquo;</strong> and <strong>A-Tier &ldquo;72.6% WR&rdquo;</strong> scoring tiles are a <strong>survivorship + fixed-TP-labeling artifact, not a tradable edge</strong>. Class verdict remains <strong>0/9 money-ready</strong>; no forward-validated edge exists yet.</p>
-        <ul>
-          <li><strong>CRYPTO TILES (DISPUTED):</strong> S-tier &ldquo;100% WR&rdquo; &rarr; <strong>0% true WR</strong> when you check if the stop was hit first intraday (8/8 replayed picks were stop-losses mislabeled as take-profits). Intrabar replay flips <strong>23&ndash;24%</strong> of all S+A &ldquo;wins&rdquo; to losses; honest forward is <strong>~38&ndash;48% WR / PF&lt;1</strong>. DISPUTED banner now live on <code>/audit</code> (INCIDENT&nbsp;#18).</li>
-          <li><strong>MODEL PORTFOLIOS un-stuck:</strong> the &ldquo;Risk-Managed Books&rdquo; page had been frozen at Jun&nbsp;3 &mdash; root-caused to a silent DB-auth failure in <code>export_json.py</code> (env-only creds &rarr; <code>password: NO</code>, masked by <code>continue-on-error</code>). Switched to the canonical <code>db_env</code> resolver; live data now current (Jun&nbsp;9, 123 portfolios).</li>
-          <li><strong>DATA-INTEGRITY fixes:</strong> per-class TP/SL caps now enforced at the raw-insert chokepoints (fixes the 56&ndash;94% TIME_EXPIRED that breaks measurement); forward-refuted strategies removed from the CRYPTO scoring boost; picks-now dividend/labeling bugs fixed; <code>kimi_direct</code> 66% WR shown to be stale (18d) + losing-recent-3 = misleading (INCIDENT&nbsp;#125).</li>
-          <li><strong>NEW HYPOTHESIS:</strong> an Opening-Range-Breakout <em>retest</em> + higher-timeframe-bias + market-structure thesis was pre-registered (H-104) per the M-107 rule &mdash; binding test is a forward paper-pilot, blocked on sub-hourly OHLCV data.</li>
-        </ul>
-        <p style="margin:8px 0 0;color:#999;">Which page has the most trustworthy picks? <code>/audit/picks-now</code> is the most <em>honest</em> surface (screened candidates) &mdash; but none of the three pages has <em>proven profitable</em> picks today. Docs: <code>reports/CRYPTO_TIER_EDGE_VERDICT_2026-06-09.md</code>, <code>reports/UPDATED_MONEY_READY_RECOMMENDATION_2026-06-09.md</code>. Pending: feed/tab descriptions, intrabar-resolve <code>at_pick_outcomes</code> (keyspace gap), find-any-edge sweep.</p>
-      </div>
-    </div>
-
-    <!-- Update: Jun 5, 2026 — P1 sleeves: forex carry unlock, DBMF/KMLM paper, crypto pilot policy -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -99,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-06-09 01:53 EDT · <strong>100 open incidents</strong> (20 P0 · 52 P1) · <strong>164 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-06-10 02:01 EDT · <strong>105 open incidents</strong> (23 P0 · 53 P1) · <strong>167 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -114,11 +82,11 @@
     <tbody>
       <tr>
         <td class="cls">OVERALL</td>
-        <td>59</td>
-        <td class="p0">10</td>
-        <td class="top-issue">Resolver-version selection bias: same data yields 4-6x PF spread -&gt; no class has a defensi…</td>
-        <td>126</td>
-        <td class="top-issue">Backfill 1034 zero-PnL rows in at_pick_outcomes after _compute_pnl fix</td>
+        <td>61</td>
+        <td class="p0">12</td>
+        <td class="top-issue">S-tier/A-tier score-band tiles on /audit/ are survivorship + fixed-TP-labeling artifacts (…</td>
+        <td>129</td>
+        <td class="top-issue">Update data integrity warning on /audit/ (quoted 2026-06-09 message) - confirm r…</td>
       </tr>
       <tr>
         <td class="cls">STOCKS</td>
@@ -146,15 +114,15 @@
       </tr>
       <tr>
         <td class="cls">FOREX</td>
-        <td>6</td>
-        <td class="p0">2</td>
-        <td class="top-issue">kimi_signal_tracking sign-flip: 142 of 367 total sign-flipped rows = 38.7% (worst single s…</td>
+        <td>8</td>
+        <td class="p0">3</td>
+        <td class="top-issue">FOREX 25% WR n=24 PF 0.078 (policy-clean); primary multi_asset_scanner + low n (sub-coinfl…</td>
         <td>4</td>
         <td class="top-issue">FOREX n/WR/PF disagreement between money_ready_verdict and pf_registry at same t…</td>
       </tr>
       <tr>
         <td class="cls">COMMODITIES</td>
-        <td>5</td>
+        <td>6</td>
         <td class="p0">4</td>
         <td class="top-issue">COT publication lag look-ahead bias: cot_positioning PF dropped 4.6 -&gt; 0.51 post-dedup</td>
         <td>3</td>
@@ -189,6 +157,14 @@
 
 <h3 style="color:#ef4444">Top 10 open P0/P1 incidents</h3>
   <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>S-tier/A-tier score-band tiles on /audit/ are survivorship + fixed-TP-labeling artifacts (intrabar-true WR ~34-38%, 0% for S in replay)</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>audit_dashboard scoring + resolver</code> · reporter: grok-4.3 (deep-dive 2026-06-09) · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
+    <span class="ie-class">OVERALL</span> <strong>Non-crypto asset classes (FOREX/COMMODITY/ETF/FUTURES) stuck at sub-coinflip WR (25%/22%/21%/33%) with low n, negative expectancy and policy frozen</strong>
+    <div class="ie-card-meta">P0 · OPEN · component: <code>emission/quality_gates/strategies/non-crypto</code> · reporter: grok-4.3 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
+  </div>
+  <div class="incident-card ie-card sev-P0">
     <span class="ie-class">OVERALL</span> <strong>Resolver-version selection bias: same data yields 4-6x PF spread -&gt; no class has a defensible edge</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>resolver/measurement layer</code> · reporter: claude-opus-4-8 (per-class edge workflow wxdjdjztu 2026-06-06) · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
@@ -220,15 +196,11 @@
     <span class="ie-class">OVERALL</span> <strong>sync_active_mysql_picks_to_json upstream writer missing — root cause of 0.09% raw-pick outcome coverage</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>alpha_engine/active_picks_sync.py (proposed) + forward_validator.validate_picks()</code> · reporter: opencode/ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>COT paper pilot over-emission</strong>
-    <div class="ie-card-meta">P0 · OPEN · component: <code>cot_paper_pilot.py / cot_positioning strategy</code> · reporter: ring-2.6-1t · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
-  <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>ML calibration system-wide inverted</strong>
-    <div class="ie-card-meta">P0 · TRIAGED · component: <code>smart_picks_engine.py / score derivation</code> · reporter: kimi/multiple · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
-  </div>
 <h3 style="color:#22c55e">Top 5 HIGH-impact enhancements</h3>
+  <div class="enhancement-card ie-card">
+    <span class="ie-class">OVERALL</span> <strong>Update data integrity warning on /audit/ (quoted 2026-06-09 message) - confirm remediation (ghosts 0 per banner) and close/ update if outdated while noting persistent P0s (resolver #110, backfill #112)</strong>
+    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category UI · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
+  </div>
   <div class="enhancement-card ie-card">
     <span class="ie-class">OVERALL</span> <strong>Backfill 1034 zero-PnL rows in at_pick_outcomes after _compute_pnl fix</strong>
     <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category DATA_FEED · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
@@ -245,15 +217,43 @@
     <span class="ie-class">OVERALL</span> <strong>Kill inverse_ml_enhanced_RENDERUSDT_4h_D — PF 0.12, avg -1.73%, n=52 (genuine no-edge)</strong>
     <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category OTHER · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
   </div>
-  <div class="enhancement-card ie-card">
-    <span class="ie-class">OVERALL</span> <strong>Calibrate TP/SL distances on verified strategies — TIME_EXIT bias blocking promotion</strong>
-    <div class="ie-card-meta">Impact HIGH · effort S · status BACKLOG · category OTHER · <a href="/audit/incidents.html#enhancements">view in full table →</a></div>
-  </div>
 <p style="margin:14px 0 0;font-size:12px;color:#94a3b8">→ Full filterable table with every row + asset-class drill-downs: <a href="/audit/incidents.html" style="color:#fbbf24;font-weight:700">/audit/incidents.html</a></p>
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-  <div class="update-entry" style="--dot-color: #22c55e;" data-tags="money-ready,forex,etf,commodity,crypto,pilot,goal-1" data-category="trading" data-types="analysis,feature">
+      <div class="update-entry" style="--dot-color: #22c55e;" data-tags="money-ready,audit,resolver,intrabar,data-integrity,goal-1" data-category="trading" data-types="fix,analysis,milestone">
+      <div class="update-date" style="line-height:1.5">Jun 10, 2026 1:15 AM EDT &mdash; <strong style="color:#22c55e;">Honest measurement layer LIVE</strong> &mdash; entry-anchored resolver default-ON + definitive per-class edge audit</div>
+      <div class="update-content">
+        <p><strong>The scoreboard no longer lies.</strong> 12-hour autonomous run, key milestones (all committed to main, every number verified by direct SQL):</p>
+        <ul>
+          <li><strong>PR2 — entry-anchored intrabar resolution is the production default</strong> (<code>universal_pick_resolver.py</code>, commit <code>0bac396a88</code>). Shadow-diff passed pre-registered gates (T1 flip 29.4%&le;30 / T2 78%&le;90 / T3 no WR inflation, 400 open picks). Old stale-window picks now honestly degrade to tagged <code>close_approx</code> instead of fake-resolving. Rollback: <code>RESOLVER_ENTRY_ANCHORED=0</code>.</li>
+          <li><strong>money_ready_verdict now carries per-class <code>intrabar_truth</code></strong> from the honest <code>at_signal_outcomes</code> ledger + the long-missing <code>generated_at</code> (<code>110722812e</code>; workflow env fix <code>1e1efea80f</code>).</li>
+          <li><strong>Definitive edge audit (1,278 slices, Bonferroni-disciplined): NO hidden repeatable edge survives.</strong> The sole triple-pass was a synthetic-pnl artifact. Narrowing to best filters lifts PF to 1.2-1.8 mechanically, but <em>every</em> narrowed slice fails the time-split — not repeatable. Why-not-profitable proof: 60-98% TIME_EXIT resolution drag + zero payoff asymmetry + (now-quarantined) corruption.</li>
+          <li><strong>&sigma;-scaled TP/SL experiment (operator question): honest NULL.</strong> Vol-scaled exits cut TIME_EXIT + manufacture asymmetry, but WR drops in exact compensation &mdash; <strong>the losses are direction/selection losses, not geometry losses</strong>. Effort redirects to per-class ENTRY criteria.</li>
+          <li><strong>Data integrity:</strong> 93 sign-flipped wrong-symbol contamination rows quarantined (e.g. BTCUSDT "TP_HIT +98%" with exit prices that crashed 80-98%; backed up to <code>ejaguiar1_backups</code>). EQUITY honest cohort crossed n&ge;100 and FAILS (WR 34.6% / PF 0.48) &mdash; the small-n "lead" dissolved, confirming the supply+time thesis. PBO gate un-froze: 1.0 (stale Jun-2) &rarr; 0.822 on honest data (still correctly blocking promotion).</li>
+          <li><strong>Plumbing:</strong> profitable-but-filtered observational lane wired (P0 incident); picks-now <code>ROOT</code> 1-char NameError fixed (honesty fields now reach the live JSON); credential scrub completed repo-wide (operator: rotate 50webs passwords &mdash; history exposure).</li>
+        </ul>
+        <p style="color:#94a3b8;font-size:0.9em">Honest verdict unchanged: <strong>0/6 classes Tier-2</strong>. The path is honest-n growth + per-class entry criteria &mdash; not new exit math, not resurrecting refuted sleeves. Sources: <code>reports/MASTER_PROGRESS_2026-06-10.md</code>, <code>reports/shadow_diff_entry_anchored_2026-06-10.json</code>, <code>reports/sigma_geometry_experiment_2026-06-10.json</code>. Reproduce: <code>python3 -m pytest tests/test_resolver_intrabar_accuracy.py</code> (15/15).</p>
+      </div>
+    </div>
+
+    <!-- Update: Jun 9, 2026 — Honest-measurement sweep: crypto score-tiles = artifact; Model Portfolios un-stuck -->
+    <div class="update-entry" style="--dot-color: #ef4444;" data-tags="money-ready,audit,data-integrity,crypto,intrabar,goal-1" data-category="trading" data-types="analysis,fix">
+      <div class="update-date" style="line-height:1.5">Jun 9, 2026 8:45 AM EDT &mdash; <strong style="color:#ef4444;">Honest-measurement sweep: crypto score-tiles are an artifact (not edge); Model Portfolios un-stuck</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">A multi-agent cross-review (4 dimensions + intrabar forward replay) found the headline crypto <strong>S-Tier &ldquo;100% WR&rdquo;</strong> and <strong>A-Tier &ldquo;72.6% WR&rdquo;</strong> scoring tiles are a <strong>survivorship + fixed-TP-labeling artifact, not a tradable edge</strong>. Class verdict remains <strong>0/9 money-ready</strong>; no forward-validated edge exists yet.</p>
+        <ul>
+          <li><strong>CRYPTO TILES (DISPUTED):</strong> S-tier &ldquo;100% WR&rdquo; &rarr; <strong>0% true WR</strong> when you check if the stop was hit first intraday (8/8 replayed picks were stop-losses mislabeled as take-profits). Intrabar replay flips <strong>23&ndash;24%</strong> of all S+A &ldquo;wins&rdquo; to losses; honest forward is <strong>~38&ndash;48% WR / PF&lt;1</strong>. DISPUTED banner now live on <code>/audit</code> (INCIDENT&nbsp;#18).</li>
+          <li><strong>MODEL PORTFOLIOS un-stuck:</strong> the &ldquo;Risk-Managed Books&rdquo; page had been frozen at Jun&nbsp;3 &mdash; root-caused to a silent DB-auth failure in <code>export_json.py</code> (env-only creds &rarr; <code>password: NO</code>, masked by <code>continue-on-error</code>). Switched to the canonical <code>db_env</code> resolver; live data now current (Jun&nbsp;9, 123 portfolios).</li>
+          <li><strong>DATA-INTEGRITY fixes:</strong> per-class TP/SL caps now enforced at the raw-insert chokepoints (fixes the 56&ndash;94% TIME_EXPIRED that breaks measurement); forward-refuted strategies removed from the CRYPTO scoring boost; picks-now dividend/labeling bugs fixed; <code>kimi_direct</code> 66% WR shown to be stale (18d) + losing-recent-3 = misleading (INCIDENT&nbsp;#125).</li>
+          <li><strong>NEW HYPOTHESIS:</strong> an Opening-Range-Breakout <em>retest</em> + higher-timeframe-bias + market-structure thesis was pre-registered (H-104) per the M-107 rule &mdash; binding test is a forward paper-pilot, blocked on sub-hourly OHLCV data.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">Which page has the most trustworthy picks? <code>/audit/picks-now</code> is the most <em>honest</em> surface (screened candidates) &mdash; but none of the three pages has <em>proven profitable</em> picks today. Docs: <code>reports/CRYPTO_TIER_EDGE_VERDICT_2026-06-09.md</code>, <code>reports/UPDATED_MONEY_READY_RECOMMENDATION_2026-06-09.md</code>. Pending: feed/tab descriptions, intrabar-resolve <code>at_pick_outcomes</code> (keyspace gap), find-any-edge sweep.</p>
+      </div>
+    </div>
+
+    <!-- Update: Jun 5, 2026 — P1 sleeves: forex carry unlock, DBMF/KMLM paper, crypto pilot policy -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="money-ready,forex,etf,commodity,crypto,pilot,goal-1" data-category="trading" data-types="analysis,feature">
       <div class="update-date" style="line-height:1.5">Jun 5, 2026 2:45 PM EDT &mdash; <strong style="color:#22c55e;">P1 real-money sleeves: carry backtest unlock + commodity ETF proxy paper</strong></div>
       <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
         <p style="margin:0 0 8px;">Continued Goal #1 after P0 (PEAD shadow + equity blocks). Class verdict still <strong>0/9 money-ready</strong>; fast substitutes advanced on paper pilots and extended backtests.</p>
