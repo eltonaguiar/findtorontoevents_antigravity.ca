@@ -71,3 +71,9 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **updates/index.html card SHIPPED + FTP-deployed (8431062f7a, HTTP 200)** — the honest-measurement milestone is publicly documented above the AUTO-INJECTED block per convention.
 - **Memory protocol done**: personal memory file + MEMORY.md pointer written (project-honest-measurement-live-2026-06-10); agentmemory POST attempted (server quiet); holographic append deferred (agent_shared_memory.json has live peer edits — avoiding clobber).
 - REMAINING QUEUE: verify live intrabar_truth post-regen; #553 rebase+gitignore; pick_funnel Money-Ready/Proven-Only doc gaps; pead shadow-log durability; 709 NULL-pnl + 82 asset_class + ohlcv-universe backfills; entry-criteria research swarm return.
+
+## TICK 05:36-06:00 — surface docs live + pead history durable + local-fleet skill
+- **pick_funnel.html: 9/9 filters now documented + DEPLOYED** (f9a629bef2) — added the two gaps: Money-Ready policy-clean sizing gate (n>=100/WR>=50/PF>=1.5 + DSR/PBO/SPA/expectancy/HHI/recency + intrabar_truth; "0/6 pass — nothing sized") and Proven-Only manual registry (_TRUST_PROVEN_*).
+- **pead shadow history made durable** — pead_shadow_picks.json overwrote every run ("w" mode), so the 2026-06-14 review gate had no history; now appends per-signal pead_shadow_history.jsonl, persisted by the workflow's `git add alpha_engine/data/`. Verified my 11-line edit was the ONLY local delta on the hot file before committing.
+- **/consult-local skill created** (.claude/skills/consult-local) — wraps the now-fully-up local fleet (vLLM :8000 Qwen2.5-14B, Ollama :11434 incl. deepseek-r1:32b + llama3.3:70b, LiteLLM :4000) for second opinions/refutation passes with the repo's anti-fabrication rules baked in.
+- Live intrabar_truth: still null — the 04:11 hourly run (pre-env-fix) is in flight with the 05:19 run queued; verification rolls to next tick.
