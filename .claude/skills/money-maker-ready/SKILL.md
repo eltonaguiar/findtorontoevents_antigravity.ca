@@ -5,7 +5,17 @@ description: Use when user wants to audit findtorontoevents.ca/audit (+ /audit/h
 
 # Money-Maker-Ready Audit Skill
 
-**Goal:** turn the 1-shot `/audit` real-money-readiness investigation into a repeatable, evolving evaluation. Project owner wants `/audit` ready for real-money use ("hedge-fund level picks per asset class, people spend their REAL money").
+**Goal:** turn the 1-shot `/audit` real-money-readiness investigation into a repeatable, evolving evaluation. Project owner wants `/audit` ready for real-money use ("hedge-fund level picks per asset class, people spend their REAL money"). Scope now explicitly includes **per-model + per-portfolio** performance on `/audit/ai_leaderboard.html` + `/audit/ai-tournament.html` (Model Portfolios — Risk-Managed Books), not just per-class picks.
+
+## 2026-06-10 REALITY UPDATE — the honest layer is LIVE (read before auditing)
+
+The measurement layer is no longer the blocker — it's fixed and self-sustaining. Audit AGAINST it, don't re-discover it:
+- **Honest source of truth = `money_ready_verdict.json` → `classes.<CLASS>.intrabar_truth`** (n/wr/pf from the entry-anchored `at_signal_outcomes.intrabar_*` ledger). The verdict JSON is NESTED: `{generated_at, classes:{CLASS:{... intrabar_truth:{n,wr,pf}}}, drift, summary}`. Live on findtorontoevents.ca; both writer workflows (audit-dashboard.yml + money-ready-snapshot.yml) are env-complete.
+- **Entry-anchored resolver is the production DEFAULT** (`RESOLVER_ENTRY_ANCHORED=1`, rollback to `0`). The old 23-24% WR inflation is closed. `tools/reresolve_intrabar_signal_outcomes.py --apply --i-understand-this-mutates-production` re-resolves; `tools/build_intrabar_truth_by_class.py` rebuilds the per-class JSON.
+- **Honest verdict today (2026-06-10): 0/9 classes money-ready.** CRYPTO n=1154 32.4%/PF0.73 FAIL; EQUITY n=107 34.6%/PF0.47 FAIL (both crossed n≥100 and FAIL — small-n leads dissolve as n grows); COMMODITY n=90 / FOREX n=88 approaching n=100. PBO=0.822 (FAIL≥0.7) still correctly blocks promotion.
+- **The deficit is ENTRY SELECTION, not exit geometry** (σ-geometry experiment proved vol-scaled exits trade WR for TIME_EXIT one-for-one). The forward edge-hunt lives in `tools/stamp_entry_conditions.py` → `entry_conditions_forward.json` (read-only sidecar; conditions like crypto RSI50-70×US-session tracked but NOT promoted until n≥100 + R1/R2/R3 re-pass). When auditing, check this sidecar for live entry-condition candidates.
+- **DO-NOT-RELITIGATE (already refuted/done this period):** stocks_rsi2_pullback promote, CRYPTO direction-flip, futures_momentum/forex_rsi2 shadow-track, luxalgo "best-in-system", MeanReversionBB, trust=7 edge, alpha_engine×CRYPTO 80.6%, the MiniMax-authored `kimi_ultimate_proven_edge` (self-admitted SYNTHETIC). Tournament 73-91% WR + leaderboard WR = single-snapshot/MISPRICED_ENTRY artifacts, never sizing surfaces.
+- **DB components (verify before any metric):** read via `tools/db_env.py` → `get_stocks_creds()` (ejaguiar1_stocks — live picks/outcomes), `get_backtests_creds()` (ejaguiar1_backtests — bt_backtest_trades), `get_backups_creds()` (ejaguiar1_backups). Passwords resolve from env or `/home/eaguiar2015/dbpasses.txt` (gitignored — NEVER commit/echo). **Any table-mutating op MUST back up to ejaguiar1_backups first** (see `tools/db_backup_to_backups.py`; backup-table names must stay ≤64 chars). File incidents/enhancements via `tools/audit_pick_funnel/cli_track.py` (idempotent upsert) then `render_incidents_page.py` + FTP `--only incidents`.
 
 ## Hard rule (enforced throughout)
 
