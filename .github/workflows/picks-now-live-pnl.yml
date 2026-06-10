@@ -1,0 +1,74 @@
+# Hourly refresh of live mark-to-market PnL for all unresolved picks-now entries.
+# Fetches current prices via yfinance/Binance, computes unrealized PnL, writes
+# DB columns (current_price/current_pnl_pct), and exports picks_now_live_pnl.json.
+#
+# Offset from :00/:30 to avoid mega-cluster contention. 43 total cron workflows
+# compete for the Actions queue; :48 is lightly used (only dashboard-pick-trader
+# runs at :43, mega-mutation-tracker at :45, ml-battleground-f at :47).
+name: Picks-Now Live PnL (hourly)
+
+on:
+  schedule:
+    - cron: "48 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: picks-now-live-pnl
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip -q
+          python3 -m pip install yfinance pandas pymysql requests -q
+
+      - name: Refresh live PnL (mark-to-market)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/live_pnl_tracker.py --apply
+
+      - name: Resolve matured picks (TP/SL/time-exit)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/resolve_picks_now.py --apply || echo "[resolve] non-fatal (picks may be within 10d window)"
+
+      - name: Rebuild track record
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/build_picks_now_track_record.py --apply || echo "[track_record] non-fatal"
+
+      - name: Commit updated JSONs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/picks_now_live_pnl.json \
+                  audit_dashboard/data/picks_now_track_record.json
+          git diff --cached --quiet || \
+            git commit -m "chore(picks-now): live PnL refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+
+      - name: Push data commit
+        continue-on-error: true
+        run: bash .github/scripts/safe_push.sh
+
+      - name: FTP deploy to production
+        env:
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: python3 tools/ftp_deploy_picks_now.py

@@ -1352,6 +1352,50 @@ def _simple_wf_oos_ratio(picks: list[dict], train_frac: float = 0.6) -> dict[str
 # Main entry point
 # ---------------------------------------------------------------------------
 
+def _intrabar_truth_map() -> dict[str, dict]:
+    """Honest per-class WR/PF from the at_signal_outcomes intrabar ledger.
+
+    2026-06-10 wiring (master plan WS-B): the self-contained entry-anchored first-touch
+    ledger (SL-wins-ties, bad-geometry-excluded) is the honest measurement source.
+    Attached ADDITIVELY to each class verdict as `intrabar_truth` so /audit and the
+    re-baseline can read honest numbers next to the legacy headline. Fail-open to {}.
+    """
+    try:
+        import pymysql
+        from tools.db_env import get_stocks_creds
+        creds = {k: v for k, v in get_stocks_creds().items()
+                 if k in ("host", "user", "password", "database", "port", "connect_timeout")}
+        conn = pymysql.connect(**creds)
+        cur = conn.cursor()
+        cur.execute(
+            """SELECT UPPER(COALESCE(asset_class,'UNKNOWN')),
+                      COUNT(*),
+                      SUM(intrabar_status='TP_HIT'),
+                      SUM(CASE WHEN intrabar_pnl_pct > 0 THEN intrabar_pnl_pct ELSE 0 END),
+                      SUM(CASE WHEN intrabar_pnl_pct < 0 THEN -intrabar_pnl_pct ELSE 0 END)
+               FROM at_signal_outcomes
+               WHERE intrabar_resolved_at IS NOT NULL
+                 AND intrabar_status IN ('TP_HIT','SL_HIT')
+               GROUP BY 1"""
+        )
+        out: dict[str, dict] = {}
+        for ac, n, wins, gw, gl in cur.fetchall():
+            n = int(n or 0)
+            wins = int(wins or 0)
+            gw = float(gw or 0.0)
+            gl = float(gl or 0.0)
+            out[ac] = {
+                "n": n,
+                "wr": round(wins / n, 4) if n else 0.0,
+                "pf": round(gw / gl, 4) if gl > 0 else None,
+                "source": "at_signal_outcomes.intrabar_*",
+            }
+        conn.close()
+        return out
+    except Exception:
+        return {}
+
+
 def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mode: bool = False) -> dict[str, dict]:
     """Return per-class readiness verdict dict.
 
@@ -1478,7 +1522,17 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         outcome_sleeves = _top_sleeves_from_outcomes(ac) if not ci_mode else []
         top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
 
+        # 2026-06-10 WS-B: honest intrabar-true per-class numbers attached additively
+        # (computed once; {} in CI mode / no-DB). Verdict gates unchanged this pass —
+        # the re-baseline switches gate inputs once honest n grows.
+        global _INTRABAR_TRUTH_CACHE
+        try:
+            _INTRABAR_TRUTH_CACHE
+        except NameError:
+            _INTRABAR_TRUTH_CACHE = {} if ci_mode else _intrabar_truth_map()
+
         results[ac] = {
+            "intrabar_truth": _INTRABAR_TRUTH_CACHE.get(ac.upper()),
             "n_resolved": n,
             "wr": round(wr, 4),
             "pf": round(pf, 4) if pf != float("inf") else None,
@@ -1658,7 +1712,15 @@ def main() -> None:
 
     results = money_ready_verdict(asset_class=args.asset_class, ci_mode=args.ci_mode)
     if args.as_json:
-        print(json.dumps(results, indent=2))
+        # 2026-06-10: top-level meta — generated_at was MISSING from
+        # money_ready_verdict.json (index.html + dashboard_freshness probe for it and
+        # showed '?'/no-data). Verified no consumer iterates top-level keys as classes,
+        # so adding meta strings is safe. JSON path only (print_report never sees it).
+        from datetime import datetime as _dt, timezone as _tz
+        out = {"generated_at": _dt.now(_tz.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+               "_intrabar_source": "at_signal_outcomes.intrabar_* (entry-anchored first-touch; PR2 default-ON 2026-06-10)"}
+        out.update(results)
+        print(json.dumps(out, indent=2))
     else:
         print_report(results)
 

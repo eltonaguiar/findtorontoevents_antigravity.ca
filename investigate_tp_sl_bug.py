@@ -20,7 +20,8 @@ from collections import defaultdict
 
 DB_HOST = 'mysql.50webs.com'
 DB_USER = 'ejaguiar1_stocks'
-DB_PASS = 'stocks1234560'
+import os as _os  # 2026-06-10 security scrub: literal removed (was a committed secret)
+DB_PASS = _os.environ.get('DB_PASS_STOCKS', '')
 DB_NAME = 'ejaguiar1_stocks'
 
 def connect():

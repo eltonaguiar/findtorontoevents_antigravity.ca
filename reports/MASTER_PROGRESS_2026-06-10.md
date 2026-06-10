@@ -1,0 +1,51 @@
+# MASTER PROGRESS — Top-Notch Picks Per Asset Class (12h run, 2026-06-10)
+
+Live log for the autonomous run. Plan: `~/.claude/plans/greedy-mixing-puppy.md`. Endorsed by Mercury, Mercury2, Grok ("execute as written") + DeepSeek (convergent root-cause). Cadence: progress every 5-15 min.
+
+## ROOT CAUSE (why months of sub-coin-flip picks)
+The project optimized for months against a **corrupted measurement layer** (inaccurate resolver → 23-24% inflated WR; backfill/label contamination; scale-corrupt PFs; over-emission + single-source concentration; promotion on raw not intrabar-true; no per-class entry criteria). Fix order: honest measurement → clean data → correct gates → grow honest n → THEN per-class edge.
+
+## DONE (this session, committed to main)
+- **PR1** entry-anchored intrabar resolver in `universal_pick_resolver.py` behind `RESOLVER_ENTRY_ANCHORED` (default OFF=byte-identical) + harness 15/15 green. (36cdfbfc04)
+- **#559 MERGED** — geometry guard in the HOURLY `outcome_resolver.py` (the `outcome-resolver.yml` cron resolver) — complementary to PR1; closes the +5548%-fake-pnl class there. (reviewed correct; backfill-half redundant-but-harmless)
+- **#557 CLOSED** — its backfill chk-guard was INVERTED (regression) + pillar-cols already identical on main.
+- **#556** was merged by a peer; verified main is **clean of the money_ready_picks_generator password leak** (my scrub 104753d8ab survived). `.agents/skills/` (56 docs) came in — not a security issue.
+- **Security scrub**: money_ready_picks_generator.py + sign_flip_purge.py cleaned (env/db_env). Scale-corrupt rows quarantined (CRYPTO raw PF 13.6→1.02). Concentration P0 fail-closed. Status GREEN.
+- **Debate** (meta→adversarial rounds) on the PR2 plan → REVISE with 11 must-fixes (folded into v2 plan).
+
+## KEY FINDING (picks-now "closest edge candidates")
+- `stocks_rsi2_pullback` EQUITY: page shows 5/6 gates pass, RECENCY FAIL. **RECENCY FAIL is a STALE-DATA bug** — live DB has 351 equity picks in 8d (last TODAY); `picks_now.json` is stale (2026-06-09). BUT its 58.8% WR/PF2.68 is the **inflated pre-intrabar number**; honest (INCIDENT #96 dedup) = n140 WR 33.9% LOSING. → NOT a real money-ready; the apparent near-readiness is stale+inflated scoreboard. Confirms PR2 is the unlock.
+- `GBPUSD=X` FOREX forex_rsi2 (n114/58.8%/recency✓, PF/DSR unknown, single-source) + `RENDERUSDT inverse_ml` CRYPTO (n15/80%/PF7.7, small-n, emitting) = the other two closest; both need honest PF + n.
+
+## REMAINING SECURITY
+- 2 root-level scratch leaks still on main: `investigate_tp_sl_bug.py`, `investigate_tp_sl_bug_v2.py`. → scrub/delete.
+- **OPERATOR ACTION (only they can): ROTATE 50webs DB passwords** — already in git history (#556 branch + docs).
+- The DB-password-leak-guard CI should be a REQUIRED check (it failed on #556 yet #556 merged).
+
+## NEXT (prioritized)
+1. WS-D: refresh stale data — `dashboard_data.json` (5d), `pick_funnel_today/90d.json` (12.8d), `picks_now.json` (1d+ + stale recency) → trigger regen workflows; add missing `generated_at` stamps. (Makes the picks-now recency gate accurate.)
+2. WS-B: PR2 entry-anchored shadow-diff (clean snapshot, per-class before/after incl. high/low-conf split per Mercury) → if sane, default ON. Wire money_ready_verdict to the intrabar ledger.
+3. WS-B: grow honest n (crypto_ohlcv 180d backfill, 709 NULL-pnl recovery, 82 blank asset_class) — each in a txn w/ row-count sanity + backup.
+4. WS-A: scrub investigate_tp_sl_bug*.py; #553 rebase+gitignore picks_now.json+keep clean scripts; GHA fixes (CI Tests timeout, edge-stability push race).
+5. WS-C: re-baseline per-class on the post-PR2 cohort; forward-track leads (shadow-only).
+6. WS-E: updates/index.html card + FTP deploy; loop.
+
+## RISKS (per peer reviews — mitigations adopted)
+Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). Keep per-class leads shadow-only until 30-60 forward-resolved post-cleanup. n≥100 + DSR + WFE before any T2 claim. Don't flip a class to money-ready on stale/inflated numbers (the stocks_rsi2_pullback trap).
+
+## TICK 04:00-04:25 — PR2 SHIPPED (the headline)
+- **PR2 LIVE (0bac396a88): entry-anchored intrabar resolution is now the production DEFAULT.** Shadow-diff PASSED all pre-registered gates (T1 flip-rate 29.4%<=30, T2 close-approx flips 78%<=90, T3 no class WR inflation; 400 open picks, prod-style fetch; conf-band split: flips concentrate in low-conf). Report 8e7c12bac8, harness 21f7088631. Rollback: RESOLVER_ENTRY_ANCHORED=0. Historical rows: left + dispute banners (recorded).
+- **Credential scrub COMPLETE** — repo-wide .py zero leaks (b7d88a97ab, 0caef8edd9). OPERATOR: rotate 50webs pw.
+- **Regens:** pick_funnel 12.8d->today ✓, dashboard_data 5d->today ✓, picks-now still running.
+- **Copilot/DeepSeek 482-line plan TRIAGED through the validation layer:**
+  - REJECTED: stocks_rsi2_pullback promote ("58.8% n=894") — direct SQL: RAW 40%/PF0.83 losing; TP/SL-only = 100% TP / 0 SL ever = close-walk labeling artifact; intrabar-true n=5. Honest perf UNKNOWN; let PR2-honest n build.
+  - REJECTED: CRYPTO SHORT-direction flip at sync layer — global-inversion premise previously refuted (w0fkolehf + live audit); destructive risk.
+  - ADOPTED: TSMOM/academic sleeves as forward_test_only shadow; FDR re-run (stale Apr 6); crypto_ohlcv 180d; blueprint_generator verify-before-fix.
+- NEXT TICK: verify picks-now regen done; wire money_ready_verdict to intrabar ledger; TSMOM shadow wiring; FDR re-run; #553 cleanup.
+
+## TICK 04:10-04:20 — verdict wired to honest ledger
+- **money_ready_verdict wired to intrabar truth (110722812e):** per-class `intrabar_truth` block (at_signal_outcomes.intrabar_*) + the missing top-level `generated_at` (fixes index.html/freshness '?'). Scratch-verified before commit; verdict gates unchanged this pass (re-baseline flips inputs later).
+- **HONEST-DATA UPDATE: EQUITY crossed n>=100 and FAILS** — intrabar n=104, WR 34.6%, PF 0.48 (the earlier 60%/PF2.13 n=55 "closest lead" dissolved as honest n grew; matches main commit d4ce42658b "EQUITY lead dissolves"). First class to reach honest n>=100 confirms: no edge yet anywhere; supply+time thesis holds. COMMODITY intrabar n=81 PF 1.77 is now the most PF-promising sub-100 class.
+- **PR2 confirmed ON origin/main** (Cursor's "branch-only" delta was their stale fetch). Cursor FIXIT review otherwise converges; adopted its queue.
+- **Peer coordination:** freebuff active on the shared tree/branch (picks-now LIVE-PnL + tools/live_pnl_tracker.py) — I stay on Contents-API commits, hands off their files.
+- NEXT: trigger verdict regen workflow (live JSON gets intrabar_truth), TSMOM shadow wiring, FDR re-run, #553 cleanup, updates card.
