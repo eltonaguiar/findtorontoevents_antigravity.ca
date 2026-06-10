@@ -152,7 +152,10 @@ jobs:
         env:
           BUNDLE_NAME: ${{ steps.arm.outputs.bundle }}
         run: |
-          git add "ml_gatekeeper/models/${BUNDLE_NAME}"
+          # 2026-06-10: gatekeeper_new.joblib matches a .gitignore pattern so plain
+          # git add refused (NEW arm failed at commit while OLD arm passed). -f is
+          # intentional: these bundles are the workflow's deliverable.
+          git add -f "ml_gatekeeper/models/${BUNDLE_NAME}"
           if git diff --cached --quiet; then
             echo "No bundle changes to commit"
           else
