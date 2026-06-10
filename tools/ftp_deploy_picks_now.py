@@ -18,11 +18,11 @@ ctx.verify_mode = ssl.CERT_NONE
 ftp = FTP_TLS(context=ctx)
 ftp.connect(host, 21, timeout=30)
 ftp.login(user, pw)
-ftp.prot_p()
-
-uploads = [
+ftp.prot_p()uploads = [
     ("audit_dashboard/picks-now.html",        "/findtorontoevents.ca/audit",      "picks-now.html"),
-    ("audit_dashboard/data/picks_now.json",   "/findtorontoevents.ca/audit/data", "picks_now.json"),
+        ("audit_dashboard/data/picks_now.json",   "/findtorontoevents.ca/audit/data", "picks_now.json"),
+    ("audit_dashboard/data/picks_now_live_pnl.json",   "/findtorontoevents.ca/audit/data", "picks_now_live_pnl.json"),
+    ("audit_dashboard/data/picks_now_track_record.json", "/findtorontoevents.ca/audit/data", "picks_now_track_record.json"),
 ]
 
 for local, remote_dir, remote_name in uploads:
