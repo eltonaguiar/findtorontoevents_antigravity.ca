@@ -32,3 +32,13 @@ The project optimized for months against a **corrupted measurement layer** (inac
 
 ## RISKS (per peer reviews — mitigations adopted)
 Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). Keep per-class leads shadow-only until 30-60 forward-resolved post-cleanup. n≥100 + DSR + WFE before any T2 claim. Don't flip a class to money-ready on stale/inflated numbers (the stocks_rsi2_pullback trap).
+
+## TICK 04:00-04:25 — PR2 SHIPPED (the headline)
+- **PR2 LIVE (0bac396a88): entry-anchored intrabar resolution is now the production DEFAULT.** Shadow-diff PASSED all pre-registered gates (T1 flip-rate 29.4%<=30, T2 close-approx flips 78%<=90, T3 no class WR inflation; 400 open picks, prod-style fetch; conf-band split: flips concentrate in low-conf). Report 8e7c12bac8, harness 21f7088631. Rollback: RESOLVER_ENTRY_ANCHORED=0. Historical rows: left + dispute banners (recorded).
+- **Credential scrub COMPLETE** — repo-wide .py zero leaks (b7d88a97ab, 0caef8edd9). OPERATOR: rotate 50webs pw.
+- **Regens:** pick_funnel 12.8d->today ✓, dashboard_data 5d->today ✓, picks-now still running.
+- **Copilot/DeepSeek 482-line plan TRIAGED through the validation layer:**
+  - REJECTED: stocks_rsi2_pullback promote ("58.8% n=894") — direct SQL: RAW 40%/PF0.83 losing; TP/SL-only = 100% TP / 0 SL ever = close-walk labeling artifact; intrabar-true n=5. Honest perf UNKNOWN; let PR2-honest n build.
+  - REJECTED: CRYPTO SHORT-direction flip at sync layer — global-inversion premise previously refuted (w0fkolehf + live audit); destructive risk.
+  - ADOPTED: TSMOM/academic sleeves as forward_test_only shadow; FDR re-run (stale Apr 6); crypto_ohlcv 180d; blueprint_generator verify-before-fix.
+- NEXT TICK: verify picks-now regen done; wire money_ready_verdict to intrabar ledger; TSMOM shadow wiring; FDR re-run; #553 cleanup.
