@@ -1,40 +1,53 @@
 {
-  "generated_at": "2026-06-10T01:21:11.196511+00:00",
+  "generated_at": "2026-06-10T07:48:10.731883+00:00",
   "rolling_window_days": 30,
   "correlation_matrix": {
     "BTCUSDT": {
       "BTCUSDT": 1.0,
-      "ETHUSDT": 0.8621,
-      "BNBUSDT": 0.7287,
-      "DOGEUSDT": 0.7831,
-      "XRPUSDT": 0.8855
+      "ETHUSDT": 0.862,
+      "BNBUSDT": 0.7257,
+      "DOGEUSDT": 0.7807,
+      "SOLUSDT": 0.883,
+      "XRPUSDT": 0.8768
     },
     "ETHUSDT": {
-      "BTCUSDT": 0.8621,
+      "BTCUSDT": 0.862,
       "ETHUSDT": 1.0,
-      "BNBUSDT": 0.6842,
-      "DOGEUSDT": 0.8718,
-      "XRPUSDT": 0.8863
+      "BNBUSDT": 0.6815,
+      "DOGEUSDT": 0.8698,
+      "SOLUSDT": 0.9072,
+      "XRPUSDT": 0.8783
     },
     "BNBUSDT": {
-      "BTCUSDT": 0.7287,
-      "ETHUSDT": 0.6842,
+      "BTCUSDT": 0.7257,
+      "ETHUSDT": 0.6815,
       "BNBUSDT": 1.0,
-      "DOGEUSDT": 0.7003,
-      "XRPUSDT": 0.682
+      "DOGEUSDT": 0.7005,
+      "SOLUSDT": 0.7153,
+      "XRPUSDT": 0.6823
     },
     "DOGEUSDT": {
-      "BTCUSDT": 0.7831,
-      "ETHUSDT": 0.8718,
-      "BNBUSDT": 0.7003,
+      "BTCUSDT": 0.7807,
+      "ETHUSDT": 0.8698,
+      "BNBUSDT": 0.7005,
       "DOGEUSDT": 1.0,
-      "XRPUSDT": 0.8624
+      "SOLUSDT": 0.8305,
+      "XRPUSDT": 0.8601
+    },
+    "SOLUSDT": {
+      "BTCUSDT": 0.883,
+      "ETHUSDT": 0.9072,
+      "BNBUSDT": 0.7153,
+      "DOGEUSDT": 0.8305,
+      "SOLUSDT": 1.0,
+      "XRPUSDT": 0.9119
     },
     "XRPUSDT": {
-      "BTCUSDT": 0.8855,
-      "ETHUSDT": 0.8863,
-      "BNBUSDT": 0.682,
-      "DOGEUSDT": 0.8624,
+      "BTCUSDT": 0.8768,
+      "ETHUSDT": 0.8783,
+      "BNBUSDT": 0.6823,
+      "DOGEUSDT": 0.8601,
+      "SOLUSDT": 0.9119,
       "XRPUSDT": 1.0
     }
   },
@@ -43,30 +56,80 @@
     "ETHUSDT",
     "BNBUSDT",
     "DOGEUSDT",
+    "SOLUSDT",
     "XRPUSDT"
   ],
   "diversification": {
-    "avg_pairwise_correlation": 0.7946,
+    "avg_pairwise_correlation": 0.811,
     "diversification_score": 0.0,
     "risk_level": "HIGH_RISK",
-    "crypto_symbol_count": 5,
-    "pair_count": 10
+    "crypto_symbol_count": 6,
+    "pair_count": 15
   },
   "cross_asset_correlations": {
     "btc_vs_spy": null,
     "btc_vs_dxy": null,
-    "btc_vs_eth": 0.8621
+    "btc_vs_eth": 0.862
   },
-  "alerts": [],
-  "alert_count": 0,
-  "high_severity_alerts": 0,
-  "diversification_history": [
+  "alerts": [
     {
-      "timestamp": "2026-06-02T19:30:50.460670+00:00",
-      "score": 18.8,
-      "avg_corr": 0.6247,
-      "risk_level": "MODERATE"
-    },
+      "type": "HIGH_CORRELATION_CLUSTER",
+      "severity": "HIGH",
+      "pair_count": 9,
+      "threshold": 5,
+      "top_pairs": [
+        {
+          "a": "SOLUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.9119
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.9072
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.883
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8783
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8768
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "DOGEUSDT",
+          "corr": 0.8698
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "ETHUSDT",
+          "corr": 0.862
+        },
+        {
+          "a": "DOGEUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8601
+        },
+        {
+          "a": "DOGEUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.8305
+        }
+      ],
+      "message": "9 pairs with correlation > 0.8 (threshold: 5)"
+    }
+  ],
+  "alert_count": 1,
+  "high_severity_alerts": 1,
+  "diversification_history": [
     {
       "timestamp": "2026-06-03T01:30:03.176527+00:00",
       "score": 16.7,
@@ -239,6 +302,12 @@
       "timestamp": "2026-06-10T01:21:11.196511+00:00",
       "score": 0.0,
       "avg_corr": 0.7946,
+      "risk_level": "HIGH_RISK"
+    },
+    {
+      "timestamp": "2026-06-10T07:48:10.731883+00:00",
+      "score": 0.0,
+      "avg_corr": 0.811,
       "risk_level": "HIGH_RISK"
     }
   ]
