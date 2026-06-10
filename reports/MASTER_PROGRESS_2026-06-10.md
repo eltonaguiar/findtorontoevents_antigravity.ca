@@ -84,3 +84,11 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **#553 CLOSED as superseded** — all deliverables (picks_now_professional.py incl. newer ROOT fix, save_picks_to_db.py, picks-now.html incl. freebuff LIVE-PnL) already live on main; merging June-6 versions would regress them.
 - **ENTRY-CONDITIONING EXPERIMENT LAUNCHED** (background): the σ-experiment proved selection (not geometry) is the deficit, so this tests entry-time features (trend-alignment, momentum, RSI band, vol regime, session) per class on the honest cohort, with the same R1/R2/R3 discipline + negative-selection filters. Report -> reports/entry_conditioning_experiment_2026-06-10.json.
 - Live intrabar_truth: the 05:19 run predates the env-fix commit; the fix rides the 05:45 queued run — verify ~06:45.
+
+## TICK 06:10-06:25 — FIRST DISCIPLINED ENTRY-EDGE CANDIDATES (the selection attack pays off)
+- **Entry-conditioning experiment returned the session's first R1/R2/R3-passing candidates** (935 deduped honest picks, 101 slices, Bonferroni-honest; DIRECT-SQL VERIFIED within tolerance):
+  1. **CRYPTO: RSI(14,1h) 50-70 × US-session entries** — n=84, WR 52.4% (+18.8pp vs 33.6% baseline), PF 1.73; passes time-split (both halves), concentration (top sym 7%), p=3e-4 (family-wise ~0.03); survived ex-ensemble + long-only re-tests. **FORWARD-TEST candidate, not a sizing trigger.**
+  2. **Strategy-direction cell: luxalgo_confluence SHORT** — verified n=41, 68.3% WR, PF 1.96 (all-CRYPTO-shorts 63.6% is mostly this cell). NOTE: this is SELECTION (which emissions to take), NOT the rejected Copilot direction-FLIP (mutating picks) — distinction matters.
+  3. **Negative entry filters the gates don't check:** EQUITY high-vol entries hold 64.3% of class losses (low-vol remainder 62.9%/PF2.48, fragile n); FOREX trend-contrarian entries hold 75.7% of losses (remainder 64.3%/PF4.74 n=14). MEMECOIN = do-not-trade (nothing conditions it).
+- Corroborates the σ-experiment: wrong-way LONG selection is the disease; entry conditioning is the cure path.
+- NEXT: spec + wire the shadow entry-gate (forward_test_only stamps: entry_condition_met flags on emissions; verdict-excluded) so forward n accrues on conditions 1-2 + the two negative filters; re-test at n>=100/condition.
