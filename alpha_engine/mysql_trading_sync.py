@@ -623,6 +623,38 @@ def _validate_entry_price_scale(
     return True, ""
 
 
+def _validate_exit_price_scale(
+    symbol: str,
+    exit_price: float,
+    category: str,
+    price_cache: dict[str, float],
+) -> tuple[bool, str]:
+    """Return (pass, reason). Pass=False means the exit_price is implausible.
+
+    Mirror of _validate_entry_price_scale — catches the 5 non-crypto rows
+    with |pnl| > 1000% whose exit_price was at wrong decimal scale
+    (e.g. NG=F exit=63095 vs real ~3.50, AUDUSD=X exit=3.21 vs real ~0.64).
+    Only applied when exit_price is present (closed positions).
+    """
+    if exit_price is None or not symbol or symbol not in price_cache:
+        return True, ""  # no OHLCV data, or no exit_price → pass gracefully
+    close_price = price_cache[symbol]
+    if close_price is None or close_price <= 0 or exit_price <= 0:
+        return True, ""
+    cat = (category or "").upper()
+    # Crypto spans extreme ranges (micro-cap → BTC); skip scale validation.
+    if cat == "CRYPTO":
+        return True, ""
+    threshold = _ENTRY_SCALE_THRESHOLD_BY_CLASS.get(cat, _ENTRY_SCALE_THRESHOLD_DEFAULT)
+    ratio = max(exit_price / close_price, close_price / exit_price)
+    if ratio > threshold:
+        return False, (
+            f"exit_price={exit_price} vs latest OHLCV close={close_price} "
+            f"(ratio {ratio:.1f}x > {threshold:.0f}x threshold for class={cat})"
+        )
+    return True, ""
+
+
 # ── Main sync logic ─────────────────────────────────────────────────────────
 
 def sync(dry_run=False):
@@ -840,6 +872,39 @@ def sync(dry_run=False):
             f"[ENTRY_SCALE] Suppressed {_scale_skipped} pick(s) with "
             f"implausible entry_price (belt-and-suspenders with the pnl "
             f"anomaly clamp). {len(rows)} rows remain for upsert."
+        )
+
+    # ── Exit-price scale validation (2026-06-09) ───────────────────────────
+    # Mirror of the entry-price check above. Catches rows whose exit_price is
+    # at a wrong decimal scale (e.g. NG=F exit=63095 vs real ~3.50, AUDUSD
+    # exit=3.21 vs real ~0.64). Only applied when exit_price is present
+    # (closed positions). Uses the same price_cache loaded above.
+    _exit_scale_skipped = 0
+    exit_validated_rows: list[dict] = []
+    for r in rows:
+        if r.get("exit_price") is None:
+            # Open position — no exit_price to validate.
+            exit_validated_rows.append(r)
+            continue
+        ok, reason = _validate_exit_price_scale(
+            r.get("symbol", ""),
+            r.get("exit_price"),
+            r.get("category", ""),
+            price_cache,
+        )
+        if ok:
+            exit_validated_rows.append(r)
+        else:
+            _exit_scale_skipped += 1
+            log_warn(
+                f"[EXIT_SCALE] Suppressing {r.get('id', '?')[:50]} "
+                f"symbol={r.get('symbol')}: {reason}"
+            )
+    if _exit_scale_skipped:
+        rows = exit_validated_rows
+        log_info(
+            f"[EXIT_SCALE] Suppressed {_exit_scale_skipped} pick(s) with "
+            f"implausible exit_price. {len(rows)} rows remain for upsert."
         )
 
     # Create table if not exists
