@@ -170,3 +170,12 @@ Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid)
 - **CI Tests gate unblocked** (8149129a14): fail-fast:false + pytest-timeout + 41 drifted tests quarantined into a visible non-blocking warning step (root cause = test/code drift, biggest contributor bb7fd2d740 portfolio commit; NOT timeouts). Resolver harness still gating.
 - **Obsidian vault**: curated 2026-06-10 session note committed (7b4a164c1c).
 - **Fleet-parallel review note**: local GPU fleet is hardware-SERIAL (GB10 one-model-at-a-time) — concurrent vLLM/Ollama fan-out timed out/500'd. True parallel multi-model review needs the cloud-routing proxy (:4000 currently unresponsive) or Claude subagents; the 2 subagent sweeps delivered the parallel review.
+
+## ULTRACODE TICK ~18:50 — workflow-verified sweep filing (3 CONFIRMED / 3 PARTIAL / 1 REFUTED)
+7-claim adversarial verification workflow (wf_3c3cdc16) over the 2nd MD sweep's ★ findings prevented one false incident and sharpened three diagnoses:
+- **FIXED (code): shadow_pilot_tracker EXPIRED-as-resolved** (354288016e) — EXPIRED dropped from the status filter + zero-pnl guard; kills the FUTURES "pf_ok:true on 378 expired rows / PF 10.28 degenerate" class.
+- **FIXED (ci): promotion_gate_report.json persistence gap** (109af8e131) — regen ran 3-hourly but output was never staged; repo copy frozen at 2026-04-02. Now staged each run. (Gini threshold was ALREADY fixed 0.40→0.65 in #412 — claim partially stale.)
+- **FILED: FOREX posture contradiction (CONFIRMED)** — FOREX_HARD_DISABLE flipped to 0 on 2026-06-05 (carry-g10 backtest) while FREEZE #77 stays open + policy-clean FOREX FAILs; operator decision incident (INCIDENT_FOREX #19).
+- **FILED: bond_strategy_harness wiring debt** (ENHANCEMENT_BONDS #9) — deliberate deferral now unblocked by PR2; BOND n=6 needs supply.
+- **RESOLVED 5 stale incidents** verified fixed-but-open (OVERALL #12 ghosts, #7 signal_time, #64+#85 EXPIRED-mislabel, #79 stale-OPEN backlog) — feed accuracy restored; page regen + FTP live (181/206/19).
+- **REFUTED (not filed): verify_system_pf "zero callers"** — it runs daily via ab_analysis.yml (succeeded today) and commits its output. Test-rot claim corrected: files live in tools/ (18F+16F, born-broken at creation), folded into the #129 reconciliation incident scope.
