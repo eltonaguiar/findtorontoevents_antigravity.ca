@@ -500,8 +500,16 @@ def _fetch_yfinance_ohlcv(symbol: str, period: str = "5d", interval: str = "1h")
             return []
 
         bars = []
-        for _, row in hist.iterrows():
+        for idx, row in hist.iterrows():
+            # bar timestamp (ms) for entry-anchored resolution (Bug 1A). yfinance intraday index
+            # is tz-aware; localize to UTC if naive so we don't silently shift by the local offset.
+            try:
+                _i = idx.tz_localize("UTC") if getattr(idx, "tzinfo", None) is None else idx
+                _ts = int(_i.timestamp() * 1000)
+            except Exception:
+                _ts = None
             bars.append({
+                "timestamp": _ts,
                 "open": float(row.get("Open", 0)),
                 "high": float(row.get("High", 0)),
                 "low": float(row.get("Low", 0)),
@@ -540,6 +548,7 @@ def _fetch_binance_klines_ohlcv(symbol: str, interval: str = "1h", limit: int = 
                 if len(k) < 5:
                     continue
                 bars.append({
+                    "timestamp": int(k[0]),  # open_time ms — for entry-anchored resolution (Bug 1A)
                     "open": float(k[1]),
                     "high": float(k[2]),
                     "low": float(k[3]),
@@ -555,12 +564,39 @@ def _fetch_binance_klines_ohlcv(symbol: str, interval: str = "1h", limit: int = 
     return []
 
 
+def _parse_ts_ms(ts_str):
+    """Robust ISO-8601 -> epoch-ms (UTC), incl. '+00:00'/'-05:00' offsets and 'Z'.
+    Returns int ms or None. Used ONLY by the entry-anchored intrabar path so the shared
+    _parse_timestamp() and the flag-OFF behavior stay byte-identical. (2026-06-10 Bug 1A.)"""
+    if not ts_str:
+        return None
+    s = str(ts_str).strip()
+    try:
+        iso = (s[:-1] + "+00:00") if s.endswith("Z") else s
+        dt = datetime.fromisoformat(iso)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return int(dt.astimezone(timezone.utc).timestamp() * 1000)
+    except (ValueError, TypeError):
+        pass
+    dt = _parse_timestamp(ts_str)
+    return int(dt.timestamp() * 1000) if dt else None
+
+
+# Entry-anchored resolution (Bug 1A) is gated OFF by default so production behavior is
+# byte-identical until a reviewed shadow-diff (PR2). Flip RESOLVER_ENTRY_ANCHORED=1 to enable.
+_ENTRY_ANCHORED = os.environ.get("RESOLVER_ENTRY_ANCHORED", "0").strip() == "1"
+
+
 def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
     """Check TP/SL against intrabar OHLC data (not just close price).
 
-    For each bar, check if high/low crossed TP or SL levels.
-    Returns (reason, exit_price, pnl_pct) or None.
-    This is more accurate than close-only checking — catches wicks that hit TP/SL.
+    Returns (reason, exit_price, pnl_pct) or None — 3-tuple contract preserved (the sole caller
+    strict-unpacks it); ambiguous/bad-geometry are carried on the pick dict.
+
+    When RESOLVER_ENTRY_ANCHORED=1 (Bug 1A fix): a valid-geometry guard + a pre-entry-bar filter +
+    a partial-window degrade (earliest bar after entry -> None -> caller's close_approx) eliminate
+    the stale-window look-ahead. Flag OFF = legacy behavior, byte-identical.
     """
     direction = pick["direction"]
     entry = pick["entry_price"]
@@ -570,7 +606,35 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
     if not entry or (not tp and not sl):
         return None
 
-    for bar in ohlcv_bars:
+    bars = ohlcv_bars
+    if _ENTRY_ANCHORED:
+        d = (direction or "LONG").upper()
+        # Bug 1C: bad-geometry guard — LONG needs sl<entry<tp, SHORT needs tp<entry<sl.
+        if d in ("LONG", "BUY"):
+            if (sl and sl >= entry) or (tp and tp <= entry):
+                pick["_intrabar_bad_geometry"] = True
+                return None
+        else:
+            if (sl and sl <= entry) or (tp and tp >= entry):
+                pick["_intrabar_bad_geometry"] = True
+                return None
+        # Entry-anchored window. Unparseable entry -> None (close_approx), NEVER unfiltered.
+        entry_ms = _parse_ts_ms(pick.get("timestamp"))
+        if entry_ms is None:
+            return None
+        stamped = [b["timestamp"] for b in ohlcv_bars if b.get("timestamp") is not None]
+        if stamped:
+            # Partial-window degrade: earliest available bar starts after entry (+1h tol) ->
+            # early bars where first-touch may have happened are missing -> do not fake-resolve.
+            if min(stamped) > entry_ms + 3_600_000:
+                return None
+            # Keep bars at/after entry (open_time >= entry_ms drops the partial entry bar);
+            # un-stamped bars are KEPT (defensive — preserves un-stamped sources).
+            bars = [b for b in ohlcv_bars if b.get("timestamp") is None or b["timestamp"] >= entry_ms]
+            if not bars:
+                return None
+
+    for bar in bars:
         high = bar.get("high", 0)
         low = bar.get("low", 0)
         if not high or not low:
@@ -578,19 +642,23 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
 
         # SL-first conservative ordering (mirrors tournament's _scan_bars_for_touch).
         if direction == "LONG":
-            if sl and low <= sl:
-                pnl = _compute_pnl(entry, sl, direction)
-                return ("SL_HIT", sl, pnl)
-            if tp and high >= tp:
-                pnl = _compute_pnl(entry, tp, direction)
-                return ("TP_HIT", tp, pnl)
+            sl_hit = bool(sl and low <= sl)
+            tp_hit = bool(tp and high >= tp)
+            if _ENTRY_ANCHORED and sl_hit and tp_hit:
+                pick["_intrabar_ambiguous"] = True
+            if sl_hit:
+                return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+            if tp_hit:
+                return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
         else:  # SHORT
-            if sl and high >= sl:
-                pnl = _compute_pnl(entry, sl, direction)
-                return ("SL_HIT", sl, pnl)
-            if tp and low <= tp:
-                pnl = _compute_pnl(entry, tp, direction)
-                return ("TP_HIT", tp, pnl)
+            sl_hit = bool(sl and high >= sl)
+            tp_hit = bool(tp and low <= tp)
+            if _ENTRY_ANCHORED and sl_hit and tp_hit:
+                pick["_intrabar_ambiguous"] = True
+            if sl_hit:
+                return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+            if tp_hit:
+                return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
 
     return None
 
@@ -1254,14 +1322,23 @@ def main():
 
             # Check TP/SL — unified intrabar OHLC replay for ALL symbols
             result = None
+            _res_method = None
             intrabar_bars = ohlc_bars_cache.get(norm_sym, [])
             if intrabar_bars:
                 result = _check_tp_sl_intrabar(pick, intrabar_bars)
                 if result:
+                    _res_method = "intrabar"
                     log.debug("  intrabar hit for %s %s", norm_sym, pick["direction"])
-            # Fallback to close-price check
+            # Fallback to close-price check. NOTE (2026-06-10 review, Bug 1B): this path
+            # is a CLOSE-ONLY APPROXIMATION — a single-snapshot price check, NOT intrabar
+            # first-touch. It is less accurate (can mark a TP "win" on a pick that hit SL
+            # intrabar). Tagged resolution_method="close_approx" so downstream WR/PF can
+            # exclude/flag these. (Bug 1A: when bars exist but are older-than-pick stale,
+            # intrabar replays the wrong window — entry-anchored fetch fix is pending.)
             if result is None:
                 result = check_tp_sl(pick, current_price)
+                if result:
+                    _res_method = "close_approx"
             if result:
                 reason, exit_price, pnl_pct = result
                 # F-1 PnL outlier cap +/-100% applied to JSON-side resolution too
@@ -1276,6 +1353,7 @@ def main():
                     "pnl_pct": pnl_pct,
                     "exit_reason": reason,
                     "status": "CLOSED",
+                    "resolution_method": _res_method,  # "intrabar" (accurate) | "close_approx" (Bug 1B)
                     "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "current_price_at_resolve": current_price,
                     "_resolver_version": RESOLVER_VERSION,

@@ -33,14 +33,30 @@ REPO = Path(__file__).resolve().parent.parent
 DATA_DIR = REPO / "audit_dashboard" / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── DB credentials (from dbpasses.txt) ──────────────────────────────────────
-DB_HOST = "mysql.50webs.com"
-DB_STOCKS_USER = "ejaguiar1_stocks"
-DB_STOCKS_PASS = "stocks1234560"
-DB_STOCKS_NAME = "ejaguiar1_stocks"
-DB_BACKTESTS_USER = "ejaguiar1_backtests"
-DB_BACKTESTS_PASS = "backtests1234560"
-DB_BACKTESTS_NAME = "ejaguiar1_backtests"
+# ── DB credentials — passwords NEVER hardcoded (2026-06-10 security fix). ────
+# The previous hardcoded literals were a committed-secret leak; resolve via the
+# canonical tools/db_env (env-first + ~/dbpasses.txt fallback) with an env fallback.
+import os as _os
+try:
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from tools.db_env import get_stocks_creds as _gsc, get_backtests_creds as _gbc
+    _S, _B = _gsc(), _gbc()
+    DB_HOST = _S.get("host", "mysql.50webs.com")
+    DB_STOCKS_USER = _S.get("user", "ejaguiar1_stocks")
+    DB_STOCKS_PASS = _S.get("password", "")
+    DB_STOCKS_NAME = _S.get("database", "ejaguiar1_stocks")
+    DB_BACKTESTS_USER = _B.get("user", "ejaguiar1_backtests")
+    DB_BACKTESTS_PASS = _B.get("password", "")
+    DB_BACKTESTS_NAME = _B.get("database", "ejaguiar1_backtests")
+except Exception:
+    DB_HOST = "mysql.50webs.com"
+    DB_STOCKS_USER = "ejaguiar1_stocks"
+    DB_STOCKS_PASS = _os.environ.get("DB_PASS_STOCKS", "")
+    DB_STOCKS_NAME = "ejaguiar1_stocks"
+    DB_BACKTESTS_USER = "ejaguiar1_backtests"
+    DB_BACKTESTS_PASS = _os.environ.get("DB_PASS_BACKTESTS", "")
+    DB_BACKTESTS_NAME = "ejaguiar1_backtests"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
