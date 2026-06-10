@@ -155,3 +155,8 @@ Live updates card (honest-measurement milestone) · pick_funnel 9/9 filter docs 
 
 ## 10:17 — ✅ ALL-CLEAR, RUN COMPLETE
 Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid), classes.CRYPTO.intrabar_truth populated (n=1154 32.4%/PF0.73), snapshot run GREEN. The honest measurement chain is live and self-maintaining. Loop ended; operator handoff is in SESSION CLOSE above.
+
+## LOOP RESUMED 10:30+ — handoff execution
+- **HANDOFF #6 COMPLETE — Option-A fully implemented** (eb12c0f26c, a17734815f, 2738cc26b7, 855c16d7a6): the signal-week dedup guardrail is live in check_emission_gates (<=1 sized emission per strategy+symbol+direction+ISO-week; shadow-exempt; SIGNAL_WEEK_DEDUP=0 kill-switch) and all 3 remaining crypto emitters (ml_crypto_predictor, claude_gainer_ml, crypto_signal_engine) now thread strategy/direction/forward_test_only. The DSR/PBO IID assumption is now protected end-to-end against correlated re-emission (the CT=F 6.33x class).
+- **HANDOFF #7 IN FLIGHT**: CI Tests chronic-timeout diagnosis delegated (background) — root-cause + minimal workflow fix proposal, review-before-commit.
+- Ledger watch: COMMODITY n=90 / FOREX n=88 (steady; first honest verdicts as resolutions accrue).
