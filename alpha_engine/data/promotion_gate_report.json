@@ -1,33 +1,35 @@
 {
-  "generated_at": "2026-04-02T01:03:34.574484+00:00",
+  "generated_at": "2026-06-10T19:00:11.379097+00:00",
   "inputs": {
-    "walk_forward": "alpha_engine\\data\\walk_forward_results.json",
-    "institutional_report": "alpha_engine\\data\\institutional_backtest_report_round2.json"
+    "walk_forward": "alpha_engine/data/walk_forward_results.json",
+    "institutional_report": "alpha_engine/data/institutional_backtest_report.json"
   },
   "thresholds": {
     "min_trades": 50,
     "posterior_prob_sharpe_gt_zero": 0.95,
     "deflated_sharpe": 1.64,
     "max_abs_correlation": 0.75,
-    "gini_concentration": 0.4
+    "gini_concentration": 0.65
   },
   "global": {
-    "gini_concentration": 0.7123,
+    "gini_concentration": 0.8609,
     "n_strategies": 5,
     "production_candidates": 0,
-    "probation": 0,
-    "reject": 5
+    "probation": 1,
+    "reject": 4,
+    "portfolio_deflated_sharpe_sm": -8.6803,
+    "portfolio_prob_sharpe_sm": 0.0
   },
   "decisions": [
     {
       "strategy": "bollinger_bounce",
-      "trades": 107,
-      "win_rate": 63.55,
-      "profit_factor": 0.486,
-      "sharpe": 0.87,
+      "trades": 133,
+      "win_rate": 63.16,
+      "profit_factor": 1.539,
+      "sharpe": 10.396,
       "posterior_prob_sharpe_gt_zero": 1.0,
-      "deflated_sharpe": 0.0,
-      "max_abs_correlation": 0.776,
+      "deflated_sharpe": 1.0,
+      "max_abs_correlation": 0.8105,
       "checks": {
         "min_trades": true,
         "bh_or_bonf_significant": true,
@@ -35,21 +37,21 @@
         "deflated_sharpe": false,
         "correlation_gate": false,
         "gini_concentration_gate": false,
-        "basic_quality": false
+        "basic_quality": true
       },
-      "gate_score": 3,
+      "gate_score": 4,
       "gate_max": 7,
-      "status": "REJECT"
+      "status": "PROBATION"
     },
     {
       "strategy": "ema_crossover",
-      "trades": 127,
-      "win_rate": 28.35,
-      "profit_factor": 0.07,
-      "sharpe": -7.059,
+      "trades": 137,
+      "win_rate": 24.82,
+      "profit_factor": 0.02,
+      "sharpe": -15.415,
       "posterior_prob_sharpe_gt_zero": 0.0,
       "deflated_sharpe": 0.0,
-      "max_abs_correlation": 0.5621,
+      "max_abs_correlation": 0.3901,
       "checks": {
         "min_trades": true,
         "bh_or_bonf_significant": true,
@@ -64,60 +66,38 @@
       "status": "REJECT"
     },
     {
-      "strategy": "rsi_reversal",
-      "trades": 39,
-      "win_rate": 53.85,
-      "profit_factor": 0.149,
-      "sharpe": 42.014,
-      "posterior_prob_sharpe_gt_zero": 1.0,
-      "deflated_sharpe": 1.0,
-      "max_abs_correlation": 0.7137,
-      "checks": {
-        "min_trades": false,
-        "bh_or_bonf_significant": false,
-        "posterior_prob_sharpe_gt_zero": true,
-        "deflated_sharpe": false,
-        "correlation_gate": true,
-        "gini_concentration_gate": false,
-        "basic_quality": false
-      },
-      "gate_score": 2,
-      "gate_max": 7,
-      "status": "REJECT"
-    },
-    {
-      "strategy": "funding_rate_contrarian",
-      "trades": 25,
-      "win_rate": 52.0,
-      "profit_factor": 0.386,
-      "sharpe": 8.801,
-      "posterior_prob_sharpe_gt_zero": 1.0,
-      "deflated_sharpe": 1.0,
-      "max_abs_correlation": 0.7137,
-      "checks": {
-        "min_trades": false,
-        "bh_or_bonf_significant": false,
-        "posterior_prob_sharpe_gt_zero": true,
-        "deflated_sharpe": false,
-        "correlation_gate": true,
-        "gini_concentration_gate": false,
-        "basic_quality": false
-      },
-      "gate_score": 2,
-      "gate_max": 7,
-      "status": "REJECT"
-    },
-    {
       "strategy": "macd_divergence",
-      "trades": 203,
-      "win_rate": 43.84,
-      "profit_factor": 2.404,
-      "sharpe": 1.095,
-      "posterior_prob_sharpe_gt_zero": 1.0,
+      "trades": 230,
+      "win_rate": 25.22,
+      "profit_factor": 0.048,
+      "sharpe": -4.895,
+      "posterior_prob_sharpe_gt_zero": 0.0,
       "deflated_sharpe": 0.0,
-      "max_abs_correlation": 0.776,
+      "max_abs_correlation": 0.7844,
       "checks": {
         "min_trades": true,
+        "bh_or_bonf_significant": true,
+        "posterior_prob_sharpe_gt_zero": false,
+        "deflated_sharpe": false,
+        "correlation_gate": false,
+        "gini_concentration_gate": false,
+        "basic_quality": false
+      },
+      "gate_score": 2,
+      "gate_max": 7,
+      "status": "REJECT"
+    },
+    {
+      "strategy": "rsi_reversal",
+      "trades": 27,
+      "win_rate": 48.15,
+      "profit_factor": 0.181,
+      "sharpe": 9.715,
+      "posterior_prob_sharpe_gt_zero": 1.0,
+      "deflated_sharpe": 1.0,
+      "max_abs_correlation": 0.8105,
+      "checks": {
+        "min_trades": false,
         "bh_or_bonf_significant": false,
         "posterior_prob_sharpe_gt_zero": true,
         "deflated_sharpe": false,
@@ -125,7 +105,29 @@
         "gini_concentration_gate": false,
         "basic_quality": false
       },
-      "gate_score": 2,
+      "gate_score": 1,
+      "gate_max": 7,
+      "status": "REJECT"
+    },
+    {
+      "strategy": "funding_rate_contrarian",
+      "trades": 5,
+      "win_rate": 40.0,
+      "profit_factor": 0.201,
+      "sharpe": 0.0,
+      "posterior_prob_sharpe_gt_zero": 0.5,
+      "deflated_sharpe": 0.0,
+      "max_abs_correlation": 0.2744,
+      "checks": {
+        "min_trades": false,
+        "bh_or_bonf_significant": false,
+        "posterior_prob_sharpe_gt_zero": false,
+        "deflated_sharpe": false,
+        "correlation_gate": true,
+        "gini_concentration_gate": false,
+        "basic_quality": false
+      },
+      "gate_score": 1,
       "gate_max": 7,
       "status": "REJECT"
     }
