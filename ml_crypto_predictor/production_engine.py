@@ -1202,7 +1202,10 @@ def generate_live_picks(backtest_results, conn=None, active_picks=None, closed_p
         # Emission gate: cooldown + daily cap (shared with alpha_engine).
         try:
             from alpha_engine.non_crypto_policy import check_emission_gates as _ceg
-            _g = _ceg(str(pick.get("symbol") or ""))
+            _g = _ceg(str(pick.get("symbol") or ""),
+                      strategy=str(pick.get("strategy") or ""),
+                      direction=str(pick.get("direction") or pick.get("signal_type") or ""),
+                      forward_test_only=bool(pick.get("forward_test_only")))
             if _g.get("blocked"):
                 continue
         except Exception:
