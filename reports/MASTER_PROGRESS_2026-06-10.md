@@ -64,3 +64,10 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **profitable_filtered_observer WIRED (f73fcec34b)** — the P0 "profitable-but-filtered picks not surfaced" incident now records a daily JSONL false-negative lane (observational-only, fully guarded; verbatim-anchored subagent implementation, reviewed + committed).
 - **PBO regen (gem #1):** global PBO 1.0 (stale June-2, degenerate) -> 0.8222 on the post-PR2+quarantine cohort (pool honestly 56->17 strategies). Still FAIL>=0.7 — CORRECTLY blocking promotion, consistent with the edge audit's null. The gate is no longer frozen on pre-fix data.
 - picks-now ROOT fix (42c5db0c73) + 93-row contamination quarantine logged previous tick.
+
+## TICK 05:15-05:40 — live wiring fixed + deliverables shipped
+- **Live verdict diagnosis + fix**: live money_ready_verdict.json had generated_at ✓ but intrabar_truth:null — root cause = the money_ready_snapshot step in audit-dashboard.yml was MISSING DB_PASS_STOCKS (5 sibling steps have it) → _intrabar_truth_map() fail-opened in GHA. Env added (1e1efea80f), regen redispatched; verify next tick.
+- **pead_equity gem resolved**: ALREADY enabled in alpha-engine-live.yml (note: early vs its own 2026-06-14 review-gate comment). Shadow-only by design (0 DB rows correct). REAL issue found: shadow log pead_shadow_picks.json is overwrite-mode ("w") → no durable history for the 06-14 review. Queued: make it append/dated before the gate.
+- **updates/index.html card SHIPPED + FTP-deployed (8431062f7a, HTTP 200)** — the honest-measurement milestone is publicly documented above the AUTO-INJECTED block per convention.
+- **Memory protocol done**: personal memory file + MEMORY.md pointer written (project-honest-measurement-live-2026-06-10); agentmemory POST attempted (server quiet); holographic append deferred (agent_shared_memory.json has live peer edits — avoiding clobber).
+- REMAINING QUEUE: verify live intrabar_truth post-regen; #553 rebase+gitignore; pick_funnel Money-Ready/Proven-Only doc gaps; pead shadow-log durability; 709 NULL-pnl + 82 asset_class + ohlcv-universe backfills; entry-criteria research swarm return.
