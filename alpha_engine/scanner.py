@@ -3727,6 +3727,20 @@ def open_new_picks(signals: list[dict], db: SQLiteStore,
         except Exception:
             pass
 
+        # ADV liquidity SHADOW-TAG (2026-06-10, INCIDENT_CRYPTO #20 phase 1):
+        # is_liquid_crypto() was built+tested but never wired. Measure-before-enforce:
+        # tag illiquid CRYPTO emissions (fail-open on cache miss) WITHOUT blocking, so
+        # we learn how many picks the future hard gate would remove and how they perform.
+        try:
+            if _ac in (None, "crypto"):
+                from alpha_engine.asset_class import is_liquid_crypto as _ilc
+                if not _ilc(signal.get("symbol")):
+                    signal["_adv_illiquid"] = True
+                    logger.info("adv_shadow_tag illiquid %s %s",
+                                signal.get("strategy", "?"), signal.get("symbol", "?"))
+        except Exception:
+            pass
+
         # Tournament tier gate: Challenger strategies are paper-only (feature-flagged)
         try:
             use_tournament = os.environ.get("ALPHA_TOURNAMENT", "0") == "1"
