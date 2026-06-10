@@ -613,6 +613,14 @@ def _validate_entry_price_scale(
     # Crypto spans extreme ranges (micro-cap → BTC); skip scale validation.
     if cat == "CRYPTO":
         return True, ""
+    # Absolute-value floor: mirror of exit_price check. Catches near-zero
+    # corrupt entries for high-priced instruments (e.g. NQ=F entry=0.004
+    # vs real ~22,000).
+    if close_price > 100.0 and entry_price < 1.0:
+        return False, (
+            f"entry_price={entry_price} < 1.0 but OHLCV close={close_price} > 100 "
+            f"(absolute-value floor — sub-$1 entry implausible for ${close_price:.0f}+ instrument)"
+        )
     threshold = _ENTRY_SCALE_THRESHOLD_BY_CLASS.get(cat, _ENTRY_SCALE_THRESHOLD_DEFAULT)
     ratio = max(entry_price / close_price, close_price / entry_price)
     if ratio > threshold:
@@ -635,6 +643,11 @@ def _validate_exit_price_scale(
     with |pnl| > 1000% whose exit_price was at wrong decimal scale
     (e.g. NG=F exit=63095 vs real ~3.50, AUDUSD=X exit=3.21 vs real ~0.64).
     Only applied when exit_price is present (closed positions).
+
+    2026-06-10: added absolute-value floor — when OHLCV close > 100, reject
+    exit_price < 1.0. Catches near-zero corrupt exits for high-priced
+    instruments (NQ=F ~22,000 with exit ~0.004) that pass the ratio check
+    because a tiny numerator produces a ratio within the threshold.
     """
     if exit_price is None or not symbol or symbol not in price_cache:
         return True, ""  # no OHLCV data, or no exit_price → pass gracefully
@@ -645,6 +658,15 @@ def _validate_exit_price_scale(
     # Crypto spans extreme ranges (micro-cap → BTC); skip scale validation.
     if cat == "CRYPTO":
         return True, ""
+    # Absolute-value floor: if the instrument trades above 100 and the exit
+    # price is below 1.0, it's implausible — no instrument that trades at
+    # $100+ can exit at sub-$1 (even a 99% crash would be >$1). Catches
+    # near-zero corrupt exits (NQ=F at ~22,000 exiting at ~0.004).
+    if close_price > 100.0 and exit_price < 1.0:
+        return False, (
+            f"exit_price={exit_price} < 1.0 but OHLCV close={close_price} > 100 "
+            f"(absolute-value floor — sub-$1 exit implausible for ${close_price:.0f}+ instrument)"
+        )
     threshold = _ENTRY_SCALE_THRESHOLD_BY_CLASS.get(cat, _ENTRY_SCALE_THRESHOLD_DEFAULT)
     ratio = max(exit_price / close_price, close_price / exit_price)
     if ratio > threshold:
