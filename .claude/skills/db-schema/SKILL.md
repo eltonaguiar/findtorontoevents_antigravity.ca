@@ -66,16 +66,27 @@ description: Look up database schema, table structure, or connection details for
 
 ## Connection Details
 
-| Variable | Value |
-|---|---|
-| Host | `mysql.50webs.com:3306` |
-| stocks user | `ejaguiar1_stocks` |
-| stocks pass env | `DB_PASS_STOCKS` (= `stock123` in `.env`) |
-| backtests user | `ejaguiar1_backtests` |
-| backtests pass env | `DB_PASS_BACKTESTS` (= `backtests123` in `.env`) |
-| favcreators pass env | `DB_PASS_SERVER_FAVCREATORS` |
+**ALWAYS connect via `tools/db_env.py` — never hardcode a password.** It resolves creds from env vars, then `/home/eaguiar2015/dbpasses.txt` (gitignored — never commit/echo its contents):
 
-> **Note:** `ejaguiar1_stocks` is **only connectable from the 50webs server IP** — external connections (dev machine, CI) get `Access denied`. Use the PHP API endpoints or run queries from within 50webs shell. `ejaguiar1_backtests` is accessible externally.
+```python
+import sys; sys.path.insert(0, '<repo root>')
+from tools.db_env import get_stocks_creds, get_backtests_creds, get_backups_creds
+import pymysql
+KEEP = ('host','user','password','database','port','connect_timeout')
+conn = pymysql.connect(**{k:v for k,v in get_stocks_creds().items() if k in KEEP})
+```
+
+| DB | resolver | user | purpose |
+|---|---|---|---|
+| `ejaguiar1_stocks` | `get_stocks_creds()` | `ejaguiar1_stocks` | live picks/outcomes (`trading_picks`, `at_signal_outcomes`, INCIDENT_*/ENHANCEMENT_*/FINDING_*) |
+| `ejaguiar1_backtests` | `get_backtests_creds()` | `ejaguiar1_backtests` | `bt_backtest_trades`, backtest runs |
+| `ejaguiar1_backups` | `get_backups_creds()` | `ejaguiar1_backups` | **backup target for ALL table-mutating ops** |
+
+Pass envs (`DB_PASS_STOCKS` / `DB_PASS_BACKTESTS` / `DB_PASS_BACKUPS`) live in `.env` / `dbpasses.txt` — the actual values are NOT documented here (history exposure → operator rotation pending). 50webs pw convention: `<name>1234560`.
+
+> **BACKUP RULE (MANDATORY, operator directive):** before any UPDATE/DELETE/DROP/schema change on a live table, snapshot the affected rows to `ejaguiar1_backups` first. Use `tools/db_backup_to_backups.py` or an inline copy — **backup-table names must stay ≤64 chars** (MySQL identifier limit; long source-table names + a timestamp suffix overflow — use a short hashed/consolidated name). Then mutate in a txn with a row-count sanity assert.
+
+> **Note:** `ejaguiar1_stocks` is **only connectable from the 50webs server IP** — external connections (dev machine, CI) get `Access denied`. Use the PHP API endpoints or run queries from within 50webs shell. `ejaguiar1_backtests` is accessible externally. (Local agents on this desktop reach all three via `db_env` — creds in `dbpasses.txt`.)
 
 ## How to Regenerate the Schema Doc
 
