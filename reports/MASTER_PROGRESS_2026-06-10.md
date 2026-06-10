@@ -204,3 +204,6 @@ Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid)
 - **ML Gatekeeper Train A/B: FULLY GREEN** — fetch-input + training + commit all fixed (the WS-A chronic is closed).
 - ci-tests: +2 new drift (phase1 dead-zone/time-of-day non-crypto gating) quarantined + redispatched. **Tonight's drift velocity: 41 -> +26 -> +2 (~69 quarantined)** — #129 updated with an operator suggestion: require test updates in the same PR for gate changes, or a brief gate-change freeze until reconciliation.
 - Ledger steady (COMMODITY 90 / FOREX 88); no ADV tags yet; lane unchanged; live fresh (21:51).
+
+## OVERNIGHT 23:47 — ALL GREEN heartbeat
+ci-tests SUCCESS (gate holding); gatekeeper closed; ledger steady (COMMODITY 90 / FOREX 88); no ADV tags yet; lane unchanged (rsi5070 108 @ 47.2%/1.54); live verdict self-sustaining (22:50). Nothing actionable; cadence extended to 90min.
