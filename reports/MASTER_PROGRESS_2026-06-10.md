@@ -110,3 +110,9 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **Re-resolve: +221 new intrabar shadow rows** (built-in backup; canonical untouched; rollback documented).
 - **Refreshed honest ledger (committed):** CRYPTO n=1154 (32.4%/PF0.73 FAIL), EQUITY n=107 (34.6%/PF0.47 FAIL) — TWO classes now clear the n>=100 bar and BOTH fail honestly; COMMODITY n=90 / FOREX n=88 approaching. Leads unchanged (futures_momentum n47 — concentration caveat stands; forex_rsi2 n20). The honest verdict is STABLE under data growth — measurement layer working as designed.
 - Live verdict intrabar_truth: 05:45 env-fixed dashboard run still in flight; verify next tick.
+
+## TICK 07:16-07:35 — forward lane honest-tracking + sign-flip gate restored
+- **crypto_rsi5070_us crossed n=100 (108): WR 47.2% / PF 1.54** (last-30d 49.2%/1.50 vs baseline 28.9%/0.55). Still ~+15pp/3xPF over baseline but WR<50 — the honest call: KEEP MEASURING, do not promote. Sidecar refreshed+committed (9869c9e687). luxalgo_short 38 @ 71.1%/2.21 (recency caveat stands).
+- **Sign-Coherence Gate failure diagnosed + FIXED**: not my scrub — the gate correctly caught 2 NEW mega_mutation ADAUSDT sign-flips (stored +3.28%/WON, real -3.48%). Purged via audit_trail/sign_flip_purge.py --apply (backup + manifest committed); re-check = 0 flips; gate redispatched.
+- Live verdict intrabar_truth: the 05:45 env-fixed dashboard run STILL in flight (long build) — rolls again.
+- Other GHA failures: CI Tests (chronic, known), Picks-Now Live PnL hourly (freebuff's new workflow — theirs), masking/leak-guard (old PR-era runs). Nothing else actionable.
