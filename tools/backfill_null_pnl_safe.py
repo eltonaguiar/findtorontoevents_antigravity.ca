@@ -68,9 +68,34 @@ def _violates_constraint(status: str, pnl: float) -> bool:
     """Check chk_pnl_sign_coherence. Returns True if pnl contradicts status."""
     if status in ("TP_HIT",):
         return pnl < -0.02  # winning trade should have positive or near-zero pnl
-    if status in ("SL_HIT", "LOST", "TIME_EXIT"):
+    if status in ("SL_HIT", "LOST"):
         return pnl > 0.02   # losing trade should have negative or near-zero pnl
+    # TIME_EXIT can be either sign — time expiry isn't a win/loss verdict.
+    # Cluster 4 of the investigation: vix_reversal GOOGL/TSLA/XLK expired at
+    # small profits (+0.03% to +1.19%) — the constraint was too strict.
     return False
+
+
+def _correct_status(status: str, pnl: float) -> str:
+    """Auto-correct status when PnL sign contradicts it.
+
+    Investigation findings (reports/null_pnl_constraint_violation_investigation_2026-06-09.md):
+      Cluster 1: iso_regime_terminal — -2% trailing stops labeled TP_HIT → correct to SL_HIT
+      Cluster 2: iso_battleground_luxalgo — inverted win/loss → TP_HIT↔LOST swap
+      Cluster 5: Miscellaneous near-flat mislabels → correct based on PnL sign
+
+    Mapping:
+      TP_HIT  + negative PnL  → LOST  (stop hit, not take-profit)
+      LOST    + positive PnL  → TP_HIT (take-profit hit, not stop)
+      SL_HIT  + positive PnL  → TP_HIT (take-profit hit, not stop-loss)
+      TIME_EXIT — never corrected (time expiry is agnostic to PnL sign)
+    """
+    if status == "TP_HIT" and pnl < -0.02:
+        return "LOST"
+    if status in ("LOST", "SL_HIT") and pnl > 0.02:
+        return "TP_HIT"
+    # TIME_EXIT, near-flat, or already consistent — leave as-is
+    return status
 
 
 def _load_price_cache(
@@ -235,12 +260,13 @@ def run(dry_run: bool = True, report_only: bool = False, log_skipped: bool = Fal
     price_cache = _load_price_cache(conn, symbols, categories)
 
     # ── 3. Classify each row ──
-    to_update: list[tuple[float, str]] = []  # (pnl_pct, id)
+    to_update: list[tuple[float, str, str | None]] = []  # (pnl_pct, id, corrected_status_or_None)
     skipped: list[dict] = []
     stats = {
         "total_candidates": len(rows),
         "clean_pass_both": 0,
-        "skip_constraint_violation": 0,
+        "status_corrected": 0,           # constraint-violating → auto-corrected status + PnL
+        "skip_constraint_violation": 0,   # TIME_EXIT with constraint-failing PnL (investigation cluster 4)
         "skip_scale_fail": 0,
         "skip_no_ohlcv": 0,
         "skip_other": 0,
@@ -254,15 +280,22 @@ def run(dry_run: bool = True, report_only: bool = False, log_skipped: bool = Fal
 
         pnl = _compute_pnl(direction, entry_price, exit_price)
 
-        # Gate 1: constraint
+        # Gate 1: constraint + auto-correct
+        corrected_status = status
         if _violates_constraint(status, pnl):
-            stats["skip_constraint_violation"] += 1
-            skipped.append({
-                "id": pick_id, "symbol": symbol, "status": status,
-                "computed_pnl": round(pnl, 4),
-                "reason": "constraint_violation",
-            })
-            continue
+            corrected_status = _correct_status(status, pnl)
+            if corrected_status == status:
+                # Could not auto-correct (e.g. TIME_EXIT with constraint-failing PnL).
+                # These are investigation clusters 4+ that need manual review.
+                stats["skip_constraint_violation"] += 1
+                skipped.append({
+                    "id": pick_id, "symbol": symbol, "status": status,
+                    "computed_pnl": round(pnl, 4),
+                    "reason": "constraint_violation_uncorrectable",
+                })
+                continue
+            # Status was auto-corrected — will be updated alongside PnL.
+            stats["status_corrected"] += 1
 
         # Gate 2: entry_price scale
         passes, reason = _passes_scale(category, entry_price, price_cache, symbol)
@@ -279,7 +312,7 @@ def run(dry_run: bool = True, report_only: bool = False, log_skipped: bool = Fal
             continue
 
         stats["clean_pass_both"] += 1
-        to_update.append((round(pnl, 4), pick_id))
+        to_update.append((round(pnl, 4), pick_id, corrected_status if corrected_status != status else None))
 
     # ── 4. Apply or report ──
     if report_only:
@@ -298,21 +331,35 @@ def run(dry_run: bool = True, report_only: bool = False, log_skipped: bool = Fal
         # Update in chunks
         chunk_size = 200
         updated = 0
+        status_corrected_count = 0
         for i in range(0, len(to_update), chunk_size):
             chunk = to_update[i : i + chunk_size]
-            for pnl_val, pick_id in chunk:
-                cur.execute(
-                    "UPDATE trading_picks SET pnl_pct = %s WHERE id = %s",
-                    (pnl_val, pick_id),
-                )
+            for pnl_val, pick_id, corrected_status in chunk:
+                if corrected_status:
+                    cur.execute(
+                        "UPDATE trading_picks SET pnl_pct = %s, status = %s WHERE id = %s",
+                        (pnl_val, corrected_status, pick_id),
+                    )
+                    status_corrected_count += 1
+                else:
+                    cur.execute(
+                        "UPDATE trading_picks SET pnl_pct = %s WHERE id = %s",
+                        (pnl_val, pick_id),
+                    )
             conn.commit()
             updated += len(chunk)
+        if status_corrected_count:
+            print(f"status_corrected {status_corrected_count} rows (auto-corrected mislabeled statuses)")
         print(f"updated {updated} rows")
     elif to_update:
+        n_corrected = sum(1 for u in to_update if u[2])
         print(f"DRY-RUN: would update {len(to_update)} rows (skipped {len(skipped)})")
+        if n_corrected:
+            print(f"  ({n_corrected} with auto-corrected status)")
         # Show sample
         for u in to_update[:5]:
-            print(f"  {u[1][:50]} -> pnl_pct={u[0]}%")
+            extra = f" status->{u[2]}" if u[2] else ""
+            print(f"  {u[1][:50]} -> pnl_pct={u[0]}%{extra}")
         if len(skipped) > 0:
             reasons = {}
             for s in skipped:
