@@ -218,15 +218,60 @@ def is_daily_cap_reached(now: Optional[datetime] = None, asset_class: Optional[s
             "asset_class": asset_class, "lane": "sized"}
 
 
+def _is_signal_week_dup(symbol: str, strategy: str, direction: str,
+                        now: Optional[datetime] = None) -> bool:
+    """Option-A guardrail (cap-swarm consensus 2026-06-09, implemented 2026-06-10):
+    <=1 SIZED emission per (strategy, symbol, direction, ISO-week). Over-emission of
+    the same signal inflates n with correlated trades and corrupts DSR/PBO (the CT=F
+    6.33x falsification). Scans the active+closed ledgers for a same-key pick in the
+    same ISO week. Kill-switch: SIGNAL_WEEK_DEDUP=0.
+    """
+    if os.environ.get("SIGNAL_WEEK_DEDUP", "1").strip() != "1":
+        return False
+    _now = now or datetime.now(timezone.utc)
+    if _now.tzinfo is None:
+        _now = _now.replace(tzinfo=timezone.utc)
+    week = _now.isocalendar()[:2]  # (year, week)
+    sym = (symbol or "").upper().strip()
+    strat = (strategy or "").strip()
+    d = (direction or "").upper().strip()
+    if not (sym and strat and d):
+        return False  # dedup only when fully keyed — partial keys would over-block
+    for path in (_ACTIVE_PICKS_PATH, _CLOSED_PICKS_PATH):
+        data = _load_json(path)
+        picks = data if isinstance(data, list) else (
+            (data.get("picks") or data.get("active") or []) if isinstance(data, dict) else [])
+        for p in picks:
+            if not isinstance(p, dict):
+                continue
+            if (str(p.get("symbol") or "").upper().strip() != sym
+                    or str(p.get("strategy") or "").strip() != strat
+                    or str(p.get("direction") or "").upper().strip() != d):
+                continue
+            if p.get("forward_test_only") in (True, 1, "1", "true", "True"):
+                continue  # shadow emissions don't consume the sized-dedup slot
+            ts = (p.get("entry_date") or p.get("entry_time") or p.get("created_at")
+                  or p.get("timestamp") or "")
+            try:
+                pdt = datetime.fromisoformat(str(ts)[:19])
+                if pdt.isocalendar()[:2] == week:
+                    return True
+            except (ValueError, TypeError):
+                continue
+    return False
+
+
 def check_emission_gates(symbol: str, now: Optional[datetime] = None,
                          asset_class: Optional[str] = None,
-                         forward_test_only: bool = False) -> dict[str, Any]:
-    """Unified gate: cooldown + per-class daily cap (Option A). Returns status dict.
+                         forward_test_only: bool = False,
+                         strategy: Optional[str] = None,
+                         direction: Optional[str] = None) -> dict[str, Any]:
+    """Unified gate: cooldown + per-class daily cap + signal-week dedup (Option A).
 
-    Callers at the pick-emission path should pass the pick's asset_class (and
-    forward_test_only flag) so the per-class sized cap applies and shadow-lane
-    picks bypass it. If blocked, tag the pick with status="cooldown_blocked" or
-    "daily_cap_reached"/"daily_total_cap_reached".
+    Callers at the pick-emission path should pass the pick's asset_class,
+    forward_test_only flag, and strategy+direction (enables the signal-week dedup —
+    without them only cap+cooldown apply). If blocked, tag the pick with
+    status="cooldown_blocked" / "daily_cap_reached" / "signal_week_dedup".
     """
     cap = is_daily_cap_reached(now=now, asset_class=asset_class, forward_test_only=forward_test_only)
     if cap.get("blocked"):
@@ -234,6 +279,11 @@ def check_emission_gates(symbol: str, now: Optional[datetime] = None,
     cool = is_symbol_cooling_down(symbol, now=now)
     if cool.get("blocked"):
         return {"blocked": True, "status": "cooldown_blocked", "reason": cool["reason"], "detail": cool}
+    if not forward_test_only and strategy and direction and \
+            _is_signal_week_dup(symbol, strategy, direction, now=now):
+        return {"blocked": True, "status": "signal_week_dedup",
+                "reason": "same (strategy,symbol,direction) already emitted this ISO week",
+                "detail": {"strategy": strategy, "symbol": symbol, "direction": direction}}
     return {"blocked": False, "status": "ok", "reason": "", "detail": {"daily": cap, "cooldown": cool}}
 
 
