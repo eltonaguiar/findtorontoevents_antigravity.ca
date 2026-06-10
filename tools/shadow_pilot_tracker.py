@@ -135,9 +135,9 @@ def load_resolved_picks(conn) -> list[dict]:
                    direction, pnl_pct, status, entry_price, take_profit,
                    stop_loss, confidence, elite_score, created_at, closed_at
             FROM trading_picks
-            WHERE status IN ('TP_HIT', 'SL_HIT', 'TIME_EXIT', 'LOST',
-                             'EXPIRED', 'CLOSED')
+            WHERE status IN ('TP_HIT', 'SL_HIT', 'TIME_EXIT', 'LOST', 'CLOSED')
               AND pnl_pct IS NOT NULL
+              AND ABS(pnl_pct) > 0.0001
             ORDER BY closed_at DESC
         """)
         rows = cur.fetchall()
