@@ -42,3 +42,10 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
   - REJECTED: CRYPTO SHORT-direction flip at sync layer — global-inversion premise previously refuted (w0fkolehf + live audit); destructive risk.
   - ADOPTED: TSMOM/academic sleeves as forward_test_only shadow; FDR re-run (stale Apr 6); crypto_ohlcv 180d; blueprint_generator verify-before-fix.
 - NEXT TICK: verify picks-now regen done; wire money_ready_verdict to intrabar ledger; TSMOM shadow wiring; FDR re-run; #553 cleanup.
+
+## TICK 04:10-04:20 — verdict wired to honest ledger
+- **money_ready_verdict wired to intrabar truth (110722812e):** per-class `intrabar_truth` block (at_signal_outcomes.intrabar_*) + the missing top-level `generated_at` (fixes index.html/freshness '?'). Scratch-verified before commit; verdict gates unchanged this pass (re-baseline flips inputs later).
+- **HONEST-DATA UPDATE: EQUITY crossed n>=100 and FAILS** — intrabar n=104, WR 34.6%, PF 0.48 (the earlier 60%/PF2.13 n=55 "closest lead" dissolved as honest n grew; matches main commit d4ce42658b "EQUITY lead dissolves"). First class to reach honest n>=100 confirms: no edge yet anywhere; supply+time thesis holds. COMMODITY intrabar n=81 PF 1.77 is now the most PF-promising sub-100 class.
+- **PR2 confirmed ON origin/main** (Cursor's "branch-only" delta was their stale fetch). Cursor FIXIT review otherwise converges; adopted its queue.
+- **Peer coordination:** freebuff active on the shared tree/branch (picks-now LIVE-PnL + tools/live_pnl_tracker.py) — I stay on Contents-API commits, hands off their files.
+- NEXT: trigger verdict regen workflow (live JSON gets intrabar_truth), TSMOM shadow wiring, FDR re-run, #553 cleanup, updates card.
