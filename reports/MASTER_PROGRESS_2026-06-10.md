@@ -199,3 +199,8 @@ Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid)
 - **Gatekeeper: training is FIXED (OLD arm fully green after the fetch-input fix); NEW arm failed only at commit — gatekeeper_new.joblib is gitignored, git add refused.** Fix: add -f (bundles are the deliverable) (239ba59a67). Redispatched.
 - **ci-tests regressed 20:43-green -> 21:23-red: +26 NEW drifted tests, all EQUITY gate-behavior** (trust-tier exempt, ETF-kill rollback, UEPS bypass, VIX filter) — a main commit changed EQUITY gating without test updates. Quarantined (same visible-non-blocking pattern, b77d0b4209), redispatched; **incident #129 escalated P2->P1** (drift outpacing reconciliation; these are silent EQUITY emission-path behavior changes).
 - Ledger steady (COMMODITY 90 / FOREX 88); lane unchanged; no ADV tags yet (scanner cycle pending); live verdict fresh (20:51).
+
+## OVERNIGHT 22:45 — gatekeeper chain GREEN end-to-end; drift velocity recorded
+- **ML Gatekeeper Train A/B: FULLY GREEN** — fetch-input + training + commit all fixed (the WS-A chronic is closed).
+- ci-tests: +2 new drift (phase1 dead-zone/time-of-day non-crypto gating) quarantined + redispatched. **Tonight's drift velocity: 41 -> +26 -> +2 (~69 quarantined)** — #129 updated with an operator suggestion: require test updates in the same PR for gate changes, or a brief gate-change freeze until reconciliation.
+- Ledger steady (COMMODITY 90 / FOREX 88); no ADV tags yet; lane unchanged; live fresh (21:51).
