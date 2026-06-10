@@ -1254,14 +1254,23 @@ def main():
 
             # Check TP/SL — unified intrabar OHLC replay for ALL symbols
             result = None
+            _res_method = None
             intrabar_bars = ohlc_bars_cache.get(norm_sym, [])
             if intrabar_bars:
                 result = _check_tp_sl_intrabar(pick, intrabar_bars)
                 if result:
+                    _res_method = "intrabar"
                     log.debug("  intrabar hit for %s %s", norm_sym, pick["direction"])
-            # Fallback to close-price check
+            # Fallback to close-price check. NOTE (2026-06-10 review, Bug 1B): this path
+            # is a CLOSE-ONLY APPROXIMATION — a single-snapshot price check, NOT intrabar
+            # first-touch. It is less accurate (can mark a TP "win" on a pick that hit SL
+            # intrabar). Tagged resolution_method="close_approx" so downstream WR/PF can
+            # exclude/flag these. (Bug 1A: when bars exist but are older-than-pick stale,
+            # intrabar replays the wrong window — entry-anchored fetch fix is pending.)
             if result is None:
                 result = check_tp_sl(pick, current_price)
+                if result:
+                    _res_method = "close_approx"
             if result:
                 reason, exit_price, pnl_pct = result
                 # F-1 PnL outlier cap +/-100% applied to JSON-side resolution too
@@ -1276,6 +1285,7 @@ def main():
                     "pnl_pct": pnl_pct,
                     "exit_reason": reason,
                     "status": "CLOSED",
+                    "resolution_method": _res_method,  # "intrabar" (accurate) | "close_approx" (Bug 1B)
                     "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "current_price_at_resolve": current_price,
                     "_resolver_version": RESOLVER_VERSION,

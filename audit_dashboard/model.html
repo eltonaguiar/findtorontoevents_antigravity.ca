@@ -65,9 +65,10 @@
 <h1 id="model-title">Model drill-down</h1>
 <div class="small" id="model-meta">Loading…</div>
 
-<div id="resolver-artifact-banner" style="background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:12px;line-height:1.6;color:#bbf7d0">
-  <strong style="color:#86efac">✅ Resolver updated — rank still building.</strong>
-  Intrabar OHLC replay (SL-first conservative ordering, gap-through fills) and drift-guard (reverse-split, contract-roll, stale-entry detection) are now live. Tier-1 badges need <strong>~7 days post-fix</strong> with n≥100 post-cleanup picks to stabilize. WR/PF rankings may shift as more historical data is re-resolved.
+<div id="resolver-artifact-banner" style="background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.45);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:12px;line-height:1.6;color:#fde68a">
+  <strong style="color:#fbbf24">⚠ Resolver hardening in progress — treat WR/PF as provisional.</strong>
+  Resolution uses intrabar first-touch (SL-first conservative ordering) with reverse-split / stale-entry drift-guards. <strong>Known gap (2026-06-10 code review):</strong> the production resolver's intrabar cache fetches only recent bars, so picks older than that window fall back to a close-only approximation (tagged <code>resolution_method=close_approx</code>) — being hardened to entry-anchored fetch. The fully-accurate intrabar-true per-class truth lives in <code>intrabar_truth_by_class.json</code> (currently 0/6 money-ready). Tier badges need ~7d post-fix + n≥100.
+</div>
 
 <div class="summary-grid" id="summary-grid"></div>
 
