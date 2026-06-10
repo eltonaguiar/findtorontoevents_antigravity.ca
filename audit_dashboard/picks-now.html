@@ -203,6 +203,12 @@
   <div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">⏳ Loading picks from <code>picks_now.json</code>...</div>
 </div>
 
+<!-- ═══ FORWARD-TESTED PERFORMANCE — honest deduped track record from picks_now_tracker ═══ -->
+<div class="section-title">📊 FORWARD-TESTED PERFORMANCE <span style="color:#58a6ff;font-size:0.75rem;text-transform:none;font-weight:400;">— every pick logged BEFORE its outcome was known · first-touch TP/SL resolver, 10d time-exit · deduped 1 pick/symbol/day</span></div>
+<div id="track-record-container" style="margin:0 24px 18px;">
+  <div style="color:var(--muted);padding:12px;">⏳ Loading track record…</div>
+</div>
+
 <!-- ═══ MULTI-MODEL REVIEW PANEL — FYI only, does not change pick scores ═══ -->
 <div style="margin:0 24px 8px;font-size:0.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:6px;">
   🤖 Extended AI Model Panel <span style="color:#58a6ff;font-size:0.75rem;text-transform:none;font-weight:400;">— FYI only · does not change pick scores · covers top 4 EQUITY symbols</span>
@@ -1056,6 +1062,42 @@ fetch('data/picks_now.json?_=' + Date.now())
   .catch(() => {
     document.getElementById('picks-container').innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);grid-column:1/-1;">⚠️ Could not load picks_now.json.</div>';
   });
+
+// ── Forward-tested track record (picks_now_track_record.json) ──
+function renderTrackRecord(d) {
+  const el = document.getElementById('track-record-container');
+  if (!el || !d || !d.totals) return;
+  const t = d.totals;
+  const wrColor = t.wr_pct == null ? 'var(--muted)' : (t.wr_pct >= 50 ? '#3fb950' : '#f85149');
+  const pnlColor = (t.cum_pnl_pct || 0) >= 0 ? '#3fb950' : '#f85149';
+  const pipe = d.maturity_pipeline || {};
+  const pipeStr = Object.entries(pipe).map(([k, v]) => k + ': ' + v).join(' · ') || 'none';
+  let html = '<div style="display:flex;flex-wrap:wrap;gap:18px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;">'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">RESOLVED / TRACKED</div><div style="font-size:1.3rem;font-weight:700;">' + t.resolved + ' / ' + t.symbol_days_tracked + '</div></div>'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">WIN RATE (provisional)</div><div style="font-size:1.3rem;font-weight:700;color:' + wrColor + ';">' + (t.wr_pct == null ? 'n/a' : t.wr_pct + '%') + '</div></div>'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">AVG PNL / PICK</div><div style="font-size:1.3rem;font-weight:700;color:' + pnlColor + ';">' + (t.avg_pnl_pct == null ? 'n/a' : t.avg_pnl_pct + '%') + '</div></div>'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">CUM PNL (sum of picks)</div><div style="font-size:1.3rem;font-weight:700;color:' + pnlColor + ';">' + (t.cum_pnl_pct == null ? 'n/a' : t.cum_pnl_pct + '%') + '</div></div>'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">STILL OPEN (by age)</div><div style="font-size:0.95rem;padding-top:6px;">' + pipeStr + '</div></div>'
+    + '</div>';
+  const rows = (d.resolved_picks || []).slice(0, 25);
+  if (rows.length) {
+    html += '<details style="margin-bottom:8px;"><summary style="cursor:pointer;color:var(--muted);font-size:0.85rem;">Show ' + rows.length + ' resolved picks</summary>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-top:6px;">'
+      + '<tr style="color:var(--muted);text-align:left;"><th style="padding:4px 8px;">Symbol</th><th>Picked</th><th>Entry</th><th>Exit</th><th>PnL</th><th>Outcome</th><th>Held</th></tr>'
+      + rows.map(r => '<tr style="border-top:1px solid var(--border);">'
+        + '<td style="padding:4px 8px;font-weight:600;">' + r.symbol + '</td><td>' + r.pick_date + '</td>'
+        + '<td>' + (r.entry != null ? r.entry : '—') + '</td><td>' + (r.exit != null ? Number(r.exit).toFixed(2) : '—') + '</td>'
+        + '<td style="color:' + ((r.pnl_pct || 0) > 0 ? '#3fb950' : '#f85149') + ';font-weight:600;">' + r.pnl_pct + '%</td>'
+        + '<td>' + r.exit_reason + '</td><td>' + r.days_held + 'd</td></tr>').join('')
+      + '</table></details>';
+  }
+  html += '<div style="font-size:0.72rem;color:var(--muted);line-height:1.5;">' + (d.caveats || []).map(c => '⚠ ' + c).join('<br>') + '</div>';
+  el.innerHTML = html;
+}
+fetch('data/picks_now_track_record.json?_=' + Date.now())
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { if (d) renderTrackRecord(d); else document.getElementById('track-record-container').innerHTML = '<div style="color:var(--muted);padding:12px;">Track record not yet generated — first publication cycle pending.</div>'; })
+  .catch(() => { document.getElementById('track-record-container').innerHTML = '<div style="color:var(--muted);padding:12px;">Track record unavailable.</div>'; });
 </script>
 </body>
 </html>

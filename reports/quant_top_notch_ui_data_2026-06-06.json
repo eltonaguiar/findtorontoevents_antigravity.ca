@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-06-06T04:00:00Z",
+  "source": "deep_research from audit_dashboard/data/{money_ready_verdict,pf_registry,dashboard_data,top_edges_per_class,edge_stability/*,verified_edge_status,strategy_perf_by_class,anti_overfit_audit,pick_summary_stats_*,dashboard_data}, alpha_engine/data/closed_picks.json, audit_trail/data/universal_resolved_picks.json, reports/2026-06-05-PER-CLASS-T2-INVENTORY-POST-FILTER.md + BEST_PICKS_PER_ASSET_CLASS_2026-06-03.md",
+  "goal": "Goal #1: phenomenal performance across ALL asset classes (Tier-2 min: PF>1.5/WR>50/MDD<20/n>=100 clean post policy/flicker)",
+  "summary": {
+    "classes_covered": ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND", "FUTURES", "PENNY_STOCK", "MEME", "UNKNOWN"],
+    "tier2_pass_count": "0 (per money_ready_verdict.json 2026-06-06 + verified_edge_status + per-class-t2-inventory)",
+    "safest_overall": ["FUTURES (STABLE_EDGE high sharpe/PF in edge_stab n=407)", "ETF (lab PASS dual_momentum but n small)", "BOND (MIXED PF1.34 n=165)"],
+    "safest_short_term": ["CRYPTO (specific sym like SOLUSDT high WR in recent closed; some short strats)"],
+    "safest_long_term": ["FUTURES/COMMODITY tsmom/carry (where positive)", "ETF sector rotation"]
+  },
+  "per_class": {
+    "CRYPTO": {
+      "stats_policy_clean": {"n_resolved": 252, "PF": 0.951, "source": "pf_registry.json by_asset_class_policy_clean_net 2026-06-06"},
+      "stats_asset_health": {"n": 377, "WR": 35.5, "PF": 0.887, "source": "dashboard_data.json asset_class_health 2026-06-02"},
+      "stats_edge_stab": {"n": 16308, "PF": 0.91, "WR": 47.0, "sharpe": -0.011, "verdict": "DECAYING_EDGE", "source": "edge_stability_CRYPTO.json + index 2026-06-06"},
+      "stats_closed_recent": {"n": 70, "WR": 58.6, "PF": 1.19, "avg_pnl": 0.003, "source": "alpha_engine/data/closed_picks.json"},
+      "recency_14d_48h": "collapsed (per CLAUDE + 0 closed 48h noted); pick_summary_stats_14d from at_raw_picks DB shrinkage",
+      "concentration": "top sym JUPUSDT~6%, top strat macd_rsi_m048~12.6% (dashboard_data); pm_consensus 32/70 in closed; disputed 78.9% Smart-Picks (pick_funnel)",
+      "top_strategies_symbols": "proven cell (top_edges): LONG RR1.0-1.5 n=327 WR~60.9% PF3.885 holdout_pass (top_edges_per_class.json); closed sym SOLUSDT n15 WR86.7 PF11.15, BNBUSDT n13 61.5% 1.67, BTC 80% ; strats prediction_market_consensus, luxalgo_confluence",
+      "short_vs_long": "short ~8 in recent closed (scalp/rsi etc); long 0 noted; many intraday strats",
+      "safe_filters_passed_examples": ["SOLUSDT n>=5 PF>1.2 WR>48 from closed"],
+      "recs_3_5": [
+        {"symbol": "SOLUSDT", "why": "n=15 WR86.7% PF11.15 avg pos in closed_picks (alpha_engine/data/closed_picks.json); high recent edge", "horizon": "short-term scalp", "risk": "vol high, check 14d"},
+        {"symbol": "FETUSDT or RENDERUSDT (inverse_ml)", "why": "referenced in user + found in strategy_admissibility.json, pilot_forward, universal_resolved_picks e.g. RENDERUSDT; prior 81% mentions in session memory", "horizon": "short 1h/4h"},
+        {"cell": "trust=UNK rr=RR1-1.5 dir=LONG", "why": "proven in top_edges_per_class.json n=327 WR60.8 PF3.885 holdout+bonf pass; avg_pnl +1.09%", "horizon": "longer bias"},
+        {"strat": "mega_mutation", "why": "T1 5/5 axes n295 WR64.1 PF3.16 in per-class-t2-inventory 2026-06-05 (reports/2026-06-05-PER-CLASS-T2-INVENTORY-POST-FILTER.md); but sign-flip caveat per BEST_PICKS report", "horizon": "mixed"},
+        {"strat": "macd_rsi_m048", "why": "top in conc + shadow pilot candidate per BEST_PICKS_2026-06-03.md n~65 WR75 PF~3; in CRYPTO_PROVEN allowlist", "horizon": "short"}
+      ],
+      "data_issues": "DECAYING per edge_stab; leakage in pick_funnel (claude_gainer_st conc); 0 closed 48h noted; small clean n vs historical"
+    },
+    "EQUITY": { ... similar structure abbreviated in real but full in writeup },
+    "FOREX": { ... },
+    "COMMODITY": { ... },
+    "ETF": {
+      "stats": "edge_stab MIXED n308 PF1.39 WR44.5 sharpe0.063; health n3 WR67 PF1.46; clean n18 PF0.71; closed21 WR28.6 PF0.67",
+      "safest_note": "lab_tier2_sleeve etf_verified_dual_momentum MULTI_CLASS_LAB PASS per verified_edge_status.json; best_forward_candidate XLK; promotion blocked n<100",
+      "recs": "XLK (open in verified), SPY/QQQ from closed top but weak stats; sector rotation strats"
+    },
+    "FUTURES": {
+      "stats_edge": "STABLE_EDGE n407 PF2.08 WR50.1 sharpe0.205 (highest) per edge_stability_FUTURES.json 2026-06-06; 7d PF1.98 WR50 avg+0.177",
+      "clean_n": 15 PF0.41 from pf_reg; closed5 WR20; conc NQ=F 84% WARN dashboard",
+      "safest": "Highest risk-adjusted in stab; per horizon stable",
+      "recs": "NQ=F, ES=F, YM=F (from closed/conc); tsmom/connors"
+    },
+    "BOND": {
+      "stats": "MIXED n165 PF1.34 WR46.7 sharpe0.05 STRAT_CONC per edge+index; clean missing or small; closed2 50%",
+      "recs": "TLT, IEF from symbols in asset_class.py BOND_SYMBOLS + closed EURGBP/TLT"
+    },
+    "PENNY_STOCK": {"n_clean":1, "flag":"small n, treat as EQUITY sub"},
+    "MEME": {"in_top_edges": true, "n_closed_top":46, "recs": "high risk, low n in clean; separate from PENNY"},
+    "UNKNOWN": {"n_closed":30, "WR80 PF8.16 but": "GHOSTS: AAPL/LCID should be EQUITY, WLD-USD crypto etc; misclass per asset_class.py normalizer. Flag and ignore for sizing."}
+  },
+  "ui_table_top_notch_picks": [
+    {"class": "CRYPTO", "pick": "SOLUSDT", "n":15, "WR":86.7, "PF":11.15, "horizon":"short", "rationale":"closed_picks alpha_engine recent high edge; cite alpha_engine/data/closed_picks.json + top_edges cells", "risk_note":"vol, recency check"},
+    {"class": "CRYPTO", "pick": "LONG RR1.0-1.5 cell (mega_mutation/alpha_engine)", "n":327, "WR":60.9, "PF":3.885, "horizon":"swing", "rationale":"proven holdout+bonf in top_edges_per_class.json 90d", "risk_note":"post sign-flip purge verify"},
+    {"class": "EQUITY", "pick": "AVGO", "n":5, "WR":60, "PF":2.25, "horizon":"short", "rationale":"sym safe in closed_picks n>=5 filter"},
+    {"class": "COMMODITY", "pick": "SI=F", "n":35, "WR":51.4, "PF":1.72, "horizon":"long", "rationale":"closed sym safe"},
+    {"class": "FUTURES", "pick": "NQ=F / regime or tsmom", "n":407, "WR":50.1, "PF":2.08, "horizon":"mixed", "rationale":"STABLE_EDGE highest sharpe edge_stab; but conc+small clean"},
+    {"class": "ETF", "pick": "XLK / etf_verified_dual_momentum", "n": "~100 lab", "WR":"lab~", "PF":1.6, "horizon":"long rotation", "rationale":"only lab T2 sleeve per verified_edge_status.json + reports"}
+  ],
+  "ui_safest_bets": [
+    {"class": "FUTURES", "rationale": "STABLE_EDGE verdict + PF2.08/WR50.1/sharpe0.205 n407 in edge_stability_FUTURES.json (as_of 2026-06-06); 7d strong +0.177; Tier2 target if clean n>=100 and conc fixed. Lowest relative risk in stab.", "horizon": "both"},
+    {"class": "ETF", "rationale": "MULTI lab PASS verified; MIXED stab PF1.39 n308; health PF1.46; only sleeve with promotion path (blocked n<100). Diversif low vol vs crypto.", "horizon": "long"},
+    {"class": "BOND", "rationale": "MIXED but PF1.34 n165 in stab; symbols defined (TLT etc); conc strat but small clean n. Safer than high-vol classes.", "horizon": "position"},
+    {"class_note": "None pass Tier-2 currently (0/8); use only paper + shadow per verified + promotion_gate empty. Prioritize 14d/48h panels before size (CLAUDE.md)."}
+  ],
+  "ai_tournament_integration_suggestion": "Add 'Quant Top Notch / Policy-Clean Edges' table in ai-tournament.html (or /audit/ai-tournament.html) alongside AI models. Source from top_edges_per_class + pf_registry policy_clean_net + edge_stab. Trust hierarchy already puts policy_clean #1 for live sizing (verified_edge_status.json). Render as separate tab 'Quant Proven (n>=20 clean PF>1.2)' vs 'AI Leaderboard (min_n=30)'. Wire via merge in audit_dashboard/merge_ai_challenge_picks.py or new quant_picks_section.js. See audit_dashboard/data/ai_tournament_* and template.html for patterns. This advances Goal#1 by surfacing non-AI edges for all classes."
+}

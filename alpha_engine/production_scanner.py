@@ -4270,6 +4270,33 @@ def main():
     except Exception as _sports_err:
         print(f"  [SPORTS_BETTING] Skipped (non-fatal): {_sports_err}")
 
+    # 3b-ATR-GATE. ATR Percentile Gate — dormant CRYPTO strategy with 58.6% WR
+    #   on n=29 policy-clean. Self-contained: run_atr_gate loads Binance OHLCV
+    #   data via api_failover.fetch_klines(), converts to DataFrames, and calls
+    #   atr_percentile_gate_scanner() from proven_edge_strategies.py.
+    #   Wire-Up Rule: wired — production_scanner imports and calls directly.
+    try:
+        from run_atr_gate import scan_atr_gate as atr_gate_scan
+
+        _atr_signals = atr_gate_scan()
+        if _atr_signals:
+            existing_keys = {
+                (p.get("symbol"), p.get("direction") or p.get("signal_type"))
+                for p in active
+            }
+            _atr_new = [
+                p for p in _atr_signals
+                if (p["symbol"], p.get("direction")) not in existing_keys
+            ]
+            active.extend(_atr_new)
+            print(
+                f"  [ATR_GATE] Added {len(_atr_new)} picks "
+                f"({len(_atr_signals)} scanned, "
+                f"{len(_atr_signals) - len(_atr_new)} deduped)"
+            )
+    except Exception as _atr_err:
+        print(f"  [ATR_GATE] Skipped (non-fatal): {_atr_err}")
+
     # 3b-PEAD. PEAD Equity Shadow Wiring (2026-05-16, unlocked by equity_walkforward_validation_2026-05-16.md)
     #   PEAD equity strategy: 2-day post-earnings drift, EQUITY top-100 universe.
     #   WF verdict: T2 WF-VERIFIED (OOS WR 62.2%, fold consistency 100%, 8 folds).

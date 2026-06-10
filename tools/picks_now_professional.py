@@ -92,7 +92,7 @@ UNIVERSE = {
     "EQUITY": {
         "tickers": [
             # Mega-cap tech
-            "NVDA", "META", "MSFT", "GOOGL", "AMZN", "AAPL", "AMD",
+            "NVDA", "META", "MSFT", "GOOGL", "AAPL", "AMD",
             "AVGO", "TSLA", "NFLX", "ADBE", "CRM", "ORCL", "IBM",
             # Semis / hardware
             "INTC", "QCOM", "TXN", "AMAT", "LRCX", "MU", "MRVL",
@@ -1093,7 +1093,14 @@ def fetch_analyst_info_failover(sym: str) -> dict:
             if isinstance(pd_, list) and pd_:
                 info["marketCap"] = pd_[0].get("mktCap")
                 info["forwardPE"] = pd_[0].get("peRatio")
-                info["dividendYield"] = pd_[0].get("lastDiv")
+                # BUG FIX 2026-06-09: lastDiv from FMP is the dollar AMOUNT of the most recent
+                # distribution payment (e.g. JEPQ monthly $0.40), NOT a yield in any unit.
+                # Previously this overwrote yfinance's fraction yield (0.10 = 10%) with a
+                # dollar amount, then the scorer did `*100`, producing 1011% for JEPQ and
+                # 1165% for RYLD on the live picks-now page. We no longer set dividendYield
+                # from lastDiv - if yfinance didn't provide a yield, leave it None rather
+                # than mis-label a dollar amount as a percent.
+                info["dividendYield"] = None
                 info["sector"] = pd_[0].get("sector")
                 info["industry"] = pd_[0].get("industry")
         if rating.status_code == 200:

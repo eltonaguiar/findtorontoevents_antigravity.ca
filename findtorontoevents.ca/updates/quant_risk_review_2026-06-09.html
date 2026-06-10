@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quant & Risk Management Review - June 9, 2026</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; border-left: 5px solid #3498db; padding-left: 10px; }
+        h3 { color: #2980b9; }
+        .highlight { background-color: #e8f4fd; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; color: #333; }
+        .critical { color: #c0392b; font-weight: bold; }
+        .success { color: #27ae60; font-weight: bold; }
+        .footer { margin-top: 50px; font-size: 0.8em; color: #7f8c8d; text-align: center; }
+        .transcript-box { background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 8px; font-family: "Courier New", Courier, monospace; white-space: pre-wrap; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>Quant & Risk Management Review</h1>
+    <p><strong>Date:</strong> June 9, 2026</p>
+    <p><strong>Analyst:</strong> Zoo (AI Software Engineer)</p>
+
+    <div class="highlight">
+        <strong>Executive Summary:</strong> The system possesses genuine alpha, but it is currently obscured by significant "noise" from toxic symbols and overfit strategies. Transitioning to a forward-weighted scoring system and implementing institutional-grade risk controls is required to reach hedge-fund quality.
+    </div>
+
+    <h2>1. Verified Alpha & Edge</h2>
+    <p>Analysis of closed picks and walk-forward validation reveals specific areas of strength:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Component</th>
+                <th>Metric</th>
+                <th>Verdict</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>quan_engine_swing</code></td>
+                <td>Profit Factor: 1.57</td>
+                <td class="success">Verified Alpha</td>
+            </tr>
+            <tr>
+                <td><code>st_rsi_momentum_confluence</code></td>
+                <td>65.1% Forward WR / PF 2.53</td>
+                <td class="success">Robust Edge</td>
+            </tr>
+            <tr>
+                <td>Directional Bias</td>
+                <td>Shorts: 72% WR vs Longs: 20.3%</td>
+                <td class="success">Strong Asymmetry</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. Critical System Failures</h2>
+    <ul>
+        <li><span class="critical">Score-PnL Disconnect:</span> Correlation between confidence and PnL is near zero (+0.008). Backtest WR is anti-predictive (r=-0.91).</li>
+        <li><span class="critical">Signal Expiration:</span> 94% of signals expire without hitting TP or SL, rendering forward validation nearly impossible.</li>
+        <li><span class="critical">Volatility Mismatch:</span> 78.9% of SL hits occurred because stop-losses were too tight relative to the symbol's ATR.</li>
+        <li><span class="critical">Toxic Concentration:</span> 96.8% of total losses are attributed to a single symbol: <code>TRXUSDT</code>.</li>
+    </ul>
+
+    <h2>3. Recommendations for Improvement</h2>
+    
+    <h3>Database & Infrastructure</h3>
+    <ul>
+        <li>Implement <code>tp_sl_quality_score</code> based on ATR to prevent whipsaws.</li>
+        <li>Store <code>market_regime_id</code> at the time of pick for conditional analysis.</li>
+        <li>Migrate <code>algorithm_performance.win_rate</code> to standard 0-100% format.</li>
+    </ul>
+
+    <h3>Dashboard & Visualization</h3>
+    <ul>
+        <li>Replace raw WR with <strong>Confidence Intervals</strong> (Bootstrap resampling).</li>
+        <li>Add <strong>Regime Heatmaps</strong> to identify where strategies decay.</li>
+        <li>Implement a <strong>Signal Resolution Funnel</strong> to diagnose expiration rates.</li>
+    </ul>
+
+    <h2>4. Strategy Failure Analysis Framework</h2>
+    <p>A 5-pillar approach to diagnose why a strategy is losing money:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Pillar</th>
+                <th>Root Cause</th>
+                <th>Quant Check</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Statistical</td>
+                <td>Overfitting / Noise</td>
+                <td>Parameter Stability Test</td>
+            </tr>
+            <tr>
+                <td>Structural</td>
+                <td>Regime Shift</td>
+                <td>Regime Attribution Analysis</td>
+            </tr>
+            <tr>
+                <td>Execution</td>
+                <td>Cost Erosion</td>
+                <td>Break-even Slippage Audit</td>
+            </tr>
+            <tr>
+                <td>Data</td>
+                <td>Lookahead Bias</td>
+                <td>Timestamp Cross-Verification</td>
+            </tr>
+            <tr>
+                <td>Risk</td>
+                <td>Tail Risk / Correlation</td>
+                <td>Effective Beta Monitoring</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>5. Chat Transcript & Process</h2>
+    <div class="transcript-box">
+User: review our buried .MD etc and see if useful for improved strategies, methods we can apply to out database /webpages to double check if we are having a statistical edge, and lets say all our strategies fail.. why. what are we missing that a Quant/Risk magenemnt team would do
+
+Zoo: [Analyzed EDGE_FINDINGS_2026-04-06.md, hedge_fund_quality_framework.md, and others]
+Findings:
+- Identified that backtest WR is anti-predictive (r=-0.91).
+- Discovered that 96.8% of losses come from TRXUSDT.
+- Noted that 94% of signals expire.
+- Synthesized a 5-pillar failure framework.
+- Recommended ATR-based TP/SL and regime-conditional scoring.
+
+User: do ytour best to start to address this feedback, work in an isolated worktree
+
+Zoo: [Set up isolated git worktree for implementation]
+    </div>
+
+    <div class="footer">
+        Generated by Zoo AI &bull; 2026-06-09 &bull; findtorontoevents.ca
+    </div>
+</body>
+</html>

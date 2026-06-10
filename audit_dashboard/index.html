@@ -1605,6 +1605,10 @@ a:hover { text-decoration: underline; }
   <button class="tab-btn" data-tab="scoretracker" style="color:var(--yellow)">Score Tracker</button>
   <button class="tab-btn" data-tab="mlhealth" style="color:var(--cyan)">ML Health</button>
   <button class="tab-btn" data-tab="links">Links</button>
+  <button class="tab-btn" data-tab="statistical" style="color:var(--purple);font-weight:600" title="Statistical Significance — Bootstrap confidence intervals, p-values, and significance testing for all strategy metrics">📊 Statistical Significance</button>
+  <button class="tab-btn" data-tab="regime" style="color:var(--orange);font-weight:600" title="Regime-Conditional Performance — Strategy performance across BULL, BEAR, SIDEWAYS, HIGH_VOL regimes with bootstrap CIs">🌡️ Regime Heatmaps</button>
+  <button class="tab-btn" data-tab="funnel" style="color:var(--cyan);font-weight:600" title="Signal Resolution Funnel — Lifecycle of signals from Generated → Validated → Executed → TP/SL/Expired">🔄 Signal Funnel</button>
+  <button class="tab-btn" data-tab="scorepnl" style="color:var(--yellow);font-weight:600" title="Score-PnL Correlation — Pearson/Spearman correlation between scoring metrics and realized PnL">📈 Score-PnL Correlation</button>
   <!-- Removed: Warnings tab (conflict data now used by Smart Picks engine internally) -->
   <!-- Removed: Audit Log tab (data available in database, not useful as UI tab) -->
 </div>
@@ -2670,6 +2674,54 @@ a:hover { text-decoration: underline; }
           <div><strong>Updates &amp; Changelog</strong><br><span style="color:var(--text-dim)">Latest features &amp; system changes</span></div>
         </a>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Statistical Significance Tab -->
+<div id="tab-statistical" class="tab-content">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px">
+    <h3 style="margin-bottom:8px;color:var(--purple)">Statistical Significance Dashboard <span style="font-size:12px;color:var(--text-dim);font-weight:400">Bootstrap confidence intervals &amp; p-values for all strategy metrics</span></h3>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">All metrics computed via 10,000 bootstrap resamples. Green = statistically significant (p < 0.05), Red = not significant. Hover cells for 95%/99% CI details.</p>
+    <div id="statistical-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div id="statistical-body" style="overflow-x:auto">
+      <div style="font-size:0.85em;color:#94a3b8;font-style:italic">Loading bootstrap confidence intervals...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Regime-Conditional Performance Tab -->
+<div id="tab-regime" class="tab-content">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px">
+    <h3 style="margin-bottom:8px;color:var(--orange)">Regime-Conditional Performance Heatmaps <span style="font-size:12px;color:var(--text-dim);font-weight:400">Strategy performance across BULL, BEAR, SIDEWAYS, HIGH_VOL regimes</span></h3>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">Cells show Win Rate with bootstrap 95% CI. Green = WR > 55% with CI above 50%, Yellow = WR 45-55%, Red = WR < 45%. Strategies with no green cells lack regime-robust edge.</p>
+    <div id="regime-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div id="regime-body" style="overflow-x:auto">
+      <div style="font-size:0.85em;color:#94a3b8;font-style:italic">Loading regime performance data...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Signal Resolution Funnel Tab -->
+<div id="tab-funnel" class="tab-content">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px">
+    <h3 style="margin-bottom:8px;color:var(--cyan)">Signal Resolution Funnel <span style="font-size:12px;color:var(--text-dim);font-weight:400">Lifecycle: Generated → Validated → Executed → TP/SL/Expired</span></h3>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">Tracks the full lifecycle of every signal. The 94% expiration rate is the primary signal quality issue — this funnel visualizes where signals die.</p>
+    <div id="funnel-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div id="funnel-body" style="overflow-x:auto">
+      <div style="font-size:0.85em;color:#94a3b8;font-style:italic">Loading signal resolution funnel...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Score-PnL Correlation Tab -->
+<div id="tab-scorepnl" class="tab-content">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px">
+    <h3 style="margin-bottom:8px;color:var(--yellow)">Score-PnL Correlation Analysis <span style="font-size:12px;color:var(--text-dim);font-weight:400">Pearson/Spearman correlation between scoring metrics and realized PnL</span></h3>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">Measures whether the scoring system actually ranks winners above losers. Current elite_score correlation: +0.203 (weak). Target: >0.7. Red = anti-predictive, Green = predictive.</p>
+    <div id="scorepnl-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div id="scorepnl-body" style="overflow-x:auto">
+      <div style="font-size:0.85em;color:#94a3b8;font-style:italic">Loading score-PnL correlation data...</div>
     </div>
   </div>
 </div>
@@ -18978,6 +19030,8 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('dashboard-data-loaded', render);
 })();
 </script>
+
+<script src="quant_risk_tabs.js"></script>
 
 <div class="audit-footer-disclaimer" style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,0.95);border-top:1px solid #2a2a4a;padding:8px 12px;padding-bottom:max(8px, env(safe-area-inset-bottom, 0px));font-size:11px;color:#888;text-align:center;z-index:9999;backdrop-filter:blur(4px);line-height:1.4;max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;">
   <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.

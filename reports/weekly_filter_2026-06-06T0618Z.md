@@ -33,6 +33,49 @@
 
 ---
 
+## money-maker-readyv2 Overall Bridge + AI Validation Addendum (2026-06-09 specialized subagent)
+**Task goal met:** No sizing on inflated (Smart Picks / ai_tournament / leaderboard). Focus clean policy-clean + forward n>=100. Tournament/leaderboard = research only (small n, synthetics). Context: user table + skill rescue (P0 intrabar/OHLCV/TP-SL). 0/9 ready.
+
+**Cited data (step1, from audit_dashboard/data/ + root policy files 2026-06-09):**
+- ai_tournament_picks_latest.json (list, 7099 rows): status MISPRICED_ENTRY=4154 (58.52%), OPEN=1116, LOSS=937, WIN=892. by_asset_class: CRYPTO=1520, EQUITY=1323, COMMODITY=1262, ETF=902, BOND=773, PENNY=622, FOREX=454, FUTURES=243. No "smart" indicators in model fields (separate from main Smart Picks).
+- ai_tournament_leaderboard.json: min_n_to_rank=30, 46 models, e.g. top kimi_direct WR=64.81% PF=2.573 (but on low n; some 0 n models listed). Synthetic/illustrative.
+- nav_surface_edge_matrix.json: generated ~Jun2, n_recent_closed small, surfaces per asset.
+- pick_summary_stats*.json (esp _14d.json _48h): recency panels; e.g. 14d EQUITY n_closed~1412 wr~44% pf1.32 (improving per CLAUDE); CRYPTO high pf but dups/leakage_caveats, 0 closed 48h in some; use before sizing.
+- money_ready_verdict.json (2026-06-09T04:46Z, from alpha_engine/money_ready_verdict.py --json): summary.money_ready=[], n_classes=9, classes e.g. EQUITY n_resolved=71 wr=0.535 pf=1.84 (mdd=0.33→mdd_ok=False, n_ok=False); drift small recent.
+- pf_registry.json: by_asset_class_policy_clean_net (canonical for sizing): BOND n=1 WR100 PF no_losses; CHEAP_STOCKS n=4 PF1.03; COMMODITY n=18 PF0.28 WR27.8; CRYPTO n=258 PF0.94 WR32.6; EQUITY n=62 PF2.08 WR58.1 (n<100); ETF n=18 PF0.10; FOREX n=24 PF0.08; FUTURES n=18 PF1.14; PENNY n=1 WR0. 0/9 pass T2 (min n=100+ PF>1.5 WR>50 MDD<20). Matches CLAUDE "0/6" / "0/9".
+
+**MISPRICED_ENTRY root (step2, resolver):** tools/ai_tournament/price_tracker.py (also normalize.py, build_audit_surface_truth.py). In resolve_pick: after split adjust + ohlc fetch (Binance 3-host failover for crypto per rule; yf for others), if |first_open - entry| /entry *100 > _DRIFT_BY_CLASS[asset] (PENNY25 default, EQUITY10, FOREX3, COMMODITY12 etc), set status=MISPRICED_ENTRY, exit_price=first_open, pnl=None, exit_reason=MISPRICED_ENTRY_REJECTED or PRESPLIT_DRIFT_*/MISPRICED_COMMODITY_. Samples: LODE (PENNY, entry0.22/0.28 exit0, PRESPLIT), KULR, NG=F/CL=F (COMMODITY entry stale vs market). Root: AI (gemini/gpt/grok/deepseek etc) submit entries from stale/cutoff training data or pre-action; contract rolls; not live at submit ts. High rate expected for synthetics. (Already has intrabar replay SL-first for resolution; P0 rescue emphasizes this + OHLCV at entry for drift.)
+
+**Proposals (step3):**
+- Class-specific model filters (tournament AI val + bridge): 
+  - In price_tracker: (edit landed) tighten PENNY to 15% for research; future: compute drift vs exact ohlc bar at submitted_at (not window[0] first_open); add per-class sane entry sanity (e.g. price >0, within 3sigma recent vol).
+  - For models: filter leaderboard to require n_resolved >=100 post-mispriced + post all SKILL integrity; per-class WR/PF CI only on clean subset.
+  - Main: class filters in money_ready_picks_generator.Tiers + verdict: e.g. EQUITY require n>=100 + mdd<0.20 + multi-source >30% share; CRYPTO sub-class (e.g. majors vs alts) + intrabar validated.
+- promotion_gate updates: strengthen build_audit_surface_truth.py (already has banner "0/9 ... Do not size on Smart Picks / tournament / leaderboard" + "use pf_registry for sizing" + "ILLUSTRATIVE_ONLY") and money_ready_snapshot/verdict/picks_generator: add explicit `if any(x in str(source).lower() for x in ["tournament","leaderboard","smart_picks"]): verdict=EXCLUDE_INFLATED; policy_clean_only=True`. Gate before any "ready" or Kelly size emit.
+- clean ledger emphasis: primary = pf_registry.by..._policy_clean_net + money_ready_verdict (post its internal) + MySQL post 6 filters (see SKILL). Regenerate weekly via tools/build_pf_registry.py + money_ready_snapshot.py + build_audit_surface_truth.py --write... . Always show 14d/48h first. "78.9% CRYPTO Smart-Picks" disputed per CLAUDE (use raw 39% etc).
+
+**Cross (step4):** recommend TSMOM/residual/carry wiring (refs: .claude/skills/money-maker-readyv2/SKILL.md , copy_trader_intel/cta_strategy_replicator.py time series mom, academic 20y+ for CTA/EQUITY/COMMODITY, carry in forex research). As OPT-IN sidecar (per wire-up rule: label explicitly, no prod caller yet; target e.g. alpha_engine/score_booster.py or production_scanner after n>=100 clean backtest). Do not size until forward validated.
+
+**Sample weekly_filter content (plan step5, injected here by editing existing per rules; /tmp copy also generated):**
+# Weekly Real-Money Filter — 2026-06-09T18xxZ (sample)
+**Rule:** NO sizing on inflated... (see addendum above for full). Per-class as cited. Filters: drift class-specific (see edit), promotion gates, clean n>=100. TSMOM wiring opt-in. Backtests: replay clean cohort, TSMOM on EQUITY policy net.
+
+**Backtest ideas (step5):** 
+1. python -c "load pf_registry + apply SKILL filters; groupby ac; compute pf/wr on n>=100 subsets."
+2. On ai_tournament resolved (exclude mispriced): vs main clean ledger delta.
+3. Simulate proposed drift filters on historical submissions (use price_log in data/ai_tournament).
+4. TSMOM + carry hybrid backtest on clean EQUITY/FOREX closed (target n=100+ OOS).
+
+**Self-verify (step6 + ongoing):** 
+- Plan 1-6 followed (reads/analyses/greps first, then proposals/edits).
+- Data cited verbatim from files.
+- Syntax verified (py_compile all green pre/post edit).
+- 0/9 ready, n<100 noted; no prod claims.
+- Edit: 1 search_replace on price_tracker (added class filter + comments), 1 on this md (injected addendum + sample, no new file).
+- Ran analyses on 7099 row json etc.
+- If more: would run tools/weekly_filter_picks.py , but per AGENTS never auto heavy; here explicit.
+- Matches CLAUDE/AGENTS: autonomous, cite, goal#1 focus (no size on bad), coord not needed as sub, used tools.
+
 ## Verified Edges (DB-sourced, dedup-clean)
 
 ### ✅ Edge #1 — EQUITY `stocks_rsi2_pullback` LONG (90d proven, 30d solid)

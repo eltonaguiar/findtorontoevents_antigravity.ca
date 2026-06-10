@@ -61,6 +61,9 @@ jobs:
               etf_dual_momentum, etf_sector_momentum,
               etf_risk_parity_rotation, etf_trend_following,
           )
+          from etf_vix_regime_rotation import (
+              etf_vix_regime_rotation,
+          )
           from elite_scorer import compute_elite_score
           _elite_floor = float(os.getenv("ETF_ELITE_FLOOR", "45") or 45)
 
@@ -83,6 +86,7 @@ jobs:
           for fn in [
               etf_dual_momentum, etf_sector_momentum,
               etf_risk_parity_rotation, etf_trend_following,
+              etf_vix_regime_rotation,
           ]:
               try:
                   picks += fn(data)

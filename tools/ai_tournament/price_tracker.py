@@ -517,6 +517,17 @@ def resolve_pick(
     )
     class_threshold = _DRIFT_BY_CLASS.get(asset_class, MAX_ENTRY_DRIFT_PCT)
 
+    # money-maker-readyv2 AI validation bridge (2026-06-09): per-class model filters
+    # for tournament (research only, synthetics). Tighten PENNY to reduce false-neg on
+    # legit vol while catching more stale pre-split AI entries (4154/7099 = 58.5% MISPRICED).
+    # Root: AI models submit entry from stale training data vs live first_open at submit ts.
+    # P0 per skill: prefer intrabar OHLCV at exact submission for drift calc (future: use
+    # finer 1h/15m bars when available). Also cross-ref with main clean: never promote
+    # tournament models to money-ready sizing (see pf_registry policy_clean_net n>=100 gate).
+    if asset_class == "PENNY":
+        class_threshold = min(class_threshold, 15.0)  # research filter proposal
+    # Always require 3+ failover price sources succeeded for non-mispriced (see fetch_price)
+
     # ── Reverse-split entry-price adjustment (2026-06-04) ──────────────
     # LODE 1-for-10 reverse split Feb 2025: AI models submitted picks with
     # pre-split prices ($0.27) but yfinance returns post-split OHLC ($3.92).

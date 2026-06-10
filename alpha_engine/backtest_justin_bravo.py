@@ -74,14 +74,14 @@ class JustinBravoBacktester:
                 db_symbol = symbol.replace('USDT', '/USDT').replace('BTC', '/BTC')
             
             # Try to load from crypto_data.db
-            query = f"""
+            query = """
                 SELECT timestamp, open, high, low, close, volume
                 FROM klines
-                WHERE pair = '{db_symbol}'
+                WHERE pair = ?
                 ORDER BY timestamp DESC
-                LIMIT {lookback_days * 288}  -- ~288 5m candles per day
+                LIMIT ?
             """
-            df = pd.read_sql(query, conn)
+            df = pd.read_sql(query, conn, params=(db_symbol, lookback_days * 288))
             conn.close()
             
             if len(df) == 0:
