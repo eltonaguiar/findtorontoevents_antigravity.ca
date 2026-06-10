@@ -97,3 +97,10 @@ Bulk DB mutations → txn + row-count sanity + rollback + backup (Mercury #1). K
 - **crypto_ohlcv FULL-UNIVERSE 180d backfill RUNNING** (--top-symbols 0; idempotent upserts of regenerable exchange bars — backup rule applies to trade records, not reproducible market data). Will shrink the 1,173 no_data picks; then re-resolve at_signal_outcomes + rebuild intrabar_truth to grow the honest ledger.
 - **Shadow entry-gate stamper DELEGATED** (background build): tools/stamp_entry_conditions.py — read-only DB -> audit_dashboard/data/entry_conditions_forward.json sidecar tracking the validated conditions (crypto_rsi5070_us, luxalgo_short, equity_lowvol/highvol-negative, forex_aligned/contrarian-negative) + per-class baselines + rolling 30d forward windows. Measurement-only; never a sizing input until n>=100/condition re-passes R1/R2/R3.
 - Live intrabar_truth: 05:19 run STILL in flight (long hourly build); env fix rides the queued 05:45 run.
+
+## TICK 06:35-06:45 — shadow entry-gate lane COMMITTED
+- **tools/stamp_entry_conditions.py + entry_conditions_forward.json on main (6d9b0e1895, 0d79e82138)** — read-only (0 write stmts verified), strict no-look-ahead, mirrors the experiment features. The forward lane already teaches:
+  - **crypto_rsi5070_us HOLDS in the forward window**: last-30d n=52, 51.9% WR / PF 1.60 vs CRYPTO baseline 28.9% / 0.55. n=52/100 toward the re-test bar.
+  - **luxalgo_short: all-recency** (entire n=37 inside last 30d) — needs time-split before belief upgrade.
+  - **EQUITY vol-regime SIGNS FLIPPED vs the experiment snapshot** once full bar history was used — the negative-filter claim is fragile; exactly the failure mode this lane exists to catch.
+- OHLCV universe backfill ~halfway (H-symbols); re-resolve + truth rebuild on completion (scheduled).
