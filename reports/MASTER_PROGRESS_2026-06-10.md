@@ -194,3 +194,8 @@ Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid)
 ## HEARTBEAT 20:43-21:00 — ML Gatekeeper chronic-red root-caused + fixed
 - Ledger: no n=100 crossings yet (COMMODITY 90 / FOREX 88 steady). Forward lane unchanged (rsi5070 108 @ 47.2%/1.54). No ADV tags yet (scanner cycle pending). ci-tests STAYS GREEN. Live verdict fresh (19:48).
 - **ML Gatekeeper Train A/B fixed (ba42197a31)** — the WS-A chronic: trainer reads gitignored dashboard_data.json (18MB, FTP-only) so fresh runners NEVER had it -> "cannot train" every run. Added a fetch-live-input step (fails loudly on 0 closed picks; live copy verified 2,148). Redispatched.
+
+## HEARTBEAT 21:41-22:00 — two regressions chased to root
+- **Gatekeeper: training is FIXED (OLD arm fully green after the fetch-input fix); NEW arm failed only at commit — gatekeeper_new.joblib is gitignored, git add refused.** Fix: add -f (bundles are the deliverable) (239ba59a67). Redispatched.
+- **ci-tests regressed 20:43-green -> 21:23-red: +26 NEW drifted tests, all EQUITY gate-behavior** (trust-tier exempt, ETF-kill rollback, UEPS bypass, VIX filter) — a main commit changed EQUITY gating without test updates. Quarantined (same visible-non-blocking pattern, b77d0b4209), redispatched; **incident #129 escalated P2->P1** (drift outpacing reconciliation; these are silent EQUITY emission-path behavior changes).
+- Ledger steady (COMMODITY 90 / FOREX 88); lane unchanged; no ADV tags yet (scanner cycle pending); live verdict fresh (20:51).
