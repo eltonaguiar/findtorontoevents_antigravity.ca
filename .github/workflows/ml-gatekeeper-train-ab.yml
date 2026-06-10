@@ -91,6 +91,20 @@ jobs:
           echo "bundle=${{ matrix.arm.bundle }}" >> "$GITHUB_OUTPUT"
           echo "label=${{ matrix.arm.label }}" >> "$GITHUB_OUTPUT"
 
+      - name: Fetch live dashboard data (trainer input)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.drop_leakage == matrix.arm.drop }}
+        # 2026-06-10: dashboard_data.json is gitignored (18MB, generated hourly,
+        # FTP-deployed) so fresh runners never have it -> "[gatekeeper]
+        # dashboard_data.json not found, cannot train" on every run. Fetch the
+        # live copy; fail the job loudly if unavailable (training on nothing is
+        # worse than not training).
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -sf --retry 3 --max-time 120 \
+            -o audit_dashboard/data/dashboard_data.json \
+            "https://findtorontoevents.ca/audit/data/dashboard_data.json"
+          python3 -c "import json; d=json.load(open('audit_dashboard/data/dashboard_data.json')); n=len(d.get('picks',{}).get('recent_closed',[])); print(f'closed picks available: {n}'); raise SystemExit(0 if n>0 else 1)"
+
       - name: Train bundle (${{ matrix.arm.label }})
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.drop_leakage == matrix.arm.drop }}
         env:

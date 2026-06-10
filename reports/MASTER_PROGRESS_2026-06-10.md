@@ -190,3 +190,7 @@ Live verdict self-sustaining: generated_at 10:10 (workflow-written, no band-aid)
 - **BOTH redispatched runs GREEN**: ci-tests SUCCESS (the merge gate is restored after the 33/40-chronic-red era — quarantine + FRED kill-switch fixes held) and picks-now-refresh SUCCESS (FTP helper fixed; freebuff's lane deploys again).
 - **ADV liquidity shadow-tag WIRED (68dab0a4dc)** — INCIDENT_CRYPTO #20 phase 1: scanner.py now tags illiquid CRYPTO emissions (_adv_illiquid=True, fail-open, never blocks) + logs each. Measure-before-enforce: phase 2 hard gate after ~1 week of tag counts + tagged-pick performance. Incident updated to IN_PROGRESS.
 - Ledger: COMMODITY 90 / FOREX 88 (steady — verdicts due as the hourly resolver accrues n).
+
+## HEARTBEAT 20:43-21:00 — ML Gatekeeper chronic-red root-caused + fixed
+- Ledger: no n=100 crossings yet (COMMODITY 90 / FOREX 88 steady). Forward lane unchanged (rsi5070 108 @ 47.2%/1.54). No ADV tags yet (scanner cycle pending). ci-tests STAYS GREEN. Live verdict fresh (19:48).
+- **ML Gatekeeper Train A/B fixed (ba42197a31)** — the WS-A chronic: trainer reads gitignored dashboard_data.json (18MB, FTP-only) so fresh runners NEVER had it -> "cannot train" every run. Added a fetch-live-input step (fails loudly on 0 closed picks; live copy verified 2,148). Redispatched.
