@@ -149,6 +149,13 @@ jobs:
         # in the 2026-06 diagnosis, but it converts any hang into a named
         # failure instead of a job-level cancel). thread method: some tests
         # use signal handlers / subprocesses.
+        env:
+          # 2026-06-10: test_money_ready_verdict transitively hit the LIVE FRED
+          # API (passes_high_conviction_gate -> get_macro_context ->
+          # fetch_fred_series) which hangs >120s on CI runners — the new timeout
+          # correctly caught it. No-op the macro fetch via the module's own
+          # kill-switch (alpha_engine/fred_macro_context.py:62).
+          FRED_MACRO_DISABLED: '1'
         run: |
           DESELECTS=$(sed 's/^[[:space:]]*/--deselect=/' /tmp/known_drift_tests.txt | tr '\n' ' ')
           python -m pytest tests/ paper_trading/tests/ alpha_engine/tests/ tools/tests/ \
