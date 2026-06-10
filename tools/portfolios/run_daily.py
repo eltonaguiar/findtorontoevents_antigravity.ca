@@ -59,7 +59,10 @@ DEFAULT_LEADERBOARD = DATA_DIR / "ai_tournament_leaderboard.json"
 
 APPETITES = ("conservative", "balanced", "aggressive")
 STARTING_NAV = 100000.0
-PF_CI_LO_EDGE_BAR = 1.0
+# 2026-06-10: raised from 1.0 to 1.10 (swarm finding — 1.0 bar let in models with
+# 0.8% WR portfolios that produced 843 SL-hits vs 7 TP-hits). grok3 (pf_ci_lo=1.145,
+# 0% synthetic, n>=30 real-resolved) is the cleanest model and must qualify.
+PF_CI_LO_EDGE_BAR = 1.10
 # How many recent OPEN picks per model we consider for ingestion each run.
 MAX_INGEST_PER_MODEL = 25
 # MA-window per appetite is read from the profile (trend_filter_ma_days);
@@ -194,28 +197,22 @@ def load_picks(path: Path) -> list[dict]:
     return raw or []
 
 
-def edge_eligible_models(models: list[dict]) -> list[dict]:
-    out = []
-    for m in models:
-        ci = m.get("pf_ci_lo")
-        if isinstance(ci, (int, float)) and ci > PF_CI_LO_EDGE_BAR:
-            out.append(m)
-    return out
-
 
 def edge_signal_for(model: dict) -> float:
     """Map a model's overall pf_ci_lo to a [0,1] edge_signal for sizing.
 
-    pf_ci_lo of 1.0 -> 0; saturates toward 1.0 as pf_ci_lo rises. Falls back
-    to a thin-CI proxy (wr) when pf_ci_lo missing.
+    2026-06-10: calibrated against the new PF_CI_LO_EDGE_BAR of 1.15.
+    pf_ci_lo <= 1.0 -> 0; saturates toward 1.0 as pf_ci_lo rises.
+    Falls back to a thin-CI proxy (wr) when pf_ci_lo missing.
     """
+    # PF_CI_LO_EDGE_BAR is the module-level constant (1.10, swarm-settled 2026-06-10)
     ci = model.get("pf_ci_lo")
-    if isinstance(ci, (int, float)) and ci > 1.0:
-        # logistic-ish squash: pf_ci_lo 1.0->0, 2.0->~0.5, 3.0->~0.67
-        return max(0.0, min(1.0, (ci - 1.0) / (ci)))
+    if isinstance(ci, (int, float)) and ci > PF_CI_LO_EDGE_BAR:
+        # logistic-ish squash: pf_ci_lo 1.15->~0.13, 2.0->~0.43, 3.0->~0.62
+        return max(0.0, min(1.0, (ci - PF_CI_LO_EDGE_BAR) / (ci)))
     wr = model.get("wr")
     if isinstance(wr, (int, float)):
-        return max(0.0, min(1.0, wr))
+        return max(0.0, min(1.0, wr * 0.5))  # 50% haircut on WR-only proxy
     return 0.0
 
 
@@ -223,9 +220,25 @@ def edge_signal_for(model: dict) -> float:
 # Seeding
 # --------------------------------------------------------------------------- #
 def seed_portfolios(db: DB, models: list[dict], profiles: dict) -> int:
-    """Idempotently create model x appetite portfolios for edge-eligible models."""
+    """Idempotently create model x appetite portfolios for edge-eligible models.
+
+    2026-06-10 tournament-portfolio-loss-fix: raised the edge bar from
+    pf_ci_lo > 1.0 to > 1.15 (swarm finding: 1.0 bar was too permissive —
+    models with pf_ci_lo 1.01-1.14 produced 0.8% WR, 843 SL-hits vs 7 TP-hits
+    in production paper portfolios).  Also require n_resolved >= 30 AND
+    n_wins > 0 so a zero-win model can never get a portfolio.
+    """
+    # PF_CI_LO_EDGE_BAR from module-level constant (1.10, swarm-settled 2026-06-10)
+    MIN_RESOLVED = 30
     created = 0
-    for m in edge_eligible_models(models):
+    for m in models:
+        ci = m.get("pf_ci_lo")
+        n_resolved = m.get("n_resolved", 0)
+        n_wins = m.get("n_wins", 0)
+        if not (isinstance(ci, (int, float)) and ci > PF_CI_LO_EDGE_BAR):
+            continue
+        if n_resolved < MIN_RESOLVED or n_wins <= 0:
+            continue
         model_id = m.get("model_id")
         if not model_id:
             continue
@@ -285,10 +298,29 @@ def model_picks(picks: list[dict], model_id: str,
     the 25 newest were all PENNY/COMMODITY/CRYPTO → 0 positions opened.
     Pass `allowed_classes` (the appetite's asset_class_allowlist) to filter
     BEFORE slicing so the 25-cap is spent on candidates that have a chance.
+
+    2026-06-10 tournament-portfolio-loss-fix: added data-quality gates so
+    the portfolio engine never opens a position from a pick that is known
+    to be compromised.  The AI-tournament DB audit found 4,154 picks with
+    entry_price drifting >25% from market (MISPRICED_ENTRY) and 1,636
+    synthetic-seed picks (SYNTHETIC_SEED_ENRICHED).  Opening a position at
+    a corrupt entry price guarantees an instant unrealized loss followed by
+    a stop-out; synthetic picks add no predictive signal.
     """
     target = MODEL_PICK_ALIASES.get(model_id, model_id)
+    # Gate 1: only OPEN picks for this model
     out = [p for p in picks if (p.get("model_id") == target
                                 and str(p.get("status", "")).upper() == "OPEN")]
+    # Gate 2: reject picks whose entry_price is known to be mispriced or
+    # whose data_integrity_flag marks them as synthetic/non-forward-test.
+    # Belt-and-suspenders: status=="OPEN" filter above already excludes
+    # MISPRICED_ENTRY picks, but keep the explicit gate in case the JSON
+    # status field gets corrupted downstream (defense-in-depth).
+    _bad_statuses = {"MISPRICED_ENTRY"}
+    _bad_flags = {"SYNTHETIC_SEED_ENRICHED", "BACKTEST_DISPUTED", "HALLUCINATION"}
+    out = [p for p in out
+           if str(p.get("status", "")).upper() not in _bad_statuses
+           and str(p.get("data_integrity_flag", "")).upper() not in _bad_flags]
     if allowed_classes:
         allowed_upper = {str(c).upper() for c in allowed_classes}
         out = [p for p in out
