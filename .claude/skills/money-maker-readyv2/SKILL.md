@@ -84,6 +84,14 @@ You start with no context. Here is where the real data and credentials are. **Ne
   - **Anti-Overfit:** `/audit/anti_overfit.html` — DSR/PBO/SPA statistical gate results per strategy
 - Models cannot fetch these reliably — pull the local JSON and reason on it (never let a model claim it "fetched" a URL).
 
+## 2026-06-10 REALITY UPDATE — honest chain shipped; pivot to ENTRY selection
+
+- **Layer C now exists and is canonical: `money_ready_verdict.json → classes.<CLASS>.intrabar_truth`** (entry-anchored `at_signal_outcomes.intrabar_*` ledger, live on /audit). The entry-anchored resolver is the production default (`RESOLVER_ENTRY_ANCHORED=1`). This SUPERSEDES the old worry that WR was unmeasurable — it's measured and honest now. Re-resolve: `tools/reresolve_intrabar_signal_outcomes.py --apply --i-understand-this-mutates-production`; rebuild: `tools/build_intrabar_truth_by_class.py`.
+- **Honest 2026-06-10: 0/9 money-ready.** CRYPTO n=1154 32.4%/0.73, EQUITY n=107 34.6%/0.47 (both n≥100 + FAIL); COMMODITY n=90 / FOREX n=88 near the bar. PBO 0.822.
+- **PROVEN this run: the deficit is ENTRY SELECTION, not exit geometry.** σ-scaled TP/SL = NULL (WR drops to match TIME_EXIT cut). So edge-hunting must condition on entry-time features. Forward lane: `tools/stamp_entry_conditions.py` → `entry_conditions_forward.json` (crypto RSI50-70×US-session n=108 47.2%/PF1.54 = tracked, NOT promoted; promote only at n≥100 + R1[time-split]/R2[conc<35%]/R3[p<0.005] re-pass). Negative filters also count as entry criteria (FOREX trend-contrarian ≈76% of losses; EQUITY high-vol).
+- **Per-model/per-portfolio scope:** ai_leaderboard.html + ai-tournament.html Model Portfolios are first-class targets. Tournament 73-91% WR + leaderboard WR are single-snapshot/MISPRICED_ENTRY artifacts — discovery surfaces, NEVER sizing surfaces. grok3 was the only 0%-synthetic engine candidate (re-verify n).
+- **DO-NOT-RELITIGATE:** stocks_rsi2_pullback, CRYPTO direction-flip, futures_momentum/forex_rsi2 shadow, luxalgo "best", MeanReversionBB, trust=7, alpha_engine×CRYPTO 80.6%, `kimi_ultimate_proven_edge` (MiniMax-authored, self-admitted SYNTHETIC — do not cite its 89.8%/PF13.1).
+
 ## Current Asset Class Snapshot (RE-VERIFY every session — two layers)
 
 > **Layer A — official gates:** `money_ready_verdict.json` (`n_resolved` = policy-clean closed picks). **0/9 pass Tier-2** as of 2026-06-08.
