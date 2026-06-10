@@ -98,7 +98,10 @@ class SignalEngine:
             if key not in existing_keys:
                 if _ceg is not None:
                     try:
-                        _g = _ceg(str(pick.get("symbol") or ""))
+                        _g = _ceg(str(pick.get("symbol") or ""),
+                                  strategy=str(pick.get("strategy") or ""),
+                                  direction=str(pick.get("direction") or ""),
+                                  forward_test_only=bool(pick.get("forward_test_only")))
                         if _g.get("blocked"):
                             logger.debug(
                                 "emission_gate_blocked %s: %s",
