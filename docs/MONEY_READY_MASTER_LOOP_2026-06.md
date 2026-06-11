@@ -104,3 +104,16 @@ This plan itself should be attacked by an agent outside this lineage. **Ready-to
 ## 10. Success definition (so we know if THIS plan is working)
 
 By 2026-09-11 (3 editions out): ≥2 classes with honest n≥100 AND PF 95%-CI-lower-bound >1.15 net in the FORWARD lane (not replay), portfolio books with validated TWR/attribution, and zero P0 measurement incidents open >7 days. If after 2 editions no class has improved its CI lower bound, the loop itself goes under review — the meta-ratchet.
+
+---
+## ADDENDUM A — Portfolio-math audit results (2026-06-11, wf_c35c2f25; full detail: reports/master_loop_inputs_2026-06-11.json)
+- The books are NAV-based (not sum-of-percentages) and flow-free, so TWR=MWR=total-return **by accident**; structurally honest headline.
+- **P0 FIXED (53982150): direction-blind NAV marking** — open SHORTs (282 live) were sign-flipped (2× the move wrong), corrupting daily returns, drawdown, the breaker input, and sizing. Historical PF_NAV_SNAPSHOT rows since 2026-05-29 carry the distortion — flag, do not trust pre-fix book curves.
+- STILL OPEN (filed): `sharpe_30d` is full-history mislabeled; Sharpe annualized over irregular snapshot gaps (weekday-only cron, 24/7 crypto books); CAGR uses snapshot-count not calendar days; "MTD" is inception-to-date. Remedy spec: daily equity curve → geometric-link TWR, calendar-aware annualization, true MTD anchor, Brinson-lite attribution per class×strategy, daily independent P&L reconciliation.
+
+## ADDENDUM B — FOOLPROOF plan post-mortem + revived concepts (2026-06-11)
+Why it failed: built on the corrupted measurement layer (every headline verdict later falsified); stats applied to contaminated pooled series (DSR=1.0 on CT=F-concentrated data); checkbox theater (completion = code merged, never outcome-conditioned); prose gates never compiled into code; amendment churn ignored as the meta-signal that measurement itself was broken; multi-AI convergence mistaken for verification; deadline-driven capital pressure.
+**Revived into this loop** (worth building, never built): (1) the monkey-test null benchmark (beat the 95th pct of 1,000 random strategies — cheap overfit killer, complements DSR/PBO); (2) symmetric AUTO-DEMOTION (rolling 30d Sharpe<0.5 or PF<1.0@50 trades demotes from the allowlist — the ladder must go down, not just up); (3) the Level-5 breadth throttle (no 4th class until 3 are live-profitable) — encoded here as the 2-3 focus-class rule; (4) cross-strategy correlation gate (>0.7 pairwise cap) — stronger than HHI; (5) institutionalize the cross-AI stat-divergence audit (the one FOOLPROOF exercise that worked: adversarial subagents, file:line-cited, sha256-deterministic) as a RECURRING monthly claims audit; (6) the cotton-style evidence pack with the systematically-skipped item (d): live forward confirmation at projected PF before any tier claim.
+
+## ADDENDUM C — Pages-calc audit (2026-06-11): P0s fixed same-day
+esc() undefined killed pick_funnel's Strategy Funnel (FIXED 71f21326, deployed); template "Max Drawdown" was range-not-drawdown (FIXED a4c25166); Σ-PnL card relabeled non-compound. Filed for follow-up: headline-cards population mismatch (statsFiltered branch inversion: default = recent-2000-only vs full-book; trust-book mode shows full-book cards over a narrowed table); total_pnl_pct server-redefinition vs template label.
