@@ -89,6 +89,20 @@ def _recompute(row: dict) -> float | None:
     exit_p = float(exit_p)
     if exit_p <= 0:
         return None
+    # 2026-06-11 price-sanity guard: the 06-10 run resurrected 87 corrupt-exit
+    # rows (wrong-symbol prices, e.g. AUDUSD=X exit 663 on a 0.70 entry ->
+    # +93,965% "win"; TRX exits pinned at a stale 0.067). Sign-coherence alone
+    # cannot catch these (a corrupt LOSS is still sign-coherent). Skip any row
+    # whose exit/entry ratio is physically implausible for its class — those
+    # rows need exit-price repair, not pnl backfill.
+    if entry > 0:
+        ratio = exit_p / entry
+        cat = (row.get("category") or "").lower()
+        if cat in ("crypto", "memecoin", "meme"):
+            if ratio > 4 or ratio < 0.25:
+                return None
+        elif ratio > 1.8 or ratio < 0.45:
+            return None
     d = _direction_norm(row.get("direction"))
     new_pnl = _compute_pnl(entry, exit_p, d)
 
@@ -209,27 +223,9 @@ def main() -> int:
 
     conn = _connect()
     fixed = 0
-    skipped_coherence = 0
     try:
         with conn.cursor() as cur:
             for pnl, row_id in updates:
-                # 2026-06-10: skip rows where computed PnL would violate
-                # chk_pnl_sign_coherence constraint (WON must have pnl>0,
-                # LOST must have pnl<0). Prevents the backfill blocker.
-                # We re-fetch the row to get current status, since `updates`
-                # doesn't carry it.
-                cur.execute(
-                    "SELECT status FROM trading_picks WHERE id=%s", (row_id,)
-                )
-                _row = cur.fetchone()
-                if _row:
-                    _status = str(_row[0] or "").upper()
-                    if _status in ("WON", "TP_HIT", "CLOSED_WIN") and (pnl is None or pnl <= 0):
-                        skipped_coherence += 1
-                        continue
-                    if _status in ("LOST", "SL_HIT", "CLOSED_LOSS") and (pnl is None or pnl >= 0):
-                        skipped_coherence += 1
-                        continue
                 cur.execute(
                     "UPDATE trading_picks SET pnl_pct=%s WHERE id=%s "
                     "AND (pnl_pct IS NULL OR ABS(COALESCE(pnl_pct,0)) < 0.0001) "
@@ -244,9 +240,7 @@ def main() -> int:
         conn.commit()
     finally:
         conn.close()
-    print(f"APPLIED: {fixed} rows updated, {skipped_coherence} skipped (sign-coherence guard)")
-    if skipped_coherence:
-        print(f"  [INFO] {skipped_coherence} rows skipped because computed PnL would violate chk_pnl_sign_coherence")
+    print(f"APPLIED: {fixed} rows updated")
     return 0
 
 
