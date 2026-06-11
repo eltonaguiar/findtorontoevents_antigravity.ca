@@ -309,3 +309,6 @@ Two workflows (21 mining/verify agents + 6 builders) + vLLM refutation consult, 
 - **GHA**: daily-top-picks empty-IN() crash, 2hour-challenge path mismatch, mirror lftp timeout — fixed + dispatched.
 - **ENH#131**: additive wr_pct/wr_fraction unit twins + units declaration. **FINDING#12**: one-sided-resolution checker wired into daily-scrutiny (non-blocking warning).
 - Backups: trading_picks_20260611T222306Z (49,810), category-alias (146), trk_sweep (22). REMAINING handoffs: #14 UNKNOWN classifier, FINDING#9 battleground dedup, #131b cron, #132 WF refresh.
+
+## HEARTBEAT 22:50 (Jun 11) — own-drift reconciled SAME-DAY (the #129 discipline, practiced)
+ci-tests went red on MY #88 normalization (5+8 category tests asserting old lowercase). Reconciled the tests to the consumer-derived UPPERCASE canonical (14/14 pass locally), REMOVED the 8 now-passing entries from the quarantine list (shrinks 69->61), redispatched. daily-top-picks-filter: GREEN (empty-IN() fix confirmed); 2hour-challenge + mirror in flight. Tournament REPLAY-only 0 ✓ · ledger 90/88 · lane unchanged · live 21:41.
