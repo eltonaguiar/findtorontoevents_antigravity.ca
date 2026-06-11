@@ -16377,22 +16377,28 @@ function renderPerformance() {
     // Summary stat cards
     let cumPnl = 0;
     let maxCum = -Infinity, minCum = Infinity;
+    // 2026-06-11 P0 (pages-calc audit): "Max Drawdown" was maxCum-minCum — the
+    // RANGE of the cumulative curve, not a drawdown (a monotonic rally from
+    // -50 to +100 showed "150% drawdown"). Track running peak-to-trough.
+    let runPeak = -Infinity, maxDDtrue = 0;
     const cumData = dailyEntries.map(([date, d]) => {
       cumPnl += d.pnl;
       maxCum = Math.max(maxCum, cumPnl);
       minCum = Math.min(minCum, cumPnl);
+      runPeak = Math.max(runPeak, cumPnl);
+      maxDDtrue = Math.max(maxDDtrue, runPeak - cumPnl);
       return { date, pnl: d.pnl, count: d.count, cum: cumPnl };
     });
     const totalDays = cumData.length;
     const profitDays = cumData.filter(d => d.pnl > 0).length;
     const lossDays = cumData.filter(d => d.pnl < 0).length;
-    const maxDD = maxCum - minCum;
+    const maxDD = maxDDtrue;  // peak-to-trough (see 2026-06-11 fix above)
 
     s4Html += '<div class="perf-stat-cards">';
     s4Html += `<div class="perf-stat-card"><div class="psc-label">Trading Days</div><div class="psc-value">${totalDays}</div></div>`;
     s4Html += `<div class="perf-stat-card"><div class="psc-label">Profitable Days</div><div class="psc-value" style="color:var(--green)">${profitDays}</div></div>`;
     s4Html += `<div class="perf-stat-card"><div class="psc-label">Losing Days</div><div class="psc-value" style="color:var(--red)">${lossDays}</div></div>`;
-    s4Html += `<div class="perf-stat-card"><div class="psc-label">Cumulative PnL</div><div class="psc-value ${pnlClass(cumPnl)}">${fmt(cumPnl)}%</div></div>`;
+    s4Html += `<div class="perf-stat-card"><div class="psc-label">Cumulative PnL (Σ per-trade %, non-compound)</div><div class="psc-value ${pnlClass(cumPnl)}">${fmt(cumPnl)}%</div></div>`;
     s4Html += `<div class="perf-stat-card"><div class="psc-label">Max Drawdown</div><div class="psc-value" style="color:var(--red)">${fmt(maxDD)}%</div></div>`;
     s4Html += '</div>';
 
