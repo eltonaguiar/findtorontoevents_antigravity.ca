@@ -873,6 +873,12 @@ async function loadRecencySubsets(){
 }
 
 // ===== STRATEGY FUNNEL RENDER (2026-05-29) =====
+// 2026-06-11 P0: esc() was referenced (lines ~894-934) but never defined in this
+// file -> ReferenceError killed the Strategy Funnel panels on every load.
+function esc(v) {
+  if (v == null) return '\u2014';
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 function renderStrategyFunnel(data){
   const classes = ['CRYPTO','EQUITY','FOREX','ETF','COMMODITY','FUTURES','BOND'];
   // 1. Strategies per asset class
