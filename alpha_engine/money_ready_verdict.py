@@ -773,6 +773,8 @@ def _class_stats(picks: list[dict]) -> dict[str, dict]:
         stats[ac] = {
             "n": n,
             "wr": round(wr, 4),
+            # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
+            "wr_pct": round(wr * 100, 2),
             "pf": round(pf, 4),
             "returns": returns,
             "picks": ps,
@@ -1535,6 +1537,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             "intrabar_truth": _INTRABAR_TRUTH_CACHE.get(ac.upper()),
             "n_resolved": n,
             "wr": round(wr, 4),
+            # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
+            "wr_pct": round(wr * 100, 2),
             "pf": round(pf, 4) if pf != float("inf") else None,
             "n_ok": n >= MIN_N_CLASS,
             "wr_ok": wr >= wr_floor,
@@ -1718,7 +1722,11 @@ def main() -> None:
         # so adding meta strings is safe. JSON path only (print_report never sees it).
         from datetime import datetime as _dt, timezone as _tz
         out = {"generated_at": _dt.now(_tz.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-               "_intrabar_source": "at_signal_outcomes.intrabar_* (entry-anchored first-touch; PR2 default-ON 2026-06-10)"}
+               "_intrabar_source": "at_signal_outcomes.intrabar_* (entry-anchored first-touch; PR2 default-ON 2026-06-10)",
+               # ENH#131: explicit unit declarations — "wr" stays a fraction (existing
+               # consumers depend on it); "wr_pct" is the additive percent twin matching
+               # pf_registry's win_rate_pct convention.
+               "units": {"wr": "fraction", "wr_pct": "percent"}}
         out.update(results)
         print(json.dumps(out, indent=2))
     else:
