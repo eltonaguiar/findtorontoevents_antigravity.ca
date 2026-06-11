@@ -1,0 +1,1206 @@
+{
+  "generated_at": "2026-06-11T06:30:40.758075+00:00",
+  "mode": "READ_ONLY_SHADOW_DIFF",
+  "report_note": "No DB writes performed. Apply decision pending review; backup to ejaguiar1_backups required before any mutation.",
+  "methodology": {
+    "cohort": "tournament_picks status IN (WIN,LOSS) AND (exit_reason NOT LIKE %REPLAY% OR exit_reason IS NULL)",
+    "n_cohort": 1453,
+    "sampled_or_full": "FULL \u2014 all 1,453 legacy rows re-resolved; no sampling",
+    "ohlc_sources": "CRYPTO: Binance daily klines (api/api1/api2/api3 -> CoinGecko -> KuCoin failover, price_tracker._fetch_ohlc_crypto_binance); non-CRYPTO: yfinance daily (auto_adjust=False), symbol via price_tracker._yf_symbol_for",
+    "window": "entry-anchored: bars from submitted_at date through submitted_at + RESOLUTION_WINDOWS_DAYS[asset_class] (EQUITY/ETF 30, CRYPTO/FUTURES 14, COMMODITY 28, FOREX 21, BOND 60, PENNY 7)",
+    "touch_rule": "price_tracker._scan_bars_for_touch \u2014 SL checked FIRST (conservative same-bar tie-break), gap-through fills at bar open when open is already past the barrier",
+    "drift_guard": "same as resolve_pick: |first bar open - entry|/entry*100 > per-class threshold -> MISPRICED_ENTRY (ETF 7, EQUITY 10, BOND 5, FOREX 3, COMMODITY/FUTURES 12, PENNY min(25,15)=15, default/CRYPTO 50)",
+    "split_adjustment": "audit_trail.reverse_split_symbols.should_adjust_for_split date guard + price heuristic (entry*factor vs first open within 0.3-2.0), same as resolve_pick",
+    "time_exit": "no touch + NOW past window close -> TIME_EXIT at last in-window bar close (slippage applied), WIN/LOSS by pnl sign. Task-spec deviation from production: production scans bars through 'today'; this shadow slices strictly to the class window",
+    "still_open": "no touch + window close still in the future -> STILL_OPEN (an honest replay would not have resolved this row yet; legacy resolution was premature)",
+    "slippage": "same SLIPPAGE_BPS as production (5bp equity/ETF/bond/commodity, 20bp crypto/forex)",
+    "wr_comparison": "paired: legacy WR and replay WR computed on the SAME rows (replay-resolved subset WIN/LOSS/TIME_EXIT_*) to avoid composition bias; legacy_wr_all also reported on full cohort",
+    "no_data_note": "All 51 NO_DATA rows are MATICUSDT: Binance delisted MATICUSDT (MATIC->POL 1:1 migration); CoinGecko OHLC + KuCoin klines also returned empty. Legacy spot resolutions for these came via CoinGecko spot. Remediation option for the apply phase: fetch POLUSDT klines as a 1:1 price-equivalent series \u2014 NOT done here to avoid guessing."
+  },
+  "fetch_status": {
+    "EQUITY:AAPL": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "CRYPTO:ADAUSDT": {
+      "source": "binance_klines",
+      "n_bars": 14,
+      "ok": true
+    },
+    "CRYPTO:ALGOUSDT": {
+      "source": "binance_klines",
+      "n_bars": 18,
+      "ok": true
+    },
+    "EQUITY:AMD": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "CRYPTO:APTUSDT": {
+      "source": "binance_klines",
+      "n_bars": 21,
+      "ok": true
+    },
+    "CRYPTO:AVAXUSDT": {
+      "source": "binance_klines",
+      "n_bars": 14,
+      "ok": true
+    },
+    "CRYPTO:BCHUSDT": {
+      "source": "binance_klines",
+      "n_bars": 10,
+      "ok": true
+    },
+    "CRYPTO:BNBUSDT": {
+      "source": "binance_klines",
+      "n_bars": 18,
+      "ok": true
+    },
+    "BOND:BND": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "CRYPTO:BTC": {
+      "source": "binance_klines",
+      "n_bars": 23,
+      "ok": true
+    },
+    "CRYPTO:BTCUSDT": {
+      "source": "binance_klines",
+      "n_bars": 21,
+      "ok": true
+    },
+    "CRYPTO:CHZUSDT": {
+      "source": "binance_klines",
+      "n_bars": 19,
+      "ok": true
+    },
+    "COMMODITY:CL=F": {
+      "source": "yfinance_daily",
+      "n_bars": 13,
+      "ok": true
+    },
+    "FUTURES:CL=F": {
+      "source": "yfinance_daily",
+      "n_bars": 13,
+      "ok": true
+    },
+    "PENNY:CLSK": {
+      "source": "yfinance_daily",
+      "n_bars": 12,
+      "ok": true
+    },
+    "CRYPTO:CROUSDT": {
+      "source": "binance_klines",
+      "n_bars": 110,
+      "ok": true
+    },
+    "FUTURES:CT=F": {
+      "source": "yfinance_daily",
+      "n_bars": 9,
+      "ok": true
+    },
+    "EQUITY:DIS": {
+      "source": "yfinance_daily",
+      "n_bars": 10,
+      "ok": true
+    },
+    "CRYPTO:DOTUSDT": {
+      "source": "binance_klines",
+      "n_bars": 19,
+      "ok": true
+    },
+    "CRYPTO:ETH": {
+      "source": "binance_klines",
+      "n_bars": 23,
+      "ok": true
+    },
+    "CRYPTO:ETHUSDT": {
+      "source": "binance_klines",
+      "n_bars": 20,
+      "ok": true
+    },
+    "FOREX:EURUSD": {
+      "source": "yfinance_daily",
+      "n_bars": 16,
+      "ok": true
+    },
+    "CRYPTO:FILUSDT": {
+      "source": "binance_klines",
+      "n_bars": 20,
+      "ok": true
+    },
+    "CRYPTO:FTMUSDT": {
+      "source": "binance_klines",
+      "n_bars": 110,
+      "ok": true
+    },
+    "FOREX:GBPUSD": {
+      "source": "yfinance_daily",
+      "n_bars": 16,
+      "ok": true
+    },
+    "COMMODITY:GC=F": {
+      "source": "yfinance_daily",
+      "n_bars": 15,
+      "ok": true
+    },
+    "CRYPTO:HBARUSDT": {
+      "source": "binance_klines",
+      "n_bars": 18,
+      "ok": true
+    },
+    "EQUITY:HD": {
+      "source": "yfinance_daily",
+      "n_bars": 13,
+      "ok": true
+    },
+    "PENNY:HOLO": {
+      "source": "yfinance_daily",
+      "n_bars": 13,
+      "ok": true
+    },
+    "BOND:IEF": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "CRYPTO:INJUSDT": {
+      "source": "binance_klines",
+      "n_bars": 10,
+      "ok": true
+    },
+    "EQUITY:IWM": {
+      "source": "yfinance_daily",
+      "n_bars": 15,
+      "ok": true
+    },
+    "ETF:IWM": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "FUTURES:KC=F": {
+      "source": "yfinance_daily",
+      "n_bars": 11,
+      "ok": true
+    },
+    "PENNY:LABD": {
+      "source": "yfinance_daily",
+      "n_bars": 8,
+      "ok": true
+    },
+    "CRYPTO:LINKUSDT": {
+      "source": "binance_klines",
+      "n_bars": 16,
+      "ok": true
+    },
+    "PENNY:LODE": {
+      "source": "yfinance_daily",
+      "n_bars": 8,
+      "ok": true
+    },
+    "CRYPTO:LTCUSDT": {
+      "source": "binance_klines",
+      "n_bars": 14,
+      "ok": true
+    },
+    "EQUITY:MA": {
+      "source": "yfinance_daily",
+      "n_bars": 12,
+      "ok": true
+    },
+    "PENNY:MARA": {
+      "source": "yfinance_daily",
+      "n_bars": 9,
+      "ok": true
+    },
+    "CRYPTO:MATICUSDT": {
+      "source": "binance_klines",
+      "n_bars": 0,
+      "ok": false
+    },
+    "EQUITY:META": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "EQUITY:MRK": {
+      "source": "yfinance_daily",
+      "n_bars": 12,
+      "ok": true
+    },
+    "EQUITY:MSFT": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "EQUITY:MU": {
+      "source": "yfinance_daily",
+      "n_bars": 17,
+      "ok": true
+    },
+    "PENNY:MVST": {
+      "source": "yfinance_daily",
+      "n_bars": 8,
+      "ok": true
+    },
+    "CRYPTO:NEARUSDT": {
+      "source": "binance_klines",
+      "n_bars": 21,
+      "ok": true
+    },
+    "COMMODITY:NG=F": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "EQUITY:NVDA": {
+      "source": "yfinance_daily",
+      "n_bars": 15,
+      "ok": true
+    },
+    "FOREX:NZDUSD": {
+      "source": "yfinance_daily",
+      "n_bars": 16,
+      "ok": true
+    },
+    "COMMODITY:OJ=F": {
+      "source": "yfinance_daily",
+      "n_bars": 15,
+      "ok": true
+    },
+    "EQUITY:PG": {
+      "source": "yfinance_daily",
+      "n_bars": 11,
+      "ok": true
+    },
+    "ETF:QQQ": {
+      "source": "yfinance_daily",
+      "n_bars": 15,
+      "ok": true
+    },
+    "CRYPTO:RENDERUSDT": {
+      "source": "binance_klines",
+      "n_bars": 19,
+      "ok": true
+    },
+    "BOND:SHY": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "PENNY:SOXS": {
+      "source": "yfinance_daily",
+      "n_bars": 9,
+      "ok": true
+    },
+    "ETF:SPY": {
+      "source": "yfinance_daily",
+      "n_bars": 17,
+      "ok": true
+    },
+    "PENNY:SQQQ": {
+      "source": "yfinance_daily",
+      "n_bars": 8,
+      "ok": true
+    },
+    "CRYPTO:SUIUSDT": {
+      "source": "binance_klines",
+      "n_bars": 12,
+      "ok": true
+    },
+    "BOND:TLT": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "ETF:TLT": {
+      "source": "yfinance_daily",
+      "n_bars": 14,
+      "ok": true
+    },
+    "FOREX:USDCAD": {
+      "source": "yfinance_daily",
+      "n_bars": 16,
+      "ok": true
+    },
+    "FOREX:USDCHF": {
+      "source": "yfinance_daily",
+      "n_bars": 15,
+      "ok": true
+    },
+    "EQUITY:VZ": {
+      "source": "yfinance_daily",
+      "n_bars": 12,
+      "ok": true
+    },
+    "COMMODITY:ZC=F": {
+      "source": "yfinance_daily",
+      "n_bars": 9,
+      "ok": true
+    },
+    "FUTURES:ZC=F": {
+      "source": "yfinance_daily",
+      "n_bars": 13,
+      "ok": true
+    },
+    "CRYPTO:ZKUSDT": {
+      "source": "binance_klines",
+      "n_bars": 21,
+      "ok": true
+    },
+    "COMMODITY:ZS=F": {
+      "source": "yfinance_daily",
+      "n_bars": 15,
+      "ok": true
+    },
+    "FUTURES:ZW=F": {
+      "source": "yfinance_daily",
+      "n_bars": 10,
+      "ok": true
+    },
+    "BOND:^TNX": {
+      "source": "yfinance_daily",
+      "n_bars": 10,
+      "ok": true
+    },
+    "BOND:^TYX": {
+      "source": "yfinance_daily",
+      "n_bars": 10,
+      "ok": true
+    }
+  },
+  "fetch_failures": [
+    "CRYPTO:MATICUSDT"
+  ],
+  "overall": {
+    "n_legacy": 1453,
+    "legacy_wr_all": 51.2,
+    "n_replay_resolved": 1112,
+    "replay_wr": 41.2,
+    "paired_legacy_wr": 50.9,
+    "wr_delta_pp": -9.7,
+    "n_flips": 340,
+    "flip_rate_pct": 30.6,
+    "n_mispriced": 80,
+    "n_still_open": 210,
+    "n_no_data": 51
+  },
+  "flip_matrix_legacy_status_to_replay_category": {
+    "WIN": {
+      "WIN": 342,
+      "LOSS": 224,
+      "TIME_EXIT_WIN": 0,
+      "TIME_EXIT_LOSS": 0,
+      "MISPRICED_ENTRY": 49,
+      "STILL_OPEN": 110,
+      "NO_DATA": 19
+    },
+    "LOSS": {
+      "WIN": 116,
+      "LOSS": 430,
+      "TIME_EXIT_WIN": 0,
+      "TIME_EXIT_LOSS": 0,
+      "MISPRICED_ENTRY": 31,
+      "STILL_OPEN": 100,
+      "NO_DATA": 32
+    }
+  },
+  "legacy_exit_reason_to_replay_category": {
+    "TP_HIT(WIN)": {
+      "WIN": 293,
+      "LOSS": 156,
+      "MISPRICED_ENTRY": 43,
+      "STILL_OPEN": 70,
+      "NO_DATA": 10
+    },
+    "TIME_EXIT(WIN)": {
+      "LOSS": 68,
+      "NO_DATA": 9,
+      "WIN": 49,
+      "STILL_OPEN": 40,
+      "MISPRICED_ENTRY": 6
+    },
+    "SL_HIT(LOSS)": {
+      "WIN": 84,
+      "LOSS": 375,
+      "NO_DATA": 26,
+      "STILL_OPEN": 59,
+      "MISPRICED_ENTRY": 25
+    },
+    "TIME_EXIT(LOSS)": {
+      "STILL_OPEN": 41,
+      "WIN": 32,
+      "MISPRICED_ENTRY": 6,
+      "LOSS": 55,
+      "NO_DATA": 6
+    }
+  },
+  "per_model": {
+    "cursor_agent": {
+      "n_legacy": 57,
+      "legacy_wr_all": 50.9,
+      "n_replay_resolved": 45,
+      "replay_wr": 35.6,
+      "paired_legacy_wr": 55.6,
+      "wr_delta_pp": -20.0,
+      "n_flips": 15,
+      "flip_rate_pct": 33.3,
+      "n_mispriced": 2,
+      "n_still_open": 10,
+      "n_no_data": 0
+    },
+    "gemini_2_5_pro": {
+      "n_legacy": 56,
+      "legacy_wr_all": 44.6,
+      "n_replay_resolved": 45,
+      "replay_wr": 28.9,
+      "paired_legacy_wr": 40.0,
+      "wr_delta_pp": -11.1,
+      "n_flips": 13,
+      "flip_rate_pct": 28.9,
+      "n_mispriced": 0,
+      "n_still_open": 8,
+      "n_no_data": 3
+    },
+    "deepseek_v3": {
+      "n_legacy": 52,
+      "legacy_wr_all": 34.6,
+      "n_replay_resolved": 35,
+      "replay_wr": 25.7,
+      "paired_legacy_wr": 34.3,
+      "wr_delta_pp": -8.6,
+      "n_flips": 9,
+      "flip_rate_pct": 25.7,
+      "n_mispriced": 8,
+      "n_still_open": 7,
+      "n_no_data": 2
+    },
+    "deepseek_r1": {
+      "n_legacy": 50,
+      "legacy_wr_all": 54.0,
+      "n_replay_resolved": 39,
+      "replay_wr": 38.5,
+      "paired_legacy_wr": 59.0,
+      "wr_delta_pp": -20.5,
+      "n_flips": 10,
+      "flip_rate_pct": 25.6,
+      "n_mispriced": 2,
+      "n_still_open": 9,
+      "n_no_data": 0
+    },
+    "claude_opus_4_7": {
+      "n_legacy": 50,
+      "legacy_wr_all": 48.0,
+      "n_replay_resolved": 43,
+      "replay_wr": 37.2,
+      "paired_legacy_wr": 48.8,
+      "wr_delta_pp": -11.6,
+      "n_flips": 13,
+      "flip_rate_pct": 30.2,
+      "n_mispriced": 0,
+      "n_still_open": 6,
+      "n_no_data": 1
+    },
+    "llama4_scout": {
+      "n_legacy": 49,
+      "legacy_wr_all": 57.1,
+      "n_replay_resolved": 36,
+      "replay_wr": 44.4,
+      "paired_legacy_wr": 58.3,
+      "wr_delta_pp": -13.9,
+      "n_flips": 17,
+      "flip_rate_pct": 47.2,
+      "n_mispriced": 3,
+      "n_still_open": 8,
+      "n_no_data": 2
+    },
+    "grok4_3": {
+      "n_legacy": 49,
+      "legacy_wr_all": 46.9,
+      "n_replay_resolved": 40,
+      "replay_wr": 37.5,
+      "paired_legacy_wr": 37.5,
+      "wr_delta_pp": 0.0,
+      "n_flips": 16,
+      "flip_rate_pct": 40.0,
+      "n_mispriced": 2,
+      "n_still_open": 7,
+      "n_no_data": 0
+    },
+    "gemini_2_5_flash": {
+      "n_legacy": 48,
+      "legacy_wr_all": 56.2,
+      "n_replay_resolved": 35,
+      "replay_wr": 48.6,
+      "paired_legacy_wr": 51.4,
+      "wr_delta_pp": -2.8,
+      "n_flips": 17,
+      "flip_rate_pct": 48.6,
+      "n_mispriced": 5,
+      "n_still_open": 8,
+      "n_no_data": 0
+    },
+    "grok3_direct": {
+      "n_legacy": 47,
+      "legacy_wr_all": 46.8,
+      "n_replay_resolved": 34,
+      "replay_wr": 38.2,
+      "paired_legacy_wr": 44.1,
+      "wr_delta_pp": -5.9,
+      "n_flips": 12,
+      "flip_rate_pct": 35.3,
+      "n_mispriced": 1,
+      "n_still_open": 12,
+      "n_no_data": 0
+    },
+    "kimi_direct": {
+      "n_legacy": 47,
+      "legacy_wr_all": 66.0,
+      "n_replay_resolved": 36,
+      "replay_wr": 61.1,
+      "paired_legacy_wr": 69.4,
+      "wr_delta_pp": -8.3,
+      "n_flips": 9,
+      "flip_rate_pct": 25.0,
+      "n_mispriced": 0,
+      "n_still_open": 10,
+      "n_no_data": 1
+    },
+    "qwen3_6_max": {
+      "n_legacy": 46,
+      "legacy_wr_all": 37.0,
+      "n_replay_resolved": 29,
+      "replay_wr": 37.9,
+      "paired_legacy_wr": 37.9,
+      "wr_delta_pp": 0.0,
+      "n_flips": 8,
+      "flip_rate_pct": 27.6,
+      "n_mispriced": 1,
+      "n_still_open": 14,
+      "n_no_data": 2
+    },
+    "llama4_maverick": {
+      "n_legacy": 45,
+      "legacy_wr_all": 48.9,
+      "n_replay_resolved": 31,
+      "replay_wr": 38.7,
+      "paired_legacy_wr": 48.4,
+      "wr_delta_pp": -9.7,
+      "n_flips": 9,
+      "flip_rate_pct": 29.0,
+      "n_mispriced": 2,
+      "n_still_open": 10,
+      "n_no_data": 2
+    },
+    "mercury": {
+      "n_legacy": 44,
+      "legacy_wr_all": 43.2,
+      "n_replay_resolved": 36,
+      "replay_wr": 33.3,
+      "paired_legacy_wr": 41.7,
+      "wr_delta_pp": -8.4,
+      "n_flips": 13,
+      "flip_rate_pct": 36.1,
+      "n_mispriced": 1,
+      "n_still_open": 7,
+      "n_no_data": 0
+    },
+    "ring26_1t": {
+      "n_legacy": 44,
+      "legacy_wr_all": 59.1,
+      "n_replay_resolved": 37,
+      "replay_wr": 37.8,
+      "paired_legacy_wr": 56.8,
+      "wr_delta_pp": -19.0,
+      "n_flips": 17,
+      "flip_rate_pct": 45.9,
+      "n_mispriced": 1,
+      "n_still_open": 5,
+      "n_no_data": 1
+    },
+    "grok3": {
+      "n_legacy": 44,
+      "legacy_wr_all": 65.9,
+      "n_replay_resolved": 37,
+      "replay_wr": 64.9,
+      "paired_legacy_wr": 64.9,
+      "wr_delta_pp": 0.0,
+      "n_flips": 2,
+      "flip_rate_pct": 5.4,
+      "n_mispriced": 6,
+      "n_still_open": 0,
+      "n_no_data": 1
+    },
+    "gpt4_1": {
+      "n_legacy": 43,
+      "legacy_wr_all": 39.5,
+      "n_replay_resolved": 32,
+      "replay_wr": 59.4,
+      "paired_legacy_wr": 46.9,
+      "wr_delta_pp": 12.5,
+      "n_flips": 10,
+      "flip_rate_pct": 31.2,
+      "n_mispriced": 1,
+      "n_still_open": 7,
+      "n_no_data": 3
+    },
+    "command_a": {
+      "n_legacy": 42,
+      "legacy_wr_all": 64.3,
+      "n_replay_resolved": 32,
+      "replay_wr": 34.4,
+      "paired_legacy_wr": 62.5,
+      "wr_delta_pp": -28.1,
+      "n_flips": 13,
+      "flip_rate_pct": 40.6,
+      "n_mispriced": 2,
+      "n_still_open": 7,
+      "n_no_data": 1
+    },
+    "minimax_m2_5": {
+      "n_legacy": 42,
+      "legacy_wr_all": 66.7,
+      "n_replay_resolved": 35,
+      "replay_wr": 51.4,
+      "paired_legacy_wr": 68.6,
+      "wr_delta_pp": -17.2,
+      "n_flips": 12,
+      "flip_rate_pct": 34.3,
+      "n_mispriced": 0,
+      "n_still_open": 5,
+      "n_no_data": 2
+    },
+    "deepseek_v4_flash": {
+      "n_legacy": 41,
+      "legacy_wr_all": 46.3,
+      "n_replay_resolved": 30,
+      "replay_wr": 50.0,
+      "paired_legacy_wr": 43.3,
+      "wr_delta_pp": 6.7,
+      "n_flips": 12,
+      "flip_rate_pct": 40.0,
+      "n_mispriced": 0,
+      "n_still_open": 9,
+      "n_no_data": 2
+    },
+    "mistral_large": {
+      "n_legacy": 41,
+      "legacy_wr_all": 34.1,
+      "n_replay_resolved": 28,
+      "replay_wr": 32.1,
+      "paired_legacy_wr": 32.1,
+      "wr_delta_pp": 0.0,
+      "n_flips": 6,
+      "flip_rate_pct": 21.4,
+      "n_mispriced": 3,
+      "n_still_open": 8,
+      "n_no_data": 2
+    },
+    "glm4_7_flash": {
+      "n_legacy": 41,
+      "legacy_wr_all": 53.7,
+      "n_replay_resolved": 29,
+      "replay_wr": 27.6,
+      "paired_legacy_wr": 55.2,
+      "wr_delta_pp": -27.6,
+      "n_flips": 12,
+      "flip_rate_pct": 41.4,
+      "n_mispriced": 1,
+      "n_still_open": 7,
+      "n_no_data": 4
+    },
+    "mistral_small": {
+      "n_legacy": 40,
+      "legacy_wr_all": 40.0,
+      "n_replay_resolved": 36,
+      "replay_wr": 44.4,
+      "paired_legacy_wr": 41.7,
+      "wr_delta_pp": 2.7,
+      "n_flips": 7,
+      "flip_rate_pct": 19.4,
+      "n_mispriced": 1,
+      "n_still_open": 2,
+      "n_no_data": 1
+    },
+    "kimi_k2_6": {
+      "n_legacy": 38,
+      "legacy_wr_all": 55.3,
+      "n_replay_resolved": 28,
+      "replay_wr": 50.0,
+      "paired_legacy_wr": 60.7,
+      "wr_delta_pp": -10.7,
+      "n_flips": 9,
+      "flip_rate_pct": 32.1,
+      "n_mispriced": 3,
+      "n_still_open": 7,
+      "n_no_data": 0
+    },
+    "pollinations_open": {
+      "n_legacy": 37,
+      "legacy_wr_all": 37.8,
+      "n_replay_resolved": 33,
+      "replay_wr": 39.4,
+      "paired_legacy_wr": 36.4,
+      "wr_delta_pp": 3.0,
+      "n_flips": 15,
+      "flip_rate_pct": 45.5,
+      "n_mispriced": 0,
+      "n_still_open": 4,
+      "n_no_data": 0
+    },
+    "gpt5_chat": {
+      "n_legacy": 36,
+      "legacy_wr_all": 55.6,
+      "n_replay_resolved": 28,
+      "replay_wr": 32.1,
+      "paired_legacy_wr": 53.6,
+      "wr_delta_pp": -21.5,
+      "n_flips": 12,
+      "flip_rate_pct": 42.9,
+      "n_mispriced": 1,
+      "n_still_open": 4,
+      "n_no_data": 3
+    },
+    "claude_haiku_4_5": {
+      "n_legacy": 33,
+      "legacy_wr_all": 72.7,
+      "n_replay_resolved": 22,
+      "replay_wr": 40.9,
+      "paired_legacy_wr": 72.7,
+      "wr_delta_pp": -31.8,
+      "n_flips": 9,
+      "flip_rate_pct": 40.9,
+      "n_mispriced": 2,
+      "n_still_open": 8,
+      "n_no_data": 1
+    },
+    "gpt5_mini": {
+      "n_legacy": 32,
+      "legacy_wr_all": 59.4,
+      "n_replay_resolved": 25,
+      "replay_wr": 36.0,
+      "paired_legacy_wr": 60.0,
+      "wr_delta_pp": -24.0,
+      "n_flips": 12,
+      "flip_rate_pct": 48.0,
+      "n_mispriced": 1,
+      "n_still_open": 6,
+      "n_no_data": 0
+    },
+    "llm7_qwen": {
+      "n_legacy": 31,
+      "legacy_wr_all": 67.7,
+      "n_replay_resolved": 23,
+      "replay_wr": 52.2,
+      "paired_legacy_wr": 65.2,
+      "wr_delta_pp": -13.0,
+      "n_flips": 11,
+      "flip_rate_pct": 47.8,
+      "n_mispriced": 1,
+      "n_still_open": 7,
+      "n_no_data": 0
+    },
+    "qwen3_5_plus": {
+      "n_legacy": 30,
+      "legacy_wr_all": 63.3,
+      "n_replay_resolved": 21,
+      "replay_wr": 23.8,
+      "paired_legacy_wr": 61.9,
+      "wr_delta_pp": -38.1,
+      "n_flips": 10,
+      "flip_rate_pct": 47.6,
+      "n_mispriced": 0,
+      "n_still_open": 8,
+      "n_no_data": 1
+    },
+    "deepseek_v4": {
+      "n_legacy": 28,
+      "legacy_wr_all": 46.4,
+      "n_replay_resolved": 26,
+      "replay_wr": 42.3,
+      "paired_legacy_wr": 46.2,
+      "wr_delta_pp": -3.9,
+      "n_flips": 1,
+      "flip_rate_pct": 3.8,
+      "n_mispriced": 1,
+      "n_still_open": 0,
+      "n_no_data": 1
+    },
+    "gh_models_gpt4o": {
+      "n_legacy": 28,
+      "legacy_wr_all": 42.9,
+      "n_replay_resolved": 25,
+      "replay_wr": 40.0,
+      "paired_legacy_wr": 36.0,
+      "wr_delta_pp": 4.0,
+      "n_flips": 1,
+      "flip_rate_pct": 4.0,
+      "n_mispriced": 2,
+      "n_still_open": 0,
+      "n_no_data": 1
+    },
+    "aimlapi_gpt4o": {
+      "n_legacy": 25,
+      "legacy_wr_all": 52.0,
+      "n_replay_resolved": 24,
+      "replay_wr": 45.8,
+      "paired_legacy_wr": 50.0,
+      "wr_delta_pp": -4.2,
+      "n_flips": 1,
+      "flip_rate_pct": 4.2,
+      "n_mispriced": 0,
+      "n_still_open": 0,
+      "n_no_data": 1
+    },
+    "groq_llama_3_70b": {
+      "n_legacy": 22,
+      "legacy_wr_all": 40.9,
+      "n_replay_resolved": 17,
+      "replay_wr": 47.1,
+      "paired_legacy_wr": 47.1,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 2,
+      "n_still_open": 0,
+      "n_no_data": 3
+    },
+    "cerebras_llama4": {
+      "n_legacy": 21,
+      "legacy_wr_all": 47.6,
+      "n_replay_resolved": 16,
+      "replay_wr": 43.8,
+      "paired_legacy_wr": 50.0,
+      "wr_delta_pp": -6.2,
+      "n_flips": 1,
+      "flip_rate_pct": 6.2,
+      "n_mispriced": 5,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "nous_hermes_4": {
+      "n_legacy": 17,
+      "legacy_wr_all": 41.2,
+      "n_replay_resolved": 10,
+      "replay_wr": 60.0,
+      "paired_legacy_wr": 50.0,
+      "wr_delta_pp": 10.0,
+      "n_flips": 1,
+      "flip_rate_pct": 10.0,
+      "n_mispriced": 4,
+      "n_still_open": 0,
+      "n_no_data": 3
+    },
+    "together_qwen_3": {
+      "n_legacy": 15,
+      "legacy_wr_all": 60.0,
+      "n_replay_resolved": 11,
+      "replay_wr": 45.5,
+      "paired_legacy_wr": 63.6,
+      "wr_delta_pp": -18.1,
+      "n_flips": 2,
+      "flip_rate_pct": 18.2,
+      "n_mispriced": 3,
+      "n_still_open": 0,
+      "n_no_data": 1
+    },
+    "nvidia_nemotron_3_70b": {
+      "n_legacy": 13,
+      "legacy_wr_all": 38.5,
+      "n_replay_resolved": 7,
+      "replay_wr": 28.6,
+      "paired_legacy_wr": 28.6,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 2,
+      "n_still_open": 0,
+      "n_no_data": 4
+    },
+    "feather_llama": {
+      "n_legacy": 5,
+      "legacy_wr_all": 60.0,
+      "n_replay_resolved": 2,
+      "replay_wr": 50.0,
+      "paired_legacy_wr": 50.0,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 1,
+      "n_still_open": 0,
+      "n_no_data": 2
+    },
+    "nvidia_deepseek_v4_pro": {
+      "n_legacy": 5,
+      "legacy_wr_all": 60.0,
+      "n_replay_resolved": 3,
+      "replay_wr": 66.7,
+      "paired_legacy_wr": 66.7,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 2,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "ring_261T": {
+      "n_legacy": 4,
+      "legacy_wr_all": 50.0,
+      "n_replay_resolved": 1,
+      "replay_wr": 0.0,
+      "paired_legacy_wr": 0.0,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 3,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "alpha_engine": {
+      "n_legacy": 3,
+      "legacy_wr_all": 66.7,
+      "n_replay_resolved": 3,
+      "replay_wr": 0.0,
+      "paired_legacy_wr": 66.7,
+      "wr_delta_pp": -66.7,
+      "n_flips": 2,
+      "flip_rate_pct": 66.7,
+      "n_mispriced": 0,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "gpt4o_mini": {
+      "n_legacy": 3,
+      "legacy_wr_all": 66.7,
+      "n_replay_resolved": 3,
+      "replay_wr": 33.3,
+      "paired_legacy_wr": 66.7,
+      "wr_delta_pp": -33.4,
+      "n_flips": 1,
+      "flip_rate_pct": 33.3,
+      "n_mispriced": 0,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "claude_opus": {
+      "n_legacy": 2,
+      "legacy_wr_all": 50.0,
+      "n_replay_resolved": 0,
+      "replay_wr": null,
+      "paired_legacy_wr": null,
+      "wr_delta_pp": null,
+      "n_flips": 0,
+      "flip_rate_pct": null,
+      "n_mispriced": 2,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "groq_kimi_k2": {
+      "n_legacy": 2,
+      "legacy_wr_all": 100.0,
+      "n_replay_resolved": 0,
+      "replay_wr": null,
+      "paired_legacy_wr": null,
+      "wr_delta_pp": null,
+      "n_flips": 0,
+      "flip_rate_pct": null,
+      "n_mispriced": 2,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "nvidia_minimax_m2": {
+      "n_legacy": 1,
+      "legacy_wr_all": 100.0,
+      "n_replay_resolved": 1,
+      "replay_wr": 100.0,
+      "paired_legacy_wr": 100.0,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 0,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "gemini_25_pro": {
+      "n_legacy": 1,
+      "legacy_wr_all": 0.0,
+      "n_replay_resolved": 1,
+      "replay_wr": 0.0,
+      "paired_legacy_wr": 0.0,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 0,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "fireworks_qwen": {
+      "n_legacy": 1,
+      "legacy_wr_all": 100.0,
+      "n_replay_resolved": 0,
+      "replay_wr": null,
+      "paired_legacy_wr": null,
+      "wr_delta_pp": null,
+      "n_flips": 0,
+      "flip_rate_pct": null,
+      "n_mispriced": 1,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "hyperbolic_llama": {
+      "n_legacy": 1,
+      "legacy_wr_all": 0.0,
+      "n_replay_resolved": 1,
+      "replay_wr": 0.0,
+      "paired_legacy_wr": 0.0,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 0,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "gpt4o": {
+      "n_legacy": 1,
+      "legacy_wr_all": 100.0,
+      "n_replay_resolved": 1,
+      "replay_wr": 100.0,
+      "paired_legacy_wr": 100.0,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 0,
+      "n_still_open": 0,
+      "n_no_data": 0
+    }
+  },
+  "per_asset_class": {
+    "CRYPTO": {
+      "n_legacy": 386,
+      "legacy_wr_all": 48.2,
+      "n_replay_resolved": 318,
+      "replay_wr": 44.0,
+      "paired_legacy_wr": 50.3,
+      "wr_delta_pp": -6.3,
+      "n_flips": 86,
+      "flip_rate_pct": 27.0,
+      "n_mispriced": 17,
+      "n_still_open": 0,
+      "n_no_data": 51
+    },
+    "BOND": {
+      "n_legacy": 294,
+      "legacy_wr_all": 52.7,
+      "n_replay_resolved": 166,
+      "replay_wr": 41.0,
+      "paired_legacy_wr": 54.2,
+      "wr_delta_pp": -13.2,
+      "n_flips": 60,
+      "flip_rate_pct": 36.1,
+      "n_mispriced": 3,
+      "n_still_open": 125,
+      "n_no_data": 0
+    },
+    "COMMODITY": {
+      "n_legacy": 199,
+      "legacy_wr_all": 54.3,
+      "n_replay_resolved": 172,
+      "replay_wr": 40.7,
+      "paired_legacy_wr": 49.4,
+      "wr_delta_pp": -8.7,
+      "n_flips": 61,
+      "flip_rate_pct": 35.5,
+      "n_mispriced": 27,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "ETF": {
+      "n_legacy": 197,
+      "legacy_wr_all": 57.9,
+      "n_replay_resolved": 169,
+      "replay_wr": 46.2,
+      "paired_legacy_wr": 59.2,
+      "wr_delta_pp": -13.0,
+      "n_flips": 38,
+      "flip_rate_pct": 22.5,
+      "n_mispriced": 0,
+      "n_still_open": 28,
+      "n_no_data": 0
+    },
+    "EQUITY": {
+      "n_legacy": 177,
+      "legacy_wr_all": 40.1,
+      "n_replay_resolved": 155,
+      "replay_wr": 30.3,
+      "paired_legacy_wr": 38.7,
+      "wr_delta_pp": -8.4,
+      "n_flips": 51,
+      "flip_rate_pct": 32.9,
+      "n_mispriced": 18,
+      "n_still_open": 4,
+      "n_no_data": 0
+    },
+    "FOREX": {
+      "n_legacy": 167,
+      "legacy_wr_all": 55.7,
+      "n_replay_resolved": 113,
+      "replay_wr": 39.8,
+      "paired_legacy_wr": 54.0,
+      "wr_delta_pp": -14.2,
+      "n_flips": 44,
+      "flip_rate_pct": 38.9,
+      "n_mispriced": 1,
+      "n_still_open": 53,
+      "n_no_data": 0
+    },
+    "PENNY": {
+      "n_legacy": 21,
+      "legacy_wr_all": 47.6,
+      "n_replay_resolved": 8,
+      "replay_wr": 50.0,
+      "paired_legacy_wr": 50.0,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 13,
+      "n_still_open": 0,
+      "n_no_data": 0
+    },
+    "FUTURES": {
+      "n_legacy": 12,
+      "legacy_wr_all": 58.3,
+      "n_replay_resolved": 11,
+      "replay_wr": 54.5,
+      "paired_legacy_wr": 54.5,
+      "wr_delta_pp": 0.0,
+      "n_flips": 0,
+      "flip_rate_pct": 0.0,
+      "n_mispriced": 1,
+      "n_still_open": 0,
+      "n_no_data": 0
+    }
+  },
+  "models_flagged_wr_drop_gt_10pp": [
+    "qwen3_5_plus",
+    "claude_haiku_4_5",
+    "command_a",
+    "glm4_7_flash",
+    "gpt5_mini",
+    "gpt5_chat",
+    "deepseek_r1",
+    "cursor_agent",
+    "ring26_1t",
+    "together_qwen_3",
+    "minimax_m2_5",
+    "llama4_scout",
+    "llm7_qwen",
+    "claude_opus_4_7",
+    "gemini_2_5_pro",
+    "kimi_k2_6"
+  ]
+}
