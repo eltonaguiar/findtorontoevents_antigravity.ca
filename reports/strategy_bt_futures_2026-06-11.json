@@ -1,0 +1,415 @@
+{
+  "strategy": "fut_xsec_rs_longshort",
+  "run_ts": "2026-06-11T05:12:29.903762Z",
+  "data": {
+    "source": "yfinance daily auto_adjust",
+    "start": "2018-01-01",
+    "end": "2026-06-11",
+    "universe": [
+      "ES=F",
+      "NQ=F",
+      "YM=F",
+      "RTY=F",
+      "ZN=F",
+      "ZB=F",
+      "GC=F",
+      "SI=F",
+      "HG=F",
+      "CL=F",
+      "NG=F",
+      "ZC=F",
+      "ZW=F",
+      "ZS=F"
+    ],
+    "bars_per_symbol": {
+      "ES=F": 2124,
+      "NQ=F": 2124,
+      "YM=F": 2124,
+      "RTY=F": 2124,
+      "ZN=F": 2124,
+      "ZB=F": 2124,
+      "GC=F": 2122,
+      "SI=F": 2122,
+      "HG=F": 2123,
+      "CL=F": 2123,
+      "NG=F": 2124,
+      "ZC=F": 2120,
+      "ZW=F": 2122,
+      "ZS=F": 2122
+    }
+  },
+  "method": {
+    "formation": "first trading day of ISO week; rank on closes strictly before entry day",
+    "score": "ret63 / (stdev63_daily * sqrt(63)), need >=70 prior closes, |score|>=0.1",
+    "book": "LONG top3 / SHORT bottom3 (k=min(3, eligible//2) to avoid overlap)",
+    "entry": "entry-day Open",
+    "exit": "last trading day of same ISO week, Close",
+    "costs_bp_per_side": 2.0,
+    "incomplete_final_week_excluded": true
+  },
+  "weeks_formed": 425,
+  "overall": {
+    "n": 2549,
+    "wr_pct": 49.86,
+    "pf": 0.8719,
+    "sum_net_ret": -4.3564,
+    "avg_net_ret_bp": -17.09
+  },
+  "r1_time_split": {
+    "pass": false,
+    "half1": {
+      "n": 1274,
+      "wr_pct": 50.39,
+      "pf": 1.0307,
+      "sum_net_ret": 0.4458,
+      "avg_net_ret_bp": 3.5,
+      "date_range": [
+        "2018-04-16",
+        "2022-05-09"
+      ]
+    },
+    "half2": {
+      "n": 1275,
+      "wr_pct": 49.33,
+      "pf": 0.7536,
+      "sum_net_ret": -4.8022,
+      "avg_net_ret_bp": -37.66,
+      "date_range": [
+        "2022-05-09",
+        "2026-06-01"
+      ]
+    },
+    "gate": "both halves WR>=45 AND PF>=1.2"
+  },
+  "r2_concentration": {
+    "pass": true,
+    "top_symbol": "ZB=F",
+    "top_share_pct": 9.89,
+    "counts": {
+      "ZS=F": 191,
+      "ZC=F": 225,
+      "ZW=F": 150,
+      "NG=F": 205,
+      "ZB=F": 252,
+      "ZN=F": 243,
+      "YM=F": 104,
+      "CL=F": 198,
+      "RTY=F": 125,
+      "HG=F": 154,
+      "GC=F": 216,
+      "NQ=F": 179,
+      "ES=F": 158,
+      "SI=F": 149
+    }
+  },
+  "side_breakdown": {
+    "long": {
+      "n": 1274,
+      "wr_pct": 52.28,
+      "pf": 0.9284,
+      "sum_net_ret": -1.1975,
+      "avg_net_ret_bp": -9.4
+    },
+    "short": {
+      "n": 1275,
+      "wr_pct": 47.45,
+      "pf": 0.8173,
+      "sum_net_ret": -3.1588,
+      "avg_net_ret_bp": -24.78
+    }
+  },
+  "pre_registered_falsification": {
+    "combined_pf_lt_1.05": true,
+    "rank_spread_5d": -26.18,
+    "rank_spread_le_0": "True",
+    "short_pf_lt_0.7": false,
+    "killed": true
+  },
+  "per_symbol": {
+    "CL=F": {
+      "n": 198,
+      "wr_pct": 46.46,
+      "pf": 0.7614,
+      "sum_net_ret": -1.1418,
+      "avg_net_ret_bp": -57.67
+    },
+    "ES=F": {
+      "n": 158,
+      "wr_pct": 55.06,
+      "pf": 0.7942,
+      "sum_net_ret": -0.2893,
+      "avg_net_ret_bp": -18.31
+    },
+    "GC=F": {
+      "n": 216,
+      "wr_pct": 56.48,
+      "pf": 1.1673,
+      "sum_net_ret": 0.2759,
+      "avg_net_ret_bp": 12.77
+    },
+    "HG=F": {
+      "n": 154,
+      "wr_pct": 41.56,
+      "pf": 0.8029,
+      "sum_net_ret": -0.4219,
+      "avg_net_ret_bp": -27.4
+    },
+    "NG=F": {
+      "n": 205,
+      "wr_pct": 46.34,
+      "pf": 0.8195,
+      "sum_net_ret": -1.2225,
+      "avg_net_ret_bp": -59.64
+    },
+    "NQ=F": {
+      "n": 179,
+      "wr_pct": 53.63,
+      "pf": 0.9722,
+      "sum_net_ret": -0.0523,
+      "avg_net_ret_bp": -2.92
+    },
+    "RTY=F": {
+      "n": 125,
+      "wr_pct": 49.6,
+      "pf": 0.7928,
+      "sum_net_ret": -0.4079,
+      "avg_net_ret_bp": -32.63
+    },
+    "SI=F": {
+      "n": 149,
+      "wr_pct": 48.32,
+      "pf": 1.0125,
+      "sum_net_ret": 0.0343,
+      "avg_net_ret_bp": 2.3
+    },
+    "YM=F": {
+      "n": 104,
+      "wr_pct": 47.12,
+      "pf": 0.6444,
+      "sum_net_ret": -0.328,
+      "avg_net_ret_bp": -31.54
+    },
+    "ZB=F": {
+      "n": 252,
+      "wr_pct": 47.22,
+      "pf": 0.9211,
+      "sum_net_ret": -0.1157,
+      "avg_net_ret_bp": -4.59
+    },
+    "ZC=F": {
+      "n": 225,
+      "wr_pct": 53.78,
+      "pf": 0.9283,
+      "sum_net_ret": -0.2202,
+      "avg_net_ret_bp": -9.79
+    },
+    "ZN=F": {
+      "n": 243,
+      "wr_pct": 53.5,
+      "pf": 1.1376,
+      "sum_net_ret": 0.0879,
+      "avg_net_ret_bp": 3.62
+    },
+    "ZS=F": {
+      "n": 191,
+      "wr_pct": 51.31,
+      "pf": 1.0662,
+      "sum_net_ret": 0.1291,
+      "avg_net_ret_bp": 6.76
+    },
+    "ZW=F": {
+      "n": 150,
+      "wr_pct": 42.67,
+      "pf": 0.7395,
+      "sum_net_ret": -0.684,
+      "avg_net_ret_bp": -45.6
+    }
+  },
+  "per_year": {
+    "2018": {
+      "n": 227,
+      "wr_pct": 49.78,
+      "pf": 1.0916,
+      "sum_net_ret": 0.1988,
+      "avg_net_ret_bp": 8.76
+    },
+    "2019": {
+      "n": 312,
+      "wr_pct": 50.0,
+      "pf": 0.7647,
+      "sum_net_ret": -0.7476,
+      "avg_net_ret_bp": -23.96
+    },
+    "2020": {
+      "n": 312,
+      "wr_pct": 51.6,
+      "pf": 1.0874,
+      "sum_net_ret": 0.4104,
+      "avg_net_ret_bp": 13.15
+    },
+    "2021": {
+      "n": 312,
+      "wr_pct": 49.04,
+      "pf": 1.0716,
+      "sum_net_ret": 0.2347,
+      "avg_net_ret_bp": 7.52
+    },
+    "2022": {
+      "n": 312,
+      "wr_pct": 44.87,
+      "pf": 0.6422,
+      "sum_net_ret": -1.9709,
+      "avg_net_ret_bp": -63.17
+    },
+    "2023": {
+      "n": 312,
+      "wr_pct": 50.0,
+      "pf": 0.9178,
+      "sum_net_ret": -0.3524,
+      "avg_net_ret_bp": -11.3
+    },
+    "2024": {
+      "n": 318,
+      "wr_pct": 51.57,
+      "pf": 0.9183,
+      "sum_net_ret": -0.3025,
+      "avg_net_ret_bp": -9.51
+    },
+    "2025": {
+      "n": 312,
+      "wr_pct": 52.88,
+      "pf": 0.8925,
+      "sum_net_ret": -0.4733,
+      "avg_net_ret_bp": -15.17
+    },
+    "2026": {
+      "n": 132,
+      "wr_pct": 47.73,
+      "pf": 0.5152,
+      "sum_net_ret": -1.3536,
+      "avg_net_ret_bp": -102.54
+    }
+  },
+  "verdict": "FAIL",
+  "caveats": [
+    "Yahoo continuous futures (=F) are front-month chained WITHOUT roll adjustment; weekly holding returns can include roll-gap distortion on roll weeks.",
+    "Adjusted-close restatements by Yahoo can change historical ranks (spec acknowledged; this run is a 2026-06-11 snapshot).",
+    "Futures cost set to 2bp/side (4bp RT) \u2014 equity/ETF tier from repo method; conservative for ES/ZN, roughly fair for NG/ZW.",
+    "Return-based PF (no notional/margin sizing); legs equal-weighted.",
+    "Monday holiday weeks enter on first trading day of week; weeks with a single trading day skipped."
+  ],
+  "trades_sample_first5": [
+    {
+      "entry_date": "2018-04-16",
+      "exit_date": "2018-04-20",
+      "symbol": "ZS=F",
+      "side": "LONG",
+      "score": 1.5627,
+      "entry": 1054.25,
+      "exit": 1028.75,
+      "gross_ret": -0.024187811240218182,
+      "net_ret": -0.024587811240218183
+    },
+    {
+      "entry_date": "2018-04-16",
+      "exit_date": "2018-04-20",
+      "symbol": "ZC=F",
+      "side": "LONG",
+      "score": 1.5092,
+      "entry": 385.0,
+      "exit": 376.5,
+      "gross_ret": -0.02207792207792203,
+      "net_ret": -0.02247792207792203
+    },
+    {
+      "entry_date": "2018-04-16",
+      "exit_date": "2018-04-20",
+      "symbol": "ZW=F",
+      "side": "LONG",
+      "score": 0.6278,
+      "entry": 466.5,
+      "exit": 463.25,
+      "gross_ret": -0.006966773847802754,
+      "net_ret": -0.007366773847802754
+    },
+    {
+      "entry_date": "2018-04-16",
+      "exit_date": "2018-04-20",
+      "symbol": "NG=F",
+      "side": "SHORT",
+      "score": -0.5581,
+      "entry": 2.753000020980835,
+      "exit": 2.739000082015991,
+      "gross_ret": 0.00508533921472909,
+      "net_ret": 0.00468533921472909
+    },
+    {
+      "entry_date": "2018-04-16",
+      "exit_date": "2018-04-20",
+      "symbol": "ZB=F",
+      "side": "SHORT",
+      "score": -0.8811,
+      "entry": 145.375,
+      "exit": 143.09375,
+      "gross_ret": 0.01569217540842649,
+      "net_ret": 0.01529217540842649
+    }
+  ],
+  "trades_sample_last5": [
+    {
+      "entry_date": "2026-06-01",
+      "exit_date": "2026-06-05",
+      "symbol": "ES=F",
+      "side": "LONG",
+      "score": 1.4769,
+      "entry": 7595.0,
+      "exit": 7400.5,
+      "gross_ret": -0.02560895325872281,
+      "net_ret": -0.026008953258722812
+    },
+    {
+      "entry_date": "2026-06-01",
+      "exit_date": "2026-06-05",
+      "symbol": "RTY=F",
+      "side": "LONG",
+      "score": 1.0859,
+      "entry": 2920.5,
+      "exit": 2834.800048828125,
+      "gross_ret": -0.02934427364214176,
+      "net_ret": -0.02974427364214176
+    },
+    {
+      "entry_date": "2026-06-01",
+      "exit_date": "2026-06-05",
+      "symbol": "GC=F",
+      "side": "SHORT",
+      "score": -0.9115,
+      "entry": 4523.5,
+      "exit": 4337.10009765625,
+      "gross_ret": 0.04120700836603297,
+      "net_ret": 0.040807008366032974
+    },
+    {
+      "entry_date": "2026-06-01",
+      "exit_date": "2026-06-05",
+      "symbol": "ZB=F",
+      "side": "SHORT",
+      "score": -1.1798,
+      "entry": 112.875,
+      "exit": 112.25,
+      "gross_ret": 0.0055370985603543366,
+      "net_ret": 0.005137098560354336
+    },
+    {
+      "entry_date": "2026-06-01",
+      "exit_date": "2026-06-05",
+      "symbol": "ZN=F",
+      "side": "SHORT",
+      "score": -1.3423,
+      "entry": 109.96875,
+      "exit": 109.34375,
+      "gross_ret": 0.005683432793407217,
+      "net_ret": 0.005283432793407217
+    }
+  ]
+}
