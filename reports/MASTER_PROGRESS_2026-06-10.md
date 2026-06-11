@@ -224,3 +224,6 @@ alpha-engine-live (ADV warm-up validation, started 01:20) + ci-tests both in_pro
 
 ## /money-maker-readyv2 RUN — 2026-06-11 ~04:15 UTC
 Freshness PASS (verdict 1.5h). Re-verified all layers: **0/9 money-ready; 0 policy-clean strategy cells pass n>=30+PF>=1.5+WR>=50 (0 even at PF>=1.3)** — canonical registry agrees with intrabar truth. KEY DIVERGENCES FLAGGED: FOREX Layer-A "WATCH 57.5%/1.77" vs intrabar 42.0%/1.13 (close-walk optimism class — intrabar canonical); ETF Layer-A 69.2%/2.01 REJECTED by intrabar 0/16. Weekly filter report shipped (reports/weekly_filter_2026-06-11.md): live sizing 0% everywhere; two CRYPTO paper-lane candidates with quarter-Kelly for the paper book only (rsi5070xUS 4.1%, luxalgo_short 9.7% recency-blocked); promote/kill rules pre-registered.
+
+## HEARTBEAT 04:28 (Jun 11) — ALL GREEN
+ci-tests holding GREEN. Ledger 90/88 (no n=100 crossing yet). ADV second reading: 0 tags on 63 picks (2 consecutive zero-tag cycles — "active universe is liquid" reading strengthening; one more cycle and #20 phase-2 gets deprioritized as no-op). Lane unchanged (rsi5070 108/150 toward re-test). Live verdict fresh (04:01).
