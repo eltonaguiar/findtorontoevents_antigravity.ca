@@ -264,3 +264,15 @@ Every per-model WR on /audit/ai-tournament.html + ai_leaderboard.html is now ent
 
 ## HEARTBEAT 08:47 (Jun 11) — ALL GREEN
 ci-tests GREEN; tournament resolutions REPLAY-only (0 regression, 1,293 OPEN awaiting honest resolution); ledger 90/88 steady; lane unchanged (rsi5070 108 @ 47.2%/1.54); live verdict 06:30 with the 08:00 hourly in flight (normal cadence). Nothing actionable.
+
+## HEARTBEAT 09:49 (Jun 11) — 3rd consecutive ALL-GREEN → cadence proposal
+ci-tests GREEN · ledger 90/88 · tournament REPLAY-only holds (0 regressions) · lane unchanged · live fresh (08:39, hourly self-sustaining).
+
+**OPERATOR PROPOSAL — relax the loop cadence.** Three consecutive heartbeats with zero actionable items; every active watch is slow-moving:
+- COMMODITY (90) / FOREX (88) crossing n=100 — days, not hours (hourly resolver accrual)
+- rsi5070 n=108→150 re-test — ~1-2 weeks
+- handoff forward-observation — pre-registered for ~2026-07-09
+- tournament REPLAY-only + CI green-hold — guarded by the workflows themselves
+Suggest: move to a 3-4h heartbeat, or a daily scheduled check (the /schedule skill can create a cloud routine), with the loop re-tightening automatically on any red. The hourly pipelines are self-sustaining; continuous 60-min agent ticks are no longer buying anything.
+
+## HEARTBEAT 10:51 (Jun 11) — 4th ALL-GREEN (lean). ci GREEN · 90/88 · tournament REPLAY-only 0 · lane unchanged · live 10:12. Cadence proposal pending with operator.
