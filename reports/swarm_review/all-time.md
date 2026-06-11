@@ -1,13 +1,13 @@
 # Swarm Pick Weekly Review — all-time
 
-Generated: 2026-06-10T04:34:40.859683+00:00
+Generated: 2026-06-11T04:35:51.497066+00:00
 
-## Overall (340 picks, 31 resolved, 309 open)
+## Overall (340 picks, 32 resolved, 308 open)
 
-- Win rate: 41.9%
-- Profit factor: 1.61
-- Wins / Losses: 13 / 18
-- Gross win pct: 103.9, gross loss pct: 64.39
+- Win rate: 43.8%
+- Profit factor: 1.84
+- Wins / Losses: 14 / 18
+- Gross win pct: 118.36, gross loss pct: 64.39
 
 ## Per consensus tier
 
@@ -16,7 +16,7 @@ Generated: 2026-06-10T04:34:40.859683+00:00
 | unanimous | 5 | 5 | 40.0 | 1.31 | 2 | 3 |
 | strong | 189 | 5 | 40.0 | 1.86 | 2 | 3 |
 | moderate | 124 | 4 | 50.0 | 2.73 | 2 | 2 |
-| single | 22 | 17 | 41.2 | 1.41 | 7 | 10 |
+| single | 22 | 18 | 44.4 | 1.83 | 8 | 10 |
 
 ## Per asset class
 
@@ -24,7 +24,7 @@ Generated: 2026-06-10T04:34:40.859683+00:00
 |---|---|---|---|---|---|---|
 | COMMODITY | 32 | 0 | 0.0 | 0.0 | 0 | 0 |
 | CRYPTO | 104 | 16 | 43.8 | 1.62 | 7 | 9 |
-| EQUITY | 180 | 7 | 42.9 | 1.83 | 3 | 4 |
+| EQUITY | 180 | 8 | 50.0 | 2.62 | 4 | 4 |
 | ETF | 19 | 3 | 33.3 | 0.78 | 1 | 2 |
 | FOREX | 3 | 3 | 33.3 | 1.05 | 1 | 2 |
 | FUTURES | 2 | 2 | 50.0 | 2.87 | 1 | 1 |
@@ -36,9 +36,9 @@ Generated: 2026-06-10T04:34:40.859683+00:00
 | ml_strategy_reviver_inverse | 1 | 1 | 100.0 | None |
 | FUTURES_RESEARCH_SWARM | 1 | 1 | 100.0 | None |
 | LEAP_SWARM_AGG | 3 | 3 | 66.7 | 2.93 |
+| V4_VALUE_SCREENER_SWARM | 6 | 3 | 66.7 | 4.17 |
 | MOMENTUM_TECH | 12 | 11 | 54.5 | 2.68 |
 | SEASONAL | 4 | 4 | 50.0 | 3.14 |
-| V4_VALUE_SCREENER_SWARM | 6 | 2 | 50.0 | 2.12 |
 | MACRO_BEAR | 12 | 11 | 45.5 | 1.92 |
 | NEWS_FLOW | 7 | 7 | 42.9 | 1.78 |
 | VOL_TRADER | 6 | 6 | 33.3 | 1.18 |
@@ -97,7 +97,7 @@ Generated: 2026-06-10T04:34:40.859683+00:00
 
 | Model | agreed_picks | resolved | WR% | PF |
 |---|---|---|---|---|
-| claude-opus-4-7 | 81 | 72 | 36.1 | 1.33 |
+| claude-opus-4-7 | 81 | 73 | 37.0 | 1.42 |
 | aimlapi_gpt4o | 94 | 0 | 0.0 | 0.0 |
 | deepseek_r1 | 58 | 0 | 0.0 | 0.0 |
 | gemini_25_pro | 36 | 0 | 0.0 | 0.0 |
