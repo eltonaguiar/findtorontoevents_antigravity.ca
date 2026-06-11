@@ -227,3 +227,15 @@ Freshness PASS (verdict 1.5h). Re-verified all layers: **0/9 money-ready; 0 poli
 
 ## HEARTBEAT 04:28 (Jun 11) — ALL GREEN
 ci-tests holding GREEN. Ledger 90/88 (no n=100 crossing yet). ADV second reading: 0 tags on 63 picks (2 consecutive zero-tag cycles — "active universe is liquid" reading strengthening; one more cycle and #20 phase-2 gets deprioritized as no-op). Lane unchanged (rsi5070 108/150 toward re-test). Live verdict fresh (04:01).
+
+## DUE-DILIGENCE REVIEW of today's prompts (operator ask, 2026-06-11 ~05:40)
+Re-read every directive received this session; gaps where value remains un-extracted, ranked:
+1. **AI-tournament per-model honesty (mandate item, partially done):** surfaces are defensively bannered, but the tournament's OWN resolver is still single-snapshot — the 73-91% WRs remain artifacts at the source. VALUE-ADD: port the entry-anchored first-touch replay to tournament_picks resolution (same pattern as PR1/PR2) so per-model WR becomes honest; then the leaderboard ranking (n>=30) becomes real. This is the largest un-started piece of the "per-model/per-portfolio top-notch" goal.
+2. **Model Portfolios risk books:** factor-risk/de-gross kill-switch filed (ENH #161) but unbuilt — the portfolios still have no beta/covariance overlay.
+3. **Operator-only items still pending:** 50webs password rotation (history exposure); FRED_API_KEY/CFTC_API_KEY/GLASSNODE in CI env (blocks the FOREX carry fix #18 + macro gates in CI); #129 policy call (require test updates in gate-change PRs).
+4. **HyroTrader: 0 journal trades** (prop-firm narrative blocked at the first 30 resolved) — untouched this session; needs its pipeline kicked or descoped.
+5. **bt_backtest_trades cross-DB sync ~25d stale** (memory) — any backtests-side analytics remain suspect; the draft GHA sync workflow awaits operator review.
+6. **pead_equity review gate 2026-06-14** (3 days): history now durable (37ff92f5af) — calendar the >=100-pick/PF>=1.5/WR>=50 promotion review.
+7. **Chronic GHA stragglers not yet fixed:** edge-stability-refresh push race; mirror-FTP timeouts (recurring in failure lists). Medium value, known patterns.
+8. DAILY_IDEAS.MD: tails were mined by both sweeps; full historical mining = low expected value (most items superseded by the honest-layer pivot).
+IN FLIGHT: engineer-10x-strategies workflow (8 classes x 10 designs -> adversarial scrutiny -> REAL entry-anchored backtests of survivors, M-107-style falsification pre-registered).
