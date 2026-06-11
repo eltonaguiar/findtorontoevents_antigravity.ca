@@ -48,7 +48,15 @@ jobs:
         run: |
           git config user.name "Hermes Agent"
           git config user.email "hermes@agent.com"
-          git add audit_trail/data/2hour_challenge_results.json
+          # 2026-06-11: real_2hour_challenge.py writes REAL_CHALLENGE_RESULTS.json
+          # (save_results, line ~328) and REAL_CHALLENGE_FINAL.md (final report)
+          # to the repo root — the old audit_trail/data/ path was never written,
+          # so `git add` died with "fatal: pathspec ... did not match any files"
+          # (exit 128) every run. `|| true` guards: the script may crash before
+          # writing (e.g. Binance 451 data starvation) and a missing file should
+          # not fail the commit step.
+          git add REAL_CHALLENGE_RESULTS.json || true
+          git add REAL_CHALLENGE_FINAL.md || true
           git commit -m "Update 2-hour challenge results [skip ci]" || echo "No changes to commit"
           bash .github/scripts/safe_push.sh
 
