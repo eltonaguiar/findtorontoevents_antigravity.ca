@@ -1,4 +1,5 @@
-/* MONEY READY filter — strictest preset, only DSR-verified Tier-1 picks.
+/* MONEY READY filter — strictest preset. DSR verified on HISTORICAL backtest
+ * only — NOT forward-validated. NOT a sizing signal.
  *
  * SUPREME EDGE 2026-05-12 — single-class deviation accepted by user.
  *
@@ -21,10 +22,16 @@
   // Hard-coded SUPREME_EDGE_REAL list. Anchors:
   //   - cot_positioning + CT=F (cotton)  — DSR=1.0000, n=100, WR 90%
   //     Antigravity confirmed cot_positioning_CT_locked LONG 89.8% WR / PF 13.1
-  //   - 4 ml_enhanced CRYPTO sleeves with DSR>=0.9995 (1d + 1h timeframe only)
-  //     Note: Agent E flagged 3 of 4 as "placeholder-stat suspect"; only RENDERUSDT
+  //   - 2 ml_enhanced CRYPTO sleeves with DSR>=0.9995 (15m + 1h)
+  //     Note: Agent E flagged DYDXUSDT as "placeholder-stat suspect"; only RENDERUSDT
   //     passed all backtest robustness checks. Including for now but flagged in tooltip.
-  //   - stocks_rsi2_pullback (EQUITY) — n=70, WR 62.9%, +0.78% avg
+  //   REMOVED 2026-06-11 (honesty relabel, incident OVERALL#124):
+  //   - ml_enhanced_INJUSDT_1d_B_lightgbm (n=27 WR 100%) + ml_enhanced_FETUSDT_1d_B_lightgbm
+  //     (n=25 WR 100%) — 100%-WR placeholder-stat suspects; pulled pending 30d forward proof.
+  //   - stocks_rsi2_pullback — claimed n=70 WR 62.9% was raw-row pre-dedup; incident #96
+  //     measured deduped WR 33.9% (losing) and STOCKS#13 records emission-dark 8+ days.
+  //   ALL remaining tiers are DSR_HISTORICAL_* — historical backtest evidence only;
+  //   forward paper-pilot (intrabar OOS) REFUTES several historical clean-cohort edges.
   var SUPREME_EDGE_REAL = {
     'cot_positioning': {
       class_hint: 'COMMODITY',
@@ -34,7 +41,7 @@
       wr_pct: 90.0,
       sharpe: 1.377,
       source: 'DSR Lopez de Prado AFML eq 14.5 + Agent A DB probe + Antigravity audit',
-      tier: 'TIER_1_RENAISSANCE',
+      tier: 'DSR_HISTORICAL_ONLY',
       caveat: 'SINGLE-STRATEGY EXCEPTION: COMMODITY class verdict is NOT_READY (WR=45% < T2 floor 50%; n=160 policy-clean). This strategy passes ONLY for CT=F (cotton) / KC=F (coffee) on DSR=1.0 evidence. Class-level recovery target: WR≥50% on n≥100 policy-clean picks.'
     },
     'cftc_cot_commercial_signal': {
@@ -45,44 +52,29 @@
       wr_pct: 93.7,
       sharpe: null,
       source: 'Agent A DB probe (cftc_cot_commercial_signal + CT=F closed picks)',
-      tier: 'TIER_1_RENAISSANCE',
+      tier: 'DSR_HISTORICAL_ONLY',
       caveat: 'sister strategy to cot_positioning; same data family'
     },
-    'ml_enhanced_INJUSDT_1d_B_lightgbm': {
-      class_hint: 'CRYPTO', symbol_filter: ['INJUSDT'],
-      dsr: 1.0000, n: 27, wr_pct: 100.0, sharpe: 2.490,
-      source: 'anti_overfit_audit DSR',
-      tier: 'TIER_1_FLAGGED',
-      caveat: 'Agent E flagged "placeholder-stat suspect" — verify with 30d live forward test before sizing; Kimi flagged 89% concentration risk'
-    },
-    'ml_enhanced_FETUSDT_1d_B_lightgbm': {
-      class_hint: 'CRYPTO', symbol_filter: ['FETUSDT'],
-      dsr: 1.0000, n: 25, wr_pct: 100.0, sharpe: 1.371,
-      source: 'anti_overfit_audit DSR',
-      tier: 'TIER_1_FLAGGED',
-      caveat: 'Agent E NEEDS_MORE_DATA (n below 20 promotion threshold; walk-forward fold 5 collapse 57% WR)'
-    },
+    // REMOVED 2026-06-11: ml_enhanced_INJUSDT_1d_B_lightgbm (n=27 WR 100%) and
+    // ml_enhanced_FETUSDT_1d_B_lightgbm (n=25 WR 100%) — placeholder-stat-suspect
+    // 100%-WR sleeves pulled pending 30d forward proof (incident OVERALL#124).
     'ml_enhanced_DYDXUSDT_15m_D_ensemble_stack': {
       class_hint: 'CRYPTO', symbol_filter: ['DYDXUSDT'],
       dsr: 1.0000, n: 31, wr_pct: 96.8, sharpe: 1.828,
       source: 'anti_overfit_audit DSR',
-      tier: 'TIER_1_FLAGGED',
+      tier: 'DSR_HISTORICAL_FLAGGED',
       caveat: 'Agent E flagged "placeholder-stat suspect" (sum_pnl +0.6% noise floor) — 15m timeframe = overfit-bait pattern flagged this session'
     },
     'ml_enhanced_RENDERUSDT_1h_D_ensemble_stack': {
       class_hint: 'CRYPTO', symbol_filter: ['RENDERUSDT'],
       dsr: 0.9995, n: 34, wr_pct: 85.3, sharpe: 0.514,
       source: 'anti_overfit_audit DSR',
-      tier: 'TIER_1_PROMOTE_PILOT',
-      caveat: 'Agent E PROMOTE_TO_PILOT (only DSR-real strategy passing all backtest robustness checks); 5% cap mandatory'
+      tier: 'DSR_HISTORICAL_PROMOTE_PILOT',
+      caveat: 'Agent E PROMOTE_TO_PILOT (only DSR-real strategy passing all backtest robustness checks); 5% cap mandatory — historical backtest evidence only, not forward-validated'
     },
-    'stocks_rsi2_pullback': {
-      class_hint: 'EQUITY', symbol_filter: null,
-      dsr: null, n: 70, wr_pct: 62.9, sharpe: null, avg_pnl_pct: 0.78,
-      source: 'P0 #10 direct DB probe 2026-05-11 (top EQUITY strategy by WR)',
-      tier: 'TIER_2',
-      caveat: 'n=70 below master plan n>=100 charter floor; Connors RSI2 mean-reversion (academic backing: russs123/RSI repo, 34yr S&P backtest)'
-    },
+    // REMOVED 2026-06-11: stocks_rsi2_pullback — the "n=70 WR 62.9%" stat was
+    // raw-row pre-dedup; incident #96 measured deduped WR 33.9% avg -0.007%
+    // (losing), and STOCKS#13 records the strategy emission-dark 8+ days.
   };
 
   var BLOCKED_CLASSES = new Set([
@@ -191,7 +183,7 @@
         banner = document.createElement('div');
         banner.id = 'money-ready-banner';
         banner.style.cssText = 'background:linear-gradient(90deg,rgba(250,204,21,0.18),rgba(34,197,94,0.12));border:1px solid rgba(250,204,21,0.5);color:#fde68a;padding:10px 16px;border-radius:8px;margin:8px 16px;font-size:13px;line-height:1.5;';
-        banner.innerHTML = '💰 <strong>MONEY READY FILTER ACTIVE</strong> — Only DSR-verified Tier-1 / Renaissance-grade sleeves visible. Hover each pick for the full edge-evidence justification. Surviving strategies: ' + Object.keys(SUPREME_EDGE_REAL).map(function(s){return '<code style="background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 5px;border-radius:3px">'+s+'</code>';}).join(', ') + '. <a href="/audit_dashboard/anti_overfit.html" style="color:#06b6d4">DSR audit →</a> <a href="/audit_dashboard/research_sidecars.html" style="color:#06b6d4">Research sidecars →</a> <a href="/reports/supreme_edge_5agent_synthesis_2026-05-12.md" style="color:#06b6d4">5-agent synthesis →</a> &middot; NFA. Click again to disable.';
+        banner.innerHTML = '💰 <strong>MONEY READY FILTER ACTIVE</strong> — DSR-verified on HISTORICAL backtest only — NOT forward-validated; forward paper-pilot refutes several entries. NOT a sizing signal. Hover each pick for the full edge-evidence justification. Surviving strategies: ' + Object.keys(SUPREME_EDGE_REAL).map(function(s){return '<code style="background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 5px;border-radius:3px">'+s+'</code>';}).join(', ') + '. <a href="/audit_dashboard/anti_overfit.html" style="color:#06b6d4">DSR audit →</a> <a href="/audit_dashboard/research_sidecars.html" style="color:#06b6d4">Research sidecars →</a> <a href="/reports/supreme_edge_5agent_synthesis_2026-05-12.md" style="color:#06b6d4">5-agent synthesis →</a> &middot; NFA. Click again to disable.';
         var anchor = document.getElementById('btn-money-ready');
         if (anchor && anchor.parentNode) anchor.parentNode.parentNode.insertBefore(banner, anchor.parentNode.nextSibling);
       }
