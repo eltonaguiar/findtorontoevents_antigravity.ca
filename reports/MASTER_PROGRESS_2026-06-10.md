@@ -255,3 +255,9 @@ The largest per-model/per-portfolio honesty lever, shipped end-to-end in one loo
 - Honest per-model deltas (top-n models): cursor_agent 44.8→30.9, deepseek_r1 53.1→41.5, gemini_2_5_pro 46.8→33.3, llama4_scout 52.5→41.3, grok4_3 52.4→46.3 (most stable).
 - Artifacts regenerated + committed + FTP-deployed; LIVE verified (leaderboard generated_at 06:41; ai-tournament.html serving honest numbers).
 Every per-model WR on /audit/ai-tournament.html + ai_leaderboard.html is now entry-anchored-honest at the source. Tournament + main pipeline now share the same resolution integrity.
+
+## HEARTBEAT 07:45 (Jun 11) — post-milestone hygiene
+- Tournament post-apply: exit_reason now EXCLUSIVELY *_REPLAY (898 SL / 620 TP / 3 TIME) — zero regression; tracker green; the 210 OPEN reverts await the next tracker cycle (replay path verified).
+- **Self-caused regression fixed**: my full FTP deploy for tournament files pushed a stale LOCAL money_ready_verdict.json over the live one (Jun-10 08:01). Synced local data files from origin/main + redeployed -> live 06:30 with intrabar intact. LESSON (recorded): refresh generated data files from origin/main before ANY broad FTP deploy.
+- Public updates addendum live: explains the ~10pp leaderboard drop (honest re-resolution) with methodology links (42ae729ed6).
+- Standard: ci-tests GREEN; ledger 90/88; lane unchanged.
