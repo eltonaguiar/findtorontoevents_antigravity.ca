@@ -28,3 +28,7 @@ Full designs + kill reasons + per-trade backtest artifacts: `reports/strategy_bt
 - Run the CRYPTO LONG-only wider-stop variant (in flight). Promote to forward-shadow ONLY if net PF≥1.5 + R1 + R2 on the same harness; else record and stop.
 - The 43 scrutiny survivors stay on file as a hypothesis pool (each carries falsification criteria); do NOT batch-backtest them — selection across 43 would need Bonferroni ~0.001 and our data can't support it. Revisit per-class when honest n and data depth grow.
 - Tournament-resolver honesty port (due-diligence item #1) remains the larger per-model lever.
+
+## FOLLOW-UP RESULT (pre-registered variant; family now CLOSED)
+LONG-only 2.0×ATR variant: n=536, 44.2%/net PF 1.328 (control 1.0×: 37.7%/1.380). **"Wider stop caps WR" confirmed; "and therefore caps PF" refuted** — bigger stopped losses offset the WR gain. Both configs are PARTIAL-grade (PF≥1.3, time-stable, top-symbol 1.9%) but neither reaches 1.5; Feb-2026 carries ~61% of total net (regime concentration caveat).
+**FINAL DISPOSITION (pre-registered, no further tuning):** `crypto_eu_us_handoff LONG (1.0×ATR)` enters FORWARD-OBSERVATION only — re-run the identical replay in ~4 weeks restricted to entries AFTER 2026-06-10 (pure out-of-sample window); promote to shadow-emission only if fresh-window net PF≥1.3 at n≥80. Else archive. Artifact: reports/strategy_bt_crypto_handoff_v2_2026-06-11.json.
