@@ -239,3 +239,6 @@ Re-read every directive received this session; gaps where value remains un-extra
 7. **Chronic GHA stragglers not yet fixed:** edge-stability-refresh push race; mirror-FTP timeouts (recurring in failure lists). Medium value, known patterns.
 8. DAILY_IDEAS.MD: tails were mined by both sweeps; full historical mining = low expected value (most items superseded by the honest-layer pivot).
 IN FLIGHT: engineer-10x-strategies workflow (8 classes x 10 designs -> adversarial scrutiny -> REAL entry-anchored backtests of survivors, M-107-style falsification pre-registered).
+
+## STRATEGY SWEEP CLOSED — 2026-06-11 ~06:30
+80 designs / 43 survivors / 8 real backtests / 0 pass + 1 pre-registered variant (PARTIAL, family closed). The honest null now triangulates from THREE directions (historical 1,278-slice audit, σ-geometry, fresh-idea sweep with real net-of-cost replays). Sole live lead: crypto_eu_us_handoff LONG (PF 1.38 / +46bp / n=536, time-stable, 1.3% top-symbol) -> FORWARD-OBSERVATION: identical replay on post-06-10 entries in ~4wk, promote only if net PF>=1.3 @ n>=80. All artifacts committed.
