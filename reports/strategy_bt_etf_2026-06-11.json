@@ -1,0 +1,85 @@
+{
+  "strategy": "etf_sector_rs_ls_weekly",
+  "run_at": "2026-06-11T05:14:15.050898Z",
+  "data": "yfinance daily OHLC auto_adjust=True (total return), 11 SPDR sectors + SPY",
+  "period": {
+    "first_entry": "2018-07-30",
+    "last_entry": "2026-06-01",
+    "weeks": 410,
+    "monday_holiday_weeks": 41
+  },
+  "costs": "2bp/side ETF (4bp round trip) subtracted from every leg",
+  "overall": {
+    "n": 1640,
+    "wr": 49.45,
+    "pf": 0.9407,
+    "avg_net_bp": -7.03
+  },
+  "r1_time_split": {
+    "split_date": "2022-07-05",
+    "half1": {
+      "n": 820,
+      "wr": 49.63,
+      "pf": 0.9667,
+      "avg_net_bp": -4.26
+    },
+    "half2": {
+      "n": 820,
+      "wr": 49.27,
+      "pf": 0.9103,
+      "avg_net_bp": -9.81
+    },
+    "passes": false
+  },
+  "r2_concentration": {
+    "top_symbol": "XLE",
+    "top_share_pct": 16.95,
+    "passes": true,
+    "by_symbol_pct": {
+      "XLE": 16.95,
+      "XLU": 12.07,
+      "XLK": 11.16,
+      "XLY": 9.82,
+      "XLRE": 8.78,
+      "XLC": 7.8,
+      "XLV": 7.74,
+      "XLP": 7.32,
+      "XLF": 6.89,
+      "XLB": 6.46,
+      "XLI": 5.0
+    }
+  },
+  "long_leg": {
+    "n": 820,
+    "wr": 56.34,
+    "pf": 1.187,
+    "avg_net_bp": 19.08
+  },
+  "short_leg": {
+    "n": 820,
+    "wr": 42.56,
+    "pf": 0.7547,
+    "avg_net_bp": -33.14
+  },
+  "weekly_basket": {
+    "n_weeks": 410,
+    "pf_net": 0.8714,
+    "wr_pct": 44.39,
+    "avg_net_bp": -7.03,
+    "realized_beta_to_spy": -0.1207
+  },
+  "verdict": "FAIL",
+  "gates": {
+    "n_ge_30": true,
+    "net_pf_ge_1_5": false,
+    "r1": false,
+    "r2": true
+  },
+  "methodology_notes": [
+    "Entry = first trading day of each ISO week at daily OPEN (== 09:30 open == 09:30-10:30 1h bar open). Tuesday open if Monday holiday (conservative concrete choice, noted).",
+    "Ranking R = c[t-5]/c[t-25]-1 on closes strictly BEFORE entry day; window never touches most recent 5 sessions.",
+    "Exit = next week's first trading day OPEN (the rebalance IS the exit). Final open week dropped.",
+    "auto_adjust=True: returns are total-return (dividends credited to longs, debited to shorts).",
+    "Each leg = one trade (matches falsification's ~4 picks/week accounting)."
+  ]
+}
