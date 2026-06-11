@@ -875,32 +875,6 @@ def resolve_single_pick(pick: dict, live_price: Optional[float] = None,
     _orig_exit_reason = str(exit_reason or "").upper()
     _orig_status = str(pick.get("status", "") or "").upper()
 
-    # ── Geometry guard (2026-06-10): reject corrupt TP/SL before replay ──
-    # ~12% of rows have stop-loss on the WRONG side of entry (e.g. LONG
-    # entry=0.01231 sl=0.6953 = 56x above entry), making first-touch
-    # trivially fire SL_HIT and compute a fake +5548% pnl. Ported from
-    # tools/reresolve_intrabar_signal_outcomes.py::valid_geometry().
-    # Skip the check if exit_price already resolved (has a meaningful exit).
-    if not (exit_p > 0 and entry > 0 and abs(exit_p - entry) / entry > 0.00001):
-        if entry > 0 and tp > 0 and sl > 0:
-            dir_upper = direction.upper()
-            if dir_upper in ("BUY", "LONG"):
-                geo_ok = sl < entry < tp
-            elif dir_upper in ("SELL", "SHORT"):
-                geo_ok = tp < entry < sl
-            else:
-                geo_ok = False
-            if not geo_ok:
-                out = dict(pick)
-                out["status"] = "CLOSED"
-                out["exit_reason"] = "BAD_GEOMETRY"
-                out["pnl_pct"] = 0.0
-                out["_bad_geometry"] = (
-                    f"LONG requires sl<entry<tp, SHORT requires tp<entry<sl; "
-                    f"got entry={entry} tp={tp} sl={sl} dir={direction}"
-                )
-                return out
-
     # If exit_price meaningfully differs from entry, use it
     if exit_p > 0 and entry > 0 and abs(exit_p - entry) / entry > 0.00001:
         effective_exit = exit_p
@@ -1831,6 +1805,75 @@ def _save_claude_gainer_ml_picks(data: dict, resolved_count: int) -> None:
         log.error("Failed to save claude_gainer_ml live picks: %s", e)
 
 
+# ---------------------------------------------------------------------------
+# Exit-price plausibility guard at resolution-write time (incident #130)
+# ---------------------------------------------------------------------------
+# The resolver paths that originally wrote corrupt exits (regime_terminal +
+# alpha_engine momentum_rider/ml_enhanced families) can fetch a wrong-symbol
+# price (e.g. AUDUSD=X exit 663.13 on a 0.70 entry -> +93,965% "win"; SOFI
+# +2,280%; TRX pinned at a stale 0.067). Sign-coherence alone cannot catch
+# these — a corrupt LOSS is still sign-coherent. Mirror of the class bounds
+# shipped in tools/backfill_resolved_pnl.py:92-105 and of the entry-price
+# scale guard (commit af1794dfc2, mysql_trading_sync._validate_exit_price_scale),
+# but DURATION-AWARE: holds longer than 21 days can legitimately move more,
+# so the bounds relax. On an implausible exit we do NOT write a terminal row
+# — the trading_picks row stays OPEN/unresolved for a later, correctly-priced
+# resolution attempt (skip-resolution + log beats storing a corrupt close).
+
+_EXIT_RATIO_LONG_HOLD_DAYS = 21.0
+
+
+def _exit_price_implausible_ratio(pick: dict) -> Optional[float]:
+    """Return the exit/entry ratio when it is physically implausible, else None.
+
+    Bounds (mirroring tools/backfill_resolved_pnl.py:92-105, duration-aware):
+      hold <= 21 days: crypto/meme ratio > 4   or < 0.25 ; others > 1.8 or < 0.45
+      hold  > 21 days: crypto/meme ratio > 8   or < 0.125; others > 2.5 or < 0.4
+    Unknown hold duration uses the strict (short-hold) bounds — same behavior
+    as the backfill reference, and a false skip is non-destructive (row is
+    retried on the next resolver run).
+    """
+    entry = _safe_float(pick.get("entry_price"))
+    exit_p = _safe_float(pick.get("exit_price"))
+    if entry <= 0 or exit_p <= 0:
+        return None  # nothing to judge — existing NULL/zero handling applies
+    ratio = exit_p / entry
+    age_h = _pick_age_hours(pick)
+    long_hold = age_h is not None and (age_h / 24.0) > _EXIT_RATIO_LONG_HOLD_DAYS
+    if not _is_non_crypto(pick):  # crypto / memecoin
+        hi, lo = (8.0, 0.125) if long_hold else (4.0, 0.25)
+    else:
+        hi, lo = (2.5, 0.4) if long_hold else (1.8, 0.45)
+    if ratio > hi or ratio < lo:
+        return ratio
+    return None
+
+
+def _guard_implausible_exit(pick: dict) -> bool:
+    """Return True (after tagging + logging) when the exit price is implausible.
+
+    Shared by BOTH MySQL write paths in _sync_resolved_to_mysql_trading_picks
+    (the mysql_close_trade delegation loop and the fallback raw UPDATE). On
+    True the caller MUST skip the terminal write entirely: no exit_price, no
+    pnl, no terminal status — the DB row stays OPEN/unresolved. The in-memory
+    pick is tagged exit_reason += '|EXIT_PRICE_IMPLAUSIBLE' for traceability.
+    """
+    ratio = _exit_price_implausible_ratio(pick)
+    if ratio is None:
+        return False
+    prior = str(pick.get("exit_reason", "") or "")
+    if "EXIT_PRICE_IMPLAUSIBLE" not in prior:
+        # trading_picks.exit_reason is VARCHAR(50) — keep the tag visible
+        pick["exit_reason"] = (prior + "|EXIT_PRICE_IMPLAUSIBLE").lstrip("|")[-50:]
+    log.warning(
+        "exit_price_implausible: skipping MySQL close for %s id=%s — "
+        "exit/entry ratio %.4f (entry=%s exit=%s); row left unresolved for retry",
+        pick.get("symbol"), pick.get("id"), ratio,
+        pick.get("entry_price"), pick.get("exit_price"),
+    )
+    return True
+
+
 def _sync_resolved_to_mysql_trading_picks(resolved_picks: list[dict]) -> int:
     """Write resolved outcomes back to trading_picks table."""
     if not resolved_picks:
@@ -1848,6 +1891,10 @@ def _sync_resolved_to_mysql_trading_picks(resolved_picks: list[dict]) -> int:
             symbol = str(pick.get("symbol", "") or "")
             direction = str(pick.get("direction", "LONG") or "LONG")
             if not symbol:
+                continue
+            # Incident #130: never delegate an implausible exit to the close
+            # API — skip so the row stays OPEN for a correctly-priced retry.
+            if _guard_implausible_exit(pick):
                 continue
             affected = _mysql_close_trade(
                 symbol=symbol,
@@ -1927,6 +1974,12 @@ def _sync_resolved_to_mysql_trading_picks(resolved_picks: list[dict]) -> int:
     for pick in resolved_picks:
         pick_id = str(pick.get("id", "") or "")[:100]
         if not pick_id:
+            continue
+
+        # Incident #130: same guard as the delegation path — do not write a
+        # terminal status/pnl/exit_price for an implausible exit; leave the
+        # row unresolved (status untouched) so the next run can retry it.
+        if _guard_implausible_exit(pick):
             continue
 
         exit_reason = str(pick.get("exit_reason", "") or "").upper()
