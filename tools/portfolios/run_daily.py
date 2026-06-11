@@ -373,7 +373,16 @@ def portfolio_state(db: DB, portfolio_id: int, starting_nav: float,
         entry = float(p.get("entry_price") or 0.0)
         deployed_cost += qty * entry
         cur_price = marks.get(p["symbol"], entry)
-        mkt_value += qty * (cur_price if cur_price else entry)
+        # 2026-06-11 P0 (portfolio-math audit): NAV marking was direction-blind —
+        # an open SHORT contributed +qty*(cur-entry) instead of -qty*(cur-entry)
+        # (2x the move wrong; 282 open SHORT rows live). Mirror the direction-
+        # aware semantics of engine.mark_position(): a short's market value is
+        # entry_value minus the adverse move, i.e. qty*(2*entry - cur).
+        _mark = (cur_price if cur_price else entry)
+        if str(p.get("direction") or "").upper() == "SHORT":
+            mkt_value += qty * (2.0 * entry - _mark)
+        else:
+            mkt_value += qty * _mark
         state_positions.append({
             "symbol": p["symbol"],
             "asset_class": p["asset_class"],
