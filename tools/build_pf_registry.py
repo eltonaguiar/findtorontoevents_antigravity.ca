@@ -890,6 +890,8 @@ def _finalize(stat):
     out["gross_loss"] = round(gl, 6)
     out["total_pnl_pct"] = round(stat["total_pnl_pct"], 6)
     out["win_rate_pct"] = round(wr, 4) if wr is not None else None
+    # ENH#131 schema note: "win_rate_pct" is PERCENT (47.2); "wr_fraction" is the additive FRACTION twin (0.472) matching money_ready_verdict's "wr" units.
+    out["wr_fraction"] = round(wr / 100.0, 6) if wr is not None else None
     out["profit_factor"] = round(pf, 6) if pf is not None else None
     out["pf_undefined_reason"] = (
         None if pf is not None else
