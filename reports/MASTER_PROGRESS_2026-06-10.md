@@ -296,3 +296,5 @@ Suggest: move to a 3-4h heartbeat, or a daily scheduled check (the /schedule ski
 ## HEARTBEAT 19:26 (Jun 11) — 13th ALL-GREEN (lean). ci GREEN · 90/88 · tournament REPLAY-only 0 · lane unchanged · live 18:00 (~1.4h, hourly variance).
 
 ## HEARTBEAT 20:28 (Jun 11) — 14th ALL-GREEN (lean). ci GREEN · 90/88 · tournament REPLAY-only 0 · lane unchanged · live 19:53.
+
+## HEARTBEAT 21:30 (Jun 11) — 15th ALL-GREEN (lean). ci GREEN · 90/88 · tournament REPLAY-only 0 · lane unchanged · live 19:53 (~1.6h, hourly variance).
