@@ -214,3 +214,6 @@ ci-tests SUCCESS (gate holding); gatekeeper closed; ledger steady (COMMODITY 90 
 
 ## OVERNIGHT 01:51 (Jun 11) — verdict self-healed; ADV validation run dispatched
 Live verdict self-healed (00:56). Ledger steady (90/88). ci-tests in flight. No scanner cycle since the ADV warm-up commit — dispatched alpha-engine-live manually to validate the measurement lane now instead of waiting for cron.
+
+## OVERNIGHT 02:06 (Jun 11) — steady; validation runs in flight
+alpha-engine-live (ADV warm-up validation, started 01:20) + ci-tests both in_progress. Ledger 90/88, lane unchanged, live verdict hourly-fresh (01:55). Next tick lands after both complete.
