@@ -234,6 +234,11 @@ jobs:
           echo "  Confluence + Tournament System ACTIVE"
           echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           echo "============================================"
+          # 2026-06-11: warm the CoinGecko ADV cache so the is_liquid_crypto
+          # SHADOW-TAG (INCIDENT_CRYPTO #20 phase 1) can actually measure —
+          # the cache is gitignored, so without this fetch the gate fail-opens
+          # on every runner and the tag never fires. Non-fatal on API failure.
+          python tools/coingecko_adv_fetcher.py --top 500 || echo "ADV refresh failed — shadow-tag fail-opens this cycle"
           python alpha_engine/production_scanner.py
 
       #  Multi-Asset Scanner: forex, equity, commodity, futures strategies
