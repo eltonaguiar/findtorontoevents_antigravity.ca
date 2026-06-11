@@ -217,3 +217,7 @@ Live verdict self-healed (00:56). Ledger steady (90/88). ci-tests in flight. No 
 
 ## OVERNIGHT 02:06 (Jun 11) — steady; validation runs in flight
 alpha-engine-live (ADV warm-up validation, started 01:20) + ci-tests both in_progress. Ledger 90/88, lane unchanged, live verdict hourly-fresh (01:55). Next tick lands after both complete.
+
+## OVERNIGHT 03:08 (Jun 11) — ADV measurement first reading: zero tags
+- alpha-engine-live (cron 01:20, WITH the warm-up commit) SUCCESS -> committed 111 active picks, **0 _adv_illiquid tags**. Honest reading: consistent with the active universe being top-500-liquid (>$50M ADV); cannot fully exclude a silent warm-up failure (non-fatal ||, gh log truncated). If several more cycles read 0 tags, the finding becomes "ADV hard gate wouldn't change current emissions — deprioritize #20 phase 2". My explicit dispatch was concurrency-cancelled by the cron run (no loss).
+- ci-tests GREEN (holding). Ledger 90/88 steady. Live verdict hourly-fresh.
