@@ -298,3 +298,14 @@ Suggest: move to a 3-4h heartbeat, or a daily scheduled check (the /schedule ski
 ## HEARTBEAT 20:28 (Jun 11) — 14th ALL-GREEN (lean). ci GREEN · 90/88 · tournament REPLAY-only 0 · lane unchanged · live 19:53.
 
 ## HEARTBEAT 21:30 (Jun 11) — 15th ALL-GREEN (lean). ci GREEN · 90/88 · tournament REPLAY-only 0 · lane unchanged · live 19:53 (~1.6h, hourly variance).
+
+## ACTIONABLES BATCH — 2026-06-11 ~22:30 (mine -> swarm-consult -> build -> ship)
+Two workflows (21 mining/verify agents + 6 builders) + vLLM refutation consult, all landed in one pass:
+- **#130 RESOLVED**: duration-aware exit-price ratio guard at the resolver source (both write paths; implausible exits stay OPEN for retry). The +93,965% class is closed end-to-end (ingest guard -> resolver guard -> backfill guard).
+- **#88 RESOLVED**: category aliases normalized at the ingest chokepoint (canonical derived from consumers) + 146-row backfill applied (backed up).
+- **#131 IN_PROGRESS->mostly done**: both NULL-pnl writer paths now compute guarded close-time pnl; backlog re-run (612 recovered / 234 correctly skipped by the price guard).
+- **#124 RESOLVED**: Money-Ready filter no longer labels refuted/placeholder sleeves "Renaissance-grade" — honest DSR_HISTORICAL_* tiers + NOT-a-sizing-signal banner LIVE (direct FTP).
+- **Stale sweep**: 7 findings + golden_cross#100 RESOLVED with verified proof.
+- **GHA**: daily-top-picks empty-IN() crash, 2hour-challenge path mismatch, mirror lftp timeout — fixed + dispatched.
+- **ENH#131**: additive wr_pct/wr_fraction unit twins + units declaration. **FINDING#12**: one-sided-resolution checker wired into daily-scrutiny (non-blocking warning).
+- Backups: trading_picks_20260611T222306Z (49,810), category-alias (146), trk_sweep (22). REMAINING handoffs: #14 UNKNOWN classifier, FINDING#9 battleground dedup, #131b cron, #132 WF refresh.
