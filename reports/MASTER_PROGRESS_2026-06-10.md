@@ -246,3 +246,12 @@ IN FLIGHT: engineer-10x-strategies workflow (8 classes x 10 designs -> adversari
 ## TICK 06:25-06:50 (Jun 11) — tournament resolver: real gap found + shadow-diff launched
 - Standard checks: ci-tests GREEN, ledger 90/88, live fresh (04:01 — hourly cadence intact).
 - **Tournament investigation result: the honest replay ALREADY EXISTS** (price_tracker._scan_bars_for_touch: entry-anchored from submitted_at, SL-first ties, gap-through, MISPRICED drift guard — the 4154/7099 exclusion). **The real gap: only 409/1,862 resolved rows (22%) used it — 1,453 legacy spot-resolved rows were never re-resolved** and still inflate per-model WR (replay SL:TP 60:40 vs legacy 50:50). Shadow-diff launched (read-only): re-resolves all legacy rows through the replay, per-model flip table -> reports/tournament_legacy_reresolve_shadow_2026-06-11.json. Apply-with-backup decision after review. This is the largest per-model/per-portfolio honesty lever, now properly scoped.
+
+## 🎯 MILESTONE 06:50 (Jun 11) — HONEST PER-MODEL TOURNAMENT IS LIVE
+The largest per-model/per-portfolio honesty lever, shipped end-to-end in one loop cycle:
+- Shadow-diff (full 1,453-row cohort, production replay semantics): paired WR 50.9→41.2 (−9.7pp), 30.6% flips, 70 legacy "wins" had ZERO barrier touch (pure snapshot artifacts), 16 models drop >10pp, grok3/grok4_3 stable.
+- Backup: ejaguiar1_backups.tournament_picks_20260611T063323Z (7,099 rows count-verified; CREATE-AS-SELECT workaround for the FK that broke db_backup_to_backups — noted for the tool).
+- Apply: 0% divergence gate PASSED; 1,453 mutated in 3 asserted txns (458 WIN / 654 LOSS via replay fills+slippage, 131 MISPRICED incl. the 51 MATIC→POL stale-entry rows, 210 premature closes reverted OPEN — the nightly tracker re-resolves them via the replay path, verified). Legacy non-REPLAY rows after: 0.
+- Honest per-model deltas (top-n models): cursor_agent 44.8→30.9, deepseek_r1 53.1→41.5, gemini_2_5_pro 46.8→33.3, llama4_scout 52.5→41.3, grok4_3 52.4→46.3 (most stable).
+- Artifacts regenerated + committed + FTP-deployed; LIVE verified (leaderboard generated_at 06:41; ai-tournament.html serving honest numbers).
+Every per-model WR on /audit/ai-tournament.html + ai_leaderboard.html is now entry-anchored-honest at the source. Tournament + main pipeline now share the same resolution integrity.
