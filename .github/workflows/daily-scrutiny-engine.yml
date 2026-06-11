@@ -35,6 +35,19 @@ jobs:
           if grep -q "HARD_STOP" /tmp/shutdown_report.txt 2>/dev/null; then
             echo "::warning::HARD_STOP sources detected — review auto-shutdown monitor output"
           fi
+      # FINDING_OVERALL#12: one-sided WON-only/LOST-only resolution tripwire.
+      # Read-only SELECT against at_raw_picks; NON-BLOCKING — emits a warning
+      # annotation when strategies with >=20 resolved rows are 100% one-sided
+      # (artifact grew 41->57 strategies while unguarded, 2026-05-31..06-11).
+      - name: One-sided resolution check (FINDING#12, non-blocking)
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_USER: ${{ secrets.DB_USER_STOCKS }}
+        run: |
+          if ! python3 tools/check_one_sided_resolution.py --min-resolved 20; then
+            echo "::warning::FINDING#12 one-sided WON-only/LOST-only resolution detected in at_raw_picks — see step log for the strategy list"
+          fi
       - name: Commit scrutiny JSON (if changed)
         run: |
           git config user.name "github-actions[bot]"

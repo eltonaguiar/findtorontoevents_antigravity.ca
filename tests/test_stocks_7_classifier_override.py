@@ -1,4 +1,8 @@
 """Unit tests for STOCKS #7 defense-in-depth: the mysql_trading_sync
+# 2026-06-11 INCIDENT_OVERALL#88: category canonical form is now UPPERCASE at the
+# ingest chokepoint (consumer-derived; see mysql_trading_sync._CATEGORY_CANONICAL_MAP).
+# Expectations updated lowercase->UPPERCASE; 'meme' stays passthrough (env-mapped downstream).
+
 classifier override that catches upstream category=crypto mistags on
 non-crypto symbols.
 
@@ -38,7 +42,7 @@ def _base_pick(symbol: str, category: str) -> dict:
 def test_aapl_crypto_tag_overridden_to_equity():
     row = pick_to_row(_base_pick("AAPL", "crypto"))
     assert row is not None, "AAPL pick should not be filtered"
-    assert row["category"] == "equity", (
+    assert row["category"] == "EQUITY", (
         f"AAPL tagged crypto must be overridden to equity, got {row['category']!r}"
     )
 
@@ -46,7 +50,7 @@ def test_aapl_crypto_tag_overridden_to_equity():
 def test_btcusdt_crypto_tag_kept():
     row = pick_to_row(_base_pick("BTCUSDT", "crypto"))
     assert row is not None
-    assert row["category"] == "crypto", (
+    assert row["category"] == "CRYPTO", (
         f"BTCUSDT crypto must remain crypto, got {row['category']!r}"
     )
 
@@ -54,6 +58,6 @@ def test_btcusdt_crypto_tag_kept():
 def test_pep_crypto_tag_overridden_to_equity():
     row = pick_to_row(_base_pick("PEP", "crypto"))
     assert row is not None
-    assert row["category"] == "equity", (
+    assert row["category"] == "EQUITY", (
         f"PEP tagged crypto must be overridden to equity, got {row['category']!r}"
     )

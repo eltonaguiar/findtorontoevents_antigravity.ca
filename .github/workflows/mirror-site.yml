@@ -31,8 +31,12 @@ jobs:
         # 2026-06-03: the source FTP tree also contains heavyweight non-site ballast
         # (backup snapshots and dependency folders like node_modules). Exclude those
         # so the mirror job stays focused on live site payloads and finishes inside
-        # the 15-minute download budget.
-        timeout-minutes: 15
+        # the download budget.
+        # 2026-06-11: 15 min was intermittently too tight for the full-site pull
+        # (run 27370850869 timed out mid-transfer; 27350269502 succeeded same day).
+        # Bumped to 30 + one lftp retry below; job budget (90) still has headroom
+        # (30 + 15 + 15 upload steps + small env-deploy/verify steps).
+        timeout-minutes: 30
         env:
           SRC_HOST: ${{ secrets.FTP_HOST }}
           SRC_USER: ${{ secrets.FTP_USER }}
@@ -68,7 +72,14 @@ jobs:
           quit
           LFTPEOF
 
-          lftp -f /tmp/lftp_download.script
+          # 2026-06-11: retry once on failure — 50webs FTP is intermittently
+          # slow/flaky. The second attempt resumes incrementally (lftp mirror
+          # only re-fetches missing/newer files already in /tmp/site_mirror).
+          if ! lftp -f /tmp/lftp_download.script; then
+            echo "WARN: first download attempt failed — retrying once in 30s..."
+            sleep 30
+            lftp -f /tmp/lftp_download.script
+          fi
           echo " Downloaded $(find /tmp/site_mirror -type f | wc -l) files"
 
       - name: Upload to torontoevent.net (GoDaddy FTP)

@@ -236,6 +236,101 @@ def _safe_float(val: Any) -> Optional[float]:
         return None
 
 
+def _pnl_pct_from_prices(
+    entry: Optional[float],
+    exit_price: Optional[float],
+    direction: Optional[str],
+    category: Optional[str],
+    status: Optional[str] = None,
+) -> Optional[float]:
+    """Compute close-time pnl_pct (PERCENT) from entry/exit/direction.
+
+    INCIDENT_OVERALL#131a (2026-06-11): mysql_close_trade wrote terminal rows
+    with pnl_pct=NULL whenever the caller omitted pnl (outcome_resolver passes
+    pick.get('pnl_pct') unguarded) — those rows are invisible to PF/WR until
+    a manual backfill. This replicates tools/backfill_resolved_pnl.py EXACTLY:
+    ``_compute_pnl`` (percent, direction multiplier, round-2 with non-zero
+    fallback), the 2026-06-11 price-sanity ratio guard (lines 92-105 there:
+    corrupt wrong-symbol exits must stay NULL for exit-price repair, not be
+    "filled"), and the chk_pnl_sign_coherence skip from ``_recompute``.
+
+    Returns pnl in percent, or None when inputs are implausible /
+    sign-incoherent (caller leaves pnl_pct NULL and logs).
+    """
+    if not entry or entry <= 0:
+        return None
+    if exit_price is None or exit_price <= 0:
+        return None
+    # Price-sanity ratio guard — mirror tools/backfill_resolved_pnl.py:92-105.
+    ratio = exit_price / entry
+    cat = (category or "").lower()
+    if cat in ("crypto", "memecoin", "meme"):
+        if ratio > 4 or ratio < 0.25:
+            return None
+    elif ratio > 1.8 or ratio < 0.45:
+        return None
+    # Direction norm — mirror tools/backfill_resolved_pnl.py::_direction_norm.
+    d = (str(direction or "LONG")).upper()
+    d = "SHORT" if d in ("SELL", "SHORT") else "LONG"
+    # Formula — mirror tools/backfill_resolved_pnl.py::_compute_pnl.
+    mult = 1.0 if d == "LONG" else -1.0
+    pnl = round(((exit_price - entry) / entry) * 100 * mult, 2)
+    if pnl == 0.0:
+        fallback = ((exit_price - entry) / entry) * 100 * mult
+        if fallback != 0.0:
+            pnl = fallback
+    # chk_pnl_sign_coherence skip — mirror tools/backfill_resolved_pnl.py::_recompute.
+    # (In mysql_close_trade the status is DERIVED from pnl after this fill, so
+    # callers there pass status=None and coherence is guaranteed by the mapping.)
+    st = (str(status or "")).upper()
+    if st in ("WON", "TP_HIT", "CLOSED_WIN") and pnl < -0.01:
+        return None
+    if st in ("LOST", "SL_HIT", "CLOSED_LOSS") and pnl > 0.01:
+        return None
+    # Writer-level sanity envelope (mirrors mysql_trading_sync's [-100, 200]%
+    # clamp on upstream pnl): never fill a value outside it.
+    if not (-100.0 <= pnl <= 200.0):
+        return None
+    return pnl
+
+
+def _fetch_close_target(symbol: str, direction: str) -> Optional[tuple]:
+    """SELECT-first the row mysql_close_trade's UPDATE will hit.
+
+    Returns (entry_price, category) for the latest open-ish trade for
+    symbol+direction — the exact same WHERE + ORDER BY as the terminal UPDATE
+    in mysql_close_trade — or None on miss/error (never blocks the close path).
+    """
+    sql = """
+        SELECT entry_price, category
+        FROM trading_picks
+        WHERE symbol=%s
+          AND direction=%s
+          AND status IN ('OPEN','ACTIVE','CLOSED','FLAT')
+        ORDER BY created_at DESC
+        LIMIT 1
+    """
+    conn = None
+    try:
+        conn = _get_conn()
+        cur = conn.cursor()
+        cur.execute(sql, (symbol, direction))
+        row = cur.fetchone()
+        _return_conn(conn)
+        return row
+    except Exception as e:
+        if conn:
+            try:
+                _return_conn(conn)
+            except Exception:
+                pass
+        logger.warning(
+            "mysql_close_trade SELECT-first failed for %s/%s: %s — "
+            "pnl fill skipped", symbol, direction, e,
+        )
+        return None
+
+
 # ── Public API ───────────────────────────────────────────────────────────────
 
 def log_discord_send(
@@ -649,6 +744,32 @@ def mysql_close_trade(
     _exit = _safe_float(exit_price)
     _pnl = _safe_float(pnl_pct)
     _reason = str(exit_reason or "").upper().strip()
+
+    # 2026-06-11 — INCIDENT_OVERALL#131a: compute pnl at close-time.
+    # outcome_resolver passes pick.get('pnl_pct') unguarded, so this canonical
+    # close path wrote terminal rows with pnl_pct=NULL even when exit_price
+    # was present and the target row stores entry_price (multi_asset_copytrader
+    # / cta_replicator / alpha_engine close paths). SELECT-first the row this
+    # UPDATE will hit and fill pnl from entry/exit/direction using the exact
+    # tools/backfill_resolved_pnl.py formula + price-sanity ratio guard;
+    # implausible rows stay NULL and are logged for exit-price repair.
+    # Must run BEFORE the status mapping below so the derived status follows
+    # the filled pnl sign (keeps chk_pnl_sign_coherence satisfied by design).
+    if _pnl is None and _exit is not None and _exit > 0:
+        _target = _fetch_close_target(symbol, _dir)
+        if _target:
+            _entry = _safe_float(_target[0])
+            _category = _target[1] if len(_target) > 1 else None
+            if _entry and _entry > 0:
+                _pnl = _pnl_pct_from_prices(_entry, _exit, _dir, _category)
+                if _pnl is None:
+                    logger.warning(
+                        "INCIDENT_OVERALL#131a close-time pnl fill SKIPPED "
+                        "for %s/%s entry=%s exit=%s cat=%s reason=%s — "
+                        "implausible exit/entry ratio; leaving pnl_pct NULL "
+                        "(row needs exit-price repair, not fill)",
+                        symbol, _dir, _entry, _exit, _category, _reason,
+                    )
 
     # Canonical terminal status mapping with sign-coherence guard.
     # If exit_reason claims TP but pnl is negative (or SL but pnl is positive),
