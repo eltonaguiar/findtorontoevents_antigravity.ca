@@ -134,6 +134,9 @@ def get_conn():
 def pull_open_picks_from_panel(conn, asset_class: str | None) -> list[dict]:
     """Get all OPEN picks from the robust panel."""
     model_ids = list(ROBUST_PANEL.keys())
+    if not model_ids:
+        # Empty panel would render "model_id IN ()" — invalid SQL (MySQL 1064).
+        return []
     placeholders = ",".join(["%s"] * len(model_ids))
     sql = f"""SELECT id, model_id, asset_class, symbol, direction,
                      entry_price, take_profit, stop_loss, confidence,
@@ -227,11 +230,27 @@ def main():
                     help="Output file (default: stdout)")
     args = ap.parse_args()
 
-    conn = get_conn()
-    try:
-        all_picks = pull_open_picks_from_panel(conn, args.asset)
-    finally:
-        conn.close()
+    if not ROBUST_PANEL:
+        # Nothing to filter: 0 leaderboard models pass the panel floors
+        # (n>=PANEL_MIN_N, WR>=PANEL_MIN_WR, PANEL_MIN_PF<=PF<=PANEL_MAX_PF).
+        # Skip the DB entirely — an empty panel would otherwise emit
+        # "model_id IN ()" (MySQL 1064). Emit an honest empty artifact
+        # with panel_empty=true and exit 0 so consumers see "no qualifying
+        # models" instead of a stale file + red cron.
+        print(
+            "INFO: ROBUST_PANEL is empty — no leaderboard models pass the "
+            f"floors (n>={PANEL_MIN_N}, WR>={PANEL_MIN_WR}, "
+            f"{PANEL_MIN_PF}<=PF<={PANEL_MAX_PF}). Nothing to filter; "
+            "writing empty artifact and exiting 0.",
+            file=sys.stderr,
+        )
+        all_picks = []
+    else:
+        conn = get_conn()
+        try:
+            all_picks = pull_open_picks_from_panel(conn, args.asset)
+        finally:
+            conn.close()
 
     # Deduplicate by (symbol, direction) — if multiple robust models agree
     # on the same trade, keep the highest-PF model's pick.
@@ -258,6 +277,7 @@ def main():
             "n_returned": len(ranked),
             "kelly_cap_pct": args.kelly_cap,
             "robust_panel": list(ROBUST_PANEL.keys()),
+            "panel_empty": not ROBUST_PANEL,
             "disputed_banner_active": True,
             "picks": [
                 {**{k: (str(v) if isinstance(v, datetime) else v)
