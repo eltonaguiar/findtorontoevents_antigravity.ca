@@ -67,7 +67,63 @@ _PNL_VERIFY_STATS = {
     "ok": 0,             # within tolerance
     "mismatch": 0,       # upstream disagreed beyond tolerance — pnl_pct dropped to None
     "skipped_no_inputs": 0,  # missing one of entry/exit/direction — verification not attempted
+    "filled_at_close": 0,    # INCIDENT_OVERALL#131a: NULL pnl computed from entry/exit at write
+    "fill_skipped_guard": 0,  # fill attempted but price-sanity / sign-coherence guard left NULL
 }
+
+# ── Category alias normalization (INCIDENT_OVERALL#88, 2026-06-11) ──────────
+# The category case-mess was actively regrowing: 129 new 'stocks' rows since
+# 2026-06-01 (writers: regime_terminal regime_mild_bull/regime_crash,
+# multi_asset_copytrader stocks_rsi2_pullback/stocks_ema_golden_cross,
+# alpha_engine momentum_rider_base) plus 'stock'/'penny'/'pennystock' — all
+# invisible to every category='equity' filter, gate, and per-class PF/WR
+# recompute. This module is the single production INSERT path into
+# trading_picks, so alias→canonical mapping here stops the regrowth at the
+# chokepoint instead of repeating one-shot backfills.
+#
+# CANONICAL form is UPPERCASE — chosen to match the majority convention, not
+# invented: tools/backfill_unknown_category.py::_CATEGORY_MAP writes
+# 'EQUITY'/'CRYPTO'/..., audit_trail/dashboard_generator.py
+# _ASSET_CLASS_HINTS maps aliases → 'EQUITY'/'FUTURES'/... and its
+# _CANONICAL sets are uppercase, quality_gates compares `.upper()` against
+# 'FUTURES'/'CRYPTO', and this file's own Canonical-CRYPTO bucket
+# (2026-06-06) already writes 'CRYPTO'. All SQL consumers use
+# LOWER(category) (and the table collation is case-insensitive), so casing
+# is read-compatible either way.
+_CATEGORY_CANONICAL_MAP = {
+    # EQUITY aliases — the active regrowth this map exists to stop.
+    "equity": "EQUITY",
+    "stock": "EQUITY",
+    "stocks": "EQUITY",
+    "share": "EQUITY",
+    "shares": "EQUITY",
+    "penny": "EQUITY",
+    "pennystock": "EQUITY",
+    "pennystocks": "EQUITY",
+    # Already-canonical classes — casing normalization + common aliases.
+    "crypto": "CRYPTO",
+    "cryptocurrency": "CRYPTO",
+    "forex": "FOREX",
+    "fx": "FOREX",
+    "currency": "FOREX",
+    "currencies": "FOREX",
+    "etf": "ETF",
+    "bond": "BOND",
+    "bonds": "BOND",
+    "futures": "FUTURES",
+    "future": "FUTURES",
+    "commodity": "COMMODITY",
+    "commodities": "COMMODITY",
+}
+
+# Recognized tags that intentionally pass through UNCHANGED and WITHOUT a
+# warning. 'meme' (87 rows) and 'index' (536 rows) are mapped downstream by
+# dashboard_generator._ASSET_CLASS_HINTS with env-configurable policy
+# (ASSET_CLASS_MAP_MEME_TO_CRYPTO gates meme→CRYPTO; index→FUTURES) —
+# rewriting them at INSERT-time would destroy the original tag the flag
+# exists to preserve. 'unknown' is the documented backfill token handled by
+# tools/backfill_unknown_category.py.
+_CATEGORY_KNOWN_PASSTHROUGH = {"meme", "index", "unknown"}
 
 # ── Ensure pymysql is available ──────────────────────────────────────────────
 try:
@@ -216,6 +272,69 @@ def _safe_float(val):
     if math.isnan(f) or math.isinf(f):
         return None
     return f
+
+
+# 2026-06-11 — INCIDENT_OVERALL#131a: terminal statuses eligible for the
+# close-time pnl fill. Keep in sync with tools/backfill_resolved_pnl.py
+# TERMINAL tuple — the writer fills exactly the rows the weekly backfill
+# would otherwise have to repair after the fact.
+_PNL_FILL_TERMINAL = frozenset((
+    "WON", "LOST", "WIN", "LOSS", "TP_HIT", "SL_HIT", "TIME_EXIT",
+    "EXPIRED", "TIME_EXIT_MAX_HOLD",
+))
+
+
+def _pnl_pct_from_prices(entry, exit_price, direction, category, status):
+    """Compute close-time pnl_pct (PERCENT) from entry/exit/direction.
+
+    INCIDENT_OVERALL#131a (2026-06-11): terminal trading_picks rows from the
+    multi_asset_copytrader / cta_replicator / alpha_engine close paths landed
+    with pnl_pct=NULL even though entry/exit/direction were all stored —
+    invisible to PF/WR until a manual backfill. This replicates
+    tools/backfill_resolved_pnl.py EXACTLY: ``_compute_pnl`` (percent,
+    direction multiplier, round-2 with non-zero fallback), the 2026-06-11
+    price-sanity ratio guard (lines 92-105 there: corrupt wrong-symbol exits
+    must be left NULL for exit-price repair, not "filled"), and the
+    chk_pnl_sign_coherence skip from ``_recompute``.
+
+    Returns pnl in percent, or None when the inputs are implausible /
+    sign-incoherent (caller leaves pnl_pct NULL and logs).
+    """
+    if not entry or entry <= 0:
+        return None
+    if exit_price is None or exit_price <= 0:
+        return None
+    # Price-sanity ratio guard — mirror tools/backfill_resolved_pnl.py:92-105.
+    ratio = exit_price / entry
+    cat = (category or "").lower()
+    if cat in ("crypto", "memecoin", "meme"):
+        if ratio > 4 or ratio < 0.25:
+            return None
+    elif ratio > 1.8 or ratio < 0.45:
+        return None
+    # Direction norm — mirror tools/backfill_resolved_pnl.py::_direction_norm.
+    d = (str(direction or "LONG")).upper()
+    d = "SHORT" if d in ("SELL", "SHORT") else "LONG"
+    # Formula — mirror tools/backfill_resolved_pnl.py::_compute_pnl.
+    mult = 1.0 if d == "LONG" else -1.0
+    pnl = round(((exit_price - entry) / entry) * 100 * mult, 2)
+    if pnl == 0.0:
+        fallback = ((exit_price - entry) / entry) * 100 * mult
+        if fallback != 0.0:
+            pnl = fallback
+    # chk_pnl_sign_coherence skip — mirror tools/backfill_resolved_pnl.py::_recompute.
+    # The status label is ground truth; never write a pnl that contradicts it
+    # (the DB CHECK constraint would reject the row anyway).
+    st = (str(status or "")).upper()
+    if st in ("WON", "TP_HIT", "CLOSED_WIN") and pnl < -0.01:
+        return None
+    if st in ("LOST", "SL_HIT", "CLOSED_LOSS") and pnl > 0.01:
+        return None
+    # Writer-level sanity envelope (same clamp applied to upstream pnl above):
+    # never fill a value outside [-100, 200]%.
+    if not (-100.0 <= pnl <= 200.0):
+        return None
+    return pnl
 
 
 def pick_to_row(pick):
@@ -453,6 +572,68 @@ def pick_to_row(pick):
     _ac_upper = str(pick.get("asset_class") or "").upper().strip()
     if _ac_upper == "CRYPTO" or raw_cat == "crypto":
         raw_cat = "CRYPTO"
+
+    # 2026-06-11 — INCIDENT_OVERALL#88: category alias normalization at the
+    # ingest chokepoint. Maps 'stocks'/'stock'/'penny'/'pennystock' (and any
+    # other known alias / casing variant) to the UPPERCASE canonical form at
+    # INSERT-time so the case-mess stops regrowing. Unmapped non-empty values
+    # pass through UNCHANGED but log a WARNING — future-alias detection, so
+    # a brand-new producer tag surfaces in the sync logs instead of silently
+    # forking a new category bucket. Empty raw_cat stays empty silently
+    # (documented above: caller knows their pick is unclassifiable; the
+    # backfill_unknown_category.py symbol auto-tagger owns those rows).
+    if raw_cat:
+        _cat_key = raw_cat.strip().lower()
+        if _cat_key in _CATEGORY_CANONICAL_MAP:
+            raw_cat = _CATEGORY_CANONICAL_MAP[_cat_key]
+        elif _cat_key not in _CATEGORY_KNOWN_PASSTHROUGH:
+            logger.warning(
+                "INCIDENT_OVERALL#88 unmapped category alias %r "
+                "(pick %s symbol=%s) — passing through unchanged; add to "
+                "_CATEGORY_CANONICAL_MAP if this is a legitimate new alias",
+                raw_cat,
+                str(pick.get("id") or "?")[:60],
+                str(pick.get("symbol") or "?")[:20],
+            )
+
+    # 2026-06-11 — INCIDENT_OVERALL#131a: compute pnl at close-time.
+    # 737 terminal rows (multi_asset_copytrader / cta_replicator /
+    # alpha_engine close paths all route through this writer) landed with
+    # pnl_pct=NULL despite entry/exit/direction being present — excluded
+    # from PF/WR aggregates until a manual backfill (which itself caused the
+    # #130 contamination on 06-10). Fill at write time with the exact
+    # tools/backfill_resolved_pnl.py formula + price-sanity ratio guard;
+    # implausible rows stay NULL and are logged for exit-price repair.
+    if (
+        pnl is None
+        and status in _PNL_FILL_TERMINAL
+        and entry_for_verify
+        and entry_for_verify > 0
+        and exit_for_verify is not None
+        and direction_for_verify
+    ):
+        _filled = _pnl_pct_from_prices(
+            entry_for_verify, exit_for_verify, direction_for_verify,
+            raw_cat, status,
+        )
+        if _filled is not None:
+            pnl = round(_filled, 4)
+            _PNL_VERIFY_STATS["filled_at_close"] += 1
+        else:
+            _PNL_VERIFY_STATS["fill_skipped_guard"] += 1
+            logger.warning(
+                "INCIDENT_OVERALL#131a close-time pnl fill SKIPPED for pick "
+                "%s symbol=%s status=%s entry=%s exit=%s dir=%s cat=%s — "
+                "implausible exit/entry ratio or sign-incoherent vs status; "
+                "leaving pnl_pct NULL (row needs exit-price repair, not fill)",
+                str(pick.get("id") or "?")[:60],
+                str(pick.get("symbol") or "?")[:20],
+                status,
+                entry_for_verify,
+                exit_for_verify,
+                direction_for_verify[:8],
+                raw_cat[:20],
+            )
 
     return {
         "id": pick.get("id", "")[:100],
@@ -1081,6 +1262,8 @@ def sync(dry_run=False):
     log_ok(
         f"pnl_pct verify: checked={_v['checked']} ok={_v['ok']} "
         f"mismatch={_v['mismatch']} skipped_no_inputs={_v['skipped_no_inputs']} "
+        f"filled_at_close={_v['filled_at_close']} "
+        f"fill_skipped_guard={_v['fill_skipped_guard']} "
         f"(tolerance={PNL_VERIFY_TOLERANCE_PCT} pp; mismatches were dropped to NULL)"
     )
     if _v["mismatch"] > 0:
