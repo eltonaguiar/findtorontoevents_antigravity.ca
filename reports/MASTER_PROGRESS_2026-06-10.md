@@ -261,3 +261,6 @@ Every per-model WR on /audit/ai-tournament.html + ai_leaderboard.html is now ent
 - **Self-caused regression fixed**: my full FTP deploy for tournament files pushed a stale LOCAL money_ready_verdict.json over the live one (Jun-10 08:01). Synced local data files from origin/main + redeployed -> live 06:30 with intrabar intact. LESSON (recorded): refresh generated data files from origin/main before ANY broad FTP deploy.
 - Public updates addendum live: explains the ~10pp leaderboard drop (honest re-resolution) with methodology links (42ae729ed6).
 - Standard: ci-tests GREEN; ledger 90/88; lane unchanged.
+
+## HEARTBEAT 08:47 (Jun 11) — ALL GREEN
+ci-tests GREEN; tournament resolutions REPLAY-only (0 regression, 1,293 OPEN awaiting honest resolution); ledger 90/88 steady; lane unchanged (rsi5070 108 @ 47.2%/1.54); live verdict 06:30 with the 08:00 hourly in flight (normal cadence). Nothing actionable.
