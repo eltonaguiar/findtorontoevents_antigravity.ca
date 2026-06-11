@@ -211,3 +211,6 @@ ci-tests SUCCESS (gate holding); gatekeeper closed; ledger steady (COMMODITY 90 
 ## OVERNIGHT 00:48 (Jun 11) — ADV measurement lane was silently dead; revived
 - ci-tests GREEN (gate holding). Ledger steady (90/88). Lane unchanged. Live verdict 1 cycle stale (22:49 dashboard run = known Binance-451 runner flake; 23:45 run in flight, self-heals).
 - **ADV shadow-tag could NEVER fire**: coingecko_adv_cache.json is gitignored and only crypto-smart-picks.yml builds it — the alpha-engine-live runner never had it -> is_liquid_crypto fail-opened everywhere. Fixed: alpha-engine-live now warms the cache before the scanner (non-fatal on API failure). The #20 phase-1 measurement actually starts with the next scanner cycle.
+
+## OVERNIGHT 01:51 (Jun 11) — verdict self-healed; ADV validation run dispatched
+Live verdict self-healed (00:56). Ledger steady (90/88). ci-tests in flight. No scanner cycle since the ADV warm-up commit — dispatched alpha-engine-live manually to validate the measurement lane now instead of waiting for cron.
