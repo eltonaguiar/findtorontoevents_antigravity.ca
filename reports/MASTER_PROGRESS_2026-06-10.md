@@ -242,3 +242,7 @@ IN FLIGHT: engineer-10x-strategies workflow (8 classes x 10 designs -> adversari
 
 ## STRATEGY SWEEP CLOSED — 2026-06-11 ~06:30
 80 designs / 43 survivors / 8 real backtests / 0 pass + 1 pre-registered variant (PARTIAL, family closed). The honest null now triangulates from THREE directions (historical 1,278-slice audit, σ-geometry, fresh-idea sweep with real net-of-cost replays). Sole live lead: crypto_eu_us_handoff LONG (PF 1.38 / +46bp / n=536, time-stable, 1.3% top-symbol) -> FORWARD-OBSERVATION: identical replay on post-06-10 entries in ~4wk, promote only if net PF>=1.3 @ n>=80. All artifacts committed.
+
+## TICK 06:25-06:50 (Jun 11) — tournament resolver: real gap found + shadow-diff launched
+- Standard checks: ci-tests GREEN, ledger 90/88, live fresh (04:01 — hourly cadence intact).
+- **Tournament investigation result: the honest replay ALREADY EXISTS** (price_tracker._scan_bars_for_touch: entry-anchored from submitted_at, SL-first ties, gap-through, MISPRICED drift guard — the 4154/7099 exclusion). **The real gap: only 409/1,862 resolved rows (22%) used it — 1,453 legacy spot-resolved rows were never re-resolved** and still inflate per-model WR (replay SL:TP 60:40 vs legacy 50:50). Shadow-diff launched (read-only): re-resolves all legacy rows through the replay, per-model flip table -> reports/tournament_legacy_reresolve_shadow_2026-06-11.json. Apply-with-backup decision after review. This is the largest per-model/per-portfolio honesty lever, now properly scoped.
