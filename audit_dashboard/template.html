@@ -988,6 +988,14 @@ a:hover { text-decoration: underline; }
             var wr = (c.wr != null && !isNaN(c.wr)) ? (Number(c.wr) * 100).toFixed(1) + '%' : 'n/a';
             var pf = (c.pf != null && !isNaN(c.pf)) ? Number(c.pf).toFixed(2) : 'n/a';
             var n  = (c.n_resolved != null) ? c.n_resolved : '?';
+            var sizingSrc = c.sizing_source || 'policy_clean';
+            var cohortLabel = sizingSrc === 'intrabar_truth'
+              ? 'intrabar-true sizing'
+              : (sizingSrc === 'insufficient_intrabar' ? 'policy-clean (intrabar n&lt;30)' : 'policy-clean');
+            var discoveryLine = '';
+            if (sizingSrc === 'intrabar_truth' && c.policy_clean_wr != null && c.policy_clean_n != null) {
+              discoveryLine = ' <span style="color:#94a3b8;font-size:10px" title="Legacy policy-clean cohort — discovery only, not sized">discovery: WR ' + (Number(c.policy_clean_wr) * 100).toFixed(1) + '%, n=' + c.policy_clean_n + '</span>';
+            }
             var raw = c.verdict || 'INSUFFICIENT_DATA';
             var ready = /(^|_)READY$|PASS/.test(raw) && !/NOT_READY|INSUFFICIENT/.test(raw);
             // 2026-06-04: render the new `policy_frozen` flag (PR 648f2a19a2) as a
@@ -1013,13 +1021,13 @@ a:hover { text-decoration: underline; }
             if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
             var liveLine = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
               '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + gateBadges + ' ' +
-              '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' policy-clean resolved)</span>' + sleeveTxt;
+              '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' ' + cohortLabel + ')</span>' + discoveryLine + sleeveTxt;
             span.innerHTML = liveLine +
               '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
               '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
           });
           var asof = document.getElementById('major-goal-asof');
-          if (asof) asof.innerHTML = 'Live &mdash; <code>money_ready_verdict.json</code> policy-clean closed-pick cohort, generated ' +
+          if (asof) asof.innerHTML = 'Live &mdash; <code>money_ready_verdict.json</code> sizing cohort (default intrabar when n&ge;30), generated ' +
             (mv.generated_date || (mv.generated_at ? String(mv.generated_at).slice(0, 10) : '?')) +
             '. Small n = strict post-resolver-v2 clean cohort (open-validator backlog starves it); see <a href="/audit/pick_funnel.html" style="color:#06b6d4">pick_funnel.html</a> for the full source-by-source breakdown.';
         })

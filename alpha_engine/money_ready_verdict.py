@@ -1106,6 +1106,31 @@ def _single_source_gate(picks: list[dict]) -> dict[str, Any]:
 # Verdict logic
 # ---------------------------------------------------------------------------
 
+# P1-A (2026-06-12): when intrabar n>=30, promotion gates use honest ledger.
+MIN_INTRABAR_N_FOR_SIZING = 30
+
+
+def _sizing_metrics_from_intrabar(
+    policy_n: int,
+    policy_wr: float,
+    policy_pf: float,
+    intrabar_truth: dict | None,
+) -> tuple[int, float, float, str]:
+    """Return (n, wr, pf, sizing_source) for verdict gates."""
+    src = os.environ.get("MONEY_READY_SIZING_SOURCE", "intrabar").strip().lower()
+    if src == "policy_clean":
+        return policy_n, policy_wr, policy_pf, "policy_clean"
+    ib = intrabar_truth or {}
+    ib_n = int(ib.get("n") or 0)
+    if ib_n >= MIN_INTRABAR_N_FOR_SIZING and ib.get("wr") is not None:
+        ib_wr = float(ib["wr"])
+        ib_pf = float(ib["pf"]) if ib.get("pf") is not None else policy_pf
+        return ib_n, ib_wr, ib_pf, "intrabar_truth"
+    if ib_n > 0:
+        return policy_n, policy_wr, policy_pf, "insufficient_intrabar"
+    return policy_n, policy_wr, policy_pf, "legacy_fallback"
+
+
 def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
              asset_class: str = "", top_symbol_share: float = 0.0,
              top_source_share: float = 0.0,
@@ -1450,6 +1475,8 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             }
 
     results: dict[str, dict] = {}
+    global _INTRABAR_TRUTH_CACHE
+    _INTRABAR_TRUTH_CACHE = {} if ci_mode else _intrabar_truth_map()
     for ac, stats in class_stats.items():
         if asset_class and ac != asset_class.upper():
             continue
@@ -1505,7 +1532,13 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         _registry_mdd = (dash_health.get(ac) or {}).get("max_drawdown_pct")
         mdd_cvar = _mdd_cvar_gate(returns, ac, registry_mdd=_registry_mdd)
 
-        verdict = _verdict(n, wr, pf, dsr, pbo, spa, asset_class=ac,
+        _policy_n, _policy_wr, _policy_pf = n, wr, pf
+        _ib_row = _INTRABAR_TRUTH_CACHE.get(ac.upper())
+        _sizing_n, _sizing_wr, _sizing_pf, _sizing_source = _sizing_metrics_from_intrabar(
+            _policy_n, _policy_wr, _policy_pf, _ib_row
+        )
+
+        verdict = _verdict(_sizing_n, _sizing_wr, _sizing_pf, dsr, pbo, spa, asset_class=ac,
                            top_symbol_share=top_symbol_share,
                            top_source_share=top_source_share,
                            avg_win=avg_win, avg_loss=avg_loss,
@@ -1515,7 +1548,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
                            recency_ok=recency.get("ok") is True)
         
         wr_floor = MIN_WR_BY_CLASS.get(ac.upper(), MIN_WR)
-        exp_gate = _expectancy_gate(wr, avg_win, avg_loss, asset_class=ac)
+        exp_gate = _expectancy_gate(_sizing_wr, avg_win, avg_loss, asset_class=ac)
 
         # Shadow-mode gates (stamped but do NOT change verdict yet)
         bootstrap_ci = _bootstrap_expectancy_ci(ac_picks) if not _CI_MODE else {"lower": None, "upper": None, "ok": None, "note": "skipped in CI mode"}
@@ -1524,25 +1557,21 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         outcome_sleeves = _top_sleeves_from_outcomes(ac) if not ci_mode else []
         top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
 
-        # 2026-06-10 WS-B: honest intrabar-true per-class numbers attached additively
-        # (computed once; {} in CI mode / no-DB). Verdict gates unchanged this pass —
-        # the re-baseline switches gate inputs once honest n grows.
-        global _INTRABAR_TRUTH_CACHE
-        try:
-            _INTRABAR_TRUTH_CACHE
-        except NameError:
-            _INTRABAR_TRUTH_CACHE = {} if ci_mode else _intrabar_truth_map()
-
         results[ac] = {
-            "intrabar_truth": _INTRABAR_TRUTH_CACHE.get(ac.upper()),
-            "n_resolved": n,
-            "wr": round(wr, 4),
+            "intrabar_truth": _ib_row,
+            "sizing_source": _sizing_source,
+            "policy_clean_n": _policy_n,
+            "policy_clean_wr": round(_policy_wr, 4),
+            "policy_clean_wr_pct": round(_policy_wr * 100, 2),
+            "policy_clean_pf": round(_policy_pf, 4) if _policy_pf != float("inf") else None,
+            "n_resolved": _sizing_n,
+            "wr": round(_sizing_wr, 4),
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
-            "wr_pct": round(wr * 100, 2),
-            "pf": round(pf, 4) if pf != float("inf") else None,
-            "n_ok": n >= MIN_N_CLASS,
-            "wr_ok": wr >= wr_floor,
-            "pf_ok": pf >= MIN_PF,
+            "wr_pct": round(_sizing_wr * 100, 2),
+            "pf": round(_sizing_pf, 4) if _sizing_pf != float("inf") else None,
+            "n_ok": _sizing_n >= MIN_N_CLASS,
+            "wr_ok": _sizing_wr >= wr_floor,
+            "pf_ok": _sizing_pf >= MIN_PF,
             "dsr_ok": dsr.get("ok"),
             "dsr_score": dsr.get("dsr_score"),
             "pbo_ok": pbo.get("ok"),
