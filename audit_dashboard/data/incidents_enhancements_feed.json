@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11 18:23 EDT",
+  "generated_at": "2026-06-12 02:04 EDT",
   "incidents": {
     "OVERALL": [
       {
@@ -724,6 +724,31 @@
         "updated_at": "2026-06-04 09:38:39",
         "resolved_at": "2026-05-31 02:10:32",
         "link_md_path": null,
+        "link_url": null,
+        "link_github_ref": null
+      },
+      {
+        "incident_id": 133,
+        "asset_class": "OVERALL",
+        "source_ref": null,
+        "title": "Portfolio books: Sharpe/CAGR/MTD metrics mislabeled or miscomputed; pre-fix NAV history distorted by SHORT-sign bug",
+        "description": "Portfolio-math audit (wf_c35c2f25, 2026-06-11): sharpe_30d is full-history (no window) annualized over irregular weekday-only snapshots; CAGR uses snapshot-count not calendar days; MTD is inception-to-date proxy. The P0 SHORT-sign NAV bug is FIXED (53982150) but PF_NAV_SNAPSHOT rows since 2026-05-29 carry the distortion for short-holding books. Remedy spec in docs/MONEY_READY_MASTER_LOOP_2026-06.md Addendum A.",
+        "severity": "P1",
+        "status": "OPEN",
+        "affected_component": "tools/portfolios/run_daily.py",
+        "reported_by": "claude-fable-masterloop",
+        "assigned_to": null,
+        "recommended_fix": "Window or relabel sharpe; calendar-aware CAGR; true MTD anchor; flag/recompute pre-fix snapshots; then the TWR/attribution module per the master-loop spec.",
+        "target_release": null,
+        "evidence": null,
+        "resolution_notes": null,
+        "duplicate_of": null,
+        "created_at": "2026-06-11 23:41:26",
+        "date_est": null,
+        "time_est": null,
+        "updated_at": "2026-06-11 23:41:26",
+        "resolved_at": null,
+        "link_md_path": "docs/MONEY_READY_MASTER_LOOP_2026-06.md",
         "link_url": null,
         "link_github_ref": null
       },
@@ -10051,7 +10076,7 @@
     "PENNY": []
   },
   "totals": {
-    "incidents": 184,
+    "incidents": 185,
     "enhancements": 206,
     "findings": 19
   }
