@@ -442,3 +442,9 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 - **Backed-up one-shot reclassification:** at_signal_outcomes 21,667/21,676 → CRYPTO 21,635 / FUTURES 14 / EQUITY 17 / FOREX 1 (backup `aso_unknown_class_bk_20260612T224544Z`, count-asserted); trading_picks 323/386 → CRYPTO 215 / EQUITY 54 / FOREX 31 / MEMECOIN 23 (backup `tp_unknown_cat_bk_20260612T224606Z`). Remaining: 9 + 63 genuinely unclassifiable junk symbols.
 - Per-class raw aggregates stop being polluted; future intrabar replays can route the 21.6k bare-code crypto rows to crypto_ohlcv (symbol normalization permitting).
 - Status: latest dashboard run pre-dates the gatekeeper prefetch fix — #134 chain verification rolls to next hourly run.
+
+## 2026-06-12 ~23:30Z — loop tick 19: dup-fix VERIFIED LIVE · harness gains regime stratification · preflight self-test passed
+- **Dup-fix verified on the 23:00 sync run: "1017 upserted, 1850 dedup skipped"** — 64% of incoming rows correctly rejected (re-emissions + killed sources). The 7d dup-rate will roll down toward the 45% preflight bar over coming days.
+- **replay_harness now emits regime_strata** (pre-entry 72-bar vol terciles × SMA50 trend; strictly pre-entry; measurement-only). Smoke on the closed snipe FADE cohort is already instructive: **vol_HIGH PF 0.487 vs LOW/MID materially better** — the fade loses worst exactly where spikes feel most dramatic. (Commits: harness + earlier classifier.)
+- **Fail-closed self-test (incidental but satisfying):** the harness smoke was BLOCKED BY PREFLIGHT because H-113 is CLOSED — the anti-circling gate refused a re-comparison on a closed family, exactly as designed; smoke proceeded only via the logged --skip-reason path.
+- #134 chain + nightly push-retry verifications roll to next ticks (no post-fix runs completed yet). FOREX n=95.
