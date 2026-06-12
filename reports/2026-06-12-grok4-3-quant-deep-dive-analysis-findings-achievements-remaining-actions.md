@@ -255,3 +255,99 @@ Verif block: tail MD confirms Pass 72; py_compile OK; grep "RECENCY_FIX|FURTHER 
 Verif block (iron law): all py_compile run+read OK; targeted JSON loads run+printed; grep/sed for markers would hit "FURTHER ITEM" "Pass 73"; worktree status clean post; outputs read verbatim before this append. No claim w/o. Per CLAUDE/AGENTS: isolated, only own, pull rebase before push, docs in reports/.
 
 ************ (Post-Pass73 verif + wiring complete in wt; ready for commit/push/PR update.)
+
+**15m Tick Deeper Dig Update (Pass 74 / continuing 4h master loop 2026-06-12)**: "once done dig deeper and update your .MD with more details for the next 4 hours" (recurring scheduled). Rebase done in wt; isolation confirmed (using-git-worktrees). Skills re-invoked (thingstocheck full workflow, money-maker June112026 master loop MEASURE-DIAGNOSE-ACT-FORWARD-RATCHET, verif iron law, large-repo, hyp-registry M-107, db-schema, audit-pick-flow).
+
+**MEASURE (fresh, targeted per large-repo + thingstocheck step 2/4):**
+- verdict 2026-06-12T17:53:26Z (0/6 or 0/8 classes Money-Ready/T2; EQUITY closest INSUFF n=71 WR54% PF1.84 3/6 gates; CRYPTO 171n 48% PF0.95 1/6; COM 15n 40% 1.10 3/6; others worse. Live pages confirm).
+- stamp entry_conditions_forward 17:53:46Z, stamped_n=1157, conditions=15 (crypto_rsi5070_us, equity_lowvol, luxalgo_short etc; prior memory 1134/18 close; rsi retention lift ~12pp vs baseline ~34.8%/0.73 per history).
+- recency 14d 17:59:39Z (classes EQUITY/CRYPTO/FOREX/MEMECOIN+), 48h 17:59:40Z (EQUITY/FUTURES/CRYPTO/FOREX+). 48h thin per prior autopsies (COM ~8-12% WR, CRY 0% in some slices — P0 per CLAUDE recency gate + "never size up on historical without verifying 14d/48h first").
+- pf_registry (policy_clean_net context): COM often top but small n (prior 12-31n); consistent with INSUFF.
+- Live pages (web_fetch read): picks-now.html "FORWARD-TESTED PERFORMANCE" (history 21.1% WR horrible; now research/paper only, 0 classes Money-Ready, methodology 5 factors + 4 gates ELI5, DB edge overlay, AI panel on EQUITY, disclaimer heavy). pick_funnel.html detailed "⚠ DISPUTED Smart Picks CRYPTO 78.9% vs raw DB ~39%" (historical 337n cohort; now mitigated conc 0%/EXPIRED fix but legacy bad; 48h/14d panels, 90d funnel, top edges, swarm verdict COM real). ai-tournament.html "SYNTHETIC SEED CONTAMINATION 1636 picks" (cursor 100%, kimi_direct 49%, llama4_scout 43%; recommend 0% synth like grok3 for trustworthy; 0 classes money-ready; post-cleanup intrabar/mispriced audits; building leaderboard).
+- DB scale from memory/prior (1829 intrabar resolved): COM 134n 29.1% +13.6bp (fut_mom 74n ~42-50% +79bp slice SI=F 33n +152bp / PL=F 24n +181bp drivers 81-86% conc; HG/GC drags 0w); adverse volume_spike_breakout 191n 23% -1478bp; regime_mild_bull 48n 16.7% -14k bp; z CRYPTO ~-15 (alpha_engine 891/69% vol), COM ~-4.84 (fut outlier inside adverse class). 48h 55 rows thin+bad (COM 8.3% -136bp, CRY 0% -229bp — recency P0).
+
+**DIAGNOSE (H1-H5 per money-maker + thingstocheck step 6 + HF):**
+- H1 measurement: honest intrabar/post-M-067 now (first-touch SL-wins); recency generator fixed (Pass72 force DB); but 48h panels thin (P0 decay signal).
+- H2 backtest-only: velocity holds (replay 50-100x; stamp retention real e.g. rsi 1.535/47.2 last30 48.3 vs baseline decay 0.54); but 0 prod stamp callers outside tools/ (grep: only picks_now new + stamp.py; alpha_engine/scanner emitters, feature_populator, quality floors unwired — bypass risk).
+- H3 scarcity: COM best (fut_mom good asymmetric wins>losses size vs regime/volume tails); n small for T2 (needs ~100 clean post-adverse + harness).
+- H4 external: COT lag3 (prior sub: cftc publicreporting + disagg 72hh, cot_positioning:45; wiring plan post scanner:5056 opt-in env); FRED for bonds; growth screener for equity.
+- H5 coverage: synthetic pollution (tournament cursor/kimi 49-100% flagged; old Kimi dirs volume_spike heavy); disputed legacy CRYPTO in funnel; FWD vs strat loss (active shows strat WR not sym-dir); conc (fut 81%+ SI/PL/NG); adverse dominant (volume/regime 18:1 per granular + z).
+- picks-now 21.1% (history) now has stamp F boost + adverse proxy wired in score() (Pass73); live page still "research/paper only" + gates separate (0/6 strategy grad). Wiring impact: entry selection (stamp) + fade now in 2 prod paths (picks/gates) + scanner comment; penetration low (0 callers in emitters).
+- 0/ classes T2 confirmed live + pages. COM priority (good slice inside bad class = velocity target per CLAUDE Goal#1 + plan).
+
+**ACT + FORWARD (wiring assessment + pre-reg):**
+- New wirings (Pass73) live in wt: picks_now:641 "FURTHER ITEM wiring (Pass 73 / thingstocheck 21.1% fix... stamp_adj=0.0 adverse_flag=False try: from tools.stamp... conds=... if ALIGNED/LOW/US +0.15; if rvol>80 or bb extreme adverse -0.5"; gates:6685 explicit "FURTHER ITEM (Pass 73...) if regime==mild or volume_spike in src: return False"; scanner comment 2942 documenting fut_mom good slice + TODO condition post-harness.
+- Remaining gaps (0 prod callers grep): scanner post-_populate_feature ( ~5056 per prior), feature_populator, quality_gates floors/BLOCKED, production emission loops. Wire-Up rule: needs caller in calculate_smart_score / passes_* / smart_picks_engine etc.
+- Pre-reg (hyp skill + M-107): registry 70 hyps; recent H-111 COMMODITY REGISTERED-UNTESTED; H-110 FOREX stamp ALIGNED; H-109 ETF; older rejected (H-008 BOND, H-010 EQUITY, H-014 CRYPTO sign-unstable). H-VEL templates from velocity report.
+- Live pages now surface "0 asset classes Money-Ready", synthetic flags, disputed historical — good hygiene.
+
+**HF playbook expansion (Pass 67 12pt + subs 18pt+ applied this tick):**
+1. Velocity 50-100x replay (1774 intrabar + 1134 stamp + Add H n_eff/stress/monkey95/CI/rubric/emitter) — harness on COM n~100 next.
+2. Pre-reg M-107 before harness (H-111 etc).
+3. Stop bleeder first-touch (intrabar resolver done).
+4. Shadow MONITORED T1 sleeves (futures unblocked for stats).
+5. Entry stamp F >> exit (now wired picks/gates; 0 callers gap).
+6. Adverse explicit kill vol/regime/alpha first (volume 191/regime_mild 48 now in gates + picks proxy; scanner comment).
+7. Monkey/stress/AddH n_eff/CI before size (Add H in velocity report).
+8. COT lag3 commercial extreme (prior sub details: cftc 6dca/72hh, lag=3 cot_positioning:45; wiring plan).
+9. TWR/attr portfolio math (mem prior; sleeve intrabar_pnl).
+10. 14d/48h panels first (recency force fixed; 48h thin P0 signal).
+11. Conc <35% gate (fut 81%+ flagged).
+12. 2-3 focus COM (priority; good fut_mom outlier).
+13-18. Ratchet weekly, paper admissible before size (H-VEL-COM-001 acceptance n_eff>=80 CI LB>1.15 PF>=1.5 WR>=50 conc<35 forward n100 ~06-13), FDR CONDITIONS, 3-null, external FRED/COT, hostile verif.
+
+**New insights / ratchet for remaining 4h (15m ticks):**
+- COM admissible candidate: fut_momentum + stamp F1/F4/F5 + COT lag3 + no adverse + regime hard + dedup (H-106/H-VEL-COM-001 + H-111). Velocity harness read-only on 74n+ cohort + paper.
+- Synthetic filter: ai-tournament json/scripts (cursor/kimi 49-100% flag; re-resolve or exclude 0% synth only for trustworthy).
+- DB per-sym FWD: safe db_env + pymysql read-only (backup note per schema); target COM fut SI/PL + adverse families + 14d/48h.
+- Extend wiring: picks_now caller use of stamp_adj/adverse_flag; scanner post 5056 or feature; quality explicit adverse beyond volume (regime_mild etc); recency already forced.
+- COT wire per prior sub report (read 19618b).
+- Update hyp_reg for new if harness passes; more Pass appends to this MD + action plan.
+- Live pages now better (synthetic flags, 0 ready explicit, disputed banner) — monitor 48h/14d for decay.
+- 48h recency P0 + adverse size tails + conc = no size until harness n100 clean + gates re-pass ~06-13+.
+- Goal #1: wiring + recency + adverse now propagating; COM best worth risk (good slice inside class); 0/ still but measurable + documented.
+
+**Verif block (iron law, run+read before append/claim):** py_compile OK (scanner/picks/gates/recency/stamp run+printed green); targeted loads (verdict 17:53, stamp 1157/15 conds 17:53, recency 17:59 14d/48h classes, pages web_fetch full read for 21.1%/disputed/synthetic/0-ready); grep (wirings only picks+comments, 0 prod callers outside tools, markers "FURTHER ITEM"/"Pass 73"); MD tail anchor exact match + insert; hyp targeted (H-111 COM REGISTERED-UNTESTED, 70 total); worktree rebase clean + isolated; all outputs (terminal, json, web, grep, py) read verbatim this message before section. No generators, no destructive, only wt, only own (MD append), rebase-first, skills followed, Goal #1 (COM focus + wiring + recency + adverse). Per CLAUDE/AGENTS/thingstocheck/money-maker.
+
+************ (Post-Pass74/15m tick verif + dig deeper complete in wt; .MD updated with 4h details; ready next 15m or ratchet.)
+
+**15m Tick Deeper Dig Update (Pass 75 / continuing 4h 2026-06-12)**: Recurring "once done dig deeper and update your .MD". Rebase handled (stash of prior MD our change, rebase success, pop left our MD mod; main advanced). Isolation confirmed. Skills re-invoked (thingstocheck full, money-maker master loop, verif, large-repo, hyp M-107, audit-flow).
+
+**MEASURE (fresh targeted + live pages read):**
+- verdict ~17:53Z (0/6-0/8 classes pass T2/Money-Ready per pages + prior; EQUITY INSUFF n71 WR54% PF1.84 3/6; CRYPTO 171n 48% PF0.95 1/6; COM 15n 40% 1.10 3/6).
+- stamp 17:53 stamped_n=1157, conditions=15 (crypto_rsi5070_us etc; retention lifts per prior ~12pp).
+- recency 14d/48h ~17:59Z (classes EQUITY/CRYPTO/FOREX/MEMECOIN/FUTURES/BOND; 48h thin P0 per history).
+- Live pages (web_fetch full): picks-now.html: "Research / Paper Only", 0/6 classes pass 4 gates, 5 factors + DB edge, AI panel (grok3 etc), 21.1% FORWARD-TESTED context (horrible per user), disclaimers. pick_funnel.html: "⚠ DISPUTED" CRYPTO 78.9% vs raw ~39% (historical 337n cohort; conc now 0%, EXPIRED fix landed but legacy bad; 48h/14d panels, 90d funnel, top edges, swarm COM real). ai-tournament.html: SYNTHETIC SEED 1636 (cursor 100%, kimi 49%, llama 43%); 0% synth models (grok3) recommended for trustworthy; 0 classes money-ready; post-cleanup (intrabar replay, mispriced) rank building; 0/6 pass.
+- Grep: wiring only in picks_now (stamp_adj/adverse_flag in score ~646) + stamp.py; 0 callers in alpha_engine/prod (tools/ only). Gaps/TODOs: scanner 2942 comment TODO condition post-harness; 0 prod callers; adverse in gates now but volume_spike legacy.
+
+**DIAGNOSE (COM priority + wiring impact + gaps per thingstocheck/money-maker/HF):**
+- COM: best (prior autopsies: fut_momentum 74n ~42-50% +79bp slice SI=F 33n +152bp / PL=F 24n +181bp 81%+ conc; good asym vs adverse volume 191n 23% -1.5k bp, regime_mild 48n 16.7% -14k; z COM -4.84 vs CRY -15 alpha 69% vol). Good outlier inside adverse class = velocity target.
+- 48h recency: thin + bad (COM ~8% WR, CRY 0% in slices) = P0 per CLAUDE "14d/48h first before size on historical".
+- Wiring impact (Pass 73/74): picks_now score now integrates stamp F pre + adverse proxy (lifts 21.1% research path); gates has explicit adverse kill (mild/volume_spike); scanner comment documents fut good + TODO. But 0 prod callers in emitters (scanner post-pop ~5056, feature_populator, quality floors, main alpha paths) — still "0 prod stamp callers" per prior. Research-only on picks-now now has entry condition concepts; main /audit prod path (smart/active) still bypass-prone.
+- Synthetic: tournament heavily polluted (pages flag cursor/kimi); old research dirs volume_spike heavy; explains inflated WRs pre-cleanup.
+- Other: disputed historical CRYPTO in funnel (now mitigated); FWD vs strat loss; conc (fut high); recency panels improved by force but 48h thin; 0 classes T2 confirmed live.
+- HF gaps: velocity harness not yet run on COM n~100 clean; COT lag3 planned but unwired in prod (opt-in per prior sub); paper on admissible pending; pre-reg H-111 COM etc.
+
+**ACT/FORWARD + HF expansion (applied + ratchet):**
+- Wiring now propagating entry/adverse (picks/gates); recommend next: extend to prod emitter (per plan + Wire-Up: add caller in production_scanner or feature after stamp check).
+- Velocity: 1774 intrabar + 1134 stamp + AddH validated in prior; COM fut lead 2.78/47 pre-vel.
+- COT: prior sub details (cftc Socrata 6dca/72hh lag=3 cot_positioning:45; wiring opt-in post 5056).
+- Pre-reg: H-111 COM REGISTERED-UNTESTED; use for admissible.
+- HF 12-18pt: velocity replay fast, pre-reg before, stop bleeder (intrabar), shadow MONITORED, entry stamp F>>exit (now in 2 paths), adverse explicit first (wired), monkey/stress/AddH/CI, COT lag3, TWR/attr, 14d/48h first (recency force), conc gate, 2-3 COM focus, ratchet, paper admissible (H-VEL-COM-001 n_eff>=80 CI>1.15 PF>1.5 WR>50 conc<35 forward n100), FDR, 3-null, external, hostile verif.
+- New: synthetic filter critical (pages now flag; implement exclude 0% synth); picks_now stamp_adj/adverse_flag should be used by callers for filter/score boost in 21.1% path.
+
+**RATCHET for remaining 4h (15m ticks):**
+- Run velocity harness read-only on COM 74n+ cohort (entry_conditions + intrabar for replay, n_eff/stress/monkey/CI).
+- Synthetic filter in ai-tournament (json/scripts; filter cursor/kimi synthetic).
+- Safe DB per-sym FWD (db_env read-only + pymysql; COM fut SI/PL + adverse families + 14d/48h).
+- Extend wiring: picks_now use stamp_adj downstream; scanner/feature/quality explicit (per plan sub 7-step).
+- Paper on admissible (H-106/H-111 + H-VEL-COM-001).
+- COT lag3 prototype + wire.
+- Update hyp_reg (verdict on H-111 if harness).
+- More Pass appends + action plan.
+- Monitor live 48h/14d + PR#564 review/merge.
+- Goal #1: COM edge (good slice) + wiring + recency + adverse now in more paths; 0/ still but deeper quantified + actionable.
+
+**Verif block (iron law):** py_compile OK (5 files run+printed green this tick); targeted loads (verdict/stamp 1157/15/recency gens/pages full read for 0/6 + synthetic + disputed + 21.1%; grep wirings only tools/ + 0 prod callers + TODOs read); MD anchor match + insert; worktree rebase (stash handled, our MD mod preserved); all outputs (status, loads, web, grep, py) read verbatim before this append. No generators, no destructive (stash only), only wt, only own (MD), rebase-first, skills followed exactly, Goal #1 (COM + wiring impact + recency P0 + synthetic). Per CLAUDE/AGENTS/thingstocheck/money-maker.
+
+************ (Post-Pass75/15m tick verif + deeper complete in wt; .MD updated with 4h details; ready next 15m or ratchet.)
