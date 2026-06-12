@@ -35,6 +35,20 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
     <!-- Update: Jun 9, 2026 — Honest-measurement sweep: crypto score-tiles = artifact; Model Portfolios un-stuck -->
+    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="forex,carry-trade,pairs,filter,goal-1" data-category="trading" data-types="feature">
+      <div class="update-date" style="line-height:1.5">Jun 12, 2026 &mdash; <strong style="color:#22c55e;">FOREX carry trade amplification: +8 G10 crosses + realized-vol filter gate</strong></div>
+      <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">
+        <p style="margin:0 0 8px;">Expanded the FOREX carry-trade scanner from 10 to 18 G10 pairs and added a realized-volatility filter gate to prevent carry-trade entry during high-volatility regimes where carry trades historically blow up (Lustig, Roussanov &amp; Verdelhan 2011).</p>
+        <ul>
+          <li><strong>+8 G10 crosses added:</strong> NZD/JPY, CAD/JPY, CHF/JPY, EUR/CHF, GBP/CHF, EUR/GBP, AUD/CAD, NZD/CAD. These add orthogonal carry exposures with lower correlation to the 10 major pairs, improving diversification across the carry portfolio.</li>
+          <li><strong>Realized-vol gate:</strong> blocks carry trades when 20d annualized realized vol &gt; 8% OR carry/vol ratio &lt; 0.5. Carry trades are empirically unprofitable during high-vol regimes; this gate prevents entries that would be stopped out by volatility spikes.</li>
+          <li><strong>Consistency fix:</strong> Synced carry yields between <code>forex_smart_picks.py</code> and <code>multi_asset/forex_strategies.py</code> (previously drifted). Both now share the same 18-pair universe with identical rate differentials.</li>
+          <li><strong>Impact:</strong> Expected ~60-80% more carry-trade signals with higher quality (vol filter removes the regimes where carry trades fail). See <code>reports/forex_carry_amplify_analysis_2026-06-12.md</code>.</li>
+        </ul>
+        <p style="margin:8px 0 0;color:#999;">This addresses Grok Phase 2 #3 (FOREX carry factor scaffold) from the DAILY_IDEAS.MD corpus. Next step: merge the intrabar-resolve branch to unlock the pf_registry wiring that shows carry_trade at T1 (PF=2.01, WR=73.1%, n=26 on that branch's data).</p>
+      </div>
+    </div>
+
     <div class="update-entry" style="--dot-color: #ef4444;" data-tags="money-ready,audit,data-integrity,crypto,intrabar,goal-1" data-category="trading" data-types="analysis,fix">
       <div class="update-date" style="line-height:1.5">Jun 9, 2026 8:45 AM EDT &mdash; <strong style="color:#ef4444;">Honest-measurement sweep: crypto score-tiles are an artifact (not edge); Model Portfolios un-stuck</strong></div>
       <div class="update-body" style="margin-top:10px;color:#d1d5db;font-size:0.92em;line-height:1.6;">

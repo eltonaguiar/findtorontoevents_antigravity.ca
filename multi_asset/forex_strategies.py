@@ -42,8 +42,31 @@ FOREX_PAIRS = {
                  "dxy_correlation": 0.75, "session_bias": "newyork"},
     "USDCHF=X": {"name": "USD/CHF", "cat": "forex", "carry_yield_diff": 2.0,
                  "dxy_correlation": 0.90, "session_bias": "london"},
+    # ── Yen crosses (high carry vs JPY) ──
     "EURJPY=X": {"name": "EUR/JPY", "cat": "forex", "carry_yield_diff": 4.0,
                  "dxy_correlation": -0.20, "session_bias": "london"},
+    "GBPJPY=X": {"name": "GBP/JPY", "cat": "forex", "carry_yield_diff": 4.75,
+                 "dxy_correlation": -0.15, "session_bias": "london"},
+    "AUDJPY=X": {"name": "AUD/JPY", "cat": "forex", "carry_yield_diff": 5.25,
+                 "dxy_correlation": -0.10, "session_bias": "asian"},
+    "NZDJPY=X": {"name": "NZD/JPY", "cat": "forex", "carry_yield_diff": 5.5,
+                 "dxy_correlation": -0.05, "session_bias": "asian"},
+    "CADJPY=X": {"name": "CAD/JPY", "cat": "forex", "carry_yield_diff": 4.0,
+                 "dxy_correlation": 0.10, "session_bias": "asian"},
+    "CHFJPY=X": {"name": "CHF/JPY", "cat": "forex", "carry_yield_diff": 2.5,
+                 "dxy_correlation": 0.05, "session_bias": "asian"},
+    # ── Crosses (lower DXY correlation) ──
+    "EURCHF=X": {"name": "EUR/CHF", "cat": "forex", "carry_yield_diff": 1.5,
+                 "dxy_correlation": -0.40, "session_bias": "london"},
+    "GBPCHF=X": {"name": "GBP/CHF", "cat": "forex", "carry_yield_diff": 2.25,
+                 "dxy_correlation": -0.30, "session_bias": "london"},
+    "EURGBP=X": {"name": "EUR/GBP", "cat": "forex", "carry_yield_diff": -0.75,
+                 "dxy_correlation": -0.10, "session_bias": "london"},
+    # ── Commodity crosses ──
+    "AUDCAD=X": {"name": "AUD/CAD", "cat": "forex", "carry_yield_diff": 0.25,
+                 "dxy_correlation": -0.50, "session_bias": "asian"},
+    "NZDCAD=X": {"name": "NZD/CAD", "cat": "forex", "carry_yield_diff": 0.5,
+                 "dxy_correlation": -0.45, "session_bias": "asian"},
 }
 
 # DXY proxy ticker on yfinance
@@ -60,7 +83,20 @@ RATE_DIFFERENTIALS = {
     "NZDUSD=X":  1.00,   # NZD 5.25% - USD 4.25%
     "USDCAD=X":  0.50,   # USD 4.25% - CAD 3.75%
     "USDCHF=X":  2.00,   # USD 4.25% - CHF 2.25%
+    # Yen crosses
     "EURJPY=X":  4.00,   # EUR 3.75% - JPY -0.25%
+    "GBPJPY=X":  4.75,   # GBP 4.50% - JPY -0.25%
+    "AUDJPY=X":  5.25,   # AUD 5.00% - JPY -0.25%
+    "NZDJPY=X":  5.50,   # NZD 5.25% - JPY -0.25%
+    "CADJPY=X":  4.00,   # CAD 3.75% - JPY -0.25%
+    "CHFJPY=X":  2.50,   # CHF 2.25% - JPY -0.25%
+    # Crosses
+    "EURCHF=X":  1.50,   # EUR 3.75% - CHF 2.25%
+    "GBPCHF=X":  2.25,   # GBP 4.50% - CHF 2.25%
+    "EURGBP=X": -0.75,   # EUR 3.75% - GBP 4.50%
+    # Commodity crosses
+    "AUDCAD=X":  0.25,   # AUD 5.00% - CAD 3.75%
+    "NZDCAD=X":  0.50,   # NZD 5.25% - CAD 3.75%
 }
 
 # Risk parameters: (stop_loss_pct, take_profit_pct, max_hold_days)
@@ -388,6 +424,17 @@ def carry_trade(df: pd.DataFrame, symbol: str, info: dict) -> list[dict]:
 
     # Need a minimum trend strength
     if adx_val < 18:
+        return signals
+
+    # Realized volatility gate (2026-06-12, per DAILY_IDEAS.MD Grok Phase 2 #3):
+    # Carry trades historically blow up during high-vol regimes (Lustig,
+    # Roussanov & Verdelhan 2011). Block when 20d annualized realized vol > 8%
+    # or the carry/vol ratio < 0.5 (carry too thin vs noise).
+    returns = close.pct_change()
+    vol_20d = float(returns.iloc[-20:].std() * (252 ** 0.5))
+    if vol_20d > 0.08:
+        return signals
+    if vol_20d > 0 and abs(rate_diff) / vol_20d < 0.5:
         return signals
 
     sl_pct, tp_pct, max_hold = FOREX_RISK["carry_trade"]

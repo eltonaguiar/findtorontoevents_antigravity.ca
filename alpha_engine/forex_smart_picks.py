@@ -58,7 +58,15 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
+# G10 FX pairs with approximate annualized interest rate differentials.
+# Positive = base currency yields more than quote (classic long-carry candidates).
+# Updated 2026-Q2. Sourced from central bank policy rates.
+# The 10 original pairs cover 80%+ of G10 FX volume; 8 crosses added 2026-06-12
+# for diversification (EUR/CHF, GBP/CHF, EUR/GBP, NZD/JPY, CAD/JPY, CHF/JPY,
+# AUD/CAD, NZD/CAD) — these add orthogonal carry exposures with lower
+# correlation to the major pairs.
 PAIRS = {
+    # ── Major pairs ──
     "EURUSD=X": {"name": "EUR/USD", "carry_yield_diff": -0.5},
     "GBPUSD=X": {"name": "GBP/USD", "carry_yield_diff": 0.25},
     "USDJPY=X": {"name": "USD/JPY", "carry_yield_diff": 4.5},
@@ -66,9 +74,20 @@ PAIRS = {
     "USDCAD=X": {"name": "USD/CAD", "carry_yield_diff": 0.5},
     "NZDUSD=X": {"name": "NZD/USD", "carry_yield_diff": 1.0},
     "USDCHF=X": {"name": "USD/CHF", "carry_yield_diff": 3.0},
+    # ── Yen crosses (high carry vs JPY) ──
     "EURJPY=X": {"name": "EUR/JPY", "carry_yield_diff": 4.0},
     "GBPJPY=X": {"name": "GBP/JPY", "carry_yield_diff": 4.75},
     "AUDJPY=X": {"name": "AUD/JPY", "carry_yield_diff": 5.25},
+    "NZDJPY=X": {"name": "NZD/JPY", "carry_yield_diff": 5.5},
+    "CADJPY=X": {"name": "CAD/JPY", "carry_yield_diff": 4.0},
+    "CHFJPY=X": {"name": "CHF/JPY", "carry_yield_diff": 2.5},
+    # ── Crosses (lower DXY correlation) ──
+    "EURCHF=X": {"name": "EUR/CHF", "carry_yield_diff": 1.5},
+    "GBPCHF=X": {"name": "GBP/CHF", "carry_yield_diff": 2.25},
+    "EURGBP=X": {"name": "EUR/GBP", "carry_yield_diff": -0.75},
+    # ── Commodity crosses ──
+    "AUDCAD=X": {"name": "AUD/CAD", "carry_yield_diff": 0.25},
+    "NZDCAD=X": {"name": "NZD/CAD", "carry_yield_diff": 0.5},
 }
 
 TP_MULT = 2.0
@@ -212,11 +231,22 @@ def check_carry_trade(df: pd.DataFrame, symbol: str) -> tuple[str, float, str] |
     if direction == "SELL" and r < 35:
         return None
 
-    # Vol filter
+    # Vol filter: two-stage gate
+    # 1) Ratio gate (existing): sudden vol spikes block entry
+    # 2) Absolute level gate (2026-06-12, per DAILY_IDEAS.MD Grok Phase 2 #3):
+    #    block carry trades when 20d realized vol > 8% annualized — carry trades
+    #    historically lose money during high-vol regimes (Lustig, Roussanov &
+    #    Verdelhan 2011). The FX carry/vol ratio must exceed 0.5.
     returns = close.pct_change()
     vol_20d = float(returns.iloc[-20:].std() * (252 ** 0.5))
     vol_60d = float(returns.iloc[-60:].std() * (252 ** 0.5)) if len(close) >= 60 else vol_20d
     if vol_60d > 0 and vol_20d / vol_60d > 1.5:
+        return None
+    # Absolute vol gate: block when 20d realized vol > 8% annualized
+    if vol_20d > 0.08:
+        return None
+    # Carry/vol ratio gate: require carry > 0.5 * vol
+    if vol_20d > 0 and abs(carry) / vol_20d < 0.5:
         return None
 
     conf = min(0.72, 0.55 + abs(score) * 0.03)
