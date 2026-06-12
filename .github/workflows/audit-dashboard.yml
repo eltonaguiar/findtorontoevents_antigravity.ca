@@ -558,6 +558,8 @@ jobs:
           # skips already-resolved rows; built-in backup) + truth rebuild.
           python tools/reresolve_intrabar_signal_outcomes.py --apply --i-understand-this-mutates-production --max 500 || echo "intrabar reresolve warning (non-fatal)"
           python tools/build_intrabar_truth_by_class.py || echo "intrabar truth build warning (non-fatal)"
+          # P1-1 (2026-06-12): symbol×direction intrabar FWD WR sidecar for Active Picks Track column.
+          python tools/build_intrabar_sym_dir_stats.py || echo "intrabar sym×dir stats warning (non-fatal)"
           python tools/money_ready_snapshot.py || echo "money_ready snapshot warning (non-fatal)"
           # 2026-06-12 (external hostile review Q1): the forward entry-conditions
           # lane had NO automation — entry_conditions_forward.json only updated on

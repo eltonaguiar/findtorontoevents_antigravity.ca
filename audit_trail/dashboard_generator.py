@@ -735,6 +735,46 @@ def _normalize_symbol(sym: str) -> str:
     return s
 
 
+def _normalize_direction_for_intrabar(direction: str) -> str:
+    """Map pick direction to intrabar sym×dir key (LONG / SHORT)."""
+    d = (direction or "").upper().strip()
+    if d in ("BUY", "LONG"):
+        return "LONG"
+    if d in ("SELL", "SHORT"):
+        return "SHORT"
+    return d or "UNKNOWN"
+
+
+def _load_intrabar_sym_dir_fwd_map() -> dict:
+    """Load P1-1 symbol×direction intrabar forward stats sidecar (if present)."""
+    path = ROOT / "audit_dashboard" / "data" / "intrabar_sym_dir_fwd.json"
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("by_key") or {}
+    except Exception:
+        return {}
+
+
+def _lookup_intrabar_sym_dir_fwd(
+    sym_dir_map: dict,
+    symbol: str,
+    direction: str,
+    strategy: str,
+) -> dict | None:
+    """Prefer strategy-specific intrabar row; fall back to symbol×direction aggregate."""
+    sym = _normalize_symbol(symbol)
+    dr = _normalize_direction_for_intrabar(direction)
+    strat = (strategy or "").strip()
+    if not sym or not dr:
+        return None
+    if strat:
+        row = sym_dir_map.get(f"{sym}|{dr}|{strat}")
+        if row:
+            return row
+    return sym_dir_map.get(f"{sym}|{dr}|*")
+
+
 # Multi-asset / UI labels that map to canonical survivor leaderboard keys
 _STRATEGY_BT_ALIAS_TO_CANONICAL: dict[str, str] = {
     "multi_asset_futures_connors_rsi2": "connors_rsi2",
@@ -15562,6 +15602,7 @@ def generate():
     # Use resolved_closed (deduped / metric-grade) so symbol n/WR matches forward ledger truth.
     _strategy_symbol_track_map = _build_strategy_symbol_track_stats(resolved_closed)
     _source_symbol_track_map = _build_source_symbol_track_stats(resolved_closed)
+    _intrabar_sym_dir_map = _load_intrabar_sym_dir_fwd_map()
 
     # ── Universal Forward Stats: compute forward_wr/forward_trades for ALL systems ──
     # Build lookup: (source_system, strategy) -> {wins, losses, total, pnl_sum}
@@ -15956,6 +15997,20 @@ def generate():
             pick["sym_track_losses"] = 0
             pick["sym_track_wr"] = None
             pick["sym_track_pnl"] = 0.0
+        # P1-1: intrabar symbol×direction forward stats (honest at_signal_outcomes ledger)
+        _sd_row = _lookup_intrabar_sym_dir_fwd(
+            _intrabar_sym_dir_map, _pick_sym, pick.get("direction", ""), strat_name
+        )
+        if _sd_row:
+            pick["sym_dir_fwd_wr"] = _sd_row.get("wr_pct")
+            pick["sym_dir_fwd_n"] = _sd_row.get("n", 0)
+            pick["sym_dir_fwd_pf"] = _sd_row.get("pf")
+            pick["sym_dir_fwd_source"] = "at_signal_outcomes.intrabar"
+        else:
+            pick["sym_dir_fwd_wr"] = None
+            pick["sym_dir_fwd_n"] = 0
+            pick["sym_dir_fwd_pf"] = None
+            pick["sym_dir_fwd_source"] = None
         pick["strat_health"] = lb.get("health")
         pick["strat_fwd_expectancy"] = lb.get("fwd_expectancy")
         pick["strat_csr"] = lb.get("fwd_csr")

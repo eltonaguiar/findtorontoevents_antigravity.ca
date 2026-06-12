@@ -1652,7 +1652,7 @@ a:hover { text-decoration: underline; }
     <b style="color:#a78bfa;">Field reference</b> — the thresholds below map 1:1 to columns in the Active Picks table so you can filter/sort manually even when no pick fully passes:
     <div style="margin-top:4px;">&bull; <b style="color:#f59e0b;">Score</b> = the <b>SCORE</b> column in Active Picks (field <code>pick.score</code>, Dashboard Score 0-100).</div>
     <div>&bull; <b style="color:#f59e0b;">Trust</b> = the <b>TRUST</b> column (field <code>pick.trust_score</code>, 0-10).</div>
-    <div>&bull; <b style="color:#f59e0b;">Forward WR</b> = the <b>FWD WR</b> column (field <code>pick.strat_fwd_wr</code>, %). N = <b>FWD N</b> column (<code>strat_fwd_trades</code>).</div>
+    <div>&bull; <b style="color:#f59e0b;">Forward WR</b> = the <b>FWD WR</b> column (field <code>pick.strat_fwd_wr</code>, %). N = <b>FWD N</b> column (<code>strat_fwd_trades</code>). <b>Track</b> prefers <code>sym_dir_fwd_wr</code> (intrabar sym×dir, n≥3) when available.</div>
     <div style="margin-top:4px;color:#94a3b8;">If any of these columns aren't visible, open the &#x2699; column settings button on the toolbar to enable them.</div>
   </div>
   <div id="hc-explainer-classes" style="display:flex;flex-direction:column;gap:6px;"></div>
@@ -8128,6 +8128,34 @@ function _symTrackUseable(p) {
   const symTot = p.sym_track_total || 0;
   return symTot >= _SYM_TRACK_MIN_N && p.sym_track_wr != null;
 }
+/** P1-1: intrabar honest symbol×direction forward WR (at_signal_outcomes.intrabar_*). */
+function _symDirIntrabarUseable(p) {
+  const n = p.sym_dir_fwd_n || 0;
+  return n >= _SYM_TRACK_MIN_N && p.sym_dir_fwd_wr != null;
+}
+function _symDirIntrabarSummaryForTooltip(p) {
+  const n = p.sym_dir_fwd_n || 0;
+  const wr = p.sym_dir_fwd_wr;
+  const sym = p.symbol || '?';
+  const dir = (p.direction || p.signal_type || '?').toUpperCase();
+  if (n <= 0 || wr == null) {
+    return 'Intrabar sym×dir forward: no resolved intrabar outcomes yet for ' + sym + ' ' + dir + '.';
+  }
+  const wrS = Number(wr).toFixed(1);
+  const pf = p.sym_dir_fwd_pf != null ? (' PF ' + Number(p.sym_dir_fwd_pf).toFixed(2)) : '';
+  if (n < _SYM_TRACK_MIN_N) {
+    return 'Intrabar sym×dir forward on ' + sym + ' ' + dir + ': ' + wrS + '% (n=' + n + ' intrabar TP/SL).' + pf + ' Need n≥' + _SYM_TRACK_MIN_N + ' before Track cell uses this rate.';
+  }
+  return 'Intrabar sym×dir forward on ' + sym + ' ' + dir + ': ' + wrS + '% (n=' + n + ' intrabar TP/SL hits).' + pf + ' Preferred over closed-picks symbol WR when n≥' + _SYM_TRACK_MIN_N + '.';
+}
+function _effectiveTrackWrPick(p) {
+  if (_symDirIntrabarUseable(p)) return { wr: Number(p.sym_dir_fwd_wr), n: p.sym_dir_fwd_n || 0, kind: 'intrabar_sym_dir' };
+  if (_symTrackUseable(p)) return { wr: Number(p.sym_track_wr), n: p.sym_track_total || 0, kind: 'sym_strategy' };
+  const sw = _normStratWrPctPick(p);
+  const sn = p.strat_fwd_trades != null ? p.strat_fwd_trades : (p.forward_trades || 0);
+  if (sw != null && !Number.isNaN(sw)) return { wr: sw, n: sn, kind: 'strategy_wide' };
+  return { wr: null, n: 0, kind: 'none' };
+}
 function _normStratWrPctPick(p) {
   let w = p.strat_fwd_wr != null ? Number(p.strat_fwd_wr) : (p.forward_wr != null ? Number(p.forward_wr) : null);
   if (w == null || Number.isNaN(w)) return null;
@@ -8520,11 +8548,11 @@ function _picksTableInner(picks, cols) {
       }
       if (c.key === '_ic_track') {
         const symTot = p.sym_track_total || 0;
-        const useSym = _symTrackUseable(p);
-        let dispWr = useSym ? Number(p.sym_track_wr) : (p.strat_fwd_wr != null ? Number(p.strat_fwd_wr) : (p.forward_wr != null ? Number(p.forward_wr) : null));
-        if (dispWr != null && !Number.isNaN(dispWr) && dispWr > 0 && dispWr <= 1.5) dispWr *= 100;
-        const dispN = useSym ? symTot : (p.strat_fwd_trades != null ? p.strat_fwd_trades : (p.forward_trades || 0));
-        if (dispWr == null || Number.isNaN(dispWr)) return `<td class="num" style="color:#6b7280" title="No track WR: need resolved history. Bold = 3+ closes on this strategy+symbol; italic = strategy-wide (same source as FWD WR when symbol history is thin).">\u2014</td>`;
+        const eff = _effectiveTrackWrPick(p);
+        let dispWr = eff.wr;
+        const dispN = eff.n;
+        const useSym = eff.kind === 'intrabar_sym_dir' || eff.kind === 'sym_strategy';
+        if (dispWr == null || Number.isNaN(dispWr)) return `<td class="num" style="color:#6b7280" title="No track WR: need resolved history. Bold = intrabar sym×dir (n≥3) or 3+ closes on strategy+symbol; italic = strategy-wide.">\u2014</td>`;
         const cappedWr = Math.min(dispWr, 100);
         const wrColor = cappedWr >= 55 ? 'var(--green)' : cappedWr >= 45 ? 'var(--yellow)' : 'var(--red)';
         const symName = p.symbol || '?';
@@ -8532,7 +8560,13 @@ function _picksTableInner(picks, cols) {
         const tipSuffix = tipExtra ? (' | ' + tipExtra) : '';
         const stratLine = _stratWideSummaryLine(p);
         const symLine = _symTrackSummaryForTooltip(p);
+        const intrabarLine = _symDirIntrabarSummaryForTooltip(p);
         const ledgerLine = (typeof _symPairLedgerLine === 'function') ? _symPairLedgerLine(p) : '';
+        if (eff.kind === 'intrabar_sym_dir') {
+          const titleBoth = ledgerLine + ' SHOWN IN CELL: ' + cappedWr.toFixed(1) + '% intrabar sym×dir WR on ' + symName + ' (' + dispN + ' TP/SL). ' + intrabarLine + ' ' + stratLine + ' ' + symLine + tipSuffix + ' ' + _fwdWrCellColorLegend();
+          const titleEsc = titleBoth.replace(/"/g, '&quot;');
+          return `<td class="num" style="color:${wrColor};font-weight:700" title="${titleEsc}">${cappedWr.toFixed(0)}%</td>`;
+        }
         if (useSym) {
           const titleBoth = ledgerLine + ' SHOWN IN CELL: ' + cappedWr.toFixed(1) + '% symbol WR on ' + symName + ' (' + dispN + ' closes). ' + stratLine + ' ' + symLine + tipSuffix + ' ' + _fwdWrCellColorLegend();
           const titleEsc = titleBoth.replace(/"/g, '&quot;');

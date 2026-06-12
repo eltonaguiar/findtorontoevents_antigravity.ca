@@ -7241,6 +7241,60 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     except Exception:
         pass  # fail-open: never block picks on gate error
 
+    # ── M-038: FOREX F1=CONTRARIAN block (2026-06-12, P1-5) ──
+    # Entry-conditioning autopsy: 76% of FOREX losses on F1=CONTRARIAN (close vs SMA50
+    # misaligned with direction). Blocks sized emissions; exempt forward_test_only lanes.
+    # Kill-switch: FOREX_F1_CONTRARIAN_GATE_ENABLED=0. Fail-open.
+    try:
+        import os as _os_m038
+
+        if _os_m038.environ.get(
+            "FOREX_F1_CONTRARIAN_GATE_ENABLED", "1"
+        ) not in ("0", "false", "FALSE", "False"):
+            _m038_ac = str(pick.get("asset_class", "") or "").upper()
+            if _m038_ac == "FOREX" and not (
+                pick.get("forward_test_only") or pick.get("_monitor_mode")
+            ):
+                _ec = pick.get("entry_conditions") or {}
+                _m038_f1 = str(
+                    pick.get("entry_condition_f1")
+                    or pick.get("f1_trend")
+                    or _ec.get("F1")
+                    or ""
+                ).upper().strip()
+                if _m038_f1 == "CONTRARIAN":
+                    logger.info(
+                        "M-038 forex_f1_contrarian_blocked: F1=CONTRARIAN "
+                        "— rejected (symbol=%s strategy=%s)",
+                        pick.get("symbol", "?"),
+                        pick.get("strategy", "?"),
+                    )
+                    return False
+                if not _m038_f1:
+                    _htf = str(
+                        pick.get("htf_bias")
+                        or pick.get("htf_alignment")
+                        or pick.get("regime_at_entry")
+                        or ""
+                    ).lower()
+                    _m038_dir = str(pick.get("direction", "") or "").upper().strip()
+                    _is_long = _m038_dir in ("LONG", "BUY")
+                    _is_short = _m038_dir in ("SHORT", "SELL")
+                    if (
+                        ("bull" in _htf and _is_short)
+                        or ("bear" in _htf and _is_long)
+                    ):
+                        logger.info(
+                            "M-038 forex_f1_contrarian_proxy_blocked: htf=%s dir=%s "
+                            "— rejected (symbol=%s)",
+                            _htf[:40],
+                            _m038_dir,
+                            pick.get("symbol", "?"),
+                        )
+                        return False
+    except Exception:
+        pass  # fail-open: never block picks on gate error
+
     # ── M-037: CRYPTO ml_score floor (2026-05-17) ──
     # Expert finding: bottom 30% of ml_score CRYPTO picks have WR=32.5%;
     # top 30% (ml_score >= 0.65) have WR=60%. Gate is env-var overridable.
