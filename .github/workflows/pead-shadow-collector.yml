@@ -21,7 +21,7 @@ permissions:
 jobs:
   collect-pead-shadow:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
 
     steps:
       - name: Checkout repository
@@ -39,6 +39,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install yfinance pandas numpy
+
+      - name: Refresh earnings calendar (S&P 500 universe)
+        # 2026-06-12 (JUN-14 gate prep): the prior 21-megacap universe produced
+        # 0 PEAD signals for 8 straight runs — all 21 reported in late April, and
+        # at that breadth the lane can never reach its n>=100 bar. Full S&P 500
+        # coverage makes Q2 season (mid-July onward) produce real shadow n.
+        # TTL-cached: after the first run only stale entries re-fetch.
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          EARNINGS_FETCHER_ENABLED: "1"
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: |
+          python tools/earnings_calendar_fetcher.py             --tickers-file data/universe/sp500_tickers.txt --ttl-hours 20             || echo "::warning::earnings calendar refresh failed — PEAD runs on stale cache"
 
       - name: Run PEAD shadow collector
         env:
