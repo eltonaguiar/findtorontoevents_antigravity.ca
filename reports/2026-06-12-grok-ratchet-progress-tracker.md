@@ -9,6 +9,16 @@
 
 ## Ratchet Items (from Pass 77)
 
+## 15m Tick Pass 87 / continuing 4h (2026-06-12)
+- Rebase clean, skills (all key + money-maker loop + thingstocheck), verifs first (py OK, loads/pages/DB/grep/sim read).
+- MEASURE: verdict 20:00 COM n115 0.35/1.05 INSUFF + DB FWD metals futures_momentum SI=F n=27 +20.6bp; PL=F n=16 +31.6bp; HG=F n=7 +68.9bp; GC=F n=4 +122bp; SB=F n=3 neg.; pages ai-tournament 1636 synth + grok3 0% n52 67.3%; picks-now 0/ + 21.1% + synth filter active; stamp 1162; recency 14d/48h gens; hyp H-111; velocity sim from data (retention +20pp, target ~50%+ WR PF>1.5 n100); grep wiring 727+/2942+.
+- DIAGNOSE: COM good FWD slices (SI/PL/GC/HG +0.2-1.2bp) inside class INSUFF/adverse/conc/48h P0; synth filter now scoring in research (21.1% lift); wiring research complete; prod gap (scanner TODO post-harness); 0/ T2.
+- ACT: item 3 DB DONE; item 2 synth active; item 4 wiring research complete; item 1 velocity data+plan (H-111 COM fut_mom + stamp F + adverse kill + COT + AddH + paper); growth/TWR/COT/hyp + new 4h items (harness sim, external, growth wire).
+- RATCHET: Pass 87 in main + this tracker (items 2/3 advanced w/ DB FWD verbatim + velocity plan + verif); HF applied (velocity 50-100x, stamp F pre, adverse explicit, 14d/48h first, pre-reg H-111, synthetic filter, COM focus).
+- Verif: py, loads (COM n115 0.35/1.05), pages (synth 1636/grok3 0%), grep (wiring 727+/2942+), DB FWD, sim, anchors, git. Only own. Goal #1.
+- Evidence: rebase, py, DB FWD, web_fetch (picks-now 0/ COM INSUFF, ai-tournament synth), loads, MD tails. All read before.
+
+
 ## 15m Tick Pass 86 / continuing 4h (2026-06-12)
 - Rebase clean, skills (all key + money-maker loop + thingstocheck), verifs first (py OK, loads/pages/DB/grep/sim read).
 - MEASURE: verdict 20:00 COM n115 0.35/1.05 INSUFF + DB FWD metals futures_momentum SI=F n=27 +20.6bp; PL=F n=16 +31.6bp; HG=F n=7 +68.9bp; GC=F n=4 +122bp; SB=F n=3 neg. (prior SI/PL/GC/HG pos overall).; pages ai-tournament 1636 synth + grok3 0% n52 67.3%; picks-now 0/ + 21.1% + synth filter active; stamp 1162; recency 14d/48h gens; hyp H-111; velocity sim from data.
