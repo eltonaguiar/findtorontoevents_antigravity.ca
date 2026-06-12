@@ -1778,6 +1778,21 @@
    "data_sample_lock": "coinglass liquidation series + crypto_ohlcv 1h <= 2026-06-12 is DISCOVERY-PROHIBITED until this registration is committed; replay sample locked at first harness run.",
    "net_costs": "16bp RT crypto; stress x0.5/1/2/4 per Addendum G",
    "banned_check": "distinct from volume_spike_breakout (C006, retired): that buys spike momentum; this fades post-cascade exhaustion with a pre-registered single trigger percentile."
+  },
+  {
+   "id": "H-113",
+   "family": "snipe_spike_30m",
+   "asset_class": "CRYPTO",
+   "registered_at": "2026-06-12",
+   "status": "REGISTERED-UNTESTED",
+   "origin": "operator request 2026-06-12 (very-short-term skyrocket sniping + 30-min self-grading + ML). Design doc: docs/plans/2026-06-13-snipe-shortterm-spike-design.md.",
+   "hypothesis": "TWO-ARMED (the C006 reconciliation): on a frozen spike trigger (5-min return >=2.0% AND 5-min volume >=5x trailing-2h median, 1-min bars, top-100 USDT universe, 2h/symbol cooldown), either CHASE (with-spike) or FADE (against-spike) has positive net expectancy with TP +1.0%/SL -0.7%/30-min time-exit at 16bp RT. Breakeven WR ~47% at this geometry.",
+   "test_statistic": "per-arm: net PF + PF CI-lower-bound (cluster bootstrap, symbol-hour clusters) + R1 time-split + R2 conc<35% + 1-min monkey-P95, via the replay_harness pattern",
+   "acceptance_criteria": "REPLAY: arm CI-LB>1.0 at n_eff>=80 + monkey-P95 + both R1 halves -> live shadow loop (30-min self-grading, resolver ships AT BIRTH). LIVE: CI-LB>1.15 at n>=150 graded events -> probation. ML layer only after >=500 graded events and must BEAT the un-ML'd arm by the same referee.",
+   "falsification": "both arms below breakeven at n=300 replay events, OR trigger frequency <5 events/day across the universe, OR 1-min data coverage <80% of window -> family CLOSED. Trigger spec is FROZEN \u2014 any tuning = new family with full FDR accounting.",
+   "data_sample_lock": "Binance 1-min klines; replay window = available 1-min history at first harness run, locked then.",
+   "net_costs": "16bp RT crypto; stress x0.5/1/2/4",
+   "banned_check": "volume_spike_breakout (C006, DNR) chased 1h-bar spikes, no fade arm, no 30-min stop, no cooldown \u2014 this family's FADE arm tests the C006-implied edge and the CHASE arm is falsifiable rather than assumed; the DNR ban on the old strategy stands."
   }
  ],
  "fork2_new_signals": [
