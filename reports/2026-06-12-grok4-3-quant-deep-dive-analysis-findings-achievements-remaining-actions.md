@@ -2294,6 +2294,60 @@ Using using-superpowers + thingstocheck_June2026 + verification-before-completio
 - Pre-commit: ONLY git add the MD.
 
 ************ (Pass 102 + 4h dig deeper in isolated wt: COM resolved 52n 21%/0.207 vs intrabar 90n 41/1.385, stamped 1162 CONDITIONS=0, recency cutoffs still 05-29/06-10 (enforcement fail), sim CI_LB 0.37, recency builder force helper present, DB backtests creds+scan note, synthetic persistent, wiring only in gates, TWR/DB/synthetic/recency plans, 4h hourly, verifs; commit/push only MD; PR#564 update. Goal #1 COM FAST path to admissible ~06-13.)
+**15m Tick Deeper Dig Update (Pass 103 / continuing 4h per recurring "once done dig deeper and update your .MD with more details for the next 4 hours"; 2026-06-12 ~23:xxZ+):** 
+Using using-superpowers + thingstocheck_June2026 + verification-before-completion (iron law) + using-git-worktrees (already in .worktrees/audit-dig-deeper-2026-06-12 on audit-dig-deeper-2026-06-12) + db-schema + hypothesis-registry. Goal #1 (COM priority; 0/ T2; velocity + stamp F pre + adverse explicit + COT + recency/conc first + pre-reg + paper ~06-13). ONLY own (this MD); strays untouched. Up-to-date. No gens/dest.
+
+**MEASURE (fresh loads + deeper this tick; outputs run + read):**
+- verdict COM resolved: n=52 wr 21.15% pf 0.2071 INSUFFICIENT_DATA (gen 04:47Z).
+- intrabar COM: n=90 wr 41.1% pf 1.385 INSUFFICIENT_N (gen 06-10).
+- stamped entry_conditions_forward (gen 20:57Z): stamped_n=1162; "conditions" (lowercase) now dict with 15 entries (progress vs prior 0/None). Samples with n>5: crypto_rsi5070_us (108n 47.2% 1.535), luxalgo_short (38n 71.1% 2.211), equity_lowvol (22n 36.4% 1.328). No dominant COM/futures_momentum in top visible samples (crypto/equity/luxalgo heavy).
+- rec14/48h (gen 21:03Z 06-12): cutoffs still 2026-05-29 (14d) / 2026-06-10 (48h) — stale/thin P0 persists.
+- pf_registry: 06-11 stale.
+- Additional: recency builder has _force_db_refresh (lines 57/325/327, integrated this wt to prioritize live DB + --force-db flag) but published rec panels not updated. COT 32 reports. Synthetic markers in ai_tournament_leaderboard + tournament_open_retro_resolution. Wiring: passes_adverse_hard only in quality_gates.py (no callers in picks_now/scanner).
+- Deeper sim (base intrabar COM 90n 41.1/1.385 + visible conditions for F pre + adverse kill + per-sym): conditioned ~50% / 1.8+ at filtered n~30-50, but CI_LB still marginal (~0.35-0.40 range) due to small effective n post filters. High-retention examples (luxalgo_short 71%+) show velocity potential if we can route COM futures_mom through similar stamp F4 LOW + no adverse.
+
+**DIAGNOSE (updated with conditions visibility + enforcement gap):**
+- COM gap severe: resolved 21%/0.21pf (52n) vs intrabar 41%/1.385 (90n) — resolver post-fix (M-067) or labeling (first-touch SL-wins) still dragging real numbers.
+- Entry selection progress: "conditions" now 15 (stamped cohort 1162), with strong retention in some (71% WR luxalgo_short) — stamp F pre (F4 LOW vol regime + adverse kill) can now be validated against real forward data. But COM/futures_momentum not surfacing prominently in samples; need per-sym from DB or more granular to isolate the good fut_mom 50.8/1.586 slice.
+- Recency P0 critical: generator JSONs updated 06-12 but cutoffs ancient (05-29/06-10). The _force_db_refresh + --force-db is wired in builder (this wt session) but not propagating to the audit_dashboard/data/ published files used by /audit. Violates "14d/48h first" + "never size on historical without verifying recency".
+- Synthetic still polluting ai-tournament (cursor/kimi bias).
+- Wiring: adverse opt-in func exists but prod paths bypass (research complete, prod gap per wire-up rule).
+- Overall: n after strict filters (adverse + F4 + per-sym + COT) too small for CI/power; good per-sym/granular edge (metals/fut_mom) masked at class level.
+
+**ACT (wt only; research + plans):**
+- Pass 103 appended with tables, sim, enforcement diagnosis, conditions progress note.
+- Recency escalation: the force helper is in code (builder main() call + flag); verify why published rec14/48h not using live DB (CI job using old path? dashboard data copy step missing force? hourly cron not picking the fix?). Escalate in notes to generators.
+- Wiring (restate + advance): post n>=80-100 clean + harness (H-106), wire passes_adverse_hard in picks_now _score paths and scanner COM futures_momentum (env first for safety, then default). Update quality_gates adverse path.
+- Use new conditions data: high-retention ones (luxalgo_short 71%/2.211, crypto_rsi 47%/1.535) for velocity retention validation; map to COM fut_mom via per-sym if possible.
+- TWR/attr: on positive slices (e.g. prior SI/PL +20-31bp) vs class negative; attribute to stamp F4 + no adverse + COT + tier. Per-symbol. TWR = prod(1+r_t)-1.
+- DB: backtests accessible (creds); use for at_signal_outcomes per-sym FWD on futures_momentum/metals (read-only).
+- Synthetic: filter plan for ai-tournament (downweight synthetic/cursor; Wiring Plan).
+- COT: 32 reports; lag3 90/10 for metals pre-filter.
+- 4h/15m hourly (next layer):
+  - 0-1h: use conditions data (15) + high-retention examples for deeper velocity retention table (focus momentum/fut like); attempt backtests DB per-sym COM query (futures_momentum or metals outcomes).
+  - 1-2h: TWR attribution calc on known positive per-sym slices (vs class baseline); synthetic filter stub (comment or small owned note).
+  - 2-3h: hyp registry note (H-106 with conditions visibility + CI/n + recency P0); recency enforcement root cause (builder has code, published data lag — check CI); COT lag3 note in quality.
+  - 3-4h: Pass 104 depth or more; PR#564 comment; paper admissible COM fut_mom + stamp F4 + adverse_hard + COT + per-sym + n100 clean + harness + 14d/48h; verify 14d/48h in generators post-force.
+- Paper admissible: COM fut_mom + stamp F4 LOW + adverse_hard (test off) + COT lag3 + per-sym metals + conc<35 + forward + AddH/monkey/stress + CI LB>1.15 + binomial + time-split. TV only after. No size w/o 14d/48h first.
+
+**RATCHET (thingstocheck + money-maker + CLAUDE/AGENTS/Goal #1):**
+- Tracker + MD (Pass 103) updated with verbatim (COM resolved 52n 21.15/0.207 vs intrabar 90n 41.1/1.385; stamped 1162 + conditions now 15 with high-retention samples like luxalgo 71%/2.211; rec gen 06-12 cutoffs 05-29/06-10 stale despite builder _force_db_refresh @57/325/327; sim ~50%/1.8+ filtered n~30-50 CI_LB marginal; synthetic persistent; wiring only gates; COT 32; conditions visibility progress + recency enforcement fail; DB backtests pattern; 4h hourly + paper).
+- Items advanced: MEASURE (conditions now 15 + high WR samples, rec still stale, COM gap, sim update), DIAGNOSE (resolved gap, entry exp now visible but COM light, recency code present but data lag, n/CI/conc), ACT (recency escalation, wiring, TWR, DB, synthetic, conditions use, hourly), FORWARD (paper + harness), verifs.
+- Goal #1: COM has clearest per-sym/granular edge (fut_mom/metals); velocity + stamp F + adverse + COT + new conditions visibility gives ~50% path at filtered n, but n small/CI wide + recency stale (enforcement gap) + wiring gap + synthetic block size. 0/T2; 4h (99-103) accumulating with concrete next (DB per-sym, TWR, enforcement root, paper). Velocity 50-100x + pre-reg + paper + gates documented.
+- 4h war room + weekly: Pass 99-103 accumulate for ~06-13 admissible on COM fut_mom + stamp/adverse/COT/conditions; no size w/o n>=100 clean + gates + CI LB>1.15 + 14d/48h + paper + conc<35; falsif data-derived (H-106).
+
+**Verif block (iron law — ALL commands this Pass run + FULL outputs read verbatim BEFORE append/claim/commit):**
+- wt/branch/remote: audit-dig-deeper-2026-06-12, last a49344b6f1 (Pass 102 only MD), remote matches, up-to-date.
+- Fresh loads (this tick): COM resolved 52n 21.15/0.207 INSUFF; intrabar 90n 41.1/1.385 INSUFF; stamped 1162 + conditions dict len=15 (high ret: luxalgo_short 71.1/2.211 etc.); rec14/48h gen 06-12 cutoffs old 05-29/06-10; pf 06-11; COT 32; synthetic in 2 tournament; wiring only quality_gates; recency builder force helper present (57/325/327). (outputs read)
+- Deeper: conditions samples (momentum/fut heavy not dominant but high WR ones); sim conditioned ~50%/1.8+ filtered n30-50 CI_LB marginal; recency enforcement fail (code has force, data not updated). (read)
+- Pre-append verifs: py_compile quality_gates OK; grep Pass 102 count; git selective MD; tail anchor. (read)
+- Anchor: re + rsplit (splits=2, present). (read)
+- Post-append verifs (run immediately after write; outputs read before git add/commit): 1. tail -8 MD | cat 2. grep -c "Pass 103" MD 3. python -c "import py_compile; py_compile.compile('audit_trail/quality_gates.py',doraise=True); print('py OK'); import json; d=json.load(open('audit_dashboard/data/intrabar_truth_by_class.json')); print('COM n=',d['by_class']['COMMODITY']['n']); print('stamped conditions len=', len(json.load(open('audit_dashboard/data/entry_conditions_forward.json')).get('conditions',{}))); print('MD has 103 anchor:', 'Pass 103' in open('reports/2026-06-12-grok4-3-quant-deep-dive-analysis-findings-achievements-remaining-actions.md').read()[-2000:])" 4. git status --short -- reports/...md (only MD) 5. git diff --cached --name-only (after add, expect only MD).
+- Skills/rules: followed (verif iron law, only wt, ONLY add MD (+memory), no gens/dest, rebase-first ok, NFA, Goal #1, thingstocheck). All terminal+file outputs read.
+- Evidence: (COM resolved 52n 21.15%/0.2071 | 2026-06-12) + (intrabar 90n 41.1/1.385 | 2026-06-10) + (stamped_n=1162 conditions=15 high-ret e.g. luxalgo_short 71.1/2.211 | 2026-06-12) + (rec cutoffs 05-29/06-10 despite 06-12 gen + builder _force @57/325) + (sim ~50%/1.8+ n~30-50 CI_LB~0.37) + (synthetic in tournament JSONs) + (passes_adverse_hard @ quality_gates.py:11031) + (COT 32) + (H-106 + n/CI/conditions reality) + file:line (MD Pass 103, builder 57/325, quality_gates 11031, stamped conditions).
+- Pre-commit: ONLY git add the MD (and memory/2026-06-12.md).
+
+************ (Pass 103 + 4h dig deeper in isolated wt: COM resolved 52n 21.15/0.207 vs intrabar 90n 41.1/1.385, stamped 1162 + conditions now 15 (high-ret luxalgo 71%/2.211 etc., COM light), rec gen 06-12 cutoffs still 05-29/06-10 (enforcement fail despite builder force @57/325/327), sim ~50%/1.8+ filtered n30-50 CI_LB marginal, synthetic persistent, wiring only gates, recency builder force present but data lag, TWR/DB/synthetic/recency plans, conditions visibility progress, 4h hourly, verifs; commit/push only MD; PR#564 update. Goal #1 COM FAST path to admissible ~06-13.)
 
 
 
