@@ -322,3 +322,11 @@ ci-tests went red on MY #88 normalization (5+8 category tests asserting old lowe
 ## MD-WATCH 1/3 — 2026-06-12 ~06:50. Found 5 new peer docs (KILO/CURSOR/FREEBUFF/BUFFY/MINIMAX-backtest) — review subagent deployed. REGRESSION FIXED: live verdict frozen 8h — my ENH#131 'units' dict survived the meta-strip (2nd occurrence of the bug class); future-proofed (ALL-UPPERCASE class keys only, dbd4006f33); live restored 04:47. Tournament non-REPLAY=1 = FTMUSDT delisted-ticker spot-fallback (by-design, labeled; watch the count). ci GREEN; 90/88 steady.
 
 ## MD-WATCH 2/3 — 2026-06-12 ~07:30. Grok4.3 loop summary processed + persisted: REGISTRY SEEDED (69 structured hypotheses verified — preflight PREREG check now has teeth; handoff DONE by peer). rsi5070 last30 retention holds vs collapsing baseline (48.3/1.45 vs 28.9/0.55). CAUTION noted on its HC-tier wire proposal (stamp conditions must NOT surface on HC until lifecycle re-pass — would front-run the gates). Standing: ci GREEN; non-REPLAY=1 (known FTM fallback, not growing); live verdict fresh (04:47); P0A catch-up batch in flight — ledger movement expected next check.
+
+## 🏁 FIRST HONEST CLASS VERDICT — COMMODITY: FAIL (2026-06-12 ~08:00, checkpoint §7 hit on schedule)
+P0A unstalled the lane (+44 rows locally; GHA step under watch) → COMMODITY crossed n=100 (110 raw). The pre-registered verdict analysis:
+- **Dedup (symbol×day×direction): 110 → 43 unique (61% duplication)** — WR 30.2%, PF 0.64, WR Wilson-95 lower bound 18.6%.
+- **Time-split COLLAPSING**: H1 (May27-Jun5) 42.9%/PF1.26 → H2 (Jun5-11) 18.2%/PF0.24.
+- **Concentrated**: futures_momentum 42% of unique trades (fresh slice 7.1% WR — the kill held), SI=F 28%.
+**VERDICT: FAIL.** The "only class with honest PF>1" was a duplication + early-window artifact — the EQUITY pattern repeating exactly at the bar. Now 3 classes have crossed n≥100 honest and ALL THREE FAIL (CRYPTO 32.4/0.73, EQUITY 35.8/0.48, COMMODITY-dedup 30.2/0.64). The loop's no-pre-positioning rule saved us from sizing this. FOREX (n=91) is next, ~days.
+Effective-n lesson applied live: the class-level n=110 was 2.6× the real evidence. All future bar-crossings get the dedup verdict FIRST.
