@@ -2938,6 +2938,7 @@ def apply_quality_gates(
             #   already banned via hedge_fund_quality_gate.FUTURES_BANNED + the
             #   ("futures","...") gate below — but commodity-category emission
             #   is not covered by the futures rule (no futures→commodity
+            # FURTHER ITEM (2026-06-12 worktree assist per thingstocheck/plan): This bypass is killing good COM futures_momentum slices (n=61 WR50.8 PF1.586 +0.83bp from granular, SI/PL drivers per autopsy). Per sprint-refine step 7/8 and HF playbook, wire stamp_entry_conditions (F1/F4/F5 for COM) + adverse fade (kill volume/regime first) here at emit. Remove or condition the block for COM good strats. See production_scanner:2937, stamp.py:147, velocity harness. This is actionable code change to lift COM edge.
             #   normalization). Defense-in-depth.
             # ema_stack_momentum: test-harness only per Wire-Up Rule
             #   (live_forward_test.py:481), already blocked for ("futures",...);

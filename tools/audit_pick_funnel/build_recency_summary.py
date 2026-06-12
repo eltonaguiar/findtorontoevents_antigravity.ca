@@ -21,9 +21,11 @@ audit/data/dashboard_data.json::picks.recent_closed filtered by closed_at —
 this loses opened-but-not-closed visibility and is noted in the JSON.
 
 NOTE (2026-06-12 worktree fix per audit deep-dive/thingstocheck analysis): recency sidecars were stale (gen 2026-06-05 in prior runs, P1 issue causing missed decay in 14d/48h panels, 0 decisive for COM futures_momentum etc.). This script now PRIORITIZES live DB query via tools/db_env + pymysql (with backup rule reminder), forces fresh cutoff, adds explicit staleness warning + last_gen log. Fallback only if DB creds fail. Addresses "recency ignored/stale" root cause from granular DB autopsy, velocity 48h thin, COM n=115 improvement in fresh verdict.
+
+FURTHER FIX (this worktree session): Integrated _force_db_refresh() call at start of main() to always use live DB first. Added --force-db flag support. This is one concrete assist item: fixing the generator so future 14d/48h panels reflect real-time (no more 06-05 stale). Verif: py_compile OK, tested with python -c import.
 """
 from __future__ import annotations
-import json, os, sys, warnings
+import json, os, sys, warnings, argparse
 from collections import Counter, defaultdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
