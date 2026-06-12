@@ -281,6 +281,12 @@ BLACKLISTED_STRATEGIES = [
     'forex_carry_ppp',
     'myfxbook_retail_contrarian',
     'forex_carry_bb_hybrid',
+    # 2026-06-12 P0B unified kill list — 5 additions
+    'futures_momentum',             # 94 emits/7d, LONG PF=0.00 (M-110 blocked)
+    'ig_contrarian_sentiment',      # BANNED_SOURCES only, backfill loophole
+    'stocks_rsi2_pullback',         # 20 emits/7d, stale edge
+    'prediction_market_consensus',  # WR 26%, -29% intrabar
+    'fx_smart_carry_trade_momentum',# FOREX WR 16.7%, -6.6%
 ]
 BLACKLISTED_EXCHANGES = ['bitget']
 

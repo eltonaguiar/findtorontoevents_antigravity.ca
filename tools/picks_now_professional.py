@@ -533,11 +533,11 @@ class QuantScorer:
     """Multi-factor scoring (inspired by institutional quant frameworks)."""
 
     # Weights (sum = 100)
-    W_MOMENTUM = 30
-    W_MEAN_REVERSION = 20
-    W_ANALYST = 25
-    W_VOL_ADJUSTED = 15
-    W_DB_EDGE = 10
+    W_MOMENTUM = 25  # was 30; -5 to fund DB edge increase (council fix #6)
+    W_MEAN_REVERSION = 15  # was 20; -5 to fund DB edge increase
+    W_ANALYST = 20  # was 25; -5 to fund DB edge increase
+    W_VOL_ADJUSTED = 15  # unchanged
+    W_DB_EDGE = 25  # was 10; council fix #6: anchor scoring to proven edge
 
     def score(self, sym: str, cls: str, df: pd.DataFrame,
               info: dict, db_edge: dict, prices: dict,

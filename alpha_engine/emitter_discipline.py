@@ -42,6 +42,14 @@ HARD_KILL_STRATEGIES: Set[str] = {
     "inverse_carry_contrarian", "ml_breakout", "genome_mutations",
     "hl_funding_fade", "kimi_signal_tracking", "multi_period_rsi_confluence_eth",
     "claude_gainer_st", "gainer_promoter",
+    # 2026-06-12 P0B unified kill list — 7 toxic strategies added
+    "futures_momentum",           # 94 emits/7d, LONG PF=0.00
+    "ig_contrarian_sentiment",    # BANNED_SOURCES loophole
+    "stocks_rsi2_pullback",       # 20 emits/7d
+    "prediction_market_consensus",# WR 26%, -29% intrabar
+    "rsi_bounce",                 # WR 20%, -49%
+    "bollinger_squeeze",          # WR 4.3%, dead
+    "fx_smart_carry_trade_momentum",# FOREX WR 16.7%, -6.6%
 }
 
 MONITOR_ONLY_STRATEGIES: Set[str] = {
@@ -146,6 +154,23 @@ def _get_strategy_tier(strategy_name: str) -> str:
         return get_strategy_tier(strategy_name).upper()
     except ImportError:
         return "UNKNOWN"
+
+
+def is_emission_allowed(strategy: str, source_system: str = "") -> Tuple[bool, str]:
+    """Central emission gate — used by ALL writers (P0B 2026-06-12).
+    Returns (allowed: bool, reason: str).
+    """
+    if os.environ.get("EMITTER_DISCIPLINE_ENFORCE", "1") in ("0", "false", "FALSE"):
+        return True, "discipline_disabled"
+    strat_lower = (strategy or "").lower().strip()
+    for ks in HARD_KILL_STRATEGIES:
+        if ks.lower() == strat_lower:
+            return False, f"HARD_KILL: {strategy}"
+    src_lower = (source_system or "").lower().strip()
+    for bs in BANNED_SOURCES:
+        if bs.lower() == src_lower:
+            return False, f"BANNED_SOURCE: {source_system}"
+    return True, "allowed"
 
 
 def apply_emitter_discipline(picks: List[dict]) -> Tuple[List[dict], List[dict]]:
