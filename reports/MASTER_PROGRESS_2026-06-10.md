@@ -403,3 +403,9 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 - **A/B experiment made durable (f3773e0a12):** #134 sharpened — it produced NO surviving data (CI-local artifact + hourly overwrites + tags stripped at close + dual stamps). Shipped ab_history_accumulator.py (append-only JSONL, canonical _ab_arm, sym/dir/arm/day dedup) wired hourly; resolution sidecar once history accrues.
 - **#136 implementation design posted** (8 internal call sites mapped; deferred per the >2-sites hot-file stop rule — recommended as a small worktree PR).
 - DAILY_IDEAS peer-coordination block committed (peers were re-investigating already-fixed surfaces).
+
+## 2026-06-12 ~20:40Z — loop tick 10: PR review queue (4 reviews posted, 1 kill-claim refuted by SQL)
+- **#572 (sym×dir FWD WR sidecar): APPROVED conceptually — supersedes my #136 key-change design** (honest intrabar source, n≥3 gate, no key migration). Required: rebase (branched pre-merge-wave; emitter/config/june2026 hunks duplicate main), drop freebuff-owned picks_now_track_record.json + portfolio_history churn.
+- **#570: collision warning posted** — same file family as the #569 NameError incident; a second stacked dup def would silently break hourly backfill again.
+- **#577: KILL CLAIM REFUTED by direct SQL** — PR cites luxalgo_filters "n=115 WR 23.48% Σ−167%"; the full source book is n=2,287 WR 43.11% Σ+64.6%. Slice undefined; investigation-before-kill + three-axis protocol required; hold posted. (Also flagged the anti_overfit EDGE_LIKELY_REAL list's no-losses artifacts.)
+- #571 (sizing 50% + calibration) + #575 (pm_macro fetchers) queued next tick.
