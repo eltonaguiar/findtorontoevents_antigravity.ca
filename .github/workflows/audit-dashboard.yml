@@ -432,6 +432,15 @@ jobs:
       # crashed with FileNotFoundError on every run, silenced by `|| echo
       # "...non-fatal"`. See INCIDENT_OVERALL #45.
 
+      - name: Fetch dashboard_data.json for the gatekeeper
+        # 2026-06-12 (masked-failure #10 / #134): the gatekeeper step runs BEFORE
+        # this workflow generates dashboard_data.json, so it exited "0 picks —
+        # need 100+" every hour, never engaged the A/B dual-write (n_ab_tagged=0
+        # forever) and FTP'd a 2-byte empty active_picks.json — all green.
+        # Same prod-prefetch pattern as pick-funnel-nightly.
+        run: |
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_data.json"             -o audit_dashboard/data/dashboard_data.json             || echo "::warning::dashboard_data prefetch failed — gatekeeper will skip (0 picks)"
+
       - name: Run ML Gatekeeper (pick quality scoring)
         id: ml_gatekeeper
         run: |
