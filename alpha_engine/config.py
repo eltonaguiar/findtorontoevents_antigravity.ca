@@ -425,8 +425,10 @@ MIN_CLOSED_TRADES = 10     # Was 50 — too strict for newer sources (2026-05-01
 CRYPTO_MAX_CONFIDENCE = 0.85
 
 # M-036: direction="BUY" is anti-predictive for CRYPTO (PF=0.38 / WR=28.9%)
-# Only LONG / SHORT are valid directional values for CRYPTO picks.
-CRYPTO_BLOCKED_DIRECTIONS = frozenset({"BUY"})
+# 2026-06-12 P0C: CRYPTO LONG n=1,050 WR 30.1% Σ−503% — LARGEST PNL LEAK IN BOOK.
+# Block LONG/STRONG_BUY at class level. SHORT (55.8% WR n=104) continues.
+# forward_test_only + _monitor_mode picks exempt in quality_gates.py (master-loop amendment).
+CRYPTO_BLOCKED_DIRECTIONS = frozenset({"BUY", "LONG", "STRONG_BUY"})
 
 # M-037: ml_score floor — bottom 30% = 32.5% WR, top 30% = 60% WR
 MIN_ML_SCORE_CRYPTO = 0.65
