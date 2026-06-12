@@ -448,3 +448,7 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 - **replay_harness now emits regime_strata** (pre-entry 72-bar vol terciles × SMA50 trend; strictly pre-entry; measurement-only). Smoke on the closed snipe FADE cohort is already instructive: **vol_HIGH PF 0.487 vs LOW/MID materially better** — the fade loses worst exactly where spikes feel most dramatic. (Commits: harness + earlier classifier.)
 - **Fail-closed self-test (incidental but satisfying):** the harness smoke was BLOCKED BY PREFLIGHT because H-113 is CLOSED — the anti-circling gate refused a re-comparison on a closed family, exactly as designed; smoke proceeded only via the logged --skip-reason path.
 - #134 chain + nightly push-retry verifications roll to next ticks (no post-fix runs completed yet). FOREX n=95.
+
+## 2026-06-12 ~23:55Z — loop tick 20: phantom IC step removed · chain verify pending the next hourly
+- **build_ic_analysis.py confirmed PHANTOM** — never existed in the repo, any worktree, or any PR branch, yet its step soft-failed the nightly since inception and its phantom output triggered masked-failure #7's atomic git-add zeroing. Step removed with a restore-with-builder note (ab0d80206c).
+- #134 chain verification still pending a completed post-986e76a41e dashboard run. FOREX intrabar parked at 95 (the 90d unresolved backlog is exhausted — accrual now tracks live emission, which is the honest steady-state). PRs: no replies; #582/#579/#576 merged clean.
