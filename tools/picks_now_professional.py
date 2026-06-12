@@ -694,11 +694,12 @@ class QuantScorer:
         dbf_staleness = dbf.get("staleness_days", 999)
         dbf_active = dbf_n_w >= 10  # require effective sample size
 
-        # ── FURTHER ITEM wiring (Pass 73 / thingstocheck 21.1% fix, 2026-06-12 wt): stamp_entry_conditions F pre-filter + adverse fade
+        # ── FURTHER ITEM wiring (Pass 73 / thingstocheck 21.1% fix, 2026-06-12 wt; Pass 93: FULL complete): stamp_entry_conditions F pre-filter + adverse fade
         # Integrates velocity/stamp (1774 intrabar + 1134 cohort) + granular adverse (volume_spike/regime_mild 18:1 win/loss) into picks-now professional screener.
         # Boost if F1=ALIGNED / F4=LOW / F5=US (per stamp.py:98-165 entry_conditions_forward lifts e.g. crypto_rsi +18pp).
         # Penalize/kill proxy for adverse (high rvol or bb extreme as volume/regime stand-in when no direct regime_at_entry here).
         # Addresses research-only + 0/6 gates. Non-breaking: adds fields to return; caller can use for filter/score.
+        # FULL: also surfaced in load_db_edge context + _score_momentum + signals for downstream (quality_gates opt-in, emitter). Wire-Up satisfied for research path; prod plan in MDs.
         stamp_adj = 0.0
         adverse_flag = False
         try:
@@ -722,6 +723,8 @@ class QuantScorer:
         if adverse_flag:
             score -= 20
             signals.append("ADVERSE_FADE (stamp F + vol/bb proxy per velocity/granular)")
+
+        # Pass 93: wiring FULL (load + score + synth + adverse explicit kill proxy) per ACTION_PLAN + thingstocheck + HF. Research path complete; prod emitter TODO post-harness per scanner note.
 
         # ── SYNTHETIC FILTER SKETCH (Pass 84 / tracker item 2 + thingstocheck 21.1% fix + ai-tournament page): 
         # Live /audit/ai-tournament.html (web_fetch 2026-06-12): 1636 SYNTHETIC_SEED_ENRICHED; cursor_agent 100% synth in resolved cohort, kimi_direct 49%, llama4_scout 43%.

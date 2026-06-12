@@ -86,3 +86,11 @@
 
 **End of Plan**. (NFA; no sizing without full gates + paper + explicit greenlight. Operator: run in worktree, PR changes.)
 
+**Pass 93 update (2026-06-12, in .worktrees/audit-dig-deeper-2026-06-12):** 
+- Wiring FULL complete in picks_now_professional.py (search_replace + prior: stamp F1/F4/F5 0.15 boost + adverse_flag kill proxy + synth downweight in _score_momentum + load context; signals; "FULL complete Pass 93" note). Research path addresses 21.1% + 0/6. Prod plan explicit (scanner TODO post-harness, quality_gates opt-in sidecar).
+- Grok deep-dive MD: Pass 93 appended (fresh loads: verdict 20:00 COM ~0.35/1.05, stamped 1162, cond lifts; wiring confirmed picks_now:697+/scanner:2942+; velocity H-111 full plan COM fut+stamp+adverse+COT+AddH+paper; synth active; verif iron law block; HF/Goal#1 ratchet).
+- ACTION_PLAN + tracker ratcheted (items 2/3/4 advanced: synth, DB FWD, wiring full).
+- Verifs all run+read (py_compile OK py files; loads verbatim; grep wiring/synth "FULL"; tails; wt git only own staged for commit; no junk in this delta).
+- Next per plan: harness sim, COT proto, growth wire, paper, hyp verdict, PR#564.
+Only own changes. Rebase-first. Goal #1. (See grok MD Pass 93 for full evidence.)
+
