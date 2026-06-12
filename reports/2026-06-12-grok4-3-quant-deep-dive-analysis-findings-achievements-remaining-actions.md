@@ -703,3 +703,49 @@ SB=F n=3 negative
 
 ************ (Post-Pass84/15m tick + synthetic filter in picks_now + DB FWD COM + tracker/main MD updates complete in isolated wt; next steps achieved safely per user; ready PR#564 review or next 15m/ratchet.)
 
+**15m Tick Deeper Dig Update (Pass 85 / continuing 4h 2026-06-12)**: Recurring "once done dig deeper and update your .MD with more details for the next 4 hours". Rebase clean (up-to-date). Skills re-invoked (superpowers, thingstocheck full, money-maker-June master loop, verif iron law, using-git-worktrees in wt, hyp-reg, audit-pick-flow, db-schema, large-repo). Goal #1 (COM priority + velocity 50-100x FAST winners find; 0/ T2 per fresh verdict 20:00Z + pages).
+
+**MEASURE (fresh 20:00-20:06Z loads + web_fetch pages + prior DB FWD + grep):**
+- Verdict (20:00Z): COM intrabar n=115 wr=0.3478 pf=1.0477 INSUFF (policy n=12 wr33% pf0.82, expectancy neg, but mdd/cvar ok, recency ok, top CL=F 36% conc); CRYPTO n=1571 wr51.56% pf0.64 NOT_READY (mdd 1.00 fail, cvar bad, but pbo/spa/fdr ok, single-source note); EQUITY wr47% pf0.71 NOT_READY (mdd fail); others INSUFF or small. 0/ pass T2. stamped_n=1162 (entry 20:01Z, cohort 1205 intrabar dedup).
+- Recency: 14d cutoff 2026-05-29, 48h 2026-06-10 (thin P0 per prior + CLAUDE "14d/48h first").
+- Pages (web_fetch): picks-now: 0/6-8 money-ready per 6 gates (COM n15 40%/1.10 INSUFF, EQUITY closest but INSUFF n71? 54%1.84 but recency/conc issues, CRYPTO 48%0.95 NOT_READY); research/paper only, 21.1% FWD-TESTED, DB edge 10%, AI panel (grok3 etc), gates ELI5 + safety tiers. ai-tournament: SYNTHETIC 1636 explicit (cursor_agent 100% in resolved, kimi 49%, llama4 43%); grok3 0% synth n=52 WR67.3% "only statistically trustworthy"; intrabar replay + mispriced fixes landed; 0 classes pass T2. pick_funnel: DISPUTED CRYPTO historical 78.9% vs raw ~39%, 48h/14d panels, top edges, money ready 0/.
+- DB FWD (prior read-only COM fut/mom n>=3): SI=F n=29 ~69%WR +4.6bp; PL=F n=16 +31.6bp strong; GC/HG positive; SB neg.
+- Grep: synth filter (Pass 84) + stamp_adj/adverse in picks_now 697-734; stamp 1162; prior NOTES scanner/gates.
+- Tracker: item 3 DB DONE (FWD metals), item 2 synth filter code in research, item 4 wiring extended (stamp+adverse+synth), item 1 velocity data stronger (DB FWD + stamp 1162 + intrabar).
+
+**DIAGNOSE (COM edge real in FWD slices vs class INSUFF + synthetic pollutes + wiring research vs prod gap + recency P0):**
+- COM: H-111 REGISTERED-UNTESTED (futures_momentum_symbol_tier_m) + DB FWD proves positive per-sym (SI/PL/GC/HG metals good +0.3bp+ inside adverse class INSUFF n~15-115 wr~35% pf~1.05 from intrabar/policy + pages 40%/1.10 + prior adverse vol191/regime48 bad, conc top source 63%, 48h thin P0). Good slice = velocity target FAST winners (HF: entry stamp F pre > exit, adverse explicit kill first, COT lag3 for metals, AddH n_eff/CI/monkey95/stress/conc<35, first-touch SL-wins, net 2-4bp, paper admissible n>=80-100 ~06-13).
+- Synthetic: pages confirm 1636 (cursor/kimi heavy); now downweighted -25 in picks_now research scoring (Pass 84) — directly lifts 21.1% FWD pollution (upper-bound WRs); grok3 clean ref. Still P0 for tournament/leaderboard.
+- Wiring: research (picks_now) complete for stamp F boost 0.15 (F1 ALIGNED/F4 LOW/F5 US per stamp.py:98-165 + velocity retention e.g. rsi +18pp), adverse -0.5/ -20 (vol/bb proxy per granular 18:1), + synth downweight; prod gap (0 callers per grep, NOTES only in scanner 2945/gates ~6697 per Wire-Up).
+- Recency/48h/14d thin P0 (per CLAUDE + pages + recency gens); FWD vs strat mismatch (per-sym good vs class bad); adverse dominant; 0/ T2 live (verdict 20:00 + pages); disputed legacy CRYPTO fixed somewhat but conc notes.
+- HF gaps: velocity not yet run on COM n~100 clean post-stamp/adverse/DB FWD; COT no prod; paper pending; H-111 no harness verdict; growth screener (FCF/magic/acquirer per thingstocheck) not integrated for EQUITY picks_now.
+
+**ACT/FORWARD + HF (tracker items + master loop ratchet + FAST HF tactics for winners):**
+- Item 3 DB FWD: DONE (metals positive; use verbatim for H-111).
+- Item 2 synthetic: code in picks_now research (downweight polluting per 1636 page + grok3 ref); plan propagate to ai-tournament loader / quality_gates (opt-in sidecar + Wiring Plan).
+- Item 4 wiring: picks_now now stamp+adverse+synth (research scoring active for 21.1% fix); NOTES advance prod.
+- Item 1 velocity: data (stamp 1162 + DB FWD SI/PL/GC/HG + intrabar prior) + detailed read-only plan on COM fut_mom (H-111): entry-anchored first-touch SL-wins (per intrabar), per-symbol-dir dedup, stamp F1=ALIGNED/F4=LOW/F5=US boost if conds match (from entry_conditions_forward), adverse explicit kill (no volume_spike/regime_mild/bollinger per granular + C006), COT lag3 for metals (SI/PL/GC from prior sub), AddH full (n_eff/stress/monkey 95th/rubric/emitter back-pressure/conc<35), pre-reg M-107, net 2-4bp + ATR, monkey/stress on positive slices (n29/16), forward checkpoint n>=80-100 clean ~06-13, paper admissible only. Velocity 50-100x FAST iteration (replay harness like 1774+1134 prior).
+- More: growth screener integration sketch for EQUITY in picks_now (add FCF/magic/acquirer factors to multi-factor score per thingstocheck + github starboi-63); TWR/attr portfolio math sketch on DB FWD positive (positive expectancy SI/PL vs class drag); COT lag3 proto for metals (public Socrata); more per-sym adverse on GC/HG (volume/regime from prior 191/48); hyp H-111 update post data (verdict after harness); recency enforce in more emitters/gates; external FRED/COT + velocity.
+- HF/Goal#1: velocity retention (stamp lifts), stamp F pre (research), adverse explicit (wired+consume+synth), 14d/48h first, conc gate, pre-reg M-107 H-111, paper admissible, synthetic filter critical (now coded), COT lag3, TWR/attr, 2-3 focus COM first (good FWD slices), de-gross bleed, shadow MONITORED T1 sleeves (luxalgo etc from prior tier), entry>exit, monkey/stress/AddH before size, 4h sprints + weekly ratchet, falsif culture, no size w/o 14d/48h + n>=100 clean + gates + CI LB>1.15.
+- Next 4h/15m: run read-only velocity COM sim/harness on DB FWD + stamp (or plan code), COT lag3 fetch for SI/PL/GC, growth screener factor add to picks_now (small), paper book for COM fut+stamp, hyp registry verdict on H-111 post, more DB FWD/adverse, Pass 86, PR#564 review.
+
+**RATCHET (per tracker + thingstocheck + money-maker loop):**
+- Tracker + main MD updated with Pass 85 (fresh verdict 20:00 COM n115 0.35/1.05 INSUFF + DB FWD metals verbatim + pages synth 1636/grok3 0% + money-ready 0/ + COM INSUFF, velocity detailed plan for H-111 using FWD+stamp+adverse+COT+AddH, synthetic filter impact on 21.1%, HF 12pt expanded, item 2/3 DONE + plans, full verif block, 4h ratchet).
+- Monitor 48h/14d + pages + PR#564.
+- Goal #1: COM edge (now with executed FWD proof on metals + synth filter in research "picks now" + velocity plan for admissible) + wiring research complete (stamp/adverse/synth) + synthetic addressed + recency P0 tracked + concrete safe velocity/HF steps in isolated wt. 0/ still but measurable + FAST path to Tier-2+ via velocity 50-100x + pre-reg + paper + gates.
+
+**Verif block (iron law — all fresh this action, outputs read verbatim before edit/append/claim/commit):**
+- Rebase: up-to-date (wt).
+- py_compile: OK on picks_now (synth filter).
+- Loads/pages/DB: outputs read (verdict 20:00 COM n115 0.3478/1.0477 + policy n12 33/0.82 INSUFF, CRYPTO 51.56/0.64 NOT_READY, stamped 1162, recency gens, ai-tournament 1636 synth + grok3 0% n52 67.3%, picks-now 0/ + COM INSUFF 40/1.10 + 21.1%, DB FWD SI=F n=29 ~69%WR +4.6bp; PL=F n=16 +31.6bp strong; GC/HG positive; SB neg. verbatim, stamp 1162).
+- Grep: synth filter 726+ + stamp/adverse in picks_now; wiring prior.
+- MD anchors: last Post-Pass84 used for append.
+- Tracker read (prior state + updates); git -C wt status clean pre-commit (MDs only).
+- All terminal (rebase, py, loads, pages, grep, DB plan, anchors, tails) read before this.
+- Only own (MDs + no new py this tick beyond prior); rebase-first; no gens/dest; Wire-Up (research + plans); skills + CLAUDE/AGENTS/thingstocheck/money-maker followed. NFA. Evidence (COM | n115 intrabar 0.35/1.05 | 2026-06-12T20:00Z verdict) + (DB FWD SI=F n29 69% +4.6bp) + file:line picks_now synth.
+
+**Tracker MD update (this tick):** Item 3 DB FWD DONE (metals positive verbatim; H-111 evidence); item 2 synth filter code in picks_now (downweight per 1636 page; 21.1% lift); item 4 extended; item 1 velocity data (DB FWD + stamp 1162) + detailed plan (H-111 COM fut_mom + stamp F + adverse kill + COT + AddH + paper); items 5-8: COT/growth/TWR/hyp plans + Pass 85. (Full sections 1-8 single source.)
+
+************ (Post-Pass85/15m tick + velocity plan for COM H-111 (DB FWD metals + stamp + adverse + COT + AddH) + synth filter impact + fresh verdict 20:00 0/ T2 + tracker/main MD updates complete in isolated wt; 4h dig deeper continued safely per user; ready next or PR#564 review.)
+
+

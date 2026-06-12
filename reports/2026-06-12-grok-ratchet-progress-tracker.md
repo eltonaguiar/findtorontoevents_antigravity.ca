@@ -9,6 +9,16 @@
 
 ## Ratchet Items (from Pass 77)
 
+## 15m Tick Pass 85 / continuing 4h (2026-06-12)
+- Rebase clean, skills (all key + money-maker loop), verifs first (py OK, loads/pages/DB/grep read).
+- MEASURE: verdict 20:00 COM n115 0.35/1.05 INSUFF + DB FWD metals SI=F n=29 ~69%WR +4.6bp; PL=F n=16 +31.6bp strong; GC/HG positive; SB neg.; pages ai-tournament 1636 synth + grok3 0% n52 67.3%; picks-now 0/ + 21.1%; stamp 1162; recency 14d/48h gens.
+- DIAGNOSE: COM good FWD slices (SI/PL/GC/HG) inside class INSUFF/adverse/conc/48h P0; synth filter now scoring in research (21.1% fix); wiring research complete; 0/ T2.
+- ACT: item 3 DONE; item 2 code; item 1 velocity detailed plan (H-111 COM fut + stamp F1/F4/F5 + no adverse + COT lag3 + AddH n_eff/CI/monkey95/stress/conc + paper); growth screener/EQUITY, TWR on FWD, more adverse.
+- RATCHET: Pass 85 in main + this tracker (items 2/3 advanced w/ DB FWD verbatim + velocity plan + verif); HF applied.
+- Verif: py, loads (COM n115 0.35/1.05), pages (synth 1636), grep, anchors, git. Only own. Goal #1.
+- Evidence: rebase, py, DB FWD, web_fetch (picks-now 0/ COM INSUFF, ai-tournament synth), loads, MD tails. All read before.
+
+
 ## 15m Tick Pass 84 / continuing 4h (2026-06-12 ~nowZ in wt)
 - Rebase clean, skills (superpowers+thingstocheck+verif+mmr-june+hyp+auditflow+dbschema+large), verifs first (py OK on edit, loads/pages/DB/grep read).
 - MEASURE: DB FWD executed (COM SI/PL strong), pages ai-tournament 1636 synth + grok3 0%, stamp 1162, verdict 0/, picks-now wiring+synth filter.
