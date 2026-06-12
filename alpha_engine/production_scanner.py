@@ -2943,6 +2943,11 @@ def apply_quality_gates(
             # Wiring for stamp F pre-filter (ALIGNED/LOW boost) + adverse kill (volume_spike / regime_mild) intended here or in emitter per plan §2/4 + stamp.py:98 + granular.
             # Currently kept blanket-blocked for safety until full velocity harness + n>=100 clean + re-pass gates on COM (target ~06-13). See deep-dive MD Pass 72/73.
             # TODO post-harness: condition the block (skip for stamped non-adverse COM futures) or move boost to score path. Wire-up rule observed.
+            # Pass 80 / tracker progress (2026-06-12): picks_now consume of stamp_adj/adverse_flag now DONE (research path boost/penalty active per velocity/granular/HF). 
+            # Next: extend to prod emitter (post _populate or in _run_... for COM futures_momentum) using get_conditions_for_pick + adverse check. 
+            # Opt-in / sidecar per Wire-Up Rule (CLAUDE.md) + tracker item 4: no full prod caller yet in main scanner path (current block is blanket for COM). 
+            # Tie to H-111 (COM fut_mom symbol tier pre-reg), velocity read-only on COM n~100 clean (entry_conditions + intrabar), COM priority (good slice inside adverse class per granular/autopsies).
+            # See reports/2026-06-12-grok-ratchet-progress-tracker.md
             # ema_stack_momentum: test-harness only per Wire-Up Rule
             #   (live_forward_test.py:481), already blocked for ("futures",...);
             #   mirror for commodity in case any future dispatch surface adds it.

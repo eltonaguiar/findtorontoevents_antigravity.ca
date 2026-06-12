@@ -96,3 +96,15 @@
 
 **Tracker update (this tick):** Item 4: picks_now consume DONE (edit + dig); item 2: synthetic evidence from fresh pages (1636, grok3 rec), plan filter; item 1: velocity data from loads + plan read-only COM. (See full sections above for details.)
 ---
+
+## 15m Tick Pass 80 / continuing 4h (2026-06-12 ~20:10Z)
+- Rebase clean, skills re-invoked, verifs first (py OK pre/post, loads/grep/pages read).
+- MEASURE: loads (verdict 20:00:46Z, stamp 20:01 1162/15 conds, recency 14d/48h 20:06:51Z); grep (consume in picks_now, 0 callers, scanner TODO at 2945 for COM fut); pages (prior full: 0/6, synthetic 1636 cursor100%/kimi49% + grok3 0% rec).
+- DIAGNOSE: COM (H-111 + fut good 74n +79bp inside adverse/conc/48h P0 + pages INSUFF); wiring (picks_now research consume active - boosts good stamp/penalizes adverse; prod 0 callers/gap); synthetic (pages explicit 1636 + filter rec to 0% synth); recency P0; 0 classes T2 live.
+- ACT/FORWARD: tracker items - item 4 wiring (picks_now DONE + safe NOTE added in scanner.py:2945 post TODO: details consume progress, prod emitter plan (post _populate/_run_), opt-in/sidecar per Wire-Up, H-111/velocity/COM/Goal#1 tie; py OK post); item 1 velocity (data from loads + read-only plan on COM fut using entry_conditions + intrabar + AddH); item 2 synthetic (pages evidence + plan filter); item 3 DB FWD (plan read-only); HF applied (velocity, stamp F pre now in research, adverse explicit wired+consume+NOTE, 14d/48h, conc, pre-reg H-111, synthetic filter critical, etc.).
+- RATCHET: this Pass 80 in main grok MD (tables from loads/pages/grep, file:line scanner NOTE 2945, COM/synthetic diagnosis, verif, 4h ratchet per tracker); tracker MD appended with Pass 80 section (item 4: NOTE in scanner + picks_now DONE; others In Progress with plans from fresh data). Monitor 48h/14d + PR#564.
+- Evidence: rebase, loads, grep (TODO anchor at 2945), py post-edit, MD anchors, tracker read. All outputs read before append/claim/edit.
+- Goal #1: COM edge + wiring (research active with consume + NOTE plan for prod; prod gap) + synthetic + recency P0 now deeper + tracked + concrete safe step in wt.
+
+**Tracker update (this tick):** Item 4: picks_now consume DONE + safe NOTE added in scanner.py:2945 (wiring extend plan, ref tracker, opt-in per Wire-Up, H-111/velocity/COM tie-in); item 1/2/3: plans detailed with fresh data (stamp 1162, verdict 20:00, recency 20:06, pages synthetic 1636/grok3 rec). Evidence trail: rebase, loads, grep (TODO anchor), py post-edit, MD anchors. (Full sections 1-8 + cross notes remain single source.)
+---
