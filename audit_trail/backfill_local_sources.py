@@ -30,6 +30,7 @@ import sqlite3
 import glob
 from pathlib import Path
 from datetime import datetime
+from alpha_engine.emitter_discipline import is_emission_allowed
 
 REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
@@ -167,6 +168,10 @@ def create_tables(cur):
 def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
                 source_system, source_file, status, exit_price, exit_reason,
                 pnl_pct, signal_ts, row_asset_class=None):
+    # P0B 2026-06-12: central emission gate
+    allowed, reason = is_emission_allowed(strategy, source_system)
+    if not allowed:
+        return 0  # silently skip killed strategies
     try:
         cur.execute(
             "INSERT IGNORE INTO at_local_picks "
@@ -189,6 +194,10 @@ def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
 def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
                    pnl_pct, source_system, strategy, opened_at, closed_at,
                    row_asset_class=None):
+    # P0B 2026-06-12: central emission gate
+    allowed, reason = is_emission_allowed(strategy, source_system)
+    if not allowed:
+        return 0  # silently skip killed strategies
     try:
         # idx_dedup UNIQUE(symbol,direction,source_system,opened_at) only fires
         # when opened_at is non-NULL. JSON picks without timestamp/created_at
