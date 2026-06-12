@@ -76,19 +76,19 @@ PROVEN_STRATEGIES: Set[str] = {
 
 
 def is_emission_allowed(strategy: str, source_system: str = "") -> Tuple[bool, str]:
-    """P0-B central kill gate (docs/plans/2026-06-12-P0B-unified-kill-list-plan.md).
+    """P0-B central kill gate — ONE function every writer consults (closes #135).
 
-    ONE function every writer consults — production_scanner already routes via
-    apply_emitter_discipline(); ingest writers (backfill_local_sources & co.)
-    historically had NO gate, so kills never stuck at the data layer
-    (INCIDENT_OVERALL #135: pair-scoped blocklists bypassed by other emitters).
-
-    Checks (cheap, no DB):
-      1. HARD_KILL_STRATEGIES (this module)
-      2. config.BLACKLISTED_STRATEGIES (lazy import; fail-open if unavailable)
-    Returns (allowed, reason). Reason is loggable for shadow audits
-    (EMITTER_DISCIPLINE_SHADOW_LOG=1 writers may record rejections).
+    2026-06-12: two parallel implementations landed (this module had a duplicate
+    def — Python silently used the later one). UNIFIED here as the superset:
+      0. env kill-switch EMITTER_DISCIPLINE_ENFORCE=0 disables (rollback)
+      1. HARD_KILL_STRATEGIES (this module; matches strategy OR source)
+      2. BANNED_SOURCES (this module, when defined)
+      3. config.BLACKLISTED_STRATEGIES (lazy import; fail-open)
+      4. quality_gates.BLOCKED_SOURCE_SYSTEMS (lazy import; fail-open)
+    Returns (allowed, reason) — reason is loggable for shadow audits.
     """
+    if os.environ.get("EMITTER_DISCIPLINE_ENFORCE", "1") in ("0", "false", "FALSE"):
+        return True, "discipline_disabled"
     strat = (strategy or "").strip().lower()
     src = (source_system or "").strip().lower()
     if not strat and not src:
@@ -96,13 +96,16 @@ def is_emission_allowed(strategy: str, source_system: str = "") -> Tuple[bool, s
     hard = {s.lower() for s in HARD_KILL_STRATEGIES}
     if strat in hard or src in hard:
         return False, f"HARD_KILL_STRATEGIES: {strat or src}"
+    banned = {s.lower() for s in globals().get("BANNED_SOURCES", ())}
+    if src in banned or strat in banned:
+        return False, f"BANNED_SOURCE: {src or strat}"
     try:
         from alpha_engine.config import BLACKLISTED_STRATEGIES as _bl
         bl = {str(s).lower() for s in _bl}
         if strat in bl or src in bl:
             return False, f"BLACKLISTED_STRATEGIES: {strat or src}"
     except Exception:
-        pass  # config unavailable -> rely on local set only
+        pass  # config unavailable -> rely on local sets only
     try:
         from audit_trail.quality_gates import BLOCKED_SOURCE_SYSTEMS as _bss
         bss = {str(s).lower() for s in _bss}
@@ -111,6 +114,7 @@ def is_emission_allowed(strategy: str, source_system: str = "") -> Tuple[bool, s
     except Exception:
         pass  # quality_gates is heavy/optional in some contexts -> fail-open
     return True, "allowed"
+
 
 
 def _load_audit_tiers() -> Tuple[Set[str], Set[str], Set[str]]:
@@ -154,23 +158,6 @@ def _get_strategy_tier(strategy_name: str) -> str:
         return get_strategy_tier(strategy_name).upper()
     except ImportError:
         return "UNKNOWN"
-
-
-def is_emission_allowed(strategy: str, source_system: str = "") -> Tuple[bool, str]:
-    """Central emission gate — used by ALL writers (P0B 2026-06-12).
-    Returns (allowed: bool, reason: str).
-    """
-    if os.environ.get("EMITTER_DISCIPLINE_ENFORCE", "1") in ("0", "false", "FALSE"):
-        return True, "discipline_disabled"
-    strat_lower = (strategy or "").lower().strip()
-    for ks in HARD_KILL_STRATEGIES:
-        if ks.lower() == strat_lower:
-            return False, f"HARD_KILL: {strategy}"
-    src_lower = (source_system or "").lower().strip()
-    for bs in BANNED_SOURCES:
-        if bs.lower() == src_lower:
-            return False, f"BANNED_SOURCE: {source_system}"
-    return True, "allowed"
 
 
 def apply_emitter_discipline(picks: List[dict]) -> Tuple[List[dict], List[dict]]:
