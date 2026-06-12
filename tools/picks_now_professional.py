@@ -533,11 +533,11 @@ class QuantScorer:
     """Multi-factor scoring (inspired by institutional quant frameworks)."""
 
     # Weights (sum = 100)
-    W_MOMENTUM = 30
-    W_MEAN_REVERSION = 20
-    W_ANALYST = 25
-    W_VOL_ADJUSTED = 15
-    W_DB_EDGE = 10
+    W_MOMENTUM = 25  # was 30; -5 to fund DB edge increase (council fix #6)
+    W_MEAN_REVERSION = 15  # was 20; -5 to fund DB edge increase
+    W_ANALYST = 20  # was 25; -5 to fund DB edge increase
+    W_VOL_ADJUSTED = 15  # unchanged
+    W_DB_EDGE = 25  # was 10; council fix #6: anchor scoring to proven edge
 
     def score(self, sym: str, cls: str, df: pd.DataFrame,
               info: dict, db_edge: dict, prices: dict,
@@ -707,6 +707,25 @@ class QuantScorer:
             score -= self.W_VOL_ADJUSTED * 0.3
             signals.append(f"HIGH_VOL {rvol:.0f}%")
 
+        # Council fix #5 (2026-06-12): Factor 4 → hard circuit breaker.
+        # If RVOL is high (>60, same threshold as HIGH_VOL penalty) AND no
+        # confirmed analyst upgrade (analyst_n >= 5, rating <= 2.0 = Buy or
+        # Strong Buy), flag the pick for veto. Direction and score are
+        # overridden at return time to SKIP_VOL / 0 — prevents catching
+        # falling knives in high-vol regimes without analyst backing.
+        # Kill-switch: COUNCIL5_CIRCUIT_BREAKER_DISABLED=1.
+        # Threshold env: COUNCIL5_RVOL_THRESHOLD (default 60).
+        _vetoed = False
+        if not os.environ.get("COUNCIL5_CIRCUIT_BREAKER_DISABLED"):
+            _rvol_thr = float(os.environ.get("COUNCIL5_RVOL_THRESHOLD", "60"))
+            _has_upgrade = (
+                analyst_n is not None and analyst_n >= 5
+                and analyst_rating is not None and analyst_rating <= 2.0
+            )
+            if rvol is not None and rvol > _rvol_thr and not _has_upgrade:
+                _vetoed = True
+                signals.append(f"VETO_RVOL={rvol:.0f}%_NO_ANALYST_UPGRADE")
+
         # Low drawdown bonus
         if max_dd < 15:
             score += 5
@@ -741,7 +760,13 @@ class QuantScorer:
             score += base
 
         # ── Direction ──
-        if score >= 75:
+        if _vetoed:
+            direction = "SKIP_VOL"
+            score = 0
+            position_pct = 0
+            sl_pct = None
+            tp_pct = None
+        elif score >= 75:
             direction = "STRONG_BUY"
         elif score >= 55:
             direction = "BUY"

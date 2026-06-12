@@ -21,7 +21,7 @@ permissions:
 jobs:
   collect-pead-shadow:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
 
     steps:
       - name: Checkout repository
@@ -40,6 +40,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install yfinance pandas numpy
 
+      - name: Refresh earnings calendar (S&P 500 universe)
+        # 2026-06-12 (JUN-14 gate prep): the prior 21-megacap universe produced
+        # 0 PEAD signals for 8 straight runs — all 21 reported in late April, and
+        # at that breadth the lane can never reach its n>=100 bar. Full S&P 500
+        # coverage makes Q2 season (mid-July onward) produce real shadow n.
+        # TTL-cached: after the first run only stale entries re-fetch.
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          EARNINGS_FETCHER_ENABLED: "1"
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: |
+          python tools/earnings_calendar_fetcher.py             --tickers-file data/universe/sp500_tickers.txt --ttl-hours 20             || echo "::warning::earnings calendar refresh failed — PEAD runs on stale cache"
+
       - name: Run PEAD shadow collector
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -54,11 +67,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add alpha_engine/data/pead_shadow_log.jsonl || true
+          # 2026-06-12: persist the earnings cache — Finnhub free-tier 429s cap each
+          # run at ~216/498 tickers; without committing the cache every run restarts
+          # from zero and the S&P500 universe NEVER completes. With persistence +
+          # the fetcher TTL, completion takes 2-3 daily runs and stays warm after.
+          git add data/earnings/ || true
           if git diff --cached --quiet; then
-            echo "No new PEAD shadow picks — log unchanged"
+            echo "No new PEAD shadow picks or cache changes"
             exit 0
           fi
-          git commit -m "chore(pead-shadow): collect H-002 shadow picks $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
+          git commit -m "chore(pead-shadow): collect H-002 shadow picks + earnings cache $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
           git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${{ github.repository }}.git"
           push_ok=false
           for i in 1 2 3 4 5 6 7 8 9 10; do

@@ -1763,6 +1763,21 @@
    "data_sample_lock": "at_signal_outcomes intrabar TP/SL rows resolved <= 2026-06-12 are DISCOVERY (excluded); acceptance uses time-split of locked cohort + forward accrual only.",
    "net_costs": "4bp RT futures assumption; stress x0.5/1/2/4 per Addendum G",
    "banned_check": "futures_momentum is on do-not-relitigate as a BROAD family (dedup artifact). This entry is the single pre-registered mutation axis permitted by mutate-before-kill; it does not re-litigate the broad claim."
+  },
+  {
+   "id": "H-112",
+   "family": "crypto_liquidation_cascade_reversal",
+   "asset_class": "CRYPTO",
+   "registered_at": "2026-06-12",
+   "status": "REGISTERED-UNTESTED",
+   "origin": "nemotron session ses_146e structural-alpha review (2026-06-12): liquidation cascades listed alongside funding mean-rev as perpetual-market structural mechanics; funding is already registered (crypto_funding_crowding_short) \u2014 cascades were the missing one. Data: local coinglass DB (~27MB, coinglass_strategies/) + liquidation fields if present; availability check IS part of the test plan.",
+   "hypothesis": "Large liquidation cascades (forced-seller exhaustion) mark short-horizon local extremes; entering AGAINST the cascade direction after the cascade-rate peaks has positive net expectancy at 16bp RT costs. This is the structural inverse of C006 (buying volume spikes = adverse selection): the entry condition is forced-flow exhaustion, not retail FOMO chase \u2014 the registration explicitly distinguishes the two so the DNR on volume-spike chasing is not re-litigated.",
+   "test_statistic": "net PF + binomial p + time-split halves + per-symbol-day cluster n_eff + PF CI-lower-bound (tools/pf_ci_lower.py) via tools/replay_harness.py; monkey-P95 per class required",
+   "acceptance_criteria": "replay (locked sample): both time-split halves PF>=1.2 net AND pf_ci_lower>1.0 at n_eff>=80 AND beats monkey P95 -> forward lane nomination only. Forward: CI-LB>1.15 at n>=80 -> probation.",
+   "falsification": "either half PF<1.0 net, or CI-LB<=1.0 at n_eff>=80, or below monkey P95, or coinglass liquidation data proves unusable (coverage <60% of replay window) -> family CLOSED after these registered comparisons; no threshold-fishing on cascade-size percentile (ONE pre-chosen: 95th percentile hourly liquidation notional).",
+   "data_sample_lock": "coinglass liquidation series + crypto_ohlcv 1h <= 2026-06-12 is DISCOVERY-PROHIBITED until this registration is committed; replay sample locked at first harness run.",
+   "net_costs": "16bp RT crypto; stress x0.5/1/2/4 per Addendum G",
+   "banned_check": "distinct from volume_spike_breakout (C006, retired): that buys spike momentum; this fades post-cascade exhaustion with a pre-registered single trigger percentile."
   }
  ],
  "fork2_new_signals": [
