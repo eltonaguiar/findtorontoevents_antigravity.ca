@@ -41,6 +41,23 @@ jobs:
             -o audit_trail/data/dashboard_payload.json \
             || echo "::warning::dashboard_payload.json fetch failed — portfolio_manager may degrade"
 
+      - name: Fetch prior portfolio state from production
+        # 2026-06-12 resurrection: claudes_test_state.json is gitignored and was
+        # NEVER fetched on the fresh checkout, so load_state() returned {} and all
+        # 36 portfolios re-bootstrapped from $10k every 30 minutes (data frozen on
+        # the live site since 2026-05-25). Size guard: an error stub must not
+        # replace real books — on a too-small fetch we fall back to bootstrap.
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/claudes_test_state.json" \
+            -o audit_dashboard/data/claudes_test_state.json \
+            || echo "::warning::state fetch failed — portfolios will re-bootstrap this run"
+          sz=$(stat -c%s audit_dashboard/data/claudes_test_state.json 2>/dev/null || echo 0)
+          if [ "$sz" -lt 10240 ]; then
+            echo "::warning::fetched state too small (${sz}B) — discarding to avoid corrupt books"
+            rm -f audit_dashboard/data/claudes_test_state.json
+          fi
+
       - name: Run portfolio manager
         run: python -m audit_dashboard.portfolio_manager
 
@@ -124,6 +141,22 @@ jobs:
               with open(src, "rb") as f:
                   ftp.storbinary("STOR claudes_test.html", f)
               print(f"Uploaded to findtorontoevents.ca/audit/claudes_test.html")
+
+              # 2026-06-12 resurrection: the page reads data/claudes_test_state.json
+              # + data/claudes_test_dashboard.json, which this workflow regenerates
+              # every 30 min but never shipped — live data was frozen at 2026-05-25.
+              try:
+                  ftp.mkd("data")
+              except Exception:
+                  pass
+              ftp.cwd("data")
+              for jf in ("claudes_test_state.json", "claudes_test_dashboard.json"):
+                  jp = Path("audit_dashboard/data") / jf
+                  if jp.exists():
+                      with open(jp, "rb") as f:
+                          ftp.storbinary(f"STOR {jf}", f)
+                      print(f"Uploaded data/{jf} ({jp.stat().st_size}B)")
+              ftp.cwd("..")
 
               # Also deploy to tdotevent.ca (same host, different root)
               try:
