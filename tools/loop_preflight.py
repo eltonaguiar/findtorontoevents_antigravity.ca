@@ -55,7 +55,19 @@ def _fail(reasons: list[str]) -> None:
     sys.exit(1)
 
 
-def check_h1() -> list[str]:
+
+def _canon(name: str) -> str:
+    """Canonical family key: NFKC -> casefold -> strip punctuation/whitespace.
+
+    2026-06-12 hardening (7-reviewer consensus: substring matching was the most
+    gameable rule — alias/suffix/punctuation evasion + false positives).
+    Matching is EXACT on canonical keys; an entry may list explicit aliases.
+    """
+    import unicodedata, re as _re
+    out = unicodedata.normalize("NFKC", name or "").casefold()
+    return _re.sub(r"[^a-z0-9]", "", out)
+
+def check_h1(stage: str = "replay") -> list[str]:
     """Measurement-integrity guards. Any DB/tool error = fail closed."""
     problems: list[str] = []
     try:
@@ -86,7 +98,11 @@ def check_h1() -> list[str]:
             "'|',COALESCE(direction,''),'|',DATE(created_at))) FROM trading_picks "
             "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")
         total, uniq = cur.fetchone()
-        if total and (1 - uniq / total) > DUP_RATE_MAX:
+        if total and (1 - uniq / total) > DUP_RATE_MAX and stage in ("promotion", "publish"):
+            problems.append(
+                f"H1: 7d emission dup-rate {(1 - uniq / total):.0%} (>{DUP_RATE_MAX:.0%}) "
+                f"— blocks {stage}: forward-lane n quality is corrupted by re-emission")
+        elif total and (1 - uniq / total) > DUP_RATE_MAX:
             print(f"PREFLIGHT WARNING: 7d emission dup-rate "
                   f"{(1 - uniq / total):.0%} (>{DUP_RATE_MAX:.0%}) — forward-lane "
                   f"n quality degraded; emission hygiene item, not a replay blocker")
@@ -106,7 +122,9 @@ def check_prereg(family: str) -> list[str]:
             if not isinstance(e, dict):
                 continue
             name = str(e.get("family") or e.get("name") or e.get("id") or "")
-            if family.lower() in name.lower() or name.lower() in family.lower():
+            keys = {_canon(name)} | {_canon(a) for a in (e.get("aliases") or [])}
+            keys.discard("")
+            if _canon(family) in keys:
                 status = str(e.get("status") or "").upper()
                 if status in ("CLOSED", "EXHAUSTED", "REFUTED"):
                     return [f"FAMILY: '{name}' is {status} — no further comparisons (anti-circling)"]
@@ -120,8 +138,14 @@ def check_prereg(family: str) -> list[str]:
 
 
 def check_dnr(family: str) -> list[str]:
-    fam = family.lower().replace("-", "_")
-    hits = [b for b in DO_NOT_RELITIGATE if b.replace("-", "_") in fam]
+    fam = _canon(family)
+    hits = []
+    for b in DO_NOT_RELITIGATE:
+        bk = _canon(b)
+        # exact match, or banned key as a clean prefix/suffix token of a
+        # versioned name (e.g. futures_momentum_v3) — NOT arbitrary substrings.
+        if fam == bk or fam.startswith(bk) or fam.endswith(bk):
+            hits.append(b)
     return [f"DNR: family matches do-not-relitigate entry '{h}'" for h in hits]
 
 
@@ -130,17 +154,24 @@ def main() -> int:
     ap.add_argument("--asset-class", required=True)
     ap.add_argument("--family", required=True,
                     help="tuning-family / hypothesis name being run")
+    ap.add_argument("--stage", default="replay", choices=["replay", "promotion", "publish"],
+                    help="promotion/publish stages BLOCK on emission dup-rate "
+                         "(forward-n quality); replay only warns (dedups internally)")
     ap.add_argument("--skip", default="",
                     help="comma list of checks to skip (h1,prereg,dnr) — logged loudly")
+    ap.add_argument("--skip-reason", default="",
+                    help="REQUIRED when --skip is used: who/why (goes to the log)")
     args = ap.parse_args()
 
     skips = {s.strip().lower() for s in args.skip.split(",") if s.strip()}
+    if skips and not args.skip_reason.strip():
+        _fail(["--skip used without --skip-reason (accountability required)"])
     for s in skips:
-        print(f"PREFLIGHT WARNING: check '{s}' explicitly skipped by operator flag")
+        print(f"PREFLIGHT WARNING: check '{s}' skipped — reason: {args.skip_reason}")
 
     problems: list[str] = []
     if "h1" not in skips:
-        problems += check_h1()
+        problems += check_h1(args.stage)
     if "dnr" not in skips:
         problems += check_dnr(args.family)
     if "prereg" not in skips:
