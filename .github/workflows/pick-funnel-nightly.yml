@@ -70,10 +70,11 @@ jobs:
           python tools/audit_pick_funnel/build_nav_surface_matrix.py \
             || echo "::warning::build_nav_surface_matrix.py failed (soft-fail)"
 
-      - name: Build strategy IC analysis
-        run: |
-          python tools/audit_pick_funnel/build_ic_analysis.py \
-            || echo "::warning::build_ic_analysis.py failed (soft-fail)"
+      # 2026-06-12: "Build strategy IC analysis" step REMOVED — build_ic_analysis.py
+      # never existed anywhere (repo, worktrees, or any PR branch). It soft-failed
+      # every night since inception AND its phantom output in the old atomic git-add
+      # zeroed the whole nightly commit (masked-failure #7, fixed earlier today).
+      # Restore the step only together with an actual committed builder.
 
       - name: Commit JSON outputs
         run: |
