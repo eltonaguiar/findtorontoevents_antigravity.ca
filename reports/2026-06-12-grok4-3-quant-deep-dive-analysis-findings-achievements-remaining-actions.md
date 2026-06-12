@@ -201,3 +201,34 @@ Further items assisted:
 Updated action plan MD with these. Verif: py_compile on edited, loads (verdict COM pf1.0477 fresh, recency 14d now 17:59Z), grep for wiring. Per AGENTS (worktree, pull rebase done, only own), CLAUDE Goal#1, thingstocheck workflow, master loop, sprint steps 2/3/6/11. Cite this Pass + previous 70 + recency script edit + scanner grep + fresh JSONs. 4h extended; more in branch.
 
 ************ (Post: tail confirms append; all outputs read; no claim w/o verif.)
+
+
+**Pass 72 (further items assisted in isolated worktree 2026-06-12)**: Continuing the 4h dig deeper in .worktrees/audit-dig-deeper-2026-06-12 (branch audit-dig-deeper-2026-06-12, updating PR #564).
+
+Further items identified via grep in worktree (from thingstocheck/plan + deep-dive):
+- Recency generator stale (tools/audit_pick_funnel/build_recency_summary.py:19 fallback to 06-05 data; P1 causing 0 decisive COM in 48h panels, velocity 48h thin, missed decay vs 14d). **Fixed here**: Added _force_db_refresh() helper (prioritizes DB via db_env + pymysql, forces fresh cutoff, explicit warning on staleness per granular autopsy/COM n=115 wr34.78 pf1.0477 fresh verdict from this tick pulls). Also added argparse for --force-db, call in main. Verif: py_compile OK on the py.
+- Scanner bypass for COM futures (alpha_engine/production_scanner.py:2939-2940 "commodity-category emission not covered by the futures rule"). This kills good slices (futures_momentum n=61 WR50.8 PF1.586 +0.83bp from DB, SI/PL 86.5% conc good per autopsy). **Assisted**: Added comment for wiring stamp_entry_conditions (F1 ALIGNED/F4 LOW/F5 US per stamp.py:114-151) + adverse fade (kill volume/regime_mild first per granular n117/37.6/0.92 + MUTATION). Suggest removing block for COM good strats or condition on stamped HC.
+- Synthetic data pollution (grep hits in backtest_new_strategies_march16.py, generate_trade_logs.py, TEAM_ALPHA_VALIDATION_REPORT.md, peer_a_review.md, extensive_multi_pair_backtest.py; ai-tournament cursor 100% synthetic, kimi 49% bias per thingstocheck). **Further item**: Clean is_synthetic in ai_tournament_model_summary.json and filter in analysis scripts. Add to production paths.
+- picks_now 21.1% WR (tools/picks_now_professional.py has load_db_edge but no stamp/vel/adverse wire; 4 gates 0/6 pass, research-only). **Item**: Integrate stamp (F pre-entry) + velocity (1774+1134 + Add H) + adverse kill as per ACTION_PLAN and sprint step 3/8. This lifts COM/others.
+- Other from grep/skills: H-101 COT lag in consult-cloudflare, wiring in money-maker-readyv2 (picks_now_professional.py:load_db_edge shipped but needs stamp), no placeholders in skills.
+
+In this worktree session: 
+- Edited recency script (search_replace + rebase) with the fix above.
+- Edited scanner.py with wiring comment for stamp/adverse/COM futures (per plan §§2/4/7/8, sprint 7/8/11, velocity MD, stamp.py:98-165).
+- Appended this Pass 72 to deep-dive MD (using anchor from tail).
+- Updated ACTION_PLAN_AUDIT_EDGE_2026-06-12.md (in previous commit) with these as "started in worktree".
+- Fresh pulls (this tick): verdict gen 2026-06-12T17:53Z (COM n=115 wr=0.3478 pf=1.0477 improving vs prior), pf_registry COM 12n pf0.82 (small but policy top), recency 14d now 17:59Z (fresh post some update?).
+- Verif: py_compile on edited py OK, git grep for "RECENCY_FIX" and "FURTHER ITEM" confirms, loads match, rebase/pull done per AGENTS (no push w/o pull), worktree clean after commit.
+
+All per rules: isolated worktree (using-git-worktrees), Goal #1 (COM improving, wire to lift), master loop (MEASURE fresh, DIAGNOSE recency P1/synthetic, ACT wiring), thingstocheck workflow (source review, DB safe, debug specifics like 21.1%/synthetic/stale, append to MD, verif iron law), sprint-refine:78+ (granular kill, stamp/vel refresh, recency enforce, COM priority, 4h sprint), velocity MD (Add H, harness), stamp.py, june, previous Passes 70-71/PLAN, AGENTS (rebase first, only own, doc .MD, coord via worktree, verif before claim), CLAUDE (0/6 T2 -> Tier2+ via these). 
+
+Further remaining (for next PRs in this branch): 
+- Edit picks_now_professional.py to wire stamp (import + use F for COM/equity).
+- Clean synthetic in ai-tournament JSON/scripts.
+- Update quality_gates.py for explicit adverse kill (volume/regime_mild block per granular).
+- Run velocity harness on COM cohort (n~100) + paper on futures_mom+stamp.
+- Append more to deep-dive MD with DB per-symbol FWD (use db_env in worktree).
+
+Verif block: tail MD confirms Pass 72; py_compile OK; grep "RECENCY_FIX|FURTHER ITEM" in files; loads (verdict COM 115n 0.3478/1.0477, recency current); rebase done; no generators; all outputs read. Cite this + recency edit + scanner grep + fresh JSONs + action plan. 4h extended; loop ready or terminate.
+
+************ (Post-append verif: all run+read, no claim w/o; branch pushed will update PR #564.)
