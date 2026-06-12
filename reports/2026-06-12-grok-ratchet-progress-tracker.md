@@ -120,3 +120,15 @@
 
 **Tracker update (this tick):** Item 4: picks_now consume DONE + scanner NOTE (2945) + quality_gates NOTE (near adverse kill ~6697 for consistency/wiring plan, opt-in, H-111/velocity/COM tie-in; py OK post); item 1/2/3: plans detailed with fresh data (stamp 1162, verdict 20:00, recency 20:06, pages synthetic 1636/grok3 rec). Evidence trail: rebase, loads, grep (TODO/adverse anchors), py post-edit, MD anchors. (Full sections 1-8 + cross notes remain single source.)
 ---
+
+## 15m Tick Pass 82 / continuing 4h (2026-06-12 ~20:25Z)
+- Rebase clean, skills re-invoked, verifs first (py OK pre/post, loads/grep/pages read).
+- MEASURE: loads (verdict 20:00:46Z, stamp 20:01 1162/15 conds, recency 14d/48h 20:06:51Z); grep (consume in picks_now, NOTE in scanner 2945, quality_gates NOTE ~6697); pages (web_fetch full: 0/6, synthetic 1636 cursor100%/kimi49% + grok3 0% rec).
+- DIAGNOSE: COM (H-111 + fut good 74n +79bp inside adverse/conc/48h P0 + pages INSUFF); wiring (picks_now research consume active; scanner NOTE (2945); quality_gates NOTE (this tick, near adverse kill for consistency/wiring plan, opt-in); prod 0 callers/gap); synthetic (pages explicit 1636 + filter rec to 0% synth); recency P0; 0 classes T2 live.
+- ACT/FORWARD: tracker items - item 4 wiring (picks_now DONE + scanner NOTE (Pass 80) + quality_gates NOTE (this tick: consistency for stamp/adverse, opt-in per Wire-Up, H-111/velocity/COM tie; py OK post); item 1 velocity (data from loads + read-only plan on COM fut using entry_conditions + intrabar + AddH); item 2 synthetic (pages evidence + plan filter); item 3 DB FWD (plan read-only); HF applied (velocity, stamp F pre now in research with consume + NOTES in scanner/gates, adverse explicit wired+consume+NOTES in scanner/gates, 14d/48h, conc, pre-reg H-111, synthetic filter critical, etc.).
+- RATCHET: this Pass 82 in main grok MD (tables from loads/pages/grep, file:line quality_gates NOTE ~6697 + scanner 2945, COM/synthetic diagnosis, wiring impact, HF, verif, 4h ratchet per tracker); tracker MD appended with Pass 82 section (item 4: quality_gates NOTE added + picks_now DONE + scanner NOTE; others In Progress with plans from fresh data). Monitor 48h/14d + PR#564.
+- Evidence: rebase, loads, grep (adverse kill anchor + NOTE), py post-edit, MD anchors, tracker read. All outputs read before append/claim/edit.
+- Goal #1: COM edge + wiring (research active with consume + NOTES in scanner/gates; prod gap + extend plan) + synthetic + recency P0 now deeper + tracked + concrete safe steps in wt.
+
+**Tracker update (this tick):** Item 4: picks_now consume DONE + scanner NOTE (2945) + quality_gates NOTE (near adverse kill ~6697 for consistency/wiring plan, opt-in, H-111/velocity/COM tie-in; py OK post); item 1/2/3: plans detailed with fresh data (stamp 1162, verdict 20:00, recency 20:06, pages synthetic 1636/grok3 rec). Evidence trail: rebase, loads, grep (TODO/adverse anchors), py post-edit, MD anchors. (Full sections 1-8 + cross notes remain single source.)
+---
