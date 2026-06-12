@@ -42,8 +42,12 @@ HARD_KILL_STRATEGIES: Set[str] = {
     "inverse_carry_contrarian", "ml_breakout", "genome_mutations",
     "hl_funding_fade", "kimi_signal_tracking", "multi_period_rsi_confluence_eth",
     "claude_gainer_st", "gainer_promoter",
-    # P0-4 (2026-06-12): st_fear_greed_contrarian — WR 34.2% / n=652 policy-clean drag
+    # P0-4 (2026-06-12): fear-greed contrarian drag
     "st_fear_greed_contrarian", "crypto_fear_greed_contrarian",
+    # P0-B (2026-06-12): intrabar bleeders still emitting via backfill
+    "futures_momentum", "ig_contrarian_sentiment", "stocks_rsi2_pullback",
+    "prediction_market_consensus", "rsi_bounce", "bollinger_squeeze",
+    "fx_smart_carry_trade_momentum",
 }
 
 MONITOR_ONLY_STRATEGIES: Set[str] = {
