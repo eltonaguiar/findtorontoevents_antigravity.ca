@@ -1,0 +1,9 @@
+(1) **Most gameable/brittle:** the **substring family-name matching** for both pre-registration and do-not-relitigate/closed/refuted families. It is easy to bypass via aliases, punctuation, parent/child names, suffixes, or near-matches, and it also creates false positives.
+
+**Concrete fix:** replace substring matching with a canonical key: `family_id` / `strategy_id` from a versioned registry. Use exact normalized matching after deterministic cleanup: Unicode NFKC, casefold, strip punctuation, normalize whitespace. Maintain a separate alias table with effective dates. Substring/fuzzy matches should trigger **manual review**, not automatic pass/block. Also reconsider `terminal NULL-pnl > 200`: that threshold is arbitrary and gameable by capping/splitting. Prefer “any terminal NULL PnL” or missing-PnL rate plus aggregate PnL uncertainty.
+
+(2) **Missing fund-style pre-trade check:** actual order/compliance validation before publish or promotion. At minimum: restricted list / sanctions / issuer bans, account/mandate permissions, venue eligibility, position limits, leverage/VaR/concentration limits, and notional/order-size checks. This gate validates research metadata, not whether the trade is legally/risk-allowed.
+
+(3) **Should `--skip` exist?** Yes, but only for **non-fatal warnings or operational exceptions**, never for hard fail conditions like sign incoherence, missing required registry, refuted family, or check execution errors.
+
+Governance: `--skip` should require named check, reason code, ticket, requester, independent approver, expiry/TTL, scope limited to one run/model, MFA/RBAC, immutable audit log, and automatic alert to risk/compliance. Break-glass skips should be dual-approved and reviewed daily.
