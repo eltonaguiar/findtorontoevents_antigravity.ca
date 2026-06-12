@@ -67,6 +67,44 @@ PROVEN_STRATEGIES: Set[str] = {
 }
 
 
+def is_emission_allowed(strategy: str, source_system: str = "") -> Tuple[bool, str]:
+    """P0-B central kill gate (docs/plans/2026-06-12-P0B-unified-kill-list-plan.md).
+
+    ONE function every writer consults — production_scanner already routes via
+    apply_emitter_discipline(); ingest writers (backfill_local_sources & co.)
+    historically had NO gate, so kills never stuck at the data layer
+    (INCIDENT_OVERALL #135: pair-scoped blocklists bypassed by other emitters).
+
+    Checks (cheap, no DB):
+      1. HARD_KILL_STRATEGIES (this module)
+      2. config.BLACKLISTED_STRATEGIES (lazy import; fail-open if unavailable)
+    Returns (allowed, reason). Reason is loggable for shadow audits
+    (EMITTER_DISCIPLINE_SHADOW_LOG=1 writers may record rejections).
+    """
+    strat = (strategy or "").strip().lower()
+    src = (source_system or "").strip().lower()
+    if not strat and not src:
+        return True, "no identity — fail-open"
+    hard = {s.lower() for s in HARD_KILL_STRATEGIES}
+    if strat in hard or src in hard:
+        return False, f"HARD_KILL_STRATEGIES: {strat or src}"
+    try:
+        from alpha_engine.config import BLACKLISTED_STRATEGIES as _bl
+        bl = {str(s).lower() for s in _bl}
+        if strat in bl or src in bl:
+            return False, f"BLACKLISTED_STRATEGIES: {strat or src}"
+    except Exception:
+        pass  # config unavailable -> rely on local set only
+    try:
+        from audit_trail.quality_gates import BLOCKED_SOURCE_SYSTEMS as _bss
+        bss = {str(s).lower() for s in _bss}
+        if src in bss or strat in bss:
+            return False, f"BLOCKED_SOURCE_SYSTEMS: {src or strat}"
+    except Exception:
+        pass  # quality_gates is heavy/optional in some contexts -> fail-open
+    return True, "allowed"
+
+
 def _load_audit_tiers() -> Tuple[Set[str], Set[str], Set[str]]:
     kill_set = set(HARD_KILL_STRATEGIES)
     monitor_set = set(MONITOR_ONLY_STRATEGIES)

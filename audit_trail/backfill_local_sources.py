@@ -203,6 +203,16 @@ def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
         # — skip it instead of polluting the table.
         if safe_opened is None:
             return 0
+        # P0-B (2026-06-12): this writer had NO kill gate — strategies killed at
+        # the scanner kept entering the honest ledger through here (#135). One
+        # central check; fail-open on import error so ingest never hard-breaks.
+        try:
+            from alpha_engine.emitter_discipline import is_emission_allowed
+            _allowed, _why = is_emission_allowed(strategy, source_system)
+            if not _allowed:
+                return 0
+        except ImportError:
+            pass
         cur.execute(
             "INSERT IGNORE INTO at_signal_outcomes "
             "(symbol, direction, entry_price, take_profit, stop_loss, exit_price, "
