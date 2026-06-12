@@ -99,7 +99,13 @@ jobs:
           done
           if ! git diff --cached --quiet; then
             git commit -m "Pick funnel nightly refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
-            git push || echo "::warning::push failed"
+            # 2026-06-12: bare `git push` lost the main race every time (peers commit
+            # ~1/min) — commit cea28a15 was created then dropped. Rebase-retry x3.
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase --autostash origin main || git rebase --abort || true
+              [ "$i" = "3" ] && echo "::warning::push failed after 3 rebase retries"
+            done
           else
             echo "No changes to commit."
           fi
