@@ -16683,12 +16683,9 @@ def generate():
         "ta_baseline": _load_latest_ta_baseline(),
 
         # ── Swarm Pick Tracking — consensus-driven multi-persona picks ──
-        # Reads audit_dashboard/data/swarm_{picks,leaderboard,pattern_tags}.json.
-        # Consumed by the "Swarm Pick Tracking" panel in template.html.
-        # Contract keys (template reads): swarm_picks_data.summary.*,
-        # .leaderboard.by_tier, .leaderboard.by_asset_class,
-        # .leaderboard.by_underlying_model, .picks[].
-        "swarm_picks_data": _load_swarm_picks_data(ROOT / "audit_dashboard" / "data"),
+        # Swarm Pick Tracking panel DECOMMISSIONED 2026-06-12 (operator request):
+        # swarm_picks_data emit removed; data archived as swarm_*_OLD.json.
+        # Insights: reports/swarm_paper_picks_decommission_2026-06-12.md
 
         # ── Walk-forward per-asset-class (PR #654; restored after #665 removal) ──
         # Top-level payload key. Live consumers:

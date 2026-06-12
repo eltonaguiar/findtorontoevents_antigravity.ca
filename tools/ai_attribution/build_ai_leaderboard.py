@@ -28,7 +28,8 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-DEFAULT_PICKS = REPO_ROOT / "audit_dashboard" / "data" / "swarm_picks.json"
+# 2026-06-12: swarm paper picks decommissioned; the book is frozen at the _OLD archive.
+DEFAULT_PICKS = REPO_ROOT / "audit_dashboard" / "data" / "swarm_picks_OLD.json"
 DEFAULT_OUT = REPO_ROOT / "audit_dashboard" / "data" / "ai_leaderboard"
 DEFAULT_RESEARCH = REPO_ROOT / "research" / "asset_class"
 

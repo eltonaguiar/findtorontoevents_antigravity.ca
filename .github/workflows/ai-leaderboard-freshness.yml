@@ -44,15 +44,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install yfinance pandas numpy pymysql
 
-      - name: Promote tournament consensus → swarm_picks
-        continue-on-error: true
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: python tools/swarm/promote_tournament_picks.py
-
-      - name: Resolve open swarm picks
-        continue-on-error: true
-        run: python tools/swarm/outcome_resolver_swarm.py
+      # Swarm paper-picks pipeline decommissioned 2026-06-12 (operator request);
+      # data archived as audit_dashboard/data/swarm_*_OLD.json.
 
       - name: Build AI attribution leaderboard
         run: python tools/ai_attribution/build_ai_leaderboard.py
@@ -126,15 +119,13 @@ jobs:
               "chore(ai-leaderboard): daily freshness $(date -u +%Y-%m-%d) [skip ci]" \
               audit_dashboard/data/ai_leaderboard/ \
               audit_dashboard/data/ma_strategy_leaderboard.json \
-              audit_dashboard/data/audit_surface_truth.json \
-              audit_dashboard/data/swarm_picks.json
+              audit_dashboard/data/audit_surface_truth.json
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add audit_dashboard/data/ai_leaderboard/ \
                     audit_dashboard/data/ma_strategy_leaderboard.json \
-                    audit_dashboard/data/audit_surface_truth.json \
-                    audit_dashboard/data/swarm_picks.json
+                    audit_dashboard/data/audit_surface_truth.json
             if ! git diff --cached --quiet; then
               git commit -m "chore(ai-leaderboard): daily freshness $(date -u +%Y-%m-%d) [skip ci]"
               git pull --rebase origin main
