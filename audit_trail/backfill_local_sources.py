@@ -73,14 +73,31 @@ def derive_asset_class(s, row_asset_class=None):
         if rac not in _UNKNOWN_TOKENS:
             return rac
 
-    s = s.upper().replace("-", "")
+    s_raw = s.upper()
+    s = s_raw.replace("-", "")
+    # 2026-06-12 (#14): 21,676 at_signal_outcomes rows sat UNKNOWN because this
+    # fell through for (a) BARE crypto codes (ADA/DOT/SOL... no USDT suffix —
+    # 21k+ rows), (b) USD-base forex (USD-JPY: "USD" was missing from
+    # forex_bases), (c) futures "=F" codes. Rules below close all three.
+    if s_raw.endswith("=F"):
+        return "FUTURES"
+    if s_raw.startswith("^"):
+        return "INDEX"
     meme = {"DOGE", "SHIB", "PEPE", "BONK", "FLOKI", "WIF", "BOME", "FAI", "ROBO", "EDGE", "MANTRA", "PHA"}
-    forex_bases = {"EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF"}
+    forex_bases = {"EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "USD"}
+    bare_crypto = {"BTC", "ETH", "SOL", "ADA", "DOT", "AVAX", "LINK", "XRP", "BNB",
+                   "MATIC", "POL", "ATOM", "UNI", "LTC", "BCH", "ETC", "XLM", "ALGO",
+                   "NEAR", "FTM", "APT", "ARB", "OP", "INJ", "TIA", "SUI", "SEI",
+                   "RUNE", "AAVE", "MKR", "CRV", "SNX", "COMP", "GRT", "FIL", "ICP",
+                   "HBAR", "VET", "EGLD", "THETA", "AXS", "SAND", "MANA", "GALA",
+                   "ENJ", "CHZ", "ONDO", "RENDER", "JUP", "ENA", "DYDX", "TON", "TRX"}
     if s in _EQUITY_ALLOWLIST:
         return "EQUITY"
     for m in meme:
         if m in s:
             return "MEMECOIN"
+    if s in bare_crypto:
+        return "CRYPTO"
     for b in forex_bases:
         if s.startswith(b) and len(s) >= 6 and not s.endswith("USDT"):
             return "FOREX"

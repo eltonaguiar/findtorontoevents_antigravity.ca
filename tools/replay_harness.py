@@ -82,15 +82,26 @@ def run_preflight(family: str, asset_class: str) -> tuple[bool, str]:
     return proc.returncode == 0, (proc.stdout or "") + (proc.stderr or "")
 
 
-def fetch_bars(cur, symbol, asset_class, start_ms, horizon_bars):
+def fetch_bars(cur, symbol, asset_class, start_ms, horizon_bars, pre_bars=0):
+    """Bars after start_ms; with pre_bars>0 also returns up to that many
+    bars BEFORE it (for regime stratification — strictly pre-entry data)."""
     table = "crypto_ohlcv" if asset_class.upper() in CRYPTO_CLASSES else "stock_ohlcv"
+    pre = []
+    if pre_bars:
+        cur.execute(
+            f"SELECT timestamp, close FROM {table} "
+            "WHERE symbol=%s AND timeframe='1h' AND timestamp<=%s "
+            "ORDER BY timestamp DESC LIMIT %s",
+            (symbol, start_ms, int(pre_bars)))
+        pre = [float(r[1]) for r in reversed(cur.fetchall())]
     cur.execute(
         f"SELECT timestamp, high, low, close FROM {table} "
         "WHERE symbol=%s AND timeframe='1h' AND timestamp>%s ORDER BY timestamp "
         "LIMIT %s",
         (symbol, start_ms, int(horizon_bars)))
-    return [{"timestamp": r[0], "high": r[1], "low": r[2], "close": r[3]}
+    bars = [{"timestamp": r[0], "high": r[1], "low": r[2], "close": r[3]}
             for r in cur.fetchall()]
+    return (bars, pre) if pre_bars else bars
 
 
 def dedup_trades(trades):
@@ -106,10 +117,19 @@ def dedup_trades(trades):
 
 def replay_set(cur, trades, asset_class, horizon_bars, cost_frac, slip_bars=0):
     """Replay every trade; returns list of {pnl_net, symbol, day, status}."""
+    import statistics as _st
     out = []
     for t in trades:
-        bars = fetch_bars(cur, t["symbol"], t.get("asset_class", asset_class),
-                          t["_entry_ms"], horizon_bars + slip_bars)
+        bars, pre = fetch_bars(cur, t["symbol"], t.get("asset_class", asset_class),
+                               t["_entry_ms"], horizon_bars + slip_bars, pre_bars=72)
+        # strictly pre-entry regime features (F4 vol proxy + F1 trend proxy)
+        pre_vol = None
+        trend = None
+        if len(pre) >= 24:
+            rets = [(pre[i] / pre[i-1] - 1) for i in range(1, len(pre)) if pre[i-1]]
+            pre_vol = _st.pstdev(rets) if len(rets) >= 12 else None
+            sma = sum(pre[-50:]) / min(len(pre), 50)
+            trend = "UP" if pre[-1] > sma else "DOWN"
         if slip_bars:
             if len(bars) <= slip_bars:
                 continue
@@ -128,7 +148,42 @@ def replay_set(cur, trades, asset_class, horizon_bars, cost_frac, slip_bars=0):
                                         dt.timezone.utc).strftime("%Y-%m-%d")
         out.append({"pnl_net": pnl * 100 - cost_frac * 100,  # pct net of RT costs
                     "symbol": t["symbol"], "day": day, "status": status,
-                    "ambiguous": ambiguous})
+                    "ambiguous": ambiguous, "pre_vol": pre_vol, "trend": trend})
+    return out
+
+
+def regime_strata(results):
+    """Per-regime breakdown (nemotron mitigation #1 / 4h-sprint regime ask):
+    pre-entry 72-bar vol terciles (LOW/MID/HIGH within-cohort) x trend (UP/DOWN).
+    Measurement only — exposes WHERE an edge concentrates; never a gate."""
+    vols = sorted(r["pre_vol"] for r in results if r.get("pre_vol") is not None)
+    if len(vols) < 30:
+        return {"note": "insufficient pre-entry history for stratification"}
+    t1, t2 = vols[len(vols) // 3], vols[2 * len(vols) // 3]
+
+    def bucket(r):
+        v = r.get("pre_vol")
+        if v is None:
+            return None
+        return "LOW" if v <= t1 else ("HIGH" if v > t2 else "MID")
+
+    strata: dict = {}
+    for r in results:
+        b = bucket(r)
+        if b is None:
+            continue
+        for key in (f"vol_{b}", f"trend_{r.get('trend') or 'NA'}",
+                    f"vol_{b}|trend_{r.get('trend') or 'NA'}"):
+            strata.setdefault(key, []).append(r["pnl_net"])
+    out = {}
+    for k, pnls in sorted(strata.items()):
+        if len(pnls) < 15:
+            continue
+        wins = sum(1 for p in pnls if p > 0)
+        gp = sum(p for p in pnls if p > 0)
+        gl = sum(-p for p in pnls if p < 0)
+        out[k] = {"n": len(pnls), "wr_pct": round(100 * wins / len(pnls), 1),
+                  "pf_net": round(gp / gl, 3) if gl else None}
     return out
 
 
@@ -225,6 +280,8 @@ def main() -> int:
                and main_m["pf_ci_lower"] > REPLAY_CI_LB_BAR)
     report["gates"]["main_ci"] = {"pass": bool(ok_main),
                                   "bar": f"n_eff>={MIN_N_EFF} & pf_ci_lower>{REPLAY_CI_LB_BAR}"}
+
+    report["regime_strata"] = regime_strata(results)
 
     # 5. R1 time-split
     results_sorted = sorted(results, key=lambda r: r["day"])
