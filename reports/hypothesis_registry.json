@@ -1784,7 +1784,7 @@
    "family": "snipe_spike_30m",
    "asset_class": "CRYPTO",
    "registered_at": "2026-06-12",
-   "status": "REGISTERED-UNTESTED",
+   "status": "PARTIAL: CHASE-REFUTED / FADE-PENDING-1MIN-REPLAY",
    "origin": "operator request 2026-06-12 (very-short-term skyrocket sniping + 30-min self-grading + ML). Design doc: docs/plans/2026-06-13-snipe-shortterm-spike-design.md.",
    "hypothesis": "TWO-ARMED (the C006 reconciliation): on a frozen spike trigger (5-min return >=2.0% AND 5-min volume >=5x trailing-2h median, 1-min bars, top-100 USDT universe, 2h/symbol cooldown), either CHASE (with-spike) or FADE (against-spike) has positive net expectancy with TP +1.0%/SL -0.7%/30-min time-exit at 16bp RT. Breakeven WR ~47% at this geometry.",
    "test_statistic": "per-arm: net PF + PF CI-lower-bound (cluster bootstrap, symbol-hour clusters) + R1 time-split + R2 conc<35% + 1-min monkey-P95, via the replay_harness pattern",
@@ -1792,7 +1792,36 @@
    "falsification": "both arms below breakeven at n=300 replay events, OR trigger frequency <5 events/day across the universe, OR 1-min data coverage <80% of window -> family CLOSED. Trigger spec is FROZEN \u2014 any tuning = new family with full FDR accounting.",
    "data_sample_lock": "Binance 1-min klines; replay window = available 1-min history at first harness run, locked then.",
    "net_costs": "16bp RT crypto; stress x0.5/1/2/4",
-   "banned_check": "volume_spike_breakout (C006, DNR) chased 1h-bar spikes, no fade arm, no 30-min stop, no cooldown \u2014 this family's FADE arm tests the C006-implied edge and the CHASE arm is falsifiable rather than assumed; the DNR ban on the old strategy stands."
+   "banned_check": "volume_spike_breakout (C006, DNR) chased 1h-bar spikes, no fade arm, no 30-min stop, no cooldown \u2014 this family's FADE arm tests the C006-implied edge and the CHASE arm is falsifiable rather than assumed; the DNR ban on the old strategy stands.",
+   "result": {
+    "coarse_gate_2026_06_12": {
+     "method": "1h-bar replay_harness (COARSE: SL-wins-ties + intra-hour ambiguity penalizes; the registered instrument is 1-min replay)",
+     "events": 1070,
+     "events_per_day": 76.4,
+     "replayed_n": 527,
+     "no_data_smallcaps": "~543 trades lacked crypto_ohlcv coverage",
+     "CHASE": {
+      "wr_pct": 21.8,
+      "pf_net": 0.273,
+      "pf_ci_lower": 0.227,
+      "n_eff": 470,
+      "verdict": "REFUTED DECISIVELY \u2014 C006 adverse-selection confirmed at 1-min granularity"
+     },
+     "FADE": {
+      "wr_pct": 47.2,
+      "pf_net": 0.863,
+      "pf_ci_lower": 0.755,
+      "n_eff": 475,
+      "r1_halves_pf": [
+       0.872,
+       0.855
+      ],
+      "ambiguous_bars": "70/263 + 63/264",
+      "verdict": "NULL at coarse gate (at breakeven WR, PF<1 net) \u2014 ambiguity-penalized"
+     }
+    },
+    "remaining_comparisons": "ONE: 1-min first-touch replay of the FADE arm (the design's true instrument). If FADE CI-LB<=1.0 there too -> family CLOSED. CHASE arm is CLOSED now."
+   }
   }
  ],
  "fork2_new_signals": [
