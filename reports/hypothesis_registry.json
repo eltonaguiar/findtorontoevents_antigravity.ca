@@ -1841,6 +1841,21 @@
      "verdict": "FAMILY_CLOSED \u2014 both arms fail. Neither chasing NOR fading 2%/5min spikes at 5x volume has positive net expectancy at 16bp with TP+1.0%/SL-0.7%/30min. The half-split stability (0.765 vs 0.768) shows this is structural, not regime noise."
     }
    }
+  },
+  {
+   "id": "H-114",
+   "family": "snipe_fade_lowvol_30m",
+   "asset_class": "CRYPTO",
+   "registered_at": "2026-06-12",
+   "status": "REGISTERED-UNTESTED",
+   "origin": "DATA-DERIVED from post-hoc regime stratification of the CLOSED H-113 FADE cohort (2026-06-12): vol_LOW tercile showed WR 64.8% / PF 1.77 (n=176, 1h coarse bars, ambiguity-penalized AGAINST) vs vol_HIGH 33.1%/0.487. Because this was found by slicing a closed family's data, the ENTIRE H-113 cohort (events <= 2026-06-12) is DISCOVERY and excluded from acceptance.",
+   "hypothesis": "FADE entries on the frozen H-113 spike trigger have positive net expectancy ONLY when pre-entry realized vol is in the cohort's LOW tercile (72-bar 1h pstdev of returns, computed strictly pre-entry). Mechanism guess: a 2%/5-min spike out of QUIET conditions is more often a one-off dislocation that mean-reverts; the same spike in already-hot conditions is trend participation.",
+   "test_statistic": "net PF + PF CI-lower-bound (cluster bootstrap symbol-hour) + R1 time-split + monkey-P95 + 1-min first-touch replay (tools/snipe/replay_1min_fade.py pattern) on FRESH events only",
+   "acceptance_criteria": "FRESH replay window (events strictly AFTER 2026-06-12): vol_LOW-filtered FADE CI-LB>1.0 at n_eff>=80 AND both halves PF>1.0 AND beats monkey-P95 -> live 30-min shadow loop. Live: CI-LB>1.15 at n>=150 graded -> probation. Event rate check: vol_LOW filter keeps >=1/3 of events (~25/day expected) \u2014 if <5/day, falsified on velocity.",
+   "falsification": "fresh-window vol_LOW FADE CI-LB<=1.0 at n_eff>=80, or fails monkey-P95, or either half PF<=1.0 -> family CLOSED. The vol tercile boundary is computed on the FRESH cohort (no reuse of the discovery boundary). NO further regime slices of H-113 data \u2014 one shot.",
+   "data_sample_lock": "all events <= 2026-06-12 are DISCOVERY (excluded). Fresh window opens 2026-06-13; first evaluation when fresh events reach n~250 raw (~3-4 days at 76/day x 1/3 vol_LOW).",
+   "net_costs": "16bp RT; stress x0.5/1/2/4",
+   "banned_check": "H-113 (snipe_spike_30m) is CLOSED and stays closed \u2014 this is the single permitted data-derived child family, with full discovery-exclusion. C006/volume_spike DNR unaffected (this FADES)."
   }
  ],
  "fork2_new_signals": [
