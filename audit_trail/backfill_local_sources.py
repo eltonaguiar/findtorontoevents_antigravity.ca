@@ -196,6 +196,13 @@ def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
         # (INCIDENT_OVERALL #91, 2026-06-04). Fall back to closed_at so the
         # unique constraint always has a non-NULL value to dedup against.
         safe_opened = safe_ts(opened_at) or safe_ts(closed_at)
+        # 2026-06-12 (ML audit P0): rows with NO resolvable timestamp bypass the
+        # UNIQUE dedup entirely (MySQL UNIQUE permits multiple NULLs) — kimi's
+        # corpus re-inserted EVERY hourly run (140k dup rows/7d, 99.4% dupes).
+        # A timestamp-less outcome is unanalyzable (no intrabar, no time-split)
+        # — skip it instead of polluting the table.
+        if safe_opened is None:
+            return 0
         cur.execute(
             "INSERT IGNORE INTO at_signal_outcomes "
             "(symbol, direction, entry_price, take_profit, stop_loss, exit_price, "
