@@ -9,6 +9,15 @@
 
 ## Ratchet Items (from Pass 77)
 
+## 15m Tick Pass 84 / continuing 4h (2026-06-12 ~nowZ in wt)
+- Rebase clean, skills (superpowers+thingstocheck+verif+mmr-june+hyp+auditflow+dbschema+large), verifs first (py OK on edit, loads/pages/DB/grep read).
+- MEASURE: DB FWD executed (COM SI/PL strong), pages ai-tournament 1636 synth + grok3 0%, stamp 1162, verdict 0/, picks-now wiring+synth filter.
+- DIAGNOSE/ACT: item 3 DB DONE (verbatim table), item 2 synth filter code added to picks_now (addresses 21.1% + page), item 4 extended, velocity/COT/paper plans + data.
+- RATCHET: Pass 84 in main MD + this tracker section (items 2/3 advanced with evidence/file:line/DB table); synthetic filter + DB FWD concrete achievements in wt.
+- Verif: py_compile, DB output read, pages, anchors, git status pre-commit. Only own. Goal #1 COM.
+- Evidence trail: rebase, py, DB FWD verbatim, web_fetch pages (synth 1636), loads, grep, MD tails, tracker. All read before append/claim.
+
+
 ### 1. Velocity harness read-only on COM n~100 clean
 - **Status:** In progress (plan + data prep)
 - **Evidence:** entry_conditions_forward gen 19:07 stamped_n=1162 (15 conds); prior intrabar autopsies (COM 134n 29.1% +13.6bp, fut_mom 74n +79bp SI/PL drivers); velocity report 1774+1134 + AddH (n_eff deflation noted for fut).

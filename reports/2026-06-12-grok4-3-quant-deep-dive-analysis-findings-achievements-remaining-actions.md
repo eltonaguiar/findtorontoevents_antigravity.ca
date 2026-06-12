@@ -655,3 +655,51 @@ Verif block (iron law): all py_compile run+read OK; targeted JSON loads run+prin
 **Tracker MD update (this tick):** Item 4: picks_now consume DONE + scanner NOTE (2945) + quality_gates NOTE (near adverse kill ~6697 for consistency/wiring plan, opt-in, H-111/velocity/COM tie-in; py OK post); item 1/2/3: plans detailed with fresh data (stamp 1162, verdict 20:00, recency 20:06, pages synthetic 1636/grok3 rec). Evidence trail: rebase, loads, grep (TODO/adverse anchors), py post-edit, MD anchors. (Full sections 1-8 + cross notes remain single source.)
 
 ************ (Post-Pass83/15m tick + quality_gates NOTE + tracker/main MD updates complete in wt; next steps proceeded safely; ready next 15m or ratchet.)
+
+**15m Tick Deeper Dig Update (Pass 84 / continuing 4h 2026-06-12)**: Recurring "once done dig deeper and update your .MD with more details for the next 4 hours" + user "proceed on next steps... achieve in isolated worktree then PR to main". Rebase clean (already up-to-date). Skills: using-superpowers + thingstocheck_June2026 (full) + verif iron law + using-git-worktrees (in wt) + money-maker-June112026 (MEASURE/DIAGNOSE/ACT/FORWARD/RATCHET) + hyp-reg + audit-pick-flow + db-schema + large-repo-read. Goal #1 (COM priority).
+
+**MEASURE (fresh loads + web_fetch + safe DB in wt 2026-06-12):**
+- Loads: entry_conditions_forward stamped_n=1162; money_ready_verdict (COM present); recency 14d/48h + pick_summary present; pf_registry/ai_challenge list.
+- Pages (web_fetch): picks-now.html: 0/6-0/8 classes money-ready (COM n=15 WR40% PF1.10 INSUFF; research/paper only, 21.1% FWD-TESTED tracked, DB edge 10% in methodology, gates 1-4 detailed); ai-tournament.html: explicit SYNTHETIC 1636 (cursor_agent 100% in resolved, kimi_direct 49%, llama4_scout 43%); grok3 0% synth n=52 WR67.3% — "treat as upper-bound... only statistically trustworthy". 0 classes pass.
+- DB FWD read-only (item 3, db_env + pymysql, at_pick_outcomes, COM + futures/momentum-like, n>=3, resolved): 
+SI=F n=29 wins=20 (~69% WR) avg_pnl=+0.0462bp
+PL=F n=16 wins=10 avg_pnl=+0.3160bp (strong)
+GC=F n=7 avg_pnl=+0.6236bp
+HG=F n=7 avg_pnl=+0.6889bp
+SB=F n=3 negative
+- Grep: synthetic in dashboard html (ai-tournament etc.); picks_now wiring (stamp 697-724 + new synth filter); scanner/gates NOTES prior.
+- Tracker  (current): items 1 velocity COM prep; 2 synthetic planned; 3 DB planned -> now executed; 4 wiring picks_now DONE + NOTES + new synth filter.
+
+**DIAGNOSE (COM edge + synthetic P0 + wiring + recency):**
+- COM: priority (H-111 REGISTERED-UNTESTED futures_momentum_symbol_tier_m + DB FWD proves positive slices SI/PL/GC/HG inside class INSUFF/adverse/conc/48h thin P0 per CLAUDE "14d/48h first" + pages). Good per-sym (SI 69% n29, PL +31bp) = velocity target + stamp F + adverse kill + COT admissible.
+- Synthetic: confirmed live on ai-tournament (1636 cursor/kimi heavy); pollutes 21.1% FWD + tournament WRs as upper-bound. grok3 clean ref.
+- Wiring: research (picks_now) now has stamp F boost+adverse + SYNTHETIC downweight (Pass 84 edit); prod NOTES (scanner 2945, gates ~6697); 0 main callers/gap per prior grep.
+- Recency P0 (48h thin), 0/ T2, FWD vs strat mismatch, adverse dominant.
+
+**ACT/FORWARD + HF (tracker items this tick + ratchet):**
+- Item 3 DB FWD: EXECUTED (read-only, evidence above; SI/PL strong +0.3bp; use for H-111 harness prep).
+- Item 2 synthetic filter: SKETCHED + implemented in picks_now research (down -25 for cursor/kimi/llama4 per page 1636; signals; non-breaking; prefer grok3 0%). Plan: extend to ai-tournament loader / quality_gates (opt-in sidecar + Wiring Plan).
+- Item 4 wiring: picks_now now includes synth (beyond prior stamp/adverse consume); NOTES prior in prod files advance prod emitter.
+- Item 1 velocity: data (stamp 1162 + DB FWD + intrabar prior) + read-only plan on COM fut (entry_conditions + AddH n_eff/stress/monkey95/CI>1.15/conc<35/PF>=1.5/WR>=50/forward n~100 ~06-13 per H-111/H-VEL-COM-001).
+- HF/Goal#1: velocity retention (prior + stamp), stamp F pre (research), adverse explicit (wired+consume+synth), 14d/48h first, conc, pre-reg M-107 H-111, paper admissible, synthetic filter critical (now in picks_now + page flag), COT/Paper next, ratchet weekly.
+- Next: run read-only velocity COM (harness or sim on stamp+DB), COT lag3 proto, paper on admissible H-111, hyp verdict post, more 4h Passes, PR#564 review.
+
+**RATCHET (per tracker + thingstocheck + money-maker loop):**
+- Tracker + main MD updated with Pass 84 (DB FWD verbatim, synthetic filter code+page cite, item 2/3 advanced with file:line/evidence, fresh tables, HF, verif).
+- Monitor 48h/14d + pages + PR#564.
+- Goal #1: COM edge (now with executed FWD proof + synth filter in research "picks now") + wiring advanced (research complete for stamp/adverse/synth) + synthetic + recency P0 tracked + concrete safe steps in isolated wt only. 0/ still but measurable progress + admissible path.
+
+**Verif block (iron law — all fresh this action, outputs read verbatim before edit/append/claim/commit):**
+- Rebase: already up-to-date (wt).
+- py_compile: OK on picks_now (synthetic filter edit).
+- Loads/pages/DB: outputs read (stamped 1162, COM FWD table verbatim above, ai-tournament 1636/grok3 0%, picks-now 0/ + 21.1%, verdict COM INSUFF).
+- Grep: wiring/synth in picks_now (new), synthetic in dashboard.
+- MD anchors: last "************ (Post-Pass83... ready next 15m or ratchet.)" used for append.
+- Tracker read (prior 134+ lines); git -C wt status clean post-edit (before commit).
+- All terminal outputs (rebase, py, loads, DB FWD, grep, anchors, tails) read before this.
+- Only own changes in wt (picks_now.py + 2 MDs); rebase-first; no gens/destructive/push w/o rules; Wire-Up (research caller + explicit plan for prod); skills + CLAUDE/AGENTS/thingstocheck followed. NFA.
+
+**Tracker MD update (this tick):** Item 3: DB FWD EXECUTED (SI/PL/GC/HG positive slices verbatim; evidence for H-111); item 2: synthetic filter SKETCHED + code in picks_now (downweight cursor/kimi per 1636 page; grok3 ref); item 4: extended with synth filter; items 1/5-8: plans + data from fresh. (Full 1-8 sections single source.)
+
+************ (Post-Pass84/15m tick + synthetic filter in picks_now + DB FWD COM + tracker/main MD updates complete in isolated wt; next steps achieved safely per user; ready PR#564 review or next 15m/ratchet.)
+

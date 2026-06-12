@@ -723,6 +723,16 @@ class QuantScorer:
             score -= 20
             signals.append("ADVERSE_FADE (stamp F + vol/bb proxy per velocity/granular)")
 
+        # ── SYNTHETIC FILTER SKETCH (Pass 84 / tracker item 2 + thingstocheck 21.1% fix + ai-tournament page): 
+        # Live /audit/ai-tournament.html (web_fetch 2026-06-12): 1636 SYNTHETIC_SEED_ENRICHED; cursor_agent 100% synth in resolved cohort, kimi_direct 49%, llama4_scout 43%.
+        # grok3: 0% synthetic, n=52, WR 67.3% — only trustworthy ref (treat others upper-bound until filtered).
+        # Downweight in this research "picks now" path (addresses 21.1% FWD pollution). Non-breaking; signals for caller. Wire-Up: research caller exists; prod extend = opt-in later.
+        synth_models = {"cursor_agent", "kimi_direct", "llama4_scout"}
+        src = (info.get("source_model") or info.get("model") or "").lower()
+        if any(m in src for m in synth_models):
+            score -= 25
+            signals.append("SYNTHETIC_SEED_DOWNWEIGHT (ai-tournament 1636 contamination; prefer grok3 0%-synth)")
+
         dbf_n_raw_60d = dbf.get("n_raw_60d", 0)
 
         # ── COMPOSITE SCORE (range: -100 to +150) ──
