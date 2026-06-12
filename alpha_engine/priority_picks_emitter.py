@@ -24,6 +24,11 @@ from typing import Any
 from alpha_engine.eight_class_flagship_strategies import generate_all_flagship_picks
 from alpha_engine.academic_strategies_emitter import generate_academic_picks
 
+try:
+    from alpha_engine.june2026_research_candidates import generate_forward_observation_picks
+except ImportError:
+    generate_forward_observation_picks = None  # type: ignore
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_OUTPUT = Path(__file__).resolve().parent / "data" / "priority_picks.json"
@@ -77,7 +82,15 @@ def emit_picks(
     logger.info("PriorityPicksEmitter starting...")
     flagship = generate_all_flagship_picks()
     academic = generate_academic_picks()
-    combined = flagship + academic
+    forward_obs: list[dict[str, Any]] = []
+    if generate_forward_observation_picks is not None:
+        import os
+        if os.environ.get("JUNE2026_FORWARD_OBSERVATION", "1").strip().lower() not in (
+            "0", "false", "off",
+        ):
+            forward_obs = generate_forward_observation_picks()
+            logger.info("June2026 forward observation picks: %d", len(forward_obs))
+    combined = flagship + academic + forward_obs
     deduped = _deduplicate_across_sources(combined)
     picks = _filter_protocol(deduped)
 

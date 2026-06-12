@@ -7202,10 +7202,10 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     except Exception:
         pass  # fail-open: never block picks on gate error
 
-    # ── M-036: CRYPTO direction="BUY" hard-blocked (2026-05-17) ──
-    # Expert finding: CRYPTO direction="BUY" PF=0.38 / WR=28.9% vs LONG PF=3.14 / WR=54.9%.
-    # "BUY" is anti-predictive for CRYPTO; only LONG / SHORT are valid.
-    # Kill-switch: CRYPTO_BUY_DIRECTION_GATE_ENABLED=0. Fail-open.
+    # ── M-036 / M-036b: CRYPTO direction hard-block (2026-05-17 + 2026-06-12) ──
+    # M-036: BUY anti-predictive (PF=0.38). M-036b: sized LONG/STRONG_BUY blocked
+    # (intrabar LONG WR ~30%, n=1050). Shadow forward_test_only picks exempt.
+    # Kill-switch: CRYPTO_BUY_DIRECTION_GATE_ENABLED=0 or CRYPTO_SIZED_LONG_BLOCK=0.
     try:
         import os as _os_m036
         if _os_m036.environ.get(
@@ -7215,14 +7215,27 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
             if _m036_ac == "CRYPTO":
                 _m036_dir = str(pick.get("direction", "") or "").upper().strip()
                 try:
-                    from alpha_engine.config import CRYPTO_BLOCKED_DIRECTIONS as _m036_blocked
+                    from alpha_engine.config import (
+                        CRYPTO_BLOCKED_DIRECTIONS as _m036_blocked,
+                        CRYPTO_BLOCKED_DIRECTIONS_SIZED as _m036_sized,
+                    )
                 except ImportError:
                     _m036_blocked = frozenset({"BUY"})
-                if _m036_dir in _m036_blocked:
+                    _m036_sized = frozenset({"BUY", "LONG", "STRONG_BUY"})
+                _fto = pick.get("forward_test_only") in (True, 1, "1", "true", "True")
+                _shadow = pick.get("forward_observation") or pick.get("paper_pilot")
+                _sized_block = _os_m036.environ.get("CRYPTO_SIZED_LONG_BLOCK", "1") not in (
+                    "0", "false", "FALSE", "False",
+                )
+                _block_set = _m036_blocked
+                if _sized_block and not (_fto or _shadow):
+                    _block_set = _m036_sized
+                if _m036_dir in _block_set:
                     logger.info(
-                        "M-036 crypto_buy_direction_blocked: direction=%s (PF=0.38 vs LONG PF=3.14) "
+                        "M-036 crypto_direction_blocked: direction=%s sized=%s shadow=%s "
                         "— rejected (symbol=%s)",
-                        _m036_dir, pick.get("symbol", "?"),
+                        _m036_dir, _sized_block and not (_fto or _shadow), bool(_fto or _shadow),
+                        pick.get("symbol", "?"),
                     )
                     return False
     except Exception:
