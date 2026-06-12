@@ -50,12 +50,48 @@ MIN_PICKS_PER_WINDOW = 5     # Skip windows with fewer picks
 # ── Data Loading ─────────────────────────────────────────────────────────────
 
 def _load_closed_picks() -> list[dict]:
-    """Load closed picks with timestamps, sorted chronologically."""
+    """Load closed picks with timestamps, sorted chronologically.
+
+    2026-06-12 (#132): the JSON sources cap this at ~512 rows, which left the
+    weekly walk-forward green-but-empty (0 strategies survive filters) and the
+    H2 scorer reading a 2-month-stale walkforward_results.json. PRIMARY source
+    is now the honest intrabar ledger (at_signal_outcomes, entry-anchored
+    first-touch TP/SL); the JSON paths remain as offline fallbacks.
+    """
     picks = []
 
-    # Primary: dashboard_payload.json
+    # Primary: honest intrabar ledger (DB) — thousands of rows vs JSON's ~512
+    try:
+        from tools.db_env import get_stocks_creds
+        import pymysql
+        keep = ("host", "user", "password", "database", "port", "connect_timeout")
+        conn = pymysql.connect(**{k: v for k, v in get_stocks_creds().items()
+                                  if k in keep})
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT symbol, direction, strategy, source_system, asset_class, "
+            "intrabar_pnl_pct, opened_at, intrabar_resolved_at "
+            "FROM at_signal_outcomes "
+            "WHERE intrabar_resolved_at IS NOT NULL "
+            "AND intrabar_status IN ('TP_HIT','SL_HIT') "
+            "AND intrabar_pnl_pct IS NOT NULL")
+        for (sym, direction, strat, src, ac, pnl, opened, resolved) in cur.fetchall():
+            picks.append({
+                "symbol": sym, "direction": direction,
+                "strategy": strat or src or "unknown",
+                "source_system": src, "asset_class": ac,
+                "pnl_pct": float(pnl),
+                "closed_at": str(resolved), "timestamp": str(opened or resolved),
+            })
+        conn.close()
+        if picks:
+            print(f"[rolling_wf] Loaded {len(picks)} intrabar-honest rows from DB")
+    except Exception as exc:  # offline / no creds -> JSON fallbacks
+        print(f"[rolling_wf] DB source unavailable ({exc}); using JSON fallback")
+
+    # Fallback: dashboard_payload.json
     payload_path = ROOT / "audit_trail" / "data" / "dashboard_payload.json"
-    if payload_path.exists():
+    if not picks and payload_path.exists():
         try:
             with open(payload_path, "r", encoding="utf-8") as f:
                 data = json.load(f)

@@ -39,6 +39,10 @@ jobs:
       - name: Run Risk Metrics (Sortino + Realistic Sharpe + IC)
         env:
           PYTHONPATH: ${{ github.workspace }}
+          # 2026-06-12 (#132): rolling_walk_forward now reads the honest intrabar
+          # ledger (at_signal_outcomes) as PRIMARY — 1,607 rows vs the 512-row
+          # JSON fallback that left the report green-but-empty for 2 months.
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
         run: |
           echo "============================================"
           echo "  GAP 1 & 2: Risk Metrics + IC"
@@ -48,6 +52,10 @@ jobs:
       - name: Run Rolling Walk-Forward Validation
         env:
           PYTHONPATH: ${{ github.workspace }}
+          # 2026-06-12 (#132): rolling_walk_forward now reads the honest intrabar
+          # ledger (at_signal_outcomes) as PRIMARY — 1,607 rows vs the 512-row
+          # JSON fallback that left the report green-but-empty for 2 months.
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
         run: |
           WINDOW_DAYS="${{ github.event.inputs.window_days || '30' }}"
           echo "============================================"
