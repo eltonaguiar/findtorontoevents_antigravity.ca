@@ -52,7 +52,7 @@ This file is the live state. It records what was done, what is in flight, what i
 
 | # | Task | Status | File:line | Reproducer | Notes |
 |---:|---|:---:|---|---|---|
-| P2-9 | Build /audit/model_portfolios.html (replaces portfolio_history) | 📋 READY | new file, uses post-May-2026 `pf_registry.json` schema | do NOT resurrect `portfolio_history.html` | new build, not a port |
+| P2-9 | Build /audit/model_portfolios.html (replaces portfolio_history) | 🔄 IN PROGRESS (worktree feat/minimax-next-steps-batch) | new file `audit_dashboard/model_portfolios.html` + `tools/deploy_to_ftp.py:378` deploy list | open `https://findtorontoevents.ca/audit/model_portfolios.html` after deploy | Roster page: 123 portfolios, status pills (active/shadow/dnt), 6 metric cards, 4 filter dropdowns, click-to-drill into pf.html. Added to FTP deploy list. Awaiting PR review. |
 | P2-10 | Adopt growth-stock-screener factors | 📋 READY | `alpha_engine/production_scanner.py` (factor set) | backtest before/after on picks_now.json | EV/EBITDA, FCF yield, 12-1 skip-month momentum, Form 4 insider |
 | P2-11 | Reverse-split detector for MEME/PENNY/CHEAP_STOCKS | 📋 READY | `alpha_engine/outcome_resolver.py` (add `split_adjust_prices()` pass) | backfill-resolver test on known 10:1 splits | not yet contaminated in large-caps; pre-empt for the 3 at-risk classes |
 | P2-12 | Active-pick-limit accounting fix | 📋 READY | `audit_trail/universal_pick_resolver.py` (include cap'd rows as 0%) | check `at_signal_outcomes.n_capd_out_neutral` | currently cap'd rows are missing from WR denominator |
@@ -119,6 +119,15 @@ This file is the live state. It records what was done, what is in flight, what i
 - The 6th borderline loser kept ACTIVE — PF<1 is a real concern but positive Sharpe is a real signal; user can override
 - Did NOT touch `pf_registry.json` or `money_ready_verdict.json` — those are strategy×class aggregations, not portfolio statuses
 - Did NOT touch BOND/MEME/PENNY at the strategy class level — that's strategy-mutation territory, requires MUTATION_THREE_AXIS_PROTOCOL pre-flight
+
+### 2026-06-12 5:00pm EST — User instruction: "proceed on next steps, isolate work in worktree, then PR"
+- Created worktree `feat/minimax-next-steps-batch` at `/home/eaguiar2015/findtorontoevents_antigravity.ca-worktrees/feat-minimax-next-steps` (branched from main @ 5e2533f71f which has P0 + P1-5)
+- Updated `pf_portfolios.json` roster to reflect 5 demotions (was 0 shadow_paper_only, now 5; will be overwritten by next daily GHA run which should re-apply the status from MySQL `pf_portfolios` table — operator should re-run `tools/portfolios/export_json.py --write` after re-demoting at the DB level)
+- **P1-4 REJECTED**: prediction_market_consensus is on `HARD_KILL_STRATEGIES` (emitter_discipline.py:49) but `anti_overfit_audit.json` shows DSR=0.998. Two different cohorts, two different verdicts. Do NOT remove from kill list without operator decision.
+- **P1-6 REJECTED**: tracker note claimed 47 AMZN rows; current file has 0. Already fixed upstream.
+- **P1-7 REJECTED**: missing classes (CRYPTO/BOND/FUTURES/MEME) in `picks_now_live_pnl.json` is by engine design — `picks_now_professional.py` only scores US-equity. Adding more classes is P2-10 territory.
+- **P1-8 REJECTED**: the 4 EDGE_LIKELY_REAL strategies are all algorithmic/quant, not emitted by any of the 46 chat-LLM tournament models. A "kimi_direct is an edge candidate" badge would be misleading. The strategy-level panel (P0-3) is the right surface.
+- **P2-9 IN PROGRESS**: built `audit_dashboard/model_portfolios.html` (267 lines, 12.8KB) — full roster page with 6 metric cards, 4 filters, status pills, click-to-drill into `pf.html`. Single JS block, syntax verified clean. Added to FTP deploy list at `tools/deploy_to_ftp.py:378`.
 
 ---
 

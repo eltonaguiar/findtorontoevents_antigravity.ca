@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Model Portfolios · findtorontoevents.ca/audit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 1600px; margin: 24px auto; padding: 0 16px; background: #0a0a0f; color: #e6e6f0; line-height: 1.5; }
+  h1 { margin-bottom: 4px; font-size: 22px; }
+  h2 { font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #a0a0b0; margin: 20px 0 10px; }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+  .small { font-size: 11px; color: #a0a0b0; }
+  .back { display: inline-block; margin-bottom: 12px; font-size: 12px; color: #93c5fd; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 10px; letter-spacing: 0.3px; }
+  .b-active { background: rgba(34,197,94,0.18); color: #86efac; border: 1px solid #22c55e; }
+  .b-shadow { background: rgba(251,191,36,0.18); color: #fcd34d; border: 1px solid #f59e0b; }
+  .b-dnt { background: rgba(239,68,68,0.18); color: #fca5a5; border: 1px solid #ef4444; }
+  .b-cons { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
+  .b-bal { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+  .b-agg { background: #7c2d12; color: #fca5a5; border: 1px solid #ef4444; }
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 18px; }
+  .summary-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px 14px; }
+  .summary-card .lbl { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
+  .summary-card .val { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .pnl-pos { color: #22c55e; }
+  .pnl-neg { color: #ef4444; }
+  .pnl-neu { color: #a0a0b0; }
+  .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 12px 0 14px; }
+  .filter-bar select, .filter-bar input { background: rgba(255,255,255,0.04); color: #e6e6f0; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 4px 8px; font-size: 12px; }
+  .filter-bar input { min-width: 240px; }
+  table.lb { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.lb th { text-align: left; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.15); color: #a0a0b0; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.3px; cursor: pointer; user-select: none; }
+  table.lb th:hover { color: #e6e6f0; }
+  table.lb td { padding: 7px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); font-variant-numeric: tabular-nums; }
+  table.lb tr:hover td { background: rgba(255,255,255,0.03); }
+  .num { text-align: right; }
+  .loading { color: #6b7280; padding: 20px; text-align: center; }
+  .err { color: #fca5a5; padding: 12px; background: rgba(239,68,68,0.10); border-radius: 6px; }
+  .status-pill { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; }
+  .leg-note { font-size: 10.5px; color: #6b7280; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<a class="back" href="./">← /audit</a>
+<h1>Model Portfolios · Roster</h1>
+<p class="small">
+  All paper-trading portfolios emitted by the AI-tournament lifecycle engine. One book per (model × risk_appetite) plus a small set of mix portfolios.
+  Source: <code>audit_dashboard/data/pf_portfolios.json</code> (n=123 today). Per-portfolio drill-down: <a href="./pf.html">pf.html</a>.
+</p>
+
+<div id="updated" class="small" style="color:#6b7280;margin-bottom:6px">Loading…</div>
+
+<div class="summary-row" id="summary-row">
+  <div class="summary-card"><div class="lbl">Total</div><div class="val" id="s-total">—</div></div>
+  <div class="summary-card"><div class="lbl">Active</div><div class="val pnl-pos" id="s-active">—</div></div>
+  <div class="summary-card"><div class="lbl">Shadow / Paper-only</div><div class="val" style="color:#fcd34d" id="s-shadow">—</div></div>
+  <div class="summary-card"><div class="lbl">do_not_trade</div><div class="val pnl-neg" id="s-dnt">—</div></div>
+  <div class="summary-card"><div class="lbl">Avg 30d Sharpe</div><div class="val" id="s-sharpe">—</div></div>
+  <div class="summary-card"><div class="lbl">Avg Max DD</div><div class="val" id="s-mdd">—</div></div>
+</div>
+
+<div class="filter-bar">
+  <label class="small">Status:
+    <select id="f-status">
+      <option value="">All</option>
+      <option value="active">active</option>
+      <option value="shadow_paper_only">shadow_paper_only</option>
+      <option value="do_not_trade">do_not_trade</option>
+    </select>
+  </label>
+  <label class="small">Risk:
+    <select id="f-risk">
+      <option value="">All</option>
+      <option value="aggressive">aggressive</option>
+      <option value="balanced">balanced</option>
+      <option value="conservative">conservative</option>
+    </select>
+  </label>
+  <label class="small">Provider:
+    <select id="f-provider"><option value="">All</option></select>
+  </label>
+  <input type="text" id="f-search" placeholder="Filter by model or portfolio_key…">
+  <span class="small" id="f-count"></span>
+</div>
+
+<table class="lb" id="roster">
+  <thead>
+    <tr>
+      <th data-sort="portfolio_key">Portfolio</th>
+      <th data-sort="model_id">Model</th>
+      <th data-sort="provider">Provider</th>
+      <th data-sort="risk_appetite">Risk</th>
+      <th data-sort="status">Status</th>
+      <th data-sort="n_open" class="num">n_open</th>
+      <th data-sort="sharpe_30d" class="num">Sharpe 30d</th>
+      <th data-sort="pf_to_date" class="num">PF to date</th>
+      <th data-sort="wr_to_date" class="num">WR to date</th>
+      <th data-sort="total_return_pct" class="num">Total %</th>
+      <th data-sort="max_dd" class="num">Max DD</th>
+    </tr>
+  </thead>
+  <tbody id="roster-body">
+    <tr><td colspan="11" class="loading">Loading pf_portfolios.json…</td></tr>
+  </tbody>
+</table>
+
+<div class="leg-note">
+  <strong>Legend:</strong>
+  <span class="status-pill b-active">active</span> — paper-trading, eligible for ranking &nbsp;
+  <span class="status-pill b-shadow">shadow_paper_only</span> — observed but excluded from leaderboard &nbsp;
+  <span class="status-pill b-dnt">do_not_trade</span> — killed (PF&lt;0.5 sustained, n≥3 resolved) &nbsp;
+  <span class="small" style="margin-left:8px">Click any column header to sort. Click a row to drill into <code>pf.html</code>.</span>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+
+let ALL = [];
+let sortKey = "sharpe_30d";
+let sortDir = -1;  // -1 = desc, +1 = asc
+
+const appetiteBadge = (a) => {
+  if (a === "aggressive") return '<span class="badge b-agg">AGG</span>';
+  if (a === "balanced") return '<span class="badge b-bal">BAL</span>';
+  if (a === "conservative") return '<span class="badge b-cons">CONS</span>';
+  return '<span class="badge" style="background:rgba(255,255,255,0.06);color:#a0a0b0">' + esc(a || "—") + '</span>';
+};
+
+const statusBadge = (s) => {
+  if (s === "active") return '<span class="status-pill b-active">active</span>';
+  if (s === "shadow_paper_only") return '<span class="status-pill b-shadow">shadow</span>';
+  if (s === "do_not_trade") return '<span class="status-pill b-dnt">DNT</span>';
+  return '<span class="status-pill" style="background:rgba(255,255,255,0.06);color:#a0a0b0">' + esc(s || "—") + '</span>';
+};
+
+const fmtPct = (v, d=2) => (v == null || isNaN(v)) ? "—" : (v >= 0 ? "+" : "") + v.toFixed(d) + "%";
+const fmtNum = (v, d=2) => (v == null || isNaN(v)) ? "—" : v.toFixed(d);
+const fmtSigned = (v, d=2) => (v == null || isNaN(v)) ? "—" : (v >= 0 ? "+" : "") + v.toFixed(d);
+const pnlClass = (v) => (v == null || isNaN(v)) ? "pnl-neu" : (v > 0 ? "pnl-pos" : v < 0 ? "pnl-neg" : "pnl-neu");
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+async function load() {
+  try {
+    const r = await fetch("./data/pf_portfolios.json?_=" + Date.now());
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
+    ALL = (d.portfolios || []).map(p => ({
+      ...p,
+      // Derive provider from model_id prefix
+      provider: p.provider || (p.model_id || "").split("_")[0] || "?",
+    }));
+    $("updated").innerHTML = "Updated: <code>" + esc(d.generated_at || "?") + "</code> · n=" + ALL.length;
+    populateProviders();
+    renderSummary();
+    bindFilters();
+    render();
+  } catch (e) {
+    $("roster-body").innerHTML = '<tr><td colspan="11" class="err">Failed to load pf_portfolios.json: ' + esc(e.message) + '. Verify the deploy or check the data/ folder.</td></tr>';
+  }
+}
+
+function populateProviders() {
+  const seen = new Set();
+  ALL.forEach(p => seen.add(p.provider));
+  const sel = $("f-provider");
+  [...seen].sort().forEach(p => {
+    const o = document.createElement("option");
+    o.value = p; o.textContent = p;
+    sel.appendChild(o);
+  });
+}
+
+function renderSummary() {
+  const total = ALL.length;
+  const active = ALL.filter(p => p.status === "active").length;
+  const shadow = ALL.filter(p => p.status === "shadow_paper_only").length;
+  const dnt = ALL.filter(p => p.status === "do_not_trade").length;
+  const sharpeVals = ALL.map(p => p.sharpe_30d).filter(v => v != null && !isNaN(v));
+  const mddVals = ALL.map(p => p.max_dd).filter(v => v != null && !isNaN(v));
+  const avgSharpe = sharpeVals.length ? sharpeVals.reduce((a,b)=>a+b,0) / sharpeVals.length : null;
+  const avgMdd = mddVals.length ? mddVals.reduce((a,b)=>a+b,0) / mddVals.length : null;
+  $("s-total").textContent = total;
+  $("s-active").textContent = active;
+  $("s-shadow").textContent = shadow;
+  $("s-dnt").textContent = dnt;
+  $("s-sharpe").textContent = fmtSigned(avgSharpe);
+  $("s-mdd").textContent = fmtPct(avgMdd);
+}
+
+function bindFilters() {
+  ["f-status", "f-risk", "f-provider", "f-search"].forEach(id => {
+    $(id).addEventListener("input", render);
+  });
+  document.querySelectorAll("th[data-sort]").forEach(th => {
+    th.addEventListener("click", () => {
+      const k = th.getAttribute("data-sort");
+      if (sortKey === k) sortDir = -sortDir;
+      else { sortKey = k; sortDir = -1; }
+      render();
+    });
+  });
+}
+
+function applyFilters(rows) {
+  const s = $("f-status").value;
+  const r = $("f-risk").value;
+  const p = $("f-provider").value;
+  const q = ($("f-search").value || "").toLowerCase();
+  return rows.filter(row => {
+    if (s && row.status !== s) return false;
+    if (r && row.risk_appetite !== r) return false;
+    if (p && row.provider !== p) return false;
+    if (q) {
+      const hay = ((row.model_id || "") + " " + (row.portfolio_key || "")).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function render() {
+  let rows = applyFilters(ALL);
+  rows.sort((a, b) => {
+    const va = a[sortKey], vb = b[sortKey];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    if (typeof va === "string") return va.localeCompare(vb) * sortDir;
+    return (va - vb) * sortDir;
+  });
+  $("f-count").textContent = rows.length + " / " + ALL.length + " rows";
+
+  if (rows.length === 0) {
+    $("roster-body").innerHTML = '<tr><td colspan="11" class="loading">No rows match the current filters.</td></tr>';
+    return;
+  }
+
+  $("roster-body").innerHTML = rows.map(p => {
+    const key = esc(p.portfolio_key);
+    const detail = "./pf.html?key=" + encodeURIComponent(p.portfolio_key);
+    return '<tr onclick="window.location=\'' + detail + '\'" style="cursor:pointer">'
+      + '<td><code style="font-size:10.5px">' + key + '</code></td>'
+      + '<td>' + esc(p.model_id || "—") + '</td>'
+      + '<td><span class="small">' + esc(p.provider || "—") + '</span></td>'
+      + '<td>' + appetiteBadge(p.risk_appetite) + '</td>'
+      + '<td>' + statusBadge(p.status) + '</td>'
+      + '<td class="num">' + (p.n_open == null ? "—" : p.n_open) + '</td>'
+      + '<td class="num ' + pnlClass(p.sharpe_30d) + '">' + fmtSigned(p.sharpe_30d) + '</td>'
+      + '<td class="num ' + pnlClass((p.pf_to_date || 0) - 1) + '">' + fmtNum(p.pf_to_date) + '</td>'
+      + '<td class="num ' + pnlClass((p.wr_to_date || 0) - 0.5) + '">' + (p.wr_to_date == null ? "—" : (p.wr_to_date*100).toFixed(1) + "%") + '</td>'
+      + '<td class="num ' + pnlClass(p.total_return_pct) + '">' + fmtPct(p.total_return_pct) + '</td>'
+      + '<td class="num ' + pnlClass(p.max_dd) + '">' + fmtPct(p.max_dd) + '</td>'
+      + '</tr>';
+  }).join("");
+}
+
+load();
+</script>
+
+</body>
+</html>
