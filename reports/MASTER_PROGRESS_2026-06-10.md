@@ -312,3 +312,5 @@ Two workflows (21 mining/verify agents + 6 builders) + vLLM refutation consult, 
 
 ## HEARTBEAT 22:50 (Jun 11) — own-drift reconciled SAME-DAY (the #129 discipline, practiced)
 ci-tests went red on MY #88 normalization (5+8 category tests asserting old lowercase). Reconciled the tests to the consumer-derived UPPERCASE canonical (14/14 pass locally), REMOVED the 8 now-passing entries from the quarantine list (shrinks 69->61), redispatched. daily-top-picks-filter: GREEN (empty-IN() fix confirmed); 2hour-challenge + mirror in flight. Tournament REPLAY-only 0 ✓ · ledger 90/88 · lane unchanged · live 21:41.
+
+## HOSTILE REVIEW TRIAGED — 2026-06-12 ~01:00. Grade B; critical F-item (forward-lane automation) FIXED same-hour (aba100e67f); review persisted (1b624997ce); Addendum D = full triage. Monkey-test benchmark elevated to next build item. Fresh peer-MD check: only 2 new non-mine in 12h (SIDECAR_STATUS known, REAL_CHALLENGE bot artifact) — peer coverage current.
