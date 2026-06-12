@@ -529,6 +529,61 @@ def load_fmp_scores(tickers: list[str]) -> dict[str, dict]:
 
 # ── Scoring engine ──────────────────────────────────────────────────────────
 
+# Council fix #3 panel rejection cache (loaded once at module init)
+_tournament_panel_cache = None
+
+def _load_tournament_panel_rejection(force_reload=False):
+    """Load AI tournament picks and build per-symbol rejection lookup.
+    Returns dict: {symbol: {n_models, n_wins, n_losses, loss_ratio, total_resolved}}
+    Only includes symbols with >=3 resolved picks.
+    Cached after first load. Kill-switch: COUNCIL3_PANEL_BRIDGE_DISABLED=1.
+    """
+    global _tournament_panel_cache
+    if _tournament_panel_cache is not None and not force_reload:
+        return _tournament_panel_cache
+    if os.environ.get("COUNCIL3_PANEL_BRIDGE_DISABLED"):
+        _tournament_panel_cache = {}
+        return _tournament_panel_cache
+    try:
+        panel_path = REPO / "audit_dashboard" / "data" / "ai_tournament_picks_latest.json"
+        if not panel_path.exists():
+            _tournament_panel_cache = {}
+            return _tournament_panel_cache
+        with open(panel_path) as f:
+            picks = json.load(f)
+        if not isinstance(picks, list):
+            _tournament_panel_cache = {}
+            return _tournament_panel_cache
+        sym_stats = defaultdict(lambda: {"models": set(), "wins": 0, "losses": 0})
+        for p in picks:
+            sym = str(p.get("symbol", "") or "").upper().strip()
+            if not sym:
+                continue
+            s = sym_stats[sym]
+            s["models"].add(p.get("model_id", ""))
+            if p.get("status") == "WIN":
+                s["wins"] += 1
+            elif p.get("status") == "LOSS":
+                s["losses"] += 1
+        out = {}
+        for sym, s in sym_stats.items():
+            resolved = s["wins"] + s["losses"]
+            if resolved >= 3:
+                out[sym] = {
+                    "n_models": len(s["models"]),
+                    "n_wins": s["wins"],
+                    "n_losses": s["losses"],
+                    "total_resolved": resolved,
+                    "loss_ratio": round(s["losses"] / resolved, 3) if resolved else 0,
+                }
+        _tournament_panel_cache = out
+        return out
+    except (OSError, json.JSONDecodeError, ValueError, KeyError) as e:
+        print(f"  [panel] tournament load failed: {e}", file=sys.stderr)
+        _tournament_panel_cache = {}
+        return _tournament_panel_cache
+
+
 class QuantScorer:
     """Multi-factor scoring (inspired by institutional quant frameworks)."""
 
@@ -542,7 +597,8 @@ class QuantScorer:
     def score(self, sym: str, cls: str, df: pd.DataFrame,
               info: dict, db_edge: dict, prices: dict,
               fmp_scores: dict | None = None,
-              db_edge_forward: dict | None = None) -> dict:
+              db_edge_forward: dict | None = None,
+              tournament_panel: dict | None = None) -> dict:
         """Score one symbol across all factors. Returns result dict.
 
         Phase B (2026-06-09): now consumes a `db_edge_forward` overlay that
@@ -695,6 +751,16 @@ class QuantScorer:
                 signals.append(f"TP+{upside:.0f}%")
             elif upside and upside < -10:
                 score -= 5
+
+        # 3.5 AI Tournament panel bridge (council fix #3, 2026-06-12)
+        # If the AI tournament panel shows this symbol has a high loss ratio
+        # (>=60% losses with >=5 resolved models), deduct 20 points.
+        # Prevents the system from ignoring its own AI panel rejection warnings.
+        if tournament_panel and sym.upper() in tournament_panel:
+            ps = tournament_panel[sym.upper()]
+            if ps["total_resolved"] >= 5 and ps["loss_ratio"] >= 0.6:
+                score -= 20
+                signals.append(f"PANEL_REJECT({ps['n_models']}M/{ps['n_losses']}L/{ps['total_resolved']}T)")
 
         # 4. Vol-adjusted safety (15 pts)
         if rvol < 20:
@@ -1173,6 +1239,14 @@ def main():
     db_edge_forward = load_db_edge_forward(decay_half_life_days=14, max_age_days=60)
     print(f"   Loaded {len(db_edge_forward)} symbols with forward-weighted edge.")
 
+    # Council fix #3 (2026-06-12): load AI tournament panel rejection data
+    tournament_panel = _load_tournament_panel_rejection()
+    if tournament_panel:
+        rejected = sum(1 for s in tournament_panel.values() if s["total_resolved"] >= 5 and s["loss_ratio"] >= 0.6)
+        print(f"   Tournament panel: {len(tournament_panel)} symbols, {rejected} rejected (>=60% loss)")
+    else:
+        print(f"   Tournament panel: disabled or unavailable")
+
     # Load FMP financial scores (Piotroski, Altman-Z)
     all_tickers = [t for cfg in UNIVERSE.values() for t in cfg["tickers"]]
     print(f"\n📥 Loading FMP financial scores for {len(all_tickers)} symbols...")
@@ -1203,7 +1277,7 @@ def main():
                             info[k] = v
 
                 result = scorer.score(sym, cls, df, info, db_edge, all_prices,
-                                      fmp_scores, db_edge_forward)
+                                      fmp_scores, db_edge_forward, tournament_panel)
                 all_prices[sym] = result["price"]
                 all_results.append(result)
 
