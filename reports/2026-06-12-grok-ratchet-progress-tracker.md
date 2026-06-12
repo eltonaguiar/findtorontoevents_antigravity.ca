@@ -83,3 +83,16 @@
 
 ---
 *Tracker is the single source for ratchet progress. Main deep-dive MD gets summary Pass entries only.*
+
+## 15m Tick Pass 79 / continuing 4h (2026-06-12 ~19:55Z)
+- Rebase clean, skills re-invoked, verifs first (py OK, loads/grep/pages read).
+- MEASURE: web_fetch picks-now (0/6 pass, research/paper only, 21.1% FORWARD-TESTED, our stamp/adverse now in research scores); ai-tournament (SYNTHETIC 1636 cursor 100%/kimi 49%, 0% synth grok3 rec, 0 ready); loads (verdict 19:07, stamp 1162/15, recency 19:13); grep (consume edit in picks_now, 0 callers, TODOs).
+- DIAGNOSE: COM priority (H-111 REGISTERED-UNTESTED + fut_mom 74n +79bp good slice inside adverse/conc/48h P0 per prior + pages INSUFF); wiring impact (adj now consumed in picks_now research path - boosts good stamp ~+12pts, penalizes adverse -20; main /audit prod still 0 callers/gap); synthetic (pages explicit 1636 flag + filter rec); recency P0 (48h thin despite fresh gen); 0 classes T2 live confirmed; FWD vs strat + adverse dominant.
+- ACT/FORWARD: tracker items advanced - item 4 wiring (picks_now consume DONE per edit + this dig; next prod extend); item 2 synthetic (pages evidence + plan filter to 0% synth); item 1 velocity (data prep + read-only plan on COM fut using entry_conditions + intrabar); DB FWD/COT/paper/H-111/HF ratchet per tracker.
+- HF applied: velocity, stamp F pre (now in research), adverse explicit (wired + consume), 14d/48h first, conc, pre-reg (H-111), paper admissible, synthetic filter critical (pages now surface).
+- RATCHET: this Pass 79 in main grok MD + tracker update (item statuses, evidence from pages/loads). Next 15m: velocity read-only COM, synthetic filter sketch, DB FWD plan, wiring NOTE in scanner/gates, PR review.
+- Evidence: rebase, web_fetch full (0/6 + synthetic 1636), loads, grep, py verif, MD anchors, tracker read. All outputs read before append/claim.
+- Goal #1: COM edge + wiring (research now has consume) + synthetic + recency P0 now deeper + tracked. 0/ still but measurable + actionable.
+
+**Tracker update (this tick):** Item 4: picks_now consume DONE (edit + dig); item 2: synthetic evidence from fresh pages (1636, grok3 rec), plan filter; item 1: velocity data from loads + plan read-only COM. (See full sections above for details.)
+---

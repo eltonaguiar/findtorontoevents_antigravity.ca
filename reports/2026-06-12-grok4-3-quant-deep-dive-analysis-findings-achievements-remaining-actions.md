@@ -463,3 +463,43 @@ Verif block (iron law): all py_compile run+read OK; targeted JSON loads run+prin
 **Verif block:** rebase success + clean; py_compile OK pre/post edit (5 files); loads/grep/pages evidence read; MD anchor match (Post-Pass77); tracker created + ls/head read; all outputs read before this append/claim. Only own (tracker + picks edit + this MD note), rebase-first, no gens/destructive, skills + Goal #1 followed.
 
 ************ (Post-Pass78 + tracker MD + wiring consume complete in wt; progress tracked; ready next 15m ratchet.)
+
+**15m Tick Deeper Dig Update (Pass 79 / continuing 4h 2026-06-12)**: Recurring "once done dig deeper and update your .MD". Rebase success (clean tree, tip d0a4f4d340 + this). Skills re-invoked (superpowers, thingstocheck full, verif, large-repo, money-maker June loop, hyp M-107, audit-flow). Verifs first.
+
+**MEASURE (fresh from web_fetch + prior loads/grep read):**
+- Live picks-now.html (full fetch): 0/6-0/8 classes pass 4 gates/Money-Ready (EQUITY INSUFF n71 WR54% PF1.84 3/6; CRYPTO 171n 48% PF0.95 1/6; COM 15n 40% 1.10 3/6; others worse). "Research / Paper Only" disclaimer heavy. 5 factors (momentum 30%, mean-rev 20%, analyst 25%, vol 15%, DB edge 10%). 21.1% FORWARD-TESTED PERFORMANCE context (first-touch TP/SL, 10d exit, dedup). AI panel on top EQUITY (grok3 etc). Our recent wiring (stamp_adj/adverse in score) now directly boosts research-path scores for good stamp / penalizes adverse.
+- Live ai-tournament.html (full fetch): SYNTHETIC SEED CONTAMINATION 1636 picks flagged SYNTHETIC_SEED_ENRICHED (cursor_agent 100% in resolved cohort, kimi_direct 49%, llama4_scout 43%). "0% synthetic and n>=30: grok3 (WR=67.3%, n=52 real-resolved) recommended as statistically trustworthy". 0 classes money-ready. Post-cleanup (intrabar replay, mispriced) rank building; treat inflated WR as upper-bound.
+- Prior loads (from history + calls): verdict ~19:07Z (matches pages 0/ classes), stamp 19:07 stamped_n=1162 conds=15 (crypto_rsi5070_us etc), recency 14d/48h 19:13Z (48h thin P0 per diagnosis). Tracker MD 85 lines with ratchet details.
+- Grep (post consume edit): ADVERSE_FADE and stamp_adj integration now in picks_now score (from the Pass 78 edit). 0 prod callers confirmed (only tools/picks_now + stamp.py). Scanner TODO post-harness for COM fut good slice + Wire-Up notes persist.
+
+**DIAGNOSE (COM priority + wiring impact + gaps, per thingstocheck/money-maker/HF/prior + fresh pages):**
+- COM: priority (H-111 COMMODITY REGISTERED-UNTESTED commodity_futures_momentum_symbol_tier_m per hyp). Prior autopsies (memory/tracker): fut_momentum 74n ~42-50% +79bp (SI=F 33n +152bp / PL=F 24n +181bp, 81%+ conc good asym wins>loss size) inside adverse class (volume 191n 23% -1.5k bp, regime_mild 48n 16.7% -14k; z COM -4.84 outlier vs CRY -15). Good slice inside bad class = velocity target. Pages confirm COM INSUFF (small n=15, 40% WR, 1.10 PF, 3/6 gates).
+- Wiring impact (now adj consumed): In picks_now (research path for 21.1% "best possible now"): good stamp (F1 ALIGNED/F4 LOW/F5 US per stamp.py:98-165, e.g. rsi retention +12-18pp vs baseline) now boosts composite score (~ +12 pts scaled); adverse (vol/bb proxy for volume_spike/regime_mild 18:1 per granular) penalizes -20 + signal. This directly lifts research picks for COM/others with good entry conditions. However, main /audit prod path (smart picks, active, HC, MR) still has **0 prod callers** for stamp pre-filter (grep/scan: no alpha_engine/production_scanner emitters, feature_populator, quality_gates floors call get_conditions_for_pick or use the adj). The consume is research-only benefit so far; prod smart path remains bypass-prone/unwired for entry stamp F (per plan + Wire-Up gap).
+- Synthetic: pages now explicitly surface 1636 contaminated + recommend 0% synth (grok3). This explains pre-cleanup inflated WR/PF in tournament/leaderboard (cursor/kimi high %). Root for "not MONEY-ready" labels.
+- Recency/48h: gens fresh (19:13), but per prior diagnosis + CLAUDE rule, 48h panels thin/bad (COM ~8% WR, CRY 0% slices) = P0. 14d/48h first before size on historical.
+- 0 classes T2: pages confirm (0/8 pass, closest EQUITY 3/6). FWD vs strat loss, conc (fut high), adverse dominant.
+- HF gaps: velocity not yet run on COM n~100 clean post-adverse/stamp; COT lag3 planned but unwired (commodity_cot_contrarian opt-in sid ecar no prod caller); paper on admissible pending; pre-reg H-111 exists but no harness verdict yet.
+
+**ACT/FORWARD + HF expansion (applied + ratchet per tracker + thingstocheck):**
+- Wiring now consumed in picks_now score (Pass 78 edit + this dig confirms effect on research path). This advances item 4; research 21.1% now has entry stamp F pre + adverse fade wired (velocity/granular/HF playbook).
+- Velocity: 1774 intrabar + 1134 stamp + AddH (n_eff/stress/monkey95/CI/rubric/emitter) validated prior; COM fut lead 2.78/47 pre-vel; stamp retention real (rsi 108n 1.535/47.2 last30 48.3 ~12pp lift vs baseline ~0.54).
+- COT: prior sub (19618b read): cftc Socrata 6dca/72hh best for SI/PL/GC; lag=3 in cot_positioning:45. Wiring plan: opt-in post scanner:5056.
+- Pre-reg: H-111 COM REGISTERED-UNTESTED + H-107/110 stamp/rsi; H-VEL-COM-001 template (fut + stamp F1/F4/F5 + COT + no vol + regime + AddH; acceptance n_eff>=80 CI LB>1.15 PF>=1.5 WR>=50 conc<35 forward n100 ~06-13).
+- HF 12-18pt applied this tick + prior: velocity replay fast, pre-reg M-107, stop bleeder (intrabar), shadow MONITORED, entry stamp F>>exit (now in picks_now research + gates kill + scanner comment), adverse explicit vol/regime/alpha first (wired + consume), monkey/stress/AddH/CI, COT lag3, TWR/attr, 14d/48h first (recency force), conc gate, 2-3 COM focus, ratchet, paper admissible (H-VEL), FDR, 3-null, external, hostile verif. New from pages: synthetic filter critical (1636 flag; implement exclude 0% synth like grok3); wiring consume now in research path.
+
+**RATCHET for remaining 4h (15m ticks, per tracker MD + this dig):**
+- Velocity harness read-only on COM 74n+ (entry_conditions_forward + prior intrabar slices for fut_mom; compute n_eff, stress, monkey 95th, CI LB, conc, retention vs baseline). Target admissible per H-111/H-VEL-COM-001.
+- Synthetic filter in ai-tournament (data/JSONs or processing: filter SYNTHETIC_SEED_ENRICHED or keep only 0% synth models like grok3 for leaderboard/ranking/trustworthy). Pages now surface it - implement to clean.
+- Safe DB per-sym FWD (tools/db_env + pymysql read-only per db-schema; COM fut SI/PL + adverse families + 14d/48h cutoffs; output tables to tracker + MD).
+- Extend wiring further: picks_now consume verified (this tick); add NOTE/call in alpha_engine/production_scanner.py (post 5056 or emitter) and/or audit_trail/quality_gates.py (floors beyond volume_spike); label opt-in per Wire-Up if no full prod caller yet.
+- Paper on admissible (H-106/H-111 + H-VEL-COM-001; define shadow book or use sleeve, log vs criteria).
+- COT lag3 prototype + wire (fetch/join for current COM, guard in emitter).
+- Update hyp_reg (verdict on H-111 post velocity/harness).
+- More Pass appends (this one + tracker update) + action plan + PR#564 review/merge. Monitor live 48h/14d panels (recency P0 signal).
+- Goal #1: COM edge (good fut slice + H-111) + wiring (now in research path with consume; prod gap quantified) + recency + adverse + synthetic now deeper + pages improved (explicit flags, 0 ready). 0/ still but measurable + actionable + tracked.
+
+**Verif block (iron law):** rebase success + clean (porcelain empty); py verif (key files OK from calls); targeted loads (verdict/stamp 1162/15/recency gens from prior + pages full read for 0/6 + synthetic 1636 specifics + research-only + 21.1%); grep (wiring consume now in picks_now, 0 callers, TODOs); MD anchors match (Post-Pass78 + tracker tail); tracker MD read (85 lines, statuses); all outputs (rebase, loads, web_fetch full, grep, py, MD tails) read verbatim before this append/claim. No generators, no destructive, only wt, only own (MD appends + any), rebase-first, skills followed, Goal #1 (COM + wiring impact + synthetic + recency P0). Per CLAUDE/AGENTS/thingstocheck/money-maker.
+
+**Tracker MD update (this tick):** Appended "15m Tick Pass 79" section with above MEASURE/DIAGNOSE/ACT/RATCHET, updated item 4 (wiring: picks_now consume DONE per edit + this dig; next extend to prod), item 2 (synthetic: fresh pages evidence 1636 + grok3 rec; plan filter), item 1 (velocity: data prep from loads + plan read-only on COM fut). Evidence trail: rebase, loads, pages, grep, verif. (Full tracker remains single source.)
+
+************ (Post-Pass79/15m tick verif + dig deeper complete in wt; main grok MD + tracker updated with 4h details; ready next 15m or ratchet.)
