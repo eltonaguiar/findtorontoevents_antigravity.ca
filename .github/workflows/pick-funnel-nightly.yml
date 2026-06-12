@@ -79,15 +79,24 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add audit_dashboard/data/pick_funnel_today.json \
-                  audit_dashboard/data/pick_funnel_90d.json \
-                  audit_dashboard/data/pick_funnel_rejected_universe.json \
-                  audit_dashboard/data/top_edges_per_class.json \
-                  audit_dashboard/data/nav_surface_edge_matrix.json \
-                  audit_dashboard/data/strategy_ic_analysis.json \
-                  audit_dashboard/data/pick_summary_stats_2w.json \
-                  audit_dashboard/data/pick_summary_stats_48h.json \
-                  reports/2026-*_pick_funnel_swarm_verdict.md 2>/dev/null || true
+          # 2026-06-12: the old single atomic `git add` listed strategy_ic_analysis.json,
+          # whose builder (build_ic_analysis.py) does not exist in the repo — git add
+          # is ATOMIC on pathspec errors, so it staged NOTHING every night ("No
+          # changes to commit") while `|| true` hid it (masked-failure #7). The fresh
+          # nav_surface_edge_matrix.json then got clobbered on the live site within
+          # the hour by audit-dashboard re-uploading main's stale committed copy.
+          # Per-file guarded adds make one missing artifact unable to zero the commit.
+          for f in audit_dashboard/data/pick_funnel_today.json \
+                   audit_dashboard/data/pick_funnel_90d.json \
+                   audit_dashboard/data/pick_funnel_rejected_universe.json \
+                   audit_dashboard/data/top_edges_per_class.json \
+                   audit_dashboard/data/nav_surface_edge_matrix.json \
+                   audit_dashboard/data/strategy_ic_analysis.json \
+                   audit_dashboard/data/pick_summary_stats_2w.json \
+                   audit_dashboard/data/pick_summary_stats_48h.json \
+                   reports/2026-*_pick_funnel_swarm_verdict.md; do
+            [ -e "$f" ] && git add "$f" || echo "skip (absent): $f"
+          done
           if ! git diff --cached --quiet; then
             git commit -m "Pick funnel nightly refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
             git push || echo "::warning::push failed"
