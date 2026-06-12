@@ -357,3 +357,10 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 - **Masked-failure bug #3 (FIXED `f2afe5773c`):** run 27400674369 ultimately FAILED in "Commit updated data" — 10× merge abort on UNTRACKED runner-generated `money_ready_archive/money_ready_2026-06-12.json` colliding with another workflow's commit of the same file (untracked files are not covered by the PHASE-2a stash). Staged the archive glob. NOTE: FTP deploy still ran (`if: always()`), so live data stayed fresh; only the git commit was lost.
 - **Pattern for the ratchet:** 3 masked failures in one session, all the same shape — *step exits non-zero or silently reverts, `|| non-fatal` / soft-fail guard hides it, surface stays green while data goes stale*. Weekly scorecard H1 (recon error) should add a freshness assertion per critical JSON (generated_at < 2h) instead of trusting green checks.
 - Grok Pass 49-51 reviewed: SI/PL-only symbol filter lift on futures_momentum (+79→+165bp), 48h COM decay (−227bp), multi_asset emit bypass (`production_scanner.py:2937` commodity-category not covered by the futures_momentum kill at `strategy_blocklist.py:229`) — third blocklist scope-gap; covered by INCIDENT#135's protocol path + grok's own operator steps.
+
+## 2026-06-12 ~10:30Z — CI-fix verification: ALL GREEN (loop closed)
+- Run 27407104548 (all 3 fixes): **completed/success**, data commit `eae20e5f4` landed with zero merge aborts.
+- **Recency panels UNFROZEN:** origin/main `pick_summary_stats_48h.json` generated_at = 2026-06-12T10:14 (was frozen 2026-06-05 → 7-day staleness ended); live site fresh since 08:59Z.
+- **Archive collision gone:** `money_ready_archive/money_ready_2026-06-12.json` now tracked+committed by the dashboard workflow (no more untracked merge-block).
+- **P0A hourly intrabar lane:** third consecutive successful backup+reresolve pass (459-row snapshot). Forward-checkpoint accrual is autonomous.
+- The three masked-failure fixes: `983413526f` (DB_PASS_BACKUPS), `d2f56ae23f` (recency staging), `f2afe5773c` (archive staging). Pattern + prevention documented in this ledger @ 08:30Z entry; scorecard H1 gets a generated_at freshness assertion.
