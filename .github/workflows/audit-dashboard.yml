@@ -24,6 +24,11 @@ name: Unified Audit Dashboard
         options:
           - ubuntu-latest
           - self-hosted
+      bootstrap_intrabar:
+        description: 'One-time bootstrap batch — reresolve ALL-TIME backlog (177K rows, bypasses 90d window). Use ONCE to seed honest intrabar data (~40 min, idempotent — re-running wastes time but is safe).'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   # 2026-05-19: collapsed to a single group now that the `push:` trigger is
@@ -556,7 +561,15 @@ jobs:
           # the intrabar lane had NO hourly driver — zero new resolutions for 46h
           # starved every forward checkpoint. Hourly capped re-resolve (idempotent:
           # skips already-resolved rows; built-in backup) + truth rebuild.
-          python tools/reresolve_intrabar_signal_outcomes.py --apply --i-understand-this-mutates-production --max 500 || echo "intrabar reresolve warning (non-fatal)"
+          # P0A one-time bootstrap batch (2026-06-12): when bootstrap_intrabar=true,
+          # runs --all-time (bypasses 90d window) at --max 2000 to seed honest intrabar
+          # data for the 177K backlog. Normal hourly runs use --max 500 (90d window).
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.bootstrap_intrabar }}" = "true" ]; then
+            echo "[P0A] BOOTSTRAP BATCH: --all-time --max 1500 (one-time backlog seed)"
+            python tools/reresolve_intrabar_signal_outcomes.py --apply --i-understand-this-mutates-production --all-time --max 1500 || echo "intrabar bootstrap warning (non-fatal)"
+          else
+            python tools/reresolve_intrabar_signal_outcomes.py --apply --i-understand-this-mutates-production --max 500 || echo "intrabar reresolve warning (non-fatal)"
+          fi
           python tools/build_intrabar_truth_by_class.py || echo "intrabar truth build warning (non-fatal)"
           python tools/money_ready_snapshot.py || echo "money_ready snapshot warning (non-fatal)"
           # 2026-06-12 (external hostile review Q1): the forward entry-conditions
