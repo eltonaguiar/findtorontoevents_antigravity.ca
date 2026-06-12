@@ -128,3 +128,25 @@ Overall grade B; every finding verified before adoption:
 - **ADOPTED (metric): the velocity principle gets its own falsification test** — when rsi5070 reaches n≥80 forward, compute forward-PF / replay-PF; ≥0.8 = principle holds; <0.5 = recalibrate the loop. Pre-registered here.
 - **ALREADY-DONE (reviewer missed it): Q4's proposed experiment** (LONG-only handoff + RSI band) — that IS the v2 control run: LONG-only 1.0×ATR PF 1.3797 n=536 (`reports/strategy_bt_crypto_handoff_v2_2026-06-11.json`; the handoff entry rule already embeds RSI 50-70 for longs). Family CLOSED; the Jul-9 out-of-sample window is its next legitimate test. No new tuning.
 - **PARTIAL: do-not-relitigate precision** — tournament-WR ban now states the reason (58.5% MISPRICED_ENTRY + single-snapshot resolution); futures_momentum stays refuted (dedup evidence stands) but may re-enter ONLY via a fresh pre-registered replay under the loop's own rules.
+
+## ADDENDUM E — GROK4_3 deep review processed (2026-06-12; source: docs/GROK4_3_JUNE112026.MD, 348KB multi-pass)
+Verdict received: "strongest, most honest, most executable plan the repo has produced... core weakness: the self-correcting properties live in prose and opt-in sidecars." Adopted:
+- **P0 FIXED — the fail-closed admission gate exists now: `tools/loop_preflight.py` (d81256b6d4).** Run before ANY replay batch / promotion / scorecard publish: blocks on H1 red (sign-incoherence, NULL-pnl regrowth), missing M-107 pre-registration, closed families, and do-not-relitigate matches; fails CLOSED on check errors; skips require an explicit logged flag. First live run already warned: 7d emission dup-rate 69% (forward-lane n quality item).
+- **UNIFIED LIFECYCLE STATES (replaces the fragmented gate numbers Grok flagged):**
+
+| State | Entry bar | Where it lives |
+|---|---|---|
+| research-replay | pre-registered (M-107) + preflight GO | replay harness artifacts |
+| shadow-forward | replay: net PF≥1.3, R1 time-split, conc<35%, family open | forward lanes (auto-accruing) |
+| probation | forward: n≥80 AND 95% CI-LB(PF)>1.15 net AND R1/R2 re-pass | promotion_gate allowlist |
+| money-ready | honest n≥100, PF≥1.5, WR≥50, ≥3 months, multi-source, intrabar-validated | money_ready_verdict MONEY_READY |
+| sizing-eligible | money-ready + conc<25% + MDD≤20% + portfolio-math validated + operator sign-off | real capital (none today) |
+Every other number in this doc defers to this table. AUTO-DEMOTION applies at every level (Addendum B #2).
+- **Taxonomy pinned:** the verdict tracks 10 classes (incl. CHEAP_STOCKS/MEME/PENNY_STOCK); "0/9" = the 9 non-degenerate; future references use "0/10 tracked, 0/9 non-degenerate".
+- **§4 cadence gains a PORTFOLIO lane:** RATCHET (Fri) now includes the portfolio-math checklist (incident #133 items) until Addendum A's module lands — it cannot be deprioritized silently.
+- **Per-class replay-readiness metrics** added to MEASURE: max-achievable honest replay n this week, bar-coverage %, regime-spread note (COMMODITY currently thin: replay n=35 vs CRYPTO 970).
+- **Registry seeding:** the hypothesis registry had 0 entries despite bt artifacts carrying voluntary pre-registration metadata — active families (handoff forward-obs, rsi5070, monkey-test baseline) get registry entries as part of the next weekly cycle so the preflight PREREG check has teeth.
+- NOT adopted: Grok's verdict-surface numbers for FOREX/ETF (57.5%/1.79, 73.5%/2.05) as anything but Layer-A — the intrabar surface stays canonical (its own cross-check showed the same).
+
+## ADDENDUM F — opencode GHA health monitor (2026-06-12; source: ___HELL_HEALTH_OPENCODE.MD)
+Peer-operated 15-min monitor active (tools/gh_actions_monitor.py). Its open items are predominantly OPERATOR-level: verify MySQL secrets in GH (sync auth failures), 50webs IP-block check, GH token permissions, Pages deploy, and the medium-term 50webs-migration evaluation. The loop treats recurring MySQL-auth workflow failures as an H1-adjacent watch item (resolution coverage depends on DB reachability from runners).
