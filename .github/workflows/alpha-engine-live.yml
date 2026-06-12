@@ -324,6 +324,19 @@ jobs:
         continue-on-error: true
         timeout-minutes: 3
 
+      #  PM odds history capture + lead/lag report (IDEA-H lead/lag prerequisite,
+      #  DAILY_IDEAS 2026-05-24 build plan). History JSONL persists via the
+      #  existing `git add prediction_market_agents/data/` in the commit step.
+      - name: Capture PM odds history + lead/lag report
+        if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python prediction_market_agents/pm_odds_history.py || echo "PM odds history capture failed (non-fatal)"
+          python prediction_market_agents/pm_lead_lag_analyzer.py || echo "PM lead/lag analyzer failed (non-fatal)"
+        continue-on-error: true
+        timeout-minutes: 4
+
       #  LunarCrush/Social sentiment signals (galaxy score equivalent via free APIs)
       - name: Run LunarCrush social sentiment
         if: steps.mode.outputs.mode == 'full-cycle' || steps.mode.outputs.mode == 'validate-only'
