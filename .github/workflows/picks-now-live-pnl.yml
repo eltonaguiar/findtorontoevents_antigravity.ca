@@ -52,7 +52,9 @@ jobs:
       - name: Rebuild track record
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
-        run: python3 tools/build_picks_now_track_record.py --apply || echo "[track_record] non-fatal"
+        # 2026-06-12: --apply is NOT a supported flag (argparse exit 2) — the JSON was
+        # frozen at 06-09 while the guard swallowed the crash hourly (masked-failure #5).
+        run: python3 tools/build_picks_now_track_record.py || echo "[track_record] non-fatal (check generated_at freshness!)"
 
       - name: Commit updated JSONs
         run: |
