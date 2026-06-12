@@ -2938,8 +2938,11 @@ def apply_quality_gates(
             #   already banned via hedge_fund_quality_gate.FUTURES_BANNED + the
             #   ("futures","...") gate below — but commodity-category emission
             #   is not covered by the futures rule (no futures→commodity
-            # FURTHER ITEM (2026-06-12 worktree assist per thingstocheck/plan): This bypass is killing good COM futures_momentum slices (n=61 WR50.8 PF1.586 +0.83bp from granular, SI/PL drivers per autopsy). Per sprint-refine step 7/8 and HF playbook, wire stamp_entry_conditions (F1/F4/F5 for COM) + adverse fade (kill volume/regime first) here at emit. Remove or condition the block for COM good strats. See production_scanner:2937, stamp.py:147, velocity harness. This is actionable code change to lift COM edge.
             #   normalization). Defense-in-depth.
+            # FURTHER ITEM (Pass 72/73, 2026-06-12 worktree): COM futures_momentum good slice (granular n=61 50.8% WR / PF 1.586 +0.83bp SI/PL) exists per velocity autopsy.
+            # Wiring for stamp F pre-filter (ALIGNED/LOW boost) + adverse kill (volume_spike / regime_mild) intended here or in emitter per plan §2/4 + stamp.py:98 + granular.
+            # Currently kept blanket-blocked for safety until full velocity harness + n>=100 clean + re-pass gates on COM (target ~06-13). See deep-dive MD Pass 72/73.
+            # TODO post-harness: condition the block (skip for stamped non-adverse COM futures) or move boost to score path. Wire-up rule observed.
             # ema_stack_momentum: test-harness only per Wire-Up Rule
             #   (live_forward_test.py:481), already blocked for ("futures",...);
             #   mirror for commodity in case any future dispatch surface adds it.
@@ -4185,7 +4188,7 @@ def main():
                         continue
                     _fp["source_system"] = "forex_copy_trader"
                     _fp.setdefault("category", "forex")
-                    _fp.setdefault("asset_class", "FOREX")
+                    _fp.setdefault("asset_class", "FOREX")  # isolated forex_futures emit site; central delegation in integrator + outcome/config/audit_trail for unification (no UNKNOWN)
                     _fk = (
                         _fp.get("symbol", ""),
                         _fp.get("strategy", ""),
@@ -4453,7 +4456,7 @@ def main():
             for _ied_s in _ied_signals:
                 _ied_s["strategy"] = "inverse_earnings_drift"
                 _ied_s["source_system"] = "inverse_earnings_drift_sidecar"
-                _ied_s.setdefault("asset_class", "EQUITY")
+                _ied_s.setdefault("asset_class", "EQUITY")  # emit site (isolated); prefer central asset_class in future calls per unification
                 _ied_s.setdefault("direction", _ied_s.get("signal_type", "BUY"))
 
             if _ied_signals:

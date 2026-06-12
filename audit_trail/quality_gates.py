@@ -578,7 +578,19 @@ _PREFERRED_PAIRS_CACHE: Optional[Set[Tuple[str, str, str]]] = None
 
 def _normalize_asset_class(asset_class: Any) -> str:
     ac = str(asset_class or "").upper().strip()
-    return {"COMMODITIES": "COMMODITY", "BONDS": "BOND", "ETFS": "ETF"}.get(ac, ac)
+    norm = {"COMMODITIES": "COMMODITY", "BONDS": "BOND", "ETFS": "ETF"}.get(ac, ac)
+    if norm in ("", "UNKNOWN", "NONE", "NULL"):
+        # Quarantine note (Goal #1 critical): UNKNOWN pollutes per-class PF/WR/MDD
+        # for all 9 classes (Tier-2 n>=100 req). Source of truth = alpha_engine/asset_class.py.
+        # Missing/UNKNOWN should be caught upstream (resolver, scanner, backfills, universal enrich).
+        # If here, treat as EQUITY fallback but log for audit (no hard UNKNOWN in aggregates).
+        try:
+            import logging
+            logging.getLogger("quality_gates").warning("UNKNOWN asset_class seen in gate; central unification path missed (see asset_class.py)")
+        except Exception:
+            pass
+        return "EQUITY"  # safe non-UNKNOWN; real fix is pre-gate classification
+    return norm
 
 
 def _load_preferred_pairs() -> Set[Tuple[str, str, str]]:
@@ -6686,6 +6698,20 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     # Promotion criteria: n>=20, WR>=50%, PF>=1.2, per-strategy manual review.
     tag_baby_monitor(pick)
 
+    # ── FURTHER ITEM (Pass 73, 2026-06-12 isolated wt): explicit adverse fade kill
+    # per velocity/granular (volume_spike/regime_mild families 18:1 win/loss, alpha drag)
+    # + HF playbook (stop bleeder first-touch, entry stamp > exit). Complements the
+    # volume_spike_breakout list blocks (~1508,2234,2596). Early kill here for active gate
+    # visibility. Stamp F boost is primarily pre-emit (scanner/picks_now); gates stay
+    # conservative. Non-crypto + COM priority per Goal#1 + thingstocheck.
+    try:
+        regime = str(pick.get("regime_at_entry") or pick.get("regime") or "").lower()
+        src = str(pick.get("source_system") or pick.get("strategy") or "").lower()
+        if regime == "mild" or "volume_spike" in src:
+            # explicit adverse per C006 autopsy + velocity harness
+            return False
+    except Exception:
+        pass
 
     # ── M-110: Pick Lifecycle Logger — entry scan (fail-soft, 2026-05-18) ──
     # Assigns a stable pick_id to every pick entering passes_active_gate().

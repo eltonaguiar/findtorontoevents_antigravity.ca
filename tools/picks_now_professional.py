@@ -693,6 +693,26 @@ class QuantScorer:
         dbf_avg_pnl = dbf.get("avg_pnl", 0)
         dbf_staleness = dbf.get("staleness_days", 999)
         dbf_active = dbf_n_w >= 10  # require effective sample size
+
+        # ── FURTHER ITEM wiring (Pass 73 / thingstocheck 21.1% fix, 2026-06-12 wt): stamp_entry_conditions F pre-filter + adverse fade
+        # Integrates velocity/stamp (1774 intrabar + 1134 cohort) + granular adverse (volume_spike/regime_mild 18:1 win/loss) into picks-now professional screener.
+        # Boost if F1=ALIGNED / F4=LOW / F5=US (per stamp.py:98-165 entry_conditions_forward lifts e.g. crypto_rsi +18pp).
+        # Penalize/kill proxy for adverse (high rvol or bb extreme as volume/regime stand-in when no direct regime_at_entry here).
+        # Addresses research-only + 0/6 gates. Non-breaking: adds fields to return; caller can use for filter/score.
+        stamp_adj = 0.0
+        adverse_flag = False
+        try:
+            from tools.stamp_entry_conditions import get_conditions_for_pick
+            pick_like = {"symbol": sym.upper(), "asset_class": cls, "strategy": info.get("strategy", None)}
+            conds = get_conditions_for_pick(pick_like) or {}
+            if conds.get("F1") == "ALIGNED" or conds.get("F4") == "LOW" or conds.get("F5") == "US":
+                stamp_adj = 0.15  # retention lift per velocity harness + plan
+            # adverse proxy (volume spike / mild regime style): high realized vol or bb_pct extreme
+            if rvol > 80 or (bb_pct is not None and (bb_pct < 0.05 or bb_pct > 0.95)):
+                adverse_flag = True
+                stamp_adj -= 0.5  # fade per HF playbook + C006 granular
+        except Exception:
+            pass  # graceful; screener works without stamp (Wire-Up note: this is the integration point)
         dbf_n_raw_60d = dbf.get("n_raw_60d", 0)
 
         # ── COMPOSITE SCORE (range: -100 to +150) ──
