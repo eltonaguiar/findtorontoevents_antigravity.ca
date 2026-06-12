@@ -42,6 +42,8 @@ HARD_KILL_STRATEGIES: Set[str] = {
     "inverse_carry_contrarian", "ml_breakout", "genome_mutations",
     "hl_funding_fade", "kimi_signal_tracking", "multi_period_rsi_confluence_eth",
     "claude_gainer_st", "gainer_promoter",
+    # P0-4 (2026-06-12): st_fear_greed_contrarian — WR 34.2% / n=652 policy-clean drag
+    "st_fear_greed_contrarian", "crypto_fear_greed_contrarian",
 }
 
 MONITOR_ONLY_STRATEGIES: Set[str] = {

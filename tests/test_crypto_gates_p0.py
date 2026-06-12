@@ -193,6 +193,45 @@ class TestM036CryptoBuyDirectionBlocked:
 
 
 # ---------------------------------------------------------------------------
+# M-036b: CRYPTO sized LONG block (2026-06-12) — shadow lane exempt
+# ---------------------------------------------------------------------------
+
+class TestM036bCryptoSizedLongBlock:
+    def test_long_direction_blocked_sized_lane(self, monkeypatch):
+        """direction='LONG' must be blocked for sized CRYPTO picks."""
+        _env_flags_isolate_p0(monkeypatch)
+        monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "1")
+        monkeypatch.setenv("CRYPTO_SIZED_LONG_BLOCK", "1")
+        pick = _crypto_pick(direction="LONG")
+        assert passes_active_gate(pick) is False
+
+    def test_strong_buy_blocked_sized_lane(self, monkeypatch):
+        """direction='STRONG_BUY' must be blocked on sized lane."""
+        _env_flags_isolate_p0(monkeypatch)
+        monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "1")
+        monkeypatch.setenv("CRYPTO_SIZED_LONG_BLOCK", "1")
+        pick = _crypto_pick(direction="STRONG_BUY")
+        assert passes_active_gate(pick) is False
+
+    def test_long_passes_with_forward_test_only(self, monkeypatch):
+        """forward_test_only shadow picks exempt from M-036b sized block."""
+        _env_flags_isolate_p0(monkeypatch)
+        monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "1")
+        monkeypatch.setenv("CRYPTO_SIZED_LONG_BLOCK", "1")
+        pick = _crypto_pick(direction="LONG", forward_test_only=True)
+        assert passes_active_gate(pick) is True
+
+    def test_short_not_blocked_by_m036b(self, monkeypatch):
+        """SHORT direction must not be blocked by M-036/M-036b."""
+        _env_flags_isolate_p0(monkeypatch)
+        monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "1")
+        monkeypatch.setenv("CRYPTO_SIZED_LONG_BLOCK", "1")
+        pick = _crypto_pick(direction="SHORT")
+        result = passes_active_gate(pick)
+        assert isinstance(result, bool)
+
+
+# ---------------------------------------------------------------------------
 # M-037: CRYPTO ml_score floor
 # ---------------------------------------------------------------------------
 

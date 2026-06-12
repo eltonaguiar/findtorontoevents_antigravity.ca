@@ -428,6 +428,10 @@ CRYPTO_MAX_CONFIDENCE = 0.85
 # Only LONG / SHORT are valid directional values for CRYPTO picks.
 CRYPTO_BLOCKED_DIRECTIONS = frozenset({"BUY"})
 
+# M-036b (2026-06-12): Sized-lane block for CRYPTO LONG bias (intrabar WR ~30% / n=1050).
+# forward_test_only / june2026 shadow picks are exempt in quality_gates (master-loop P0-C note).
+CRYPTO_BLOCKED_DIRECTIONS_SIZED = frozenset({"BUY", "LONG", "STRONG_BUY"})
+
 # M-037: ml_score floor — bottom 30% = 32.5% WR, top 30% = 60% WR
 MIN_ML_SCORE_CRYPTO = 0.65
 
