@@ -5927,6 +5927,69 @@ def compute_asset_class_health(ac_breakdown: dict) -> dict:
     return out
 
 
+def enrich_health_with_intrabar_sizing(asset_class_health: dict) -> None:
+    """P1-A Step 2: prefer intrabar-true display fields when n>=30.
+
+    Reads money_ready_verdict.json (built by money_ready_snapshot before this
+    generator in CI) or intrabar_truth_by_class.json as fallback. Mutates
+    asset_class_health in place; fail-open when files missing.
+    """
+    mr_classes: dict = {}
+    try:
+        mr_path = ROOT / "audit_dashboard" / "data" / "money_ready_verdict.json"
+        if mr_path.exists():
+            mr_classes = (json.loads(mr_path.read_text(encoding="utf-8")) or {}).get(
+                "classes", {}
+            ) or {}
+    except Exception:
+        mr_classes = {}
+
+    ib_by_class: dict = {}
+    if not mr_classes:
+        try:
+            ib_path = ROOT / "audit_dashboard" / "data" / "intrabar_truth_by_class.json"
+            if ib_path.exists():
+                ib_by_class = (json.loads(ib_path.read_text(encoding="utf-8")) or {}).get(
+                    "by_class", {}
+                ) or {}
+        except Exception:
+            ib_by_class = {}
+
+    for ac, health in (asset_class_health or {}).items():
+        ac_up = str(ac).upper()
+        row = mr_classes.get(ac_up) or mr_classes.get(ac) or {}
+        ib = row.get("intrabar_truth") or ib_by_class.get(ac_up) or {}
+        ib_n = int((ib or {}).get("n") or 0)
+        sizing_src = row.get("sizing_source") or (
+            "intrabar_truth" if ib_n >= 30 else "legacy_fallback"
+        )
+
+        health["policy_clean_wr_pct"] = row.get("policy_clean_wr_pct") or health.get("wr_pct")
+        health["policy_clean_pf"] = row.get("policy_clean_pf") or health.get("pf")
+        health["policy_clean_n"] = row.get("policy_clean_n") or health.get("n")
+        health["sizing_source"] = sizing_src
+
+        if ib_n >= 30 and ib.get("wr") is not None:
+            ib_wr_pct = round(float(ib["wr"]) * 100, 1)
+            ib_pf = ib.get("pf")
+            health["intrabar_n"] = ib_n
+            health["intrabar_wr_pct"] = ib_wr_pct
+            health["intrabar_pf"] = ib_pf
+            health["display_wr_pct"] = ib_wr_pct
+            health["display_pf"] = ib_pf
+            health["display_n"] = ib_n
+            health["display_source"] = "intrabar_truth"
+            health["discovery_only"] = False
+            if (ib_pf is not None and float(ib_pf) < 1.0) or ib_wr_pct < 50.0:
+                health["sizing_allowed"] = False
+        else:
+            health["display_wr_pct"] = health.get("wr_pct")
+            health["display_pf"] = health.get("pf")
+            health["display_n"] = health.get("n")
+            health["display_source"] = "policy_clean_discovery"
+            health["discovery_only"] = True
+
+
 def _resolution_class_for_pick(pick: dict) -> str:
     """Bucket a pick into one of the 6 canonical classes (or CRYPTO/OTHER).
 
@@ -15664,6 +15727,12 @@ def generate():
         log.info("  asset_class_health 60d-window stamped")
     except Exception as e:
         log.warning("  60d-window enrichment failed (non-fatal): %s", e)
+
+    try:
+        enrich_health_with_intrabar_sizing(asset_class_health)
+        log.info("  asset_class_health intrabar sizing display stamped")
+    except Exception as e:
+        log.warning("  intrabar sizing enrichment failed (non-fatal): %s", e)
 
     # ── Opt B: Tier-1 walk-forward promotion gate ──
     # Per reports/tradingview_backtest_benchmark_2026-05-11.md. Re-tier any

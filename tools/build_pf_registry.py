@@ -1059,6 +1059,8 @@ def main():
     # by_asset_class_policy_clean_net row.
     for _row in c_policy_net:
         _row["max_drawdown_pct"] = class_mdd_net.get(_row["asset_class"])
+        _row["display_tier"] = "discovery"
+        _row["promotion_eligible"] = False
     dropped_policy = len(kept) - len(kept_policy)
 
     registry = {
@@ -1099,6 +1101,12 @@ def main():
         },
         "policy_excluded_count": len(POLICY_EXCLUDED),
         "canonical_view": "by_asset_class_policy_clean_net",
+        "display_tier": "discovery",
+        "promotion_eligible": os.environ.get("PF_REGISTRY_PROMOTION_ELIGIBLE", "0") == "1",
+        "promotion_note": (
+            "P1-A (2026-06-12): pf_registry WR/PF is discovery-only unless "
+            "PF_REGISTRY_PROMOTION_ELIGIBLE=1 AND intrabar_truth corroborates (n>=30)."
+        ),
         "slippage_model": "alpha_engine.charter_slippage.deduct_slippage "
                           "(M-069 fraction-unit round-trip bps)",
         "by_asset_class_raw": raw_class,

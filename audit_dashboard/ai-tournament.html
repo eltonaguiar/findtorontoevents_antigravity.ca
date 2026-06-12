@@ -212,6 +212,7 @@
       <th class="num" title="Ranking score = lower-95%(WR) × lower-95%(PF). Shrinks small samples toward their confidence floor so a few lucky picks can't top the board.">Score*</th>
       <th class="num" title="Total picks submitted by this model, INCLUDING still-OPEN picks (~half the field). Open picks do NOT count toward WR/PF until they resolve.">n picks</th>
       <th class="num" title="Resolved picks (WIN or LOSS). Below 30 (shown amber) = not statistically rankable yet — treat the WR as activity, not a proven edge.">n resolved</th>
+      <th class="num" title="Picks excluded from WR/PF (MISPRICED_ENTRY, impossible geometry, resolved-before-submitted). High excl vs resolved = headline WR is misleading.">n excl</th>
       <th title="T1 PF≥2 & WR≥55 · T2 PF≥1.5 & WR≥50 · T3 PF≥1.2 & WR≥45 · BELOW otherwise. Tier uses absolute PF/WR thresholds; the # column uses the CI-adjusted score. ⚠ T1 badges carry a warning icon — current resolver uses single-snapshot (no intrabar OHLC replay) which inflates WR by 15–30%; all T1s are UNPROVEN until n≥100 intrabar-replay-resolved closes accumulate.">Tier</th>
       <th title="LIVE = ranked (n≥30). BUILDING = still accumulating resolved picks toward the n=30 floor.">Status</th>
     </tr>
@@ -658,7 +659,7 @@ function renderLeaderboard(models, opts) {
   opts = opts || {};
   const tbody = document.getElementById('lb-body');
   if (!models || models.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:#4b5563;padding:20px">
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;color:#4b5563;padding:20px">
       No data in this window — picks are still being collected or no models have resolved picks yet.
     </td></tr>`;
     return;
@@ -672,11 +673,11 @@ function renderLeaderboard(models, opts) {
   tbody.innerHTML = '';
 
   if (opts.fallbackAllTab) {
-    tbody.innerHTML += `<tr><td colspan="11" style="padding:10px;background:rgba(239,68,68,0.12);font-size:11px;color:#fca5a5">
+    tbody.innerHTML += `<tr><td colspan="12" style="padding:10px;background:rgba(239,68,68,0.12);font-size:11px;color:#fca5a5">
       <strong>Leaderboard JSON unavailable.</strong> Showing approximate WR×PF from picks only — scores will NOT match CI-adjusted pipeline ranks. Retry after <code>ai_tournament_leaderboard.json</code> deploys.
     </td></tr>`;
   } else if (opts.approximate) {
-    tbody.innerHTML += `<tr><td colspan="11" style="padding:10px;background:rgba(245,158,11,0.08);font-size:11px;color:#fcd34d">
+    tbody.innerHTML += `<tr><td colspan="12" style="padding:10px;background:rgba(245,158,11,0.08);font-size:11px;color:#fcd34d">
       <strong>Window snapshot (approximate):</strong> WR×PF without CI shrinkage. Use the <strong>ALL</strong> tab for authoritative CI-adjusted ranks from <code>ai_tournament_leaderboard.json</code>.
     </td></tr>`;
   }
@@ -686,7 +687,7 @@ function renderLeaderboard(models, opts) {
     const allTimeHint = currentWindow !== 'all'
       ? ' Switch to <strong>ALL</strong> for rank-eligible models, or scroll to <strong>Model Summary</strong> for the full roster.'
       : ' Scroll to <strong>Model Summary</strong> below for the full roster.';
-    tbody.innerHTML += `<tr><td colspan="11" style="padding:12px 10px;background:rgba(96,165,250,0.08);border-bottom:1px solid rgba(96,165,250,0.2);font-size:12px;color:#93c5fd">
+    tbody.innerHTML += `<tr><td colspan="12" style="padding:12px 10px;background:rgba(96,165,250,0.08);border-bottom:1px solid rgba(96,165,250,0.2);font-size:12px;color:#93c5fd">
       No model has 30+ resolved picks in the <strong>${winLabel}</strong> window (${models.length} model${models.length === 1 ? '' : 's'} still in BUILDING).${allTimeHint}
     </td></tr>`;
   }
@@ -712,6 +713,8 @@ function renderLeaderboard(models, opts) {
     const pfDisplay = hasPf ? m.pf.toFixed(2) : '—';
     const pfClass = !hasPf ? 'pnl-neu' : (m.pf >= 1.5 ? 'pnl-pos' : m.pf < 1.0 ? 'pnl-neg' : 'pnl-neu');
     const rankNum = (m.rank != null) ? m.rank : (i + 1);
+    const excl = m.n_excluded_untrustworthy || 0;
+    const exclClass = excl > m.n_resolved ? 'pnl-neg' : 'pnl-neu';
     tbody.innerHTML += `<tr>
       <td class="rank">#${rankNum}</td>
       <td class="model-name"><a href="./model.html?id=${encodeURIComponent(m.model_id)}" title="Drill down to all picks, per-asset-class and per-persona breakdown for ${esc(m.model_id)}">${esc(m.model_id)}</a></td>
@@ -722,6 +725,7 @@ function renderLeaderboard(models, opts) {
       <td class="num">${hasWr && hasPf ? m.score.toFixed(3) : '—'}</td>
       <td class="num">${m.n_picks}</td>
       <td class="num" style="${m.n_resolved < 30 ? 'color:#f59e0b;font-weight:700' : ''}" title="${m.n_resolved < 30 ? 'Below n=30 rank threshold — WR not yet statistically reliable' : 'Resolved (WIN/LOSS) picks counted toward WR/PF'}">${m.n_resolved}${m.n_resolved < 30 ? ' ⚠' : ''}</td>
+      <td class="num ${exclClass}" title="Excluded from WR/PF (mispriced entry, bad geometry)">${excl > 0 ? excl : '—'}</td>
       <td>${tier}</td>
       <td><span class="badge b-t2">LIVE</span></td>
     </tr>`;
@@ -733,7 +737,7 @@ function renderLeaderboard(models, opts) {
       <td class="rank">—</td>
       <td class="model-name"><a href="./model.html?id=${encodeURIComponent(m.model_id)}" title="Drill down to all picks, per-asset-class and per-persona breakdown for ${esc(m.model_id)}">${esc(m.model_id)}</a></td>
       <td><span class="provider">${esc(m.provider)}</span></td>
-      <td class="num pnl-neu" colspan="6">n=${m.n_resolved} / need 30 to rank</td>
+      <td class="num pnl-neu" colspan="7">n=${m.n_resolved} / need 30 to rank</td>
       <td><span class="badge b-pending">BUILDING</span></td>
       <td></td>
     </tr>`;
@@ -867,7 +871,7 @@ async function loadPicksAndLeaderboard() {
     // No pick-level data — show leaderboard models as all-time only
     renderLeaderboard(serverLeaderboard);
     document.getElementById('lb-body').insertAdjacentHTML('beforeend',
-      '<tr><td colspan="11" style="text-align:center;color:#4b5563;padding:8px;font-size:11px">' +
+      '<tr><td colspan="12" style="text-align:center;color:#4b5563;padding:8px;font-size:11px">' +
       '⚠ Time-window filters require pick-level data. Showing all-time only until <code>ai_tournament_picks_latest.json</code> is available.' +
       '</td></tr>');
     return;

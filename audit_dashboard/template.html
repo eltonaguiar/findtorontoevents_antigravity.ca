@@ -1039,15 +1039,24 @@ a:hover { text-decoration: underline; }
       var span = document.querySelector('[data-mg-class="' + key + '"]');
       if (!span) return;
       var row = d[cls] || {};
-      var pf = row.profit_factor != null ? row.profit_factor : row.pf;
-      var wr = row.win_rate_pct != null ? row.win_rate_pct : (row.win_rate != null ? row.win_rate * (row.win_rate <= 1 ? 100 : 1) : null);
-      var n  = row.closed_trades != null ? row.closed_trades : (row.n != null ? row.n : row.trades);
+      var dispWr = row.display_wr_pct != null ? row.display_wr_pct : (row.win_rate_pct != null ? row.win_rate_pct : (row.win_rate != null ? row.win_rate * (row.win_rate <= 1 ? 100 : 1) : null));
+      var dispPf = row.display_pf != null ? row.display_pf : (row.profit_factor != null ? row.profit_factor : row.pf);
+      var dispN = row.display_n != null ? row.display_n : (row.closed_trades != null ? row.closed_trades : (row.n != null ? row.n : row.trades));
+      var pf = dispPf;
+      var wr = dispWr;
+      var n  = dispN;
       if (pf == null && wr == null && n == null) return;
       var t = tier(pf, wr, n);
       var labelColor = t.color;
       if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
+      var srcTag = row.display_source === 'intrabar_truth'
+        ? ' <span style="font-size:10px;color:#86efac" title="Primary metrics from at_signal_outcomes intrabar ledger (n≥30)">intrabar-true</span>'
+        : ' <span style="font-size:10px;color:#94a3b8" title="Policy-clean discovery cohort — not sized until intrabar n≥30">discovery</span>';
+      var discLine = (row.display_source === 'intrabar_truth' && row.policy_clean_wr_pct != null)
+        ? ' <span style="font-size:10px;color:#64748b" title="Legacy policy-clean WR — may disagree with intrabar">policy-clean WR ' + fmt(row.policy_clean_wr_pct, 1) + '%</span>'
+        : '';
       var html = '<strong style="color:' + labelColor + '">' + key + '</strong> &mdash; ' +
-        t.label + ' (PF ' + fmt(pf, 2) + ', WR ' + fmt(wr, 1) + '%, n=' + (n != null ? n : '—') + ').';
+        t.label + ' (PF ' + fmt(pf, 2) + ', WR ' + fmt(wr, 1) + '%, n=' + (n != null ? n : '—') + ')' + srcTag + discLine + '.';
       var cRow = (conc && conc[key]) || null;
       if (cRow && (cRow.tier === 'WARN' || cRow.tier === 'BLOCK')) {
         var badgeColor = cRow.tier === 'BLOCK' ? '#ef4444' : '#f59e0b';
