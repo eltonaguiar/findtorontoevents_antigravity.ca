@@ -1506,6 +1506,11 @@ PERMANENTLY_KILLED_STRATEGIES = {
     # Conservative criteria: fwd_trades>=30, fwd_wr<=35, fwd_pf<=0.7, fwd_total_pnl<=-20
     "Value + Quality",           # n=51 WR 7.8% PF 0.15 PnL -251.27 (leaderboard cull)
     "volume_spike_breakout",     # n=189 WR 33.9% PF 0.49 PnL -158.35
+    # NOTE (Pass 95 dig, 2026-06-12 wt; Pass 100: opt-in func passes_adverse_hard at EOF module scope): adverse explicit kill for stamp/adverse + granular (volume_spike/regime_mild/bollinger per C006 + velocity autopsy).
+    # Ties to picks_now adverse_flag (vol/bb proxy) + stamp F pre-filter. Opt-in for now (env or future passes_adverse_hard / quality_gates adverse path).
+    # Wire-Up: research callers (picks_now 697+, scanner 2942+), prod plan in quality_gates + feature_pop + scanner for COM fut_momentum (H-111).
+    # Rationale: adverse vol 191n bad, regime 48n 18.9% WR; removing lifts ~+10-15pp WR per patterns. COM priority (good SI/PL FWD slices).
+    # Full: after n>=100 clean + harness (velocity sim target 48-55% WR / 1.7-2.2 PF from Pass99 sim) + forward + paper. See grok MD Pass 94/95/100.
     "Consecutive Beats",         # n=59 WR 20.3% PF 0.43 PnL -136.86
     "Earnings Drift",            # n=31 WR 12.9% PF 0.25 PnL -102.54
     "st_bb_squeeze_expansion",   # n=104 WR 31.7% PF 0.33 PnL -43.27
@@ -11103,3 +11108,22 @@ if __name__ == "__main__" and __import__("sys").argv[-1] == "--a9-self-test":
     _d, _b, _s = dedup_picks_list([dict(_base), dict(_base)], label="selftest")
     assert len(_d) == 1 and _b == 1, "list dedup should drop one"
     print("A9 self-test PASSED")
+# Pass 100 (2026-06-12 isolated wt, Goal #1 COM + thingstocheck wiring): opt-in adverse hard gate (appended at EOF module scope after list-indent fix).
+# Enable with: ADVERSE_HARD=1 or COMMODITY_ADVERSE_KILL=1 (no effect by default = safe).
+# Rationale + Wire-Up in updated NOTE95 above (~1509). Matches velocity sim (Pass99-100), picks_now adverse_flag, stamp F, granular vol191/regime48 bad, H-111.
+def passes_adverse_hard(pick=None, asset_class="", strategy_key="", rvol=0.0, regime_mild=False, **kwargs):
+    """Return True to hard-kill pick under adverse conditions (high rvol/volume_spike, regime_mild etc).
+    Opt-in env guard only. See grok MD Pass 99/100, quality_gates NOTE95, H-106/H-111.
+    """
+    import os
+    if not (os.environ.get("ADVERSE_HARD") or os.environ.get("COMMODITY_ADVERSE_KILL")):
+        return False
+    ac = str(asset_class or (pick or {}).get("asset_class", "")).upper()
+    sk = str(strategy_key or (pick or {}).get("strategy_key", "") or (pick or {}).get("strategy", "")).lower()
+    rv = float(rvol or (pick or {}).get("rvol", 0) or (pick or {}).get("relative_volume", 0) or 0)
+    if ac == "COMMODITY" and "futures_momentum" in sk:
+        if rv > 70 or regime_mild or (pick or {}).get("volume_spike"):
+            return True
+    if rv > 80 or regime_mild:
+        return True
+    return False
