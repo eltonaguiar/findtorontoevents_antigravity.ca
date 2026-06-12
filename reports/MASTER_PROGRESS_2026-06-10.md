@@ -409,3 +409,10 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 - **#570: collision warning posted** — same file family as the #569 NameError incident; a second stacked dup def would silently break hourly backfill again.
 - **#577: KILL CLAIM REFUTED by direct SQL** — PR cites luxalgo_filters "n=115 WR 23.48% Σ−167%"; the full source book is n=2,287 WR 43.11% Σ+64.6%. Slice undefined; investigation-before-kill + three-axis protocol required; hold posted. (Also flagged the anti_overfit EDGE_LIKELY_REAL list's no-losses artifacts.)
 - #571 (sizing 50% + calibration) + #575 (pm_macro fetchers) queued next tick.
+
+## 2026-06-12 ~21:00Z — loop ticks 11-13: SNIPE designed→registered→GATED in under an hour (the velocity principle working)
+- **H-113 snipe family: designed (3c1baa70eb), pre-registered, scanner built (4fe3c562bd), 1,070 events extracted (76.4/day — 15x the falsification floor), and BOTH arms replay-gated same-session:**
+  - **CHASE arm (buy the skyrocket — the intuitive version): REFUTED DECISIVELY** — WR 21.8%, net PF 0.273, CI-LB 0.227 at n=527/n_eff 470. C006's adverse-selection verdict confirmed at 1-minute granularity. Arm CLOSED.
+  - **FADE arm: NULL at the coarse 1h gate** — WR 47.2% (≈breakeven), net PF 0.863, stable across halves (0.872/0.855), but ~25% of bars ambiguity-penalized (SL-wins-ties on 1h bars). ONE registered comparison remains: the 1-min first-touch replay (the design's true instrument); family closes either way after it. (e835ea454e)
+- PR queue: #571 + #575 APPROVED; #578/#580 rebase-coordination warnings (both touch audit-dashboard.yml — changed 4x today — AND each other); #581 additive (low risk).
+- Verification: unified is_emission_allowed intact on main (1 def); A/B history + earnings cache await their next scheduled runs; FOREX intrabar n still short of 100.
