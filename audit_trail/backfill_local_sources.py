@@ -421,7 +421,7 @@ def main():
         ("data/live_picks.db", "live_picks", "live_picks_tracker"),
         ("KIMI_FEB172026/data/kimi_trading.db", "signals", "kimi_feb17"),
         ("KIMI_RISEOFTHECLAW/data/signal_tracker.db", "tracked_signals", "kimi_signal_tracker"),
-        ("KIMI_RISEOFTHECLAW/data/kimi_trading.db", "picks", "kimi_riseoftheclaw"),
+        ("KIMI_RISEOFTHECLAW/data/kimi_trading.db", "picks", "kimi_riseoftheclaw"),  # DISABLED 2026-06-12
         ("signal_recorder/data/signal_log.db", "signal_log", "signal_recorder"),
         ("signal_recorder/data/signal_log.db", "signal_outcomes", "signal_recorder"),
         ("sandbox/data/opposite_day.db", "opposite_picks", "opposite_day"),
@@ -446,8 +446,8 @@ def main():
         ("battleground/data/active_picks.json", "battleground", False),
         ("battleground/data/closed_picks.json", "battleground", True),
         ("crypto_ml_edge/data/active_picks.json", "crypto_ml_edge", False),
-        ("KIMI_RISEOFTHECLAW/data/active_picks.json", "kimi_riseoftheclaw", False),
-        ("KIMI_RISEOFTHECLAW/data/closed_picks.json", "kimi_riseoftheclaw", True),
+        ("KIMI_RISEOFTHECLAW/data/active_picks.json", "kimi_riseoftheclaw", False),  # DISABLED 2026-06-12
+        ("KIMI_RISEOFTHECLAW/data/closed_picks.json", "kimi_riseoftheclaw", True),   # DISABLED 2026-06-12
         ("coinglass_strategies/data/active_picks.json", "coinglass", False),
         ("rl_agent/data/active_picks.json", "rl_agent", False),
         ("genome/active_picks.json", "genome", False),

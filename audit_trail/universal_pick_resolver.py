@@ -885,7 +885,8 @@ def make_pick_id(pick):
     Prefer a stable raw id when available; otherwise fall back to a richer signature."""
     raw_id = pick.get("id", "")
     if raw_id not in (None, ""):
-        return f"id::{pick.get('source_system', '')}::{raw_id}"
+        entry = round(_float(pick.get("entry_price", 0) or 0), 8)
+        return f"id::{pick.get('source_system', '')}::{raw_id}::{entry}"
     sym = _normalize_symbol(pick.get('symbol', ''))
     entry = round(_float(pick.get("entry_price", 0) or 0), 8)
     ts = str(pick.get("timestamp", "") or "").strip()[:19]

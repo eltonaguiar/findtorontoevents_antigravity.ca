@@ -1961,6 +1961,10 @@ BLOCKED_SOURCE_SYSTEMS = {
     # 2026-05-14 MMR audit (PR #986) §4 draggers:
     "breakout_b_ml",         # n=44, 0% WR, PF 0.00 — zero-win placeholder pattern
     "kimi_claw_research",    # n=50, 0% WR, PF 0.00 — zero-win placeholder, 3 asset classes
+    # 2026-06-12: kimi_riseoftheclaw — 138K+ picks at 28.4% WR, PF 0.69.
+    # Produces 76% of all system picks. 99.4% are duplicates (866 distinct out of 141K).
+    # Dormant since March (0 intrabar-resolved rows) but ingestion-ACTIVE (NULL ts bypasses dedup).
+    "kimi_riseoftheclaw",
     "rocket_scanner",  # 2026-04-05: 5 active picks, 0% WR, -0.81% avg — kimi + noncrypto-drilldown live audit
     # 2026-04-28: copy_trader_highscore — Hyperliquid leaderboard SHORT replay system.
     # System aggregate (audit_dashboard/data/dashboard_data.json):
@@ -5914,7 +5918,7 @@ _SOURCE_SYSTEM_SCORES = {
     # Old 2026-04-15 comment ("44.7% WR, +0.30% avg PnL, n=273, marginal edge")
     # was based on a different sample and is now stale; the live data
     # disagrees on WR (+12pp), PF (+1.4x), and net pnl per trade by 4-7x.
-    "kimi_riseoftheclaw": 15,
+    "kimi_riseoftheclaw": -30,  # DISABLED 2026-06-12: 28.4% WR, 76% of picks. Defense-in-depth with BLOCKED_SOURCE_SYSTEMS.
     "baby_strats_forward": 2,  # 44.4% WR, +0.01% avg PnL, n=162 (huge volume, flat)
     "dna_winner_picks": 2,  # 41.7% WR, +0.14% avg PnL, n=24
     # Proven losers
@@ -6924,9 +6928,9 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     except Exception:
         pass  # fail-open: never break admission on this gate
 
-    # ── Kill gate (2026-05-15): statistically-justified strategy kill at admission ──
+    # ── Kill gate (2026-05-15 → wired 2026-06-12): statistically-justified strategy kill ──
     # Previously only called from commodity_kill_switch.py + fx_kill_switch.py.
-    # Wired here so any pick carrying embedded strategy stats (wins, n, asset_class)
+    # Wired here so any pick carrying forward-test stats (strat_fwd_wr, strat_fwd_trades)
     # is blocked at the central admission gate when evidence clearly warrants a kill.
     # Fail-open: missing stats or any exception skips the gate (thin classes like
     # BOND n=11 / FUTURES n=0 will always get INSUFFICIENT_EVIDENCE — safe).
@@ -6935,9 +6939,26 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
         import os as _os_kg
         if _os_kg.environ.get("KILL_GATE_ENABLED", "1") not in ("0", "false", "FALSE", "False"):
             from audit_trail.kill_gate import evaluate_kill as _evaluate_kill
+            _fwd_wr_kg = pick.get("strat_fwd_wr") or pick.get("forward_wr")
+            _fwd_n_kg = pick.get("strat_fwd_trades") or pick.get("forward_trades")
             _stats_kg = pick.get("stats") or {}
-            _wins_kg = _stats_kg.get("wins") if _stats_kg else pick.get("wins")
-            _n_kg = _stats_kg.get("n") if _stats_kg else pick.get("n")
+            _wins_kg = _stats_kg.get("wins") if isinstance(_stats_kg, dict) else None
+            _n_kg = _stats_kg.get("n") if isinstance(_stats_kg, dict) else None
+            if _wins_kg is None:
+                _wins_kg = pick.get("wins")
+            if _n_kg is None:
+                _n_kg = pick.get("n")
+            if _wins_kg is None and _fwd_wr_kg is not None and _fwd_n_kg is not None:
+                try:
+                    _wr_val = float(_fwd_wr_kg)
+                    _n_val = int(float(_fwd_n_kg))
+                    if _wr_val > 1.0:
+                        _wr_val = _wr_val / 100.0
+                    _wins_kg = int(round(_wr_val * _n_val))
+                    _n_kg = _n_val
+                except (TypeError, ValueError, OverflowError):
+                    _wins_kg = None
+                    _n_kg = None
             _ac_kg = str(pick.get("asset_class", "") or "").strip().upper()
             if _wins_kg is not None and _n_kg is not None:
                 _allow_kill, _verdict_kg, _detail_kg = _evaluate_kill(
