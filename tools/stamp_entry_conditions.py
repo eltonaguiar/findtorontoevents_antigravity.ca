@@ -148,6 +148,12 @@ CONDITIONS = [  # (name, class, definition, predicate(pick, feats))
      lambda p, f: p["_cls"] == "FOREX" and f["F1"] == "ALIGNED"),
     ("forex_contrarian_NEGATIVE", "FOREX", "NEGATIVE filter: class=FOREX AND F1=CONTRARIAN (76% of losses)",
      lambda p, f: p["_cls"] == "FOREX" and f["F1"] == "CONTRARIAN"),
+    ("crypto_us_monday", "CRYPTO", "F5 session=US AND dow=Mon (T2 n=40 WR=55% PF=1.92; R1 fail — forward watch)",
+     lambda p, f: p["_cls"] == "CRYPTO" and f["F5"] == "US" and f["dow"] == "Mon"),
+    ("crypto_rsi5070_us_short", "CRYPTO", "F3 RSI 50-70 AND F5=US AND direction=SHORT (n=16 WR=81% — accrue n)",
+     lambda p, f: p["_cls"] == "CRYPTO" and f["F3"] == "50-70" and f["F5"] == "US" and p["direction"] == "SHORT"),
+    ("equity_mom_with", "EQUITY", "F2 24h momentum WITH direction (n=24 WR=54% PF=2.17 — forward watch)",
+     lambda p, f: p["_cls"] == "EQUITY" and f["F2"] == "WITH"),
 ]
 
 
