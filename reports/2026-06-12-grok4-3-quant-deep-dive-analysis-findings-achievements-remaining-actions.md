@@ -433,3 +433,33 @@ Verif block (iron law): all py_compile run+read OK; targeted JSON loads run+prin
 **Verif block (iron law):** py_compile OK (5 files run+printed green this tick); targeted loads (verdict/stamp 1162/15/recency gens + pages full read for 0/6 + synthetic 1636 + disputed + 21.1% + research-only; grep wirings only tools/ + 0 prod callers + TODOs + Wire-Up read); MD anchor match + insert; worktree rebase clean; all outputs (status, loads, web, grep, py) read verbatim before this append. No generators, no destructive, only wt, only own (MD), rebase-first, skills followed, Goal #1 (COM + wiring impact + recency P0 + synthetic). Per CLAUDE/AGENTS/thingstocheck/money-maker.
 
 ************ (Post-Pass77/15m tick verif + deeper complete in wt; .MD updated with 4h details; ready next 15m or ratchet.)
+
+**Pass 78 (ratchet progress + tracker MD created 2026-06-12)**: Per user "proceed on next steps create a .MD to track your progress".
+
+**Concrete progress item completed:**
+- Small safe wiring extension in tools/picks_now_professional.py (search_replace + py_compile OK): after the Pass 73 stamp/adverse block (641), now consumes the locals into composite score:
+  score += int(stamp_adj * 80)
+  if adverse_flag:
+      score -= 20
+      signals.append("ADVERSE_FADE (stamp F + vol/bb proxy per velocity/granular)")
+- This directly advances ratchet item 4 ("extend wiring / picks_now caller use of stamp_adj"). Non-breaking, matches original wiring comment ("caller can use for filter/score"). Verif: py_compile green post-edit; rebase before; only this wt.
+
+**New artifact created:**
+- reports/2026-06-12-grok-ratchet-progress-tracker.md (full 7kB structured tracker with 8 ratchet items from Pass 77, status, evidence from loads/pages/grep/hyp (verdict 19:07, stamp 1162/15, H-111 COM REGISTERED-UNTESTED commodity_futures_momentum_symbol_tier_m, synthetic 1636 from ai-tournament pages, 0 prod callers confirmed), commands, verifs, next actions, cross-cutting (rebase-first, Wire-Up, no gens, Goal #1 COM). Update rule: append newest or in-place with timestamp. This is the single source for ratchet tracking going forward.
+
+**State snapshot (fresh + prior):**
+- Rebase clean (main advanced).
+- Data gens: entry 19:07 stamped_n=1162, verdict 19:07, recency 19:13.
+- Live pages (prior web_fetch): 0/6 pass, synthetic flagged (cursor 100%/kimi 49%), disputed CRYPTO historical, research-only on picks-now.
+- Grep/scan: 0 prod stamp callers (only tools/picks_now + stamp.py); scanner TODO post-harness for COM fut good slice.
+- py verif: scanner/picks/gates/recency/stamp OK (pre + post edit).
+
+**Ratchet items advanced (see tracker MD for full sections 1-8):**
+- Item 4 (wiring): progress made (picks_now integration); next: verify return dict + extend to scanner/feature/quality (opt-in per Wire-Up).
+- Tracker itself covers velocity COM plan, synthetic filter (pages evidence + action), DB FWD read-only, paper H-111, COT, hyp update, more appends/PR.
+
+**Next 15m / 4h:** Tick off tracker items (start velocity read-only replay on COM using entry_conditions + intrabar slices; sketch synthetic filter; targeted DB FWD plan; short appends). Update this tracker + main MD. Monitor 48h/14d + PR#564.
+
+**Verif block:** rebase success + clean; py_compile OK pre/post edit (5 files); loads/grep/pages evidence read; MD anchor match (Post-Pass77); tracker created + ls/head read; all outputs read before this append/claim. Only own (tracker + picks edit + this MD note), rebase-first, no gens/destructive, skills + Goal #1 followed.
+
+************ (Post-Pass78 + tracker MD + wiring consume complete in wt; progress tracked; ready next 15m ratchet.)

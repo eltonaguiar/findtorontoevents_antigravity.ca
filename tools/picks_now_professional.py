@@ -713,6 +713,16 @@ class QuantScorer:
                 stamp_adj -= 0.5  # fade per HF playbook + C006 granular
         except Exception:
             pass  # graceful; screener works without stamp (Wire-Up note: this is the integration point)
+
+        # Pass 77 / ratchet progress tracker item: consume stamp_adj + adverse_flag (computed above)
+        # into the live composite score. Non-breaking, directly addresses "extend wiring" + "picks_now caller use of stamp_adj".
+        # Scale chosen to fit score range (-100..+150); adverse gives conservative penalty.
+        # Also ensures fields are available downstream (already noted in return per original wiring).
+        score += int(stamp_adj * 80)
+        if adverse_flag:
+            score -= 20
+            signals.append("ADVERSE_FADE (stamp F + vol/bb proxy per velocity/granular)")
+
         dbf_n_raw_60d = dbf.get("n_raw_60d", 0)
 
         # ── COMPOSITE SCORE (range: -100 to +150) ──
