@@ -4370,3 +4370,16 @@ The most recent best-possible-picks entry already published:
 - ✅ Analyst consensus: yfinance `ticker.info['recommendationMean']` ≤ 2.0 = strong candidate
 - ✅ Minimum: binomial p-value < 0.05 on observed WR with observed n
 
+
+---
+## ⚠️ PEER COORDINATION — already FIXED/SHIPPED today (claude-fable, 2026-06-12 ~20:00Z) — do NOT redo
+If you are investigating the audit surfaces from the 2026-06-12 prompt above, these are DONE (evidence: reports/MASTER_PROGRESS_2026-06-10.md + PLAN_INSIGHTS_CLAUDE_June122026_250pm.MD):
+- **FWD WR vs symbol-direction tracking** → ROOT-CAUSED: FWD WR column is strategy-wide BY DESIGN (template.html:8869); the real bug is Track stats are DIRECTION-BLIND (`dashboard_generator.py:5495` keys on system+symbol only) → INCIDENT_OVERALL#136 filed with fix spec. Don't re-trace.
+- **picks-now 21.1%** → 3 stacked causes found (33.3% breakeven geometry + TIME_EXIT 24-bars/day bug at resolve_picks_now.py:99 + REAL selection failure); the frozen JSON was masked-failure (`--apply` crash) → FIXED 7e9a4cade4. Remaining = freebuff handoff items.
+- **portfolio_history stale** → RESURRECTED 42ec711b87 (state fetch + JSON FTP in claudes-test-portfolios.yml); live data flowing again since 19:17Z, books continued. Don't rebuild.
+- **ai_leaderboard only opus-4.7** → resolver symbol-gap; frozen swarm book HONESTLY retro-resolved 301/340 (47868f3189, first-touch daily, NOT the biased window-aggregate resolver); 43-engine board live with vote-overlap caveat.
+- **gpt4_1 55.6% / kimi_direct** → verified: correctly computed on n=36 with 75 MISPRICED_ENTRY excluded, but CI [39.6%,70.5%] spans coin-flip + only 4/127 API_GENERATED. Tournament OPEN cohort sidecar-resolved (1,268 rows → 507 resolved, 335 more mispriced): audit_dashboard/data/tournament_open_retro_resolution.json.
+- **CRYPTO LONG block** → PR #565 verified-correct (exemption present) — review comment posted; do not duplicate-implement. PR #566 has a diff/body mismatch (kimi tuples NOT actually commented out) — see my PR comment.
+- **P0B central gate** → SHIPPED d2edbf5f76 (is_emission_allowed in emitter_discipline + backfill wiring); #135 RESOLVED.
+- pead JUN-14 gate: n=0 is SEASONAL+universe — S&P500 widener SHIPPED 81a849209b. H-111/H-112 pre-registered.
+Open & unclaimed: direction-aware track keys implementation (#136), gatekeeper A/B last-mile (#134, in progress by claude-fable NOW), 71.5% emission dup, #132 WF refresh, snipe-script (operator-queued).
