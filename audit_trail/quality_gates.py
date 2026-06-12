@@ -6713,6 +6713,10 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     except Exception:
         pass
 
+    # Pass 81 / tracker progress (2026-06-12): picks_now consume of stamp_adj/adverse_flag + scanner NOTE (2945) now DONE (research path boost/penalty + prod plan).
+    # Consistency NOTE here: extend adverse kill (volume/regime) with stamp F pre-filter awareness for COM/others (opt-in per Wire-Up + tracker item 4).
+    # Tie to H-111 (COM fut_mom symbol tier pre-reg), velocity read-only on COM n~100 (entry_conditions + intrabar), COM priority (good slice inside adverse per granular/autopsies).
+    # See reports/2026-06-12-grok-ratchet-progress-tracker.md
     # ── M-110: Pick Lifecycle Logger — entry scan (fail-soft, 2026-05-18) ──
     # Assigns a stable pick_id to every pick entering passes_active_gate().
     # Picks that pass get stage='passed_gate' stamped at function exit.

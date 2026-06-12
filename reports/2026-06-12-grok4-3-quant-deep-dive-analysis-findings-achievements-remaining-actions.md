@@ -541,3 +541,41 @@ Verif block (iron law): all py_compile run+read OK; targeted JSON loads run+prin
 **Tracker MD update (this tick):** Item 4: picks_now consume DONE + safe NOTE added in scanner.py:2945 (wiring extend plan, ref tracker, opt-in per Wire-Up, H-111/velocity/COM tie-in); item 1/2/3: plans detailed with fresh data (stamp 1162, verdict 20:00, recency 20:06, pages synthetic 1636/grok3 rec). Evidence trail: rebase, loads, grep (TODO anchor), py post-edit, MD anchors. (Full sections 1-8 + cross notes remain single source.)
 
 ************ (Post-Pass80/15m tick + scanner NOTE + tracker/main MD updates complete in wt; next steps proceeded safely; ready next 15m or ratchet.)
+
+**15m Tick Deeper Dig Update (Pass 81 / continuing 4h 2026-06-12)**: Recurring "once done dig deeper and update your .MD". Rebase success (clean tree). Skills re-invoked. Verifs first.
+
+**MEASURE (fresh from loads + pages/grep read):**
+- Loads: verdict 20:00:46Z (0/ classes T2 per prior + pages); stamp 20:01 stamped_n=1162, 15 conds; recency 14d/48h 20:06:51Z (48h thin P0 signal).
+- Pages (web_fetch full): picks-now 0/6 pass, research/paper only, 21.1% FORWARD-TESTED, wiring (consume + scanner NOTE) now in research scores; ai-tournament SYNTHETIC 1636 (cursor 100%/kimi 49%), 0% synth grok3 rec, 0 ready.
+- Grep: consume/ADVERSE_FADE in picks_now; NOTE in scanner 2945; 0 prod callers (only tools/picks + stamp.py); quality_gates has the FURTHER ITEM adverse kill ~6697 + new NOTE.
+- Tracker MD 110 lines (Pass 80 section with item updates).
+
+**DIAGNOSE (COM + wiring + gaps + this tick):**
+- COM: priority (H-111 REGISTERED-UNTESTED commodity_futures_momentum_symbol_tier_m + loads/pages INSUFF n=15 40% 1.10; prior: fut_mom 74n +79bp good (SI/PL 81%+ conc) inside adverse (volume 191n/regime_mild 48n bad, conc, 48h thin P0 per CLAUDE "14d/48h first")). Good slice inside bad class = velocity target.
+- Wiring impact: picks_now research path now has consume (Pass 78) + scanner NOTE (Pass 80): good stamp boosts score, adverse penalizes; helps 21.1% for COM/others with stamped entry. Main /audit prod (smart/active/HC/MR) still 0 callers/gap per grep/plan. New quality_gates NOTE (this tick) for consistency/adverse + stamp awareness (opt-in per Wire-Up + tracker).
+- Synthetic: pages explicit 1636 + grok3 rec (filter to 0% synth for trustworthy).
+- Recency P0 (48h thin despite fresh gen); 0 classes T2 live confirmed; FWD vs strat + adverse + conc.
+- HF gaps: velocity not run on COM n~100 clean post-stamp/adverse; COT/COT_contrarian opt-in no prod caller; paper pending; H-111 no harness verdict.
+
+**ACT/FORWARD + HF (proceed on tracker items this tick):**
+- Item 4 wiring extend: picks_now consume DONE (research active); scanner NOTE (2945) added (Pass 80); quality_gates NOTE added (this tick, near adverse kill ~6697 for stamp consistency/wiring plan, opt-in, H-111/velocity/COM tie; py OK post). Next: NOTE/call in feature or full prod emitter.
+- Item 1 velocity: data from loads (stamp 1162/15 conds + prior intrabar) + read-only plan on COM fut (entry_conditions + intrabar replay + AddH n_eff/stress/monkey/CI; target admissible per H-111/H-VEL-COM-001).
+- Item 2 synthetic: pages evidence 1636 + grok3 rec + plan filter (keep 0% synth models).
+- Item 3 DB FWD: plan read-only (db_env + pymysql; COM fut SI/PL + adverse + 14d/48h).
+- HF applied: velocity, stamp F pre (research now with consume + NOTES), adverse explicit (wired + consume + NOTES in scanner/gates), 14d/48h first, conc, pre-reg (H-111), synthetic filter critical (pages surface), etc.
+
+**RATCHET (per tracker + this dig):**
+- Velocity read-only COM n~100 (plan + data prep).
+- Synthetic filter sketch (pages + plan).
+- DB FWD plan.
+- Wiring: NOTE in scanner (done) + quality_gates (this tick); next in feature or prod.
+- Paper/COT on H-111.
+- Update tracker (item 4: quality_gates NOTE added + picks_now DONE + scanner NOTE; others In Progress with plans from fresh data) + main MD (this Pass 81).
+- Monitor 48h/14d + PR#564 review.
+- Goal #1: COM edge (good slice + H-111) + wiring (research active with consume + NOTES in scanner/gates; prod gap + extend plan) + synthetic + recency P0 now deeper + tracked + concrete safe steps in wt.
+
+**Verif block (iron law):** rebase success + clean; py_compile OK (5 files + post quality_gates NOTE); targeted loads (verdict/stamp 1162/15/recency gens + pages/grep evidence read); MD anchors match (Post-Pass80 + tracker); tracker read (110 lines); all outputs (rebase, loads, grep, py, MD tails, tracker) read verbatim before this append/claim/edit. Only own (quality_gates NOTE + tracker + main MD), rebase-first, no gens/destructive, skills + Goal #1 + Wire-Up followed. Per CLAUDE/AGENTS/thingstocheck/money-maker.
+
+**Tracker MD update (this tick):** Item 4: picks_now consume DONE + scanner NOTE (2945) + quality_gates NOTE (near adverse kill ~6697 for consistency/wiring plan, opt-in, H-111/velocity/COM tie; py OK post); item 1/2/3: plans detailed with fresh data (stamp 1162, verdict 20:00, recency 20:06, pages synthetic 1636/grok3 rec). Evidence trail: rebase, loads, grep (TODO anchor + adverse kill), py post-edit, MD anchors. (Full sections 1-8 + cross notes remain single source.)
+
+************ (Post-Pass81/15m tick + quality_gates NOTE + tracker/main MD updates complete in wt; next steps proceeded safely; ready next 15m or ratchet.)
