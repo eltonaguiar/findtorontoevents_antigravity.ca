@@ -1,0 +1,19 @@
+ **[A] FAIL-CLOSED PREFLIGHT GATE**
+
+The 69% duplicate emission rate with only warning-level enforcement is a catastrophic blind spot—this volume of noise will systematically erode signal integrity and mask genuine failures. The substring-matched family name registry is brittle against typos, Unicode variants, and deliberate evasion; migrate to phonetic hashing (e.g., Metaphone) plus Levenshtein-distance thresholds. Terminal NULL-pnl>200 lacks context—normalize by strategy capacity or historical volatility, or hard thresholds will misfire on high-variance regimes. Most critically, logged-but-allowed `--skip` flags create an audit trail without accountability; require VP-level sign-off with automatic escalation after N skips per quarter.
+
+**[B] CAPACITY/COST STRESS MATRIX**
+
+The 1h bar constraint makes latency slip simulation (1/5/15min) nearly meaningless—you're interpolating within a single bar without microstructure, so slippage estimates are unverifiable fiction. Volume caps as % of entry-bar volume ignore the joint distribution: a 5% cap on a thin bar may still crash the market, while 1% on a thick bar may be overly conservative. Replace with participation-rate modeling using bar-to-bar volume variance, or explicitly label these as "unfalsifiable bounds." The PF CI-lower-bound>1.15 threshold across >=3 cases is underpowered; with 6 scenarios, this invites p-hacking—pre-specify which 3 matter or use Bonferroni correction.
+
+**[C] FORWARD CONFIRMATION LANES**
+
+The 69% same-day re-emission means your "forward" confirmation is mostly backward-looking self-validation; per-condition n/WR/PF will be inflated by near-duplicates and suffer look-ahead bias if conditions are stamped but picks resolve asynchronously. The rolling 30d window is too short for rare events and will chase noise; extend to 90d minimum or use expanding windows. Dedup on (symbol,direction,day) fails when upstream re-emits with microsecond timestamp shifts or symbol aliases—fuzzy match on entry-bar open time ± tolerance. Most critically, "pre-entry-bar features" stamped at entry-time is oxymoronic; clarify if features are truly frozen or if lane assignment leaks post-hoc information.
+
+**[D] WEEKLY 5-HYPOTHESIS DIAGNOSTIC**
+
+Your self-identified "diagnosis theater" risk is fatal without a locked rubric—currently, this is structured opinion with plausible deniability. Each category ("measurement-error," "backtest-only") lacks operational definitions, scoring anchors, or inter-rater reliability checks; two quants will produce divergent levers. The "top score picks the week's lever" conflates ordinal ranking with cardinal magnitude—difference between #1 and #2 may be noise. Require pre-registration of rubric weights, blinded dual-scoring, and automatic hold when inter-rater disagreement exceeds threshold. Track lever performance vs. counterfactual (always-hold, round-robin) to prove the diagnostic adds value, not just process.
+
+**[E] MONKEY-TEST NULL (UNBUILT)**
+
+Beating 95th percentile of random strategies is a pathetically weak bar—random entry/hold/direction with costs will cluster near zero or negative PF; 95th percentile may still be unprofitable. This tests only that your strategy isn't *obviously* broken, not that it's good. Worse, same-universe constraint means random strategies inherit universe selection bias; your "null" embeds your research process. Build instead: (1) permuted-entry null (same signals, randomize symbol-direction mapping), (2) constrained random walk null (momentum/volatility-matched), and (3) require beating 95th percentile *net Sharpe*, not PF, to penalize pathological risk concentration.
