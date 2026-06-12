@@ -543,6 +543,12 @@ jobs:
           # fail-open in GHA -> live JSON had intrabar_truth: null. This makes the
           # honest at_signal_outcomes.intrabar_* per-class block reach /audit.
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          # 2026-06-12 P0A root-cause: reresolve_intrabar_signal_outcomes.py calls
+          # get_backups_creds() for its mandatory backup-before-mutation; with no
+          # backups password in the runner env it raised ValueError inside
+          # backup_rows() BEFORE resolving anything, swallowed by `|| non-fatal`
+          # — runner resolved 0/hour while local resolved +44.
+          DB_PASS_BACKUPS: ${{ secrets.DB_PASS_BACKUPS }}
         run: |
           # 2026-05-28: refresh money_ready_verdict.json on every hourly dashboard
           # build (was daily-only via money-ready-snapshot.yml → 13h+ stale vs embed).
