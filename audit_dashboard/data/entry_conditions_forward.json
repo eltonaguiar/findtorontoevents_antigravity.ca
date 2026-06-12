@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-06-12T06:28:48.081024+00:00",
+  "generated_at": "2026-06-12T10:56:32.052484+00:00",
   "read_only": true,
   "source_experiment": "reports/entry_conditioning_experiment_2026-06-10.json",
   "cohort_sql_note": "at_signal_outcomes intrabar_resolved_at IS NOT NULL AND intrabar_status IN ('TP_HIT','SL_HIT'); dedup (symbol,direction,day) MIN id; LIMIT 4000 ORDER BY opened_at DESC",
-  "cohort_n": 1191,
-  "stamped_n": 1151,
+  "cohort_n": 1197,
+  "stamped_n": 1154,
   "skips": {
+    "COMMODITY:entry_scale_mismatch": 4,
+    "EQUITY:entry_scale_mismatch": 6,
     "FOREX:entry_scale_mismatch": 7,
     "CRYPTO:entry_scale_mismatch": 7,
     "UNKNOWN:entry_scale_mismatch": 1,
     "FUTURES:entry_scale_mismatch": 3,
-    "EQUITY:entry_scale_mismatch": 5,
-    "COMMODITY:entry_scale_mismatch": 2,
     "CRYPTO:no_bars": 5,
     "UNKNOWN:insufficient_pre_bars": 1,
     "EQUITY:insufficient_pre_bars": 2,
@@ -83,30 +83,30 @@
     "forex_trend_aligned": {
       "class": "FOREX",
       "definition": "class=FOREX AND F1 trend=ALIGNED (close vs SMA50 x dir)",
-      "n": 14,
-      "wr": 64.3,
-      "pf": 4.736,
-      "avg_pnl": 0.4962,
+      "n": 16,
+      "wr": 68.8,
+      "pf": 5.333,
+      "avg_pnl": 0.5036,
       "last30d": {
-        "n": 14,
-        "wr": 64.3,
-        "pf": 4.736,
-        "avg_pnl": 0.4962
+        "n": 16,
+        "wr": 68.8,
+        "pf": 5.333,
+        "avg_pnl": 0.5036
       },
       "verdict_note": "accruing forward n; below the n>=100 gate"
     },
     "forex_contrarian_NEGATIVE": {
       "class": "FOREX",
       "definition": "NEGATIVE filter: class=FOREX AND F1=CONTRARIAN (76% of losses)",
-      "n": 26,
-      "wr": 26.9,
-      "pf": 0.479,
-      "avg_pnl": -0.1347,
+      "n": 27,
+      "wr": 25.9,
+      "pf": 0.458,
+      "avg_pnl": -0.1408,
       "last30d": {
-        "n": 25,
-        "wr": 24.0,
-        "pf": 0.419,
-        "avg_pnl": -0.156
+        "n": 26,
+        "wr": 23.1,
+        "pf": 0.401,
+        "avg_pnl": -0.1615
       },
       "verdict_note": "negative filter \u2014 high n here means the avoid-rule keeps firing; verify WR stays low"
     },
@@ -148,10 +148,10 @@
       "pf": 0.712,
       "avg_pnl": -0.4343,
       "last30d": {
-        "n": 413,
+        "n": 410,
         "wr": 28.8,
-        "pf": 0.543,
-        "avg_pnl": -0.8208
+        "pf": 0.542,
+        "avg_pnl": -0.8236
       },
       "verdict_note": "n>=100 reached \u2014 re-run R1/R2/R3 before any sizing decision"
     },
@@ -188,15 +188,15 @@
     "baseline_FOREX": {
       "class": "FOREX",
       "definition": "all FOREX picks in cohort (class baseline)",
-      "n": 40,
-      "wr": 40.0,
-      "pf": 1.402,
-      "avg_pnl": 0.0861,
+      "n": 43,
+      "wr": 41.9,
+      "pf": 1.48,
+      "avg_pnl": 0.099,
       "last30d": {
-        "n": 39,
-        "wr": 38.5,
-        "pf": 1.355,
-        "avg_pnl": 0.0781
+        "n": 42,
+        "wr": 40.5,
+        "pf": 1.435,
+        "avg_pnl": 0.0918
       },
       "verdict_note": "accruing forward n; below the n>=100 gate"
     },
