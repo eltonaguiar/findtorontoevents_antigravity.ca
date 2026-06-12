@@ -1784,7 +1784,7 @@
    "family": "snipe_spike_30m",
    "asset_class": "CRYPTO",
    "registered_at": "2026-06-12",
-   "status": "PARTIAL: CHASE-REFUTED / FADE-PENDING-1MIN-REPLAY",
+   "status": "CLOSED",
    "origin": "operator request 2026-06-12 (very-short-term skyrocket sniping + 30-min self-grading + ML). Design doc: docs/plans/2026-06-13-snipe-shortterm-spike-design.md.",
    "hypothesis": "TWO-ARMED (the C006 reconciliation): on a frozen spike trigger (5-min return >=2.0% AND 5-min volume >=5x trailing-2h median, 1-min bars, top-100 USDT universe, 2h/symbol cooldown), either CHASE (with-spike) or FADE (against-spike) has positive net expectancy with TP +1.0%/SL -0.7%/30-min time-exit at 16bp RT. Breakeven WR ~47% at this geometry.",
    "test_statistic": "per-arm: net PF + PF CI-lower-bound (cluster bootstrap, symbol-hour clusters) + R1 time-split + R2 conc<35% + 1-min monkey-P95, via the replay_harness pattern",
@@ -1820,7 +1820,26 @@
       "verdict": "NULL at coarse gate (at breakeven WR, PF<1 net) \u2014 ambiguity-penalized"
      }
     },
-    "remaining_comparisons": "ONE: 1-min first-touch replay of the FADE arm (the design's true instrument). If FADE CI-LB<=1.0 there too -> family CLOSED. CHASE arm is CLOSED now."
+    "remaining_comparisons": "ONE: 1-min first-touch replay of the FADE arm (the design's true instrument). If FADE CI-LB<=1.0 there too -> family CLOSED. CHASE arm is CLOSED now.",
+    "final_1min_2026_06_12": {
+     "method": "1-min first-touch, SL-wins-ties, 30-min time-exit, net 16bp \u2014 the registered TRUE instrument (ambiguous 20/1070 vs 133/527 at 1h: granularity caveat eliminated)",
+     "FADE": {
+      "n": 1070,
+      "wr_pct": 44.4,
+      "pf_net": 0.766,
+      "pf_ci_lower": 0.69,
+      "exits": {
+       "TP": 434,
+       "SL": 567,
+       "TIME": 69
+      },
+      "r1_halves_pf": [
+       0.765,
+       0.768
+      ]
+     },
+     "verdict": "FAMILY_CLOSED \u2014 both arms fail. Neither chasing NOR fading 2%/5min spikes at 5x volume has positive net expectancy at 16bp with TP+1.0%/SL-0.7%/30min. The half-split stability (0.765 vs 0.768) shows this is structural, not regime noise."
+    }
    }
   }
  ],
