@@ -35,6 +35,8 @@ See EAGLE2_2026-06-02_CLAUDE_OPUS_4_7.MD Pillar 3 + Pillar 4 capital ladder.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from typing import Iterable, Optional
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -184,6 +186,27 @@ def _profit_factor_from_pnls(pnls: list[float]) -> float | None:
     return wins / losses
 
 
+def run_loop_preflight(strategy_key: str, asset_class: str) -> tuple[bool, str]:
+    """MANDATORY before any promotion evaluation or PROMOTED_STRATEGIES edit.
+
+    2026-06-12 (GROK4_3 v2 review): the fail-closed gate existed but had no
+    production caller — "we have the gate" complacency. This wires it into the
+    promotion path. Returns (go, output). Fail-closed on any error.
+    """
+    import subprocess
+    import sys as _sys
+    try:
+        proc = subprocess.run(
+            [_sys.executable, str(Path(__file__).resolve().parent.parent
+                                  / "tools" / "loop_preflight.py"),
+             "--asset-class", asset_class, "--family", strategy_key],
+            capture_output=True, text=True, timeout=120,
+        )
+        return proc.returncode == 0, (proc.stdout or "") + (proc.stderr or "")
+    except Exception as exc:  # fail closed
+        return False, f"preflight errored: {exc}"
+
+
 def evaluate_forward_tier2(
     closed_pnls: list[float],
     *,
@@ -192,6 +215,8 @@ def evaluate_forward_tier2(
     dsr: float | None = None,
     wr_high_vix: float | None = None,
     wr_low_vix: float | None = None,
+    strategy_key: str | None = None,
+    asset_class: str | None = None,
 ) -> dict:
     """Six-check promotion ladder for paper→production (MASTERPLAN action 4).
 
@@ -200,6 +225,13 @@ def evaluate_forward_tier2(
 
     Returns dict with ``passed``, ``blockers``, and computed metrics.
     """
+    # 2026-06-12: mandatory fail-closed preflight when identity is provided
+    # (callers SHOULD provide it; legacy positional calls stay compatible).
+    if strategy_key and asset_class:
+        _go, _out = run_loop_preflight(strategy_key, asset_class)
+        if not _go:
+            return {"promote": False, "checks": {}, "blocked_by_preflight": True,
+                    "preflight_output": _out[-800:]}
     window = list(closed_pnls[:TIER2_MIN_N])
     n = len(window)
     blockers: list[str] = []
