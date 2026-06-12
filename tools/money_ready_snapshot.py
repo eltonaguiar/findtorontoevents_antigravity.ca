@@ -74,7 +74,11 @@ def run_verdict() -> dict:
     # non-dict value so validate()/iteration only ever see class records. This
     # crashed the snapshot ("class 'generated_at' record is not an object") and
     # silently froze the live verdict JSON until fixed.
-    data = {k: v for k, v in data.items() if isinstance(v, dict)}
+    # 2026-06-12 second occurrence of the meta-key bug class: ENH#131 added a
+    # top-level "units" DICT which survived the non-dict strip and broke
+    # validate() ("class 'units' missing keys"). Future-proof rule: class
+    # records are ALL-UPPERCASE keys (CRYPTO/EQUITY/...); anything else is meta.
+    data = {k: v for k, v in data.items() if isinstance(v, dict) and k.isupper()}
     if not data:
         sys.exit("ERROR: verdict JSON contained no class records after meta-strip")
     return data
