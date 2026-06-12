@@ -243,6 +243,9 @@ _RETIRED_STRATEGIES = frozenset({
     "forex_carry_momentum",
     # n=55 WR=38.18% avg_pnl=-0.071695% total_pnl=-3.9432%  reasons=wr_below_floor
     "fx_smart_carry_trade_momentum",
+    # 2026-06-12: auto-killed by strategy_kill_switch.py (Phase 2 strategy kill)
+    # n=115 WR=23.48% avg_pnl=-1.454348% total_pnl=-167.25%  reasons=wr_below_floor, total_pnl_destroyed
+    "luxalgo_filters",
 })
 
 # Composite (system, strategy) pairs that are toxic only in a specific combo.
