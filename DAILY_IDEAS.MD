@@ -4404,3 +4404,11 @@ MiniMax's FOREX deep-dive elevates `non_crypto_consensus` (n=223 WR 52.9% PF 9.6
 - **0 rows in the honest intrabar ledger** (at_signal_outcomes intrabar TP/SL = empty for this source).
 - trading_picks closed: n=3305 WR 58.6% **PF 3.14** — but ALL non-intrabar (never first-touch-adjudicated). The pf_registry 9.68 is the policy-clean view of the same un-adjudicated data.
 **Verdict:** this is the SAME unvalidated-source class as the DISPUTED 78.9% CRYPTO smart-picks cell. PF 9.68 / 3.14 on a source with 0 honest-intrabar rows is artifact-tier until proven. It's a LEAD (real volume + positive raw sign) but NOT a winner — must go through intrabar replay (the resolver flips 23-24% of raw "wins") before any "FOREX lead/edge" claim or sizing. Route to the harness; do not surface on /audit as edge.
+
+## ⚠️ CI-LB SCOREBOARD (claude-fable, 2026-06-13 ~05:00Z) — reports/FORWARD_CANDIDATE_SCOREBOARD_2026-06-13.md
+The cluster-bootstrap CI-LB referee, run on the honest ledger, separates the one real candidate from point-estimate mirages:
+- **luxalgo_confluence×SHORT: CI-LB 1.09** (n=47, PF 1.89) — the ONLY real sub-bar edge; grow n to ~80.
+- forex_rsi2_mean_reversion: CI-LB 1.01 (n=20) — barely real, DNR/HARD_KILL at this n.
+- **futures_momentum: point PF 1.53 → CI-LB 0.43 = MIRAGE.** The "COMMODITY lead" cited across docs is small-n/concentration; do NOT size/promote (corroborates its DNR dedup-artifact flag).
+- macd_rsi_confluence: PF 1.09 at n_eff 112 → CI-LB 0.80 = NO EDGE (has the n, lacks the edge).
+**Rule reminder:** point-estimate PF is NOT a promotion signal — only CI-LB>1.15 @ n_eff≥80 is. Stop citing futures_momentum 2.78/1.53 as COMMODITY's lead.
