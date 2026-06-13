@@ -190,6 +190,14 @@ def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
     if not allowed:
         return 0  # silently skip killed strategies
     try:
+        # P0-B: same central kill gate as insert_outcome (was missing on pick path)
+        try:
+            from alpha_engine.emitter_discipline import is_emission_allowed
+            _allowed, _why = is_emission_allowed(strategy, source_system)
+            if not _allowed:
+                return 0
+        except ImportError:
+            pass
         cur.execute(
             "INSERT IGNORE INTO at_local_picks "
             "(symbol, direction, entry_price, take_profit, stop_loss, confidence, "

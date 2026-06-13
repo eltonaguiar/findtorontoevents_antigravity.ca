@@ -42,7 +42,9 @@ HARD_KILL_STRATEGIES: Set[str] = {
     "inverse_carry_contrarian", "ml_breakout", "genome_mutations",
     "hl_funding_fade", "kimi_signal_tracking", "multi_period_rsi_confluence_eth",
     "claude_gainer_st", "gainer_promoter",
-    # 2026-06-12 P0B unified kill list — 7 toxic strategies added
+    # P0-4 (2026-06-12): fear-greed contrarian drag
+    "st_fear_greed_contrarian", "crypto_fear_greed_contrarian",
+    # P0-B (2026-06-12): intrabar bleeders still emitting via backfill
     "futures_momentum",           # 94 emits/7d, LONG PF=0.00
     "ig_contrarian_sentiment",    # BANNED_SOURCES loophole
     "stocks_rsi2_pullback",       # 20 emits/7d

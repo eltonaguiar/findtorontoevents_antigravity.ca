@@ -7214,10 +7214,10 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     except Exception:
         pass  # fail-open: never block picks on gate error
 
-    # ── M-036: CRYPTO direction="BUY" hard-blocked (2026-05-17) ──
-    # Expert finding: CRYPTO direction="BUY" PF=0.38 / WR=28.9% vs LONG PF=3.14 / WR=54.9%.
-    # "BUY" is anti-predictive for CRYPTO; only LONG / SHORT are valid.
-    # Kill-switch: CRYPTO_BUY_DIRECTION_GATE_ENABLED=0. Fail-open.
+    # ── M-036 / M-036b: CRYPTO direction hard-block (2026-05-17 + 2026-06-12) ──
+    # M-036: BUY anti-predictive (PF=0.38). M-036b: sized LONG/STRONG_BUY blocked
+    # (intrabar LONG WR ~30%, n=1050). Shadow forward_test_only picks exempt.
+    # Kill-switch: CRYPTO_BUY_DIRECTION_GATE_ENABLED=0 or CRYPTO_SIZED_LONG_BLOCK=0.
     try:
         import os as _os_m036
         if _os_m036.environ.get(
@@ -7227,23 +7227,85 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
             if _m036_ac == "CRYPTO":
                 _m036_dir = str(pick.get("direction", "") or "").upper().strip()
                 try:
-                    from alpha_engine.config import CRYPTO_BLOCKED_DIRECTIONS as _m036_blocked
+                    from alpha_engine.config import (
+                        CRYPTO_BLOCKED_DIRECTIONS as _m036_blocked,
+                        CRYPTO_BLOCKED_DIRECTIONS_SIZED as _m036_sized,
+                    )
                 except ImportError:
                     _m036_blocked = frozenset({"BUY"})
-                # 2026-06-12 P0C master-loop amendment: exempt forward_test_only
-                # and _monitor_mode picks so shadow/measurement lanes continue
-                # to accumulate forward n (crypto_rsi5070_us checkpoint 2026-06-25,
-                # crypto_eu_us_handoff LONG observation 2026-07-09).
-                # Only block SIZED/real-capital emissions.
-                if pick.get("forward_test_only") or pick.get("_monitor_mode"):
-                    pass  # measurement-only — skip block
-                elif _m036_dir in _m036_blocked:
+                    _m036_sized = frozenset({"BUY", "LONG", "STRONG_BUY"})
+                _fto = pick.get("forward_test_only") in (True, 1, "1", "true", "True")
+                _shadow = pick.get("forward_observation") or pick.get("paper_pilot")
+                _monitor = pick.get("_monitor_mode")
+                if _fto or _shadow or _monitor:
+                    pass  # measurement-only — skip block (P0C master-loop)
+                else:
+                    _sized_block = _os_m036.environ.get("CRYPTO_SIZED_LONG_BLOCK", "1") not in (
+                        "0", "false", "FALSE", "False",
+                    )
+                    _block_set = _m036_sized if _sized_block else _m036_blocked
+                    if _m036_dir in _block_set:
+                        logger.info(
+                            "M-036 crypto_direction_blocked: direction=%s sized=%s "
+                            "— rejected (symbol=%s)",
+                            _m036_dir, bool(_sized_block),
+                            pick.get("symbol", "?"),
+                        )
+                        return False
+    except Exception:
+        pass  # fail-open: never block picks on gate error
+
+    # ── M-038: FOREX F1=CONTRARIAN block (2026-06-12, P1-5) ──
+    # Entry-conditioning autopsy: 76% of FOREX losses on F1=CONTRARIAN (close vs SMA50
+    # misaligned with direction). Blocks sized emissions; exempt forward_test_only lanes.
+    # Kill-switch: FOREX_F1_CONTRARIAN_GATE_ENABLED=0. Fail-open.
+    try:
+        import os as _os_m038
+
+        if _os_m038.environ.get(
+            "FOREX_F1_CONTRARIAN_GATE_ENABLED", "1"
+        ) not in ("0", "false", "FALSE", "False"):
+            _m038_ac = str(pick.get("asset_class", "") or "").upper()
+            if _m038_ac == "FOREX" and not (
+                pick.get("forward_test_only") or pick.get("_monitor_mode")
+            ):
+                _ec = pick.get("entry_conditions") or {}
+                _m038_f1 = str(
+                    pick.get("entry_condition_f1")
+                    or pick.get("f1_trend")
+                    or _ec.get("F1")
+                    or ""
+                ).upper().strip()
+                if _m038_f1 == "CONTRARIAN":
                     logger.info(
-                        "M-036 crypto_direction_blocked: direction=%s (CRYPTO LONG Σ−503%% n=1,050) "
-                        "— rejected (symbol=%s)",
-                        _m036_dir, pick.get("symbol", "?"),
+                        "M-038 forex_f1_contrarian_blocked: F1=CONTRARIAN "
+                        "— rejected (symbol=%s strategy=%s)",
+                        pick.get("symbol", "?"),
+                        pick.get("strategy", "?"),
                     )
                     return False
+                if not _m038_f1:
+                    _htf = str(
+                        pick.get("htf_bias")
+                        or pick.get("htf_alignment")
+                        or pick.get("regime_at_entry")
+                        or ""
+                    ).lower()
+                    _m038_dir = str(pick.get("direction", "") or "").upper().strip()
+                    _is_long = _m038_dir in ("LONG", "BUY")
+                    _is_short = _m038_dir in ("SHORT", "SELL")
+                    if (
+                        ("bull" in _htf and _is_short)
+                        or ("bear" in _htf and _is_long)
+                    ):
+                        logger.info(
+                            "M-038 forex_f1_contrarian_proxy_blocked: htf=%s dir=%s "
+                            "— rejected (symbol=%s)",
+                            _htf[:40],
+                            _m038_dir,
+                            pick.get("symbol", "?"),
+                        )
+                        return False
     except Exception:
         pass  # fail-open: never block picks on gate error
 
