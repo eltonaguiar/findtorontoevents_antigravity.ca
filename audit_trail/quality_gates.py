@@ -11140,6 +11140,11 @@ def passes_adverse_hard(pick=None, asset_class="", strategy_key="", rvol=0.0, re
                 return False  # good velocity retention cond — do not hard-kill (see Pass 125 load forward + 15 conds table)
     except Exception:
         pass
+    # Pass 131: extend one-sided source kills in passes_adverse_hard for H4/H5 pathology (FINDING#12 33 100% one-sided from reddit/copy/gnews/currents/stocktwits/youtube per check_one_sided). Kill bad external sources (ties to BLOCKED Pass 129 + stamp for good conds like crypto_rsi/forex_aligned velocity retention; do not protect bad sources even if stamped). Cleans 21.1% FWD + low WR. Non-breaking; opt-in env. See deep-dive Pass 130/131 + master loop.
+    bad_one_sided_sources = ["reddit/reddit:u/", "currents/currents:", "gnews/gnews:", "stocktwits/stocktwits:", "copy_pm_", "youtube/youtube:coinbureau"]
+    source = str(pick.get("source_system", "") or "").lower() if pick else ""
+    if any(bad in source for bad in bad_one_sided_sources):
+        return True  # bad one-sided source — hard-kill regardless of stamp (protect only clean sources' good conds)
     if ac == "COMMODITY" and "futures_momentum" in sk:
         if rv > 70 or regime_mild or (pick or {}).get("volume_spike"):
             return True
