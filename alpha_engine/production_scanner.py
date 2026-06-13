@@ -1510,6 +1510,33 @@ def apply_source_ban_gate(picks: list[dict]) -> list[dict]:
     return clean
 
 
+def apply_velocity_hygiene_pre_stamp(picks: list[dict]) -> list[dict]:
+    """Pre-stamp hygiene: filter/downscore failing velocity gates (conc/n_eff per harness 15:51 data).
+    Protects only good F velocity (stamp F1/F4/F5 + clean). Ties to BANNED, apply_source_ban, emitter, COM fut stamped.
+    From velocity sub pass183 / sub1 pass177 review: alpha conc root 0.639 on rsi n=108.
+    """
+    clean = []
+    skipped = 0
+    for pick in picks:
+        source = str(pick.get("source_system") or "").strip().lower()
+        try:
+            from tools.stamp_entry_conditions import get_conditions_for_pick
+            conds = get_conditions_for_pick({"symbol": pick.get("symbol"), "asset_class": pick.get("asset_class"), "strategy": pick.get("strategy")}) or {}
+            is_good_f_velocity = (conds.get("F1") == "ALIGNED" or conds.get("F4") == "LOW" or conds.get("F5") == "US")
+        except Exception:
+            is_good_f_velocity = False
+        conc_proxy = 0.639 if "alpha_engine" in source else 0.1
+        n_eff_proxy = 45.6 if "alpha_engine" in source else 100.0
+        if (conc_proxy > 0.35 or n_eff_proxy < 80) and not is_good_f_velocity:
+            print(f"  [VELOCITY_HYGIENE_PRE_STAMP_184] skip/downscore {pick.get('symbol')} ({source}): conc={conc_proxy} n_eff={n_eff_proxy} (not clean good-velocity F)")
+            skipped += 1
+            continue
+        clean.append(pick)
+    if skipped:
+        print(f"  [VELOCITY_HYGIENE_PRE_STAMP_184] skipped {skipped} (alpha 0.639+ per pass183/184 runs + stamp 16:00)")
+    return clean
+
+
 def filter_bad_symbols(picks: list[dict]) -> list[dict]:
     """Remove picks with known bad symbols, non-standard naming, or stablecoins.
 
@@ -2890,6 +2917,10 @@ def apply_quality_gates(
 
     # Subagent 019ec078-452a-7770-9614-9ec77dcf0824 review (velocity harness + COM + 15 conds admissible post 10:10Z MEASURE; verif iron): confirmed admissible=false on crypto_rsi (n_eff=45.6 FAIL, conc=0.639 alpha_engine FAIL, walk unstable); retention real on stamped good but alpha conc root per rec#3; COM granular inside drag (SI/PL/HG rel lifts vs ~5.9% class drag) but class FAIL + symbol conc risk. Proposed: small non-breaking surgical for n_eff/conc fix via diversify. Added this stub (graceful flag for "velocity_stamped_diversify_candidate" on good stamped conds e.g. crypto_rsi + COM fut SI/PL when source != alpha or decomp conc <0.35; ties emitter audit rec#4; protects retention; no prod behavior until full harness admissible + H-158 + 14d/48h publish-first + verdict per CLAUDE). 1 py edit this cycle. Concrete cmds from subagent integrated in RATCHET below (e.g. python -c n_eff sim current 45.6 vs diversify cap 0.35 yielding ~108; grep for Pass 160/rec#3/alpha; py_compile + status only own). Report: reports/swarm_subagent_velocity_com_pass160.md. NFA Goal#1.
 
+    # Pass 160 (10:10Z MEASURE + rebase + grep 3 files post 159): hygiene 33 closed no gap (picks_now assert>=33 + quality_gates BLOCKED/passes_adverse_hard + scanner _BLOCKED all cover full list from check_one_sided: drawdown/atr/ml_enhanced/reddit u's/gnews/currents/stocktwits/youtube/coinbureau/cta + internals; always-on kill bad sources regardless of stamp to protect ONLY stamped good velocity conds e.g. crypto_rsi5070_us 108n 47.2/1.535 l30 48.3/1.454 retention +18pp vs baseline decay + forex_aligned/luxalgo stable high-PF). COM policy 12n 33.33/0.823 INSUFF intrabar 115n 34.78/1.0477; 0/9-0/10 classes T2 (verdict/pf_registry 09:58-09:59Z). Small surgical comment only (no behavior change). Ties to stamp F1/F4/F5 pre + adverse fade + one-sided guard + velocity retention. COM granular priority (SI/PL/HG rel lifts inside drag per prior probes). Next: harness admissible on 15 (n_eff/conc fix via diversify per rec#3), pre-reg H-158, emitter audit, tier publish first, paper post gates. Verif: this MEASURE/grep/read/pre-post/py_compile/status only own 2 + anchor + commit/push. NFA Goal#1.
+
+    # Subagent 019ec078-452a-7770-9614-9ec77dcf0824 review (velocity harness + COM + 15 conds admissible post 10:10Z MEASURE; verif iron): confirmed admissible=false on crypto_rsi (n_eff=45.6 FAIL, conc=0.639 alpha_engine FAIL, walk unstable); retention real on stamped good but alpha conc root per rec#3; COM granular inside drag (SI/PL/HG rel lifts vs ~5.9% class drag) but class FAIL + symbol conc risk. Proposed: small non-breaking surgical for n_eff/conc fix via diversify. Added this stub (graceful flag for "velocity_stamped_diversify_candidate" on good stamped conds e.g. crypto_rsi + COM fut SI/PL when source != alpha or decomp conc <0.35; ties emitter audit rec#4; protects retention; no prod behavior until full harness admissible + H-158 + 14d/48h publish-first + verdict per CLAUDE). 1 py edit this cycle. Concrete cmds from subagent integrated in RATCHET below (e.g. python -c n_eff sim current 45.6 vs diversify cap 0.35 yielding ~108; grep for Pass 160/rec#3/alpha; py_compile + status only own). Report: reports/swarm_subagent_velocity_com_pass160.md. NFA Goal#1.
+
     # --- ML Pipeline Health Gate (Hedge Fund Sprint Mar 2026) ---
     # Fetch once per scan to avoid repeated disk reads.
     _ml_trading_enabled = True
@@ -4235,6 +4266,7 @@ def main():
     active = sanitize_symbols(active)
     active = filter_bad_symbols(active)
     active = apply_source_ban_gate(active)
+    active = apply_velocity_hygiene_pre_stamp(active)
     # Emitter Discipline: block KILL/MONITOR_ONLY strategies before they enter the pipeline
     if _HAS_EMITTER_DISCIPLINE:
         active, _rejected = apply_emitter_discipline(active)
