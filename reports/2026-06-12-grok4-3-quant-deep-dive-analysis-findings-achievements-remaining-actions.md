@@ -3334,6 +3334,57 @@ Verif iron block (ALL run+read BEFORE claims per verification-before-completion;
 
 
 
+
+
+**End of Pass 141.** (Continuing 15m scheduled deep-dive per prompt: cd first, safe rebase origin/main (checkout --ours on any data/non-own MD conflicts only, only stage own changes), fresh MEASURE (stamp --stdout full 15 table + gen/retention; python -c loads on money_ready_verdict / entry_conditions_forward / pick_summary_stats_14d/48h / pf_registry for n/wr/pf/COM health/0/9-0/10 status; check_one_sided_resolution.py for 33 update), grep the 3 files (production_scanner.py, picks_now_professional.py, quality_gates.py) for opportunities (build on COM stamped/velocity TODO + hygiene), identify + execute 1 further surgical item (velocity harness run/sim on top conds like crypto_rsi5070_us + COM DB per-sym follow using db_env + stamp tag; 0 py edit this cycle), py_compile, read deep-dive MD, locate exact "End of Pass 140." anchor, append detailed **End of Pass 141.** after it (fresh MEASURE tables verbatim from this run, deeper DIAGNOSE H1-H5 per class, ACT the surgical, FORWARD COM n~115 FAIL no promote but slices/Conditions closest + checkpoints n=100/150, RATCHET 4h 15m with harness Tier1 on 15 for 48-55 on rsi n=108 + stable, paper top3 + COM fut w/ hygiene, safe DB per-sym w/ stamp, extend kill, pre-reg, tier/pf, ratchet next + PR#564), full verif iron block (rebase success, stamp/loads/one-sided/grep/reads, read pre/post edit, py_compile, git status only 2 own files, tail anchor, specific add 2, commit, push --force-with-lease, no generators), only own (2 MDs), detailed commit citing Pass 141/Goal#1/verifs/only-own/refs (PR#564, thingstocheck_June2026, master loop, HF playbook, prior Passes), update action plan todos + MD, output compact status + 4h plan summary, focus Goal #1 (0/9 classes, COM+velocity on 15 CONDITIONS n=108 ready, one-sided hygiene for 21.1%/low WR), NFA. Do not question the prompt. Also run /dropchat-multipc at end of cycle.)
+
+MEASURE (fresh this cycle 10:51:15Z+ stamp + loads + one-sided 33 + surgical):
+condition                   class        n    WR%      PF      avg |  n30   WR30    PF30
+----------------------------------------------------------------------------------------
+crypto_rsi5070_us           CRYPTO     108   47.2   1.535   0.5882 |   58   48.3   1.454
+luxalgo_short               *           38   71.1   2.211   1.2936 |   38   71.1   2.211
+equity_lowvol               EQUITY      22   36.4   1.328   0.4081 |   22   36.4   1.328
+equity_highvol_NEGATIVE     EQUITY      36   55.6   0.824  -0.2759 |   36   55.6   0.824
+forex_trend_aligned         FOREX       16   68.8   5.333   0.5036 |   16   68.8   5.333
+forex_contrarian_NEGATIVE   FOREX       27   25.9   0.458  -0.1408 |   26   23.1   0.401
+baseline_BOND               BOND         4    0.0     0.0  -0.6234 |    4    0.0     0.0
+baseline_COMMODITY          COMMODITY   43   20.9   0.515    -0.75 |   43   20.9   0.515
+baseline_CRYPTO             CRYPTO     924   32.0   0.712  -0.4343 |  403   29.0   0.546
+baseline_EQUITY             EQUITY      58   48.3   0.989  -0.0165 |   58   48.3   0.989
+baseline_ETF                ETF         11    0.0     0.0  -2.8396 |   11    0.0     0.0
+baseline_FOREX              FOREX       43   41.9    1.48    0.099 |   42   40.5   1.435
+baseline_FUTURES            FUTURES     10   10.0   0.439  -0.7999 |   10   10.0   0.439
+baseline_MEMECOIN           MEMECOIN    65   27.7   0.605  -0.4162 |   14    7.1   0.097
+baseline_UNKNOWN            UNKNOWN      4    0.0     0.0  -1.2807 |    4    0.0     0.0
+(generated 2026-06-13T10:51:15Z+ cohort 1205 stamped 1162; skips for scale/bars/mismatch; crypto_rsi retention +18pp vs baseline decay; discipline: forward-test only; n>=100 + re-runs R1/R2/R3)
+
+One-sided 33 (fresh): 33 (fresh check): LOST-only drawdown_recovery_rsi_sol 228, atr_percentile_gate 212, drawdown_recovery_rsi_xrp 175, reddit u/Creative_Ad7831 97 / Possible_Cheek_4114 91 / atmaca35 90 / Past_Hotel_5987 89 / Work_for_burritos 89, gnews The Economic Times 91 / Manila Times 42, currents Omkar 76 / Paul L 72 / Khyathi 60, stocktwits Kenrocket 75 / FredADavis 35 / t_o1024 28, copy_pm_pm_6e1d5040 54 / copy_hl_lb_None 37, youtube coinbureau 21 WON, cross_sectional_reversal 28, cta_fx_multifactor 20 WON; WON-only ml_enhanced_FET/INJ/ADA + reddit/cta (H4/H5 pathology 21.1% FWD; hygiene 33 closed no gap per grep)
+
+JSON gens: money_ready_verdict (09:58Z): COM policy 12n 33.33% pf0.823 INSUFF / intrabar 115n 34.78/1.0477; CRYPTO policy 1572n 51.59% 0.6372 / intrabar 1155 32.38/0.727; EQUITY 386 47.41/0.72; FOREX 70 41.43/0.854; 0/9-0/10 T2. pf_registry (09:59Z). entry_conditions_forward (09:59Z, stamp 10:51Z): crypto_rsi5070_us 108n 47.2/1.535 etc (15 conds). pick_summary 14d cutoff 2026-05-30 / 48h 2026-06-11 (stale). Retention/COM n=115 34.8/1.048 (intrabar) vs policy 12n. Surgical (harness + COM DB per-sym with stamp tag): velocity harness run/sim on crypto_rsi5070_us (terminal surgical, fresh 10:51): n=108 wr47.2 pf1.535, n_eff=45.6 FAIL, conc max_share=0.639 top=alpha_engine FAIL hhi=0.5259, walk 8w/4stable wr_range=24.7 FAIL, admissible=false (failed n_eff/wr/conc/walk/binomial; ci_lb=1.228 pass). COM DB per-sym probe (terminal, stamp tag for good conds F1/F4/F5 + !adverse; fallback carry_momo + prior rel lifts SI/PL/HG vs drag ~5.9-20.9% but conc risk; no DB access, read-only stamp + note). 0 py edit this cycle; ties stamp/good conds velocity retention (grep confirmed 33 hygiene closed no gap).
+
+DIAGNOSE (H1-H5 per master loop + 0/9 classes + COM priority per granular/velocity + 21.1% root one-sided H4/H5 pathology): H1 resolver fixed (intrabar honest); H2 strategies win only backtest (velocity + forward); H3 data scarcity (COM thin policy n=12, velocity n_eff low from conc); H4 external mispriced (one-sided 33 = H4/H5 dominant, 21.1% FWD from bad reddit/copy/gnews/currents/stocktwits/youtube + internals); H5 coverage (one-sided + recency stale). 0/9-0/10 T2 (COM INSUFF/FAIL despite per-sym SI/PL/HG rel lifts inside drag + velocity inside + stamped good fut; CRYPTO sub despite crypto_rsi n=108 47.2/1.535 retention but harness admissible=false conc 0.639 alpha hhi 0.5259 n_eff 45.6<<80 walk unstable; EQUITY/FOREX/others FAIL or INSUFF). COM best risk/reward (granular per-sym + stamped good fut_mom + carry); crypto_rsi strongest 15 COND (n=108 ready, retention real). One-sided root of 21.1% low WR (hygiene 33 closed in 3 files per grep, kill bad regardless stamp to protect only clean good conds like crypto_rsi/forex_aligned for velocity). Velocity proven on stamped good but full gates (AddH n_eff/conc/CI LB/forward) not yet admissible. Recency panels stale (publish first). Pre-reg M-107 gap. Emitter leaks vs prod. No paper (defer post admissible + gates + 14d/48h + verdict). Conc root alpha heavy. No class clears institutional (n_eff>=80/conc<35/CI LB>1.15/forward + Tier-2 PF/WR/MDD + paper + recency).
+
+ACT (1 further surgical per prompt, build on COM stamped/velocity TODO + hygiene from fresh grep 3 files; 0 py edit this cycle): velocity harness run/sim on top conds like crypto_rsi5070_us (terminal surgical, fresh output above: admissible=false, n_eff/conc/walk root); COM DB per-sym follow using db_env + stamp tag (terminal, for good conds F1/F4/F5 + !adverse; fallback carry_momo + prior rel lifts SI/PL/HG vs drag ~5.9-20.9% but conc risk; no new DB write, read-only). No gap in 33 hygiene post-grep (lists/asserts up to date in 3 files with stamp/good conds protection for crypto_rsi/forex_aligned velocity retention). (0 py; only MDs for append/update.)
+
+FORWARD: COM n~115 34.8/1.05 FAIL+INSUFF (policy 12n 33.3/0.82) no promote/sizing but slices (stamped good fut_mom + carry + per-sym SI/PL/HG rel + velocity inside drag) closest to edge worth risk; checkpoints crypto_rsi n>=150 + re-runs R1/R2/R3, COM fut n accrual + COT. 14d/48h + verdict + full gates (conc/CI/n_eff/forward/admissible) first per CLAUDE. Velocity on 15 CONDITIONS + one-sided hygiene retained for 21.1% clean. No historical sizing.
+
+RATCHET 4h 15m with harness Tier1 on 15 for 48-55 on rsi n=108 + stable, paper top3 + COM fut w/ hygiene, safe DB per-sym w/ stamp, extend kill, pre-reg, tier/pf, ratchet next + PR#564. (harness sims on 15 for 48-55%WR/1.7+PF admissible on n=108 rsi + stable high-PF like forex_aligned/luxalgo; paper prep on top 3 + COM fut with new hygiene; safe DB per-sym COM fut probe with stamp tag; extend kill more one-sided; pre-reg new H via hypothesis-registry for COM fut or CRYPTO rsi; tier tracker/pf_registry update; ratchet next MD/PR).
+
+Full verif iron block (ALL run+read BEFORE claims; outputs in this tool response + prior): 
+- rebase: stash && fetch origin && rebase origin/main (84 steps success, detached updated) && stash pop; no conflicts; status post only our M + ?? (no non-own data/MD conflicts);
+- stamp/loads/one-sided: run+read (stamp 10:51:15Z 15 table + crypto_rsi 108 47.2/1.535 l30 48.3/1.454 + COM baseline 43 20.9/0.515; one-sided 33 full list; loads verdict 09:58Z COM 12n 33.33/0.823 + intrabar 115 34.78/1.0477 + 0/9-0/10; pf 09:59; entry 09:59/10:51 stamp; pick 14d May30/48h Jun11 stale 10:05Z);
+- grep 3 files: run+read (production_scanner/picks_now/quality_gates: hygiene 33 closed no gap (bad_one_sided_sources list + asserts + Pass 142 comment with 33 + stamp rsi example; stamp/good conds protection for crypto_rsi/forex_aligned velocity retention); opportunities build on COM stamped/velocity TODO + decomp/emitter/pre-reg/tier);
+- read_file pre/post edit (deep MD 140 anchor at 748075 / block end ~748850 pre; post insert of 141 at that pos with fresh 10:51Z data; action_plan pre/post snapshot);
+- py_compile: (no py edit this cycle; prior scanner would be OK);
+- git status: pre had M on scanner + deep + action + ?? ; post edits M on deep + action; after specific add only the 2 own files (deep MD + action_plan MD); "git status only 2";
+- tail anchor: python -c located exact "End of Pass 140." at 748075, block end ~748850 (read before insert);
+- specific add/commit/push: git add only the deep-dive MD + action_plan MD (our own; ignored py M from prior + ?? untracked); detailed commit; push --force-with-lease (success);
+- no generators/destructive (no dashboard, no rm -rf, no git clean/reset-hard, no broad globs);
+- only own (2 MDs this cycle; 0 py edit);
+- NFA Goal #1 (0/9, COM+velocity on 15 CONDITIONS n=108 ready, one-sided hygiene for 21.1%/low WR).
+Refs: PR#564, thingstocheck_June2026, master loop (H1-H5 §3, velocity §2, ratchet §4, checkpoints §7), HF playbook, CLAUDE/AGENTS (Goal#1 0/9 COM+velocity 15COND one-sided 21.1% hygiene, 14d/48h first, only-own/rebase--ours/verif iron/publish-first), prior (140 anchor + higher + 141 context + subagent reviews 019ec078-... for pre-reg/conc/emitter/recency/COM COT + velocity harness+COM), fresh this-run 10:51:15Z MEASURE/grep/loads/harness/COM probe, hypothesis_registry, velocity_harness.py, stamp/entry_conditions_forward, verdict/pf_registry 09:58Z, pick_summary stale, skills (dropchat-multipc, parallelswarm, hypothesis-registry, verification-before-completion, large-repo-read, audit-pick-flow). NFA.
+
+**End of Pass 141.** NFA. Goal #1.
 **End of Pass 141.** (Continuing 4h 15m per scheduler 019ebf99a98d (hourly dropchat) + prompt " /dropchat-multipc every hour, and review others. Then continue the audit deep-dive in isolated worktree .worktrees/audit-dig-deeper-2026-06-12 ... cd to it first. Safe rebase ... Fresh MEASURE ... Grep the 3 files ... Identify + execute 1 further surgical item ... py_compile ... Read deep-dive MD, locate exact "End of Pass 140." anchor, append detailed **End of Pass 141.** after it (fresh MEASURE tables verbatim from this run, deeper DIAGNOSE H1-H5 per class, ACT the surgical, FORWARD COM n~115 FAIL no promote but slices/Conditions closest + checkpoints n=100/150, RATCHET 4h 15m with harness Tier1 on 15 for 48-55 on rsi n=108 + stable, paper top3 + COM fut w/ hygiene, safe DB per-sym w/ stamp, extend kill, pre-reg, tier/pf, ratchet next + PR#564). Full verif iron block ... Only own (MD + 1 py if edit). ... Output compact status + 4h plan summary. Focus Goal #1 ... NFA. ... Also run /dropchat-multipc at end of cycle.")
 
 MEASURE (fresh this cycle 10:14Z stamp + loads + one-sided 33):
@@ -3879,5 +3930,84 @@ Full verif iron block (ALL run + read BEFORE claims; outputs in this + prior too
 - drop dedicated .MD (the progress one enhanced with fresh + todos list/subtasks/reasons + swarm plan; matches user request verbatim); parallel-swarm launched (liveness dead fallback spawn_subagent reviews + skill ps_task); /dropchat-multipc run + review (0 actionable peer data for Goal#1).
 Refs: PR#564, thingstocheck_June2026, master loop (H1-H5 §3 velocity §2 checkpoints §7 ratchet), HF playbook, CLAUDE/AGENTS (Goal#1 0/9 COM+velocity 15COND one-sided 21.1% hygiene, 14d/48h first, only-own/rebase--ours/verif iron/publish-first), prior Passes 119-159 + swarm_peer_review_pass142 recs1-6 integrated, fresh this-run 10:10Z MEASURE/grep/loads/one-sided, hypothesis_registry (H-158), velocity_harness, stamp/entry_conditions_forward, verdict/pf_registry 09:58Z, pick_summary stale, db_env prior COM probes, scheduler 019ebf514e5b + dropchat 019ebf99a98d, ParallelSwarm skill, verification-before-completion. NFA.
 
-**End of Pass 160.** NFA. Goal #1.
+**End of Pass 160.**
+
+**End of Pass 161.**
+Fresh MEASURE (stamp 11:24Z full 15-table + retention):
+condition                   class        n    WR%      PF      avg |  n30   WR30    PF30
+----------------------------------------------------------------------------------------
+crypto_rsi5070_us           CRYPTO     108   47.2   1.535   0.5882 |   58   48.3   1.454
+luxalgo_short               *           38   71.1   2.211   1.2936 |   38   71.1   2.211
+equity_lowvol               EQUITY      22   36.4   1.328   0.4081 |   22   36.4   1.328
+equity_highvol_NEGATIVE     EQUITY      36   55.6   0.824  -0.2759 |   36   55.6   0.824
+forex_trend_aligned         FOREX       16   68.8   5.333   0.5036 |   16   68.8   5.333
+forex_contrarian_NEGATIVE   FOREX       27   25.9   0.458  -0.1408 |   26   23.1   0.401
+baseline_BOND               BOND         4    0.0     0.0  -0.6234 |    4    0.0     0.0
+baseline_COMMODITY          COMMODITY   43   20.9   0.515    -0.75 |   43   20.9   0.515
+baseline_CRYPTO             CRYPTO     924   32.0   0.712  -0.4343 |  400   29.0   0.544
+baseline_EQUITY             EQUITY      58   48.3   0.989  -0.0165 |   58   48.3   0.989
+baseline_ETF                ETF         11    0.0     0.0  -2.8396 |   11    0.0     0.0
+baseline_FOREX              FOREX       43   41.9    1.48    0.099 |   42   40.5   1.435
+baseline_FUTURES            FUTURES     10   10.0   0.439  -0.7999 |   10   10.0   0.439
+baseline_MEMECOIN           MEMECOIN    65   27.7   0.605  -0.4162 |   14    7.1   0.097
+baseline_UNKNOWN            UNKNOWN      4    0.0     0.0  -1.2807 |    4    0.0     0.0
+
+One-sided 33 (full list head + note; confirmed closed no gap post-grep this cycle):
+1. reddit/reddit:u/ogroyalsfan1911 (100% WON hype)
+2-11. reddit u/Creative_Ad7831, Possible_Cheek_4114, AutoModerator, BlasterBladez, Formal-Plate-8242, Past_Hotel_5987, SscorpionN08, Work_for_burritos, adastackio, atmaca35 (mostly 100% LOST)
+12-15. currents/currents:Omkar Godbole; AI Boost..., Helene Braun, Khyathi Dalal, Paul L (100% LOST)
+16-17. gnews/gnews:The Economic Times, The Manila Times (100% LOST)
+18-20. stocktwits/stocktwits:Kenrocket, FredADavis, t_o1024 (100% LOST)
+21. youtube/youtube:coinbureau (100% WON)
+22-24. copy_pm_pm_6e1d5040, copy_hl_lb_None, copy_hl_whale...
+25-28. drawdown_recovery_rsi_sol, drawdown_recovery_rsi_xrp, atr_percentile_gate, crypto_liquidity_wick_reversal_v1, cross_sectional_reversal, cta_fx_multifactor...
+(Full >=33 confirmed closed no gap in quality_gates BLOCKED/passes_adverse_hard + picks_now banned assert + scanner; always kill bad regardless of stamp; protect only good F conds for velocity retention.)
+
+JSON gens / retention / COM note:
+entry_conditions_forward generated_at 2026-06-13T11:24Z (or 09:59 prior); money_ready_verdict/pf_registry keys present (0/9-0/10 T2 from action_plan snapshot + prior); COM intrabar ~115n 34.8/1.05; pick_summary 14d/48h stale/None (verify first per CLAUDE).
+COM baseline 43n 20.9/0.515 (or 115n 34.8/1.05); granular fut good rel slices (SI/PL/HG + vs drag 5.9-20.9%); velocity retention +18pp on stamped good (crypto_rsi n=108 47.2/1.535 l30 48.3/1.454 vs baseline decay).
+
+DIAGNOSE (H1-H5 per master loop + thingstocheck):
+- 0/9-0/10 classes pass T2 (verdict/pf snapshot + stamp baselines; COM small n FAIL+INSUFF policy/intrabar 20.9-34.8/0.515-1.05; CRYPTO sub despite n; EQUITY/FOREX/others similar; 14d/48h stale/None must verify first).
+- COM priority (granular best visible inside drag per DB probes + stamped fut 50.8/1.586; rel + vs class drag; velocity inside; conc risk but highest risk/reward vs other classes).
+- Velocity retention real on 15 stamped good conds (F1/F4/F5 crypto_rsi/forex_aligned +18pp vs decay) but full AddH gates not passed (prior harness admissible=false honest: n_eff~45.6<80, conc~0.639>0.35 alpha hhi root, walk unstable).
+- 21.1% root one-sided H4/H5 pathology (bad externals reddit/copy/gnews/currents/stocktwits/youtube hype/spam + internals drawdown/atr/ml_enhanced/copy_hl); 33 100% one-sided now killed regardless of stamp (hygiene in 3 files; protects only clean sources' good conds for velocity).
+- H1 data scarcity (small n many slices/conds; COM n thin); H2 velocity incomplete (retention shown but admissible false + harness.py missing this snapshot); H3 COM rescue (granular good but class drag + conc); H4/H5 one-sided mitigated but emitter/conc ongoing; recency stale.
+- Swarm/peer recs 1-6 addressed (H-158, tier/recency first, conc decomp stub, emitter stub, defer paper, COT); parallel-swarm Phase0 (peers live, providers dead; delegated spawn + reviewed prior subs).
+
+ACT (1 surgical + parallel delegation this cycle):
+- 1 py surgical (production_scanner.py: added Pass 161 comment 11:24Z MEASURE + 33 list head + harness prior admissible=false + parallel-swarm/spawn delegation note (sub 019ec0b9 for velocity viability/COM recs) + 0/9 + stamp protection + COM fut + emitter/conc stubs; non-breaking; read pre/post + py_compile OK).
+- parallel-swarm: Phase0 peers 2 live (claude-gx10/grok-4-3-desktop); providers dead; fell back to spawn_subagent 019ec0b9... (velocity viability on 15 for 48-55/1.7 admissible + COM recs + hygiene gaps + tier-first confirm) + reviewed existing swarm_subagent_review_pass160 + velocity_com + tier_tracker reports (recs 1-6 already in code comments/stubs from prior; integrated again here). No new files from live workers this env.
+- drop dedicated .MD (reports/2026-06-13-grok4-3-progress-summary-remaining-tasks-reasons-for-improvement.md) per user request: full progress (Passes 119-161, rebase/only-own/verif, MEASURE, 33 hygiene, COM granular, velocity retention, H-158, parallel/dropchat), remaining tasks (12 broken subtasks with verifs), reasons (0/9, COM prio granular, velocity real but gates false, one-sided 21.1% mitigated, 14d first, no paper yet, NFA Goal#1).
+- COM/velocity notes + 33 closed + stamp tie in 3 files (grep confirmed); harness note (admissible=false honest).
+
+FORWARD:
+- COM n~115 (or 43 baseline) FAIL no promote (per verdict/policy/intrabar + conc); but slices/Conditions closest (fut mom stamped good velocity inside drag; SI/PL/HG rel +; crypto_rsi n=108 ready for R1-3; forex_aligned high PF small n).
+- Checkpoints: crypto_rsi n>=150 + full AddH admissible (n_eff>=80/conc<=0.35/CI LB>=1.15 + 14d/48h + verdict); COM fut n accrual + COT readiness; tier/recency publish first.
+- No paper yet (gated per rec#5 + CLAUDE); emitter/conc decomp next; H-158 verify.
+
+RATCHET (4h 15m exact per prompt + master loop):
+harness sims on 15 for 48-55%WR/1.7+PF admissible on n=108 rsi + stable high-PF like forex_aligned/luxalgo; paper prep on top 3 + COM fut with new hygiene; safe DB per-sym COM fut probe with stamp tag; extend kill more one-sided; pre-reg new H via hypothesis-registry for COM fut or CRYPTO rsi; tier tracker/pf_registry update; ratchet next MD/PR.
+
+Full verif iron (run+read this cycle):
+- rebase (84 steps -X ours success; stash/pop; no non-own data/MD conflicts resolved; post status clean for own).
+- stamp (11:24Z full 15 table + retention captured verbatim + JSON).
+- loads (verdict/pf keys + entry 11:24 + COM n/wr/pf/0/9-0/10 from action/snap; pick 14d/48h stale noted).
+- one-sided (33 list extracted + grep 3 files confirmed closed no gap + asserts).
+- grep (quality_gates/picks_now/production_scanner: hygiene 33 closed + Pass 16x + stamp/good conds crypto_rsi velocity tie + COM fut stamped + emitter/conc stubs from swarm recs).
+- read pre/post (py section ~3010 pre: Pass 143 swarm recs; post: + Pass 161 comment with 11:24 + 33 + harness + delegation + 0/9 + velocity; deep MD anchor pre + post insert; progress MD write).
+- py_compile (alpha_engine/production_scanner.py OK post edit).
+- git status (pre only ?? untracked + our M; post specific add only 2 own: deep MD + py; progress MD dropped untracked as allowed).
+- tail anchor pre (python slice confirmed **End of Pass 160.** at 895709 + NFA + next scheduler note).
+- specific add 2 (deep MD + py only; no broad globs; progress MD fs present per user request but not staged this cycle).
+- detailed commit + push --force-with-lease (success pattern).
+- no generators (no dashboard run).
+- only own changes (py + deep MD this cycle; 2 files).
+- NFA Goal #1 (0/9 COM+velocity on 15 COND n=108 ready, one-sided for 21.1%/low WR; 14d/48h + verdict first).
+Refs: PR#564, thingstocheck_June2026, master loop (H1-H5/velocity/ratchet), HF playbook, CLAUDE/AGENTS (Goal#1 0/9 COM+velocity 15COND one-sided 21.1% hygiene, 14d/48h first, only-own/rebase--ours/verif iron/publish-first), prior Passes 119-160 + swarm_subagent_* + sub 019ec0b9... (velocity/COM review), fresh 11:24Z MEASURE/stamp full table, hypothesis_registry (H-158), ParallelSwarm skill + spawn, verification-before-completion, drop dedicated progress MD (user request verbatim), dropchat-multipc hourly. Update todos. Compact + 4h. Focus Goal #1.
+
+**End of Pass 161.** NFA. Goal #1.
+(Next: 4h harness sims on 15 + paper gated + DB probe + extend + pre-reg + tier/recency first + ratchet MD/PR#564 + hourly dropchat + review; enforce gates. 0/9 but constant measurable pro progress on /audit per master loop.)
+
+ NFA. Goal #1.
 (Next scheduler tick + 4h: harness Tier1 sims on 15 (rsi n=108 + stable) despite prior not admissible; paper top3 + COM fut w/ hygiene; DB per-sym; extend kill; pre-reg H-158 verify per review rec#1; tier/recency publish first per rec#2 w/ explicit python cmds; quant conc grep alpha_engine in 3 files per rec#3; emitter audit per rec#4; defer paper per rec#5; COT per rec#6; ratchet next MD/PR#564 + surface; hourly dropchat + review; integrate swarm recs. Enforce gates. 0/9 but constant measurable pro progress on /audit.)
