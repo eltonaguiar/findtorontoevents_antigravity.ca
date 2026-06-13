@@ -83,6 +83,28 @@
     'MEMECOIN', // PF 0.50, 29 strategies quarantined
   ]);
 
+  // P1-A: cache money_ready_verdict for intrabar sizing gate (loaded lazily).
+  window._moneyReadyVerdictCache = window._moneyReadyVerdictCache || null;
+
+  function ensureMoneyReadyVerdictCache(cb) {
+    if (window._moneyReadyVerdictCache) { if (cb) cb(); return; }
+    fetch('./data/money_ready_verdict.json?' + Date.now())
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ window._moneyReadyVerdictCache = j || {}; if (cb) cb(); })
+      .catch(function(){ window._moneyReadyVerdictCache = {}; if (cb) cb(); });
+  }
+
+  function classPassesIntrabarSizingGate(cls) {
+    var mv = window._moneyReadyVerdictCache;
+    if (!mv || !mv.classes) return true;
+    var c = mv.classes[String(cls || '').toUpperCase()];
+    if (!c) return true;
+    if (c.sizing_source === 'intrabar_truth') {
+      return c.wr_ok === true && c.pf_ok === true;
+    }
+    return true;
+  }
+
   // Per-class score floor (matches alpha_engine/config.py MIN_ELITE_SCORE_BY_CLASS)
   var CLASS_SCORE_FLOOR = {
     'CRYPTO': 70, 'EQUITY': 60, 'ETF': 50, 'FOREX': 70,
@@ -130,6 +152,7 @@
     }
     var sym = String(pick.symbol || '').toUpperCase().trim();
     if (edge.symbol_filter && edge.symbol_filter.indexOf(sym) === -1) return null;
+    if (!classPassesIntrabarSizingGate(cls)) return null;
     // Score floor
     var floor = CLASS_SCORE_FLOOR[cls] || 50;
     var score = Number(pick.score || 0);
@@ -165,6 +188,7 @@
   // applyMoneyReady — called by the button onclick
   window.applyMoneyReady = function() {
     window._moneyReadyActive = !window._moneyReadyActive;
+    ensureMoneyReadyVerdictCache(function(){
     var btn = document.getElementById('btn-money-ready');
     if (btn) {
       btn.style.opacity = window._moneyReadyActive ? '1' : '0.7';
@@ -191,5 +215,8 @@
     } else if (banner) {
       banner.style.display = 'none';
     }
+    });
   };
+
+  ensureMoneyReadyVerdictCache();
 })();
