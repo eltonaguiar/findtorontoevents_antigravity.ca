@@ -443,6 +443,11 @@ jobs:
 
       - name: Run ML Gatekeeper (pick quality scoring)
         id: ml_gatekeeper
+        env:
+          # 2026-06-12 (#134 final link): the A/B dual-write is env-gated and the
+          # flag was NEVER set in CI — with the prefetch fixed (2,132 picks loaded
+          # vs 0) the router still skipped. Models verified on main. Engage.
+          ML_GATE_AB_ENABLED: "1"
         run: |
           pip install 'scikit-learn==1.3.2' 'scipy>=1.10.0,<1.14' -q 2>/dev/null || true
           python ml_gatekeeper/gatekeeper.py || echo "ML Gatekeeper warning (non-fatal)"

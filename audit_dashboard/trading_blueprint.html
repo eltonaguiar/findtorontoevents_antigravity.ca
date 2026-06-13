@@ -462,7 +462,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         </tr><tr>
           <td><b>mape evolver</b><br><span class="dim" style="font-size:11px">DARWIN MAP-Elites (ATLAS). Quality-Diversity evolution - fills a grid of (volatility x trend) niches with the best strat</span></td>
           <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
-          <td class="num">6</td>
+          <td class="num">3</td>
           <td class="num">0</td>
           <td class="num">0</td><td class="num">0</td>
           <td class="num" style="color:#ef4444">0.0%</td>
@@ -798,7 +798,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         </tr><tr>
           <td><b>luxalgo filters</b><br><span class="dim" style="font-size:11px">LuxAlgo 5-Filter Confluence Engine. Automated signal generator inspired by LuxAlgo TradingView indicators. Runs 5 Python</span></td>
           <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
-          <td class="num">1</td>
+          <td class="num">4</td>
           <td class="num">416</td>
           <td class="num">145</td><td class="num">211</td>
           <td class="num" style="color:#ef4444">40.7%</td>
@@ -904,7 +904,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <th>BT WR</th><th>FWD WR</th><th>FWD Trades</th><th>FWD PF</th>
         <th>Conf</th><th>R:R</th><th>Avg PnL</th><th>Health</th>
       </tr></thead><tbody><tr>
-          <td><b>kalshi_mtf_consensus</b></td>
+          <td><b>tsmom_volscaled</b></td>
           <td class="num">1</td>
           <td class="num">SHORT:1</td>
           <td class="num" style="font-size:11px">XRP</td>
@@ -929,6 +929,19 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td class="num">2.0</td>
           <td class="num" style="color:#22c55e">+0.27%</td>
           <td class="num">None:1</td>
+        </tr><tr>
+          <td><b>luxalgo_confluence</b></td>
+          <td class="num">1</td>
+          <td class="num">SHORT:1</td>
+          <td class="num" style="font-size:11px">XRP</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">40.6%</td>
+          <td class="num">357</td>
+          <td class="num" style="color:#ef4444">0.94</td>
+          <td class="num">0.67</td>
+          <td class="num">1.7</td>
+          <td class="num" style="color:#22c55e">+0.92%</td>
+          <td class="num">healthy:1</td>
         </tr></tbody></table>
       </div>
     </div></div>
@@ -938,7 +951,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
       <p class="dim">For an external reviewer to evaluate signal quality, they need to know the actual entry/exit rules, not just names. Strategies marked with "No documented rules" are a transparency gap.</p>
       <div class="table-wrap">
       <table><thead><tr><th style="min-width:180px">Strategy</th><th>Active</th><th>FWD WR/Trades</th><th>Entry/Exit Logic & Parameters</th></tr></thead>
-      <tbody><tr><td><b>kalshi_mtf_consensus</b></td><td class="num">1</td><td class="num" style="color:#ef4444">0%/0t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr><tr><td><b>tsmom_volscaled</b></td><td class="num">1</td><td class="num" style="color:#ef4444">0%/0t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr></tbody></table>
+      <tbody><tr><td><b>tsmom_volscaled</b></td><td class="num">1</td><td class="num" style="color:#ef4444">0%/0t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr><tr><td><b>luxalgo_confluence</b></td><td class="num">1</td><td class="num" style="color:#ef4444">41%/357t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr></tbody></table>
       </div>
       <div class="verdict-box neutral">
         <b>Transparency gap:</b> Many strategies lack documented entry/exit rules. This makes external review impossible for those strategies.
@@ -1229,6 +1242,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
           <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL (unreal.)</th>
           <th>Age(h)</th><th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
         </tr></thead><tbody><tr>
+              <td>XRP</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">1.1416</td><td class="num">1.11454</td><td class="num">1.15759</td>
+              <td class="num" style="color:#22c55e">+0.92%</td>
+              <td class="num">27h</td>
+              <td class="num">0.67</td><td class="num">1.7</td>
+              <td class="num" style="color:#ef4444">41%</td>
+              <td class="num">2</td>
+              <td class="dim" style="font-size:11px">luxalgo_confluence</td>
+              <td class="dim" style="font-size:11px">luxalgo_filters</td>
+            </tr><tr>
               <td>SOL</td>
               <td style="color:#ef4444">SHORT</td>
               <td class="num">66.74</td><td class="num">57.8843</td><td class="num">71.1679</td>
@@ -1270,6 +1294,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
           <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL (unreal.)</th>
           <th>Age(h)</th><th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
         </tr></thead><tbody><tr>
+              <td>XRP</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">1.1416</td><td class="num">1.11454</td><td class="num">1.15759</td>
+              <td class="num" style="color:#22c55e">+0.92%</td>
+              <td class="num">27h</td>
+              <td class="num">0.67</td><td class="num">1.7</td>
+              <td class="num" style="color:#ef4444">41%</td>
+              <td class="num">2</td>
+              <td class="dim" style="font-size:11px">luxalgo_confluence</td>
+              <td class="dim" style="font-size:11px">luxalgo_filters</td>
+            </tr><tr>
               <td>SOL</td>
               <td style="color:#ef4444">SHORT</td>
               <td class="num">66.74</td><td class="num">57.8843</td><td class="num">71.1679</td>
@@ -1525,6 +1560,22 @@ score = 0.30 × norm_wr + 0.25 × norm_pf + 0.20 × confidence + 0.15 × (agreem
           <td class="num" style="color:#22c55e">+76.88%</td>
           <td class="num" style="color:#ef4444">-57.1%</td>
         </tr><tr>
+          <td><b>stochrsi_macd_combo</b></td>
+          <td class="dim" style="font-size:11px">rapid_fire</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">60.9%</td>
+          <td class="num">23</td>
+          <td class="num" style="color:#22c55e">+60.55%</td>
+          <td class="num" style="color:#ef4444">-60.9%</td>
+        </tr><tr>
+          <td><b>stochrsi_macd_combo</b></td>
+          <td class="dim" style="font-size:11px">rapid_fire</td>
+          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
+          <td class="num" style="color:#22c55e">60.9%</td>
+          <td class="num">23</td>
+          <td class="num" style="color:#22c55e">+60.55%</td>
+          <td class="num" style="color:#ef4444">-60.9%</td>
+        </tr><tr>
           <td><b>Bollinger MR</b></td>
           <td class="dim" style="font-size:11px">stocks_competition</td>
           <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
@@ -1540,22 +1591,6 @@ score = 0.30 × norm_wr + 0.25 × norm_pf + 0.20 × confidence + 0.15 × (agreem
           <td class="num">82</td>
           <td class="num" style="color:#22c55e">+59.76%</td>
           <td class="num" style="color:#ef4444">-51.2%</td>
-        </tr><tr>
-          <td><b>stochrsi_macd_combo</b></td>
-          <td class="dim" style="font-size:11px">rapid_fire</td>
-          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
-          <td class="num" style="color:#22c55e">59.1%</td>
-          <td class="num">22</td>
-          <td class="num" style="color:#22c55e">+57.55%</td>
-          <td class="num" style="color:#ef4444">-59.1%</td>
-        </tr><tr>
-          <td><b>stochrsi_macd_combo</b></td>
-          <td class="dim" style="font-size:11px">rapid_fire</td>
-          <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
-          <td class="num" style="color:#22c55e">59.1%</td>
-          <td class="num">22</td>
-          <td class="num" style="color:#22c55e">+57.55%</td>
-          <td class="num" style="color:#ef4444">-59.1%</td>
         </tr><tr>
           <td><b>ema-ribbon-momentum-scout</b></td>
           <td class="dim" style="font-size:11px">kimi_competition, kimi_riseoftheclaw</td>
@@ -1822,6 +1857,16 @@ Key changes:
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
           <td class="dim" style="font-size:11px">Z-score=1.88 above 200d SMA (1.38170), RSI=79. Backtest: 68.3% WR on 167 trades </td>
+        </tr><tr>
+          <td>USDCAD=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#ef4444;font-weight:700">SELL</td>
+          <td class="num">1.39716</td><td class="num">1.3901742</td><td class="num">1.40135148</td>
+          <td class="num">0.67</td><td class="num">2.6</td>
+          <td class="num" style="color:#ef4444">-0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
+          <td class="dim" style="font-size:11px">Z-score=1.74 above 200d SMA (1.38169), RSI=77. Backtest: 68.3% WR on 167 trades </td>
         </tr><tr>
           <td>USDCHF=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
