@@ -129,9 +129,44 @@ def build() -> dict:
          "won": int(r["won"] or 0), "avg_pnl_pct": _f(r["avg_pnl"])}
         for r in cur.fetchall()
     ]
+
+    # 2026-06-13: UNIQUE-SYMBOL track record. The symbol-day view re-picks the
+    # same name up to 7 consecutive days, so one real decline books as up to 6
+    # "losses" (ORCL x6, GOOGL x5 in the 21.1% panel — 21 of 28 dedup losses
+    # came from 5 underlying decisions). This block reports each symbol ONCE
+    # (its picked-cohort net outcome) so the page can show decision-level truth
+    # alongside symbol-day rows. Additive keys only — existing consumers unchanged.
+    cur.execute(
+        """
+        SELECT symbol,
+               COUNT(*) AS picks,
+               SUM(exit_pnl_pct) AS sum_pnl,
+               AVG(exit_pnl_pct) AS avg_pnl,
+               SUM(exit_pnl_pct > 0) AS won_days
+        FROM vw_picks_now_dedup
+        WHERE exit_pnl_pct IS NOT NULL
+        GROUP BY symbol
+        ORDER BY sum_pnl DESC
+        """
+    )
+    sym_rows = cur.fetchall()
+    uniq_n = len(sym_rows)
+    uniq_pos = sum(1 for r in sym_rows if (r["sum_pnl"] or 0) > 0)
+    unique_symbols = {
+        "n_symbols": uniq_n,
+        "n_net_positive": uniq_pos,
+        "wr_pct_by_symbol": round(100 * uniq_pos / uniq_n, 1) if uniq_n else None,
+        "note": ("each symbol counted ONCE (net of all its symbol-day picks). "
+                 "Decision-level WR; the headline WR above is symbol-day rows."),
+        "best": [{"symbol": r["symbol"], "picks": int(r["picks"]),
+                  "net_pnl_pct": _f(r["sum_pnl"])} for r in sym_rows[:5]],
+        "worst": [{"symbol": r["symbol"], "picks": int(r["picks"]),
+                   "net_pnl_pct": _f(r["sum_pnl"])} for r in sym_rows[-5:]],
+    }
     conn.close()
 
     return {
+        "unique_symbols": unique_symbols,
         "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source": "vw_picks_now_dedup (one row per symbol per UTC day; resolver = tools/resolve_picks_now.py first-touch TP/SL, 10d TIME_EXIT)",
         "totals": {
