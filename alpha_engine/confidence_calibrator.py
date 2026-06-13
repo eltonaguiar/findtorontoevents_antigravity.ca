@@ -78,7 +78,7 @@ _CACHE: dict[str, dict[str, list[float]]] | None = None
 
 
 def _enabled() -> bool:
-    return os.environ.get(_FLAG_ENV, "0").strip().lower() in ("1", "true", "yes")
+    return os.environ.get(_FLAG_ENV, "1").strip().lower() in ("1", "true", "yes")
 
 
 def _isotonic_fit(x: list[float], y: list[float]) -> dict[str, list[float]]:
