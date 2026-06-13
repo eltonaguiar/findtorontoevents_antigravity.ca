@@ -333,6 +333,8 @@ def load_db_edge():
             "ml_enhanced_FETUSDT_1d_B_lightgbm", "ml_enhanced_INJUSDT_1d_B_lightgbm",
             "ml_enhanced_ADAUSDT_15m_B_lightgbm", "copy_hl_lb_None",
         )
+        # Pass 138 / v2 swarm (plan-review-2026-06-13-v2, deepseek rec #6): assert completeness for the 33 FINDING#12 one-sided (hygiene P0). Ties to stamp/good conds (crypto_rsi n=108 retention) and previous extensions (Pass 132/133/137 in quality_gates adverse + banned). If <33, hygiene gap risks 21.1% pollution.
+        assert len(banned) >= 33, f"Expected >=33 banned sources for FINDING#12 hygiene, got {len(banned)}"
         placeholders = ",".join(["%s"] * len(banned))
         # WR DENOMINATOR FIX: count EXPIRED/FLAT as non-wins. Previously the
         # query filtered status IN ('WON','LOST'), silently dropping EXPIRED and
@@ -430,6 +432,8 @@ def load_db_edge_forward(decay_half_life_days: int = 14, max_age_days: int = 60)
             "ml_enhanced_FETUSDT_1d_B_lightgbm", "ml_enhanced_INJUSDT_1d_B_lightgbm",
             "ml_enhanced_ADAUSDT_15m_B_lightgbm", "copy_hl_lb_None",
         )
+        # Pass 138 / v2 swarm (plan-review-2026-06-13-v2, deepseek rec #6): assert completeness for the 33 FINDING#12 one-sided (hygiene P0). Ties to stamp/good conds (crypto_rsi n=108 retention) and previous extensions (Pass 132/133/137 in quality_gates adverse + banned). If <33, hygiene gap risks 21.1% pollution.
+        assert len(banned) >= 33, f"Expected >=33 banned sources for FINDING#12 hygiene, got {len(banned)}"
         placeholders = ",".join(["%s"] * len(banned))
         cur.execute(f"""
             SELECT symbol, asset_class,
