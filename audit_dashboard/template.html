@@ -912,6 +912,26 @@ a:hover { text-decoration: underline; }
   </div>
   </details>
   <div id="audit-surface-truth-mount" style="margin:8px 0"></div>
+  <details id="strategy-tribunal-panel" style="margin:8px 0;padding:10px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);border-radius:8px;color:#fecaca;font-size:12px;line-height:1.5">
+    <summary style="cursor:pointer;font-weight:700;color:#fca5a5">⚖ Strategy Kill Tribunal (weekly intrabar auto-review)</summary>
+    <div id="strategy-tribunal-body" style="margin-top:8px;color:#e5e7eb">Loading tribunal report…</div>
+  </details>
+  <script>
+  (function(){
+    fetch('./data/strategy_tribunal_latest.json?' + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      var el = document.getElementById('strategy-tribunal-body');
+      if (!el) return;
+      if (!j || !j.summary) { el.textContent = 'No tribunal report yet — runs Fridays 14:00 UTC (dry-run).'; return; }
+      var s = j.summary;
+      var kills = (j.kills || []).slice(0, 8).map(function(k){
+        return k.strategy + ' (' + k.asset_class + ' n=' + k.n + ' WR=' + k.wr_pct + '% PF=' + k.pf + ')';
+      }).join('; ') || 'none';
+      el.innerHTML = '<div><strong>Last run:</strong> ' + (j.generated_at || '?') + ' · <strong>KILL</strong> ' + s.n_kill + ' · PROBATION ' + s.n_probation + ' · KEEP ' + s.n_keep + '</div>'
+        + '<div style="margin-top:6px;font-size:11px;color:#fca5a5"><strong>Top KILL candidates:</strong> ' + kills + '</div>'
+        + '<div style="margin-top:4px;font-size:11px;color:#94a3b8">Full report: <code>reports/strategy_tribunal_*.json</code>. Apply via workflow_dispatch + TRIBUNAL_APPLY secret.</div>';
+    }).catch(function(){ var el = document.getElementById('strategy-tribunal-body'); if (el) el.textContent = 'Tribunal JSON unavailable.'; });
+  })();
+  </script>
   <script src="audit_surface_truth_banner.js"></script>
   <!-- DISPUTED BANNER (Tier-0 fix 2026-05-28) — propagated from pick_funnel.html so /audit
        headline cannot be cited without the disclosure. Conditioned on money_ready_verdict

@@ -22,6 +22,23 @@ _IS_COMMODITY_RE = re.compile(r"=F$", re.I)
 # Classes with intrabar FAIL at n≥100 — no STRONG_BUY promotion without override.
 _CLASS_FAIL_BLOCK = {"CRYPTO", "EQUITY", "COMMODITY"}
 
+# Probation sleeves (master loop) — exempt from class FAIL demotion when sym×dir is T2-shaped.
+# luxalgo_confluence × CRYPTO × SHORT: n≈38 WR 71% PF 2.21 (2026-06-11 pass-hunter).
+PROBATION_SYM_DIR_KEYS = frozenset({
+    "NEARUSDT|SHORT",
+    "SOLUSDT|SHORT",
+    "AVAXUSDT|SHORT",
+    "LINKUSDT|SHORT",
+    "ADAUSDT|SHORT",
+    "BTCUSDT|SHORT",
+    "ETHUSDT|SHORT",
+})
+
+
+def is_probation_sym_dir(symbol: str, direction: str) -> bool:
+    key = f"{normalize_symbol(symbol)}|{normalize_direction(direction)}"
+    return key in PROBATION_SYM_DIR_KEYS
+
 
 def normalize_symbol(symbol: str) -> str:
     s = (symbol or "").strip().upper()
@@ -115,11 +132,15 @@ def apply_class_fail_gate(
     direction: str,
     asset_class: str,
     class_truth: Dict[str, dict],
+    symbol: str = "",
+    pick_direction: str = "",
 ) -> Tuple[str, str]:
     """Demote BUY labels when entire class fails intrabar at n≥100."""
     ac = (asset_class or "").upper().strip()
     if direction not in ("STRONG_BUY", "BUY"):
         return direction, ""
+    if is_probation_sym_dir(symbol or "", pick_direction or direction):
+        return direction, "probation_sleeve_exempt"
     if ac not in _CLASS_FAIL_BLOCK:
         return direction, ""
     row = class_truth.get(ac) or {}
@@ -151,7 +172,9 @@ def stamp_intrabar_fields(
     else:
         new_dir, gate_status, gate_note = direction, "NO_DATA", "no intrabar sym×dir cohort"
 
-    class_dir, class_note = apply_class_fail_gate(new_dir, cls, class_truth)
+    class_dir, class_note = apply_class_fail_gate(
+        new_dir, cls, class_truth, sym, direction,
+    )
     if class_note:
         new_dir = class_dir
         gate_note = f"{gate_note}; {class_note}" if gate_note else class_note

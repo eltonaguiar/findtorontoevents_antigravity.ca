@@ -17,6 +17,15 @@
 | 5 | `picks-now.html` intrabar FWD badges | ✅ |
 | 6 | Tests (13) + PR to main | ✅ |
 
+### Batch 2 (2026-06-13) — branch `feat/pro-level-batch2-2026-06-13`
+
+| # | Task | Status |
+|---|------|--------|
+| 7 | luxalgo SHORT fallback + june2026 module | ✅ |
+| 8 | COMMODITY gap-fade intrabar replay tool | ✅ |
+| 9 | Probation sleeve bypass on picks-now gate | ✅ |
+| 10 | /audit tribunal collapsible panel | ✅ |
+
 ---
 
 ## What this changes live (after merge + cron)

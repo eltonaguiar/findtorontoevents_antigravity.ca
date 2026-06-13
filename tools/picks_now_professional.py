@@ -889,7 +889,7 @@ class QuantScorer:
                 direction, intrabar_gate, intrabar_gate_note = classify_intrabar_pick(
                     direction, row["wr_pct"], row["n"],
                 )
-            class_dir, class_note = apply_class_fail_gate(direction, cls, _class_truth)
+            class_dir, class_note = apply_class_fail_gate(direction, cls, _class_truth, sym, direction)
             if class_note:
                 direction = class_dir
                 intrabar_gate_note = (

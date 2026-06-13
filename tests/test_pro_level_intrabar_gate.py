@@ -46,9 +46,15 @@ class TestIntrabarGate(unittest.TestCase):
 
     def test_class_fail_demotes_equity(self):
         truth = {"EQUITY": {"n": 113, "verdict": "FAIL"}}
-        d, note = apply_class_fail_gate("STRONG_BUY", "EQUITY", truth)
+        d, note = apply_class_fail_gate("STRONG_BUY", "EQUITY", truth, "AMD", "STRONG_BUY")
         self.assertEqual(d, "WATCH")
         self.assertIn("FAIL", note)
+
+    def test_probation_exempt_crypto_class_fail(self):
+        truth = {"CRYPTO": {"n": 1155, "verdict": "FAIL"}}
+        d, note = apply_class_fail_gate("STRONG_BUY", "CRYPTO", truth, "NEARUSDT", "SHORT")
+        self.assertEqual(d, "STRONG_BUY")
+        self.assertIn("probation", note)
 
     def test_stamp_intrabar_demotes_amd_like(self):
         sym_map = {"AMD|LONG": {"n": 20, "wr_pct": 25.0, "pf": 0.4}}

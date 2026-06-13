@@ -178,6 +178,11 @@ def main() -> int:
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
+    dash_path = os.path.join(REPO_ROOT, "audit_dashboard", "data", "strategy_tribunal_latest.json")
+    os.makedirs(os.path.dirname(dash_path), exist_ok=True)
+    with open(dash_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2)
+
     if args.stdout:
         print(json.dumps(report, indent=2))
     else:
