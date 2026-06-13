@@ -2882,3 +2882,6 @@ All outputs read verbatim before this Pass text. Goal #1. (See full cmd history 
 
 
 **Pass 117 (fallback):** H-154 pre-reg velocity on 15 conds + COM fut SI/PL + tracker FWD; picks_now 117 velocity/21.1 + tracker FWD comments; data as above (entry 01:57 15 conds, DB COM fut SI/PL/GC per-sym, tracker 647 rows, ai 7099 synth168, 21.1 research disclaimer, wiring status, 4h plan). Continuing.
+
+
+**Pass 118 (2026-06-13 summary drop)... (anchor fallback)**
