@@ -235,6 +235,7 @@ def _tag_forward(pick: dict[str, Any], strategy_id: str, enhancement: str) -> di
     out["strategy"] = strategy_id
     out["forward_observation"] = True
     out["paper_pilot"] = True
+    out["forward_test_only"] = True  # M-036b: exempt from sized LONG block
     out["source_system"] = out.get("source_system") or "june2026_research"
     out["extra"] = dict(out.get("extra") or {})
     out["extra"]["june2026_enhancement"] = enhancement
