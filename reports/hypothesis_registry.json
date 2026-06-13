@@ -1934,6 +1934,22 @@
       "data_sample_lock": "at_signal_outcomes intrabar, n=108 as of 2026-06-13 16:19Z",
       "result": "n=108: gross PF 1.53 (CI-LB 1.073); net@16bp PF 1.36 (CI-LB 0.953, sub-bar); IS/OOS net 1.44/1.30 (HOLDS, no decay); WR 47.2%; top-symbol RENDERUSDT 6% (diversified). Survives cost + holds OOS + diversified; only the CI-LB lower bound is short at n=108. See reports/CRYPTO_RSI5070_US_LEAD_CANDIDATE_2026-06-13.md.",
       "kill_reason": null
+    },
+    {
+      "id": "H-120",
+      "asset_class": "MULTI",
+      "family": "daily_resolution_inflation_generalization",
+      "description": "Pre-registered test (subagent): does the ~2.8x daily-resolution PF inflation found on FOREX consensus (H-118) generalize to other daily-resolved trading_picks strategies? Re-resolve non_crypto_consensus/COMMODITY and forex_rsi2_mean_reversion with conservative SL-wins-ties honest first-touch vs stored daily pnl on the same deduped picks.",
+      "test_statistic": "honest first-touch PF vs daily PF (inflation ratio) + honest net CI-LB",
+      "acceptance_criteria": {
+        "rule": "if honest PF materially < daily PF across strategies, the inflation generalizes (rule SUPPORTED); a promotable survivor would need honest net CI-LB>1.15"
+      },
+      "economic_prior": "daily resolution credits close drift / counts near-flat TIME_EXITs as wins; this is a resolver-method artifact independent of strategy",
+      "status": "SUPPORTED",
+      "registered_at": "2026-06-13",
+      "data_sample_lock": "trading_picks 2026+, fxp_price_history (FX) / daily bars (commodity), H1 spot-replay 20/20=100% match",
+      "result": "GENERALIZES. non_crypto_consensus/COMMODITY: daily PF 2.67 -> honest 1.28 (2.09x inflation, n=135, honest CI-LB 0.92). forex_rsi2_mean_reversion: daily PF 1.26 -> honest 1.07 (1.18x, n=120 outlier-clean, honest CI-LB 0.77; raw threw PF 22.4 from one wrong-scale AUDUSD entry=0.05379 +1191% fake win -> geometry-guard). Both honest CI-LB far below 1.15 bar = NOT promotable. Three confirmations of the rule now: FX consensus 2.8x / COMMODITY 2.09x / forex_rsi2 1.18x. H1 spot-replay 20/20 100% confirms the honest ledger itself is faithful.",
+      "kill_reason": null
     }
   ],
   "fork2_new_signals": [
