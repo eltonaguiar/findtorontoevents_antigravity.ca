@@ -11114,6 +11114,7 @@ if __name__ == "__main__" and __import__("sys").argv[-1] == "--a9-self-test":
 def passes_adverse_hard(pick=None, asset_class="", strategy_key="", rvol=0.0, regime_mild=False, **kwargs):
     """Return True to hard-kill pick under adverse conditions (high rvol/volume_spike, regime_mild etc).
     Opt-in env guard only. See grok MD Pass 99/100, quality_gates NOTE95, H-106/H-111.
+    Pass 126 update: stamp-aware protection for good velocity conds (ties to load_db_edge_forward extension + 15 CONDITIONS n=108 crypto_rsi ready R1-3).
     """
     import os
     if not (os.environ.get("ADVERSE_HARD") or os.environ.get("COMMODITY_ADVERSE_KILL")):
@@ -11121,6 +11122,17 @@ def passes_adverse_hard(pick=None, asset_class="", strategy_key="", rvol=0.0, re
     ac = str(asset_class or (pick or {}).get("asset_class", "")).upper()
     sk = str(strategy_key or (pick or {}).get("strategy_key", "") or (pick or {}).get("strategy", "")).lower()
     rv = float(rvol or (pick or {}).get("rvol", 0) or (pick or {}).get("relative_volume", 0) or 0)
+    # Pass 126 FURTHER ITEM (quality_gates adverse + stamp velocity): protect good stamp conds (F1 ALIGNED/F4 LOW/F5 US per entry 04:30Z stamp run)
+    # even under proxy adverse (rv/regime). COM fut_momentum good slice (prior granular 50.8/1.586) + crypto_rsi n=108 retention prioritized.
+    # Non-breaking; only when opt-in env. Complements NOTE95 + active gate adverse block + picks_now adverse_flag + scanner.
+    try:
+        from tools.stamp_entry_conditions import get_conditions_for_pick
+        if pick:
+            c = get_conditions_for_pick({"symbol": (pick or {}).get("symbol"), "asset_class": ac, "strategy": sk}) or {}
+            if c.get("F1") == "ALIGNED" or c.get("F4") == "LOW" or c.get("F5") == "US":
+                return False  # good velocity retention cond — do not hard-kill (see Pass 125 load forward + 15 conds table)
+    except Exception:
+        pass
     if ac == "COMMODITY" and "futures_momentum" in sk:
         if rv > 70 or regime_mild or (pick or {}).get("volume_spike"):
             return True
