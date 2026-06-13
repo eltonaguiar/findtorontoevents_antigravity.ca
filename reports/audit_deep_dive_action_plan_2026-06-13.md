@@ -69,3 +69,16 @@
 This plan is the .MD for peer review (fan out now via swarms). Execute fixes below (hygiene already in 129-132; more if gaps from review).
 
 **End of Plan.** NFA.
+
+**Pass 141/142 Update (2026-06-13, post harness run + progress .MD):** 
+Current snapshot: Stamp 15 CONDITIONS consistent (crypto_rsi5070_us 108n 47.2/1.535 l30 48.3/1.454 retention lift key; COM baseline drag 43n 20.9/0.515). One-sided 33 FINDING#12 (list currents/stocktwits/reddit/gnews/copy_hl/ml_enhanced/youtube etc.). Verdict 0/9-0/10 T2 (COM small n 33-37%/0.82-1.26 INSUFF/FAIL; CRYPTO sub). Velocity_harness.py executed: crypto_rsi n=108 wr47.2 pf1.535 but n_eff=45.6 fail, conc 0.639 alpha (fail), walk_forward unstable, admissible=false (failed n_eff/wr/conc/walk/binomial). Results in data/velocity_harness_results.json. Dedicated reports/2026-06-13-grok4-3-audit-deep-dive-progress-pass141-remaining-tasks-reasons.md dropped (progress, state, subtasks, reasons: retention real but full AddH/conc/n_eff not admissible yet; COM granular edge inside class drag but overall FAIL; no paper/recency yet; pre-reg needed; 14d/48h stale). Main deep-dive appended with Pass 142 summary. 
+
+Completed since prior plan snapshot: hygiene 33 (quality_gates/picks/scanner), COM stamped velocity protection (scanner Pass 140), velocity Tier1 note (Pass 141 scanner), /dropchat-multipc + hourly scheduler 019ebf99a98d, rebase --ours protect only own, MEASURE/grep/surgical/verif iron, harness execution (local metrics), progress .MD + todos subtasks breakdown, main MD Pass 142 append.
+
+Updated subtasks (see todo_write live list + progress .MD): Velocity harness (pre-reg H-158 now, full run on 15+COM via velocity_harness.py, capture AddH vs thresholds, append/verif); COM DB per-sym (db_env+stamp probe + table + COT widen); Parallel delegate (spawn_subagent /parallel-swarm /swarm_run for harness report/COM probe/tier+recency/swarm review of plan/progress MD via PeerReviewSwarmOptions; review outputs + integrate); Tier/recency (run trackers, publish 14d/48h first); Paper (TV on top admissible post harness); Ratchet/surface (append Pass 142, update plans, updates/index.html read full + insert before marker + deploy+curl if touched); Cross (re-MEASURE, verif iron, dropchat hourly, only own in wt).
+
+Reasons (from progress .MD): Velocity retention real on conditioned but harness shows not admissible yet (n_eff/conc/walk failures — alpha heavy conc, small eff n, variance); COM class FAIL despite granular (per-sym good slices, velocity inside drag); one-sided addressed but recency/14d/48h still issues + stale panels; no paper track record; n<100 clean + full gates (conc/CI/n_eff/forward) + 14d/48h + verdict mandatory before promote; pre-reg M-107; leaks research vs prod. COM + crypto_rsi 15 CONDITIONS closest for risk/reward.
+
+Next: Pre-reg H-158 (M-107); review harness metrics (not admissible — diagnose conc); spawn/review delegates for COM probe/tier/swarm; integrate; COM DB + tier/recency publish; paper stub; ratchet MDs + surface per rules; hourly dropchat. Enforce gates. NFA. Goal #1 (0/9, COM+velocity on 15 n=108 ready, one-sided 21.1%).
+
+Refs: new progress .MD, main deep-dive Pass 141/142, harness results, stamp, one-sided, prior plan, CLAUDE/AGENTS, skills (dropchat, hypothesis-registry, PeerReviewSwarmOptions, verification-before-completion), scheduler.
