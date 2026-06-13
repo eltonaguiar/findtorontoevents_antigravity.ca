@@ -67,10 +67,10 @@ STARTING_CAPITAL = 10_000.0
 # v1.2: Risk-based position sizing replaces fixed $2K allocation
 # Old: ALLOCATION_PER_PICK = 2_000.0 (20% of capital -- way too concentrated)
 # New: Size = risk_amount / stop_distance, capped at MAX_ALLOCATION_PER_PICK
-MAX_RISK_PER_TRADE = 0.02        # Risk 2% of capital per trade ($200 on $10K)
-MAX_ALLOCATION_PER_PICK = 0.15   # Max 15% of capital in any single pick ($1,500)
-MAX_TOTAL_EXPOSURE = 0.80        # Max 80% of capital deployed at once
-MAX_CORRELATED_EXPOSURE = 0.40   # Max 40% in same asset class (was 30% -- too restrictive for crypto-heavy portfolio)
+MAX_RISK_PER_TRADE = 0.01        # Risk 1% of capital per trade ($100 on $10K) — CUT 50% 2026-06-12
+MAX_ALLOCATION_PER_PICK = 0.08   # Max 8% of capital in any single pick ($800) — CUT 50% 2026-06-12
+MAX_TOTAL_EXPOSURE = 0.50        # Max 50% of capital deployed at once — CUT from 80% 2026-06-12
+MAX_CORRELATED_EXPOSURE = 0.20   # Max 20% in same asset class — CUT from 40% 2026-06-12
 
 # Pick cap system:
 # - Overall cap set to 20 (institutional risk audit fix -- was 999/disabled).
@@ -82,7 +82,7 @@ MAX_PICKS_PER_STRATEGY = 3       # Reduced from 4 -- prevent single-strategy dom
 MAX_PICKS_PER_SYMBOL = 1         # Reduced from 2 -- TRANSFORMATION BLUEPRINT Phase 1: prevent FET-style concentration (237% of PnL from 1 symbol)
 MAX_PICKS_PER_SECTOR = 3         # Sector concentration cap -- correlated same-sector picks compound losses
 MAX_SAME_DIRECTION_CRYPTO = 40   # Raised per-user request to restore signal liquidity
-KELLY_CAP = 0.05  # Max 5% of capital per trade (Kelly capped)
+KELLY_CAP = 0.025  # Max 2.5% of capital per trade (Kelly capped) — CUT 50% 2026-06-12
 
 # ---------------------------------------------------------------------------
 # Sector map for concentration risk management
