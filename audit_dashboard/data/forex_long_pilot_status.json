@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-13T05:50:27.921065+00:00",
+  "generated_at": "2026-06-13T05:54:14.203215+00:00",
   "tracker": "forex_long_pilot_tracker",
   "spec": {
     "source_system": "non_crypto_consensus",
@@ -14,7 +14,8 @@
   "acceptance_criteria": {
     "min_n": 100,
     "min_pf": 1.5,
-    "min_decisive_wr": 50.0
+    "min_decisive_wr": 50.0,
+    "basis": "NET of cost"
   },
   "kill_criteria": {
     "max_days": 30,
@@ -28,30 +29,90 @@
   "baseline_frozen": {
     "n": 129,
     "deduped_n": 129,
-    "pf": 3.13,
-    "decisive_n": 51,
-    "decisive_wr": 72.5,
+    "pf": 0.76,
+    "gross_pf": 3.13,
+    "net_pf": 0.76,
+    "decisive_n": 65,
+    "decisive_wr": 35.4,
+    "gross_decisive_wr": 72.5,
     "wr_ci95": [
-      59.1,
-      82.9
+      24.9,
+      47.5
     ],
-    "sum_pnl_pct": 3.43,
-    "max_drawdown_pct": 0.92,
-    "flat_n": 78
+    "net_sum_pnl_pct": -2.03,
+    "gross_sum_pnl_pct": 3.43,
+    "max_drawdown_pct": 3.13,
+    "flat_n": 64,
+    "cost_sensitivity_gross_bp": {
+      "0bp": {
+        "pf": 3.13,
+        "decWR": 72.5
+      },
+      "2bp": {
+        "pf": 1.8,
+        "decWR": 58.8
+      },
+      "3bp": {
+        "pf": 1.3,
+        "decWR": 50.0
+      },
+      "5bp": {
+        "pf": 0.66,
+        "decWR": 32.9
+      },
+      "8bp": {
+        "pf": 0.24,
+        "decWR": 16.3
+      }
+    },
+    "cost_model": {
+      "major_pct": 0.03,
+      "jpy_pct": 0.06
+    }
   },
   "forward": {
     "n": 0,
     "deduped_n": 0,
     "pf": null,
+    "gross_pf": null,
+    "net_pf": null,
     "decisive_n": 0,
     "decisive_wr": null,
+    "gross_decisive_wr": null,
     "wr_ci95": [
       0.0,
       0.0
     ],
-    "sum_pnl_pct": 0,
+    "net_sum_pnl_pct": 0,
+    "gross_sum_pnl_pct": 0,
     "max_drawdown_pct": 0.0,
-    "flat_n": 0
+    "flat_n": 0,
+    "cost_sensitivity_gross_bp": {
+      "0bp": {
+        "pf": null,
+        "decWR": null
+      },
+      "2bp": {
+        "pf": null,
+        "decWR": null
+      },
+      "3bp": {
+        "pf": null,
+        "decWR": null
+      },
+      "5bp": {
+        "pf": null,
+        "decWR": null
+      },
+      "8bp": {
+        "pf": null,
+        "decWR": null
+      }
+    },
+    "cost_model": {
+      "major_pct": 0.03,
+      "jpy_pct": 0.06
+    }
   },
   "forward_days_elapsed": 0,
   "stage": "ACCRUING (no forward-resolved picks yet \u2014 baseline frozen, awaiting new closes)",

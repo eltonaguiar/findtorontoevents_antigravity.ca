@@ -39,7 +39,12 @@ from pathlib import Path
 PILOT_START_DEFAULT = "2026-06-13"
 WIN_THRESHOLD_PCT = 0.05
 SOURCE = "non_crypto_consensus"
-ACCEPT = {"min_n": 100, "min_pf": 1.5, "min_decisive_wr": 50.0}
+# Round-trip transaction cost (percent) per pair class. The edge has tiny winners
+# (~0.2-0.3%), so cost dominates: gross PF 3.13 collapses to ~0.76 at realistic
+# blended retail FX cost. Acceptance is judged on NET PF, never gross.
+COST_MAJOR_PCT = float(os.environ.get("FX_COST_MAJOR_PCT", "0.03"))   # 3bp majors
+COST_JPY_PCT = float(os.environ.get("FX_COST_JPY_PCT", "0.06"))       # 6bp JPY crosses
+ACCEPT = {"min_n": 100, "min_pf": 1.5, "min_decisive_wr": 50.0, "basis": "NET of cost"}
 KILL = {"max_days": 30, "min_pf": 1.0, "min_n": 10}
 CIRCUIT = {"max_drawdown_pct": 5.0, "max_cum_loss_pct_of_book": 2.0}
 
@@ -78,33 +83,56 @@ def _wilson(k: int, n: int, z: float = 1.96):
     return [round((c - h) * 100, 1), round((c + h) * 100, 1)]
 
 
-def _cohort_stats(rows: list) -> dict:
-    """rows: list of (pnl, date) already deduped+sorted by date."""
-    n = len(rows)
-    wins = [r for r in rows if r[0] > WIN_THRESHOLD_PCT]
-    losses = [r for r in rows if r[0] < -WIN_THRESHOLD_PCT]
-    gp = sum(r[0] for r in wins)
-    gl = abs(sum(r[0] for r in losses))
+def _cost_of(symbol: str) -> float:
+    return COST_JPY_PCT if "JPY" in (symbol or "").upper() else COST_MAJOR_PCT
+
+
+def _pf_wr(pnls: list) -> tuple:
+    wins = [p for p in pnls if p > WIN_THRESHOLD_PCT]
+    losses = [p for p in pnls if p < -WIN_THRESHOLD_PCT]
+    gp = sum(wins)
+    gl = abs(sum(losses))
     pf = round(gp / gl, 2) if gl > 0 else (None if not wins else 99.0)
-    decisive = len(wins) + len(losses)
-    # max drawdown on the cumulative pnl curve
-    cum = 0.0
-    peak = 0.0
-    mdd = 0.0
-    for r in rows:
-        cum += r[0]
+    dec = len(wins) + len(losses)
+    wr = round(len(wins) / dec * 100, 1) if dec else None
+    return pf, wr, len(wins), len(losses)
+
+
+def _cohort_stats(rows: list) -> dict:
+    """rows: list of (pnl, symbol, date) already deduped+sorted by date."""
+    n = len(rows)
+    gross = [r[0] for r in rows]
+    net = [r[0] - _cost_of(r[1]) for r in rows]
+    g_pf, g_wr, _, _ = _pf_wr(gross)
+    n_pf, n_wr, nw, nl = _pf_wr(net)
+    # cost-sensitivity sweep on uniform round-trip cost (bps)
+    sens = {}
+    for bp in (0, 2, 3, 5, 8):
+        p, w, _, _ = _pf_wr([x - bp / 100.0 for x in gross])
+        sens[f"{bp}bp"] = {"pf": p, "decWR": w}
+    decisive = nw + nl
+    # max drawdown on the cumulative NET pnl curve
+    cum = peak = mdd = 0.0
+    for x in net:
+        cum += x
         peak = max(peak, cum)
         mdd = min(mdd, cum - peak)
     return {
         "n": n,
         "deduped_n": n,
-        "pf": pf,
+        "pf": n_pf,                 # headline PF is NET-of-cost
+        "gross_pf": g_pf,
+        "net_pf": n_pf,
         "decisive_n": decisive,
-        "decisive_wr": round(len(wins) / decisive * 100, 1) if decisive else None,
-        "wr_ci95": _wilson(len(wins), decisive),
-        "sum_pnl_pct": round(sum(r[0] for r in rows), 2),
+        "decisive_wr": n_wr,        # net decisive WR
+        "gross_decisive_wr": g_wr,
+        "wr_ci95": _wilson(nw, decisive),
+        "net_sum_pnl_pct": round(sum(net), 2),
+        "gross_sum_pnl_pct": round(sum(gross), 2),
         "max_drawdown_pct": round(abs(mdd), 2),
         "flat_n": n - decisive,
+        "cost_sensitivity_gross_bp": sens,
+        "cost_model": {"major_pct": COST_MAJOR_PCT, "jpy_pct": COST_JPY_PCT},
     }
 
 
@@ -133,8 +161,8 @@ def fetch(pilot_start: str) -> dict:
         if key not in seen or r[0] < seen[key][0]:
             seen[key] = r
     ded = sorted(seen.values(), key=lambda x: str(x[4]))
-    baseline = [(float(r[3]), str(r[4])) for r in ded if str(r[4]) < pilot_start]
-    forward = [(float(r[3]), str(r[4])) for r in ded if str(r[4]) >= pilot_start]
+    baseline = [(float(r[3]), r[1], str(r[4])) for r in ded if str(r[4]) < pilot_start]
+    forward = [(float(r[3]), r[1], str(r[4])) for r in ded if str(r[4]) >= pilot_start]
     return {"baseline": baseline, "forward": forward, "raw_n": len(rows)}
 
 
@@ -145,7 +173,7 @@ def build_status(pilot_start: str) -> dict:
 
     fwd_days = 0
     if data["forward"]:
-        first = datetime.strptime(data["forward"][0][1], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        first = datetime.strptime(data["forward"][0][2], "%Y-%m-%d").replace(tzinfo=timezone.utc)
         fwd_days = (datetime.now(timezone.utc) - first).days
 
     # acceptance / kill / circuit evaluation on the FORWARD cohort
@@ -204,9 +232,10 @@ def main() -> int:
     Path(args.out).write_text(json.dumps(status, indent=2))
     b, f = status["baseline_frozen"], status["forward"]
     print(f"[forex_long_pilot] {status['stage']}")
-    print(f"  baseline (pre {args.pilot_start}): n={b['n']} PF={b['pf']} decWR={b['decisive_wr']}% "
-          f"MDD={b['max_drawdown_pct']}%")
-    print(f"  forward  (>= {args.pilot_start}): n={f['n']} PF={f['pf']} decWR={f['decisive_wr']}% "
+    print(f"  baseline (pre {args.pilot_start}): n={b['n']} NET-PF={b['net_pf']} (gross {b['gross_pf']}) "
+          f"decWR={b['decisive_wr']}% MDD={b['max_drawdown_pct']}%")
+    print(f"    cost-sensitivity (gross): " + " ".join(f"{k}:{v['pf']}" for k, v in b['cost_sensitivity_gross_bp'].items()))
+    print(f"  forward  (>= {args.pilot_start}): n={f['n']} NET-PF={f['net_pf']} decWR={f['decisive_wr']}% "
           f"days={status['forward_days_elapsed']}")
     print(f"  -> {args.out}")
     return 0
