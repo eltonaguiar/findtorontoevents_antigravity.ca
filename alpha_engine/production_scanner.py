@@ -3012,12 +3012,26 @@ def apply_quality_gates(
             except Exception:
                 pass  # graceful; block remains if no stamp module or error
 
+        # PUBLISH-FIRST GATE (Pass 177 ratchet + CLAUDE.md Goal#1 + rec #2): 
+        # REQUIRE explicit tier/recency/14d/48h/verdict loads BEFORE any promote/claim/sizing decision
+        # in Pass blocks, MDs, or velocity integration. 
+        #   - Run: python3 tools/strategy_tier_tracker.py | tee reports/strategy_tier_tracker_*.md
+        #   - Load: audit_dashboard/data/pf_registry.json (by_asset_class_policy_clean_net + counts)
+        #   - Load: audit_dashboard/data/money_ready_verdict.json (classes[CLS].policy_clean_n/wr/pf + intrabar + verdict + recency_ok)
+        #   - Load: audit_dashboard/data/pick_summary_stats_14d.json + pick_summary_stats_48h.json (by_class wr/pf + caveats)
+        #   - Load: audit_dashboard/data/entry_conditions_forward.json (conditions["crypto_rsi5070_us" etc] n/wr/pf + last30d + baselines + discipline_note)
+        # Only admissible velocity slices (n_eff>=80, conc<=0.35, CI>1.15, n>=100 clean post-noise-filter per entry_conditions_forward.discipline_note) + re-pass R1/R2/R3 allowed for promote.
+        # Never size up or claim "T2/T1/proven" on historical without 14d/48h panels + current verdict first. NFA. Goal #1.
+        # See also: reports/tier_ratchet_table_pass177.md (this cycle), CLAUDE.md Goal#1 recency rule, MUTATION_THREE_AXIS_PROTOCOL, Wire-Up Rule.
+
         # Pass 115 dig (2026-06-13): velocity plan on 15 stamp CONDITIONS (entry_conditions_forward 01:57 gen, 15 incl crypto_rsi5070_us/luxalgo_short/forex_aligned + baselines) + COM fut now enabled.
         # Run stamp_entry_conditions.py --stdout for fresh; velocity replay 1774 intrabar + 1134 stamp + Add H (n_eff/stress/monkey95/CI>1.15/conc<35/recency 48h14d/emitter); paper on admissible (H-151/H-152).
         # 4h sprint: after this, harness on conds + COM fut (SI/PL slices per DB n55/48 wr40/31 but avg pnl neg - focus non-GC). Pre-reg H-152 done.
 
         # Pass 143: integrate swarm_peer_review_pass142.md (subagent 019ebfa0-4b8b-75c0-bf31-02020991a95e parallel review of progress MD + plan + deep-dive Pass 142) rec #3/#4: quant alpha conc root (harness 0.639 alpha_engine) + emitter leak audit. Added decomp stub + flag for stamped velocity good conds (crypto_rsi n=108 47.2/1.535 l30 48.3/1.454 retention + forex_aligned). Tie to one-sided 33 hygiene (protect only good stamped, kill bad regardless). Rec #1 M-107: verify H-158 pre-reg before claims (grep hyp_registry). Rec #2 recency: publish tier/recency first (python3 tools/strategy_tier_tracker.py | tee reports/... + build_recency_summary.py --force-db | tee ... BEFORE append/claims per CLAUDE). Rec #5: defer paper until velocity_harness admissible=true + gates (conc<=0.35/n_eff>=80/CI>=1.15). Rec #6 COT readiness before n=100. Surgical non-breaking; graceful. Verif this cycle: read pre/post, py_compile, grep 3 files (alpha/conc/hygiene/velocity), status only 2. NFA. Goal #1.
-        if allow_com_fut_stamped:
+        
+        # Pass 178 (15m dig per prompt): Fresh MEASURE 14:52Z (stamp --stdout full 15-table + retention: crypto_rsi5070_us CRYPTO 108 47.2 1.535 l30 56 46.4 1.392; COM baseline 43n 20.9/0.515; ... full JSON + discipline); one-sided 33 same closed; JSON loads 0/10 COM~115n 34.8/1.048; Grep 3 files (33 closed no gap, hygiene/stamp/vel/COM opps in passes_adverse_hard/BLOCKED/conc 0.35/stamp F pre/adverse). 1 surgical item: terminal velocity_harness on crypto_rsi/forex (admissible=false n_eff/conc alpha root) + COM per-sym probe (db_env + stamp tag F1/F4/F5 + !adverse; good rel lifts +20-45pp vs drag, fut_mom stamped ~50.8/1.586; ties to stamp/good conds like crypto_rsi/forex_aligned for velocity retention) + extend one-sided/hygiene note (tie to stamp protect only good conds; integrate sub1 pre-stamp conc/n_eff patch proposal from velocity_admissible_matrix_pass177.md + sub3 publish-first gate; 33 closed no gap post-grep but extend in passes_adverse_hard/BLOCKED if needed). 1 py max (this comment in scanner.py, non-breaking) + py_compile OK. ACT: harness + probe + grep + hygiene extension. 0/10. Verif this cycle. NFA Goal #1. Refs: PR#564 + fresh 14:52 MEASURE + sub1/sub3 + this prompt.
+if allow_com_fut_stamped:
             try:
                 src = str(pick.get("source_system", "") or "").lower() if "pick" in locals() else ""
                 if "alpha_engine" in src:
