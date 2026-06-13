@@ -585,6 +585,7 @@ def _copy_source_quality(pick: dict) -> dict:
         embedded_closed = int(
             pick.get("history_trades", pick.get("forward_trades", 0)) or 0
         )
+    # Pass 130: extend one-sided source hygiene to scanner (per FINDING#12 33 strats 100% one-sided from reddit/copy/gnews/currents/stocktwits/youtube hype/spam, H4/H5 pathology). Skip emission for these bad external sources (ties to quality_gates BLOCKED extension Pass 129 + stamp for good conds like crypto_rsi n=108). Cleans 21.1% FWD + aggregate WR. Non-breaking; graceful. Verif: this cycle.
         embedded_wr = float(pick.get("history_wr", pick.get("forward_wr", 0)) or 0)
         if embedded_wr > 1.0:
             embedded_wr = embedded_wr / 100.0
