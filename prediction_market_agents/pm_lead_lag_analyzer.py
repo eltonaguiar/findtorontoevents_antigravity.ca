@@ -69,6 +69,67 @@ def _pearson(xs: list[float], ys: list[float]) -> Optional[float]:
     return cov / (sx * sy)
 
 
+def _betacf(a: float, b: float, x: float) -> float:
+    """Continued fraction for the incomplete beta (Numerical Recipes)."""
+    tiny = 1e-30
+    qab, qap, qam = a + b, a + 1.0, a - 1.0
+    c = 1.0
+    d = 1.0 - qab * x / qap
+    if abs(d) < tiny:
+        d = tiny
+    d = 1.0 / d
+    h = d
+    for m in range(1, 200):
+        m2 = 2 * m
+        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
+        d = 1.0 + aa * d
+        if abs(d) < tiny:
+            d = tiny
+        c = 1.0 + aa / c
+        if abs(c) < tiny:
+            c = tiny
+        d = 1.0 / d
+        h *= d * c
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
+        d = 1.0 + aa * d
+        if abs(d) < tiny:
+            d = tiny
+        c = 1.0 + aa / c
+        if abs(c) < tiny:
+            c = tiny
+        d = 1.0 / d
+        delta = d * c
+        h *= delta
+        if abs(delta - 1.0) < 3e-7:
+            break
+    return h
+
+
+def _betai(a: float, b: float, x: float) -> float:
+    """Regularized incomplete beta I_x(a, b)."""
+    if x <= 0.0:
+        return 0.0
+    if x >= 1.0:
+        return 1.0
+    lbeta = (math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b)
+             + a * math.log(x) + b * math.log(1.0 - x))
+    bt = math.exp(lbeta)
+    if x < (a + 1.0) / (a + b + 2.0):
+        return bt * _betacf(a, b, x) / a
+    return 1.0 - bt * _betacf(b, a, 1.0 - x) / b
+
+
+def _pearson_pvalue(r: float, n: int) -> Optional[float]:
+    """Two-tailed p-value for a Pearson r under H0: rho=0 (Student-t, df=n-2)."""
+    df = n - 2
+    if df <= 0:
+        return None
+    if abs(r) >= 1.0:
+        return 0.0
+    t2 = (r * r) * df / (1.0 - r * r)
+    return _betai(0.5 * df, 0.5, df / (df + t2))
+
+
 def load_history(path: Path = HISTORY_FILE) -> dict[tuple[str, str], dict[str, float]]:
     """Return {(platform, market_id): {date: prob}} keeping one prob per date."""
     series: dict[tuple[str, str], dict[str, float]] = defaultdict(dict)
@@ -150,11 +211,14 @@ def analyze_market(prob_by_date: dict[str, float],
             verdict = "COINCIDENT"
         else:
             verdict = "REACTIVE"
+        best_p = (_pearson_pvalue(best_r, best_n)
+                  if best_lag is not None and best_n > 2 else None)
         results.append({
             "underlying": symbol,
             "verdict": verdict,
             "best_lag": best_lag,
             "best_r": round(best_r, 4) if best_lag is not None else None,
+            "best_p_uncorrected": round(best_p, 5) if best_p is not None else None,
             "n_pairs": best_n,
             "per_lag": per_lag,
         })
@@ -208,13 +272,38 @@ def run(history_path: Path = HISTORY_FILE, report_path: Path = REPORT_FILE,
             "correlations": analyze_market(prob_by_date, returns_by_symbol),
         })
 
-    leading = sum(1 for m in report["markets"]
-                  for c in m["correlations"] if c["verdict"] == "LEADING")
+    # Multiple-testing correction. Each market reports the BEST of 7 lags x each
+    # underlying, so the raw |r|>=0.30 verdict is optimistic twice over (best-of-7
+    # selection + many markets). Bonferroni-correct across every reported
+    # correlation result so a LEADING verdict that survives is trustworthy.
+    all_results = [c for m in report["markets"] for c in m["correlations"]
+                   if c.get("best_r") is not None]
+    n_tests = len(all_results)
+    bonf_alpha = 0.05 / n_tests if n_tests else 0.05
+    for c in all_results:
+        p = c.get("best_p_uncorrected")
+        c["bonferroni_significant"] = bool(p is not None and p < bonf_alpha)
+
+    leading = [c for m in report["markets"] for c in m["correlations"]
+               if c["verdict"] == "LEADING"]
+    leading_sig = [c for c in leading if c.get("bonferroni_significant")]
     report["status"] = "OK"
-    report["leading_count"] = leading
+    report["n_correlation_tests"] = n_tests
+    report["bonferroni_alpha"] = round(bonf_alpha, 6)
+    report["leading_count"] = len(leading)
+    report["leading_bonferroni_significant_count"] = len(leading_sig)
+    report["caveat"] = (
+        "LEADING verdicts use the build-plan threshold |r|>=0.30 WITHOUT correction. "
+        "With n_correlation_tests best-of-7-lag comparisons, treat only "
+        "bonferroni_significant=true rows as candidate signals; the rest are "
+        "consistent with noise. None are tradeable until they survive a held-out "
+        "forward window (no look-ahead) per docs/MUTATION_THREE_AXIS_PROTOCOL.md."
+    )
     report_path.write_text(json.dumps(report, indent=2, default=str))
-    logger.info("Analyzed %d markets (%d LEADING verdicts) -> %s",
-                len(report["markets"]), leading, report_path)
+    logger.info("Analyzed %d markets: %d LEADING (raw |r|>=%.2f), %d survive Bonferroni "
+                "(alpha=%.2g over %d tests) -> %s",
+                len(report["markets"]), len(leading), R_THRESHOLD,
+                len(leading_sig), bonf_alpha, n_tests, report_path)
     return report
 
 

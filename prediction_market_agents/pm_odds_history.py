@@ -19,6 +19,14 @@ Output: prediction_market_agents/data/pm_odds_history.jsonl
 
 OPT-IN SIDECAR per CLAUDE.md Wire-Up Rule: read-only data capture, emits no picks,
 changes no production behavior. Wired as a non-fatal step in alpha-engine-live.yml.
+
+Modes:
+  python pm_odds_history.py             # append today's live snapshot (the CI step)
+  python pm_odds_history.py --backfill  # one-shot historical seed from Polymarket
+                                        # CLOB prices-history + Kalshi candlesticks
+                                        # (daily) so the lead/lag analyzer's >=20-day
+                                        # gate is met immediately. Idempotent; rows
+                                        # carry "backfilled": true.
 """
 
 from __future__ import annotations
@@ -27,6 +35,7 @@ import json
 import logging
 import ssl
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -185,6 +194,114 @@ def fetch_polymarket_rows(now: datetime) -> list[dict]:
     return rows
 
 
+# --- Historical backfill (one-shot seed so the lead/lag analyzer's >=20-day gate
+# --- can be met today instead of waiting ~3 weeks for daily live capture).
+# --- Endpoints verified live 2026-06-13:
+#       Polymarket CLOB prices-history (daily fidelity=1440) — needs clobTokenIds.
+#       Kalshi candlesticks (period_interval=1440) — prices in *_dollars fields.
+POLYMARKET_CLOB = "https://clob.polymarket.com/prices-history"
+KALSHI_BACKFILL_SERIES = "KXFEDDECISION"
+BACKFILL_LOOKBACK_DAYS = 180
+
+
+def _date_of(epoch_s: int) -> str:
+    return datetime.fromtimestamp(epoch_s, timezone.utc).strftime("%Y-%m-%d")
+
+
+def backfill_polymarket_rows() -> list[dict]:
+    """One historical row per (date, market) from Polymarket CLOB daily history.
+
+    Includes CLOSED markets too — resolved per-meeting markets carry the most
+    informative odds trajectories (e.g. a cut market sliding 57%->0% as the
+    meeting approached), which is exactly what lead/lag needs.
+    """
+    rows: list[dict] = []
+    seen_markets: set[str] = set()
+    for query in POLYMARKET_QUERIES:
+        data = _get(f"{POLYMARKET_SEARCH}?q={query}&limit_per_type=10")
+        for ev in (data or {}).get("events") or []:
+            for m in ev.get("markets") or []:
+                mid = str(m.get("id") or m.get("conditionId") or "")
+                title = m.get("question") or m.get("title") or ev.get("title") or ""
+                if not mid or mid in seen_markets:
+                    continue
+                low = title.lower()
+                if not any(w in low for w in ("fed", "fomc", "federal reserve", "rate")):
+                    continue
+                token_ids = m.get("clobTokenIds")
+                if isinstance(token_ids, str):
+                    try:
+                        token_ids = json.loads(token_ids)
+                    except Exception:
+                        token_ids = None
+                if not token_ids:
+                    continue
+                yes_token = token_ids[0]  # YES outcome
+                time.sleep(0.2)  # be polite to the CLOB endpoint
+                hist = _get(f"{POLYMARKET_CLOB}?market={yes_token}&interval=max&fidelity=1440")
+                points = (hist or {}).get("history") or []
+                if not points:
+                    continue
+                seen_markets.add(mid)
+                action = _classify_action(title)
+                by_date: dict[str, float] = {}
+                for p in points:
+                    prob = _norm_prob(p.get("p"))
+                    if prob is None:
+                        continue
+                    by_date[_date_of(int(p["t"]))] = prob  # last write per day wins
+                for date, prob in by_date.items():
+                    rows.append({
+                        "date": date, "ts": date + "T00:00:00+00:00",
+                        "platform": "polymarket", "market_id": mid,
+                        "title": title.strip()[:200], "action": action,
+                        "prob": prob, "volume": 0.0, "backfilled": True,
+                    })
+    return rows
+
+
+def backfill_kalshi_rows() -> list[dict]:
+    """One historical row per (date, KXFEDDECISION leg) from Kalshi daily candles."""
+    rows: list[dict] = []
+    end_ts = int(datetime.now(timezone.utc).timestamp())
+    start_ts = end_ts - BACKFILL_LOOKBACK_DAYS * 86400
+    data = _get(f"{KALSHI_API}/markets?series_ticker={KALSHI_BACKFILL_SERIES}"
+                f"&limit=200")
+    for m in (data or {}).get("markets", []):
+        ticker = m.get("ticker") or ""
+        if not ticker:
+            continue
+        title = (m.get("title") or "") + " " + (m.get("subtitle") or "")
+        url = (f"{KALSHI_API}/series/{KALSHI_BACKFILL_SERIES}/markets/{ticker}"
+               f"/candlesticks?start_ts={start_ts}&end_ts={end_ts}&period_interval=1440")
+        time.sleep(0.4)  # Kalshi candlesticks rate-limit (429) without throttle
+        candles = (_get(url) or {}).get("candlesticks") or []
+        by_date: dict[str, float] = {}
+        for c in candles:
+            price = c.get("price") or {}
+            yes_bid = c.get("yes_bid") or {}
+            raw = (price.get("mean_dollars") or price.get("close_dollars")
+                   or yes_bid.get("close_dollars"))
+            prob = _norm_prob(raw)
+            if prob is None:
+                continue
+            ts = c.get("end_period_ts")
+            if ts:
+                by_date[_date_of(int(ts))] = prob
+        for date, prob in by_date.items():
+            rows.append({
+                "date": date, "ts": date + "T00:00:00+00:00",
+                "platform": "kalshi", "market_id": ticker,
+                "title": title.strip()[:200],
+                "action": ("cut" if "-C" in ticker.upper()
+                           else "hold" if ticker.upper().endswith("H0")
+                           else "hike" if "-H" in ticker.upper()
+                           else _classify_action(title)),
+                "prob": prob, "volume": 0.0, "backfilled": True,
+            })
+    return rows
+
+
 def load_existing_keys(path: Path) -> set[tuple[str, str, str]]:
     keys: set[tuple[str, str, str]] = set()
     if not path.exists():
@@ -202,13 +319,8 @@ def load_existing_keys(path: Path) -> set[tuple[str, str, str]]:
     return keys
 
 
-def run() -> int:
-    now = datetime.now(timezone.utc)
-    rows = fetch_kalshi_rows(now) + fetch_polymarket_rows(now)
-    if not rows:
-        logger.info("No macro PM markets fetched (APIs down or no open markets) — nothing appended")
-        return 0
-
+def _append_rows(rows: list[dict]) -> int:
+    """Append rows to the history JSONL, skipping (date, platform, market_id) dupes."""
     existing = load_existing_keys(HISTORY_FILE)
     appended = 0
     with HISTORY_FILE.open("a") as fh:
@@ -219,15 +331,44 @@ def run() -> int:
             fh.write(json.dumps(row, default=str) + "\n")
             existing.add(key)
             appended += 1
+    return appended
 
+
+def run() -> int:
+    now = datetime.now(timezone.utc)
+    rows = fetch_kalshi_rows(now) + fetch_polymarket_rows(now)
+    if not rows:
+        logger.info("No macro PM markets fetched (APIs down or no open markets) — nothing appended")
+        return 0
+    appended = _append_rows(rows)
     logger.info("Fetched %d markets, appended %d new daily snapshots to %s",
                 len(rows), appended, HISTORY_FILE)
     return appended
 
 
+def backfill() -> int:
+    """One-shot historical seed from Polymarket CLOB + Kalshi candlesticks.
+
+    Idempotent: re-running only adds dates not already present, so it composes
+    with the daily live capture (run()).
+    """
+    rows = backfill_polymarket_rows() + backfill_kalshi_rows()
+    if not rows:
+        logger.info("Backfill fetched no historical points (APIs down?) — nothing appended")
+        return 0
+    markets = len({(r["platform"], r["market_id"]) for r in rows})
+    appended = _append_rows(rows)
+    logger.info("Backfill: %d historical points across %d markets, appended %d new dated rows to %s",
+                len(rows), markets, appended, HISTORY_FILE)
+    return appended
+
+
 if __name__ == "__main__":
     try:
-        run()
+        if "--backfill" in sys.argv:
+            backfill()
+        else:
+            run()
     except Exception as exc:  # sidecar must never break the calling workflow
         logger.error("pm_odds_history failed: %s", exc)
         sys.exit(0)
