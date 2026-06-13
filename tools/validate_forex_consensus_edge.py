@@ -48,7 +48,7 @@ def _load_db_password() -> str:
         if path.exists():
             for line in path.read_text(errors="replace").splitlines():
                 s = line.strip()
-                if s == "stocks1234560" or (s.startswith("stocks") and s.endswith("1234560")):
+                if s.startswith("stocks") and s.endswith("1234560") and len(s) > 10:
                     return s
     raise SystemExit("No DB password: set DB_PASS_STOCKS or provide dbpasses.txt")
 
