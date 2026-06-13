@@ -726,10 +726,32 @@ class QuantScorer:
 
         # Pass 93: wiring FULL (load + score + synth + adverse explicit kill proxy) per ACTION_PLAN + thingstocheck + HF. Research path complete; prod emitter TODO post-harness per scanner note.
 
+        # Pass 94 dig (growth/quality screener extension per thingstocheck prompt + github starboi-63/growth-stock-screener): FCF/magic/acquirer-style factors for EQUITY.
+        # Uses existing fields (roe, eps_growth, peg, market_cap) + simple quality+value heuristic (high ROE + positive EPS growth + reasonable PEG + not micro-cap).
+        # Bonus for "magic" (high quality low "value" proxy) or acquirer-like (solid ROE + growth). Non-breaking; additive to score for EQUITY class.
+        # Ties to EQUITY lowvol stamp F4 + velocity retention (baseline_EQUITY 49.1/1.046 improving in slices).
+        growth_quality_adj = 0.0
+        if cls == "EQUITY":
+            roe_v = roe or 0
+            eps_g = eps_growth or 0
+            peg_v = peg or 999
+            mcap = market_cap or 0
+            if roe_v > 0.15 and eps_g > 0 and peg_v < 2.0 and mcap > 2e9:  # quality + reasonable value, liquid
+                growth_quality_adj = 0.12
+                signals.append("GROWTH_QUALITY (ROE+EPSg+PEG<2, mcap>2B; magic/acquirer proxy per starboi-63)")
+            elif roe_v > 0.10 and eps_g > 0:
+                growth_quality_adj = 0.06
+                signals.append("GROWTH_QUALITY_PARTIAL (ROE+EPSg)")
+        score += int(growth_quality_adj * 60)  # scale to range; small lift for EQUITY edge slices
+
         # ── SYNTHETIC FILTER SKETCH (Pass 84 / tracker item 2 + thingstocheck 21.1% fix + ai-tournament page): 
         # Live /audit/ai-tournament.html (web_fetch 2026-06-12): 1636 SYNTHETIC_SEED_ENRICHED; cursor_agent 100% synth in resolved cohort, kimi_direct 49%, llama4_scout 43%.
         # grok3: 0% synthetic, n=52, WR 67.3% — only trustworthy ref (treat others upper-bound until filtered).
         # Downweight in this research "picks now" path (addresses 21.1% FWD pollution). Non-breaking; signals for caller. Wire-Up: research caller exists; prod extend = opt-in later.
+
+        # Pass 116 dig (2026-06-13): velocity on 15 stamp CONDITIONS (entry 01:57: crypto_rsi/luxalgo_short/forex_aligned + baselines; retention e.g. rsi +18pp per prior/H-152/153) + COM fut SI/PL focus (DB per-sym n55 wr40% / n48 31% better than GC/HG 0% conc; now conditioned in scanner per 114/115 + H-151/152/153 pre-reg).
+        # 21.1% root: historical FWD on picks_now_tracker (647 rows per DB probe; logged from py main(); current py wiring stamp+adverse+growth+synth filter improves future scores but closed 21.1% locked + disclaimer "research signals" "0/6 gates" "gates do NOT apply to individual picks" keeps research-only until 1+ class passes gates (COM candidate).
+        # Prod path: extend synth filter + velocity scoring to tracker emission (picks_now_tracker / vw_picks_now_dedup); surface CONDITION badges + COM admissible. 4h sprint: after this, probe tracker for 21.1 FWD rows (SELECT by score/created_at), velocity calc on 15 (stamp --stdout + manual retention vs baseline), paper on SI/PL fut admissible (H-153). Pre-reg H-153 done.
         synth_models = {"cursor_agent", "kimi_direct", "llama4_scout"}
         src = (info.get("source_model") or info.get("model") or "").lower()
         if any(m in src for m in synth_models):
