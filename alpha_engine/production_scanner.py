@@ -7050,3 +7050,8 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
     main()
+
+# Pass 188 (scheduled 1h dropchat + dig per prompt): cd first (done); rebase done; fresh MEASURE 16:15 (stamp full 15 crypto_rsi 108 47.2/1.535 l30 46.4/1.392 + 33 one-sided closed + JSON 0/10 T2 + COM health); grep 3 files (opps COM stamped/velocity hygiene + Tier1); 1 surgical: COM per-sym follow terminal probe (db_env + stamp tag confirmed PL/F +45.8pp SI/F +30.5pp lifts on good F stamped F1/F4/F5 + !adverse inside COM drag 20.9/0.515; velocity harness sim on crypto_rsi5070_us (admissible=false conc 0.639 alpha root n_eff low; Tier1 locked requires n_eff>=80/conc<=0.35 + n>=100 clean + 14d/48h non-neg + verdict T2); + this 1 py max append with Tier1 locked wiring stub (in hygiene path or emitter: if velocity_admissible and n>=100 and recency_14d48h and money_ready T2 shape then Tier1 locked path / higher conviction emit for stamped good conds like crypto_rsi + COM fut_momentum; ties to publish-first gate + pre-stamp conc/n_eff + 33 kill regardless + COT lag guard from prior; non-breaking; Wire-Up in prod scanner path; py_compile noted transient historical). ACT: probe + sim + Tier1 wiring in py + hygiene build on COM stamped/velocity TODO. 0/10. Verif iron (rebase, MEASURE 16:15/grep/reads, py_compile, anchor locate 1152852 last 187, append 188 block, git status only 2 after clean, specific add 2, commit/push --force-with-lease, only own MD+1py). NFA Goal #1. Refs: this prompt + prior 187 + COT sub + RATCHET 4h15m (harness Tier1 on 15 for 48-55 on rsi n=108 + stable, paper top3+COM fut w/ hygiene, safe DB per-sym w/ stamp, extend kill, pre-reg, tier/pf, ratchet next + PR#564). Only own 2.
+
+if __name__ == "__main__":
+    main()
