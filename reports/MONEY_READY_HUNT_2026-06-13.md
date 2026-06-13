@@ -5,13 +5,17 @@
 through a placebo/beta control, ISO-week distribution check, net-of-cost, and an honest
 IS/OOS split. Goal #1 (audit performance across asset classes).
 
-**Bottom line:** After the most rigorous, placebo-controlled, multi-angle sweep this project
-has run, **0 cohorts pass a clean Tier-2 money-ready bar.** Every top-line "winner" decomposes
-into one of: **market beta (a risk-off move), single-fortnight concentration, same-bar
-look-ahead, or cost.** The single survivor that clears the *statistical* T2 bar net-of-cost is
-**`cta_replicator` × COMMODITY × SHORT (ex-CL=F): net PF 2.43, WR 61%, n=1222** — but it rides a
-falling-commodity regime (beta tailwind) and cannot be intrabar-verified (no commodity OHLCV in
-the DB). It is the **best forward-pilot candidate, not a confirmed winner.**
+**Bottom line:** After the most rigorous, placebo/benchmark-controlled, multi-angle sweep this
+project has run, **0 cohorts pass a clean Tier-2 money-ready bar, and every apparent winner —
+including the one that clears the statistical bar — decomposes into market beta.** The leading
+candidate, `cta_replicator` × COMMODITY × SHORT (ex-CL=F): net PF 2.43, WR 61%, n=1222, looked
+promising on its headline stats but **failed the decisive selection-alpha test**: benchmarked
+against the same-symbol-same-week average of *all* commodity shorts, cta's median excess is
+**−0.01%** and it beats the benchmark only **49%** of the time, and its edge lives entirely in
+the falling-commodity window (IS half net PF 1.06 break-even → OOS 4.53). It is the
+*falling-commodity regime*, not cta's signal. **There is no genuine, regime-controlled
+money-ready edge in the current book in any asset class.** The honest path forward is emitter-side
+(reachable TPs) + new orthogonal inputs, not further mining.
 
 ---
 
@@ -56,18 +60,22 @@ placebo (or buy&hold over the same window) does as well or better.**
 - An oversold-contrarian LONG *looked* strong (PF 2.08) but is a **same-bar look-ahead artifact**;
   under honest next-bar entry it collapses to PF 1.10 (≈beta, placebo p=0.80).
 
-### COMMODITY — CLOSEST LEAD, beta-caveated (Agent C + this session's verification)
+### COMMODITY — leading candidate, REFUTED as beta on deeper test (Agent C flagged it; this session refuted it)
 - `cta_replicator` × COMMODITY × SHORT, strict-dedup n=1473, decisive WR 57%, net PF 1.31.
 - **Drop the already-killed CL=F (crude, −1.11% avg bleed) → net PF 2.43, WR 61%, n=1222.**
   CL=F was independently retired earlier (3.8% WR), so excluding it is policy, not post-hoc fishing.
-- Clean structurally: **0 null timestamps, 12 ISO weeks spread (top-3wk = 53%, not a fortnight),
-  diversified across 5 positive futures** (gold/soy/natgas/corn/wheat), symbol HHI 0.15, and OOS
-  **strengthens** (IS 1.07 → OOS 1.86 per the registry sweep).
-- **Caveat (beta):** all-source commodity SHORT nets 1.29 vs LONG 0.80 → there is a
-  falling-commodity tailwind. But cta's ex-crude **2.43 ≫ 1.29 generic short**, so cta has genuine
-  selection skill *on top of* the beta. It cannot be intrabar-verified (no commodity OHLCV) and
-  rides one regime. **Verdict: strongest candidate; needs a forward window in a non-falling
-  commodity regime before sizing.**
+- Structurally clean (0 null timestamps, 11–12 ISO weeks spread, diversified across 5 positive
+  futures, symbol HHI 0.15) — which is why it survived where the equity/crypto fortnight artifacts
+  did not. So I ran two decisive controls:
+  1. **IS/OOS by date halves:** IS (Mar27–Apr14) net PF **1.06 (break-even)**; OOS (Apr14–Jun01)
+     net PF **4.53**. The edge exists *only* in the later, falling-commodity window — not stable.
+  2. **Selection-alpha (the commodity analog of a placebo):** cta short minus the same-symbol-week
+     average of *all* commodity shorts (ex-CL=F) → mean excess **+0.04%, median −0.01%, beats the
+     benchmark only 49%** of the time. vs *non-cta* shorts the mean is +0.14% but median ~0 /
+     52% hit (outlier-driven, not consistent).
+- **Verdict: BETA, not skill.** The net PF 2.43 is the falling-commodity regime (all-source
+  commodity SHORT nets 1.29 vs LONG 0.80); cta adds **no reliable selection skill** on top of it.
+  Not money-ready. (Can't be intrabar-verified anyway — no commodity OHLCV in the DB.)
 
 ### Other classes
 - FOREX: prior sessions established net-of-cost death (consensus gross 1.79 → net 0.62; sub-1bp
@@ -108,13 +116,38 @@ placebo (or buy&hold over the same window) does as well or better.**
   the fix the SHORT cohort drops to net PF 1.55 / OOS 1.45 — fails the gate anyway (and is beta).
 - No production behavior changed. All work read-only on the DB; isolated worktree off origin/main.
 
+## Options / greeks as a new input (operator request — assessed this session)
+
+Could options/greeks help our predictions? **Partly — as a defensive gate, not a new alpha source —
+and this ground is already heavily worked here.**
+- **Already refuted:** `tools/options_flow_research.py` + `reports/options_flow_research_2026-05-18.md`
+  walk-forward-KILLED put/call ratio, IV-skew (^SKEW), and VIX term structure on real free CBOE+Yahoo
+  data (137–155 windows; eff sign ~50/50; ~43% cost survival; "8th straight harness kill"). VRP/short-vol
+  is REFUTED (11-axis critique; `refuted/vrp-...` branch). Crypto options signals are *already wired*
+  into the scanner (`alpha_engine/options_signals.py` Deribit; `crypto_options_vol.py`).
+  `alpha_engine/features/options_features.py` is a realized-vol *proxy*, not real chains.
+- **Data feasibility (live-tested this session):** our four paid keys — FINNHUB, FMP, ALPHAVANTAGE,
+  TIINGO — return **ZERO options data** (paywalled / dead / premium-only / no options product). The only
+  usable feeds are **free CBOE delayed quotes** (full equity/ETF chains *with* per-strike greeks +
+  `iv30`, but **no free history**) and **free Deribit** (crypto `mark_iv`/skew + DVOL IV-index history,
+  the one place with backtestable history). So **every equity options signal is forward-collect-only.**
+- **Best use:** an **opt-in IV/skew GATE** (not a strategy) on existing equity/ETF longs — e.g. suppress
+  or down-size a new long when `iv30` is bottom-decile (vol-expansion risk) AND 25-delta skew is in the
+  crash zone. MVP: `alpha_engine/options_iv_gate.py` Phase 0 forward-collects a daily CBOE snapshot table
+  for our ~214 symbols (flag OFF, no behavior change); Phase 1 wires `passes_iv_gate()` after ≥40–60 days
+  and is kept only if the gated-long cohort beats the ungated cohort on net-of-cost PF across ≥3
+  consecutive 14-day walk-forward windows (reuse `tools/edge_stability_harness.py`). Given 8 prior harness
+  kills, treat the base rate as "probably won't clear" — but the collector is cheap and the downside is
+  bounded. **Not a paid-data purchase, not VRP-shaped.**
+
 ## Recommended next action
 
-1. **Forward paper-pilot `cta_replicator` COMMODITY SHORT (ex-CL=F)** as an opt-in sidecar (no
-   production change), headline **net-of-cost** PF, and gate acceptance on a forward window that
-   includes a non-falling commodity stretch + a same-period long/short beta check. This is the only
-   candidate with a credible statistical case.
-2. **Stop mining the current book for directional alpha** — it is exhausted; the remaining lever is
-   emitter-side (reachable TPs) + new orthogonal signal inputs.
-3. **Options/greeks as a new input** (operator request, assessed separately) — most promising as a
-   *gate/sizer* on existing equity picks, forward-collected first (no historical chains in the DB).
+1. **Stop mining the current book for directional alpha** — it is exhausted across all 6 classes;
+   every apparent winner is regime beta. The remaining levers are (a) emitter-side **reachable TPs**
+   (size to the measured MFE, median ~0.8% / p75 ~1.9% for equity hourly) and (b) genuinely
+   **orthogonal new inputs**.
+2. **If building one new input, build the opt-in CBOE IV/skew gate sidecar** (forward-collect first) —
+   the only options angle not already refuted, and framed honestly as a *risk filter*, not alpha.
+3. **Do not size up anything on regime-window numbers** — require a forward window spanning a *different*
+   regime + a same-period benchmark/placebo control (the test that just killed both the equity SHORT and
+   the cta commodity SHORT).
