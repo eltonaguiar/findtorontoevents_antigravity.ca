@@ -67,3 +67,38 @@ Three measurement disciplines were required to see it, all of which the aggregat
 
 - `tools/validate_forex_consensus_edge.py` — read-only reproducer (creds from env / `dbpasses.txt`, never hardcoded).
 - Source table: `ejaguiar1_stocks.trading_picks` (50,905 rows; FOREX resolved 2026+ = 15,126 raw, 1,853 deduped).
+
+---
+
+## 8. De-risk addendum (per-class / per-direction / per-symbol decomposition)
+
+Before any pilot, the winner was decomposed to check whether the PF 1.96 is broad-based or carried by one cell. **It is broad-based and the decomposition refines the pilot spec.**
+
+**By asset class (non_crypto_consensus, deduped):**
+
+| class | n | PF | IS / OOS | decisive WR | read |
+|---|---|---|---|---|---|
+| FOREX | 304 | 1.96 | 1.91 / 2.03 | 62% | clean, both halves ≈2.0 — the lead |
+| COMMODITY | 136 | 2.70 | 6.04 / 1.50 | 69% | also has edge, but IS≫OOS (some decay); OOS still ≥1.5. **Peer's lane — flagged, not claimed here** |
+| EQUITY | 27 | 0.76 | 0.44 / 0.98 | 36% | FAILS + n<30 — the consensus edge does NOT generalize to equities |
+
+So `non_crypto_consensus` is a **FOREX + COMMODITY** consensus edge, not universal — cleanest in FOREX.
+
+**FOREX by direction — the LONG side is the powerhouse:**
+
+| direction | n | PF | IS / OOS | decisive WR |
+|---|---|---|---|---|
+| **LONG** | 129 | **3.13** | **4.82 / 2.05** | **73%** |
+| SHORT | 180 | 1.54 | 1.19 / 2.05 | 56% |
+
+LONG is materially stronger and robust in **both** time halves; SHORT is marginal in-sample (IS 1.19) and only holds via the OOS half.
+
+**FOREX by symbol — the edge is a spread, NOT a single-pair artifact:**
+
+The top-*traded* pair is actually a drag: **EURJPY (n=38) is PF 0.94 / 47% — break-even-to-losing.** The profit comes from a basket: USDCAD 5.60 (83% WR), EURUSD 2.40, GBPUSD 2.26, AUDUSD 2.09, CADJPY 1.77, GBPJPY 1.30. Break-even tails: EURGBP 1.06, NZDUSD 1.05. **This is the good kind of robustness** — no single pair carries it, and the most-concentrated symbol is not the source of the edge.
+
+### Refined pilot spec (tighter, higher-conviction)
+
+Instead of the whole source, pilot **`non_crypto_consensus` FOREX LONG** (PF 3.13, decisive WR 73%, IS 4.82 / OOS 2.05, n=129), optionally dropping the three break-even pairs (EURJPY, EURGBP, NZDUSD). This is the highest-conviction, most-robust slice and the recommended Stage-3 forward-paper pilot specification.
+
+**Caveat preserved:** still daily-resolved (not intrabar), still a 2026 cohort — the pilot is what confirms it forward. The per-symbol slicing here is descriptive de-risking of the *existing* sample, not a new optimized backtest, so it does not add overfitting risk to the headline PF.
