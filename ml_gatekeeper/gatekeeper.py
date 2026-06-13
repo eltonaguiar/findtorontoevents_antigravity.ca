@@ -23,7 +23,11 @@ from collections import defaultdict
 
 try:
     from ml_gatekeeper.ab_router import ABRouter, AB_ENABLED
-except Exception:
+except Exception as _ab_imp_err:
+    # 2026-06-13 (#134): this except silently disabled the entire A/B experiment
+    # whenever the import failed — the masking pattern. Print the reason so CI
+    # logs show WHY the dual-write skipped instead of skipping silently.
+    print(f"[gatekeeper] ab_router import failed — A/B disabled: {_ab_imp_err!r}")
     ABRouter = None
     AB_ENABLED = False
 
