@@ -777,6 +777,17 @@ class QuantScorer:
         if any(m in src for m in synth_models) or "synthetic" in src:
             score -= 25
             signals.append("SYNTHETIC_SEED_DOWNWEIGHT (ai-tournament 1636 contamination; prefer grok3 0%-synth; expanded models + source check)")
+        # Pass 127 further item: stamp velocity respect in synthetic (protect good conds e.g. crypto_rsi n=108 l30 48.3/1.454 retention, forex_aligned 5.333, luxalgo from full -25 while still mitigating 21.1% FWD synth pollution per thingstocheck + ai-tournament).
+        # Ties to prior stamp in _score_momentum, load_db_edge_forward, passes_adverse_hard. Non-breaking; partial recovery + signal for velocity retention.
+        try:
+            from tools.stamp_entry_conditions import get_conditions_for_pick
+            pick_like = {"symbol": sym.upper(), "asset_class": cls, "strategy": info.get("strategy", None)}
+            conds = get_conditions_for_pick(pick_like) or {}
+            if conds.get("F1") == "ALIGNED" or conds.get("F4") == "LOW" or conds.get("F5") == "US":
+                score += 15  # mitigation for good velocity cond
+                signals.append("SYNTHETIC_STAMP_MITIGATED (good F cond overrides full -25)")
+        except Exception:
+            pass
         # CONDITION badge surfacing (pro-5): caller can use for /picks-now or tracker to show e.g. "STAMP: crypto_rsi5070_us" for velocity retention visibility. See prod path notes.
 
         dbf_n_raw_60d = dbf.get("n_raw_60d", 0)
