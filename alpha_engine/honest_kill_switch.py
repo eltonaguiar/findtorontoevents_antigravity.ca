@@ -67,7 +67,7 @@ MIN_PF = 1.0             # profit factor threshold (below = KILL) — default / 
 ASSET_CLASS_THRESHOLDS: dict[str, dict[str, float]] = {
     #            min_wr  min_pf  min_trades
     "CRYPTO":    {"min_wr": 0.45, "min_pf": 1.0,  "min_trades": 30},
-    "EQUITY":    {"min_wr": 0.45, "min_pf": 0.8,  "min_trades": 30},
+    "EQUITY":    {"min_wr": 0.45, "min_pf": 1.0,  "min_trades": 30},  # Raised 0.8→1.0 per peer review consensus (PF<1.0 = net-negative expectancy)
     "ETF":       {"min_wr": 0.45, "min_pf": 1.0,  "min_trades": 30},
     "FOREX":     {"min_wr": 0.50, "min_pf": 1.2,  "min_trades": 30},
     "COMMODITY": {"min_wr": 0.50, "min_pf": 1.2,  "min_trades": 30},

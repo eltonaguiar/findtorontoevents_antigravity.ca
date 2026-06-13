@@ -42,24 +42,29 @@ Several items from the initial Money Maker Ready report were **data misinterpret
 **ETA:** 2-3 days  
 **Blocked by:** Sufficient historical data per strategy (check n ≥ 100)
 
-### 2. Fix Concept Drift KS_D Computation
-**Why:** `hf_stats.concept_drift` is empty in the live dashboard, meaning the drift detector is not producing output. Previous reports cite `KS_D=0.313` vs critical `0.047` — if real, this is a hard blocker.
+### 2. Wire Concept Drift Auto-Pause (Data Found!) ✅ VERIFIED
+**Why:** Concept drift data actually EXISTS in `dashboard_data.json::hf_stats.concept_drift`:
+- `ks_D = 0.0498` vs `ks_critical_05 = 0.0460` → `drift_alert = true`
+- `early_n = 1746`, `late_n = 1746` (substantial sample)
+- Previously cited KS_D=0.313 was from a May 11 report (stale data, regime has shifted since)
+- Per-class drift is NOT computed (all asset classes show empty)
+
+The drift is REAL but MILD (KS_D only 8% above critical). The `drift_alert=true` flag is correctly set.
 
 **Existing infrastructure:**
-- `tools/hf_stats.py` line 432: `compute_concept_drift()` function exists
-- `tools/concept_drift_ks_stub.py` — KS test stub
-- `audit_trail/quality_gates.py` line 890: `_get_concept_drift_ratio()` reads from dashboard
+- `tools/hf_stats.py` line 432: `compute_concept_drift()` — already producing output
+- `audit_trail/quality_gates.py` line 890: `_get_concept_drift_ratio()` — reads from dashboard
 - `alpha_engine/drift_aware_scoring.py` — adjusts scores based on drift
+- Dashboard template already renders concept_drift block (line 5859)
 
 **Action:**
-1. Debug why `compute_concept_drift()` returns empty when called from `dashboard_generator.py`
-2. Verify the KS test is receiving valid dated PnL data (not empty arrays)
-3. Wire drift_alert → auto-pause sizing when KS_D > 0.10
-4. Add per-class drift (already scaffolded at `quality_gates.py` line 1124)
+1. Wire `drift_alert=true` → auto-pause new position sizing when KS_D > 0.10 (currently 0.0498, below threshold)
+2. Add per-class concept drift computation (scaffolded at `quality_gates.py` line 1124)
+3. Add per-strategy drift monitoring (rolling 30d WR vs lifetime WR)
 
 **Owner:** @claude-code  
 **ETA:** 1-2 days  
-**Blocked by:** Understanding why `hf_stats` cache is stale (24h gate exists but may not refresh)
+**Status:** Data confirmed present; wiring is the remaining work
 
 ### 3. Real-Time Slippage Tracking
 **Why:** All PnL figures are theoretical without actual fill quality measurement.
