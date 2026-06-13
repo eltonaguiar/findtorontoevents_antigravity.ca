@@ -162,34 +162,34 @@ $ python3 tools/persist_p1_5_demotions.py
        SET status='shadow_paper_only',
            status_reason=<P1-5 reason>,
            status_changed_at='2026-06-13 04:50:00'
-     WHERE portfolio_key=<PORTFOLIO_KEY_1>     -- aimlapi_gpt4o__conservative
+     WHERE portfolio_key='aimlapi_gpt4o__conservative'
 [p1-5] SQL: UPDATE PF_PORTFOLIO
        SET status='shadow_paper_only',
            status_reason=<P1-5 reason>,
            status_changed_at='2026-06-13 04:50:00'
-     WHERE portfolio_key=<PORTFOLIO_KEY_2>     -- gh_models_gpt4o__conservative
+     WHERE portfolio_key='gh_models_gpt4o__conservative'
 [p1-5] SQL: UPDATE PF_PORTFOLIO
        SET status='shadow_paper_only',
            status_reason=<P1-5 reason>,
            status_changed_at='2026-06-13 04:50:00'
-     WHERE portfolio_key=<PORTFOLIO_KEY_3>     -- gpt4o__conservative
+     WHERE portfolio_key='gpt4o__conservative'
 [p1-5] SQL: UPDATE PF_PORTFOLIO
        SET status='shadow_paper_only',
            status_reason=<P1-5 reason>,
            status_changed_at='2026-06-13 04:50:00'
-     WHERE portfolio_key=<PORTFOLIO_KEY_4>     -- gpt5_chat__conservative
+     WHERE portfolio_key='gpt5_chat__conservative'
 [p1-5] SQL: UPDATE PF_PORTFOLIO
        SET status='shadow_paper_only',
            status_reason=<P1-5 reason>,
            status_changed_at='2026-06-13 04:50:00'
-     WHERE portfolio_key=<PORTFOLIO_KEY_5>     -- deepseek_r1__conservative
+     WHERE portfolio_key='deepseek_r1__conservative'
 [p1-5] DRY-RUN complete; ROLLBACK (no changes written)
 [p1-5] --- SUMMARY ---
-  <PORTFOLIO_KEY_1>     rows=None state=DRY_RUN
-  <PORTFOLIO_KEY_2>     rows=None state=DRY_RUN
-  <PORTFOLIO_KEY_3>     rows=None state=DRY_RUN
-  <PORTFOLIO_KEY_4>     rows=None state=DRY_RUN
-  <PORTFOLIO_KEY_5>     rows=None state=DRY_RUN
+  aimlapi_gpt4o__conservative              rows=None state=DRY_RUN
+  gh_models_gpt4o__conservative            rows=None state=DRY_RUN
+  gpt4o__conservative                      rows=None state=DRY_RUN
+  gpt5_chat__conservative                  rows=None state=DRY_RUN
+  deepseek_r1__conservative                rows=None state=DRY_RUN
 ```
 
 The `<P1-5 reason>` placeholder in the dry-run print is a display-time
