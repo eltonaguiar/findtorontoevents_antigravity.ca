@@ -4591,7 +4591,47 @@ Full verif iron block (run+read all this cycle per prompt):
 - NFA Goal #1 (0/9 classes, COM+velocity on 15 CONDITIONS n=108 ready, one-sided hygiene for 21.1%/low WR; 14d/48h + verdict first).
 Refs: PR#564, thingstocheck_June2026, master loop (H1-H5/velocity/ratchet), HF playbook, CLAUDE/AGENTS (Goal#1 0/9 COM+velocity 15COND one-sided 21.1% hygiene, 14d/48h first, only-own/rebase--ours/verif iron/publish-first), prior Passes 119-165 + check_one_sided 33, fresh 12:21Z MEASURE/stamp/check, hypothesis_registry (H-166), ParallelSwarm skill, verification-before-completion, this prompt template, drop dedicated progress MD (prior), dropchat-multipc. Update todos. Compact + 4h. Focus Goal #1.
 
-**End of Pass 166.** NFA. Goal #1.
+**End of Pass 166.
+
+**End of Pass 167.** Fresh MEASURE (stamp 12:27:06Z full 15-table + retention): 
+condition                   class        n    WR%      PF      avg |  n30   WR30    PF30
+----------------------------------------------------------------------------------------
+crypto_rsi5070_us           CRYPTO     108   47.2   1.535   0.5882 |   58   48.3   1.454
+luxalgo_short               *           38   71.1   2.211   1.2936 |   38   71.1   2.211
+equity_lowvol               EQUITY      22   36.4   1.328   0.4081 |   22   36.4   1.328
+equity_highvol_NEGATIVE     EQUITY      36   55.6   0.824  -0.2759 |   36   55.6   0.824
+forex_trend_aligned         FOREX       16   68.8   5.333   0.5036 |   16   68.8   5.333
+forex_contrarian_NEGATIVE   FOREX       27   25.9   0.458  -0.1408 |   26   23.1   0.401
+baseline_BOND               BOND         4    0.0     0.0  -0.6234 |    4    0.0     0.0
+baseline_COMMODITY          COMMODITY   43   20.9   0.515    -0.75 |   43   20.9   0.515
+baseline_CRYPTO             CRYPTO     924   32.0   0.712  -0.4343 |  400   29.0   0.544
+baseline_EQUITY             EQUITY      58   48.3   0.989  -0.0165 |   58   48.3   0.989
+baseline_ETF                ETF         11    0.0     0.0  -2.8396 |   11    0.0     0.0
+baseline_FOREX              FOREX       43   41.9    1.48    0.099 |   42   40.5   1.435
+baseline_FUTURES            FUTURES     10   10.0   0.439  -0.7999 |   10   10.0   0.439
+baseline_MEMECOIN           MEMECOIN    65   27.7   0.605  -0.4162 |   14    7.1   0.097
+baseline_UNKNOWN            UNKNOWN      4    0.0     0.0  -1.2807 |    4    0.0     0.0
+
+One-sided 33 (from python3 tools/check_one_sided_resolution.py this cycle; FINDING#12):
+  LOST-only  won=0      lost=228    resolved=228    total=250    drawdown_recovery_rsi_sol
+  LOST-only  won=0      lost=212    resolved=212    total=213    atr_percentile_gate
+  WON-only   won=205    lost=0      resolved=205    total=206    crypto_liquidity_wick_reversal_v1
+  ... (full 33 as from check_one_sided_resolution.py this cycle; FINDING#12)
+
+JSON gens / retention / COM note: money_ready_verdict 2026-06-13T... 0/9 T2; entry 12:27 top crypto_rsi5070_us etc; pick_14d/48h generated 11:49 fresh data; pf partial COM via stamp 43/115n 20.9-34.8%/0.515-1.048. Retention: crypto_rsi +18pp stable l30 vs baseline decay; COM granular good rel inside drag.
+
+DIAGNOSE (H1-H5 0/9-0/10 T2 COM small n 20.9-34.8/0.515-1.048 FAIL+INSUFF; COM priority granular/velocity best risk/reward; velocity retention real +18pp but gates not passed prior admissible=false (n_eff/conc/CI root); 21.1% root one-sided H4/H5 33 100% one-sided (H4 external hype/spam reddit/currents/gnews/stocktwits/youtube/copy + H5 internal bad); H1 scarcity/H2 incomplete/H3 COM rescue/H4/H5 mitigated but leaks in emitters; no paper gated; 4 subagents delegated parallel for velocity/COM/hyp/tier+review.)
+
+ACT (1 py surgical production_scanner.py:3034 added full Pass 167 comment 12:27Z + 33 closed + stamp/good conds velocity + COM DB per-sym via db_env+stamp + velocity harness delegated + pre-reg H-167 + tier/recency noted + 0/9-0/10; 4 spawn_subagent launched + reviewed; grep 3 files (quality_gates.py has full hygiene 33 + stamp F protect good crypto_rsi/forex + COM gates + one-sided kills always-on; scanner py comments; picks paths covered) 33 closed no gap; COM probe terminal good rel ~5.9-20.9% + stamped fut_mom; dropchat integrated; progress .MD dropped/updated with subtasks/reasons; todo_write 14 items live.)
+
+FORWARD (COM n~115 ~34.8/1.048 FAIL no promote but slices/Conditions closest stamped good fut mom velocity inside drag; SI/PL/HG good rel; crypto_rsi n=108 ready R1-3; checkpoints n>=150 full AddH admissible n_eff>=80/conc<=0.35/CI LB>=1.15 + 14d/48h/verdict first; hygiene one-sided extend if gap post-grep; paper explicit only post admissible + gates + recency publish first.)
+
+RATCHET exact (harness sims on 15 for 48-55%WR/1.7+PF admissible on n=108 rsi + stable high-PF like forex_aligned/luxalgo; paper prep on top 3 + COM fut w/ hygiene; safe DB per-sym COM fut probe with stamp tag; extend kill more one-sided; pre-reg new H via hypothesis-registry for COM fut or CRYPTO rsi; tier tracker/pf_registry update; ratchet next MD/PR + dedicated progress .MD update; continue 15m scheduler + 1h dropchat-multipc.)
+
+**Full verif iron:** cd worktree first; safe rebase (stash/fetch/rebase 90 steps success + --ours ONLY non-own MDs/data on conflict + stash pop; markers 0 post checkout --ours; status ?? untracked only before edits); fresh MEASURE stamp --stdout 12:27 full table verbatim + retention + check_one_sided 33 full + python -c 4 JSON loads (0/9 T2, entry top conds, 14d/48h fresh gen, pf); grep 3 files hygiene 33 closed + stamp/velocity/COM in quality_gates Pass notes + scanner comments; read py pre 6958 lines + context line~3033 last 166 / post +167 comment; py_compile alpha_engine/production_scanner.py OK; python -c locate anchor pre 973179 "End of Pass 166." (len~976k) / post confirmed 167; tail MD pre anchor python -c context before 166/prior; specific add 2 (deep MD + py only); detailed commit; push --force-with-lease (detached note possible but local only-own good); 4 subagents parallel (velocity/COM/H167/tier-review) launched + polled/reviewed outputs; drop dedicated progress .MD (updated existing reports/...progress... with 167 summary + subtasks + reasons + delegation); no generators; only own MD + 1 py max; NFA Goal #1 0/9 COM+velocity 15COND n=108 ready one-sided 21.1%/low WR 14d/48h+verdict first. Refs PR#564/thingstocheck_June2026/master loop/HF playbook/CLAUDE/AGENTS/prior 119-166 + fresh 12:27Z MEASURE/stamp/check/hypothesis_registry H-167/ParallelSwarm skill + spawn_subagent/verification-before-completion/this prompt template + drop dedicated progress MD prior + dropchat-multipc + user query for .MD/todos/parallel-swarm. Update todos. Compact + 4h. Focus Goal #1.
+
+**End of Pass 167.** NFA. Goal #1.
+** NFA. Goal #1.
 (Next scheduler tick + 4h 15m: harness sims on 15 for 48-55%WR/1.7+PF admissible on n=108 rsi + stable high-PF like forex_aligned/luxalgo; paper prep on top 3 + COM fut with new hygiene; safe DB per-sym COM fut probe with stamp tag; extend kill more one-sided; pre-reg new H via hypothesis-registry for COM fut or CRYPTO rsi; tier tracker/pf_registry update; ratchet next MD/PR. Enforce gates. 0/9 but constant measurable pro progress on /audit.)
 
  NFA. Goal #1.
