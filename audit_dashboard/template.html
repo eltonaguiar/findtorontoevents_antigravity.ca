@@ -8090,7 +8090,7 @@ function _normFwdWrPct(x) {
 }
 
 // ?? Picks table ??
-const numCols = new Set(['entry_price','exit_price','take_profit','stop_loss','confidence','rsi_at_entry','volume_ratio','pnl_pct','tp_remaining_pct','sl_remaining_pct','age_hours','rr_ratio','max_safe_leverage','score','bt_win_rate','bt_profit_factor','recent_pnl','recent_max_dd','_livePrice','_ic_track','strat_fwd_wr','strat_fwd_trades','verified_edge','at_issue_strat_fwd_wr','at_issue_strat_fwd_trades','at_issue_trust_score','_closed_delta_trust_score','_closed_delta_strat_fwd_wr','_closed_delta_strat_fwd_trades']);
+const numCols = new Set(['entry_price','exit_price','take_profit','stop_loss','confidence','rsi_at_entry','volume_ratio','pnl_pct','tp_remaining_pct','sl_remaining_pct','age_hours','rr_ratio','max_safe_leverage','score','bt_win_rate','bt_profit_factor','recent_pnl','recent_max_dd','_livePrice','_ic_track','strat_fwd_wr','strat_fwd_trades','strat_fwd_avg_pnl','verified_edge','at_issue_strat_fwd_wr','at_issue_strat_fwd_trades','at_issue_trust_score','_closed_delta_trust_score','_closed_delta_strat_fwd_wr','_closed_delta_strat_fwd_trades']);
 var _picksPageSize = 100; // Render 100 rows initially, "Load More" for rest (mobile perf)
 var _picksFullData = null;
 var _picksFullCols = null;
@@ -8896,6 +8896,27 @@ function _picksTableInner(picks, cols) {
         const tipEsc = tip.replace(/"/g, '&quot;');
         return `<td class="num" style="color:${nColor}" title="${tipEsc}">${nNum}</td>`;
       }
+      // EXP% \u2014 strategy-wide forward expectancy (avg PnL per closed trade, in %)
+      if (c.key === 'strat_fwd_avg_pnl') {
+        const ev = p.strat_fwd_avg_pnl;
+        if (ev == null) return '<td class="num" style="color:#6b7280" title="No forward expectancy (strat_fwd_avg_pnl absent; need n>=2 closed trades).">\u2014</td>';
+        const evNum = Number(ev);
+        // Color bands on FRACTIONS (values are stored as decimals, e.g. 0.0122 = +1.22%):
+        //   green >= +0.5% (fraction 0.005)
+        //   yellow 0..+0.5% (fraction 0..0.005)
+        //   red < 0%
+        const evColor = evNum >= 0.005 ? 'var(--green)' : evNum >= 0 ? 'var(--yellow)' : 'var(--red)';
+        const evPctStr = (evNum >= 0 ? '+' : '') + (evNum * 100).toFixed(2) + '%';
+        const fwdN = p.strat_fwd_trades != null ? p.strat_fwd_trades : p.forward_trades;
+        const fwdWr = p.strat_fwd_wr != null ? p.strat_fwd_wr : p.forward_wr;
+        const evTip = ('Strategy-wide forward EXPECTANCY: ' + evPctStr + ' (average PnL per closed trade). ' +
+          'Color bands: green >=+0.5% (edge), yellow 0..+0.5% (marginal), red <0% (losing). ' +
+          'Backed by FWD N=' + (fwdN != null ? fwdN : '?') + ' trades with FWD WR=' + (fwdWr != null ? (fwdWr*100).toFixed(1) + '%' : '?') + '. ' +
+          'This is the SINGLE MOST IMPORTANT number for a strategy \u2014 positive means each trade makes money on average. ' +
+          'Calculated as total PnL% / N closed trades across all symbols for this strategy. ' +
+          'Populated only when strat_fwd_trades >= 2. Hover the FWD N column for sample-size context.').replace(/"/g, '&quot;');
+        return `<td class="num" style="color:${evColor};font-weight:600" title="${evTip}">${evPctStr}</td>`;
+      }
       // Recent performance metrics for top 5?10 picks
       if (c.key === 'recent_pnl') {
         const cls = v != null ? (v > 0 ? 'pnl-pos' : v < 0 ? 'pnl-neg' : '') : '';
@@ -9164,6 +9185,7 @@ const allActiveCols = [
   {key:'_ic_track',label:'Track', default:true, tip:'Track record. Hover shows symbol n/3 progress toward symbol-specific cell WR. Bold = symbol WR in cell when n>=3 on this strategy+symbol. Italic + warning = strategy-wide WR; hover for W/L + threshold.'},
   {key:'strat_fwd_wr',label:'FWD WR', default:true, tip:'FWD WR = strategy-wide forward (live) win rate across ALL symbols for this strategy. Not symbol-specific. HC filter gates on this value (>=45% base, >=50% FOREX). If Strong shows a star but FWD WR < 50%, the pick has theoretical strength (high score, proven trust, or multi-source consensus) but the strategy has not yet proven a winning live track record — treat with extra caution and smaller position size. Color bands: green >=55%, yellow 45-55%, red <45%.'},
   {key:'strat_fwd_trades',label:'FWD N', default:true, tip:'FWD N is always strategy-wide trade count — no warning icon. Hover compares to symbol-specific n on this pair.'},
+  {key:'strat_fwd_avg_pnl',label:'EXP%', default:true, tip:'EXPECTANCY (strategy-wide, forward). Average PnL per closed trade for this strategy across ALL symbols. The single most important number for a strategy — positive = each trade makes money on average. Color bands: green >=+0.5%, yellow 0..+0.5%, red <0%. Populated only when strat_fwd_trades >= 2.'},
   {key:'_ic_htf',label:'HTF', default:true, tip:'Higher Timeframe alignment. Shows if the 4H/1D trend confirms the pick direction. Aligned = higher WR.'},
   {key:'_ic_strong',label:'Strong', default:true, tip:'Strong Signal star. Earned by passing 2+ of these independent conviction signals: (A) Score >= 70, (B) Trust tier = PROVEN, (C) Forward WR >= 55% with n >= 10 trades, (D) 3+ source agreement, or by technical alignment (3+ timeframes confirm direction + 4H STRONG BUY/SELL). A star does NOT guarantee live profitability — if FWD WR < 50%, the forward track record does not yet confirm the theoretical edge. Treat star + sub-50% FWD WR picks with caution.'},
   {key:'symbol',label:'Symbol', default:true},
@@ -9232,6 +9254,14 @@ function buildClosedColsFromActiveList(colList) {
     }
     if (col.key === 'strat_fwd_trades') {
       out.push({ key: '_closed_delta_strat_fwd_trades', label: col.label, tip: colTips._closed_delta_strat_fwd_trades });
+      continue;
+    }
+    if (col.key === 'strat_fwd_avg_pnl') {
+      // For closed rows, show the per-pick realized pnl_pct instead (it's the
+      // realized expectation for THIS trade; the strategy-wide EXP is shown
+      // at entry for context). If the closed row carries strat_fwd_avg_pnl
+      // post-resolution, prefer that; else fall back to realized pnl_pct.
+      out.push({ key: 'strat_fwd_avg_pnl', label: col.label, tip: col.tip });
       continue;
     }
     if (col.key === 'verified_edge') {

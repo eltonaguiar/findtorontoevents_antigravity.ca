@@ -1,7 +1,7 @@
 {
   "schema": "metric-honesty-tiers/v1",
   "purpose": "Single source of truth for the honesty/confidence label shown as a tooltip on every WR/PF/Sharpe cell across /audit and the Investment Hub. Answers the user's question for any metric: 'Is it institutional grade? Is it promising but not statistically valid yet? Or is it unverified / no-edge / contaminated?' Thresholds inherit from docs/PERFORMANCE_CHARTER.md (canonical); this file adds the VALIDITY gates that decide whether a number may be trusted at all.",
-  "generated_for_review": "2026-05-29",
+  "generated_for_review": "2026-06-12",
   "canonical_threshold_source": "docs/PERFORMANCE_CHARTER.md §2",
   "decisive_definition": "A pick is DECISIVE only if it has a hard-resolved outcome: TP hit (WIN) or SL hit (LOSS). Picks resolved by max-hold/expiry-by-pnl-sign are SOFT-resolved and counted separately; >25% soft-resolution caps a cohort at 'promising_not_valid'. OPEN/active picks are never counted in WR/PF.",
   "tiers": [
@@ -38,6 +38,22 @@
       "disqualifiers": ["pf<1.2", "wr<0.45", "zero hard-resolved wins"],
       "current_live_examples": [
         {"cohort": "gm_unified_picks / ADX Trend Strength", "n_decisive": 70, "wr": 0.743, "pf": 3.29, "why_not_valid": "n<100, crypto-concentrated, STALE (newest 2026-02-16), ~40% of wins soft-resolved (max-hold). Needs a fresh forward-test before any audit ingestion."}
+      ]
+    },
+    {
+      "id": "candidate_paper",
+      "label": "Candidate — paper-trade candidate (DSR-corrected, n<100)",
+      "emoji": "🟪",
+      "color": "#a855f7",
+      "tooltip_short": "DSR≥0.95 after multiple-testing correction (Lopez de Prado AFML eq 14.5) but n<100. PAPER-ONLY — do not size up. The next era of honest-measurement candidates.",
+      "tooltip_full": "A STRICTER sub-class of `promising_not_valid` for strategies that pass the Deflated Sharpe Ratio multiple-testing correction at >=0.95 confidence. The DSR explicitly accounts for the number of strategies tested and rejects single-strategy Sharpe values that would be expected to appear by chance when many strategies are tried. The remaining barrier is sample size (n<100 hard-resolved) — at higher n the strategy either becomes production_viable or regresses. PAPER-ONLY — wire to forward-paper-test, do NOT size up. The 2026-06-12 anti_overfit_audit.json cohort has 4 strategies at this tier; prediction_market_consensus (n=215) is the only one with n>=100 and is a tier-2 candidate pending the kill-list reconciliation.",
+      "gates_required": ["dsr>=0.95 (Lopez de Prado AFML eq 14.5)", "pf>=1.3 on hard-resolved", "wr>=0.45 on hard-resolved", "n_decisive<100 OR (n_decisive>=100 AND strategy is on HARD_KILL_STRATEGIES for a contradictory intrabar cohort)"],
+      "disqualifiers": ["dsr<0.95", "pf<1.3", "wr<0.45", "zero hard-resolved wins", "fabricated/sentinel values", "headline contradicts canonical policy-clean view"],
+      "current_live_examples": [
+        {"cohort": "cta_golden_cross_200", "n_decisive": 36, "wr": 0.639, "pf": 14.74, "dsr": 1.0, "why_paper_only": "n<100; PF 14.7 is high but only 36 trades; need n->100 to confirm"},
+        {"cohort": "ml_enhanced_INJUSDT_1d_B_lightgbm", "n_decisive": 24, "wr": 1.0, "pf": null, "dsr": 1.0, "why_paper_only": "n<100; 100% WR with n=24 is suspicious; need forward-paper-test"},
+        {"cohort": "ml_enhanced_RENDERUSDT_1h_D_ensemble_stack", "n_decisive": 30, "wr": 0.833, "pf": 6.83, "dsr": 0.997, "why_paper_only": "n<100; 1h timeframe is overfit-bait; need 24h cross-validation"},
+        {"cohort": "prediction_market_consensus", "n_decisive": 215, "wr": 0.679, "pf": 3.43, "dsr": 0.998, "why_paper_only": "n>=100 but on HARD_KILL_STRATEGIES (P0B 2026-06-12, WR 26% intrabar) for a contradictory intrabar cohort. WALK-FORWARD REFUTES 2026-06-13: survival_rate=27.9% (gate >=60%), mean_oos_wr=47.4% (gate >=50%), is_pf=55.5 (massive overfit). DSR=0.998 in anti_overfit_audit was a single-window cohort, NOT rolling-walk-forward. Operator decision required: confirm kill or re-test with longer history."}
       ]
     },
     {

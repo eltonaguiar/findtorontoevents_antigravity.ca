@@ -1450,6 +1450,25 @@
   "summary": {
     "money_ready": [],
     "watch": [],
-    "n_classes": 10
+    "n_classes": 10,
+    "candidate_paper": [
+      {"strategy": "cta_golden_cross_200", "n": 36, "wr_pct": 63.9, "pf": 14.74, "dsr": 1.0, "class": "CTA/Equity", "why_paper_only": "n<100; PF 14.7 is high but only 36 trades; need n->100 to confirm"},
+      {"strategy": "ml_enhanced_INJUSDT_1d_B_lightgbm", "n": 24, "wr_pct": 100.0, "pf": null, "dsr": 1.0, "class": "CRYPTO", "why_paper_only": "n<100; 100% WR with n=24 is suspicious; need forward-paper-test"},
+      {"strategy": "ml_enhanced_RENDERUSDT_1h_D_ensemble_stack", "n": 30, "wr_pct": 83.3, "pf": 6.83, "dsr": 0.997, "class": "CRYPTO", "why_paper_only": "n<100; 1h timeframe is overfit-bait; need 24h cross-validation"},
+      {"strategy": "prediction_market_consensus", "n": 215, "wr_pct": 67.9, "pf": 3.43, "dsr": 0.998, "class": "PRED-MKT", "why_paper_only": "n>=100 but on HARD_KILL_STRATEGIES (P0B 2026-06-12, WR 26% intrabar) for a contradictory intrabar cohort. WALK-FORWARD REFUTES 2026-06-13: survival_rate=27.9% (gate >=60%), mean_oos_wr=47.4% (gate >=50%), mean_oos_pf=8.27 (winsorized), is_pf=55.5 (massive overfit). Verdict: 1/1 cells FAIL. The DSR=0.998 in anti_overfit_audit was a single-window cohort, NOT rolling-walk-forward. Operator decision required: confirm kill OR re-test with longer history."}
+    ],
+    "n_candidate_paper": 4,
+    "monitored_classes": [
+      {"class": "EQUITY", "status": "monitor_only", "reason": "n=0 (resolver backlog 2026-05-31); EQUITY honest WR 47% per honest-measurement; need resolver to clear backlog + 100 clean trades"},
+      {"class": "CRYPTO", "status": "monitor_only", "reason": "PF=0.64, single-source 91.7% concentration in claude_gainer_st; PF 1.14/43% WR per policy_clean"},
+      {"class": "COMMODITY", "status": "monitor_only", "reason": "WR=33.3% PF=0.82; cot_positioning 86.5% WR was an over-emission artifact (FALSIFIED 2026-05-13, 6x dup ratio)"},
+      {"class": "ETF", "status": "monitor_only", "reason": "PF=2.95 WR=72.2% but n=2; n too small to validate; need n->30"},
+      {"class": "FUTURES", "status": "monitor_only", "reason": "WR=15.4% PF=0.76; futures_momentum REFUTED by dedup (PF 2.59->1.03)"},
+      {"class": "INDEX", "status": "monitor_only", "reason": "WR=100% but n too small; 0 hard-resolved wins; need forward cohort"},
+      {"class": "PENNY_STOCK", "status": "monitor_only", "reason": "WR=0.0% PF=0.00 documented loser (per metric_honesty_tiers); stop-loss-dominated Canadian micro-caps"},
+      {"class": "BOND", "status": "monitor_only", "reason": "WR=100% PF=0.00; 8 picks only; n too small; need forward cohort"},
+      {"class": "MEME", "status": "monitor_only", "reason": "WR=10% PF=0.02; reverse-split contamination risk not yet addressed (P2-11)"}
+    ],
+    "n_monitored_classes": 9
   }
 }

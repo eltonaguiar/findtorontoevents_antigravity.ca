@@ -971,6 +971,14 @@ function renderPicks(data) {
     const peVal = p.fwd_pe != null ? p.fwd_pe.toFixed(1) + 'x' : null;
     const epsVal = p.eps_growth_pct != null ? '+' + p.eps_growth_pct.toFixed(0) + '% YoY' : null;
     const dbVal = p.db_n && p.db_n >= 3 ? p.db_wr.toFixed(0) + '% WR (n=' + p.db_n + ')' : null;
+    // Expectancy: per-pick forward-weighted avg PnL (from picks_now.json if present,
+    // else falls back to strategy-wide strat_fwd_avg_pnl from the alpha engine). Shown
+    // only when backed by n>=2 closed trades.
+    const expVal = (p.dbf_active && p.dbf_avg_pnl != null && (p.dbf_n_weighted||0) >= 2)
+      ? (p.dbf_avg_pnl >= 0 ? '+' : '') + (p.dbf_avg_pnl * 100).toFixed(2) + '% exp (n=' + (p.dbf_n_weighted).toFixed(0) + 'w)'
+      : (p.strat_fwd_avg_pnl != null && (p.strat_fwd_trades||0) >= 2
+        ? (p.strat_fwd_avg_pnl >= 0 ? '+' : '') + (p.strat_fwd_avg_pnl * 100).toFixed(2) + '% exp (n=' + p.strat_fwd_trades + ')'
+        : null);
     const divVal = p.div_yield_pct != null && !isNaN(p.div_yield_pct) ? p.div_yield_pct.toFixed(2) + '%' : null;
 
     // Rich stat helpers
@@ -1024,6 +1032,7 @@ function renderPicks(data) {
         ${peVal ? chip('P/E', peVal, 'Forward P/E — price ÷ forecasted next-12-month earnings.\nCurrent: ' + peVal + '\n\nBelow 15 = Potentially undervalued\n15-25 = Fair (S&P 500 avg ~20x)\n25-40 = Growth premium\nAbove 40 = High expectations (risk)') : ''}
         ${epsVal ? chip('EPS', epsVal, 'EPS Growth YoY — year-over-year earnings per share change.\nCurrent: ' + epsVal + '\n\nAbove 20% = Strong growth\n10-20% = Moderate\n0-10% = Slow\nNegative = Declining\n\nThe #1 long-term stock price driver.') : ''}
         ${dbVal ? chip('📚 DB', dbVal, 'Database Win Rate — our closed-trade history on this symbol from ejaguiar1_stocks at_pick_outcomes.\nCurrent: ' + dbVal + '\n\nAbove 55% = Strong\n45-55% = Average\nBelow 45% = Below average') : ''}
+        ${expVal ? chip('📈 EXP', expVal, 'EXPECTANCY — average PnL per closed trade. The single most important number for sizing: positive = each trade makes money on average. Shown only when n>=2 weighted closed trades exist.\n\nCurrent: ' + expVal + '\n\nAbove +0.5% = Edge\n0..+0.5% = Marginal\nBelow 0% = Losing\n\nSource: alpha_engine forward-weighted (dbf_*) or strategy-wide (strat_fwd_*) when symbol-level not available.') : ''}
         ${p.peg ? chip('PEG', p.peg.toFixed(2), 'PEG Ratio — P/E divided by earnings growth rate.\nCurrent: ' + p.peg.toFixed(2) + '\n\nBelow 1.0 = Undervalued relative to growth\n1.0-2.0 = Fair value\nAbove 2.0 = Expensive relative to growth') : ''}
         ${p.roe_pct ? chip('ROE', p.roe_pct.toFixed(1) + '%', 'Return on Equity — net income ÷ shareholder equity.\nCurrent: ' + p.roe_pct.toFixed(1) + '%\n\nAbove 20% = Excellent (competitive moat)\n15-20% = Good\n10-15% = Average\nBelow 10% = Weak') : ''}
         ${divVal ? chip('Div Yield', divVal, 'Dividend Yield — annual dividend ÷ price.\nCurrent: ' + divVal + '\n\nShows cash return from holding before price movement.\nBonds/ETFs: 3-5% is normal income yield.\nStocks: 1-3% is typical. Above 5% may signal risk.\n\nFor TLT/IEF: this is the interest (coupon) payment. The price can still go down if rates rise.') : ''}
