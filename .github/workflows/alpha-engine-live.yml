@@ -321,6 +321,12 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python prediction_market_agents/pm_macro_overlay.py || echo "PM macro overlay skipped (non-fatal)"
+
+      - name: PM accrual + freshness check (loud, non-blocking)
+        # 2026-06-13 (D): surfaces a silent PM no-op as ::error instead of
+        # another 6-day dead lane. Soft mode = never blocks pick emission.
+        continue-on-error: true
+        run: python tools/pm_accrual_check.py || true
         continue-on-error: true
         timeout-minutes: 3
 
