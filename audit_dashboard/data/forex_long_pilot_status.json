@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-06-13T05:50:27.921065+00:00",
+  "tracker": "forex_long_pilot_tracker",
+  "spec": {
+    "source_system": "non_crypto_consensus",
+    "category": "FOREX",
+    "direction": "LONG",
+    "symbols": "ALL (no exclusion \u2014 selection-bias-safe per peer review)",
+    "win_threshold_pct": 0.05,
+    "dedup": "per (strategy,symbol,day)",
+    "book": "paper / 0% real capital",
+    "pilot_start": "2026-06-13"
+  },
+  "acceptance_criteria": {
+    "min_n": 100,
+    "min_pf": 1.5,
+    "min_decisive_wr": 50.0
+  },
+  "kill_criteria": {
+    "max_days": 30,
+    "min_pf": 1.0,
+    "min_n": 10
+  },
+  "circuit_breaker": {
+    "max_drawdown_pct": 5.0,
+    "max_cum_loss_pct_of_book": 2.0
+  },
+  "baseline_frozen": {
+    "n": 129,
+    "deduped_n": 129,
+    "pf": 3.13,
+    "decisive_n": 51,
+    "decisive_wr": 72.5,
+    "wr_ci95": [
+      59.1,
+      82.9
+    ],
+    "sum_pnl_pct": 3.43,
+    "max_drawdown_pct": 0.92,
+    "flat_n": 78
+  },
+  "forward": {
+    "n": 0,
+    "deduped_n": 0,
+    "pf": null,
+    "decisive_n": 0,
+    "decisive_wr": null,
+    "wr_ci95": [
+      0.0,
+      0.0
+    ],
+    "sum_pnl_pct": 0,
+    "max_drawdown_pct": 0.0,
+    "flat_n": 0
+  },
+  "forward_days_elapsed": 0,
+  "stage": "ACCRUING (no forward-resolved picks yet \u2014 baseline frozen, awaiting new closes)",
+  "real_capital": "0% \u2014 paper only until forward n>=100 AND intrabar replay passes",
+  "note": "Read-only sidecar; changes no production gate/emitter. Forward cohort accrues as the existing pipeline resolves new non_crypto_consensus FOREX LONG picks."
+}
