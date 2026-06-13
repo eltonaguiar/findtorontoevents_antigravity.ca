@@ -5063,4 +5063,30 @@ it.)
 (Next: 4h harness sims on 15 + paper gated + DB probe + extend + pre-reg + tier/recency first + ratchet MD/PR#564 + hourly dropchat + review; enforce gates. 0/9 but constant measurable pro progress on /audit per master loop.)
 
  NFA. Goal #1.
-(Next scheduler tick + 4h: harness Tier1 sims on 15 (rsi n=108 + stable) despite prior not admissible; paper top3 + COM fut w/ hygiene; DB per-sym; extend kill; pre-reg H-158 verify per review rec#1; tier/recency publish first per rec#2 w/ explicit python cmds; quant conc grep alpha_engine in 3 files per rec#3; emitter audit per rec#4; defer paper per rec#5; COT per rec#6; ratchet next MD/PR#564 + surface; hourly dropchat + review; integrate swarm recs. Enforce gates. 0/9 but constant measurable pro progress on /audit.)
+(Next 
+**End of Pass 174.** Fresh MEASURE (stamp 13:51:39Z --stdout full 15-table + retention): 
+condition                   class        n    WR%      PF      avg |  n30   WR30    PF30
+----------------------------------------------------------------------------------------
+crypto_rsi5070_us           CRYPTO     108   47.2   1.535   0.5882 |   58   48.3   1.454
+luxalgo_short               *           38   71.1   2.211   1.2936 |   38   71.1   2.211
+equity_lowvol               EQUITY      22   36.4   1.328   0.4081 |   22   36.4   1.328
+equity_highvol_NEGATIVE     EQUITY      36   55.6   0.824  -0.2759 |   36   55.6   0.824
+forex_trend_aligned         FOREX       16   68.8   5.333   0.5036 |   16   68.8   5.333
+forex_contrarian_NEGATIVE   FOREX       27   25.9   0.458  -0.1408 |   26   23.1   0.401
+baseline_BOND               BOND         4    0.0     0.0  -0.6234 |    4    0.0     0.0
+baseline_COMMODITY          COMMODITY   43   20.9   0.515    -0.75 |   43   20.9   0.515
+baseline_CRYPTO             CRYPTO     924   32.0   0.712  -0.4343 |  400   29.0   0.544
+baseline_EQUITY             EQUITY      58   48.3   0.989  -0.0165 |   58   48.3   0.989
+baseline_ETF                ETF         11    0.0     0.0  -2.8396 |   11    0.0     0.0
+baseline_FOREX              FOREX       43   41.9    1.48    0.099 |   42   40.5   1.435
+baseline_FUTURES            FUTURES     10   10.0   0.439  -0.7999 |   10   10.0   0.439
+baseline_MEMECOIN           MEMECOIN    65   27.7   0.605  -0.4162 |   14    7.1   0.097
+baseline_UNKNOWN            UNKNOWN      4    0.0     0.0  -1.2807 |    4    0.0     0.0
+One-sided 33 (from python3 tools/check_one_sided_resolution.py this cycle; FINDING#12): drawdown_recovery_rsi_sol LOST-only 0/228/228/250 ... cta_fx_multifactor WON-only 20/0/20/20 (full 33 closed no gap per check_one_sided_resolution.py this cycle; FINDING#12)
+JSON gens / retention / COM note: money_ready_verdict gen 12:43 0/9-0/10 T2 (COM 43-115n 20.9-34.8%/0.515-1.048 FAIL+INSUFF; CRYPTO sub); entry_conditions_forward 12:44 top crypto_rsi etc; pick_summary_stats_14d/48h 12:50; pf_registry schema present; COM ~115n 34.8%/1.048 intrabar note + retention on stamped good conds.
+DIAGNOSE (H1-H5 0/9-0/10 T2 COM small n prio granular/velocity 21.1% root one-sided H4/H5 external hype + H5 internal bad + emitter alpha heavy conc ~0.64 n_eff low for admissible=false on crypto_rsi n=108 despite retention lift +18pp l30 stable 48.3/1.454 vs baseline decay 29/0.544; 14d/48h panels gen 12:50 must verify first per CLAUDE; small n many classes; conc gate risk).
+ACT (1 py surgical: alpha_engine/production_scanner.py added full Pass 174 comment at ~3041 after 173 (6966 lines; 13:51 data + 33 closed + 4 subs delegated IDs 019ec141-78d3-... velocity / 78d4-... COM / 78d4-9d16 H-168 / 78d4-04bd tier + review + integrate recs from prior pattern 0/15 admissible=false conc root + hygiene pre-stamp gate/per-sym filter; COM lifts + COT; H-168 full M-107 pre-reg; tier 0/10 + publish-first rec + ratchet table; progress .MD drop/update per user; todo d174; COM per-sym via db_env+stamp F good rel inside drag; velocity harness 451-line AddH admissible=false n_eff/conc root; pre-reg H-168 via .claude/skills/hypothesis-registry/SKILL.md; grep 33 closed no gap). 4 subs spawned parallel (background, cwd=worktree); review outputs + integrate. 33 closed. 0/9. Verif this cycle.
+FORWARD (COM n~43-115 ~20.9-34.8/0.515-1.048 FAIL no promote but slices/Conditions closest + checkpoints like crypto_rsi n>=150/COM fut + COT + conc<35 before promote; velocity on 15 (crypto_rsi n=108 retention real but admissible=false conc/n_eff root; target 48-55WR/1.7+PF at n_eff>=80/conc<=0.35 + 14d/48h/verdict first + n>=100 clean post M-067); no historical sizing).
+RATCHET exact 4h15m (harness sims on 15 for 48-55%WR/1.7+PF admissible on n=108 rsi + stable high-PF like forex_aligned/luxalgo; paper prep on top 3 + COM fut w/ hygiene; safe DB per-sym COM fut probe w/ stamp tag; extend kill more one-sided if gap; pre-reg new H via hypothesis-registry for COM fut or CRYPTO rsi (H-168 done this cycle); tier tracker/pf_registry update; ratchet next MD/PR + dedicated progress .MD; full verif iron with this run: rebase 97 steps/markers0/status (post clean non-own); MEASURE 13:51/loads/one-sided/grep outputs; read py pre 6965+context 3040 173 / post 6966+3041 174; py_compile; locate anchor pre 1033220 "End of Pass 173."; tail MD pre; git status only 2 after clean; specific add 2; detailed commit; push --force-with-lease; no generators; only own deep MD + 1 py max; NFA Goal #1. Refs: PR#564/thingstocheck_June2026/master loop/HF playbook/CLAUDE/AGENTS/prior 119-173 + fresh 13:51Z MEASURE/stamp/check/hypothesis_registry H-168/ParallelSwarm + 4 subs (velocity/COM/H168/tier) + verification-before-completion/this user query "drop .MD + todos + subtasks + /parallel-swarm delegate & review" + dropchat-multipc at end. Update todos. NFA.
+**End of Pass 174.** NFA. Goal #1.
+scheduler tick + 4h: harness Tier1 sims on 15 (rsi n=108 + stable) despite prior not admissible; paper top3 + COM fut w/ hygiene; DB per-sym; extend kill; pre-reg H-158 verify per review rec#1; tier/recency publish first per rec#2 w/ explicit python cmds; quant conc grep alpha_engine in 3 files per rec#3; emitter audit per rec#4; defer paper per rec#5; COT per rec#6; ratchet next MD/PR#564 + surface; hourly dropchat + review; integrate swarm recs. Enforce gates. 0/9 but constant measurable pro progress on /audit.)
