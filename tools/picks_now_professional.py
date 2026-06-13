@@ -311,6 +311,14 @@ def load_db_edge():
             "luxalgo_filters", "multi_asset_copytrader", "forex_copy_trader",
             "signal_validation", "multi_asset_cot", "regime_terminal",
             "myfxbook_retail_contrarian", "ig_contrarian_sentiment",
+            # Pass 132: extend banned for FINDING#12 100% one-sided hygiene (H4/H5, 33 strats from reddit/copy/gnews/currents/stocktwits/youtube per check_one_sided + quality_gates Pass 129/131). Ties to stamp/good conds (crypto_rsi/forex_aligned velocity retention protected; bad sources killed regardless). Cleans DB edge for 21.1% + COM probes. Surgical, non-breaking (same NOT IN structure).
+            "reddit/reddit:u/ogroyalsfan1911", "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost",
+            "gnews/gnews:The Economic Times", "stocktwits/stocktwits:Kenrocket", "copy_pm_pm_6e1d5040", "youtube/youtube:coinbureau",
+            "reddit/reddit:u/Creative_Ad7831", "reddit/reddit:u/Possible_Cheek_4114", "reddit/reddit:u/atmaca35", "reddit/reddit:u/SscorpionN08",
+            "reddit/reddit:u/Past_Hotel_5987", "reddit/reddit:u/adastackio", "reddit/reddit:u/Work_for_burritos", "reddit/reddit:u/BlasterBladez",
+            "currents/currents:Paul L", "currents/currents:Khyathi Dalal", "currents/currents:Helene Braun; Helene-Braun",
+            "stocktwits/stocktwits:FredADavis", "stocktwits/stocktwits:t_o1024", "reddit/reddit:u/Formal-Plate-8242", "reddit/reddit:u/Actual_Sale4710",
+            "reddit/reddit:u/AutoModerator",
         )
         placeholders = ",".join(["%s"] * len(banned))
         # WR DENOMINATOR FIX: count EXPIRED/FLAT as non-wins. Previously the
@@ -394,6 +402,14 @@ def load_db_edge_forward(decay_half_life_days: int = 14, max_age_days: int = 60)
             "luxalgo_filters", "multi_asset_copytrader", "forex_copy_trader",
             "signal_validation", "multi_asset_cot", "regime_terminal",
             "myfxbook_retail_contrarian", "ig_contrarian_sentiment",
+            # Pass 132: extend banned for FINDING#12 100% one-sided hygiene (H4/H5, 33 strats from reddit/copy/gnews/currents/stocktwits/youtube per check_one_sided + quality_gates Pass 129/131). Ties to stamp/good conds (crypto_rsi/forex_aligned velocity retention protected; bad sources killed regardless). Cleans DB edge for 21.1% + COM probes. Surgical, non-breaking (same NOT IN structure).
+            "reddit/reddit:u/ogroyalsfan1911", "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost",
+            "gnews/gnews:The Economic Times", "stocktwits/stocktwits:Kenrocket", "copy_pm_pm_6e1d5040", "youtube/youtube:coinbureau",
+            "reddit/reddit:u/Creative_Ad7831", "reddit/reddit:u/Possible_Cheek_4114", "reddit/reddit:u/atmaca35", "reddit/reddit:u/SscorpionN08",
+            "reddit/reddit:u/Past_Hotel_5987", "reddit/reddit:u/adastackio", "reddit/reddit:u/Work_for_burritos", "reddit/reddit:u/BlasterBladez",
+            "currents/currents:Paul L", "currents/currents:Khyathi Dalal", "currents/currents:Helene Braun; Helene-Braun",
+            "stocktwits/stocktwits:FredADavis", "stocktwits/stocktwits:t_o1024", "reddit/reddit:u/Formal-Plate-8242", "reddit/reddit:u/Actual_Sale4710",
+            "reddit/reddit:u/AutoModerator",
         )
         placeholders = ",".join(["%s"] * len(banned))
         cur.execute(f"""
