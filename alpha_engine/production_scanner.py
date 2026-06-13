@@ -2979,6 +2979,10 @@ def apply_quality_gates(
             except Exception:
                 pass  # graceful; block remains if no stamp module or error
 
+        # Pass 115 dig (2026-06-13): velocity plan on 15 stamp CONDITIONS (entry_conditions_forward 01:57 gen, 15 incl crypto_rsi5070_us/luxalgo_short/forex_aligned + baselines) + COM fut now enabled.
+        # Run stamp_entry_conditions.py --stdout for fresh; velocity replay 1774 intrabar + 1134 stamp + Add H (n_eff/stress/monkey95/CI>1.15/conc<35/recency 48h14d/emitter); paper on admissible (H-151/H-152).
+        # 4h sprint: after this, harness on conds + COM fut (SI/PL slices per DB n55/48 wr40/31 but avg pnl neg - focus non-GC). Pre-reg H-152 done.
+
         if _cat_strat_key in _BLOCKED_CATEGORY_STRATEGIES and not allow_com_fut_stamped:
             reject_reason = (
                 f"[TOXIC STRAT+CLASS] {strat_name} on {category} disabled — "

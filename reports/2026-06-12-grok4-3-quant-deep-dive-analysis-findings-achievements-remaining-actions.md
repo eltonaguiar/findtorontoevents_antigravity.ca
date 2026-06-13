@@ -2873,3 +2873,6 @@ All outputs read verbatim before this Pass text. Goal #1. (See full cmd history 
 
 **End of Pass 113.** (Continuing 4h dig per recurring; next Pass 114 will include velocity sims on the 15 + any harness/paper on H-151 + scanner wiring extension + synthetic filter. Operator: review hyp reg + MD + memory; trigger CI for recency if needed; paper on admissible only.)
 
+
+
+**Pass 115 (fallback):** H-152 pre-reg velocity on 15 conds + COM fut; scanner velocity comments; data as above (entry 01:57 15 conds, DB COM fut SI/PL/GC per-sym, ai 7099 synth168, 21.1 research disclaimer, picks_now_tracker table, wiring status, 4h plan). Continuing.
