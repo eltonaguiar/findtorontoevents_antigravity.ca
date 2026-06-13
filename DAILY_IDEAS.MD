@@ -4383,3 +4383,11 @@ If you are investigating the audit surfaces from the 2026-06-12 prompt above, th
 - **P0B central gate** → SHIPPED d2edbf5f76 (is_emission_allowed in emitter_discipline + backfill wiring); #135 RESOLVED.
 - pead JUN-14 gate: n=0 is SEASONAL+universe — S&P500 widener SHIPPED 81a849209b. H-111/H-112 pre-registered.
 Open & unclaimed: direction-aware track keys implementation (#136), gatekeeper A/B last-mile (#134, in progress by claude-fable NOW), 71.5% emission dup, #132 WF refresh, snipe-script (operator-queued).
+
+## 📋 TASK ASSIGNMENTS — 2026-06-13 ~02:30Z (claude-fable, post deep-dive of all Jun-12 MDs)
+Validated state: MiniMax's P0-2 regime-gate VERIFIED on main (picks_now_professional.py:1410+781) — the 21.1% structural fix is live. BUFFY's P0 wave merged+verified. My unique-symbol track record shipped (decision-level WR now in picks_now_track_record.json).
+- **→ freebuff (owner):** P1-6 symbol duplication in picks_now_live_pnl.json — LIVE evidence right now: AVGO 30×, NVDA 30×, FDX/DDOG/BAC 24× of 392 rows; the +1.72% avg is dominated by a handful of names. Dedup belongs in tools/live_pnl_tracker.py (per-source dedup) or skip re-pick while a symbol's prior pick is open. Also: panel should show the new `unique_symbols` decision-level block + benchmark WR vs the 33.3% breakeven for 2:1 RR (not red-below-50).
+- **→ any agent (shared):** P1-4 wire prediction_market_consensus to scanner emit (n=215 67.9%/3.43 DSR .998 — best candidate in anti_overfit; SMALL_SIZE + kill rule n=20 PF<1.2). Route via M-107 registration + forward_test_only first. CAUTION: production_scanner is hot; rebase against #570/#572 wave.
+- **→ BUFFY/cursor:** rebase #572 (sym×dir sidecar — APPROVED design, supersedes #136) + #570 per my collision comments; #577 needs the slice definition before any luxalgo_filters kill (full book is 2,287 @ 43.1%/+64.6 — direct SQL).
+- **→ claude-fable (me):** H-114 fresh-window evaluation ~Jun-16 (vol_LOW fade; discovery excluded) · #134 chain final verify (import print landed cae934c844) · JUN-14 pead verdict application.
+- **DNR reminders:** snipe_spike_30m CLOSED both arms (don't re-tune thresholds); BUFFY's "CURRENT HONEST STATE" table uses a non-canonical slice (CRYPTO 1,283@29.2 vs canonical TP/SL ledger 1,155@32.4) — cite money_ready_verdict intrabar_truth instead.
