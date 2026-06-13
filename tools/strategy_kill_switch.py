@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Strategy Kill Switch — auto-disable toxic strategies from live MySQL performance data.
 
-Connects to ejaguiar1_stocks, queries at_pick_outcomes for resolved (WON/LOST)
-trades, and identifies strategies that breach safety thresholds.  In dry-run mode
-(the default) it reports what WOULD be killed.  With --execute it persists the
-report and appends newly killed strategies to alpha_engine/strategy_blocklist.py
-so they are blocked on the next process start.
+Connects to ejaguiar1_stocks, queries trading_picks (PRIMARY) + at_pick_outcomes
+(SUPPLEMENT) for resolved (WON/LOST/EXPIRED) trades, and identifies strategies
+that breach safety thresholds. trading_picks is the primary data source because
+at_pick_outcomes has unreliable WR data due to near-flat TIME_EXIT resolutions.
+
+In dry-run mode (the default) it reports what WOULD be killed.  With --execute
+it persists the report and appends newly killed strategies to
+alpha_engine/strategy_blocklist.py so they are blocked on the next process start.
 
 Usage:
     DB_PASS_STOCKS=... python tools/strategy_kill_switch.py
@@ -100,21 +103,69 @@ def fetch_strategy_stats(
     password: Optional[str] = None,
     database: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """Aggregate per-(asset_class, strategy) from at_pick_outcomes (WON/LOST only)."""
+    """Aggregate per-(asset_class, strategy) from trading_picks (PRIMARY) and at_pick_outcomes (fallback).
+
+    2026-06-13: trading_picks is now PRIMARY because at_pick_outcomes has unreliable WR data
+    due to near-flat TIME_EXIT resolutions. The deduped live book gives the true signal.
+    at_pick_outcomes is queried as a secondary source for strategies with n<min_trades in trading_picks.
+    """
     conn = _connect(host=host, user=user, password=password, database=database)
     cur = conn.cursor()
+
+    # PRIMARY: trading_picks (live book, deduped, reliable PnL)
     cur.execute(
         """
-        SELECT asset_class, strategy, status, pnl_pct
+        SELECT COALESCE(NULLIF(category, ''), 'UNKNOWN') AS asset_class,
+               COALESCE(NULLIF(strategy, ''), '(unattributed)') AS strategy,
+               status, pnl_pct
+        FROM trading_picks
+        WHERE status IN ('WON', 'LOST', 'EXPIRED')
+          AND pnl_pct IS NOT NULL
+        """
+    )
+    primary_rows = cur.fetchall()
+
+    # SECONDARY: at_pick_outcomes (older data, less reliable, used only as supplement)
+    cur.execute(
+        """
+        SELECT COALESCE(NULLIF(asset_class, ''), 'UNKNOWN') AS asset_class,
+               strategy, status, pnl_pct
         FROM at_pick_outcomes
         WHERE status IN ('WON', 'LOST')
         """
     )
-    rows = cur.fetchall()
+    secondary_rows = cur.fetchall()
     conn.close()
 
+    # Build primary bucket from trading_picks
+    # Build merged bucket from primary + supplemented rows
+    all_rows: List[Dict[str, Any]] = []
+    seen_keys: Set[str] = set()
+
+    # Dedup primary_rows first, then build strat counts from DEDUPED rows
+    for r in primary_rows:
+        key = f"{r.get('asset_class','')}|{r.get('strategy','')}|{r.get('status','')}|{r.get('pnl_pct','')}"
+        if key not in seen_keys:
+            seen_keys.add(key)
+            all_rows.append(r)
+
+    # Count trading_picks records per strategy AFTER dedup, so we don't inflate counts
+    tp_strat_counts: Dict[str, int] = {}
+    for r in all_rows:
+        strat = str(r.get("strategy") or "").strip() or "(unattributed)"
+        tp_strat_counts[strat] = tp_strat_counts.get(strat, 0) + 1
+
+    # Supplement with at_pick_outcomes rows ONLY when a strategy has < 20 trading_picks entries
+    for r in secondary_rows:
+        key = f"{r.get('asset_class','')}|{r.get('strategy','')}|{r.get('status','')}|{r.get('pnl_pct','')}"
+        if key not in seen_keys:
+            strat = str(r.get("strategy") or "").strip() or "(unattributed)"
+            if tp_strat_counts.get(strat, 0) < 20:
+                seen_keys.add(key)
+                all_rows.append(r)
+
     buckets: Dict[Tuple[str, str], Dict[str, float]] = {}
-    for r in rows:
+    for r in all_rows:
         ac = normalize_class(r.get("asset_class"))
         strat = str(r.get("strategy") or "").strip() or "(unattributed)"
         key = (ac, strat)
@@ -330,7 +381,7 @@ def build_report(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Auto-disable toxic strategies based on live at_pick_outcomes performance.",
+        description="Auto-disable toxic strategies based on live trading_picks (primary) + at_pick_outcomes (supplement) performance.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -413,7 +464,7 @@ def main() -> None:
     )
 
     # Fetch
-    log.info("Fetching resolved trades from at_pick_outcomes (min_trades=%d)...", args.min_trades)
+    log.info("Fetching resolved trades from trading_picks (primary) + at_pick_outcomes (supplement, min_trades=%d)...", args.min_trades)
     stats = fetch_strategy_stats(
         args.min_trades,
         host=args.db_host,

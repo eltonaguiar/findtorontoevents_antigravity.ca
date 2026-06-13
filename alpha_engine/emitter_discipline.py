@@ -35,10 +35,10 @@ _SHADOW_LOG_ENABLED = os.environ.get("EMITTER_DISCIPLINE_SHADOW_LOG", "0").strip
 
 HARD_KILL_STRATEGIES: Set[str] = {
     "quan_engine_scalp", "quan_engine_swing", "quan_engine_position",
-    "cta_replicator", "rapid_fire", "ensemble", "battleground_luxalgo",
+    "cta_replicator", "rapid_fire", "battleground_luxalgo",
     "binance_smart_money", "multi_asset_scanner",
     "forex_carry_momentum", "forex_carry_ppp", "myfxbook_retail_contrarian",
-    "forex_carry_bb_hybrid", "carry_trade_momentum", "forex_rsi2_mean_reversion",
+    "forex_carry_bb_hybrid", "carry_trade_momentum",
     "inverse_carry_contrarian", "ml_breakout", "genome_mutations",
     "hl_funding_fade", "kimi_signal_tracking", "multi_period_rsi_confluence_eth",
     "claude_gainer_st", "gainer_promoter",

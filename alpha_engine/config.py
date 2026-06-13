@@ -270,7 +270,6 @@ BLACKLISTED_STRATEGIES = [
     'ml_crypto_predictor',       # 2026-06-13: P0 kill - source of high-confidence spam in dashboard hallucinations
     # 2026-05-28 quant review P0 kills — see reports/QUANT_STRATEGY_REVIEW_2026-05-28.md
     'rapid_fire',                # 217 trades, PF 0.77, -70% PnL — biggest volume drag
-    'ensemble',                  # 84 CRYPTO trades, PF 0.009, -6066% PnL — worst strategy in system
     'battleground_luxalgo',      # 32 trades, PF 0.18, -117% PnL — grinding losses
     'multi_period_rsi_confluence_eth',  # 16 trades, PF 0.43, -248% PnL
     'ml_breakout',               # 21 trades, 0% WR — ML model completely inverted
@@ -282,7 +281,6 @@ BLACKLISTED_STRATEGIES = [
     'multi_asset_scanner',       # FOREX n=11 WR 9.1%, FUTURES n=11 WR 9.1% — universal loser
     'ctar_replicator',           # FOREX n=5 WR 40% PF 0.62, COMMODITY n=2 WR 0% PF 0.0
     # INC FOREX P0 (2026-05-31): block proven losers; only cta_cross_asset_tsmom SHORT + forex_carry probation remain
-    'forex_rsi2_mean_reversion',
     'inverse_carry_contrarian',
     'carry_trade_momentum',
     'forex_carry_momentum',
@@ -294,12 +292,12 @@ BLACKLISTED_STRATEGIES = [
     'ig_contrarian_sentiment',      # BANNED_SOURCES only, backfill loophole
     'stocks_rsi2_pullback',         # 20 emits/7d, stale edge
     'prediction_market_consensus',  # WR 26%, -29% intrabar
-    'fx_smart_carry_trade_momentum',# FOREX WR 16.7%, -6.6%
-    # 2026-06-12 P0C: remaining worst-performing strategies from forward test investigation
+    'fx_smart_carry_trade_momentum',# FOREX WR 16.7%, -6.6%    # 2026-06-12 P0C: remaining worst-performing strategies from forward test investigation
     'goldmine_6x_consensus',        # 0.0% WR (0/17), -58.71% PnL — deterministic loser (was only blocked as EQUITY pair)
     'commodity_momentum',           # 10.0% WR, PF 0.19, -19% PnL — killed by honest_kill_switch
     'cta_cross_asset_tsmom',        # 28.7% WR, PF 0.11 — net drag (directional blocks in BLOCKED_DIRECTION_TRIPLES insufficient)
 ]
+
 BLACKLISTED_EXCHANGES = ['bitget']
 
 # ---------------------------------------------------------------------------

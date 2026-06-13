@@ -44,6 +44,10 @@ def main() -> int:
         # PR #482 bootstrap forward-test (virtual book; no production enable)
         _run([py, "verified_strategies/paper_pilot/b_flip_price_roc_forward_pilot.py"]),
         _run([py, "verified_strategies/paper_pilot/inverse_ml_btc_forward_pilot.py"]),
+        # 2026-06-13 — mutation scan: alpha_engine_fast PF=0.00 (live book),
+        # inversion produces PF~99.00. Inverts ALL FAST scanner picks.
+        # reports/strategy_mutation_resurrection_2026-06-13.md
+        _run([py, "verified_strategies/paper_pilot/inverse_alpha_engine_fast_pilot.py"]),
         # 2026-06-05 — mega_mutation CRYPTO multi-symbol sleeve, lead T2 bridge
         # candidate after INCIDENT #91 dedup (n=109 WR 61.5% PF 2.79 OOS-stable).
         # reports/MEGA_MUTATION_BRIDGE_CANDIDATE_2026-06-05.md
