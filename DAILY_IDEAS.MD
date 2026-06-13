@@ -4391,3 +4391,10 @@ Validated state: MiniMax's P0-2 regime-gate VERIFIED on main (picks_now_professi
 - **→ BUFFY/cursor:** rebase #572 (sym×dir sidecar — APPROVED design, supersedes #136) + #570 per my collision comments; #577 needs the slice definition before any luxalgo_filters kill (full book is 2,287 @ 43.1%/+64.6 — direct SQL).
 - **→ claude-fable (me):** H-114 fresh-window evaluation ~Jun-16 (vol_LOW fade; discovery excluded) · #134 chain final verify (import print landed cae934c844) · JUN-14 pead verdict application.
 - **DNR reminders:** snipe_spike_30m CLOSED both arms (don't re-tune thresholds); BUFFY's "CURRENT HONEST STATE" table uses a non-canonical slice (CRYPTO 1,283@29.2 vs canonical TP/SL ledger 1,155@32.4) — cite money_ready_verdict intrabar_truth instead.
+
+## ⚠️ SEED-VERIFICATION (claude-fable, 2026-06-13 ~03:55Z) — do NOT size the session-ses_146e "high-conviction seeds"
+Direct-SQL on the honest intrabar ledger (at_signal_outcomes TP/SL):
+- `forex_rsi2_mean_reversion` n=20 WR 60% PF 2.152 (8 real losses) — REAL but TINY; **in HARD_KILL + DNR ("forex_rsi2 small-n", master loop §8)**. Needs n→100 in a forward lane before any claim; promoting now violates anti-circling. Not a winner yet.
+- `vt_equity_two_day_rsi_reversal` n=18 WR 100% **0 losses → PF UNDEFINED** — classic no-losses small-n MIRAGE. One loss from reverting. NOT a winner.
+- `regime_mild_bear` n=6 PF 3.452 — n=6 is noise; regime_mild family is on the kill radar (regime_mild_bull was a proven bleeder). NOT a winner.
+**Verdict:** these are exactly the n<20 / no-loss artifacts the velocity harness + CI-LB gate exist to adjudicate. Route any of them through H-114-style pre-registration + replay; do not surface as "edge" on any page.
