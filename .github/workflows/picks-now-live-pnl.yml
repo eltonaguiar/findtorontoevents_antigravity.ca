@@ -67,7 +67,12 @@ jobs:
 
       - name: Push data commit
         continue-on-error: true
-        run: bash .github/scripts/safe_push.sh
+        # Surface a swallowed push (masking-policy T2): if safe_push fails, the
+        # data commit never reaches origin, so picks_now_live_pnl.json /
+        # picks_now_track_record.json go STALE on the repo side (the dashboard
+        # generator reads the committed JSON) until the next successful run.
+        # FTP deploy below still runs, so the live page is unaffected.
+        run: bash .github/scripts/safe_push.sh || echo "::warning::picks-now data commit push failed — picks_now_live_pnl.json / picks_now_track_record.json stale on the repo side until the next successful push (FTP deploy still ran)"
 
       - name: FTP deploy to production
         env:

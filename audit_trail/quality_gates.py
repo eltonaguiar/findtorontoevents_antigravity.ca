@@ -6181,6 +6181,7 @@ def _passes_dow_gate(pick: Dict[str, Any]) -> bool:
 # Addresses §15 trap #2: 352 dupe groups, BTCUSDT LONG = 565 simultaneous picks.
 # This gate is applied at emission time (quality_gates), not just tagging (dashboard_generator).
 _SEEN_PICK_KEYS: set = set()
+_SEEN_SYMBOLS: set = set()  # 2026-06-12: symbol-only dedup for ONE-PER-TICKER gate
 
 
 def _dedup_gate_blocks(pick: Dict[str, Any], active_picks: Optional[List[Dict]] = None) -> Optional[str]:
@@ -6198,21 +6199,32 @@ def _dedup_gate_blocks(pick: Dict[str, Any], active_picks: Optional[List[Dict]] 
     dedup_key = (symbol, direction, strategy)
     
     # Check against active picks if provided
+    _one_per_ticker_enabled = os.environ.get("ONE_PER_TICKER_DISABLED", "0") not in (
+        "1", "true", "TRUE")
     if active_picks:
         for active in active_picks:
             a_sym = str(active.get("symbol", "") or "").upper().strip()
             a_dir = str(active.get("direction", "") or "").upper().strip()
             a_str = str(active.get("strategy", "") or "").lower().strip()
+            # Exact tri-key dedup (existing)
             if (a_sym, a_dir, a_str) == dedup_key:
                 return f"DEDUP: {symbol} {direction} {strategy} already active"
+            # §15b ONE-PER-TICKER HARD LIMIT (2026-06-12 council fix #1)
+            # Block new picks for a symbol that already has ANY active pick,
+            # regardless of strategy/direction. Eliminates MU×8, AVGO×3, AMT×5
+            # concentration risk identified in picks-now.html council review.
+            if _one_per_ticker_enabled and a_sym == symbol:
+                return f"ONE_PER_TICKER: {symbol} already has active position (any strategy)"
     
-    # Check against seen keys (in-memory dedup for batch processing)
+    # In-batch dedup (exact tri-key + symbol-only)
     if dedup_key in _SEEN_PICK_KEYS:
         return f"DEDUP: {symbol} {direction} {strategy} duplicate in batch"
+    if _one_per_ticker_enabled and symbol in _SEEN_SYMBOLS:
+        return f"ONE_PER_TICKER: {symbol} duplicate in batch (different strategy)"
     _SEEN_PICK_KEYS.add(dedup_key)
+    _SEEN_SYMBOLS.add(symbol)
     
     return None
-    return True
 
 
 _PENNY_MEME_CLASSES = frozenset({"MEMECOIN", "PENNY_STOCK"})
@@ -7224,20 +7236,22 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
                     _m036_sized = frozenset({"BUY", "LONG", "STRONG_BUY"})
                 _fto = pick.get("forward_test_only") in (True, 1, "1", "true", "True")
                 _shadow = pick.get("forward_observation") or pick.get("paper_pilot")
-                _sized_block = _os_m036.environ.get("CRYPTO_SIZED_LONG_BLOCK", "1") not in (
-                    "0", "false", "FALSE", "False",
-                )
-                _block_set = _m036_blocked
-                if _sized_block and not (_fto or _shadow):
-                    _block_set = _m036_sized
-                if _m036_dir in _block_set:
-                    logger.info(
-                        "M-036 crypto_direction_blocked: direction=%s sized=%s shadow=%s "
-                        "— rejected (symbol=%s)",
-                        _m036_dir, _sized_block and not (_fto or _shadow), bool(_fto or _shadow),
-                        pick.get("symbol", "?"),
+                _monitor = pick.get("_monitor_mode")
+                if _fto or _shadow or _monitor:
+                    pass  # measurement-only — skip block (P0C master-loop)
+                else:
+                    _sized_block = _os_m036.environ.get("CRYPTO_SIZED_LONG_BLOCK", "1") not in (
+                        "0", "false", "FALSE", "False",
                     )
-                    return False
+                    _block_set = _m036_sized if _sized_block else _m036_blocked
+                    if _m036_dir in _block_set:
+                        logger.info(
+                            "M-036 crypto_direction_blocked: direction=%s sized=%s "
+                            "— rejected (symbol=%s)",
+                            _m036_dir, bool(_sized_block),
+                            pick.get("symbol", "?"),
+                        )
+                        return False
     except Exception:
         pass  # fail-open: never block picks on gate error
 
@@ -10191,6 +10205,41 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
             _pll_m110.transition_stage(_pll_pick_id_m110, "passed_gate")
     except Exception:
         pass
+
+    # §16 UNIVERSAL TP/SL FALLBACK (2026-06-12 council fix #2)
+    # Ensure every admitted pick has TP and SL. Catastrophic outliers drive
+    # the -35.86% mean closed PnL (vs -0.04% trimmed). Default percentage-based
+    # TP/SL per asset class. Kill-switch: UNIVERSAL_TPSL_DISABLED=1
+    if os.environ.get("UNIVERSAL_TPSL_DISABLED", "0") not in ("1", "true", "TRUE"):
+        try:
+            _tpsl_tp = pick.get("take_profit")
+            _tpsl_sl = pick.get("stop_loss")
+            _tpsl_entry = pick.get("entry_price")
+            if _tpsl_entry and (not _tpsl_tp or not _tpsl_sl):
+                _tpsl_ac = str(pick.get("asset_class", "") or "").upper()
+                # Default TP/SL percentages per asset class (conservative)
+                _tpsl_defaults = {
+                    "CRYPTO": (0.05, 0.03),     # TP +5%, SL -3%
+                    "EQUITY": (0.03, 0.02),     # TP +3%, SL -2%
+                    "FOREX": (0.015, 0.01),     # TP +1.5%, SL -1%
+                    "COMMODITY": (0.04, 0.025), # TP +4%, SL -2.5%
+                    "ETF": (0.03, 0.02),        # TP +3%, SL -2%
+                }
+                _tpsl_tp_pct, _tpsl_sl_pct = _tpsl_defaults.get(_tpsl_ac, (0.03, 0.02))
+                _tpsl_e = float(_tpsl_entry)
+                _tpsl_side = str(pick.get("direction", "LONG")).upper()
+                if "SHORT" in _tpsl_side:
+                    if not _tpsl_tp:
+                        pick["take_profit"] = round(_tpsl_e * (1 - _tpsl_tp_pct), 4)
+                    if not _tpsl_sl:
+                        pick["stop_loss"] = round(_tpsl_e * (1 + _tpsl_sl_pct), 4)
+                else:
+                    if not _tpsl_tp:
+                        pick["take_profit"] = round(_tpsl_e * (1 + _tpsl_tp_pct), 4)
+                    if not _tpsl_sl:
+                        pick["stop_loss"] = round(_tpsl_e * (1 - _tpsl_sl_pct), 4)
+        except Exception:
+            pass  # fail-open — better unprotect than block
 
     return True
 

@@ -100,8 +100,9 @@ class RealTimeBattleTester:
         """
         signals = []
         
-        # Simulated funding rates (in real system, fetch from Binance/Bybit)
-        # These would be real funding rates from exchange APIs
+        # ⚠️ SIMULATED funding rates (INCIDENT#137) — these are HARDCODED, not from
+        # any exchange. Any "signal" derived here is synthetic; the report must be
+        # truth-labeled. Real funding would come from Binance/Bybit funding APIs.
         funding_rates = {
             'BTC': -0.0005,  # Negative = longs get paid
             'ETH': 0.0012,   # Positive = shorts pay

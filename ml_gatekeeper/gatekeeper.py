@@ -23,7 +23,11 @@ from collections import defaultdict
 
 try:
     from ml_gatekeeper.ab_router import ABRouter, AB_ENABLED
-except Exception:
+except Exception as _ab_imp_err:
+    # 2026-06-13 (#134): this except silently disabled the entire A/B experiment
+    # whenever the import failed — the masking pattern. Print the reason so CI
+    # logs show WHY the dual-write skipped instead of skipping silently.
+    print(f"[gatekeeper] ab_router import failed — A/B disabled: {_ab_imp_err!r}")
     ABRouter = None
     AB_ENABLED = False
 
@@ -1326,7 +1330,19 @@ def main():
     model_bundle, fold_metrics, feat_importance, strategy_router = train_model(X, y, meta)
 
     # 4. Score active picks
-    scored = score_active_picks(model_bundle, strategy_router)
+    # 2026-06-13 (#134 root cause): the A/B dual-write score_active_picks_ab()
+    # was DEFINED but never CALLED — main() only ran the single-write path, so
+    # n_ab_tagged stayed 0 forever and ab_history never accrued. Wire it: when
+    # AB enabled + both bundles present, run the dual-write (it writes OLD to the
+    # production path + NEW to the sidecar). It returns {"old","new"} on the A/B
+    # path but a bare list on its internal fallback — normalize to the OLD list,
+    # which production consumes and the report counts. Off/missing-bundle = unchanged.
+    if AB_ENABLED and MODEL_DIR_OLD.exists() and MODEL_DIR_NEW.exists():
+        print("[gatekeeper] #134: A/B enabled + both bundles present \u2192 dual-write path")
+        _ab = score_active_picks_ab(strategy_router)
+        scored = _ab.get("old", []) if isinstance(_ab, dict) else _ab
+    else:
+        scored = score_active_picks(model_bundle, strategy_router)
 
     # 5. Save training report
     report = {

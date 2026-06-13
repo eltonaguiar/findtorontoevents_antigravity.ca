@@ -30,6 +30,7 @@ import sqlite3
 import glob
 from pathlib import Path
 from datetime import datetime
+from alpha_engine.emitter_discipline import is_emission_allowed
 
 REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
@@ -72,14 +73,31 @@ def derive_asset_class(s, row_asset_class=None):
         if rac not in _UNKNOWN_TOKENS:
             return rac
 
-    s = s.upper().replace("-", "")
+    s_raw = s.upper()
+    s = s_raw.replace("-", "")
+    # 2026-06-12 (#14): 21,676 at_signal_outcomes rows sat UNKNOWN because this
+    # fell through for (a) BARE crypto codes (ADA/DOT/SOL... no USDT suffix —
+    # 21k+ rows), (b) USD-base forex (USD-JPY: "USD" was missing from
+    # forex_bases), (c) futures "=F" codes. Rules below close all three.
+    if s_raw.endswith("=F"):
+        return "FUTURES"
+    if s_raw.startswith("^"):
+        return "INDEX"
     meme = {"DOGE", "SHIB", "PEPE", "BONK", "FLOKI", "WIF", "BOME", "FAI", "ROBO", "EDGE", "MANTRA", "PHA"}
-    forex_bases = {"EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF"}
+    forex_bases = {"EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "USD"}
+    bare_crypto = {"BTC", "ETH", "SOL", "ADA", "DOT", "AVAX", "LINK", "XRP", "BNB",
+                   "MATIC", "POL", "ATOM", "UNI", "LTC", "BCH", "ETC", "XLM", "ALGO",
+                   "NEAR", "FTM", "APT", "ARB", "OP", "INJ", "TIA", "SUI", "SEI",
+                   "RUNE", "AAVE", "MKR", "CRV", "SNX", "COMP", "GRT", "FIL", "ICP",
+                   "HBAR", "VET", "EGLD", "THETA", "AXS", "SAND", "MANA", "GALA",
+                   "ENJ", "CHZ", "ONDO", "RENDER", "JUP", "ENA", "DYDX", "TON", "TRX"}
     if s in _EQUITY_ALLOWLIST:
         return "EQUITY"
     for m in meme:
         if m in s:
             return "MEMECOIN"
+    if s in bare_crypto:
+        return "CRYPTO"
     for b in forex_bases:
         if s.startswith(b) and len(s) >= 6 and not s.endswith("USDT"):
             return "FOREX"
@@ -167,6 +185,10 @@ def create_tables(cur):
 def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
                 source_system, source_file, status, exit_price, exit_reason,
                 pnl_pct, signal_ts, row_asset_class=None):
+    # P0B 2026-06-12: central emission gate
+    allowed, reason = is_emission_allowed(strategy, source_system)
+    if not allowed:
+        return 0  # silently skip killed strategies
     try:
         # P0-B: same central kill gate as insert_outcome (was missing on pick path)
         try:
@@ -197,6 +219,10 @@ def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
 def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
                    pnl_pct, source_system, strategy, opened_at, closed_at,
                    row_asset_class=None):
+    # P0B 2026-06-12: central emission gate
+    allowed, reason = is_emission_allowed(strategy, source_system)
+    if not allowed:
+        return 0  # silently skip killed strategies
     try:
         # idx_dedup UNIQUE(symbol,direction,source_system,opened_at) only fires
         # when opened_at is non-NULL. JSON picks without timestamp/created_at

@@ -67,10 +67,10 @@ STARTING_CAPITAL = 10_000.0
 # v1.2: Risk-based position sizing replaces fixed $2K allocation
 # Old: ALLOCATION_PER_PICK = 2_000.0 (20% of capital -- way too concentrated)
 # New: Size = risk_amount / stop_distance, capped at MAX_ALLOCATION_PER_PICK
-MAX_RISK_PER_TRADE = 0.02        # Risk 2% of capital per trade ($200 on $10K)
-MAX_ALLOCATION_PER_PICK = 0.15   # Max 15% of capital in any single pick ($1,500)
-MAX_TOTAL_EXPOSURE = 0.80        # Max 80% of capital deployed at once
-MAX_CORRELATED_EXPOSURE = 0.40   # Max 40% in same asset class (was 30% -- too restrictive for crypto-heavy portfolio)
+MAX_RISK_PER_TRADE = 0.01        # Risk 1% of capital per trade ($100 on $10K) — CUT 50% 2026-06-12
+MAX_ALLOCATION_PER_PICK = 0.08   # Max 8% of capital in any single pick ($800) — CUT 50% 2026-06-12
+MAX_TOTAL_EXPOSURE = 0.50        # Max 50% of capital deployed at once — CUT from 80% 2026-06-12
+MAX_CORRELATED_EXPOSURE = 0.20   # Max 20% in same asset class — CUT from 40% 2026-06-12
 
 # Pick cap system:
 # - Overall cap set to 20 (institutional risk audit fix -- was 999/disabled).
@@ -82,7 +82,7 @@ MAX_PICKS_PER_STRATEGY = 3       # Reduced from 4 -- prevent single-strategy dom
 MAX_PICKS_PER_SYMBOL = 1         # Reduced from 2 -- TRANSFORMATION BLUEPRINT Phase 1: prevent FET-style concentration (237% of PnL from 1 symbol)
 MAX_PICKS_PER_SECTOR = 3         # Sector concentration cap -- correlated same-sector picks compound losses
 MAX_SAME_DIRECTION_CRYPTO = 40   # Raised per-user request to restore signal liquidity
-KELLY_CAP = 0.05  # Max 5% of capital per trade (Kelly capped)
+KELLY_CAP = 0.025  # Max 2.5% of capital per trade (Kelly capped) — CUT 50% 2026-06-12
 
 # ---------------------------------------------------------------------------
 # Sector map for concentration risk management
@@ -281,6 +281,12 @@ BLACKLISTED_STRATEGIES = [
     'forex_carry_ppp',
     'myfxbook_retail_contrarian',
     'forex_carry_bb_hybrid',
+    # 2026-06-12 P0B unified kill list — 5 additions
+    'futures_momentum',             # 94 emits/7d, LONG PF=0.00 (M-110 blocked)
+    'ig_contrarian_sentiment',      # BANNED_SOURCES only, backfill loophole
+    'stocks_rsi2_pullback',         # 20 emits/7d, stale edge
+    'prediction_market_consensus',  # WR 26%, -29% intrabar
+    'fx_smart_carry_trade_momentum',# FOREX WR 16.7%, -6.6%
 ]
 BLACKLISTED_EXCHANGES = ['bitget']
 
@@ -425,8 +431,10 @@ MIN_CLOSED_TRADES = 10     # Was 50 — too strict for newer sources (2026-05-01
 CRYPTO_MAX_CONFIDENCE = 0.85
 
 # M-036: direction="BUY" is anti-predictive for CRYPTO (PF=0.38 / WR=28.9%)
-# Only LONG / SHORT are valid directional values for CRYPTO picks.
-CRYPTO_BLOCKED_DIRECTIONS = frozenset({"BUY"})
+# 2026-06-12 P0C: CRYPTO LONG n=1,050 WR 30.1% Σ−503% — LARGEST PNL LEAK IN BOOK.
+# Block LONG/STRONG_BUY at class level. SHORT (55.8% WR n=104) continues.
+# forward_test_only + _monitor_mode picks exempt in quality_gates.py (master-loop amendment).
+CRYPTO_BLOCKED_DIRECTIONS = frozenset({"BUY", "LONG", "STRONG_BUY"})
 
 # M-036b (2026-06-12): Sized-lane block for CRYPTO LONG bias (intrabar WR ~30% / n=1050).
 # forward_test_only / june2026 shadow picks are exempt in quality_gates (master-loop P0-C note).

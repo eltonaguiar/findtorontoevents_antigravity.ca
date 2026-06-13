@@ -64,6 +64,11 @@ jobs:
           echo "" >> BATTLE_REPORT.md
           echo "**Last Run:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> BATTLE_REPORT.md
           echo "" >> BATTLE_REPORT.md
+          # 2026-06-13 (INCIDENT#137): funding rates are SIMULATED literals
+          # (battle_test_real_time.py:103-110) and survivors come from a static
+          # forward_test_results.json (period ended 2026-02-17). NOT a live test.
+          echo "> ⚠️ **SIMULATED INPUTS — NOT A LIVE TEST.** Funding rates are hardcoded literals; the survivor/eliminated lists are a STATIC analysis with period ending **2026-02-17**, re-stamped each run. Do not size or cite. (INCIDENT#137; workflow disabled 2026-06-13.)" >> BATTLE_REPORT.md
+          echo "" >> BATTLE_REPORT.md
           
           # Extract key metrics
           python3 << 'EOF' >> BATTLE_REPORT.md
