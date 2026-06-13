@@ -320,7 +320,11 @@ alpha_engine/data/hindsight/**/*.json
 **/data/active_picks.json
 **/data/live_*.json
 **/data/*_signals.json
-!cross_aggregation/data/super_signals.json  # needed by Deploy Competition workflow
+# needed by Deploy Competition workflow (own-line comment — inline broke the negation):
+!cross_aggregation/data/super_signals.json
+# 2026-06-13 (D): must persist or the PM overlay no-ops (risk-review found it gitignored).
+# NOTE inline "# comment" on a pattern line is NOT valid gitignore syntax — keep comments on their own line.
+!prediction_market_agents/data/pm_macro_overlay_signals.json
 # Re-track other deploy-source live JSONs (CI fresh-checkout needs them)
 !KIMI_RISEOFTHECLAW/data/live_competition.json
 !KIMI_RISEOFTHECLAW/data/live_signals_now.json

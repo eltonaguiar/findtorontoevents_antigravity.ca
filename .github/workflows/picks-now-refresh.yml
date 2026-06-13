@@ -31,6 +31,11 @@ jobs:
           python3 -m pip install --upgrade pip -q
           python3 -m pip install yfinance pandas numpy pymysql requests scipy -q
 
+      - name: Build intrabar sym×dir overlay (picks-now pro gate)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/build_intrabar_sym_dir_stats.py || echo "[sym_dir] non-fatal (gate falls back to class-only)"
+
       - name: Generate picks
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}

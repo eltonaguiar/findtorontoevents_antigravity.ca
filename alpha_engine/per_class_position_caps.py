@@ -48,7 +48,7 @@ from typing import Iterable
 # ---------------------------------------------------------------------------
 # Defaults (universal fallback when per-class disabled or class unknown)
 # ---------------------------------------------------------------------------
-UNIVERSAL_POSITION_PCT: float = 0.05      # 5% — matches alpha_engine/backtest/portfolio.py default
+UNIVERSAL_POSITION_PCT: float = 0.025     # 2.5% — CUT 50% from 5% 2026-06-12
 UNIVERSAL_MAX_CONCURRENT: int = 30         # matches alpha_engine/backtest/engine.py default
 
 # ---------------------------------------------------------------------------
@@ -64,14 +64,14 @@ UNIVERSAL_MAX_CONCURRENT: int = 30         # matches alpha_engine/backtest/engin
 #   - FOREX: sub-floor PF 0.27 → 3% (downsized while pip-as-percent fix pending)
 #   - FUTURES: thin sample, leverage built-in → 3%
 PER_CLASS_POSITION_PCT: dict[str, float] = {
-    "CRYPTO":    0.05,
-    "MEME":      0.02,    # high vol + fast decay
-    "EQUITY":    0.08,    # T2 candidate — charter size-up
-    "ETF":       0.05,    # borderline T3
-    "COMMODITY": 0.07,    # meets T2 PF
-    "FUTURES":   0.03,    # thin sample + leverage
-    "FOREX":     0.03,    # sub-floor pending pip fix
-    "BOND":      0.04,    # T2 thresholds met but n<100
+    "CRYPTO":    0.025,   # CUT 50% 2026-06-12
+    "MEME":      0.01,    # CUT 50% 2026-06-12
+    "EQUITY":    0.04,    # CUT 50% 2026-06-12
+    "ETF":       0.025,   # CUT 50% 2026-06-12
+    "COMMODITY": 0.035,   # CUT 50% 2026-06-12
+    "FUTURES":   0.015,   # CUT 50% 2026-06-12
+    "FOREX":     0.015,   # CUT 50% 2026-06-12
+    "BOND":      0.02,    # CUT 50% 2026-06-12
 }
 
 # ---------------------------------------------------------------------------

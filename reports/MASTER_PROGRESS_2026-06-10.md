@@ -403,3 +403,70 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 - **A/B experiment made durable (f3773e0a12):** #134 sharpened — it produced NO surviving data (CI-local artifact + hourly overwrites + tags stripped at close + dual stamps). Shipped ab_history_accumulator.py (append-only JSONL, canonical _ab_arm, sym/dir/arm/day dedup) wired hourly; resolution sidecar once history accrues.
 - **#136 implementation design posted** (8 internal call sites mapped; deferred per the >2-sites hot-file stop rule — recommended as a small worktree PR).
 - DAILY_IDEAS peer-coordination block committed (peers were re-investigating already-fixed surfaces).
+
+## 2026-06-12 ~20:40Z — loop tick 10: PR review queue (4 reviews posted, 1 kill-claim refuted by SQL)
+- **#572 (sym×dir FWD WR sidecar): APPROVED conceptually — supersedes my #136 key-change design** (honest intrabar source, n≥3 gate, no key migration). Required: rebase (branched pre-merge-wave; emitter/config/june2026 hunks duplicate main), drop freebuff-owned picks_now_track_record.json + portfolio_history churn.
+- **#570: collision warning posted** — same file family as the #569 NameError incident; a second stacked dup def would silently break hourly backfill again.
+- **#577: KILL CLAIM REFUTED by direct SQL** — PR cites luxalgo_filters "n=115 WR 23.48% Σ−167%"; the full source book is n=2,287 WR 43.11% Σ+64.6%. Slice undefined; investigation-before-kill + three-axis protocol required; hold posted. (Also flagged the anti_overfit EDGE_LIKELY_REAL list's no-losses artifacts.)
+- #571 (sizing 50% + calibration) + #575 (pm_macro fetchers) queued next tick.
+
+## 2026-06-12 ~21:00Z — loop ticks 11-13: SNIPE designed→registered→GATED in under an hour (the velocity principle working)
+- **H-113 snipe family: designed (3c1baa70eb), pre-registered, scanner built (4fe3c562bd), 1,070 events extracted (76.4/day — 15x the falsification floor), and BOTH arms replay-gated same-session:**
+  - **CHASE arm (buy the skyrocket — the intuitive version): REFUTED DECISIVELY** — WR 21.8%, net PF 0.273, CI-LB 0.227 at n=527/n_eff 470. C006's adverse-selection verdict confirmed at 1-minute granularity. Arm CLOSED.
+  - **FADE arm: NULL at the coarse 1h gate** — WR 47.2% (≈breakeven), net PF 0.863, stable across halves (0.872/0.855), but ~25% of bars ambiguity-penalized (SL-wins-ties on 1h bars). ONE registered comparison remains: the 1-min first-touch replay (the design's true instrument); family closes either way after it. (e835ea454e)
+- PR queue: #571 + #575 APPROVED; #578/#580 rebase-coordination warnings (both touch audit-dashboard.yml — changed 4x today — AND each other); #581 additive (low risk).
+- Verification: unified is_emission_allowed intact on main (1 def); A/B history + earnings cache await their next scheduled runs; FOREX intrabar n still short of 100.
+
+## 2026-06-12 ~21:10Z — H-113 SNIPE: FAMILY CLOSED (complete pre-registered lifecycle in one session)
+- **Final 1-min replay (the registered true instrument; ambiguity 20/1070 vs 133/527 at 1h): FADE across ALL 1,070 events = WR 44.4%, net PF 0.766, CI-LB 0.690, halves IDENTICAL (0.765/0.768 — structural, not regime).** CHASE was already refuted (21.8%/0.27). **Verdict: neither chasing NOR fading 2%-in-5-min spikes at 5× volume clears 16bp costs at TP+1.0%/SL−0.7%/30-min.** (bc6b59302f)
+- **What the snipe ask bought us:** a definitive honest answer in ~90 min (design → M-107 registration → 1,070-event scan → coarse gate → fine gate → CLOSED), C006 triple-confirmed at 1-min granularity, two reusable tools (spike_event_scan + the 1-min first-touch replayer — seed for a per-pick 1-min resolver), zero capital risked. THE VELOCITY PRINCIPLE WORKING AS DESIGNED.
+- **ML layer correctly never built** — ML refines a measured edge or dies with the family; the family died first. New spike families need new MECHANICS (e.g. H-112 liquidation cascades) + new registration, not threshold tweaks. DNR: snipe_spike_30m both arms at this trigger+geometry.
+
+## 2026-06-12 ~21:45Z — loop tick 15: #132 walk-forward FIXED (masked-failure #9)
+- **Root cause:** the weekly validation ran GREEN every Monday but `rolling_walk_forward` loaded only the **512-row closed_picks.json** → report green-but-EMPTY (0 strategies) since April, while 8 consumers (incl. dashboard_generator + the H2 gate) read the Apr-15-frozen `walkforward_results.json`.
+- **Fix (e2084b34c8):** loader now reads the honest intrabar ledger as PRIMARY (1,607 rows; JSON fallbacks kept for offline), DB creds added to the weekly workflow, fresh report committed. **Honest verdict: UNSTABLE (<60% windows pass) — a true negative consistent with 0/9, which is exactly what H2 scoring needs to read.** Follow-up filed in the commit: migrate the 8 stale-file consumers to the rolling report.
+- Verification queue: earnings cache + ab_history still awaiting their cycles; FOREX n=95; dashboard hourly in_progress; no PR replies yet.
+
+## 2026-06-12 ~22:20Z — loop tick 16: the 73.9% dup-rate root-caused + fixed at the sync chokepoint
+- **Direct SQL (7d): 3,037 of 4,110 trading_picks rows are duplicates.** Top emitters are ALREADY-KILLED sources bypassing every gate: cta_replicator (IN HARD_KILL; 707 rows/7d across 3 strategies), multi_asset_copytrader re-emitting DNR strategies (futures_momentum 280, ig_contrarian 405, myfxbook 101), non_crypto_consensus 421. Mechanism: emitters mint FRESH ids each cycle; the sync upsert keys on id → same (source,symbol,direction,strategy,day) re-inserts 5-10×.
+- **Fix at the chokepoint (mysql_trading_sync.py):** NEW-id rows now pass (a) the P0B `is_emission_allowed` gate (killed sources stop syncing) and (b) an active-day dedup against a 14d preload; EXISTING-id close/update flows are untouched (closes always sync). Expect the 7d dup-rate to fall toward the preflight 45% bar as the window rolls — this unblocks promotion-stage preflight.
+- ALSO: full local S&P500 earnings fetch running (CI run failed 10 push retries after a 95-min fetch; local fetch + one atomic commit sidesteps the race permanently).
+
+## 2026-06-12 ~22:50Z — loop tick 17: earnings cache LANDED via PR · masked-failure #10 (gatekeeper starvation)
+- **S&P500 earnings cache ON MAIN** (PR #582, squash-merged from an isolated worktree branch — race-free; 439/498 tickers, 3.6MB; 59 missing are delisted/renamed + residual 429s, self-healing via daily TTL). Collector runs are now TTL-skip-fast; the pead lane is ready for Q2 season.
+- **Masked-failure #10 FOUND+FIXED (986e76a41e):** the ML Gatekeeper step runs BEFORE this workflow generates dashboard_data.json → "0 picks — need 100+" exit every hour → the A/B dual-write NEVER engaged (the real reason ab_history accrued 0 even after the accumulator landed) → and a 2-byte empty active_picks.json was FTP'd to all 3 sites. All green the whole time. Fix: prod-prefetch of dashboard_data.json before the step (the pick-funnel-nightly pattern). #134's chain is now: prefetch → gatekeeper dual-write (models verified ON main) → accumulator → history.
+- Verification: ab_history.jsonl file now created+committed by CI ✓ (empty until the prefetch run); dup-fix + unified gate live; FOREX n=95.
+
+## 2026-06-12 ~22:50Z — loop tick 18: #14 UNKNOWN classifier FIXED — 22,047 rows reclassified (backed up)
+- **Half the outcomes table was class-UNKNOWN (21,676/43k rows)** from 3 classifier fall-throughs: bare crypto codes (ADA/DOT/SOL... 21.6k rows), USD-base dashed forex (USD-JPY — "USD" missing from forex_bases), and =F futures. Patched `derive_asset_class` (+^indices→INDEX) with unit checks (76f0d8cdfa).
+- **Backed-up one-shot reclassification:** at_signal_outcomes 21,667/21,676 → CRYPTO 21,635 / FUTURES 14 / EQUITY 17 / FOREX 1 (backup `aso_unknown_class_bk_20260612T224544Z`, count-asserted); trading_picks 323/386 → CRYPTO 215 / EQUITY 54 / FOREX 31 / MEMECOIN 23 (backup `tp_unknown_cat_bk_20260612T224606Z`). Remaining: 9 + 63 genuinely unclassifiable junk symbols.
+- Per-class raw aggregates stop being polluted; future intrabar replays can route the 21.6k bare-code crypto rows to crypto_ohlcv (symbol normalization permitting).
+- Status: latest dashboard run pre-dates the gatekeeper prefetch fix — #134 chain verification rolls to next hourly run.
+
+## 2026-06-12 ~23:30Z — loop tick 19: dup-fix VERIFIED LIVE · harness gains regime stratification · preflight self-test passed
+- **Dup-fix verified on the 23:00 sync run: "1017 upserted, 1850 dedup skipped"** — 64% of incoming rows correctly rejected (re-emissions + killed sources). The 7d dup-rate will roll down toward the 45% preflight bar over coming days.
+- **replay_harness now emits regime_strata** (pre-entry 72-bar vol terciles × SMA50 trend; strictly pre-entry; measurement-only). Smoke on the closed snipe FADE cohort is already instructive: **vol_HIGH PF 0.487 vs LOW/MID materially better** — the fade loses worst exactly where spikes feel most dramatic. (Commits: harness + earlier classifier.)
+- **Fail-closed self-test (incidental but satisfying):** the harness smoke was BLOCKED BY PREFLIGHT because H-113 is CLOSED — the anti-circling gate refused a re-comparison on a closed family, exactly as designed; smoke proceeded only via the logged --skip-reason path.
+- #134 chain + nightly push-retry verifications roll to next ticks (no post-fix runs completed yet). FOREX n=95.
+
+## 2026-06-12 ~23:55Z — loop tick 20: phantom IC step removed · chain verify pending the next hourly
+- **build_ic_analysis.py confirmed PHANTOM** — never existed in the repo, any worktree, or any PR branch, yet its step soft-failed the nightly since inception and its phantom output triggered masked-failure #7's atomic git-add zeroing. Step removed with a restore-with-builder note (ab0d80206c).
+- #134 chain verification still pending a completed post-986e76a41e dashboard run. FOREX intrabar parked at 95 (the 90d unresolved backlog is exhausted — accrual now tracks live emission, which is the honest steady-state). PRs: no replies; #582/#579/#576 merged clean.
+
+## 2026-06-13 ~00:30Z — loop tick 21: #134 prefetch VERIFIED (2,132 picks load vs 0) + final env link + session wrap committed
+- Post-fix run 27447341297: prefetch ✓, gatekeeper loaded **2,132 real closed picks** (masked-failure #10 fix VERIFIED). Dual-write still skipped → final link found: ML_GATE_AB_ENABLED was never set in CI (now set, 6cb83af6ad; note: ab_router defaults ON, so if the next run is STILL silent the culprit is the silently-swallowed import in gatekeeper.py:24-28 — instrument next). NOTE: 79f0e18d0a is a no-op commit (edit assertion failed but file was PUT unchanged) — superseded by 6cb83af6ad.
+- Phantom build_ic_analysis step removed (ab0d80206c). Session wrap-up committed: reports/SESSION_WRAP_CLAUDE_June122026_8hloop.MD (11 masked failures table, H-111..114 lifecycle, verification schedule).
+
+## 2026-06-13 ~01:30Z — loop tick 22 (verification-only): A/B import instrumented; chain proof rolls to tomorrow's runs
+- No post-flag dashboard run completed yet (hourly runs ~60-75 min each tonight). Shipped the diagnostic for the only remaining unknown: the `except: AB_ENABLED=False` import mask at gatekeeper.py now PRINTS the failure reason — tomorrow's CI logs will name the culprit if the dual-write still skips. PRs unchanged; no replies.
+
+## 2026-06-13 ~05:30Z — quant+risk+swarm pipeline EXECUTED: A retired, D persistence+harness shipped
+- **Pipeline ran end-to-end** (operator-requested): 7 items → quant-desk review + risk-mgmt review (both agents, parallel) → implementation+testing plan (29915d6bd1) → 3-reviewer swarm review (adopted: generator-banner not MD-banner; end-to-end payload check; A rollback test) → implemented.
+- **A / INCIDENT#137 RESOLVED (df08f5242c):** battle_test workflow DISABLED; SIMULATED banner in the generator block + static MD + funding-literal comment. Rollback test passed: re-enable triggers no run (cron-only), no stale regen. Zero consumers (verified twice).
+- **D / pm-leadlag (f35198e59d):** root cause was the no-op RE-ARMED — `pm_macro_overlay_signals.json` gitignored by `**/data/*_signals.json` so it never persisted between CI runs. Fixed with an own-line negation + loud `pm_accrual_check.py` (3 assertions incl. swarm's non-empty-payload check) wired NON-BLOCKING into alpha-engine-live. BONUS: the same inline-comment gitignore bug had silently broken the `super_signals.json` negation too — both fixed.
+- **Quant verdicts adopted:** E (#564 extraction) REJECTED — 2 of 3 "features" are dead code (imports a nonexistent function), live parts harmful; comment posted. F (picks-now SHORT) NO-BUILD (cash-on-RISK_OFF correct; AVOID-list is the testable alternative). C covered by existing FAIL verdict. B/G deferred post-wave (#570/#572/#578/#580 own the files). 12-1 momentum is the one factor worth adopting — must ship WITH a STRONG_BUY recalibration (643/643 = unthresholded).
+- 12th masked failure of the cycle: the gitignore inline-comment class (2 broken negations).
+
+## 2026-06-13 ~02:30Z — 8h LOOP END. #134 root cause PINNED (dead-code entry point)
+- **#134 terminal cause found:** `score_active_picks_ab()` (gatekeeper.py:854 — the dual-write) is DEFINED BUT NEVER CALLED; main()@1306 only runs single-write run(). All 3 upstream fixes were real (prefetch→2,131 picks load; env flag; import-print confirms import OK) but the entry point never reaches the A/B branch. Next-session code task: wire main() to invoke it (hot file — careful). Logged on INCIDENT#134.
+- Loop ran ~19:15Z→02:30Z. Full ledger: reports/SESSION_WRAP_CLAUDE_June122026_8hloop.MD + reports/PATH_TO_PRO_PICKS_CLAUDE_June132026.MD. Loop ENDED — no further scheduled wakeups.

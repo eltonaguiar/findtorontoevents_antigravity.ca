@@ -19,6 +19,13 @@ Acceptance criteria (90-day checkpoint per DAILY_IDEAS IDEA-H):
   PF<1.0 OR resolved n<10 after 60d → deactivate this module entirely.
 
 No new dependencies; reuses urllib/json/pathlib from existing PM agents.
+
+2026-06-12 fetcher fix: both platform fetchers were silent no-ops from launch
+(Kalshi schema drift: 'active' status + string-dollar fields; Polymarket
+/markets?search= ignores its search param). Rewritten against live-verified
+schemas: Kalshi KXFEDDECISION per-meeting Cut/Hike/Hold legs + Polymarket
+/public-search per-meeting binaries. The 60-day acceptance clock above starts
+2026-06-12 (first day signals could actually flow), not 2026-06-06.
 """
 
 from __future__ import annotations
@@ -43,8 +50,17 @@ OUTPUT_FILE = DATA_DIR / "pm_macro_overlay_signals.json"
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [pm_macro] %(message)s")
 
+# API schemas verified live 2026-06-12 (see pm_odds_history.py, which shares them):
+#   Kalshi v2: status='active' (not 'open'), string-dollar prices
+#     (last_price_dollars / yes_bid_dollars), volume_fp. The KXFEDDECISION series
+#     has explicit per-meeting Cut/Hike/Hold legs (ticker suffix C25/C26/H0/H25/
+#     H26) — no keyword classification needed.
+#   Polymarket: /markets?search= IGNORES the search param; use /public-search?q=.
+#     Per-meeting binaries "Fed rate cut by <Month Year> meeting?" + hike
+#     equivalents; endDate is unreliable — parse the meeting month from the
+#     question text instead.
 KALSHI_API = "https://api.elections.kalshi.com/trade-api/v2"
-POLYMARKET_GAMMA = "https://gamma-api.polymarket.com/markets"
+POLYMARKET_SEARCH = "https://gamma-api.polymarket.com/public-search"
 TIMEOUT = 20
 
 CONSENSUS_THRESHOLD = 0.70   # both platforms must agree at ≥70% to emit
@@ -90,110 +106,157 @@ def _get(url: str, timeout: int = TIMEOUT) -> Optional[dict]:
         return None
 
 
-def fetch_kalshi_fed_probability() -> Optional[tuple[str, float]]:
-    """Return (action, probability) for the most liquid Fed rate market on Kalshi.
-
-    action is one of 'cut', 'hike', 'hold'.
-    Returns None if no Fed market found or API is down.
-    """
-    # Kalshi Fed series: KXFED (rate decision), FOMC, etc.
-    series_to_try = ["KXFED", "FOMC", "FEDRATE", "FED"]
-    for series in series_to_try:
-        url = f"{KALSHI_API}/markets?series_ticker={series}&limit=20"
-        data = _get(url)
-        if not data:
+def _kalshi_price(market: dict) -> Optional[float]:
+    """Probability from current (string-dollar) fields, legacy cent ints as fallback."""
+    for field in ("last_price_dollars", "yes_bid_dollars", "last_price", "yes_bid"):
+        raw = market.get(field)
+        if raw in (None, "", 0):
             continue
-        markets = data.get("markets", [])
-        if not markets:
+        try:
+            prob = float(raw)
+        except (TypeError, ValueError):
             continue
-
-        # Find the most liquid open market
-        open_markets = [m for m in markets if m.get("status") == "open"]
-        if not open_markets:
-            continue
-        market = max(open_markets, key=lambda m: m.get("volume", 0))
-
-        yes_price = market.get("yes_bid") or market.get("last_price") or 0
-        no_price = market.get("no_bid") or (1 - yes_price) if yes_price else 0
-
-        title = (market.get("title") or "").lower()
-        subtitle = (market.get("subtitle") or "").lower()
-        combined = title + " " + subtitle
-
-        # Map market title to action
-        if any(w in combined for w in ("cut", "lower", "decrease", "reduce")):
-            action = "cut"
-        elif any(w in combined for w in ("hike", "raise", "increase")):
-            action = "hike"
-        else:
-            action = "hold"
-
-        prob = float(yes_price) / 100 if yes_price > 1 else float(yes_price)
-        if prob > 0:
-            logger.info("Kalshi %s: action=%s prob=%.1f%%", series, action, prob * 100)
-            return action, prob
-
-    logger.info("Kalshi: no Fed markets found — tried %s", series_to_try)
+        if prob > 1:  # legacy cent-int fields
+            prob /= 100.0
+        if 0 < prob <= 1:
+            return prob
     return None
 
 
-def fetch_polymarket_fed_probability() -> Optional[tuple[str, float]]:
-    """Return (action, probability) from Polymarket Gamma API for Fed rate markets."""
-    url = f"{POLYMARKET_GAMMA}?search=federal+reserve+rate&limit=10&active=true"
-    data = _get(url)
-    if not data:
-        # Try with slug-based search
-        data = _get(f"{POLYMARKET_GAMMA}?search=fed+rate+cut&limit=10")
-    if not data:
-        return None
+def fetch_kalshi_fed_probability() -> Optional[tuple[str, float]]:
+    """Return (action, probability) for the NEAREST upcoming FOMC meeting on Kalshi.
 
-    markets = data if isinstance(data, list) else data.get("results", data.get("markets", []))
+    Uses the KXFEDDECISION series, whose per-meeting markets have explicit legs:
+    ticker suffix C25/C26 = cut (25bps / >25bps), H0 = no change (hold),
+    H25/H26 = hike. p(action) = sum of that action's legs — no keyword guessing.
+    Returns None if the series is empty or the API is down.
+    """
+    data = _get(f"{KALSHI_API}/markets?series_ticker=KXFEDDECISION&limit=100&status=open")
+    markets = [m for m in (data or {}).get("markets", [])
+               if m.get("status") in ("active", "open")]
     if not markets:
+        logger.info("Kalshi: no open KXFEDDECISION markets found")
         return None
 
-    # Find the most liquid Fed rate market
-    best = None
-    best_vol = 0
+    # Group by meeting (event_ticker), pick the nearest future close_time
+    now = datetime.now(timezone.utc)
+    events: dict[str, list[dict]] = {}
     for m in markets:
-        title = (m.get("question") or m.get("title") or "").lower()
-        vol = float(m.get("volume") or m.get("volumeNum") or 0)
-        if "fed" in title or "fomc" in title or "federal reserve" in title:
-            if vol > best_vol:
-                best_vol = vol
-                best = m
+        events.setdefault(m.get("event_ticker") or "?", []).append(m)
 
-    if not best:
-        logger.info("Polymarket: no Fed markets found")
+    def _close_time(ms: list[dict]) -> datetime:
+        try:
+            return datetime.fromisoformat(
+                (ms[0].get("close_time") or "").replace("Z", "+00:00"))
+        except ValueError:
+            return now.replace(year=now.year + 10)
+
+    upcoming = {ev: ms for ev, ms in events.items() if _close_time(ms) > now}
+    if not upcoming:
+        logger.info("Kalshi: KXFEDDECISION has no future-dated meetings")
+        return None
+    nearest_ev = min(upcoming, key=lambda ev: _close_time(upcoming[ev]))
+
+    probs = {"cut": 0.0, "hike": 0.0, "hold": 0.0}
+    for m in upcoming[nearest_ev]:
+        leg = (m.get("ticker") or "").rsplit("-", 1)[-1].upper()
+        prob = _kalshi_price(m)
+        if prob is None:
+            continue
+        if leg.startswith("C"):
+            probs["cut"] += prob
+        elif leg == "H0":
+            probs["hold"] += prob
+        elif leg.startswith("H"):
+            probs["hike"] += prob
+
+    if not any(probs.values()):
+        logger.info("Kalshi: %s legs had no usable prices", nearest_ev)
+        return None
+    action = max(probs, key=lambda a: probs[a])
+    prob = min(probs[action], 1.0)
+    logger.info("Kalshi %s: cut=%.1f%% hike=%.1f%% hold=%.1f%% -> action=%s",
+                nearest_ev, probs["cut"] * 100, probs["hike"] * 100,
+                probs["hold"] * 100, action)
+    return action, prob
+
+
+_MONTHS = {name: i + 1 for i, name in enumerate(
+    ["january", "february", "march", "april", "may", "june",
+     "july", "august", "september", "october", "november", "december"])}
+
+
+def _poly_meeting_probs(query: str) -> dict[tuple[int, int], float]:
+    """{(year, month): YES prob} from per-meeting binaries via /public-search.
+
+    Matches questions like 'Fed rate cut by June 2026 meeting?'. The endDate
+    field is unreliable on these markets, so the meeting month comes from the
+    question text.
+    """
+    import re
+    out: dict[tuple[int, int], float] = {}
+    data = _get(f"{POLYMARKET_SEARCH}?q={query}&limit_per_type=10")
+    for ev in (data or {}).get("events") or []:
+        if ev.get("closed"):
+            continue
+        for m in ev.get("markets") or []:
+            if m.get("closed"):
+                continue
+            question = m.get("question") or m.get("title") or ""
+            match = re.search(
+                r"by\s+(january|february|march|april|may|june|july|august|"
+                r"september|october|november|december)\s+(\d{4})\s+meeting",
+                question, re.IGNORECASE)
+            if not match:
+                continue
+            outcome_prices = m.get("outcomePrices")
+            if isinstance(outcome_prices, str):
+                try:
+                    outcome_prices = json.loads(outcome_prices)
+                except Exception:
+                    outcome_prices = None
+            try:
+                prob = float(outcome_prices[0]) if outcome_prices else None
+            except (TypeError, ValueError, IndexError):
+                prob = None
+            if prob is None or not (0 <= prob <= 1):
+                continue
+            key = (int(match.group(2)), _MONTHS[match.group(1).lower()])
+            # Keep the first (most relevant) market per meeting month
+            out.setdefault(key, prob)
+    return out
+
+
+def fetch_polymarket_fed_probability() -> Optional[tuple[str, float]]:
+    """Return (action, probability) for the NEAREST upcoming FOMC meeting on Polymarket.
+
+    Combines the per-meeting 'Fed rate cut by <Month Year> meeting?' and
+    'Fed Rate Hike by <Month Year> Meeting?' binaries for the same nearest
+    meeting; hold = 1 - cut - hike. 'Cut by meeting X' ≈ 'cut at meeting X'
+    for the nearest meeting, since no earlier meeting exists.
+    """
+    cut_by_meeting = _poly_meeting_probs("fed+rate+cut")
+    hike_by_meeting = _poly_meeting_probs("fed+rate+hike")
+    if not cut_by_meeting and not hike_by_meeting:
+        logger.info("Polymarket: no per-meeting Fed rate markets found")
         return None
 
-    title = (best.get("question") or best.get("title") or "").lower()
-    # Probability: outcomePrices[0] (YES) is the probability
-    outcome_prices = best.get("outcomePrices")
-    if isinstance(outcome_prices, str):
-        try:
-            outcome_prices = json.loads(outcome_prices)
-        except Exception:
-            outcome_prices = None
+    now = datetime.now(timezone.utc)
+    candidates = [k for k in set(cut_by_meeting) | set(hike_by_meeting)
+                  if k >= (now.year, now.month)]
+    if not candidates:
+        logger.info("Polymarket: no future-dated Fed meeting markets")
+        return None
+    meeting = min(candidates)
 
-    prob = 0.0
-    if outcome_prices and len(outcome_prices) >= 1:
-        try:
-            prob = float(outcome_prices[0])
-        except (ValueError, TypeError):
-            prob = float(best.get("bestBid", 0) or 0)
-
-    if prob > 1:
-        prob /= 100
-
-    if any(w in title for w in ("cut", "lower", "decrease")):
-        action = "cut"
-    elif any(w in title for w in ("hike", "raise", "increase")):
-        action = "hike"
-    else:
-        action = "hold"
-
-    logger.info("Polymarket Fed: action=%s prob=%.1f%% (vol=%.0f)", action, prob * 100, best_vol)
-    return action, prob
+    p_cut = cut_by_meeting.get(meeting, 0.0)
+    p_hike = hike_by_meeting.get(meeting, 0.0)
+    probs = {"cut": p_cut, "hike": p_hike, "hold": max(0.0, 1.0 - p_cut - p_hike)}
+    action = max(probs, key=lambda a: probs[a])
+    logger.info("Polymarket meeting %d-%02d: cut=%.1f%% hike=%.1f%% hold=%.1f%% -> action=%s",
+                meeting[0], meeting[1], p_cut * 100, p_hike * 100,
+                probs["hold"] * 100, action)
+    return action, probs[action]
 
 
 def _build_pick(symbol: str, direction: str, confidence: float, reason: str, now: datetime, is_etf: bool) -> dict:

@@ -1202,6 +1202,39 @@ def sync(dry_run=False):
         except Exception as _de:
             log_warn(f"Soft-dedup pre-fetch failed (non-fatal): {_de}")
 
+    # 2026-06-12 (#dup-73.9%): NEW ACTIVE rows arrive with fresh ids every emitter
+    # cycle, so the id-keyed upsert re-inserts the same (source,symbol,direction,
+    # strategy,day) pick 5-10x — 3,037 of 4,110 rows in the last 7d were dups,
+    # and the worst emitters are HARD-KILLED sources whose picks shouldn't sync
+    # at all. Preload: existing ids (so close/update flows are never skipped)
+    # + active-day keys for the dedup guard.
+    _existing_ids: set = set()
+    _active_day_keys: set = set()
+    try:
+        cursor.execute(
+            "SELECT id, source_system, symbol, UPPER(COALESCE(direction,'')), "
+            "COALESCE(strategy,''), DATE(created_at) FROM trading_picks "
+            "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)")
+        for (_id, _src, _sym, _dir, _strat, _day) in cursor.fetchall():
+            _existing_ids.add(str(_id))
+            _active_day_keys.add((_src or "", _sym, _dir, _strat, str(_day)))
+    except Exception as _de:
+        log_warn(f"Active-day dedup pre-fetch failed (non-fatal): {_de}")
+
+    try:
+        from alpha_engine.emitter_discipline import is_emission_allowed as _gate
+    except Exception:
+        _gate = None
+
+    def _active_day_key(row: dict):
+        try:
+            return ((row.get("source_system") or ""), row["symbol"],
+                    str(row.get("direction") or "").upper(),
+                    str(row.get("strategy") or ""),
+                    str(row.get("created_at"))[:10])
+        except Exception:
+            return None
+
     def _soft_dedup_key(row: dict):
         if row.get("closed_at") is None or row.get("exit_price") is None:
             return None
@@ -1223,6 +1256,23 @@ def sync(dry_run=False):
     for i in range(0, len(rows), batch_size):
         batch = rows[i : i + batch_size]
         for row in batch:
+            # P0B gate: picks from killed sources/strategies don't sync at all
+            # (close/update flows for EXISTING ids still pass — kills stop NEW rows).
+            if _gate is not None and str(row.get("id")) not in _existing_ids:
+                try:
+                    _ok, _why = _gate(row.get("strategy") or "", row.get("source_system") or "")
+                    if not _ok:
+                        duplicates += 1
+                        continue
+                except Exception:
+                    pass  # fail-open
+            # Active-day dedup: a NEW id for an already-emitted
+            # (source,symbol,direction,strategy,day) is a re-emission, not a pick.
+            _adk = _active_day_key(row)
+            if (_adk and str(row.get("id")) not in _existing_ids
+                    and _adk in _active_day_keys):
+                duplicates += 1
+                continue
             # Soft-dedup: skip closed rows that already exist under a different id
             _sdk = _soft_dedup_key(row)
             if _sdk and _sdk in _existing_closed_keys:
@@ -1235,6 +1285,9 @@ def sync(dry_run=False):
                 inserted += 1
                 if _sdk:
                     _existing_closed_keys.add(_sdk)  # prevent intra-batch duplicates
+                if _adk:
+                    _active_day_keys.add(_adk)
+                _existing_ids.add(str(row.get("id")))
             except pymysql.Error as e:
                 errno = getattr(e, "args", [None])[0]
                 # 1062 = duplicate on uq_trading_picks_dedup — row already stored under another id
