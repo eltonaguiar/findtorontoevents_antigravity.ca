@@ -29,3 +29,19 @@ Live `trading_picks`, 2026+, resolved, classes FOREX/EQUITY/ETF/BOND/INDEX (CRYP
 - This does NOT change the FOREX verdict (still gross-only).
 
 Reproduce: per-class net hunt in this session; cost model matches `tools/forex_long_pilot_tracker.py`.
+
+---
+
+## ⚠️ CORRECTION (2026-06-13, robustness re-test) — `leveraged_etf_decay` is REFUTED
+
+A deeper robustness pass (delegated to a subagent, reviewed) **kills the candidate**. The headline net PF 1.24 is fragile and artifact-driven:
+
+- **Drop the single best winner** (LABD +6.95%) → net PF **1.05** (fails the 1.2 gate). One trade in 69 carries the edge.
+- **Drop LABD entirely** → net PF **0.94 (net-losing).** JDST+SOXS alone = 0.94. The "edge" is essentially LABD-only.
+- **Per-symbol:** LABD net PF 3.69 / JDST 0.75 / SOXS 1.09 — concentrated by P&L in one symbol, not broad-mechanism.
+- **Single-batch artifact:** 100% of the cohort is `TIME_EXIT`, all `closed_at = 2026-06-04` in ONE snapshot — the single-snapshot-resolution artifact flagged in prior sessions, not live first-touch trading. No TP_HIT/SL_HIT exists, so first-touch path-dependency is untested.
+- **No universe to expand into:** across ~50 candidate leveraged/inverse ETFs (SQQQ/SPXS/TZA/UVXY/FAZ/…) the DB holds **2 closed rows total**. "Expanding the universe" can't be back-measured — it needs forward pick generation first.
+
+**Revised verdict: NO-GO.** `leveraged_etf_decay` is a one-symbol / one-trade / one-batch mirage, not a net-positive edge. **Both candidates this session are now non-viable** (FOREX = gross-only; ETF-decay = artifact). The honest state: **0 robust net-positive candidates.** The correct next step for the decay thesis is to forward-generate SHORT picks across the real leveraged/inverse universe and resolve them intrabar (use `verified_strategies/intrabar_replay_noncrypto.py`), then re-measure in ~5–6 weeks.
+
+This correction reinforces improvement-area #1 (low amplitude) and adds a new one: **batch/single-snapshot resolution manufactures false edges** — require multiple distinct `closed_at` dates + TP/SL diversity before trusting any cohort.
