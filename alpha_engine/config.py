@@ -250,8 +250,15 @@ COMMODITY_LONG_REENABLE_WR_THRESHOLD: float = 0.40   # min WR to re-enable COMMO
 COMMODITY_LONG_REENABLE_MIN_N: int = 30               # min n trades before re-evaluating
 
 # ---------------------------------------------------------------------------
-# Priority 1: Stop the Bleeding - Junk Signal Filters
+# Banned source systems (architectural disconnects / low quality)
 # ---------------------------------------------------------------------------
+BANNED_SOURCE_SYSTEMS = [
+    'claude_gainer_st',
+    'ml_crypto_predictor',
+    'kimi_direct',
+    'gpt4_1',
+]
+
 # binance_smart_money: 45.8% WR, -0.21% PnL — net loser
 # hl_funding_fade: 0/11 = 0% WR — consistently wrong on funding rate reversals
 BLACKLISTED_STRATEGIES = [
@@ -259,7 +266,8 @@ BLACKLISTED_STRATEGIES = [
     'hl_funding_fade',           # 0/11 = 0% WR — consistently wrong on funding rate reversals
     'quan_engine_scalp',         # PF 0.42 / WR 37% — degraded, dead per edge_decay_heatmap
     'claude_gainer_st',          # 26.5% WR / -355% total PnL / 778/790 PROVEN picks (2026-05-01 fix)
-    'kimi_signal_tracking',      # -954% PnL / PF 0.26 (SUPREME EDGE P0 #2, 2026-05-11)
+    'ml_crypto_predictor',       # 2026-06-13: P0 kill - source of high-confidence spam in dashboard hallucinations
+    'ml_crypto_predictor',       # 2026-06-13: P0 kill - source of high-confidence spam in dashboard hallucinations
     # 2026-05-28 quant review P0 kills — see reports/QUANT_STRATEGY_REVIEW_2026-05-28.md
     'rapid_fire',                # 217 trades, PF 0.77, -70% PnL — biggest volume drag
     'ensemble',                  # 84 CRYPTO trades, PF 0.009, -6066% PnL — worst strategy in system
@@ -287,6 +295,10 @@ BLACKLISTED_STRATEGIES = [
     'stocks_rsi2_pullback',         # 20 emits/7d, stale edge
     'prediction_market_consensus',  # WR 26%, -29% intrabar
     'fx_smart_carry_trade_momentum',# FOREX WR 16.7%, -6.6%
+    # 2026-06-12 P0C: remaining worst-performing strategies from forward test investigation
+    'goldmine_6x_consensus',        # 0.0% WR (0/17), -58.71% PnL — deterministic loser (was only blocked as EQUITY pair)
+    'commodity_momentum',           # 10.0% WR, PF 0.19, -19% PnL — killed by honest_kill_switch
+    'cta_cross_asset_tsmom',        # 28.7% WR, PF 0.11 — net drag (directional blocks in BLOCKED_DIRECTION_TRIPLES insufficient)
 ]
 BLACKLISTED_EXCHANGES = ['bitget']
 

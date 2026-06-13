@@ -910,6 +910,49 @@ a:hover { text-decoration: underline; }
     <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; ACCUMULATING (at_raw_picks: 78 rows, up from 2). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols. First production emissions detected 2026-05-31.</span>
     <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health GREEN: ghost rows 0, status mismatch 0, non-canonical statuses 0.</span>
   </div>
+<div id="kill-switch-panel" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(251,146,60,0.06));border:1px solid rgba(239,68,68,0.3);border-radius:12px;color:#fde68a;font-size:0.85em">
+  <details open>
+    <summary style="cursor:pointer;font-weight:700;font-size:1.05em;color:#f87171;letter-spacing:0.3px">
+      ⚔️ Honest Kill Switch <span id="ks-status" style="font-weight:400;color:#94a3b8;font-size:0.85em">Loading...</span>
+    </summary>
+    <div id="ks-content" style="margin-top:8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;font-size:0.9em">
+      <div><strong style="color:#ef4444">Killed:</strong> <span id="ks-killed">-</span> strategies</div>
+      <div><strong style="color:#22c55e">Survivors:</strong> <span id="ks-survivors">-</span> strategies</div>
+      <div><strong style="color:#fbbf24">Kill Rate:</strong> <span id="ks-kill-rate">-</span>%</div>
+      <div><strong style="color:#60a5fa">Evaluated:</strong> <span id="ks-evaluated">-</span> / <span id="ks-total">-</span></div>
+      <div><strong style="color:#34d399">WR Lift:</strong> +<span id="ks-wr-lift">-</span> pp</div>
+      <div><strong style="color:#34d399">PF Lift:</strong> +<span id="ks-pf-lift">-</span></div>
+      <div><strong style="color:#a78bfa">PnL Saved:</strong> <span id="ks-pnl-saved">-</span>%</div>
+      <div><strong style="color:#94a3b8">Verdict:</strong> <span id="ks-verdict">-</span></div>
+    </div>
+    <div id="ks-strategies" style="margin-top:8px;font-size:0.8em;color:#94a3b8;max-height:120px;overflow-y:auto"></div>
+  </details>
+</div>
+<script>
+(function() {
+  function render(ks) {
+    if (!ks) { document.getElementById('ks-status').textContent = '(no data)'; return; }
+    document.getElementById('ks-status').textContent = 'Updated ' + (ks.generated_at || 'unknown').slice(0, 16);
+    document.getElementById('ks-killed').textContent = ks.killed || 0;
+    document.getElementById('ks-survivors').textContent = ks.survivors || 0;
+    document.getElementById('ks-kill-rate').textContent = (ks.kill_rate_pct || 0).toFixed(1);
+    document.getElementById('ks-evaluated').textContent = ks.evaluated || 0;
+    document.getElementById('ks-total').textContent = ks.total_strategies || 0;
+    var imp = ks.impact || {};
+    document.getElementById('ks-wr-lift').textContent = (imp.wr_lift_pp || 0).toFixed(2);
+    document.getElementById('ks-pf-lift').textContent = (imp.pf_lift || 0).toFixed(4);
+    document.getElementById('ks-pnl-saved').textContent = (imp.pnl_damage_removed || 0).toFixed(0);
+    document.getElementById('ks-verdict').textContent = imp.verdict || 'N/A';
+    var strats = ks.killed_strategies || [];
+    if (strats.length > 0) {
+      document.getElementById('ks-strategies').innerHTML = '<strong>Killed strategies (' + strats.length + '):</strong> ' + strats.join(', ');
+    }
+  }
+  var D = window.__DASHBOARD_DATA__ || (typeof dashboardData !== 'undefined' ? dashboardData : null);
+  if (D && D.kill_switch) { render(D.kill_switch); return; }
+  fetch('data/dashboard_data.json?' + Date.now()).then(function(r){return r.json();}).then(function(d){render(d.kill_switch);}).catch(function(){document.getElementById('ks-status').textContent = '(fetch failed)';});
+})();
+</script>
   </details>
   <div id="audit-surface-truth-mount" style="margin:8px 0"></div>
   <script src="audit_surface_truth_banner.js"></script>

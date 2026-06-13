@@ -2003,6 +2003,11 @@ BLOCKED_SOURCE_SYSTEMS = {
     # Already in PERMANENTLY_KILLED_STRATEGIES; adding source-system-level block for
     # defense-in-depth (pipeline checks source_system, not just strategy name).
     "quan_engine_scalp",
+    # 2026-06-12: quan_engine as source_system — blocks ALL quan_engine variants
+    # (swing, position, base). 30.3% WR, PF 0.66, -118% PnL after costs. Defense-in-depth:
+    # strategy name 'quan_engine' already in PERMANENTLY_KILLED_STRATEGIES but source_system
+    # block catches variants that emit under different strategy names.
+    "quan_engine",
     # cot_positioning: COT-publication LOOK-AHEAD LEAKAGE. Headline 77-78% WR / PF 4.6 is
     # an artifact: ~85% of its 134 picks are CT=F (cotton); COT signal uses CFTC data not
     # available at decision time. Deduped + ex-CT=F: n=20 / WR 30% / PF 0.51 — a loser.
