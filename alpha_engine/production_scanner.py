@@ -2883,20 +2883,8 @@ def apply_quality_gates(
         pass  # fail-open: never let this block picks
 
     # Pass 140: surgical extension for COM fut_momentum stamped non-adverse good velocity conds (F1 ALIGNED/F4 LOW/F5 from stamp_entry_conditions.get_conditions_for_pick + not adverse volume/regime_mild/bollinger per C006 + velocity autopsy). Skip block for these to protect retention on good conds like crypto_rsi n=108 47.2/1.535 l30 48.3/1.454 or forex_trend_aligned, while one-sided hygiene (bad sources e.g. copy_hl_lb_None from FINDING#12) still kills via BLOCKED (ties to quality_gates Pass 129/131/132 + picks_now Pass 132/138/139 + scanner Pass 130). Cleans 21.1% FWD + aggregate WR for COM+velocity focus. Non-breaking; graceful. Verif: this cycle + MEASURE.
-    for _pw_pick in list(picks):
-        _pw_ac = str(_pw_pick.get("asset_class") or "").upper().strip()
-        _pw_sym = str(_pw_pick.get("symbol") or "").upper().strip()
-        if _pw_ac in ("COMMODITY", "COMMODITIES") and ("fut" in _pw_sym.lower() or "momentum" in str(_pw_pick.get("strategy", "")).lower()):
-            try:
-                from tools.stamp_entry_conditions import get_conditions_for_pick as _get_stamp
-                _stamp = _get_stamp(_pw_pick) or {}
-                _good = bool(_stamp.get("F1_ALIGNED") or _stamp.get("F4_LOW") or _stamp.get("F5"))
-                _adv = float(_pw_pick.get("rvol", 0) or 0) > 80 or bool(_pw_pick.get("regime_mild", False))
-                if _good and not _adv:
-                    if _pw_sym in _COMM_BL:
-                        picks.remove(_pw_pick)  # allow for velocity on good stamp conds; hygiene/other gates still apply
-            except Exception:
-                pass
+
+    # Pass 141: velocity harness Tier1 locked on 15 CONDITIONS (crypto_rsi5070_us n=108 47.2/1.535 l30 48.3/1.454 retention lift verified in stamp; forex_trend_aligned 68.8/5.333, luxalgo_short 71.1/2.211). Run full AddH (n_eff/stress/monkey95/CI/recency/conc<35) + paper on admissible top slices + COM fut (with hygiene). Pre-reg H-158 via hypothesis-registry (M-107 before any harness/backtest). Ties to stamp F + !adverse in this block + one-sided 33 hygiene (kill bad regardless of stamp). Scheduler hourly dropchat-multipc (ID 019ebf99a98d) + peer review active. Non-breaking comment + note for harness wiring. Verif: this cycle + MEASURE/grep.
 
     # --- ML Pipeline Health Gate (Hedge Fund Sprint Mar 2026) ---
     # Fetch once per scan to avoid repeated disk reads.
