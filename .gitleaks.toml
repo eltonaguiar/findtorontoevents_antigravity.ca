@@ -21,6 +21,21 @@ regexes = [
   '''\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}''',
 ]
 
+# PF_PORTFOLIO row identifiers (e.g. aimlapi_gpt4o__conservative, gpt4o__balanced)
+# appear in SQL `WHERE portfolio_key='...'` blocks inside reports and planning MDs.
+# They are row identifiers, not credentials — but the default `generic-api-key`
+# rule sometimes matches them (entropy 3.4-3.9 on the random-looking part).
+# This allowlist regex matches the full SQL clause and prevents the finding.
+regexTarget = "match"
+regexes = [
+  # SQL WHERE clause: WHERE portfolio_key='<key>' or WHERE portfolio_key=<key>
+  '''(?i)\bWHERE\s+portfolio_key\s*=\s*['"]?[a-z0-9_]+__(conservative|balanced|aggressive)['"]?''',
+  # Top-of-report summary rows: "<key>     PF=0.10 WR=11% sharpe=-7.09"
+  '''^[ \t]*[a-z0-9_]+__(conservative|balanced|aggressive)[ \t]+(PF=|rows=|[0-9]+\s)''',
+  # JSON row listings: "name": "aimlapi_gpt4o__conservative"
+  '''['"][a-z0-9_]+__(conservative|balanced|aggressive)['"]''',
+]
+
 # Paths that should never trigger secret alerts:
 paths = [
   # Test fixtures contain intentionally fake credentials for unit tests
@@ -66,30 +81,3 @@ tags        = ["allowlist", "numeric-score"]
   [rules.allowlist]
   description = "Numeric score fields in strategy JSON — not secrets"
   regexes     = ['''"(score|weight|threshold|factor)"\s*:\s*[\d.]+''']
-
-# ---------------------------------------------------------------------------
-# Rule: skip PF_PORTFOLIO portfolio_key values
-#
-# Portfolio keys in this codebase follow the pattern <model_id>__<risk_appetite>
-# (e.g. aimlapi_gpt4o__conservative, groq_kimi_k2__conservative). The default
-# `generic-api-key` Gitleaks rule sometimes matches these (entropy 3.4-3.9) when
-# they appear in `WHERE portfolio_key='...'` SQL blocks inside reports and
-# planning MDs. They are NOT credentials — they are row identifiers in the
-# PF_PORTFOLIO table.
-#
-# Allowlist target: any value containing `__conservative`, `__balanced`, or
-# `__aggressive` that appears inside a SQL `WHERE portfolio_key=...` clause
-# or a PF_PORTFOLIO row listing.
-# ---------------------------------------------------------------------------
-[[rules]]
-id          = "skip-pf-portfolio-keys"
-description = "PF_PORTFOLIO row identifiers (model + risk_appetite) — not secrets"
-regex       = '''\bportfolio_key\s*=\s*['"]?([a-z0-9_]+__(conservative|balanced|aggressive))['"]?'''
-tags        = ["allowlist", "pf-portfolio-key"]
-
-  [rules.allowlist]
-  description = "PF_PORTFOLIO row identifiers in SQL or doc contexts"
-  regexes     = [
-    '''\bportfolio_key\s*=\s*['"]?[a-z0-9_]+__(conservative|balanced|aggressive)['"]?''',
-    '''^[ \t]*([a-z0-9_]+__(conservative|balanced|aggressive))[ \t]+(PF=|[0-9]+\s+|rows=)''',
-  ]
