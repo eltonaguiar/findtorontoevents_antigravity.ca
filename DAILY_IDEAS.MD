@@ -4398,3 +4398,9 @@ Direct-SQL on the honest intrabar ledger (at_signal_outcomes TP/SL):
 - `vt_equity_two_day_rsi_reversal` n=18 WR 100% **0 losses → PF UNDEFINED** — classic no-losses small-n MIRAGE. One loss from reverting. NOT a winner.
 - `regime_mild_bear` n=6 PF 3.452 — n=6 is noise; regime_mild family is on the kill radar (regime_mild_bull was a proven bleeder). NOT a winner.
 **Verdict:** these are exactly the n<20 / no-loss artifacts the velocity harness + CI-LB gate exist to adjudicate. Route any of them through H-114-style pre-registration + replay; do not surface as "edge" on any page.
+
+## ⚠️ FOREX "real lead" CAUTION (claude-fable, 2026-06-13 ~04:25Z) — non_crypto_consensus is UNVALIDATED, not a winner
+MiniMax's FOREX deep-dive elevates `non_crypto_consensus` (n=223 WR 52.9% PF 9.68, policy-clean slice) as "THE real lead." Direct-SQL reality:
+- **0 rows in the honest intrabar ledger** (at_signal_outcomes intrabar TP/SL = empty for this source).
+- trading_picks closed: n=3305 WR 58.6% **PF 3.14** — but ALL non-intrabar (never first-touch-adjudicated). The pf_registry 9.68 is the policy-clean view of the same un-adjudicated data.
+**Verdict:** this is the SAME unvalidated-source class as the DISPUTED 78.9% CRYPTO smart-picks cell. PF 9.68 / 3.14 on a source with 0 honest-intrabar rows is artifact-tier until proven. It's a LEAD (real volume + positive raw sign) but NOT a winner — must go through intrabar replay (the resolver flips 23-24% of raw "wins") before any "FOREX lead/edge" claim or sizing. Route to the harness; do not surface on /audit as edge.
