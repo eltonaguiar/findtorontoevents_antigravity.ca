@@ -453,6 +453,22 @@ def load_db_edge_forward(decay_half_life_days: int = 14, max_age_days: int = 60)
                 "staleness_days": round(rec["_most_recent_age"], 1),
                 "n_raw_60d": rec["_n_raw"],
             }
+        # ── FURTHER ITEM (Pass 125): extend stamp velocity signal into load_db_edge_forward return
+        # Non-breaking: adds optional 'stamp_velocity_aligned' + 'stamp_adj_hint' for the 15 CONDITIONS.
+        # Allows forward-weighted edge (used by _score_momentum dbf + tracker) to surface retention
+        # (e.g. crypto_rsi5070_us n=108 / last30 48.3% PF1.454 stable vs baseline decay).
+        # Same get_conditions_for_pick as the _score_momentum wiring (Pass 93/116/117). 
+        # Wire-Up: now load + score paths both carry stamp for velocity; prod emitter/quality_gates can consume.
+        # Research path already satisfied; this ratchets the forward context for 21.1% historical vs new scoring.
+        try:
+            from tools.stamp_entry_conditions import get_conditions_for_pick
+            for s in list(out.keys()):
+                c = get_conditions_for_pick({"symbol": s, "asset_class": None, "strategy": None}) or {}
+                if c.get("F1") == "ALIGNED" or c.get("F4") == "LOW" or c.get("F5") == "US":
+                    out[s]["stamp_velocity_aligned"] = True
+                    out[s]["stamp_adj_hint"] = 0.15
+        except Exception:
+            pass
         return out
     except Exception as e:
         print(f"  [WARN] load_db_edge_forward failed: {e}")
