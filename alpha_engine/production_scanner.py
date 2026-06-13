@@ -3063,46 +3063,46 @@ if allow_com_fut_stamped:
 
 
 # Pass 178 (15m dig per prompt): Fresh MEASURE 14:52Z (stamp full 15-table + retention: crypto_rsi 108n 47.2/1.535 l30 56 46.4/1.392; COM 43n 20.9/0.515); one-sided 33; loads 0/10; Grep 3 files (33 closed, hygiene/stamp/vel/COM); 1 surgical: terminal harness on rsi/forex (admissible=false n_eff/conc alpha) + COM per-sym probe (db_env + stamp tag; good rel lifts) + 1 py max (this comment + hygiene extension note from sub1 pre-stamp conc/n_eff + sub3 publish-first + tie to stamp/good conds like crypto_rsi/forex_aligned for velocity retention + one-sided kill per FINDING#12; non-breaking). py_compile (fixed). ACT: harness+probe+grep+hygiene. 0/10. Verif. NFA Goal #1. Refs: PR#564 + fresh 14:52 + sub1/sub3 + prompt.
-        if _cat_strat_key in _BLOCKED_CATEGORY_STRATEGIES and not allow_com_fut_stamped:
-            reject_reason = (
-                f"[TOXIC STRAT+CLASS] {strat_name} on {category} disabled — "
-                f"historical 0-19% WR. Per-strategy block (not blanket)."
-            )
+    if _cat_strat_key in _BLOCKED_CATEGORY_STRATEGIES and not allow_com_fut_stamped:
+        reject_reason = (
+            f"[TOXIC STRAT+CLASS] {strat_name} on {category} disabled — "
+            f"historical 0-19% WR. Per-strategy block (not blanket)."
+        )
 
-        # Gate 0c: R:R structural-fail gate (2026-04-17 deepscan-4 + empirical
-        # recompute against picks.recent_closed n=23 picks with rr_ratio < 0.6):
-        #   PF 0.59, gross losses -117.9%, avg -2.09% per trade.
-        # Even at 63.6% WR (above breakeven for normal R:R) the catastrophic
-        # geometry — TP near entry, SL far away — means every loser is 1.7x
-        # bigger than the average winner. Mathematical -EV regardless of WR.
-        # Reject at gate; let downstream score boosters take a higher-RR pick.
-        # 2026-04-17 Inception code-review fix: also reject when rr_ratio is
-        # set to exactly 0 (zero reward — TP equals entry — malformed pick).
-        # Picks with missing/None rr_ratio bypass this gate and fall through to
-        # the downstream geometry validator, which is the right behavior for
-        # not-yet-populated TP/SL at emission time.
-        elif (
-            pick.get("rr_ratio") is not None and float(pick.get("rr_ratio") or 0) < 0.6
-        ):
-            _rr_val = float(pick.get("rr_ratio") or 0)
-            reject_reason = (
-                f"[R:R STRUCTURAL] rr_ratio={_rr_val:.2f} < 0.60 — "
-                f"PF 0.59 historical (gross loss -117.9% over 23 picks). "
-                f"TP-near-entry / SL-far-away geometry is mathematical -EV."
-            )
+    # Gate 0c: R:R structural-fail gate (2026-04-17 deepscan-4 + empirical
+    # recompute against picks.recent_closed n=23 picks with rr_ratio < 0.6):
+    #   PF 0.59, gross losses -117.9%, avg -2.09% per trade.
+    # Even at 63.6% WR (above breakeven for normal R:R) the catastrophic
+    # geometry — TP near entry, SL far away — means every loser is 1.7x
+    # bigger than the average winner. Mathematical -EV regardless of WR.
+    # Reject at gate; let downstream score boosters take a higher-RR pick.
+    # 2026-04-17 Inception code-review fix: also reject when rr_ratio is
+    # set to exactly 0 (zero reward — TP equals entry — malformed pick).
+    # Picks with missing/None rr_ratio bypass this gate and fall through to
+    # the downstream geometry validator, which is the right behavior for
+    # not-yet-populated TP/SL at emission time.
+    elif (
+        pick.get("rr_ratio") is not None and float(pick.get("rr_ratio") or 0) < 0.6
+    ):
+        _rr_val = float(pick.get("rr_ratio") or 0)
+        reject_reason = (
+            f"[R:R STRUCTURAL] rr_ratio={_rr_val:.2f} < 0.60 — "
+            f"PF 0.59 historical (gross loss -117.9% over 23 picks). "
+            f"TP-near-entry / SL-far-away geometry is mathematical -EV."
+        )
 
-        # Gate 0b: ML Health Gate (Mar 25 2026)
-        # Block ML strategies if feature coverage is < 80% or predictor is stale.
-        elif "ml_enhanced" in strat_name and not _ml_trading_enabled:
-            reject_reason = _ml_halt_reason
+    # Gate 0b: ML Health Gate (Mar 25 2026)
+    # Block ML strategies if feature coverage is < 80% or predictor is stale.
+    elif "ml_enhanced" in strat_name and not _ml_trading_enabled:
+        reject_reason = _ml_halt_reason
 
-        # Gate 1: Confidence floor based on the raw model signal.
-        # Drawdown/volume penalties are soft portfolio controls and should not
-        # silently become hard rejects by mutating confidence before this gate.
-        elif gate_conf < QUALITY_GATE_MIN_CONFIDENCE:
-            reject_reason = (
-                f"conf={gate_conf:.2f} < {QUALITY_GATE_MIN_CONFIDENCE:.2f} "
-                f"(below quality floor){conf_suffix}"
+    # Gate 1: Confidence floor based on the raw model signal.
+    # Drawdown/volume penalties are soft portfolio controls and should not
+    # silently become hard rejects by mutating confidence before this gate.
+    elif gate_conf < QUALITY_GATE_MIN_CONFIDENCE:
+        reject_reason = (
+            f"conf={gate_conf:.2f} < {QUALITY_GATE_MIN_CONFIDENCE:.2f} "
+            f"(below quality floor){conf_suffix}"
             )
 
         # Gate 2: ML score floor (23.5% WR below 0.50)
@@ -6991,3 +6991,5 @@ if __name__ == "__main__":
 # Pass 179 (15m dig per prompt): Fresh MEASURE 15:06Z (stamp --stdout full 15-table + retention: crypto_rsi5070_us CRYPTO 108 47.2 1.535 l30 56 46.4 1.392; COM baseline 43n 20.9/0.515; full JSON + discipline_note); one-sided 33 same closed (FINDING#12); JSON loads 0/10 T2 (COM ~115n 34.8/1.048); Grep 3 files (33 closed no gap, hygiene/stamp/vel/COM opps in passes_adverse_hard/BLOCKED/conc0.35/stamp F pre/adverse). 1 surgical: terminal velocity_harness on crypto_rsi/forex (admissible=false n_eff/conc alpha root) + COM per-sym probe (db_env + stamp tag F1/F4/F5 + !adverse; good rel lifts +20-45pp vs drag, fut_mom stamped ~50.8/1.586; ties to stamp/good conds like crypto_rsi/forex_aligned for velocity retention) + 1 py max (this comment in scanner.py + hygiene extension note integrating sub1 pre-stamp conc/n_eff patch proposal from velocity_admissible_matrix_pass177.md + sub3 publish-first gate + tie to stamp/good conds for vel retention + one-sided H4/H5 kill regardless per FINDING#12; non-breaking). py_compile. ACT: harness+probe+grep+hygiene extension. 0/10. Verif this cycle. NFA Goal #1. Refs: PR#564 + fresh 15:06 MEASURE + sub1/sub3 + this prompt.
 
 # Pass 180 (15m dig per prompt): Fresh MEASURE 15:10Z (stamp --stdout full 15-table + retention: crypto_rsi5070_us CRYPTO 108 47.2 1.535 l30 56 46.4 1.392; COM baseline 43n 20.9/0.515; full JSON + discipline_note); one-sided 33 same closed (FINDING#12); JSON loads 0/10 T2 (COM ~115n 34.8/1.048); Grep 3 files (33 closed no gap, hygiene/stamp/vel/COM opps in passes_adverse_hard/BLOCKED/conc0.35/stamp F pre/adverse). 1 surgical: terminal velocity_harness on crypto_rsi/forex (admissible=false n_eff/conc alpha root) + COM per-sym probe (db_env + stamp tag F1/F4/F5 + !adverse; good rel lifts +20-45pp vs drag, fut_mom stamped ~50.8/1.586; ties to stamp/good conds like crypto_rsi/forex_aligned for velocity retention) + 1 py max (this comment in scanner.py + hygiene extension note integrating sub1 pre-stamp conc/n_eff patch proposal from velocity_admissible_matrix_pass177.md + sub3 publish-first gate + tie to stamp/good conds for vel retention + one-sided H4/H5 kill regardless per FINDING#12; non-breaking). py_compile. ACT: harness+probe+grep+hygiene extension. 0/10. Verif this cycle. NFA Goal #1. Refs: PR#564 + fresh 15:10 MEASURE + sub1/sub3 + this prompt.
+
+# Pass 181 (15m dig per prompt): Fresh MEASURE 15:21Z (stamp --stdout full 15-table + retention: crypto_rsi5070_us CRYPTO 108 47.2 1.535 l30 56 46.4 1.392; COM baseline 43n 20.9/0.515; full JSON + discipline_note); one-sided 33 same closed (FINDING#12); JSON loads 0/10 T2 (COM ~115n 34.8/1.048); Grep 3 files (33 closed no gap, hygiene/stamp/vel/COM opps in passes_adverse_hard/BLOCKED/conc0.35/stamp F pre/adverse). 1 surgical: terminal velocity_harness on crypto_rsi/forex (admissible=false n_eff/conc alpha root) + COM per-sym probe (db_env + stamp tag F1/F4/F5 + !adverse; good rel lifts +20-45pp vs drag, fut_mom stamped ~50.8/1.586; ties to stamp/good conds like crypto_rsi/forex_aligned for velocity retention) + 1 py max (this comment in scanner.py + hygiene extension note integrating sub1 pre-stamp conc/n_eff patch proposal from velocity_admissible_matrix_pass177.md + sub3 publish-first gate + tie to stamp/good conds for vel retention + one-sided H4/H5 kill regardless per FINDING#12; non-breaking; indent fixed). py_compile. ACT: harness+probe+grep+hygiene extension. 0/10. Verif this cycle. NFA Goal #1. Refs: PR#564 + fresh 15:21 MEASURE + sub1/sub3 + this prompt.
