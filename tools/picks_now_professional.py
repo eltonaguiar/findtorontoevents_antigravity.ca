@@ -723,6 +723,8 @@ class QuantScorer:
         if adverse_flag:
             score -= 20
             signals.append("ADVERSE_FADE (stamp F + vol/bb proxy per velocity/granular)")
+        if stamp_adj > 0:
+            signals.append("STAMP_COND_APPLIED (F pre-filter for velocity retention + badge surfacing in tracker/picks-now)")  # pro-5: CONDITION badge for visibility of good entry conds (e.g. crypto_rsi, forex_aligned)
 
         # Pass 93: wiring FULL (load + score + synth + adverse explicit kill proxy) per ACTION_PLAN + thingstocheck + HF. Research path complete; prod emitter TODO post-harness per scanner note.
 
@@ -754,11 +756,12 @@ class QuantScorer:
         # Prod path: extend synth filter + velocity scoring to tracker emission (picks_now_tracker / vw_picks_now_dedup); surface CONDITION badges + COM admissible. 4h sprint: after this, probe tracker for 21.1 FWD rows (SELECT by score/created_at), velocity calc on 15 (stamp --stdout + manual retention vs baseline), paper on SI/PL fut admissible (H-153). Pre-reg H-153 done.
 
         # Pass 117 dig (2026-06-13): H-154 pre-reg (velocity on 15 conds + COM fut SI/PL + tracker FWD 647 rows per DB per-sym + tracker insight; focus SI/PL per DB n55/48 wr40/31 vs GC/HG 0% conc; harness on conds + COM fut (SI/PL) + tracker FWD context for 21.1 historical vs current scoring). 4h sprint: after this, velocity calc on 15 (stamp --stdout + manual retention vs baseline from entry 01:57), tracker probe for 21.1 FWD rows (SELECT by score/created_at on 647; historical closed; new scoring not yet in closed data), paper on SI/PL fut admissible (H-154). Prod path: extend velocity scoring + synth filter to tracker emission for future 21.1 lift. Pre-reg H-154 done.
-        synth_models = {"cursor_agent", "kimi_direct", "llama4_scout"}
-        src = (info.get("source_model") or info.get("model") or "").lower()
-        if any(m in src for m in synth_models):
+        synth_models = {"cursor_agent", "kimi_direct", "llama4_scout", "cursor", "deepseek"}  # expanded per pro-5
+        src = (info.get("source_model") or info.get("model") or info.get("source") or "").lower()
+        if any(m in src for m in synth_models) or "synthetic" in src:
             score -= 25
-            signals.append("SYNTHETIC_SEED_DOWNWEIGHT (ai-tournament 1636 contamination; prefer grok3 0%-synth)")
+            signals.append("SYNTHETIC_SEED_DOWNWEIGHT (ai-tournament 1636 contamination; prefer grok3 0%-synth; expanded models + source check)")
+        # CONDITION badge surfacing (pro-5): caller can use for /picks-now or tracker to show e.g. "STAMP: crypto_rsi5070_us" for velocity retention visibility. See prod path notes.
 
         dbf_n_raw_60d = dbf.get("n_raw_60d", 0)
 

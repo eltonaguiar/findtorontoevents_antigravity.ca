@@ -324,6 +324,10 @@ def _build(hours: int, label: str, include_pick_rows: bool, out_name: str):
 def main():
     # FURTHER ITEM completed in worktree: integrate _force_db_refresh() to always prioritize live DB (fixes stale 06-05 P1 per deep-dive/thingstocheck/velocity analysis).
     # Call at start; _build will use if available (see _query_window updates in full script for conn pass-through if extended).
+    # Support --force-db for explicit CI invocation (P0 recency fix).
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--force-db', action='store_true', help='Force live DB query for fresh 14d/48h (default behavior now)')
+    args = parser.parse_args()
     _force_db_refresh()
     print("=== 14-day window ===")
     _build(hours=24 * 14, label="last_14_days", include_pick_rows=False, out_name="pick_summary_stats_2w.json")

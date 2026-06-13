@@ -50,7 +50,7 @@ jobs:
 
       - name: Build recency summaries (14d + 48h)
         run: |
-          python tools/audit_pick_funnel/build_recency_summary.py \
+          python tools/audit_pick_funnel/build_recency_summary.py --force-db \
             || echo "::warning::build_recency_summary.py failed (soft-fail)"
 
       - name: Run swarm verdict
