@@ -912,6 +912,26 @@ a:hover { text-decoration: underline; }
   </div>
   </details>
   <div id="audit-surface-truth-mount" style="margin:8px 0"></div>
+  <details id="strategy-tribunal-panel" style="margin:8px 0;padding:10px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);border-radius:8px;color:#fecaca;font-size:12px;line-height:1.5">
+    <summary style="cursor:pointer;font-weight:700;color:#fca5a5">⚖ Strategy Kill Tribunal (weekly intrabar auto-review)</summary>
+    <div id="strategy-tribunal-body" style="margin-top:8px;color:#e5e7eb">Loading tribunal report…</div>
+  </details>
+  <script>
+  (function(){
+    fetch('./data/strategy_tribunal_latest.json?' + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      var el = document.getElementById('strategy-tribunal-body');
+      if (!el) return;
+      if (!j || !j.summary) { el.textContent = 'No tribunal report yet — runs Fridays 14:00 UTC (dry-run).'; return; }
+      var s = j.summary;
+      var kills = (j.kills || []).slice(0, 8).map(function(k){
+        return k.strategy + ' (' + k.asset_class + ' n=' + k.n + ' WR=' + k.wr_pct + '% PF=' + k.pf + ')';
+      }).join('; ') || 'none';
+      el.innerHTML = '<div><strong>Last run:</strong> ' + (j.generated_at || '?') + ' · <strong>KILL</strong> ' + s.n_kill + ' · PROBATION ' + s.n_probation + ' · KEEP ' + s.n_keep + '</div>'
+        + '<div style="margin-top:6px;font-size:11px;color:#fca5a5"><strong>Top KILL candidates:</strong> ' + kills + '</div>'
+        + '<div style="margin-top:4px;font-size:11px;color:#94a3b8">Full report: <code>reports/strategy_tribunal_*.json</code>. Apply via workflow_dispatch + TRIBUNAL_APPLY secret.</div>';
+    }).catch(function(){ var el = document.getElementById('strategy-tribunal-body'); if (el) el.textContent = 'Tribunal JSON unavailable.'; });
+  })();
+  </script>
   <script src="audit_surface_truth_banner.js"></script>
   <!-- DISPUTED BANNER (Tier-0 fix 2026-05-28) — propagated from pick_funnel.html so /audit
        headline cannot be cited without the disclosure. Conditioned on money_ready_verdict
@@ -988,6 +1008,14 @@ a:hover { text-decoration: underline; }
             var wr = (c.wr != null && !isNaN(c.wr)) ? (Number(c.wr) * 100).toFixed(1) + '%' : 'n/a';
             var pf = (c.pf != null && !isNaN(c.pf)) ? Number(c.pf).toFixed(2) : 'n/a';
             var n  = (c.n_resolved != null) ? c.n_resolved : '?';
+            var sizingSrc = c.sizing_source || 'policy_clean';
+            var cohortLabel = sizingSrc === 'intrabar_truth'
+              ? 'intrabar-true sizing'
+              : (sizingSrc === 'insufficient_intrabar' ? 'policy-clean (intrabar n&lt;30)' : 'policy-clean');
+            var discoveryLine = '';
+            if (sizingSrc === 'intrabar_truth' && c.policy_clean_wr != null && c.policy_clean_n != null) {
+              discoveryLine = ' <span style="color:#94a3b8;font-size:10px" title="Legacy policy-clean cohort — discovery only, not sized">discovery: WR ' + (Number(c.policy_clean_wr) * 100).toFixed(1) + '%, n=' + c.policy_clean_n + '</span>';
+            }
             var raw = c.verdict || 'INSUFFICIENT_DATA';
             var ready = /(^|_)READY$|PASS/.test(raw) && !/NOT_READY|INSUFFICIENT/.test(raw);
             // 2026-06-04: render the new `policy_frozen` flag (PR 648f2a19a2) as a
@@ -1013,13 +1041,13 @@ a:hover { text-decoration: underline; }
             if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
             var liveLine = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
               '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + gateBadges + ' ' +
-              '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' policy-clean resolved)</span>' + sleeveTxt;
+              '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' ' + cohortLabel + ')</span>' + discoveryLine + sleeveTxt;
             span.innerHTML = liveLine +
               '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
               '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
           });
           var asof = document.getElementById('major-goal-asof');
-          if (asof) asof.innerHTML = 'Live &mdash; <code>money_ready_verdict.json</code> policy-clean closed-pick cohort, generated ' +
+          if (asof) asof.innerHTML = 'Live &mdash; <code>money_ready_verdict.json</code> sizing cohort (default intrabar when n&ge;30), generated ' +
             (mv.generated_date || (mv.generated_at ? String(mv.generated_at).slice(0, 10) : '?')) +
             '. Small n = strict post-resolver-v2 clean cohort (open-validator backlog starves it); see <a href="/audit/pick_funnel.html" style="color:#06b6d4">pick_funnel.html</a> for the full source-by-source breakdown.';
         })
@@ -1031,15 +1059,24 @@ a:hover { text-decoration: underline; }
       var span = document.querySelector('[data-mg-class="' + key + '"]');
       if (!span) return;
       var row = d[cls] || {};
-      var pf = row.profit_factor != null ? row.profit_factor : row.pf;
-      var wr = row.win_rate_pct != null ? row.win_rate_pct : (row.win_rate != null ? row.win_rate * (row.win_rate <= 1 ? 100 : 1) : null);
-      var n  = row.closed_trades != null ? row.closed_trades : (row.n != null ? row.n : row.trades);
+      var dispWr = row.display_wr_pct != null ? row.display_wr_pct : (row.win_rate_pct != null ? row.win_rate_pct : (row.win_rate != null ? row.win_rate * (row.win_rate <= 1 ? 100 : 1) : null));
+      var dispPf = row.display_pf != null ? row.display_pf : (row.profit_factor != null ? row.profit_factor : row.pf);
+      var dispN = row.display_n != null ? row.display_n : (row.closed_trades != null ? row.closed_trades : (row.n != null ? row.n : row.trades));
+      var pf = dispPf;
+      var wr = dispWr;
+      var n  = dispN;
       if (pf == null && wr == null && n == null) return;
       var t = tier(pf, wr, n);
       var labelColor = t.color;
       if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
+      var srcTag = row.display_source === 'intrabar_truth'
+        ? ' <span style="font-size:10px;color:#86efac" title="Primary metrics from at_signal_outcomes intrabar ledger (n≥30)">intrabar-true</span>'
+        : ' <span style="font-size:10px;color:#94a3b8" title="Policy-clean discovery cohort — not sized until intrabar n≥30">discovery</span>';
+      var discLine = (row.display_source === 'intrabar_truth' && row.policy_clean_wr_pct != null)
+        ? ' <span style="font-size:10px;color:#64748b" title="Legacy policy-clean WR — may disagree with intrabar">policy-clean WR ' + fmt(row.policy_clean_wr_pct, 1) + '%</span>'
+        : '';
       var html = '<strong style="color:' + labelColor + '">' + key + '</strong> &mdash; ' +
-        t.label + ' (PF ' + fmt(pf, 2) + ', WR ' + fmt(wr, 1) + '%, n=' + (n != null ? n : '—') + ').';
+        t.label + ' (PF ' + fmt(pf, 2) + ', WR ' + fmt(wr, 1) + '%, n=' + (n != null ? n : '—') + ')' + srcTag + discLine + '.';
       var cRow = (conc && conc[key]) || null;
       if (cRow && (cRow.tier === 'WARN' || cRow.tier === 'BLOCK')) {
         var badgeColor = cRow.tier === 'BLOCK' ? '#ef4444' : '#f59e0b';
@@ -2738,7 +2775,7 @@ function showStrategyPopup(iconElem, strategyName) {
   popup.style.top = (rect.bottom + window.scrollY) + 'px';
   popup.style.left = (rect.left + window.scrollX) + 'px';
 }
-// Data too large to embed (14MB). Loading from data/dashboard_data.json instead.
+// Data too large to embed (13MB). Loading from data/dashboard_data.json instead.
 // External data/dashboard_data.json is loaded in init() via async fetch only.
 // Sync XHR was removed: it blocked the main thread for seconds on large JSON (mobile "page unresponsive").
 let D = window.DASHBOARD_DATA || {};
