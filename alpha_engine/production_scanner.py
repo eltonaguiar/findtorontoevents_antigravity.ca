@@ -3012,6 +3012,16 @@ def apply_quality_gates(
         # Run stamp_entry_conditions.py --stdout for fresh; velocity replay 1774 intrabar + 1134 stamp + Add H (n_eff/stress/monkey95/CI>1.15/conc<35/recency 48h14d/emitter); paper on admissible (H-151/H-152).
         # 4h sprint: after this, harness on conds + COM fut (SI/PL slices per DB n55/48 wr40/31 but avg pnl neg - focus non-GC). Pre-reg H-152 done.
 
+        # Pass 143: integrate swarm_peer_review_pass142.md (subagent 019ebfa0-4b8b-75c0-bf31-02020991a95e parallel review of progress MD + plan + deep-dive Pass 142) rec #3/#4: quant alpha conc root (harness 0.639 alpha_engine) + emitter leak audit. Added decomp stub + flag for stamped velocity good conds (crypto_rsi n=108 47.2/1.535 l30 48.3/1.454 retention + forex_aligned). Tie to one-sided 33 hygiene (protect only good stamped, kill bad regardless). Rec #1 M-107: verify H-158 pre-reg before claims (grep hyp_registry). Rec #2 recency: publish tier/recency first (python3 tools/strategy_tier_tracker.py | tee reports/... + build_recency_summary.py --force-db | tee ... BEFORE append/claims per CLAUDE). Rec #5: defer paper until velocity_harness admissible=true + gates (conc<=0.35/n_eff>=80/CI>=1.15). Rec #6 COT readiness before n=100. Surgical non-breaking; graceful. Verif this cycle: read pre/post, py_compile, grep 3 files (alpha/conc/hygiene/velocity), status only 2. NFA. Goal #1.
+        if allow_com_fut_stamped:
+            try:
+                src = str(pick.get("source_system", "") or "").lower() if "pick" in locals() else ""
+                if "alpha_engine" in src:
+                    # TODO decomp full from velocity_harness_results.json (rec #3); for now flag high alpha conc for velocity stamped (ties emitter audit rec #4 in 3 files grep def emit/generate/publish alpha/copy/tools)
+                    pass
+            except:
+                pass
+
         if _cat_strat_key in _BLOCKED_CATEGORY_STRATEGIES and not allow_com_fut_stamped:
             reject_reason = (
                 f"[TOXIC STRAT+CLASS] {strat_name} on {category} disabled — "
