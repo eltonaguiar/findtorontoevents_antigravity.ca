@@ -866,6 +866,42 @@ class QuantScorer:
             signals.append(f"NEG_TARGET_UPSIDE({upside:.0f}%)")
             direction = "WATCH"
 
+        # ── Intrabar sym×dir forward gate (pro-level, 2026-06-13) ──
+        # Honest forward WR from at_signal_outcomes; demotes/blocks bad symbols.
+        intrabar_fwd_n = None
+        intrabar_fwd_wr_pct = None
+        intrabar_fwd_pf = None
+        intrabar_gate = "NO_DATA"
+        intrabar_gate_note = ""
+        _sym_dir_map = getattr(self, "intrabar_sym_dir_map", None) or {}
+        _class_truth = getattr(self, "intrabar_class_truth", None) or {}
+        if _sym_dir_map or _class_truth:
+            from tools.picks_now_intrabar_gate import (
+                apply_class_fail_gate,
+                classify_intrabar_pick,
+                lookup_sym_dir,
+            )
+            row = lookup_sym_dir(_sym_dir_map, sym, direction) if _sym_dir_map else None
+            if row:
+                intrabar_fwd_n = row["n"]
+                intrabar_fwd_wr_pct = row["wr_pct"]
+                intrabar_fwd_pf = row["pf"]
+                direction, intrabar_gate, intrabar_gate_note = classify_intrabar_pick(
+                    direction, row["wr_pct"], row["n"],
+                )
+            class_dir, class_note = apply_class_fail_gate(direction, cls, _class_truth)
+            if class_note:
+                direction = class_dir
+                intrabar_gate_note = (
+                    f"{intrabar_gate_note}; {class_note}" if intrabar_gate_note else class_note
+                )
+                if intrabar_gate in ("OK", "NO_DATA"):
+                    intrabar_gate = "CLASS_DEMOTED"
+            if intrabar_gate in ("BLOCKED", "CLASS_DEMOTED", "DEMOTED") and intrabar_gate_note:
+                signals.append(f"INTRABAR_GATE({intrabar_gate_note})")
+            if direction not in ("STRONG_BUY", "BUY"):
+                position_pct = 0
+
         # ── Position sizing (Kelly/vol-parity) ──
         if direction in ("STRONG_BUY", "BUY") and rvol > 0:
             if rvol < 15:
@@ -1048,6 +1084,11 @@ class QuantScorer:
             # Phase B step 1 — ATR-relative TP/SL quality (0-100; None when
             # BUY/STRONG_BUY didn't fire or atr_pct was zero).
             "tp_sl_quality_score": tp_sl_quality_score,
+            "intrabar_fwd_n": intrabar_fwd_n,
+            "intrabar_fwd_wr_pct": intrabar_fwd_wr_pct,
+            "intrabar_fwd_pf": intrabar_fwd_pf,
+            "intrabar_gate": intrabar_gate,
+            "intrabar_gate_note": intrabar_gate_note or None,
         }
 
 
@@ -1247,6 +1288,16 @@ def main():
     else:
         print(f"   Tournament panel: disabled or unavailable")
 
+    from tools.picks_now_intrabar_gate import load_class_truth, load_sym_dir_map
+    intrabar_sym_dir_map = load_sym_dir_map()
+    intrabar_class_truth = load_class_truth()
+    scorer.intrabar_sym_dir_map = intrabar_sym_dir_map
+    scorer.intrabar_class_truth = intrabar_class_truth
+    print(
+        f"\n📥 Intrabar forward overlay: {len(intrabar_sym_dir_map)} sym×dir keys, "
+        f"{len(intrabar_class_truth)} classes"
+    )
+
     # Load FMP financial scores (Piotroski, Altman-Z)
     all_tickers = [t for cfg in UNIVERSE.values() for t in cfg["tickers"]]
     print(f"\n📥 Loading FMP financial scores for {len(all_tickers)} symbols...")
@@ -1427,6 +1478,15 @@ def main():
             seen.add(sym); out.append(r)
         return out
 
+    _symdir_path = DATA_DIR / "intrabar_sym_dir_fwd.json"
+    _intrabar_overlay_ts = None
+    if _symdir_path.is_file():
+        try:
+            with open(_symdir_path, encoding="utf-8") as _sf:
+                _intrabar_overlay_ts = json.load(_sf).get("generated_at")
+        except (json.JSONDecodeError, OSError):
+            pass
+
     json_data = {
         "generated_at": ts.isoformat(),
         "generated_at_est": datetime.now(timezone.utc).strftime("%b %d, %Y %I:%M %p ET (approx)"),
@@ -1437,6 +1497,11 @@ def main():
         "picks": _dedup_by_symbol(json_picks.to_dict("records")),
         "all": _dedup_by_symbol(df_res.sort_values('score', ascending=False).head(60).to_dict("records"))[:50],
         "safest": _dedup_by_symbol(safest.to_dict("records")),
+        "intrabar_overlay_generated_at": _intrabar_overlay_ts,
+        "pro_level_gate": (
+            "Picks demoted/blocked when intrabar sym×dir forward WR<50% (n≥5) or "
+            "class intrabar FAIL at n≥100. Discovery quant scores alone do not qualify for STRONG_BUY."
+        ),
     }
     # Clean NaN values before JSON serialization — NaN is NOT valid JSON
     # and causes JavaScript JSON.parse() to throw SyntaxError.

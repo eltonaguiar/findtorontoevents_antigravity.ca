@@ -1,0 +1,60 @@
+# Weekly strategy kill tribunal (P1-B) — dry-run report; --apply gated by TRIBUNAL_APPLY secret.
+name: Strategy Kill Tribunal
+
+on:
+  schedule:
+    - cron: "0 14 * * 5"  # Friday 14:00 UTC
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Append KILL verdicts to emitter_audit (requires TRIBUNAL_APPLY secret)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: write
+
+jobs:
+  tribunal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: python3 -m pip install pymysql -q
+
+      - name: Run tribunal (dry-run)
+        if: github.event_name != 'workflow_dispatch' || inputs.apply != 'true'
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/strategy_kill_tribunal.py --stdout | head -80
+
+      - name: Run tribunal (apply)
+        if: github.event_name == 'workflow_dispatch' && inputs.apply == 'true'
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          TRIBUNAL_APPLY: ${{ secrets.TRIBUNAL_APPLY }}
+        run: python3 tools/strategy_kill_tribunal.py --apply --stdout | head -80
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/strategy_tribunal_*.json audit_trail/data/emitter_audit.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No tribunal changes to commit"
+          else
+            git commit -m "chore(tribunal): weekly strategy kill report $(date -u +'%Y-%m-%d') [skip ci]"
+            git push || echo "push skipped (race ok)"
+          fi
