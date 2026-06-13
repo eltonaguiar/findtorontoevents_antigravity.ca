@@ -1,3 +1,8 @@
+> ⚠️ **DEPRECATED / SIMULATED — NOT A LIVE TEST (INCIDENT#137, 2026-06-13).**
+> Funding rates here are hardcoded literals, not exchange data; the survivor/eliminated
+> lists are a STATIC analysis whose period ended **2026-02-17**. The hourly workflow that
+> regenerated this file is now DISABLED. Do not size, cite, or trust any number below.
+
 ##  Battle Test Report
 
 **Last Run:** 2026-06-13 01:41:16 UTC
