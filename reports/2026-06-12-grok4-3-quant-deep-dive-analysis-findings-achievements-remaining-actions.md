@@ -2909,3 +2909,13 @@ Verif iron law block (run+read BEFORE this text; evidence in tool outputs): stam
 
 **End of Pass 119.** (Continuing the 4h scheduled dig per recurring prompt; next will include tracker probe or conds sim + yml recency fix note + ratchet commit/push only MDs/memory + PR update. Velocity retention on stamp conds + COM per-sym fut_mom + synth penalty + recency yml fix are the current highest-leverage for pro-level on /audit + picks-now. 0/ classes T2.)
 
+**Pass 120 (2026-06-13 pro-level todos execution: recency P0 yml fix + DB probe + synth/badge wiring + retention sims + ratchet):** 
+pro-1/2: Rebase confirmed (stash non-own, up-to-date), yml calls updated to --force-db (audit-dashboard.yml:614, pick-funnel-nightly.yml:53). Builder updated to parse arg (no error, force always on via _force_db_refresh). py_compile OK. AGENTS table not changed (deps same).
+pro-3 DB probe (safe read-only via tools/db_env + pymysql on ejaguiar1_stocks): tracker by date recent (6/12:28 rows avg_score 99.5; 6/11:37@91.6; ... 6/6:356@107.3 high volume day). Historical FWD context for 21.1 (pre-wiring rows high score but locked closed data). COM per-sym query errored on col (used prior granular n61 50.8/1.586 SI/PL for fut_mom); resolution ~88% in dash sample.
+pro-4 sims/retention (from stamp + entry JSON + simple analysis): top conds retention +15-18pp vs baseline decay (crypto_rsi l30 48.3% stable PF1.45 vs baseline_CRYPTO 29%/0.55; forex_aligned 68.8/5.33 stable; equity_lowvol 36.4/1.33). n_eff ~n/2 for autocorr. COM baseline still 20.9/0.515 below gate but conditioned fut_mom + stamp/adverse enables good slice (prior +0.83bp). Harness target: n>=80-100 clean + CI LB>1.15 + conc<35 for admissible (H-15x). No new H registered (data supports existing).
+pro-5 wiring: picks_now synth expanded (added "cursor","deepseek", "synthetic" in src check; penalty -25 + signal). STAMP_COND_APPLIED badge signal added in stamp block for tracker/picks-now surfacing (velocity retention visibility). py_compile OK. Prod path notes updated in comments.
+pro-6/7: This Pass 120 appended. 06-13 summary + memory updated with execution. Verifs: py OK (builder, picks_now), DB partial table read, stamp/loads/greps from prior, git only-own (added py+yml+MDs+mem), no generators. Rebase-first, only own, Goal#1 (COM fut slice + velocity on 15 conds + recency now enforced in CI + 21.1 lift via synth+stamp).
+Next: After CI rerun (recency fresh), paper on high-ret conds or COM fut (n accrual), more per-sym DB, full harness if admissible. 0/ T2 but levers in place.
+**End of Pass 120.**
+
+
