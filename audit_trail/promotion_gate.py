@@ -173,6 +173,13 @@ def admission_reason(strategy_key: str, asset_class: str) -> str:
 TIER2_MIN_N = 100
 TIER2_MIN_WR = 0.55
 TIER2_MIN_PF = 1.4
+# 2026-06-13: the master loop's ACTUAL promotion bar (MD §2/§10) is the 95% CI
+# LOWER BOUND of net PF, not the point estimate. The code only checked point PF,
+# which would PASS mirages: futures_momentum point PF 1.53 (>1.4) has CI-LB 0.43
+# (FORWARD_CANDIDATE_SCOREBOARD_2026-06-13). Enforce the CI-LB so point-estimate
+# inflation can never promote. Set TIER2_REQUIRE_CI_LB=0 only for legacy callers
+# that cannot supply per-trade pnls (they keep point-PF behavior, logged).
+TIER2_MIN_PF_CI_LB = 1.15
 TIER2_MIN_DSR = 0.80
 TIER2_OOS_PF_RATIO = 0.85
 TIER2_MAX_REGIME_WR_DROP = 0.15
@@ -217,6 +224,7 @@ def evaluate_forward_tier2(
     wr_low_vix: float | None = None,
     strategy_key: str | None = None,
     asset_class: str | None = None,
+    clusters: list | None = None,
 ) -> dict:
     """Six-check promotion ladder for paper→production (MASTERPLAN action 4).
 
@@ -247,6 +255,21 @@ def evaluate_forward_tier2(
     if pf is None or (pf != float("inf") and pf < TIER2_MIN_PF):
         blockers.append(f"pf<{TIER2_MIN_PF}")
 
+    # CI-LOWER-BOUND GATE (2026-06-13) — the master-loop promotion bar. Point PF
+    # alone passes small-n/concentration mirages; require the cluster/iid bootstrap
+    # CI-LB > 1.15. clusters (optional, list aligned to closed_pnls) make it
+    # symbol-day-honest. Fail-closed: if pf_ci_lower is unavailable, block on it
+    # rather than silently fall back to point PF.
+    pf_ci_lb = None
+    try:
+        from tools.pf_ci_lower import pf_ci_lower as _ci
+        _res = _ci(window, clusters=(clusters[:TIER2_MIN_N] if clusters else None))
+        pf_ci_lb = _res.get("pf_ci_lower")
+        if pf_ci_lb is None or pf_ci_lb < TIER2_MIN_PF_CI_LB:
+            blockers.append(f"pf_ci_lb<{TIER2_MIN_PF_CI_LB} (got {pf_ci_lb})")
+    except Exception as _exc:
+        blockers.append(f"pf_ci_lb_uncomputable ({_exc}) — fail-closed")
+
     if oos_pf is not None and is_pf is not None and is_pf > 0:
         if oos_pf < TIER2_OOS_PF_RATIO * is_pf:
             blockers.append("oos_pf_below_85pct_is")
@@ -264,6 +287,7 @@ def evaluate_forward_tier2(
         "n": n,
         "wr": round(wr, 4),
         "pf": round(pf, 4) if pf is not None and pf != float("inf") else pf,
+        "pf_ci_lower": pf_ci_lb,
         "dsr": dsr,
     }
 
