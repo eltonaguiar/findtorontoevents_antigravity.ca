@@ -1983,6 +1983,13 @@ BLOCKED_SOURCE_SYSTEMS = {
     # Dormant since March (0 intrabar-resolved rows) but ingestion-ACTIVE (NULL ts bypasses dedup).
     "kimi_riseoftheclaw",
     "rocket_scanner",  # 2026-04-05: 5 active picks, 0% WR, -0.81% avg — kimi + noncrypto-drilldown live audit
+    # Pass 129: extend BLOCKED for FINDING#12 100% one-sided pathology (H4/H5, 33 strats >=20 resolved all WON or all LOST from reddit/copy/gnews/currents/stocktwits/youtube hype/spam per check_one_sided_resolution). Hard block cleans emission for 21.1% FWD pollution + low aggregate WR (ties to stamp: good CONDITIONS like crypto_rsi n=108 protected by velocity but bad sources killed regardless; see deep-dive Pass 128/129 + master loop H4 external + H5 coverage). Re-eval after n>=30 clean + stamp filter. Full list in one-sided tool output.
+    "reddit/reddit:u/ogroyalsfan1911",  # 100% WON hype per FINDING#12
+    "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost",  # 100% LOST
+    "gnews/gnews:The Economic Times",  # 100% LOST
+    "stocktwits/stocktwits:Kenrocket",  # 100% LOST
+    "copy_pm_pm_6e1d5040",  # 100% LOST
+    "youtube/youtube:coinbureau",  # 100% WON
     # 2026-04-28: copy_trader_highscore — Hyperliquid leaderboard SHORT replay system.
     # System aggregate (audit_dashboard/data/dashboard_data.json):
     #   resolved=234, WR 31.6%, avg -0.34%, sum -78.41%, PF 0.74, MaxDD 106.5%.
