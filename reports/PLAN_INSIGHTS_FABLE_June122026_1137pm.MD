@@ -102,3 +102,21 @@ The top-*traded* pair is actually a drag: **EURJPY (n=38) is PF 0.94 / 47% — b
 Instead of the whole source, pilot **`non_crypto_consensus` FOREX LONG** (PF 3.13, decisive WR 73%, IS 4.82 / OOS 2.05, n=129), optionally dropping the three break-even pairs (EURJPY, EURGBP, NZDUSD). This is the highest-conviction, most-robust slice and the recommended Stage-3 forward-paper pilot specification.
 
 **Caveat preserved:** still daily-resolved (not intrabar), still a 2026 cohort — the pilot is what confirms it forward. The per-symbol slicing here is descriptive de-risking of the *existing* sample, not a new optimized backtest, so it does not add overfitting risk to the headline PF.
+
+---
+
+## 9. ⚠️ CRITICAL COST CAVEAT (2026-06-13) — the edge is GROSS-only
+
+A transaction-cost stress (the peer panel's #1 concern) materially downgrades this finding. The winners are tiny (~0.2–0.3% per trade), so FX spread/slippage dominates:
+
+| Round-trip cost | Net PF (LONG, n=129) | decisive WR |
+|---|---|---|
+| 0 bp (gross) | 3.13 | 72.5% |
+| 2 bp | 1.80 | 58.8% |
+| 3 bp | 1.30 | 50.0% |
+| 5 bp | **0.66** | 32.9% |
+| **blended (majors 3bp / JPY 6bp)** | **0.76 — UNPROFITABLE** | 35.4% |
+
+**Honest verdict:** `non_crypto_consensus` FOREX LONG is a **knife-edge, execution-dependent edge** — net-profitable only at **≤2 bp round-trip** (excellent execution, majors only) and a **loser at realistic retail FX cost**. The gross PF 3.13 / 2.02 is real but does **not** survive costs. It is **NOT money-ready as currently executed.**
+
+This reframes the pilot: the forward tracker (`tools/forex_long_pilot_tracker.py`) now reports **NET-of-cost PF as the headline** and gates acceptance on net, not gross. The pilot's real question becomes: *can it be executed at ≤2 bp on majors* — not just *does the gross edge persist*. Do not size real capital on the gross number.
