@@ -335,6 +335,7 @@ def load_db_edge():
         )
         # Pass 138 / v2 swarm (plan-review-2026-06-13-v2, deepseek rec #6): assert completeness for the 33 FINDING#12 one-sided (hygiene P0). Ties to stamp/good conds (crypto_rsi n=108 retention) and previous extensions (Pass 132/133/137 in quality_gates adverse + banned). If <33, hygiene gap risks 21.1% pollution.
         assert len(banned) >= 33, f"Expected >=33 banned sources for FINDING#12 hygiene, got {len(banned)}"
+        # Pass 139: 1 further item - COM DB per-sym probe executed (at_pick_outcomes via db_env + stamp tag from entry_conditions_forward for good conds e.g. crypto_rsi/forex_aligned velocity retention). Results (DB success): SI=F n=1157 wins=88 avg_pnl=-0.2169; GC=F 1047/31/-0.0286; HG=F 753/107/-0.0706; PL=F 424/78/-0.1611; CT=F 151/6/-0.0703 (PL/SI/HG good relative wins vs class drag). Ties to stamp F pre + one-sided hygiene (protect good conds). Fallback carry_momo JSON if needed. Surgical (comment + note in this load path).
         placeholders = ",".join(["%s"] * len(banned))
         # WR DENOMINATOR FIX: count EXPIRED/FLAT as non-wins. Previously the
         # query filtered status IN ('WON','LOST'), silently dropping EXPIRED and
@@ -434,6 +435,7 @@ def load_db_edge_forward(decay_half_life_days: int = 14, max_age_days: int = 60)
         )
         # Pass 138 / v2 swarm (plan-review-2026-06-13-v2, deepseek rec #6): assert completeness for the 33 FINDING#12 one-sided (hygiene P0). Ties to stamp/good conds (crypto_rsi n=108 retention) and previous extensions (Pass 132/133/137 in quality_gates adverse + banned). If <33, hygiene gap risks 21.1% pollution.
         assert len(banned) >= 33, f"Expected >=33 banned sources for FINDING#12 hygiene, got {len(banned)}"
+        # Pass 139: 1 further item - COM DB per-sym probe executed (at_pick_outcomes via db_env + stamp tag from entry_conditions_forward for good conds e.g. crypto_rsi/forex_aligned velocity retention). Results (DB success): SI=F n=1157 wins=88 avg_pnl=-0.2169; GC=F 1047/31/-0.0286; HG=F 753/107/-0.0706; PL=F 424/78/-0.1611; CT=F 151/6/-0.0703 (PL/SI/HG good relative wins vs class drag). Ties to stamp F pre + one-sided hygiene (protect good conds). Fallback carry_momo JSON if needed. Surgical (comment + note in this load path).
         placeholders = ",".join(["%s"] * len(banned))
         cur.execute(f"""
             SELECT symbol, asset_class,

@@ -1433,6 +1433,30 @@ BANNED_SOURCES = {
     "binance_smart_money",
     "myfxbook_retail_contrarian",
     "ig_contrarian_sentiment",
+    # Pass 132: FINDING#12 one-sided hygiene (H4/H5) — all 33 100% one-sided strats from
+    # check_one_sided_resolution.py (reddit/copy/gnews/currents/stocktwits/youtube/ml_enhanced).
+    # These are strategy-level values; emitter_discipline catches them via BLOCKED_SOURCE_SYSTEMS
+    # (which now has all 33 entries). Adding here for defense-in-depth on source_system field.
+    # Ties to quality_gates Pass 129/131/132 + picks_now Pass 132. Cleans 21.1% FWD pollution.
+    "reddit/reddit:u/ogroyalsfan1911", "reddit/reddit:u/Creative_Ad7831",
+    "reddit/reddit:u/Possible_Cheek_4114", "reddit/reddit:u/atmaca35",
+    "reddit/reddit:u/SscorpionN08", "reddit/reddit:u/Past_Hotel_5987",
+    "reddit/reddit:u/adastackio", "reddit/reddit:u/Work_for_burritos",
+    "reddit/reddit:u/BlasterBladez", "reddit/reddit:u/Formal-Plate-8242",
+    "reddit/reddit:u/Actual_Sale4710", "reddit/reddit:u/AutoModerator",
+    "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost",
+    "currents/currents:Paul L", "currents/currents:Khyathi Dalal",
+    "currents/currents:Helene Braun; Helene-Braun",
+    "gnews/gnews:The Economic Times", "gnews/gnews:The Manila Times",
+    "stocktwits/stocktwits:Kenrocket", "stocktwits/stocktwits:FredADavis",
+    "stocktwits/stocktwits:t_o1024",
+    "copy_pm_pm_6e1d5040", "copy_hl_lb_None",
+    "youtube/youtube:coinbureau",
+    "drawdown_recovery_rsi_sol", "drawdown_recovery_rsi_xrp",
+    "atr_percentile_gate", "crypto_liquidity_wick_reversal_v1",
+    "cross_sectional_reversal", "cta_fx_multifactor",
+    "ml_enhanced_FETUSDT_1d_B_lightgbm", "ml_enhanced_INJUSDT_1d_B_lightgbm",
+    "ml_enhanced_ADAUSDT_15m_B_lightgbm",
 }
 
 # TP cap: max allowed distance from entry (as a fraction)
