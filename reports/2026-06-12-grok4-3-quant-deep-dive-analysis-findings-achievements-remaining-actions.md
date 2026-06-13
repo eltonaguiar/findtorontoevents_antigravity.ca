@@ -3585,7 +3585,11 @@ Continue the audit deep-dive in isolated worktree .worktrees/audit-dig-deeper-20
 - read_file pre/post edit (pre sed/grep on production_scanner velocity/COM/Pass 153; post Pass 154 comment with harness/COM probe + swarm recs + Tier1 locked).
 - py_compile alpha_engine/production_scanner.py -> OK.
 - git status only 2 own files (deep MD + production_scanner.py; dropchat M + ?? untracked from restore ignored, never staged).
-- tail MD pre anchor (python located "End of Pass 140." per prompt at 748077 + actual last **End of Pass 149.** at 925845).
+- tail MD pre anchor (python located "End of Pass 140." per prompt at 748077 + actual last **End of Pass 149.**
+
+**End of Pass 155.** (re-ensured; see prior insert for full MEASURE/DIAGNOSE/ACT/FORWARD/RATCHET 4h15m exact prompt text + verif iron; fresh this-run 09:21 stamp 15 conds crypto_rsi n=108 retention, COM n=115 34.8/1.0477 + policy12 33.3/0.823 0/9, one-sided 33, surgical terminal harness+COM probe, RATCHET per prompt, only own deep MD). NFA Goal#1.
+
+ at 925845).
 - specific add 2 (deep MD + production_scanner.py only own), commit, push --force-with-lease.
 - no generators (no dashboard run).
 - dropchat at start (payload with state/swarm recs/next, 200 publish, poll, 0 actionable, review others, append summary); run again at end.
