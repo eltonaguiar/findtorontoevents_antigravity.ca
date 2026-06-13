@@ -92,4 +92,29 @@
 
 **End of this summary .MD (2026-06-13).** Dropped in worktree reports/ per request. Appended Pass 118 note to main deep-dive (via follow-up edit). Continue ratchet in wt, commit only own, PR update, memory. Pro-level requires fixing the 5-6 P0s (recency, n>=100 clean, wiring to prod, synthetic, enforcement, paper on admissible COM) + velocity/stamp/adverse as entry edge + master loop discipline. 
 
+## Dig Deeper Update (Pass 119, 2026-06-13 ~03:30+ UTC — stamp --stdout MEASURE + recency CI root + fresh CONDITIONS + 21.1/synth coded + COM pf vs entry + velocity retention)
+
+**Fresh MEASURE (stamp run in wt + loads):** stamp_entry_conditions.py --stdout (read-only; cohort 1205/1162 stamped, skips scale/no-bars; JSON gen ~03:30Z). CONDITIONS (15, key rows):
+- crypto_rsi5070_us CRYPTO 108n 47.2% 1.535 (l30 58n 48.3% 1.454) — n>=100, re-run R1/R2/R3.
+- luxalgo_short * 38n 71.1% 2.211 stable.
+- forex_trend_aligned FOREX 16n 68.8% 5.333 stable.
+- baseline_COMMODITY COMMODITY 43n 20.9% 0.515 (below n=100 gate).
+- baseline_CRYPTO CRYPTO 924n 32.0% 0.712 (l30 404n 29.2% 0.55 — decay).
+- baseline_EQUITY EQUITY 58n 48.3% 0.989.
+- baseline_FOREX FOREX 43n 41.9% 1.48 (l30 40.5% 1.435).
+Negative filters (avoid rules firing, good): equity_highvol_NEGATIVE 36n 55.6/0.82; forex_contrarian_NEGATIVE 27n 25.9/0.458.
+Targeted loads (verdict/pf/entry ~20:00-20:01Z, recency 20:06Z): pf_policy_clean_net COM n=12 33.3% PF0.82; CRYPTO 1696n ~51%WR PF0.66 single-src87%; EQUITY 385n47% PF0.71 single90%; FOREX42n26%/0.41; FUTURES13n15%/0.76 etc (0 pass T2). 14d/48h gen 20:06 but old cutoffs (source field). Dash grid (older): active CRYPTO~63 (swing), EQUITY~23, COM~3; res~75-95%.
+
+**Recency CI root (deeper grep this tick):** audit-dashboard.yml:614 `python tools/audit_pick_funnel/build_recency_summary.py || echo ::warning:: (soft-fail)` — no --force-db. pick-funnel-nightly.yml:53 same plain call. Builder has our _force_db_refresh + --force-db + main integration + fallback (if DB unreachable). Big publish list includes the _14d/_48h. Explains published recency gens "current" but frozen cutoffs (pre-force era). (Grep yml 614/53 + builder 288/316/331 read.)
+
+**21.1% + synth:** picks_now has *active* code (757-761): synth_models={"cursor_agent","kimi_direct","llama4_scout"}; if match: score-=25 + "SYNTHETIC_SEED_DOWNWEIGHT (ai-tournament 1636 contamination; prefer grok3 0%-synth)". Comments 752-756 detail velocity on 15 + COM fut SI/PL (DB per-sym n55/48 40/31% vs GC/HG 0% conc) + tracker FWD 647 + "21.1% root: historical FWD on picks_now_tracker ... current py wiring stamp+adverse+growth+synth filter improves future scores but closed 21.1% locked + disclaimer "research signals" "0/6 gates" "gates do NOT apply..." keeps research-only until 1+ class passes (COM candidate)". Web /picks-now matches (research-only, gates 0/6 do NOT apply, money-ready 0/8 table). Stamp/adverse wiring (697+/2942+) + this downweight target pollution for future tracker.
+
+**COM + velocity:** pf policy small n poor (12n 33/0.82); entry baseline_COM 43n 20.9/0.515 "below gate". But stamp run + prior granular (futures_mom n~61 50.8/1.586 +0.83bp SI/PL vs conc 0%) + scanner conditioned (stamp_good F1/F4/F5 -> allow) + picks_now wiring surface the slice. Retention from stamp: good conds hold/improve l30 (crypto_rsi 47.2->48.3; forex_aligned 68.8/5.333; luxalgo 71.1/2.211) vs baseline_CRYPTO decay + baseline_COM flat poor. High-ret (analysis): crypto_rsi, luxalgo, forex_aligned_aligned, equity baseline. Negative filters working.
+
+**ACT / further (wt this dig):** stamp --stdout executed (table read); recency root dug (yml calls); CONDITIONS analysis (high-ret list vs decay, COM weak, neg filters); synth downweight confirmed *live* + 21.1 comments. Ideas next ticks: pass --force-db in yml calls (audit-dashboard + pick-funnel-nightly); expand synth_models; surface CONDITION in tracker; safe DB probe tracker 647 historical FWD (pre/post 06-12) + per-sym COM fut; harness sim on top conds (crypto_rsi + forex_aligned + equity_lowvol vs baselines). Paper on high-ret first or COM fut when n+stamp_good+no-adverse. 14d/48h + CI + conc before size.
+
+**RATCHET:** Pass 119 appended to deep-dive. This "Dig Deeper Update (Pass 119)" added to 06-13 summary. memory/2026-06-13 appended. Verifs: stamp run+table, yml greps, loads+analysis py, code reads (picks_now 757+ synth active + comments; scanner 2963+ conditioned), git (non-own only), py_compile OK. Only MDs/memory added/committed/pushed. PR#564 comment. Goal #1. NFA.
+
+(End of dig deeper update. Continuing 4h scheduled per prompt. Velocity retention on stamp conds + COM per-sym fut + synth penalty + recency yml fix = current levers for pro-level /audit + picks-now. 0/ classes T2.)
+
 NFA. All from local reads/loads/code/web (2026-06-13 session). Goal #1.
