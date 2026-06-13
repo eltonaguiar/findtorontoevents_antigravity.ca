@@ -1878,6 +1878,42 @@
       "falsification": "A REAL SHORT first-touch replay fails net-PF CI-LB>1.15 at n_eff>=80, symbol-day clustered.",
       "discovery_state": "sign-flip optimistic CI-LB 1.49 @ n_eff 39 (UNDER-POWERED); NOT a SHORT replay. Emits forward-shadow (never sized).",
       "source": "MiMo v2.5 inversion backtest (refuted for sizing); see reports/MIMO_INVERSION_VALIDATION_2026-06-13.md"
+    },
+    {
+      "id": "H-117",
+      "asset_class": "FOREX",
+      "family": "vol_regime_conditioned_consensus",
+      "description": "Rescue the gross FOREX-consensus edge by conditioning entry on high pre-entry realized volatility (trailing 10d close-to-close std from fxp_price_history, strictly pre-entry, no look-ahead). Prior: low-amplitude FX winners (~0.2-0.3%) die to 2bp cost; high-vol regimes should produce larger winners that survive net-of-cost.",
+      "test_statistic": "net-of-cost (2bp majors) PF CI-LB, median vol split, one pre-registered comparison",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "high-vol half net CI-LB > low-vol half AND clears 1.15"
+      },
+      "economic_prior": "vol expansion -> larger directional moves -> bigger winners relative to fixed spread",
+      "status": "REFUTED",
+      "registered_at": "2026-06-13",
+      "data_sample_lock": "trading_picks non_crypto_consensus FOREX 2026-04-05..05-25, fxp_price_history join (185/304 deduped)",
+      "result": "LONG (pre-registered focus): high-vol net@2bp CI-LB 0.51 (n_eff 42) < low-vol 0.60 (n_eff 41) \u2014 OPPOSITE of hypothesis; high-vol IS/OOS 1.71/0.48 collapses. ALL-dir: high-vol 0.797 ~= low-vol 0.787, both no-edge. Winner amplitude barely moves with vol (0.092 vs 0.057%).",
+      "kill_reason": "Vol-regime conditioning does NOT rescue FX consensus. Cost-amplitude bottleneck is structural, not regime-dependent; the amplitude ceiling of FX mean-reversion does not depend on entry vol. Each half n_eff ~41 (<80 gate) anyway."
+    },
+    {
+      "id": "H-118",
+      "asset_class": "FOREX",
+      "family": "honest_firsttouch_resolution",
+      "description": "Verify the FOREX-consensus 'winner' (daily-resolved gross PF 1.79 / CI-LB 1.35) under conservative SL-wins-ties FIRST-TOUCH resolution against actual daily OHLC bars (fxp_price_history, 8 majors). It was never honestly resolved \u2014 absent from at_signal_outcomes intrabar ledger.",
+      "test_statistic": "honest first-touch gross PF + CI-LB vs daily-resolved on the SAME deduped picks",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "honest first-touch CI-LB must clear 1.15 to confirm the daily-resolved edge is real"
+      },
+      "economic_prior": "if the edge is real it should survive honest first-touch; if it is a resolution artifact, honest PF will be far below daily PF",
+      "status": "REFUTED",
+      "registered_at": "2026-06-13",
+      "data_sample_lock": "trading_picks non_crypto_consensus FOREX entry/TP/SL, n=88 deduped April-cohort majors with >=15 fwd daily bars",
+      "result": "Honest first-touch gross PF 1.02 / CI-LB 0.70 / WR 41% vs daily-resolved 2.88 / CI-LB 1.73 on the SAME 88 picks. Daily resolver inflates gross PF ~2.8x. Robust across 20/40/60-bar horizons. TP=37 SL=51 (closer 0.5% SL hit first ~58%).",
+      "kill_reason": "The FOREX-consensus edge has NO gross edge under honest first-touch \u2014 it was a daily-resolution artifact. GENERALIZED: all daily-resolved trading_picks CI-LB inflated ~2-3x; re-resolve COMMODITY consensus + forex_rsi2 with first-touch before any pilot. See reports/FOREX_CONSENSUS_HONEST_FIRSTTOUCH_2026-06-13.md."
     }
   ],
   "fork2_new_signals": [
