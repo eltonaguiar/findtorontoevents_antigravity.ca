@@ -456,3 +456,6 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 ## 2026-06-13 ~00:30Z — loop tick 21: #134 prefetch VERIFIED (2,132 picks load vs 0) + final env link + session wrap committed
 - Post-fix run 27447341297: prefetch ✓, gatekeeper loaded **2,132 real closed picks** (masked-failure #10 fix VERIFIED). Dual-write still skipped → final link found: ML_GATE_AB_ENABLED was never set in CI (now set, 6cb83af6ad; note: ab_router defaults ON, so if the next run is STILL silent the culprit is the silently-swallowed import in gatekeeper.py:24-28 — instrument next). NOTE: 79f0e18d0a is a no-op commit (edit assertion failed but file was PUT unchanged) — superseded by 6cb83af6ad.
 - Phantom build_ic_analysis step removed (ab0d80206c). Session wrap-up committed: reports/SESSION_WRAP_CLAUDE_June122026_8hloop.MD (11 masked failures table, H-111..114 lifecycle, verification schedule).
+
+## 2026-06-13 ~01:30Z — loop tick 22 (verification-only): A/B import instrumented; chain proof rolls to tomorrow's runs
+- No post-flag dashboard run completed yet (hourly runs ~60-75 min each tonight). Shipped the diagnostic for the only remaining unknown: the `except: AB_ENABLED=False` import mask at gatekeeper.py now PRINTS the failure reason — tomorrow's CI logs will name the culprit if the dual-write still skips. PRs unchanged; no replies.
