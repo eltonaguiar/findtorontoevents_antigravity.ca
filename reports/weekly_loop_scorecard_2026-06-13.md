@@ -32,3 +32,23 @@ luxalgo SHORT → n_eff≥80 + CI-LB>1.15 (the live front-runner) · pead JUN-14
 ## RATCHET
 No class crossed a gate this cycle (correctly — 24h, backlog exhausted). The cycle's deliverable is the **first honest CI-LB on a real lead** (luxalgo SHORT 1.09). Filed/standing: #134 wired, INCIDENT_STOCKS#15 (regime guard schema bug), non_crypto_consensus PF-9.68 caution (0 honest-intrabar rows). Peers running this loop in parallel own picks-now/UI/data lanes — no dup (no 06-13 peer scorecard existed at ratchet time).
 rubric+body sha256 = 6c02f1aed250bbda
+
+---
+
+## Master Loop cycle — 2026-06-13 ~09:45Z (claude-fable)
+
+**MEASURE.** `build_intrabar_truth_by_class`: only T2-shaped intrabar lead is FOREX `forex_rsi2_mean_reversion` n=**20** (PF 2.15) — honest intrabar ledger is sparse for non-crypto. `check_one_sided_resolution` (FINDING#12 tripwire): **33 one-sided sources** (12 WON-only/1094 rows, 21 LOST-only/1713 rows).
+
+**DIAGNOSE H1 (resolver/measurement) — GREEN for the money-ready path.** The one-sided tripwire is NOT a fresh resolver bug and does NOT contaminate the verdict:
+- The trusted intrabar ledger (`at_signal_outcomes`) has **0 rows** for the WON-only artifact sources → they never reach the money-ready/DSR path.
+- `copy_hl_lb_None` (21-LOST-only, 328 abandoned) is already hard-banned (blocklist + quality_gates).
+- Remaining one-sided = (a) 2 synthetic WON-only artifacts, (b) genuinely-losing+abandoned strategies, (c) social/sentiment feeds (one-directional by construction).
+- **ACTION ITEM (investigate-then-ban, mutate-before-kill):** `cta_fx_multifactor` (20/20 WON, +1.46%, **zero** time-exits — resolver-artifact signature) and `ml_enhanced_ADAUSDT_15m_B_lightgbm` (42/42 WON, +6.16%, single-symbol ADA lightgbm) are UNBANNED WON-only artifacts. They don't reach intrabar truth but would inflate any naive raw-table scan. Flag like the DNR synthetic edges; do NOT cite as edges.
+
+**DIAGNOSE (edge) — this cycle's headline: 0 FORWARD-ROBUST money-ready edges net of realistic cost.** Definitive net-cost CI-LB scan across all n≥80 strategies: only commodity consensus cleared full-sample (net CI-LB 1.75) but FAILS forward (OOS 0.81, recent 0.52 — IS-inflated/decayed); FOREX consensus dies at ~1bp (sub-1bp-execution edge); futures_momentum confirmed mirage. Two compounding traps proven on real candidates: **gross→net** (FX winners too small) and **full-sample→forward** (commodity decayed). Reports: FOREX_NETCOST_CILB_SENSITIVITY, DEFINITIVE_NETCOST_MONEYREADY_SCAN (+OOS addendum).
+
+**FORWARD (checkpoint calendar — judge at the bar, no re-tuning):** pead_equity gate **JUN-14 (tomorrow)** · FOREX n=100 honest ~Jun16-20 · crypto_rsi5070_us n≥150 ~Jun25 · crypto_eu_us_handoff OOS Jul-9.
+
+**RATCHET (standing disciplines reinforced):** (1) promotion gate = **net** (cost-adjusted) PF CI-LB > 1.15 @ n_eff≥80 on the **forward** window — gross/point-PF/WR-CI/sign-flip all overstated this cycle (refuted MiMo 0/7, split freebuff 1/4). (2) #134 A/B gating resolved (dual-write now runs on low-data hours); accrual input-starved by ~7 active picks. (3) 2 WON-only artifacts flagged for ban.
+
+**Honest verdict:** no hidden edge exists. The bottleneck is real and now precisely characterized — execution **cost** (low-amplitude edges), **decay** (commodity), and active-pick **volume** (A/B). Progress now = data hygiene + forward-checkpoint accrual, not new winners.
