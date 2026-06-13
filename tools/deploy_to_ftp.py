@@ -374,7 +374,8 @@ def deploy_audit_dashboard(ftp: ftplib.FTP, main_remote_base: str) -> int:
              "ai-tournament.html", "ai_leaderboard.html", "research_index.html", "edge_stability.html",
              "curated_picks_20260524.html", "hedge_fund_simulation_20260524.html",
              "simulation_full_report_20260524.html",
-             "picks-now.html", "pf.html", "model.html", "pick_funnel.html",
+             "picks-now.html", "pf.html", "model.html", "model_portfolios.html",
+             "pick_funnel.html",
              "database_consolidation.py", "trading_blueprint.html",
              "strategy_audit_summary.html", "claudes_test.html")
     n = 0

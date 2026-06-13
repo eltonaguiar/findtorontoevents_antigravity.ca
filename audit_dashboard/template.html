@@ -1388,7 +1388,103 @@ a:hover { text-decoration: underline; }
         <div style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.5);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#fca5a5">
           &#x26A0;&#xFE0F; <strong>RESEARCH ONLY — NOT ACTIONABLE FORWARD SIGNALS.</strong> The DSR numbers below are derived from closed-pick historical analysis. Post-hoc segment search, over-emission artifacts, and small-sample DSR inflation (n&lt;100) affect multiple entries. Do NOT use for live sizing without independent forward-test confirmation. See INC #1 (P0) post-hoc segment warning below.
         </div>
-        Latest patterns leading to strong profit and low risk, surfaced via the new <a href="/audit/anti_overfit.html" style="color:#06b6d4">Anti-Overfit Audit (DSR)</a> sidecar (Lopez de Prado AFML eq 14.5; hourly cron). 8 of 42 strategies (n&ge;20 closed) pass DSR &ge; 0.95 floor &mdash; "publishable confidence" per Bailey-Lopez de Prado.<br><br>
+        Latest patterns leading to strong profit and low risk, surfaced via the new <a href="/audit/anti_overfit.html" style="color:#06b6d4">Anti-Overfit Audit (DSR)</a> sidecar (Lopez de Prado AFML eq 14.5; hourly cron). 8 of 42 strategies (n&ge;20 closed) pass DSR &ge; 0.95 floor &mdash; "publishable confidence" per Bailey-Lopez de Prado.<br><br>        <div id="edge-candidates-mini-panel" style="background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.35);border-radius:8px;padding:10px 12px;margin:8px 0 12px;font-size:11.5px;line-height:1.55">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+            <strong style="color:#86efac;font-size:12px">&#x1F3AF; EDGE_LIKELY_REAL + REFUTED_BY_WF (current, from <code>anti_overfit_audit.json</code>)</strong>
+            <span style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="color:#fbbf24;font-size:10px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);padding:1px 6px;border-radius:10px;font-weight:600">PAPER-ONLY &mdash; n&lt;100 does NOT pass production gate</span>
+              <span id="wf-fpr-badge" style="color:#fca5a5;font-size:10px;background:rgba(252,165,165,0.12);border:1px solid rgba(252,165,165,0.35);padding:1px 6px;border-radius:10px;font-weight:600">WF second-gate: loading...</span>
+            </span>
+          </div>
+          <div style="font-size:10.5px;color:#94a3b8;margin-bottom:6px">
+            <strong style="color:#fcd34d">Two-gate system:</strong> DSR (Lopez de Prado AFML 14.5) AND walk-forward (14d IS / 5d OOS / 3d step). <span style="color:#86efac">Green</span> = DSR passes; <span style="color:#fca5a5">red</span> = demoted to <code>REFUTED_BY_WF</code> (DSR passed but rolling OOS failed). <span style="color:#94a3b8">Gray</span> = <code>SKIPPED_LOW_N</code> (cannot run walk-forward without n&ge;20).
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:2px">
+            <thead><tr style="border-bottom:1px solid rgba(34,197,94,0.25)">
+              <th style="text-align:left;padding:3px 6px;color:#86efac">Strategy</th>
+              <th style="text-align:right;padding:3px 6px;color:#86efac">n</th>
+              <th style="text-align:right;padding:3px 6px;color:#86efac">WR</th>
+              <th style="text-align:right;padding:3px 6px;color:#86efac">PF</th>
+              <th style="text-align:right;padding:3px 6px;color:#86efac">DSR</th>
+              <th style="text-align:left;padding:3px 6px;color:#86efac">WF</th>
+              <th style="text-align:left;padding:3px 6px;color:#86efac">Class</th>
+            </tr></thead>
+            <tbody id="edge-candidates-mini-tbody">
+              <tr><td colspan="7" style="padding:6px;color:#94a3b8;font-style:italic">Loading from anti_overfit_audit.json (fetched on page load)...</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:6px;font-size:10.5px;color:#94a3b8">
+            <strong style="color:#fcd34d">Read me:</strong> The 4 <span style="color:#fca5a5">REFUTED_BY_WF</span> entries (red) all passed DSR with &ge;0.95 confidence AFTER multiple-testing correction &mdash; but failed the honest rolling-OOS test. <strong>prediction_market_consensus</strong> (n=215, the largest) had only 28% window survival with mean OOS WR 47%, just below the 50% bar. Full detail at <a href="/audit/anti_overfit.html" style="color:#06b6d4">anti_overfit.html</a>; reproducer <code>tools/anti_overfit_audit_with_wf.py --min-n 10</code>.
+          </div>
+        </div>
+        <script>
+        // P0-3 (re-applied 2026-06-13 after PR #579 silent revert): fetch anti_overfit_audit.json
+        // and render BOTH EDGE_LIKELY_REAL (green) and REFUTED_BY_WF (red) rows.
+        (function() {
+          fetch('/audit/data/anti_overfit_audit.json?_=' + Date.now())
+            .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+            .then(d => {
+              // Surface the WF second-gate false-positive rate in the badge
+              const fpr = d.wf_false_positive_rate;
+              const gatesRun = d.wf_gates_run;
+              const fprBadge = document.getElementById('wf-fpr-badge');
+              if (fprBadge && fpr != null) {
+                const pct = (fpr * 100).toFixed(0);
+                fprBadge.textContent = 'WF false-positive: ' + pct + '% (' + gatesRun + ' gated)';
+                fprBadge.style.color = fpr >= 0.5 ? '#fca5a5' : '#86efac';
+              }
+              // Render all DSR-EDGE + REFUTED_BY_WF rows; sort REFUTED first (the honest story)
+              const strats = (d.strategies || []).filter(s =>
+                s.verdict === 'EDGE_LIKELY_REAL' || s.verdict === 'REFUTED_BY_WF');
+              strats.sort((a, b) => {
+                if (a.verdict !== b.verdict) return a.verdict === 'REFUTED_BY_WF' ? -1 : 1;
+                return (b.n || 0) - (a.n || 0);
+              });
+              const classGuess = (s) => {
+                const n = (s.strategy || '').toLowerCase();
+                if (n.includes('usdt') || n.includes('btc') || n.includes('eth') || n.includes('render') || n.includes('inj')) return 'CRYPTO';
+                if (n.includes('forex') || n.includes('fx_') || n.includes('usd') || n.includes('eur') || n.includes('jpy')) return 'FOREX';
+                if (n.includes('commodity') || n.includes('gold') || n.includes('oil') || n.includes('cot_')) return 'COMMODITY';
+                if (n.includes('bond') || n.includes('yield')) return 'BOND';
+                if (n.includes('etf')) return 'ETF';
+                if (n.includes('cta_')) return 'EQUITY/FUTURES';
+                if (n.includes('prediction_market')) return 'PRED-MKT';
+                if (n.includes('vt_equity')) return 'EQUITY';
+                return '?';
+              };
+              const wrColor = (wr) => wr >= 60 ? '#86efac' : wr >= 50 ? '#fcd34d' : '#fca5a5';
+              const pfStr = (pf) => pf == null ? '<span style="color:#fcd34d">&infin;</span>' : (pf >= 2 ? ('<span style="color:#86efac">' + pf.toFixed(2) + '</span>') : ('<span style="color:#fcd34d">' + pf.toFixed(2) + '</span>'));
+              const wfCell = (s) => {
+                if (s.verdict === 'REFUTED_BY_WF') {
+                  return '<span style="color:#fca5a5;font-weight:600">REFUTE</span> <span style="color:#94a3b8;font-size:10px">(' + (s.wf_verdict || 'FAIL') + ')</span>';
+                }
+                if (s.wf_verdict === 'SKIPPED_LOW_N') {
+                  return '<span style="color:#94a3b8">SKIP-n&lt;20</span>';
+                }
+                return '<span style="color:#86efac">-</span>';
+              };
+              const rowBg = (s) => s.verdict === 'REFUTED_BY_WF' ? 'rgba(252,165,165,0.06)' : 'rgba(34,197,94,0.04)';
+              const html = strats.map(s => {
+                const wr = s.wr_pct != null ? s.wr_pct : 0;
+                return '<tr style="border-bottom:1px solid rgba(148,163,184,0.10);background:' + rowBg(s) + '">'
+                  + '<td style="padding:4px 6px"><code style="color:#e0e6ed;font-size:10.5px">' + (s.strategy || '?') + '</code></td>'
+                  + '<td style="padding:4px 6px;text-align:right;color:#e0e6ed">' + (s.n || 0) + '</td>'
+                  + '<td style="padding:4px 6px;text-align:right;color:' + wrColor(wr) + ';font-weight:600">' + wr.toFixed(1) + '%</td>'
+                  + '<td style="padding:4px 6px;text-align:right">' + pfStr(s.pf) + '</td>'
+                  + '<td style="padding:4px 6px;text-align:right;color:' + ((s.dsr||0) >= 0.95 ? '#86efac' : '#fcd34d') + '">' + (s.dsr != null ? s.dsr.toFixed(3) : '?') + '</td>'
+                  + '<td style="padding:4px 6px;font-size:10.5px">' + wfCell(s) + '</td>'
+                  + '<td style="padding:4px 6px;color:#94a3b8;font-size:10px">' + classGuess(s) + '</td>'
+                  + '</tr>';
+              }).join('') || '<tr><td colspan="7" style="padding:6px;color:#fca5a5">No EDGE_LIKELY_REAL or REFUTED_BY_WF strategies in current audit.</td></tr>';
+              const tbody = document.getElementById('edge-candidates-mini-tbody');
+              if (tbody) tbody.innerHTML = html;
+            })
+            .catch(e => {
+              const tbody = document.getElementById('edge-candidates-mini-tbody');
+              if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="padding:6px;color:#fca5a5">Failed to load anti_overfit_audit.json: ' + e + '. See <a href="/audit/anti_overfit.html" style="color:#06b6d4">sidecar page</a>.</td></tr>';
+            });
+        })();
+        </script>
         <strong style="color:#fca5a5">COMMODITY &mdash; cot_positioning DSR=1.0 FALSIFIED 2026-05-13</strong>: the original "n=104 / WR 86.5% / DSR=1.0000" claim was an over-emission artifact &mdash; dedup audit found <code>multi_asset_cot_positioning</code> emitted 38 raw signals from only 6 unique CFTC release weeks (6.33&times; ratio). Pilot status now <code>SHADOW_INSUFFICIENT_N</code> with <code>dsr=null</code>; dedup pilot WR 33.3% on n=6 unique releases. <strong>Do not size on this edge.</strong> Refs: <code>reports/cot_paper_pilot_overemission_falsified_20260513.md</code>, <code>audit_dashboard/data/cot_paper_pilot_status.json</code>.<br>
         <strong style="color:#86efac">CRYPTO &mdash; ML-enhanced 1d/1h sleeves</strong>: 4 strategies survive DSR test &mdash; <code>ml_enhanced_INJUSDT_1d_B_lightgbm</code> (n=27, WR 100%, Sharpe +2.49), <code>ml_enhanced_DYDXUSDT_15m_D_ensemble_stack</code> (n=31, WR 96.8%), <code>ml_enhanced_FETUSDT_1d_B_lightgbm</code> (n=25, WR 100%), <code>ml_enhanced_RENDERUSDT_1h_D_ensemble_stack</code> (n=34, WR 85.3%). All DSR &ge; 0.9995. <span style="color:#fbbf24">&#9888; All four have n &lt; 100 &mdash; DSR formula is unreliable below n=100 (Bailey-Lopez de Prado). Awaiting n&ge;100 confirmation before sizing.</span><br>
         <strong style="color:#fbbf24">EQUITY &mdash; stocks_rsi2_pullback DISPUTED (INCIDENT #96, 2026-06-04)</strong>: original "n=70 WR 62.9% +0.78%" claim was raw-row pre-dedup. True n=140 (deduped by sym+ts+strat+dir) WR <strong>33.9%</strong> avg <strong>-0.007%</strong> &mdash; slightly losing, not edge. Per-symbol: WMT n=220 avg -0.44%, KO -0.80%, COST -0.59%; only C/AVGO marginally positive. Inflation source: INCIDENT #91 NULL opened_at row duplicates (5.6x ratio).<br>
@@ -8110,7 +8206,7 @@ function _normFwdWrPct(x) {
 }
 
 // ?? Picks table ??
-const numCols = new Set(['entry_price','exit_price','take_profit','stop_loss','confidence','rsi_at_entry','volume_ratio','pnl_pct','tp_remaining_pct','sl_remaining_pct','age_hours','rr_ratio','max_safe_leverage','score','bt_win_rate','bt_profit_factor','recent_pnl','recent_max_dd','_livePrice','_ic_track','strat_fwd_wr','strat_fwd_trades','verified_edge','at_issue_strat_fwd_wr','at_issue_strat_fwd_trades','at_issue_trust_score','_closed_delta_trust_score','_closed_delta_strat_fwd_wr','_closed_delta_strat_fwd_trades']);
+const numCols = new Set(['entry_price','exit_price','take_profit','stop_loss','confidence','rsi_at_entry','volume_ratio','pnl_pct','tp_remaining_pct','sl_remaining_pct','age_hours','rr_ratio','max_safe_leverage','score','bt_win_rate','bt_profit_factor','recent_pnl','recent_max_dd','_livePrice','_ic_track','strat_fwd_wr','strat_fwd_trades','strat_fwd_avg_pnl','verified_edge','at_issue_strat_fwd_wr','at_issue_strat_fwd_trades','at_issue_trust_score','_closed_delta_trust_score','_closed_delta_strat_fwd_wr','_closed_delta_strat_fwd_trades']);
 var _picksPageSize = 100; // Render 100 rows initially, "Load More" for rest (mobile perf)
 var _picksFullData = null;
 var _picksFullCols = null;
@@ -8916,6 +9012,27 @@ function _picksTableInner(picks, cols) {
         const tipEsc = tip.replace(/"/g, '&quot;');
         return `<td class="num" style="color:${nColor}" title="${tipEsc}">${nNum}</td>`;
       }
+      // EXP% \u2014 strategy-wide forward expectancy (avg PnL per closed trade, in %)
+      if (c.key === 'strat_fwd_avg_pnl') {
+        const ev = p.strat_fwd_avg_pnl;
+        if (ev == null) return '<td class="num" style="color:#6b7280" title="No forward expectancy (strat_fwd_avg_pnl absent; need n>=2 closed trades).">\u2014</td>';
+        const evNum = Number(ev);
+        // Color bands on FRACTIONS (values are stored as decimals, e.g. 0.0122 = +1.22%):
+        //   green >= +0.5% (fraction 0.005)
+        //   yellow 0..+0.5% (fraction 0..0.005)
+        //   red < 0%
+        const evColor = evNum >= 0.005 ? 'var(--green)' : evNum >= 0 ? 'var(--yellow)' : 'var(--red)';
+        const evPctStr = (evNum >= 0 ? '+' : '') + (evNum * 100).toFixed(2) + '%';
+        const fwdN = p.strat_fwd_trades != null ? p.strat_fwd_trades : p.forward_trades;
+        const fwdWr = p.strat_fwd_wr != null ? p.strat_fwd_wr : p.forward_wr;
+        const evTip = ('Strategy-wide forward EXPECTANCY: ' + evPctStr + ' (average PnL per closed trade). ' +
+          'Color bands: green >=+0.5% (edge), yellow 0..+0.5% (marginal), red <0% (losing). ' +
+          'Backed by FWD N=' + (fwdN != null ? fwdN : '?') + ' trades with FWD WR=' + (fwdWr != null ? (fwdWr*100).toFixed(1) + '%' : '?') + '. ' +
+          'This is the SINGLE MOST IMPORTANT number for a strategy \u2014 positive means each trade makes money on average. ' +
+          'Calculated as total PnL% / N closed trades across all symbols for this strategy. ' +
+          'Populated only when strat_fwd_trades >= 2. Hover the FWD N column for sample-size context.').replace(/"/g, '&quot;');
+        return `<td class="num" style="color:${evColor};font-weight:600" title="${evTip}">${evPctStr}</td>`;
+      }
       // Recent performance metrics for top 5?10 picks
       if (c.key === 'recent_pnl') {
         const cls = v != null ? (v > 0 ? 'pnl-pos' : v < 0 ? 'pnl-neg' : '') : '';
@@ -9184,6 +9301,7 @@ const allActiveCols = [
   {key:'_ic_track',label:'Track', default:true, tip:'Track record. Hover shows symbol n/3 progress toward symbol-specific cell WR. Bold = symbol WR in cell when n>=3 on this strategy+symbol. Italic + warning = strategy-wide WR; hover for W/L + threshold.'},
   {key:'strat_fwd_wr',label:'FWD WR', default:true, tip:'FWD WR = strategy-wide forward (live) win rate across ALL symbols for this strategy. Not symbol-specific. HC filter gates on this value (>=45% base, >=50% FOREX). If Strong shows a star but FWD WR < 50%, the pick has theoretical strength (high score, proven trust, or multi-source consensus) but the strategy has not yet proven a winning live track record — treat with extra caution and smaller position size. Color bands: green >=55%, yellow 45-55%, red <45%.'},
   {key:'strat_fwd_trades',label:'FWD N', default:true, tip:'FWD N is always strategy-wide trade count — no warning icon. Hover compares to symbol-specific n on this pair.'},
+  {key:'strat_fwd_avg_pnl',label:'EXP%', default:true, tip:'EXPECTANCY (strategy-wide, forward). Average PnL per closed trade for this strategy across ALL symbols. The single most important number for a strategy — positive = each trade makes money on average. Color bands: green >=+0.5%, yellow 0..+0.5%, red <0%. Populated only when strat_fwd_trades >= 2.'},
   {key:'_ic_htf',label:'HTF', default:true, tip:'Higher Timeframe alignment. Shows if the 4H/1D trend confirms the pick direction. Aligned = higher WR.'},
   {key:'_ic_strong',label:'Strong', default:true, tip:'Strong Signal star. Earned by passing 2+ of these independent conviction signals: (A) Score >= 70, (B) Trust tier = PROVEN, (C) Forward WR >= 55% with n >= 10 trades, (D) 3+ source agreement, or by technical alignment (3+ timeframes confirm direction + 4H STRONG BUY/SELL). A star does NOT guarantee live profitability — if FWD WR < 50%, the forward track record does not yet confirm the theoretical edge. Treat star + sub-50% FWD WR picks with caution.'},
   {key:'symbol',label:'Symbol', default:true},
@@ -9252,6 +9370,14 @@ function buildClosedColsFromActiveList(colList) {
     }
     if (col.key === 'strat_fwd_trades') {
       out.push({ key: '_closed_delta_strat_fwd_trades', label: col.label, tip: colTips._closed_delta_strat_fwd_trades });
+      continue;
+    }
+    if (col.key === 'strat_fwd_avg_pnl') {
+      // For closed rows, show the per-pick realized pnl_pct instead (it's the
+      // realized expectation for THIS trade; the strategy-wide EXP is shown
+      // at entry for context). If the closed row carries strat_fwd_avg_pnl
+      // post-resolution, prefer that; else fall back to realized pnl_pct.
+      out.push({ key: 'strat_fwd_avg_pnl', label: col.label, tip: col.tip });
       continue;
     }
     if (col.key === 'verified_edge') {

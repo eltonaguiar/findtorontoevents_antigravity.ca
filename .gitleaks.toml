@@ -15,10 +15,26 @@ useDefault = true
 [allowlist]
 description = "Repo-wide safe patterns"
 
-# GitHub Actions expression syntax — ${{ secrets.FOO }} is a template placeholder,
-# not an actual secret value committed to the repo.
+# Combine all regex-based allowlist rules into one list (TOML disallows
+# duplicate keys; the parser fails on `regexes = ...` declared twice).
+#
+#   1) GitHub Actions expression syntax — ${{ secrets.FOO }} is a template
+#      placeholder, not an actual secret value committed to the repo.
+#   2) PF_PORTFOLIO row identifiers (e.g. aimlapi_gpt4o__conservative,
+#      gpt4o__balanced) appear in SQL `WHERE portfolio_key='...'`
+#      blocks inside reports and planning MDs. They are row identifiers,
+#      not credentials — but the default `generic-api-key` rule sometimes
+#      matches them (entropy 3.4-3.9 on the random-looking part).
+regexTarget = "match"
 regexes = [
+  # (1) GH Actions expression syntax
   '''\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}''',
+  # (2a) SQL WHERE clause: WHERE portfolio_key='<key>' or =<key>
+  '''(?i)\bWHERE\s+portfolio_key\s*=\s*['"]?[a-z0-9_]+__(conservative|balanced|aggressive)['"]?''',
+  # (2b) Top-of-report summary rows: "<key>     PF=0.10 WR=11% sharpe=-7.09"
+  '''^[ \t]*[a-z0-9_]+__(conservative|balanced|aggressive)[ \t]+(PF=|rows=|[0-9]+\s)''',
+  # (2c) JSON row listings: "name": "aimlapi_gpt4o__conservative"
+  '''['"][a-z0-9_]+__(conservative|balanced|aggressive)['"]''',
 ]
 
 # Paths that should never trigger secret alerts:

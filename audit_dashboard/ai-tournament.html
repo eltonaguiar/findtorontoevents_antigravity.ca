@@ -482,6 +482,47 @@
   <strong style="color:#f59e0b;">Disclaimer:</strong> This is <strong>NOT financial advice</strong>. All trading signals, picks, scores, and analysis are for <strong>educational and research purposes only</strong>. Past performance does not guarantee future results. Trading cryptocurrencies involves substantial risk of loss. Always do your own research (DYOR) before making any investment decisions.
 </div>
 
+<!-- P1-8: Statistical Edge tier (anti-overfit audit) — distinct cohort from chat-LLM tournament above. -->
+<!-- 2026-06-13: PR body #581 explicitly REJECTED a 'kimi_direct is edge candidate' badge as misleading. -->
+<!-- Algorithmically generated strategies from anti_overfit_audit.json have nothing in common with the chat-LLM picks above. -->
+<h2 style="margin-top:32px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.12)">🧮 Statistical Edge (anti-overfit audit)</h2>
+<div style="max-width:1180px;margin:8px 0 14px;padding:10px 14px;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.3);border-radius:8px;font-size:12px;line-height:1.6;color:#cbd5e1">
+  <strong style="color:#93c5fd">DIFFERENT COHORT from the chat-LLM tournament tiers above.</strong>
+  Algorithmically generated strategies from <code>audit_dashboard/data/anti_overfit_audit.json</code>.
+  <strong>NOT a chat-LLM tournament.</strong> Walk-forward second-gate applied — DSR-pass + WF-pass shown in <span style="color:#86efac;font-weight:600">green</span>, DSR-pass + WF-fail (<code>REFUTED_BY_WF</code>) in <span style="color:#fca5a5;font-weight:600">red</span>, <code>SKIPPED_LOW_N</code> in <span style="color:#94a3b8">gray</span>. 10 strategies survive DSR &ge; 0.95; 4 of those were <strong>refuted</strong> by the rolling OOS test (i.e. DSR said yes, walk-forward said no).
+  <div style="margin-top:6px;font-size:11px;color:#94a3b8">
+    Data: <code>audit_dashboard/data/anti_overfit_audit.json</code> · validator <code>alpha_engine.anti_overfit_validator</code> (DSR Lopez de Prado AFML 14.5) + <code>tools/walk_forward_per_strategy.py</code> (14d IS / 5d OOS / 3d step) · cron <code>30 * * * *</code> UTC.
+  </div>
+</div>
+<div style="background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.35);border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.55">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+    <strong style="color:#86efac;font-size:12px">&#x1F3AF; EDGE_LIKELY_REAL + REFUTED_BY_WF (current, from <code>anti_overfit_audit.json</code>)</strong>
+    <span style="display:flex;gap:6px;flex-wrap:wrap">
+      <span style="color:#fbbf24;font-size:10px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);padding:1px 6px;border-radius:10px;font-weight:600">PAPER-ONLY &mdash; n&lt;100 does NOT pass production gate</span>
+      <span id="stat-edge-wf-fpr-badge" style="color:#fca5a5;font-size:10px;background:rgba(252,165,165,0.12);border:1px solid rgba(252,165,165,0.35);padding:1px 6px;border-radius:10px;font-weight:600">WF second-gate: loading…</span>
+    </span>
+  </div>
+  <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:2px">
+    <thead><tr style="border-bottom:1px solid rgba(34,197,94,0.25)">
+      <th style="text-align:left;padding:3px 6px;color:#86efac">Strategy</th>
+      <th style="text-align:right;padding:3px 6px;color:#86efac">n</th>
+      <th style="text-align:right;padding:3px 6px;color:#86efac">WR</th>
+      <th style="text-align:right;padding:3px 6px;color:#86efac">PF</th>
+      <th style="text-align:right;padding:3px 6px;color:#86efac">DSR</th>
+      <th style="text-align:left;padding:3px 6px;color:#86efac">WF</th>
+      <th style="text-align:left;padding:3px 6px;color:#86efac">Class</th>
+    </tr></thead>
+    <tbody id="stat-edge-tbody">
+      <tr><td colspan="7" style="padding:6px;color:#94a3b8;font-style:italic">Loading from anti_overfit_audit.json (fetched on page load)…</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:8px;font-size:10.5px;color:#94a3b8">
+    <strong style="color:#fcd34d">Read me:</strong>
+    This panel is <strong>not part of the chat-LLM tournament</strong> — the 10+ AI models above (kimi, gpt-4o, deepseek, grok3, claude_opus_4_7, ring_261T, etc.) submit picks through a chat-LLM prompt and have <em>nothing</em> in common with these algorithmically generated statistical edges.
+    The <span style="color:#fca5a5">REFUTED_BY_WF</span> rows are honest <em>wins</em> for the walk-forward gate — they all passed DSR &ge; 0.95 after multiple-testing correction but failed the rolling-OOS test, so the audit demoted them from <code>EDGE_LIKELY_REAL</code>. The largest is <strong>prediction_market_consensus</strong> (n=215, OOS WR 47%). The 6 <span style="color:#86efac">EDGE_LIKELY_REAL</span> rows survive DSR but most still have <code>SKIPPED_LOW_N</code> for walk-forward (n&lt;20); treat as paper-only signals until n&ge;100 intrabar-replay-resolved closes accumulate. Full audit: <a href="/audit/anti_overfit.html" style="color:#06b6d4">anti_overfit.html</a> · reproducer <code>tools/anti_overfit_audit_with_wf.py --min-n 10</code>.
+  </div>
+</div>
+
 <script>
 // ── Pipeline freshness banner (self-contained IIFE) ──
 (function(){
@@ -1224,11 +1265,106 @@ async function loadPortfolios() {
   }
 }
 
+// ── P1-8: Statistical Edge tier (anti-overfit audit) ──
+// Loads audit_dashboard/data/anti_overfit_audit.json, filters to
+// EDGE_LIKELY_REAL + REFUTED_BY_WF, sorts REFUTED first, and renders the
+// 7-column table. Color logic mirrors the P0-3 panel at template.html:1372:
+// REFUTED = red, EDGE = green, SKIPPED_LOW_N = gray.
+// PR #581 body explicitly REJECTED a 'kimi_direct is edge candidate' badge
+// as misleading, so this tier is presented as a clearly distinct cohort
+// from the chat-LLM tournament models above.
+async function loadStatisticalEdgeTier() {
+  const tbody = document.getElementById('stat-edge-tbody');
+  const badge = document.getElementById('stat-edge-wf-fpr-badge');
+  if (!tbody) return;
+  try {
+    const resp = await fetch('./data/anti_overfit_audit.json?' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const d = await resp.json();
+
+    // Honest badge: only show a percentage if wf_false_positive_rate is
+    // present and numeric in the JSON. Otherwise display "WF: not gated".
+    if (badge) {
+      const fpr = d.wf_false_positive_rate;
+      const gatesRun = d.wf_gates_run;
+      if (fpr != null && typeof fpr === 'number' && !isNaN(fpr)) {
+        const pct = (fpr * 100).toFixed(0);
+        badge.textContent = 'WF false-positive: ' + pct + '% (' + (gatesRun != null ? gatesRun : '?') + ' gated)';
+        badge.style.color = fpr >= 0.5 ? '#fca5a5' : '#86efac';
+      } else {
+        badge.textContent = 'WF: not gated';
+        badge.style.color = '#94a3b8';
+      }
+    }
+
+    // Filter to DSR-survivors + WF-refuted; REFUTED first so the honest
+    // story sits at the top (matches P0-3 panel order).
+    const strats = (d.strategies || []).filter(s =>
+      s.verdict === 'EDGE_LIKELY_REAL' || s.verdict === 'REFUTED_BY_WF');
+    strats.sort((a, b) => {
+      if (a.verdict !== b.verdict) return a.verdict === 'REFUTED_BY_WF' ? -1 : 1;
+      return (b.n || 0) - (a.n || 0);
+    });
+
+    // Heuristic class guess from strategy name (the JSON does not carry
+    // asset_class on the strategy objects themselves).
+    const classGuess = (s) => {
+      const n = (s.strategy || '').toLowerCase();
+      if (n.includes('usdt') || n.includes('btc') || n.includes('eth') || n.includes('render') || n.includes('inj') || n.includes('dydx') || n.includes('avax') || n.includes('bnb') || n.includes('fet') || n.includes('ton') || n.includes('pol')) return 'CRYPTO';
+      if (n.includes('forex') || n.includes('fx_') || n.includes('usd') || n.includes('eur') || n.includes('jpy')) return 'FOREX';
+      if (n.includes('commodity') || n.includes('gold') || n.includes('oil') || n.includes('cot_')) return 'COMMODITY';
+      if (n.includes('bond') || n.includes('yield') || n.includes('ust')) return 'BOND';
+      if (n.includes('etf')) return 'ETF';
+      if (n.includes('cta_')) return 'EQUITY/FUTURES';
+      if (n.includes('prediction_market')) return 'PRED-MKT';
+      if (n.includes('vt_equity') || n.includes('equity')) return 'EQUITY';
+      return '?';
+    };
+    const wrColor = (wr) => wr >= 60 ? '#86efac' : wr >= 50 ? '#fcd34d' : '#fca5a5';
+    const pfStr = (pf) => pf == null
+      ? '<span style="color:#fcd34d">∞</span>'
+      : (pf >= 2
+          ? '<span style="color:#86efac">' + pf.toFixed(2) + '</span>'
+          : '<span style="color:#fcd34d">' + pf.toFixed(2) + '</span>');
+    const wfCell = (s) => {
+      if (s.verdict === 'REFUTED_BY_WF') {
+        return '<span style="color:#fca5a5;font-weight:600">REFUTE</span> <span style="color:#94a3b8;font-size:10px">(' + (s.wf_verdict || 'FAIL') + ')</span>';
+      }
+      if (s.wf_verdict === 'SKIPPED_LOW_N' || s.wf_verdict === 'INSUFF_N') {
+        return '<span style="color:#94a3b8">SKIP-n&lt;20</span>';
+      }
+      return '<span style="color:#86efac">-</span>';
+    };
+    const rowBg = (s) => s.verdict === 'REFUTED_BY_WF' ? 'rgba(252,165,165,0.06)' : 'rgba(34,197,94,0.04)';
+
+    const html = strats.map(s => {
+      const wr = s.wr_pct != null && !isNaN(s.wr_pct) ? s.wr_pct : 0;
+      return '<tr style="border-bottom:1px solid rgba(148,163,184,0.10);background:' + rowBg(s) + '">'
+        + '<td style="padding:4px 6px"><code style="color:#e0e6ed;font-size:10.5px">' + esc(s.strategy || '?') + '</code></td>'
+        + '<td style="padding:4px 6px;text-align:right;color:#e0e6ed">' + (s.n || 0) + '</td>'
+        + '<td style="padding:4px 6px;text-align:right;color:' + wrColor(wr) + ';font-weight:600">' + wr.toFixed(1) + '%</td>'
+        + '<td style="padding:4px 6px;text-align:right">' + pfStr(s.pf) + '</td>'
+        + '<td style="padding:4px 6px;text-align:right;color:' + ((s.dsr || 0) >= 0.95 ? '#86efac' : '#fcd34d') + '">' + (s.dsr != null ? s.dsr.toFixed(3) : '?') + '</td>'
+        + '<td style="padding:4px 6px;font-size:10.5px">' + wfCell(s) + '</td>'
+        + '<td style="padding:4px 6px;color:#94a3b8;font-size:10px">' + classGuess(s) + '</td>'
+        + '</tr>';
+    }).join('') || '<tr><td colspan="7" style="padding:6px;color:#fca5a5">No EDGE_LIKELY_REAL or REFUTED_BY_WF strategies in current audit.</td></tr>';
+    tbody.innerHTML = html;
+  } catch (e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="padding:6px;color:#fca5a5">Failed to load anti_overfit_audit.json: ' + e + '. See <a href="/audit/anti_overfit.html" style="color:#06b6d4">sidecar page</a>.</td></tr>';
+    if (badge) {
+      badge.textContent = 'WF: load error';
+      badge.style.color = '#fca5a5';
+    }
+  }
+}
+
 // ── Init ──
 loadPicksAndLeaderboard().then(() => { loadPicks(); }).catch(() => {});
 loadModelSummary();
 loadTierRatings();
 loadPortfolios();
+loadStatisticalEdgeTier();
 </script>
 
 <!-- TABLE SORTING — click any header to sort (numeric-aware, asc/desc toggle). 2026-05-29 -->
