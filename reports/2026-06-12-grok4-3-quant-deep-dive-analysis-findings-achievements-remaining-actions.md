@@ -2801,3 +2801,75 @@ Using using-superpowers + thingstocheck_June2026 + verification-before-completio
 
 
 **2026-06-13 FINAL SUMMARY (anchor-miss fallback)**: See new dedicated reports/2026-06-13-grok-audit-progress-summary-accomplished-remaining-pro-level-path.md . (Pass 112)
+
+
+---
+
+**Pass 113: 4h continuation dig deeper (MEASURE-DIAGNOSE-ACT-FORWARD-RATCHET per money-maker-ready-June112026edition master loop + thingstocheck_June2026 11-step + verif iron law; 2026-06-13, in .worktrees/audit-dig-deeper-2026-06-12).** Rebase resolved (--ours on data JSONs/DAILY; index reset per only-own AGENTS rule). Goal #1 (0/6 T2 -> pro-level Tier-2+ on /audit + conditioned /picks-now.html). NFA. Refs: master loop §1-5, thingstocheck prompt (21.1% horrible research-only + synthetic + stale + FWD loss + 0/6 gates), db-schema (at_signal_outcomes + tools/db_env), hypothesis-registry (M-107), verification-before-completion, prior Passes 1-112 + ACTION_PLAN + velocity 1774+1134 + stamp:98 + scanner:2942 + picks_now:697 + quality:11031 + entry 06-13 + DB 17470.
+
+**MEASURE (commands run + full outputs READ before any claim; targeted python -c + grep + sed + py_compile + git; no generators):**
+- Rebase/git: clean (no rebase in progress post --ours+add+continue; reset unstaged non-MD; divergence 361 vs 37 on our branch - force-lease for updates). Status post-reset: only memory + reports + untracked old stray.
+- py_compile (iron law): build_recency_summary.py OK; production_scanner.py OK; picks_now_professional.py OK; quality_gates.py OK. (Full print read.)
+- entry_conditions_forward.json: generated_at 2026-06-13T00:37:28Z (fresh today), stamped_n=1162, cohort_n=1205, conditions len=15 (key "conditions"; structure keys include generated_at/read_only/source_experiment/cohort_sql_note/stamped_n/skips/conditions/discipline_note). (Prior load had "0" due to case/print; confirmed 15.)
+- Recency: pick_summary_stats_14d cutoff 2026-05-29T21:03 (stale P1), gen 06-12T21:03; 48h cutoff 2026-06-10T21:03. (Builder _force_db_refresh + main call + --force-db present per grep/sed read at build_recency:23/57/325/59/61/66/69; snapshots in data/ not refreshed in this env - CI :10 would use force now.)
+- DB (db-schema guided, tools/db_env + pymysql read-only SELECT; no mutate/backup needed): at_signal_outcomes total closed-with-pnl=17470. Per asset_class (n / wr / avg_pnl): CRYPTO 16139 / 0.5435 / +0.1968; EQUITY 423 / 0.4232 / +0.304; FOREX 412 / 0.4345 / -0.0066; COMMODITY 301 / 0.2226 / -0.1637 (aggregate drag vs prior granular futures_mom 50.8% n61 +0.83bp SI/PL); MEMECOIN 92 / 0.2826 / -0.841; ETF 47 / 0.3830 / -0.159; FUTURES 31 / 0.6129 / +0.0689 (small high WR). No stamp cols in at_signal_outcomes (SHOW COLUMNS returned []). (Outputs read; column adjusted from "resolved_at" err to pnl_pct/status per history/schema.)
+- ai_tournament_picks_latest: 7099 picks. (Rough synth string scan + models top from prior; kimi/gpt/others; synthetic pollution per thingstocheck prompt + page audit.)
+- Wiring status (grep -n -E "FURTHER|stamp_entry|adverse_flag|growth_quality|RECENCY_FIX" + sed context read full):
+  - picks_now_professional.py:697- (FULL Pass 93): stamp_adj=0.15 if F1 ALIGNED/F4 LOW/F5 US (import get_conditions_for_pick); adverse_flag=True + adj-0.5 if rvol>80 or bb extreme; growth_quality_adj 0.12/0.06 for EQUITY ROE/EPSg/PEG/mcap; signals + score update. Addresses 21.1% research path + 0/6.
+  - production_scanner.py:2937- (FURTHER ITEM Pass 72/73 + Pass 80 tracker): COM futures_momentum good granular slice noted; "Wiring for stamp F pre-filter + adverse kill intended here or emitter"; currently in _BLOCKED_CATEGORY_STRATEGIES blanket for safety "until full velocity harness + n>=100 clean + re-pass gates"; TODO "condition the block (skip for stamped non-adverse) or move boost to score"; "picks_now consume DONE (research path)"; "Next: extend to prod emitter using get_conditions_for_pick + adverse check". Wire-up observed (comment only, no full caller yet).
+  - build_recency_summary.py: RECENCY_FIX + _force_db_refresh() + call in main + --force-db + warnings (fixes 06-05 stale per Pass 70+/thingstocheck).
+  - quality_gates.py:1509 NOTE95 (Pass 95/100): adverse explicit kill (volume_spike/regime_mild/bollinger); passes_adverse_hard func at 11031 (opt-in for COM fut_mom + stamp F); ties to picks_now adverse_flag + granular.
+- picks-now.html + template (local source grep/sed + disclaimer read): title "Top Picks Now — Live Tracker"; .disclaimer; "21.1pp" in td (likely the FWD WR stat); "RESEARCH ONLY — NOT ACTIONABLE FORWARD SIGNALS"; "0/6 asset classes have a strategy that passes all 4 gates, which is why the disclaimer says "Zero asset classes are currently Money-Ready""; "Individual picks on this page do NOT need to pass the gates — the gates are for strategy-level graduation"; methodology scores "RIGHT NOW" (e.g. AMZN 133/100) logged to picks_now_tracker; source link to picks_now_professional.py. (21.1% is the forward-tested on tracker; wiring in py improves scoring layer but page/stat reflects current tracker data.)
+- Live page: web fetch 412 (precondition/CF); rely on source + prior thingstocheck page audit (buttons/filters/tabs, 21.1% root, synthetic in ai-tournament, stale portfolio/ai_leaderboard, FWD vs strat loss in active/star, disputed CRYPTO 78.9% vs raw ~39%).
+- hyp reg: total 73 (pre this) -> added H-151 (COM futures_momentum_stamp_adverse_velocity; full fields per hyp skill: asset COMMODITY, family..., description with granular+velocity+stamp+adverse+dedup+first-touch+net, acceptance incl eff0.3/3win/CI1.15/n80/conc0.35/wr0.50/paper_twr, econ prior from autopsy, status UNTESTED, registered 2026-06-13, data_lock entry+at+stamp+velocity, banned_check distinct from killed futures_mom). (Print "pre-registered" read; json edit our only.)
+- Other: memory/2026-06-13.md created with full log. thingstocheck/money-maker/db-schema/verif/hyp skills read + followed (11-step todos, DB safe, pre-reg before, iron law run+read, loop steps).
+
+**DIAGNOSE (H1-H5 from master + thingstocheck + granular/velocity/autopsy):**
+- H1 (measurement): honest intrabar/post-fix (M-067 resolver), DB n~17k total gives real per-class (COM 301n 22%WR -0.16pnl aggregate vs prior granular futures 50.8%/1.586 good; FUT 31n 61% high but small). Recency published stale (05-29/06-10 cutoffs in snapshots) despite code force (P1; CI would refresh). Entry 15 conds fresh 06-13 good for velocity.
+- H2 (bt-only vs live): research /picks-now (21.1% path) now wired stamp/adverse/growth in py (lifts per velocity retention e.g. prior rsi +18pp stable last30); prod /audit (scanner) has comment+TODO+blanket block on COM fut_mom (safety until n100+harness+re-pass per its NOTE); 0/6 gates in disclaimer explains why "not money-ready" even if methodology scores now better. 21.1pp persists in source (tracker DB or gen not yet with new scorer; or gates separate).
+- H3 (scarcity): non-crypto thin (COM 301, others <100-400); 15 conds help density but COM/fut light in entry CONDITIONS.
+- H4 (external): COT/Polymarket/Kalshi/growth screener mentioned in prompt/skill but not fully wired to stamp/velocity here (prior COT ~32).
+- H5 (coverage): FWD vs strat/symbol-dir loss in active/star (per prompt); synthetic in ai 7k (models kimi/gpt/cursor etc per thingstocheck + page); one-sided/ghosts addressed prior but monitor in DB probe.
+- picks-now 21.1% horrible root (per user prompt + source): explicit "RESEARCH ONLY" + "0/6 asset classes" money-ready (gates for strategy graduation, not individual picks); methodology (now with our stamp+adverse+growth) vs gates distinction. Wiring in py (source linked) is the fix for scoring; to pro-level need refreshed tracker with conditioned picks + at least 1 class passing gates (COM candidate via granular + stamp + velocity + adverse).
+- COM priority (best worth risk per granular + prior): aggregate low but futures_mom slice +0.83bp SI/PL n61 50.8% (velocity autopsy); stamp CONDITIONS + adverse kill + harness = admissible path; currently blocked in scanner for safety (per NOTE "until full... ~06-13"); H-151 pre-reg for it.
+- Velocity: 15 conds + 1774/1134 harness prior proven retention; 50-100x for fast iter; not re-run this pass but DB/entry fresh for it.
+- Synthetic pollution: in ai_tournament (7k picks, various models); inflates vs honest DB (CRYPTO 54% but net small, COM drag).
+- Overall 0/6 T2: DB + verdict context + disclaimer confirm (need n>=80-100 clean, CI LB>1.15, PF>1.5, WR>50, conc<35, recency/14d48h green, forward/paper, full gates).
+
+**ACT (per loop + thingstocheck + Wire-Up):**
+- Pre-reg H-151 (COM futures_momentum + stamp F pre-filter + adverse fade + velocity/AddH + paper TWR) in hyp reg BEFORE any harness (M-107 + hyp skill + master). Full entry per required fields. (Data lock on fresh 06-13 entry + 1162 stamped + at + 1774 intrabar 1134 stamp.)
+- Wiring: research path (picks_now for /picks-now.html) FULL active (stamp boost + adverse kill + growth; "FULL complete Pass 93"); prod scanner comment+TODO (block active, "extend to prod emitter" planned; quality has passes_adverse_hard opt-in). No new code edit this cycle (safe; prior wirings survived rebase + py_compile OK); documented for next.
+- DB hygiene: probe done (read-only); per db-schema backup rule noted for any future mutate.
+- No generators; only own changes (hyp + memory + MD).
+
+**FORWARD (per master §4 + thingstocheck + acceptance in H-151):**
+- Velocity harness on the 15 CONDITIONS + COM fut slice (Add H: n_eff/stress/monkey95/CI/conc/recency/rubric/emitter; target conditioned PF>=1.6 WR~48-52 at n~100).
+- Paper on admissible (tv-paper-trade TP/SL mandatory; TWR/attr from fills not sum-pct; monitor 14d/48h).
+- Synthetic filter for ai_tournament (model count + backfill/nuke per prompt).
+- Recency: ensure CI runs builder with --force-db (snapshots will update); 14d/48h primary in verdict/UI.
+- Scanner: implement the "condition the block" / "move boost to score" per its own NOTE (use get_conditions_for_pick + passes_adverse_hard or adverse proxy; skip block for stamped non-adverse COM fut_mom).
+- picks-now: refresh tracker with wired scorer; surface CONDITION badges + growth + COM admissible; honest disclaimer update if pro.
+- Per-class: COM first admissible (n100 clean + gates + paper + CI + conc + recency) ~06-13-16 per prior calendar; then rotate. External COT lag3 + growth screener + pred markets per skill/prompt.
+- Gate: only promote at forward + paper + CI LB>1.15 n>=80 + conc<35 + full monkey/stress + TWR green (no size on historical).
+
+**RATCHET (weekly + this Pass + memory):** 
+- Hyp reg updated (H-151 pre-reg).
+- Main deep-dive MD + memory/2026-06-13 updated (this Pass 113 + log).
+- 4h sprint checklist (from master + thingstocheck + prior sprint-refine): 0-30m pulls/verifs (entry/DB/recency/wiring/grep/sed/py_compile + thingstocheck if full page); 30-90m velocity batch on 15 conds + COM fut (pre-reg done); 90-150m adverse hard in quality + scanner condition block + synthetic filter stub; 150-210m paper on top admissible + TWR proto + growth full for EQUITY; 210-240m 14d/48h + verdict + tier + RATCHET (update hyp + MD + memory + perhaps updates/ card) + verif block + commit/push (only own) + PR comment.
+- Next recurring: Pass 114 with harness results (if run), DB per-sym FWD for stamped COM, live page unblock if possible, more pre-reg if new.
+- Master loop self-correct: H1 red (rec lag) -> fix trigger; H3 scarcity -> focus COM + conds; etc.
+
+**Verif iron law block (run+read BEFORE claim; evidence in cmd outputs + this text):** 
+1. git reset (unstaged non-own from rebase); status grep reports/memory: read.
+2. py_compile 4 pys: all "OK" (print read).
+3. python entry/rec/DB/ai/wiring loads + hyp pre-reg: full prints read (entry 06-13 15 conds, DB table with COM 301n 22% -0.16, rec stale cutoffs, wiring grep/sed hits at exact lines, H-151 added "pre-registered", total 17470).
+4. sed/grep on scanner block + picks_now wiring + recency: full context read (FURTHER at 2942, FULL at 697, RECENCY_FIX at 23/57 etc, passes_adverse at 11031).
+5. DB probe2 + hyp check: outputs read (per class table, no stamp col, hyp 73+).
+6. memory/2026-06-13.md created (ls read); MD append (this).
+7. Skills read (money-maker loop, thingstocheck 11-step, db-schema tables+db_env, verif gate, hyp pre-reg workflow) + followed (todos, MEASURE loads/DB/grep, pre-reg before, iron run+read, RATCHET).
+8. No generators/destructive; worktree confirmed; only hyp+memory+deep-MD will be git add; push force-lease.
+9. thingstocheck prompt items addressed (21.1% debug via source+disclaimer+wiring, synthetic in 7k, stale recency, FWD, 0/6 gates, COM priority, velocity, DB safe).
+All outputs read verbatim before this Pass text. Goal #1. (See full cmd history for raw.)
+
+**End of Pass 113.** (Continuing 4h dig per recurring; next Pass 114 will include velocity sims on the 15 + any harness/paper on H-151 + scanner wiring extension + synthetic filter. Operator: review hyp reg + MD + memory; trigger CI for recency if needed; paper on admissible only.)
+
