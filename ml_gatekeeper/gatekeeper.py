@@ -1323,6 +1323,7 @@ def main():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         # #134 (2026-06-13): the A/B dual-write below lived AFTER this retraining-sample
         # guard, so on low-closed-volume hours main() returned here and the sidecar +
         # ab_history went dead for weeks. But scoring active picks reuses the ALREADY-
@@ -1332,6 +1333,8 @@ def main():
         # (on-disk bundles + persisted router) so the A/B keeps accruing. Fail-safe:
         # any error falls back to the heuristic path with a logged reason (no silent mask).
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1347,6 +1350,9 @@ def main():
         # falls back to the heuristic path with a logged reason (no silent mask).
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1359,7 +1365,11 @@ def main():
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 print("[gatekeeper] #134: insufficient retrain data \u2192 A/B dual-write with on-disk bundles")
+=======
+                print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
+>>>>>>> Stashed changes
 =======
                 print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
 >>>>>>> Stashed changes
