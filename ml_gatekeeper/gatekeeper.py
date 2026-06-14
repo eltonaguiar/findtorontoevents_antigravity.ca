@@ -1322,6 +1322,7 @@ def main():
         print(f"[gatekeeper] Only {len(X)} picks — need 100+ for reliable training")
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         # #134 (2026-06-13): the A/B dual-write below lived AFTER this retraining-sample
         # guard, so on low-closed-volume hours main() returned here and the sidecar +
         # ab_history went dead for weeks. But scoring active picks reuses the ALREADY-
@@ -1331,6 +1332,8 @@ def main():
         # (on-disk bundles + persisted router) so the A/B keeps accruing. Fail-safe:
         # any error falls back to the heuristic path with a logged reason (no silent mask).
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         # #134 (2026-06-13): the A/B dual-write was unreachable on low-closed-volume
@@ -1343,6 +1346,9 @@ def main():
         # with the >=100 path (OLD-ML → prod, NEW-ML → sidecar). Fail-safe: any error
         # falls back to the heuristic path with a logged reason (no silent mask).
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1352,7 +1358,11 @@ def main():
                 _sr = json.loads(_rp.read_text(encoding="utf-8")) if _rp.exists() else {}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 print("[gatekeeper] #134: insufficient retrain data \u2192 A/B dual-write with on-disk bundles")
+=======
+                print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
+>>>>>>> Stashed changes
 =======
                 print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
 >>>>>>> Stashed changes
