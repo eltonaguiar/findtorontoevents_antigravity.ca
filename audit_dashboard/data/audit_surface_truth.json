@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-13T06:00:54.959159+00:00",
+  "generated_at": "2026-06-15T06:19:05.420520+00:00",
   "tier2_charter": {
     "min_n": 100,
     "min_wr": 0.5,
@@ -19,9 +19,9 @@
     {
       "asset_class": "CRYPTO",
       "verdict": "NOT_READY",
-      "n_resolved": 1572,
-      "wr_pct": 51.6,
-      "pf": 0.6372,
+      "n_resolved": 1155,
+      "wr_pct": 32.4,
+      "pf": 0.7269,
       "money_ready": false,
       "policy_clean_n": 1697,
       "policy_clean_pf": 0.657197,
@@ -32,9 +32,9 @@
     {
       "asset_class": "EQUITY",
       "verdict": "NOT_READY",
-      "n_resolved": 386,
-      "wr_pct": 47.1,
-      "pf": 0.717,
+      "n_resolved": 119,
+      "wr_pct": 34.4,
+      "pf": 0.4599,
       "money_ready": false,
       "policy_clean_n": 386,
       "policy_clean_pf": 0.719684,
@@ -43,17 +43,30 @@
       "bridge_action": "FAIL \u2014 mutate or kill emitters; no real money"
     },
     {
+      "asset_class": "COMMODITY",
+      "verdict": "NOT_READY",
+      "n_resolved": 115,
+      "wr_pct": 34.8,
+      "pf": 1.0477,
+      "money_ready": false,
+      "policy_clean_n": 12,
+      "policy_clean_pf": 0.823035,
+      "policy_clean_wr_pct": 33.3333,
+      "tier2_pass": false,
+      "bridge_action": "SUB_TIER2 \u2014 forward paper until n\u2265100 and PF\u22651.5"
+    },
+    {
       "asset_class": "FOREX",
       "verdict": "INSUFFICIENT_DATA",
-      "n_resolved": 71,
-      "wr_pct": 40.8,
-      "pf": 0.8538,
+      "n_resolved": 95,
+      "wr_pct": 41.0,
+      "pf": 1.1024,
       "money_ready": false,
-      "policy_clean_n": 70,
-      "policy_clean_pf": 0.854088,
-      "policy_clean_wr_pct": 41.4286,
+      "policy_clean_n": 87,
+      "policy_clean_pf": 1.304271,
+      "policy_clean_wr_pct": 45.977,
       "tier2_pass": false,
-      "bridge_action": "FAIL \u2014 mutate or kill emitters; no real money"
+      "bridge_action": "SUB_TIER2 \u2014 forward paper until n\u2265100 and PF\u22651.5"
     },
     {
       "asset_class": "ETF",
@@ -78,19 +91,6 @@
       "policy_clean_n": 13,
       "policy_clean_pf": 0.762845,
       "policy_clean_wr_pct": 15.3846,
-      "tier2_pass": false,
-      "bridge_action": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
-    },
-    {
-      "asset_class": "COMMODITY",
-      "verdict": "INSUFFICIENT_DATA",
-      "n_resolved": 12,
-      "wr_pct": 33.3,
-      "pf": 0.823,
-      "money_ready": false,
-      "policy_clean_n": 12,
-      "policy_clean_pf": 0.823035,
-      "policy_clean_wr_pct": 33.3333,
       "tier2_pass": false,
       "bridge_action": "INSUFFICIENT_N \u2014 no class-level sizing; paper-pilot only"
     },
@@ -206,7 +206,7 @@
     }
   ],
   "ai_leaderboard": {
-    "as_of": "2026-06-13T06:00:41.444384+00:00",
+    "as_of": "2026-06-15T06:18:52.066531+00:00",
     "picks": 340,
     "resolved": 301,
     "engines": 43,
@@ -220,17 +220,17 @@
     "mispriced_pct": 60.4,
     "status_counts": {
       "MISPRICED_ENTRY": 4285,
-      "OPEN": 1191,
-      "LOSS": 937,
-      "WIN": 686
+      "OPEN": 1149,
+      "LOSS": 955,
+      "WIN": 710
     },
     "closed_by_class": [
       {
         "asset_class": "CRYPTO",
-        "n_closed": 437,
-        "wr": 0.4211,
-        "wr_pct": 42.1,
-        "avg_pnl_pct": -1.1472,
+        "n_closed": 447,
+        "wr": 0.4183,
+        "wr_pct": 41.8,
+        "avg_pnl_pct": -1.1944,
         "tier2_pass": false,
         "verdict": "COIN_FLIP_OR_WORSE"
       },
@@ -263,11 +263,11 @@
       },
       {
         "asset_class": "FOREX",
-        "n_closed": 231,
-        "wr": 0.4892,
-        "wr_pct": 48.9,
-        "avg_pnl_pct": -0.1662,
-        "tier2_pass": false,
+        "n_closed": 262,
+        "wr": 0.5076,
+        "wr_pct": 50.8,
+        "avg_pnl_pct": -0.1035,
+        "tier2_pass": true,
         "verdict": "COIN_FLIP_OR_WORSE"
       },
       {
@@ -299,10 +299,10 @@
       },
       {
         "asset_class": "FUTURES",
-        "n_closed": 20,
-        "wr": 0.45,
-        "wr_pct": 45.0,
-        "avg_pnl_pct": 0.9184,
+        "n_closed": 21,
+        "wr": 0.4762,
+        "wr_pct": 47.6,
+        "avg_pnl_pct": 0.9485,
         "tier2_pass": false,
         "verdict": "INSUFFICIENT_N"
       }
@@ -311,69 +311,76 @@
     "banner": "4285/7099 rows MISPRICED_ENTRY \u2014 tournament WR is coin-flip at pool level; not money-ready."
   },
   "production_ledger": {
-    "null_pnl_resolved": 168,
+    "null_pnl_resolved": 169,
     "resolver_backlog_note": "Run tools/backfill_resolved_pnl.py after ejaguiar1_backups archive",
     "raw_90d_by_class": [
       {
         "asset_class": "CRYPTO",
-        "n": 16783,
+        "n": 16735,
         "wr_pct": 47.2,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "FOREX",
-        "n": 15136,
+        "n": 15141,
         "wr_pct": 52.8,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "COMMODITY",
-        "n": 7278,
-        "wr_pct": 46.8,
+        "n": 7297,
+        "wr_pct": 46.7,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "EQUITY",
-        "n": 3181,
-        "wr_pct": 36.1,
+        "n": 3178,
+        "wr_pct": 36.0,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "INDEX",
-        "n": 433,
-        "wr_pct": 44.3,
+        "n": 434,
+        "wr_pct": 44.2,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "FUTURES",
-        "n": 412,
-        "wr_pct": 51.0,
+        "n": 415,
+        "wr_pct": 51.1,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "ETF",
-        "n": 371,
-        "wr_pct": 44.7,
+        "n": 375,
+        "wr_pct": 44.5,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "BOND",
-        "n": 175,
-        "wr_pct": 44.6,
+        "n": 176,
+        "wr_pct": 44.9,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       },
       {
         "asset_class": "MEME",
-        "n": 56,
-        "wr_pct": 33.9,
+        "n": 41,
+        "wr_pct": 41.5,
+        "tier2_pass": false,
+        "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
+      },
+      {
+        "asset_class": "MEMECOIN",
+        "n": 23,
+        "wr_pct": 43.5,
         "tier2_pass": false,
         "note": "raw trading_picks 90d \u2014 not policy-clean; use pf_registry for sizing"
       }
