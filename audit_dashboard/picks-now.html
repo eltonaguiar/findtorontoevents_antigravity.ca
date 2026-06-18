@@ -1146,20 +1146,34 @@ function renderLivePnl(d) {
       + '</table></details>';
   }
 
-  // Top 10 winners + losers
-  const picks = (d.picks || []).filter(p => p.pnl_pct != null);
+  // Top 10 winners + losers — DEDUPED by symbol+direction (2026-06-13 fix: the same pick
+  // re-emitted intraday was rendering as N separate rows — e.g. MU appeared 8x. Now counted
+  // ONCE; keep the EARLIEST emission as the true pick time, badge the re-emit count, show
+  // the pick date/time in EST). generated_at is stored UTC -> convert to America/New_York.
+  const fmtEST = g => { if (!g) return '—'; const dt = new Date(String(g).replace(' ','T') + 'Z'); return isNaN(dt.getTime()) ? '—' : dt.toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); };
+  const _bySym = {};
+  for (const p of (d.picks || []).filter(p => p.pnl_pct != null)) {
+    const k = p.symbol + '|' + p.direction;
+    if (!_bySym[k]) { _bySym[k] = Object.assign({}, p, { _dupes: 1 }); }
+    else {
+      _bySym[k]._dupes += 1;
+      if (p.generated_at && (!_bySym[k].generated_at || p.generated_at < _bySym[k].generated_at)) { _bySym[k].generated_at = p.generated_at; _bySym[k].pnl_pct = p.pnl_pct; }
+    }
+  }
+  const picks = Object.values(_bySym);
   if (picks.length) {
     const sorted = [...picks].sort((a,b) => (b.pnl_pct||0) - (a.pnl_pct||0));
     const winners = sorted.slice(0, 10);
     const losers = sorted.slice(-10).reverse();
+    const _row = (p, color) => '<tr style="border-top:1px solid var(--border);"><td style="padding:3px 6px;font-weight:600;">' + p.symbol + '</td><td style="color:var(--muted);">' + p.direction + '</td><td style="color:var(--muted);font-size:0.7rem;white-space:nowrap;">' + fmtEST(p.generated_at) + ' EST' + (p._dupes > 1 ? ' <span title="re-emitted ' + p._dupes + '× intraday — counted once" style="color:#d29922;">×' + p._dupes + '</span>' : '') + '</td><td style="color:' + color + ';font-weight:600;text-align:right;">' + (p.pnl_pct >= 0 ? '+' : '') + p.pnl_pct + '%</td></tr>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">';
-    html += '<div><div style="font-size:0.78rem;color:#3fb950;font-weight:600;margin-bottom:4px;">▲ Top Gainers</div>'
+    html += '<div><div style="font-size:0.78rem;color:#3fb950;font-weight:600;margin-bottom:4px;">▲ Top Gainers <span style="color:var(--muted);font-weight:400;font-size:0.7rem;">(unique symbols · pick time EST)</span></div>'
       + '<table style="width:100%;border-collapse:collapse;font-size:0.75rem;">'
-      + winners.map(p => '<tr style="border-top:1px solid var(--border);"><td style="padding:3px 6px;font-weight:600;">' + p.symbol + '</td><td style="color:var(--muted);">' + p.direction + '</td><td style="color:#3fb950;font-weight:600;text-align:right;">+' + p.pnl_pct + '%</td></tr>').join('')
+      + winners.map(p => _row(p, '#3fb950')).join('')
       + '</table></div>';
-    html += '<div><div style="font-size:0.78rem;color:#f85149;font-weight:600;margin-bottom:4px;">▼ Top Losers</div>'
+    html += '<div><div style="font-size:0.78rem;color:#f85149;font-weight:600;margin-bottom:4px;">▼ Top Losers <span style="color:var(--muted);font-weight:400;font-size:0.7rem;">(unique symbols · pick time EST)</span></div>'
       + '<table style="width:100%;border-collapse:collapse;font-size:0.75rem;">'
-      + losers.map(p => '<tr style="border-top:1px solid var(--border);"><td style="padding:3px 6px;font-weight:600;">' + p.symbol + '</td><td style="color:var(--muted);">' + p.direction + '</td><td style="color:#f85149;font-weight:600;text-align:right;">' + p.pnl_pct + '%</td></tr>').join('')
+      + losers.map(p => _row(p, '#f85149')).join('')
       + '</table></div>';
     html += '</div>';
   }
