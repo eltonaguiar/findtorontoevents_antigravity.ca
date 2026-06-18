@@ -311,6 +311,30 @@ def fetch_live_prices(symbols: list[str], asset_class: str) -> dict[str, float]:
         except Exception as e:
             print(f"# yfinance batch fetch failed: {e}", file=sys.stderr)
 
+        # FALLBACK (2026-06-18): yfinance is frequently IP-blocked / rate-limited
+        # from GitHub runners -> 0 prices -> the fail-closed guard below crashes
+        # outcome-resolver.yml on EVERY run (observed 10/10), so the downstream
+        # "Mirror -> at_signal_outcomes" step never runs and the honest intrabar
+        # ledger froze at 2026-06-12 (every forward checkpoint starved). The
+        # docstring already intends audit_trail/fetch_stock_prices (yfinance -> FMP)
+        # for non-crypto; this wires it for any symbol yfinance missed. FMP
+        # /stable/profile returns accurate quotes (validated AAPL/SPY/NVDA 2026-06-18).
+        # The fail-closed guard is PRESERVED: if BOTH yfinance and FMP yield nothing,
+        # `prices` stays empty and the no-mass-skip refusal still fires.
+        missing = [s for s in symbols if s not in prices]
+        if missing:
+            try:
+                from audit_trail.fetch_stock_prices import fetch_prices as _fsp
+                for _s, _p in (_fsp(missing) or {}).items():
+                    try:
+                        if _p and float(_p) > 0:
+                            prices[_s] = float(_p)
+                    except (TypeError, ValueError):
+                        continue
+            except Exception as _e:
+                print(f"# equity price fallback (fetch_stock_prices) failed: {_e}",
+                      file=sys.stderr)
+
     # Bug-2 fix 2026-05-18: fail loud on a non-empty non-crypto symbol set that
     # yields ZERO prices — almost always a symbol-format mismatch (EURUSD vs
     # EURUSD=X) or a yfinance outage, NOT a real "all stayed open" result.
