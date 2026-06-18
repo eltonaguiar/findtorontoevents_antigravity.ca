@@ -240,6 +240,49 @@ def compute_verdict(pick: dict, live_price: float | None, max_hold_hours: int,
     }
 
 
+def _fetch_forex_rates(symbols: list[str]) -> dict[str, float]:
+    """Keyless FX fallback via frankfurter.app (ECB daily reference rates).
+
+    'USDCAD=X' -> base USD / quote CAD -> rate. Used ONLY when yfinance misses the pair
+    (FMP /stable/profile can't quote FX). DAILY granularity — coarse, a fallback so a
+    FOREX price outage resolves instead of skipping the whole class. Best-effort; never
+    raises. Returns {original_symbol: rate}. Covers majors + crosses (arbitrary base).
+    """
+    import urllib.request as _u
+    from collections import defaultdict as _dd
+
+    out: dict[str, float] = {}
+    by_base: dict[str, list[str]] = _dd(list)
+    pairs: dict[str, tuple] = {}
+    for s in symbols:
+        core = s.upper().replace("=X", "")
+        if len(core) != 6 or not core.isalpha():
+            continue
+        base, quote = core[:3], core[3:]
+        by_base[base].append(quote)
+        pairs[s] = (base, quote)
+    rates: dict[tuple, float] = {}
+    for base, quotes in by_base.items():
+        try:
+            qs = ",".join(sorted(set(quotes)))
+            url = f"https://api.frankfurter.app/latest?base={base}&symbols={qs}"
+            req = _u.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with _u.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read())
+            for q, r in (data.get("rates") or {}).items():
+                try:
+                    rates[(base, q.upper())] = float(r)
+                except (TypeError, ValueError):
+                    continue
+        except Exception:
+            continue
+    for s, (base, quote) in pairs.items():
+        r = rates.get((base, quote))
+        if r and r > 0:
+            out[s] = r
+    return out
+
+
 def fetch_live_prices(symbols: list[str], asset_class: str) -> dict[str, float]:
     """Per-class live-price fetcher with dedup. Reuses existing failover
     chains — alpha_engine/api_failover for CRYPTO, audit_trail/fetch_stock_prices
@@ -334,6 +377,19 @@ def fetch_live_prices(symbols: list[str], asset_class: str) -> dict[str, float]:
             except Exception as _e:
                 print(f"# equity price fallback (fetch_stock_prices) failed: {_e}",
                       file=sys.stderr)
+
+        # FOREX (=X) fallback (2026-06-18): FMP /stable/profile + yfinance both miss FX
+        # pairs from the runner; use frankfurter.app (ECB, keyless, daily). Coarse but
+        # better than skipping the class. Guard still preserved (if this also yields
+        # nothing, prices stays empty for FX and the no-mass-skip refusal fires).
+        fx_missing = [s for s in symbols if s not in prices and "=X" in s.upper()]
+        if fx_missing:
+            try:
+                for _s, _r in _fetch_forex_rates(fx_missing).items():
+                    if _r and _r > 0:
+                        prices[_s] = float(_r)
+            except Exception as _e:
+                print(f"# forex price fallback (frankfurter) failed: {_e}", file=sys.stderr)
 
     # Bug-2 fix 2026-05-18: fail loud on a non-empty non-crypto symbol set that
     # yields ZERO prices — almost always a symbol-format mismatch (EURUSD vs
