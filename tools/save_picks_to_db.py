@@ -48,6 +48,7 @@ for p in picks:
          analyst_rating, analyst_count, target_price, upside_pct,
          eli5_reason, signals)
         VALUES (NOW(), %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        ON DUPLICATE KEY UPDATE symbol=symbol
     """, (
         p["symbol"], p.get("class",""), p.get("direction","LONG"),
         sn(price), sn(price*(1+tp/100)) if tp else None, sn(price*(1-sl/100)) if sl else None,
