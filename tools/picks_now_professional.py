@@ -34,6 +34,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from collections import defaultdict
 
+# 2026-06-18: put repo root on sys.path so `from tools.db_env import ...` resolves when this is
+# invoked as `python3 tools/picks_now_professional.py` (the picks-now-refresh "Generate picks"
+# step has no PYTHONPATH and was failing fatally: ModuleNotFoundError: No module named 'tools'
+# -> the engine stopped generating picks). Matches the guard already in save_picks_to_db.py.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import numpy as np
 import pandas as pd
 import yfinance as yf
