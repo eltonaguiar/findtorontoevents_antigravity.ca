@@ -20,7 +20,27 @@
 - **Both jobs fail**: `test (3.11)` (job 82129353401) and `test (3.12)` (job 82129353412) — same error on both Python versions.
 - **Failing run URL**: https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27759346825
 
+**Pytest results (run 27759346825):**
+- Python 3.11: **35 failed, 35 passed** in 50.57s
+- Python 3.12: **92 failed, 6062 passed**, 62 skipped in 181.21s
+
+**Failure clusters (3.11 job):**
+
+| Cluster | Count | Signal |
+|---|---|---|
+| `test_money_ready_verdict.py` M070/M105 | 7 | `money_ready_verdict()` returns `NOT_READY` where `WATCH`/`MONEY_READY` expected |
+| `test_portfolio_engine.py` | 7 | TP/SL floor, drawdown breaker, `max_open_positions` vs `gross_exposure_cap_pct` key |
+| `test_trust_tier_non_crypto_default_on.py` | 4 | Non-crypto EQUITY/ETF `passes_active_gate` returns False; bypass flags broken |
+| `test_quality_gates.py` FOREX | 2 | `FOREX_HARD_DISABLE` not defaulting ON; FOREX passes gate without override |
+| `test_kimi_promotion_unblock.py` | 2 | `passes_active_gate` False for EQUITY kimi picks |
+| `test_ns_c_e_exec_gate_filters.py` | 1 | `FOREX_HARD_DISABLE` env var unreadable with default |
+| `test_pf_registry_tournament_db.py` | 1 | Tournament loader returns 0 rows instead of 2 |
+
+**3.12-only failures:** `test_wf_verdict_null_block.py` — CRYPTO `passes_active_gate` returns False when True expected (5+ visible; this is the M-036 block from PR #601). Secondary run hit a live network timeout in `alpha_engine/bond_data_fred.py` (real HTTPS call to FRED API not mocked, 120s pytest-timeout fired).
+
 **Action required:** operator must:
 1. Fix `alpha_engine/backtest_quant_algorithms.py` — restore valid Python content (current line 1 is garbage: `IsADirectoryErrorCHATWITHIT.mdmd atTH..D`); last touched by commit `8d13fcd1`
-2. Merge PR #599 and PR #601 to fix the 91 M-036 gate-test failures on main
-3. Optionally audit how a [skip ci] data commit overwrote a Python source file with markdown/error content — `backtest_quant_algorithms.py` may have been clobbered by a runaway automated writer
+2. Merge PR #599 and PR #601 to fix the M-036 gate-test failures on main
+3. Review `test_money_ready_verdict.py`, `test_portfolio_engine.py`, `test_trust_tier_non_crypto_default_on.py`, and `test_quality_gates.py` failure clusters — these are broader than the M-036 single-axis fix in #599/#601 and may require additional investigation
+4. Mock or skip the live FRED API call in `bond_data_fred.py` for CI (causes 120s+ hang in secondary run)
+5. Audit how a [skip ci] data commit overwrote a Python source file — `backtest_quant_algorithms.py` was clobbered by a runaway automated writer
