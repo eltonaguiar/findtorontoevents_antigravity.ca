@@ -1563,6 +1563,7 @@ def main():
                  analyst_rating, analyst_count, target_price, upside_pct,
                  eli5_reason, signals)
                 VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE symbol=symbol
             ''', (
                 r['symbol'], r['class'], r.get('direction', 'LONG'),
                 safe_float(price),
