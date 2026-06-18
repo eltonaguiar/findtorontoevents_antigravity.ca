@@ -80,26 +80,35 @@ jobs:
           echo "  ACTIVE PICKS SYNC — MySQL writer (PR#2)"
           echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           echo "============================================"
+          # 2026-06-18: each per-class sync is NON-FATAL (matching the BOND line's
+          # pre-existing `|| true`). Previously a single class's price-fetch outage
+          # (yfinance IP-blocked from the runner -> 0 prices -> in-script fail-closed
+          # guard) aborted the whole step under `set -e`, so the downstream
+          # "Mirror -> at_signal_outcomes" step never ran and the honest intrabar
+          # ledger FROZE (2026-06-12..06-18). The in-script guard still prevents
+          # mass-skip WITHIN a class; this only stops one class from freezing all
+          # the others + the mirror. Pairs with the FMP equity fallback in
+          # active_picks_sync.fetch_live_prices (same PR).
           python alpha_engine/active_picks_sync.py \
             --asset-class CRYPTO \
             --max-rows 5000 \
-            --apply
+            --apply || echo "::warning::active_picks_sync CRYPTO non-fatal (price-fetch outage)"
           python alpha_engine/active_picks_sync.py \
             --asset-class EQUITY \
             --max-rows 5000 \
-            --apply
+            --apply || echo "::warning::active_picks_sync EQUITY non-fatal (price-fetch outage)"
           python alpha_engine/active_picks_sync.py \
             --asset-class FOREX \
             --max-rows 5000 \
-            --apply
+            --apply || echo "::warning::active_picks_sync FOREX non-fatal (price-fetch outage)"
           python alpha_engine/active_picks_sync.py \
             --asset-class COMMODITY \
             --max-rows 3000 \
-            --apply
+            --apply || echo "::warning::active_picks_sync COMMODITY non-fatal (price-fetch outage)"
           python alpha_engine/active_picks_sync.py \
             --asset-class ETF \
             --max-rows 2000 \
-            --apply
+            --apply || echo "::warning::active_picks_sync ETF non-fatal (price-fetch outage)"
           python alpha_engine/active_picks_sync.py \
             --asset-class BOND \
             --max-rows 1000 \
