@@ -34,3 +34,34 @@ falling) while shorting winners is mildly positive (+0.22%/day) but not enough t
 the reversal prior. A cross-sectional *momentum* variant (long winners / short losers) would be a DISTINCT
 hypothesis requiring its own pre-registration — NOT pursued here (anti-circling: H-124 is one FDR family, closed;
 and naive daily momentum would still face the 20bp/day cost drag). Logged so it isn't re-litigated as reversal.
+
+---
+# H-125 — Weekly Crypto Cross-Sectional Momentum: REFUTED (2026-06-18)
+
+Pre-registered (M-107) before running; `loop_preflight` GO. Motivated by H-124's leg findings + the cost insight
+(weekly turnover ~5x less drag than the daily rebalance that killed H-124). LONG top-decile / SHORT bottom-decile
+by prior-7d return, weekly non-overlap rebalance, market-neutral, net 10bp/side.
+
+| metric | value |
+|---|---|
+| NET weekly LS mean | **−0.844%/wk** |
+| weekly PF | 0.519 |
+| ann Sharpe | −1.87 |
+| IS half mean | −1.916% (PF 0.28) |
+| OOS half mean | +0.227% (PF 1.27) |
+| LONG-winner leg | −3.06%/wk |
+| SHORT-loser leg | +1.37%/wk |
+| BTC-beta | −0.225 |
+| monkey-test | t=−1.27 < null p95 1.11 (FAILS) |
+| weekly obs | 24 (thin) |
+
+## Verdict: REFUTED
+IS half net-negative + fails the monkey-test → falsified. n=24 weeks is also far below the n≥80 bar, but the sign
++ monkey-test failure are decisive regardless.
+
+## Combined conclusion (H-124 + H-125) — avenue CLOSED
+Daily reversal (H-124) AND weekly momentum (H-125) are both net-negative, and the cross-sectional leg signs **flip
+with horizon** (daily: losers trend down; weekly: winners revert down). That pattern = **no stable, exploitable
+cross-sectional autocorrelation structure in crypto at these horizons net-of-cost** — just noise plus the
+rebalance-cost drag. This matches the project's settled "no robust edge" reality. No further cross-sectional
+variants will be run (anti-circling: reversal×momentum × daily×weekly is the full 2×2; all refuted).
