@@ -46,6 +46,14 @@ THRESHOLDS: Dict[str, Dict[str, int]] = {
         "green_max_minutes": 360,   # 6h — resolved picks may land slower than raw picks
         "yellow_max_minutes": 1440, # 24h
     },
+    "intrabar_resolution": {
+        # The honest intrabar lane should accrue within hours of the hourly resolver.
+        # >24h stale = RED. (Added 2026-06-18: this lane silently froze 06-12..06-18 —
+        # 6 days — while signal_outcomes stayed GREEN, because the latter watches
+        # closed_at @30d, not intrabar_resolved_at.)
+        "green_max_minutes": 360,   # 6h
+        "yellow_max_minutes": 1440, # 24h
+    },
     "backtests": {
         "green_max_minutes": 2880,  # 48h
         "yellow_max_minutes": 10080,  # 1 week
@@ -279,6 +287,49 @@ def check_signal_outcomes(conn: Any) -> Dict[str, Any]:
     return result
 
 
+def check_intrabar_resolution(conn: Any) -> Dict[str, Any]:
+    """Freshness of the INTRABAR resolution lane — MAX(intrabar_resolved_at).
+
+    This is the honest measurement surface (decisive TP_HIT/SL_HIT) that feeds every
+    per-class verdict and pre-registered forward checkpoint. It is DISTINCT from
+    check_signal_outcomes (which watches closed_at at a 30d threshold). The intrabar
+    lane froze 2026-06-12..06-18 (6 days) while signal_outcomes stayed GREEN, because
+    outcome-resolver.yml was silently failing upstream (active_picks_sync yfinance-only
+    equity fetch -> fail-closed guard -> mirror step never ran). A tight threshold here
+    surfaces that class of stall on day one instead of day six.
+    """
+    result: Dict[str, Any] = {
+        "check": "intrabar_resolution",
+        "table": "at_signal_outcomes.intrabar_resolved_at",
+        "status": "RED",
+        "minutes_stale": None,
+        "last_intrabar_resolved_at": None,
+        "n_decisive_total": 0,
+    }
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT MAX(intrabar_resolved_at), "
+                "  SUM(CASE WHEN intrabar_status IN ('TP_HIT','SL_HIT') THEN 1 ELSE 0 END) "
+                "FROM at_signal_outcomes"
+            )
+            row = cur.fetchone()
+            if row:
+                last_at, n_decisive = row
+                result["last_intrabar_resolved_at"] = str(last_at) if last_at else None
+                result["n_decisive_total"] = int(n_decisive or 0)
+                minutes = _minutes_since(last_at)
+                result["minutes_stale"] = round(minutes, 1) if minutes is not None else None
+                result["status"] = _grade(minutes, THRESHOLDS["intrabar_resolution"])
+                if last_at is None:
+                    result["status"] = "RED"
+                    result["note"] = "no intrabar resolutions ever — lane never ran"
+    except Exception as exc:
+        log.warning("intrabar_resolution check error: %s", exc)
+        result["error"] = str(exc)
+    return result
+
+
 # Canonical statuses — keep in sync with tools/standardize_statuses.py and
 # tools/db_health_check.py check_status_standardization().
 CANONICAL_STATUSES = {"TP_HIT", "SL_HIT", "LOST", "EXPIRED", "TIME_EXIT", "ACTIVE", "OPEN"}
@@ -413,6 +464,7 @@ def run_freshness_check(output_path: Optional[str] = None) -> Dict[str, Any]:
         checks.append(check_live_picks(stocks_conn))
         checks.append(check_resolver_outputs(stocks_conn))
         checks.append(check_signal_outcomes(stocks_conn))
+        checks.append(check_intrabar_resolution(stocks_conn))
         checks.append(check_status_standardization(stocks_conn))
     except RuntimeError as exc:
         log.error("Stocks DB connect failed: %s", exc)
