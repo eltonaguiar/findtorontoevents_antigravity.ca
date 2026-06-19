@@ -262,3 +262,16 @@ def test_bug2_no_fail_loud_for_crypto(monkeypatch):
     # should not raise even though 0 prices come back
     out = aps.fetch_live_prices(["FAKECOINUSDT"], "CRYPTO")
     assert out == {}
+
+
+def test_fetch_forex_rates_empty_is_network_free():
+    # No symbols -> no frankfurter call, empty dict (guard path).
+    from alpha_engine.active_picks_sync import _fetch_forex_rates
+    assert _fetch_forex_rates([]) == {}
+
+
+def test_fetch_forex_rates_malformed_skipped_no_network():
+    # Symbols that don't parse to a 6-char alpha pair are skipped BEFORE any
+    # network call, so this returns {} offline (no =X / wrong length / empty).
+    from alpha_engine.active_picks_sync import _fetch_forex_rates
+    assert _fetch_forex_rates(["BTCUSDT", "TOOLONGSYMBOL=X", "12=X", ""]) == {}
