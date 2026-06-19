@@ -18,9 +18,21 @@ jobs:
           MAX_BATCHES=15
           for i in $(seq 1 $MAX_BATCHES); do
             echo "=== Batch $i ==="
-            RESULT=$(curl -s --max-time 60 "$ENDPOINT" 2>/dev/null)
-            FETCHED=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('fetched',0))" 2>/dev/null || echo "0")
-            MSG=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); tickers=[t['ticker'] for t in d.get('tickers',[])]; print(','.join(tickers[:5]) if tickers else d.get('message','done'))" 2>/dev/null || echo "error")
+            # UNMASK (2026-06-19): capture HTTP status. A dead endpoint (404) previously parsed to
+            # fetched=0 and was reported as "All tickers up to date" -> silent green froze daily_prices
+            # for ~7 weeks (since 2026-04-29). Distinguish endpoint-broken from genuinely-up-to-date.
+            HTTP=$(curl -s -o /tmp/fp_resp.json -w '%{http_code}' --max-time 60 "$ENDPOINT" 2>/dev/null || echo "000")
+            if [ "$HTTP" != "200" ]; then
+              echo "::error::fetch_prices.php returned HTTP $HTTP (expected 200) — daily_prices ingest is BROKEN, not 'up to date'. Endpoint: $ENDPOINT"
+              exit 1
+            fi
+            RESULT=$(cat /tmp/fp_resp.json)
+            FETCHED=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('fetched',0))" 2>/dev/null)
+            if [ -z "$FETCHED" ]; then
+              echo "::error::fetch_prices.php returned HTTP 200 but a non-JSON/unparseable body — ingest BROKEN"
+              exit 1
+            fi
+            MSG=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); tickers=[t['ticker'] for t in d.get('tickers',[])]; print(','.join(tickers[:5]) if tickers else d.get('message','done'))" 2>/dev/null || echo "")
             echo "fetched=$FETCHED | $MSG"
             if [ "$FETCHED" = "0" ]; then
               echo "All tickers up to date - done"
