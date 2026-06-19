@@ -356,6 +356,7 @@ jobs:
           # across all asset classes (Stage A, 2026-05-18). User-approved 2026-05-18.
           # ACTIVE_PICKS_SYNC_APPLY=1 + --apply together enable live MySQL writes.
           ACTIVE_PICKS_SYNC_APPLY: '1'
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}  # 2026-06-19 P0: FMP equity-price fallback auth (yfinance rate-limited)
         run: |
           pip install pymysql yfinance -q 2>/dev/null || true
           # 2026-05-30: added --max-rows 20000 (default is 5000). With 39,706 OPEN
