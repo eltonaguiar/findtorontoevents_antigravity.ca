@@ -1,3 +1,5 @@
+> **⛔ SUPERSEDED 2026-06-19** — the actual fix was env-wiring `FMP_API_KEY` into the active_picks_sync steps (the FMP fallback code already existed on main), NOT P0-3 (yfinance→keyed switch) or P0-4 (local backfill). Ledger is un-frozen + verified. The ONLY live item from this plan is **P0-5 (un-mask / fail-hard freshness monitor)**. See INCIDENT (resolved) + SESSION_SUMMARY.
+
 # Implementation Plan — Restore the Honest Measurement Layer (P0)
 
 **Author:** claude-opus · 2026-06-19 · **Status:** plan for review (peer-review pending)
