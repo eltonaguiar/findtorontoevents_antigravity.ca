@@ -2119,9 +2119,9 @@
       },
       "data_sample_lock": "Binance fapi funding history ->2020; crypto_ohlcv 1h 2022-09..2026-06 (1.28M rows)",
       "registered_at": "2026-06-19",
-      "status": "FORWARD_SHADOW",
-      "kill_reason": null,
-      "result": "Feasibility HIGH. CAUTION: the 32 funding/carry rows already in at_signal_outcomes are PLACEHOLDER STAMPS (every SL_HIT=exact SL, TIME_EXITs all 0.0 pnl, 0 real TP_HITs) -> neither confirm nor refute; a fresh backtest is mandatory. Cross-ref H-006 (do not double-count)."
+      "status": "REFUTED",
+      "kill_reason": "falsification met (net CI-LB<=1.0)",
+      "result": "REFUTED on available data (181-day OHLCV window, single negative-funding regime): n=143 deduped, net@16bp PF 0.64 CI-LB 0.40 (entry-date), WR 28.7% (SL hit 102 vs TP 41), conc FETUSDT 37.8% (>35%). Contrarian LONG on negative-extreme funding LOSES — price continues down, 1% SL triggers before 2% TP. IS/OOS 0.62/0.65. Meets falsification (CI-LB<=1.0 AND conc>=35%). CAVEAT: crypto_ohlcv 1h covers only ~181d (2025-12..2026-06) all-negative-funding; definitive multi-regime test needs OHLCV history backfill. FDR family closed. Run 2026-06-19."
     },
     {
       "id": "H-131",
@@ -2137,9 +2137,9 @@
       },
       "data_sample_lock": "same plumbing as H-130",
       "registered_at": "2026-06-19",
-      "status": "FORWARD_SHADOW",
-      "kill_reason": null,
-      "result": "Feasibility HIGH, same funding plumbing as H-130. Falsify if price drift offsets carry or total net CI-LB<=1.0."
+      "status": "REFUTED",
+      "kill_reason": "falsification met (net CI-LB<=1.0)",
+      "result": "REFUTED on available data: n=1480 deduped, net PF 0.84 CI-LB 0.62 (entry-date), WR 43.9%. Price-only drift -0.021%/trade (DOWN) — the LONG-perp price loss swamps the small negative-funding carry + 16bp. IS/OOS 0.75/0.95. Top sym FETUSDT 9.2% (diversified). Meets falsification (total net CI-LB<=1.0 + price drift offsets carry). Same 181d single-regime OHLCV caveat as H-130. Run 2026-06-19."
     }
   ],
   "fork2_new_signals": [

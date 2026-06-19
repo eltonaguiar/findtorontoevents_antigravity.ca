@@ -1557,9 +1557,32 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         outcome_sleeves = _top_sleeves_from_outcomes(ac) if not ci_mode else []
         top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
 
+        # OVERALL/110 transparency: machine-readable daily-vs-honest-intrabar divergence.
+        # The verdict already GATES on honest intrabar via _sizing_metrics_from_intrabar
+        # (MONEY_READY_SIZING_SOURCE='intrabar' default, gate uses _sizing_pf when intrabar
+        # n>=MIN_INTRABAR_N_FOR_SIZING); this field merely EXPOSES the resolver-version
+        # spread numerically so drift is auditable / CI-checkable. Pure metadata — it never
+        # changes a verdict. Daily (policy_clean) systematically over-states vs honest
+        # intrabar (incident OVERALL/110); flag=True when daily PF leads honest PF by >0.15.
+        _ib_pf = (_ib_row or {}).get("pf")
+        _ib_wr = (_ib_row or {}).get("wr")
+        _daily_pf_fin = _policy_pf if _policy_pf != float("inf") else None
+        _ib_div = {
+            "daily_pf": round(_daily_pf_fin, 4) if _daily_pf_fin is not None else None,
+            "daily_wr": round(_policy_wr, 4),
+            "honest_pf": round(_ib_pf, 4) if _ib_pf is not None else None,
+            "honest_wr": round(_ib_wr, 4) if _ib_wr is not None else None,
+            "honest_n": (_ib_row or {}).get("n"),
+            "pf_inflation_x": round(_daily_pf_fin / _ib_pf, 2) if (_daily_pf_fin and _ib_pf) else None,
+            "wr_inflation_pp": round((_policy_wr - _ib_wr) * 100, 1) if _ib_wr is not None else None,
+            "gate_source": _sizing_source,
+            "flag": bool(_ib_pf is not None and _daily_pf_fin is not None and (_daily_pf_fin - _ib_pf) > 0.15),
+        }
+
         results[ac] = {
             "intrabar_truth": _ib_row,
             "sizing_source": _sizing_source,
+            "intrabar_daily_divergence": _ib_div,
             "policy_clean_n": _policy_n,
             "policy_clean_wr": round(_policy_wr, 4),
             "policy_clean_wr_pct": round(_policy_wr * 100, 2),
