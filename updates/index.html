@@ -34,26 +34,6 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
-    <div class="update-entry" style="--dot-color: #ef4444;" data-tags="money-ready,p0,data-integrity,resolver,ci,swarm-review,goal-1" data-category="trading" data-types="fix,feature,analysis">
-      <div class="update-date" style="line-height:1.5">Jun 18, 2026 11:00 PM EDT &mdash; <strong style="color:#ef4444;">P0: un-froze the honest measurement layer + 5 hardening/research PRs (6 merged, swarm-reviewed)</strong></div>
-      <div class="update-content">
-        <p><strong>The headline is a P0 catch.</strong> The honest intrabar ledger (<code>at_signal_outcomes.intrabar_resolved_at</code>) had been <strong>silently frozen for ~6 days</strong> (last decisive resolution 2026-06-13) &mdash; every per-class verdict and pre-registered forward checkpoint was reading a stale single-day snapshot. Root cause (traced from direct evidence): the hourly <code>outcome-resolver.yml</code> was <em>failing on every run</em> at the Active-Picks-Sync step because <code>active_picks_sync.fetch_live_prices()</code> was <strong>yfinance-only</strong> for non-crypto and yfinance is IP-blocked from GitHub runners &rarr; 0/1 EQUITY prices &rarr; a fail-closed guard crashed the job &rarr; the downstream &ldquo;mirror &rarr; <code>at_signal_outcomes</code>&rdquo; step never ran. <code>trading_picks</code> stayed healthy the whole time (338 closes), so it was purely a price-fetch failover gap.</p>
-
-        <p><strong>6 PRs merged to main (all swarm-reviewed via the 3-engine consensus; nits cosmetic, 0 blocking issues):</strong></p>
-        <ul>
-          <li><strong>#608 &mdash; P0 ledger-feeder fix</strong> (3 parts): FMP <code>/stable/profile</code> equity fallback + made each per-class sync non-fatal + keyless frankfurter (ECB) FOREX fallback. <em>Tested:</em> 22/22 unit tests incl. 2 new network-free FOREX-guard tests; live-validated FMP (AAPL 298 / SPY 746 / NVDA 210) and frankfurter (USDCAD 1.41, EURJPY 184). <em>Impact:</em> the next resolver run resumes feeding the ledger; fail-closed guard preserved (no mass-skip).</li>
-          <li><strong>#610 &mdash; intrabar freshness alarm</strong>: extends the DB Freshness Guardian to grade <code>MAX(intrabar_resolved_at)</code> staleness (RED &gt;24h). Auto-wired into the existing freshness workflows; would have caught this stall on day 1 instead of day 6.</li>
-          <li><strong>#611 &mdash; cohort de-concentration guard</strong>: adds additive <code>day_concentration</code> / <code>n_distinct_days</code> / <code>single_regime_warning</code> fields to the per-class verdict, flagging single-regime mirages (this week every class was 70&ndash;92% one day).</li>
-          <li><strong>#609 &mdash; monkey-test null benchmark</strong>: the Addendum-H overfit-killer (random-strategy null, t-stat vs 95th pct) that the loop specced 3&times; but was missing from main. Read-only; self-test passes.</li>
-          <li><strong>#607 &mdash; weekly Master-Loop scorecard</strong>: 0/9 classes pass; COMMODITY n=100 verdict FAIL (single-day mirage); FOREX <code>rsi2</code> held (net PF 2.89 but n_eff 18.6).</li>
-          <li><strong>#612 &mdash; two pre-registered edge-hunts, both REFUTED</strong> (negative knowledge): H-124 daily crypto cross-sectional reversal and H-125 weekly crypto momentum &mdash; both net-negative after cost; the cross-sectional leg signs flip with horizon, i.e. no stable exploitable structure at these horizons net-of-cost. Avenue closed (anti-circling).</li>
-        </ul>
-
-        <p><strong>Method note:</strong> branch protection is off, so the red CI <code>test</code> job (an unrelated, pre-existing ~92-test gate breakage on main) did not block these merges &mdash; each PR was validated on its own checks + unit tests + swarm review before merging, and the merged code was re-verified to compile/parse on <code>main</code>. Nothing was dropped; #608 was the only PR <em>modified</em> post-review (added the 2 FOREX unit tests + the frankfurter fallback). Single highest-leverage follow-up now lands automatically: the next hourly <code>outcome-resolver</code> run re-feeds the ledger across distinct days, which clears the <code>single_regime_warning</code> and re-arms every forward checkpoint.</p>
-      </div>
-    </div>
-
-    <!-- Update: Jun 12, 2026 — Master Loop v1.1: peer-review gauntlet results + enforcement now in code -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -86,7 +66,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-06-18 02:09 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-06-19 02:17 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -240,7 +220,27 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-  <div class="update-entry" style="--dot-color: #a78bfa;" data-tags="money-ready,master-loop,peer-review,enforcement,goal-1" data-category="trading" data-types="plan,milestone,analysis">
+      <div class="update-entry" style="--dot-color: #ef4444;" data-tags="money-ready,p0,data-integrity,resolver,ci,swarm-review,goal-1" data-category="trading" data-types="fix,feature,analysis">
+      <div class="update-date" style="line-height:1.5">Jun 18, 2026 11:00 PM EDT &mdash; <strong style="color:#ef4444;">P0: un-froze the honest measurement layer + 5 hardening/research PRs (6 merged, swarm-reviewed)</strong></div>
+      <div class="update-content">
+        <p><strong>The headline is a P0 catch.</strong> The honest intrabar ledger (<code>at_signal_outcomes.intrabar_resolved_at</code>) had been <strong>silently frozen for ~6 days</strong> (last decisive resolution 2026-06-13) &mdash; every per-class verdict and pre-registered forward checkpoint was reading a stale single-day snapshot. Root cause (traced from direct evidence): the hourly <code>outcome-resolver.yml</code> was <em>failing on every run</em> at the Active-Picks-Sync step because <code>active_picks_sync.fetch_live_prices()</code> was <strong>yfinance-only</strong> for non-crypto and yfinance is IP-blocked from GitHub runners &rarr; 0/1 EQUITY prices &rarr; a fail-closed guard crashed the job &rarr; the downstream &ldquo;mirror &rarr; <code>at_signal_outcomes</code>&rdquo; step never ran. <code>trading_picks</code> stayed healthy the whole time (338 closes), so it was purely a price-fetch failover gap.</p>
+
+        <p><strong>6 PRs merged to main (all swarm-reviewed via the 3-engine consensus; nits cosmetic, 0 blocking issues):</strong></p>
+        <ul>
+          <li><strong>#608 &mdash; P0 ledger-feeder fix</strong> (3 parts): FMP <code>/stable/profile</code> equity fallback + made each per-class sync non-fatal + keyless frankfurter (ECB) FOREX fallback. <em>Tested:</em> 22/22 unit tests incl. 2 new network-free FOREX-guard tests; live-validated FMP (AAPL 298 / SPY 746 / NVDA 210) and frankfurter (USDCAD 1.41, EURJPY 184). <em>Impact:</em> the next resolver run resumes feeding the ledger; fail-closed guard preserved (no mass-skip).</li>
+          <li><strong>#610 &mdash; intrabar freshness alarm</strong>: extends the DB Freshness Guardian to grade <code>MAX(intrabar_resolved_at)</code> staleness (RED &gt;24h). Auto-wired into the existing freshness workflows; would have caught this stall on day 1 instead of day 6.</li>
+          <li><strong>#611 &mdash; cohort de-concentration guard</strong>: adds additive <code>day_concentration</code> / <code>n_distinct_days</code> / <code>single_regime_warning</code> fields to the per-class verdict, flagging single-regime mirages (this week every class was 70&ndash;92% one day).</li>
+          <li><strong>#609 &mdash; monkey-test null benchmark</strong>: the Addendum-H overfit-killer (random-strategy null, t-stat vs 95th pct) that the loop specced 3&times; but was missing from main. Read-only; self-test passes.</li>
+          <li><strong>#607 &mdash; weekly Master-Loop scorecard</strong>: 0/9 classes pass; COMMODITY n=100 verdict FAIL (single-day mirage); FOREX <code>rsi2</code> held (net PF 2.89 but n_eff 18.6).</li>
+          <li><strong>#612 &mdash; two pre-registered edge-hunts, both REFUTED</strong> (negative knowledge): H-124 daily crypto cross-sectional reversal and H-125 weekly crypto momentum &mdash; both net-negative after cost; the cross-sectional leg signs flip with horizon, i.e. no stable exploitable structure at these horizons net-of-cost. Avenue closed (anti-circling).</li>
+        </ul>
+
+        <p><strong>Method note:</strong> branch protection is off, so the red CI <code>test</code> job (an unrelated, pre-existing ~92-test gate breakage on main) did not block these merges &mdash; each PR was validated on its own checks + unit tests + swarm review before merging, and the merged code was re-verified to compile/parse on <code>main</code>. Nothing was dropped; #608 was the only PR <em>modified</em> post-review (added the 2 FOREX unit tests + the frankfurter fallback). Single highest-leverage follow-up now lands automatically: the next hourly <code>outcome-resolver</code> run re-feeds the ledger across distinct days, which clears the <code>single_regime_warning</code> and re-arms every forward checkpoint.</p>
+      </div>
+    </div>
+
+    <!-- Update: Jun 12, 2026 — Master Loop v1.1: peer-review gauntlet results + enforcement now in code -->
+<div class="update-entry" style="--dot-color: #a78bfa;" data-tags="money-ready,master-loop,peer-review,enforcement,goal-1" data-category="trading" data-types="plan,milestone,analysis">
       <div class="update-date" style="line-height:1.5">Jun 12, 2026 — 12:15 AM EDT &mdash; <strong style="color:#a78bfa;">Master Loop v1.1</strong> &mdash; the plan survived a 10-engine peer gauntlet; enforcement moved from prose into code</div>
       <div class="update-content">
         <p style="background:rgba(248,113,113,0.08);border-left:3px solid #f87171;padding:6px 10px"><strong>Checkpoint result (Jun 12, ~4 AM EDT):</strong> COMMODITY became the third class to cross n&ge;100 honest — and the first scheduled checkpoint verdict is <strong>FAIL</strong> (deduped n=43, WR 30.2%, PF 0.64, second-half collapse). The earlier "only class with PF&gt;1" was a duplication artifact (110 raw &rarr; 43 unique). Three honest bar-crossings, three honest FAILs — the discipline is working; nothing was sized. FOREX verdict next (~days).</p>
@@ -1316,7 +1316,7 @@ curl -s "https://findtorontoevents.ca/audit/data/pf_portfolio_deepseek_v4__aggre
 </div>
 
 <div class="update-entry" style="--dot-color: #f97316;" data-tags="correction,verbatim-rt,resolver,forensic,wbkz389ek,pipeline-integrity,5-ai-peer-review,goal-1,trading,documentation" data-category="trading" data-types="documentation">
-  <div class="update-date">Jun 18, 2026 &mdash; LIVE (updated hourly)</div>
+  <div class="update-date">Jun 19, 2026 &mdash; LIVE (updated hourly)</div>
   <p><strong>2026-06-01 EST (verbatim+RT applied to my own output):</strong> Workflow <code>wbkz389ek</code> (5-AI peer-reviewed pipeline-resolution plan) just landed. Its independent forensic agent ran <em>actual</em> grep on the resolver code + live SQL on <code>trading_picks</code> / <code>signal_outcomes</code> and the numbers diverge significantly from what I posted in the earlier ELI5 entry below (which repeated peer-reported figures from kilo's session). Per the canonical anti-fabrication discipline, I am correcting on the record before the operator acts on bad numbers.</p>
   <table style="border-collapse:collapse;font-size:0.92em;margin:8px 0;">
     <thead><tr style="background:#f3f4f6;"><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Claim in my ELI5 (from peer dump)</th><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Actual (forensic agent on disk + DB)</th></tr></thead>
@@ -12093,7 +12093,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          Jun 18, 2026 &mdash; 11:31 PM EST | Hourly Portfolio Update
+          Jun 19, 2026 &mdash; 02:02 AM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -12112,6 +12112,7 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
 
 
 
@@ -12847,7 +12848,7 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 18, 11:31 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jun 19, 02:02 AM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>
