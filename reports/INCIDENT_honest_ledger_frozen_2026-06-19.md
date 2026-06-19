@@ -1,3 +1,5 @@
+> **✅ RESOLVED 2026-06-19 ~03:30Z** — `at_signal_outcomes` is flowing again (latest_created 03:39, intrabar 03:58; outcome-resolver GREEN). The CONVERGED root cause (FMP_API_KEY not wired into the active_picks_sync env; secret existed) is authoritative — the earlier DB_PASS_BACKUPS / yfinance-IP-block theories below are SUPERSEDED. Only the un-mask (P0-5) remains open.
+
 # P0 INCIDENT — honest ledger (`at_signal_outcomes`) frozen ~6 days behind GREEN CI
 
 **Found:** 2026-06-19 ~01:05Z (via the money-ready monitoring loop). **Severity:** P0 — the verdict-grade honest measurement layer (foundation of the entire money-ready program) stopped updating, while `audit-dashboard.yml` reported success every hour.
