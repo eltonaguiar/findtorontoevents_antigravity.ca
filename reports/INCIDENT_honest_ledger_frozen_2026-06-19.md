@@ -30,3 +30,17 @@
 
 ## Verify
 After the next `audit-dashboard.yml` run: `SELECT MAX(created_at), MAX(intrabar_resolved_at) FROM at_signal_outcomes` should advance past 2026-06-12/13. If `created_at` advances but `intrabar_resolved_at` does not → cause #4 (DB_PASS_BACKUPS) confirmed.
+
+---
+
+## CORRECTION / refined diagnosis (2026-06-19 ~02:20Z, after verification)
+
+Split the two tables — they froze for DIFFERENT reasons:
+
+- **`at_pick_outcomes`** (written by `universal_pick_resolver`): froze on the missing DB creds (cause #1). **FIXED — commit e45c434b7; verified fresh `resolved_at`=2026-06-19 01:12 on the next run.**
+- **`at_signal_outcomes`** (the honest ledger I measure): **NOT a resolution backlog** — `reresolve_intrabar_signal_outcomes.py --apply` loaded **0 unresolved rows** (every existing row is already resolved). The freeze is that **no NEW rows have been inserted since 2026-06-12**. The inserter is the **`Active picks sync (LIVE)` step**, which has been **raising "0/1 EQUITY prices fetched — APPLY mode, refusing to proceed"** (correct safety halt) since 06-12 because **yfinance returns no prices on the GH runner** (AAPL is valid → it's a Yahoo cloud-IP rate-limit/block, not a symbol-format issue). So cause #4 (DB_PASS_BACKUPS) is NOT the at_signal_outcomes cause — **cause #2 (equity price source) is.**
+
+### Corrected fix for the honest-ledger freeze (operator / deeper)
+- Switch the active-picks-sync equity price fetch **off yfinance** to the keyed providers already in ENV (FINNHUB / FMP_API_KEY / TIINGO / ALPHAVANTAGE — see `reference-equity-prices-2026-verified`), with failover. yfinance is unreliable on GH-runner IPs.
+- OR run `active_picks_sync` from a non-blocked host (local works) until the source is switched.
+- The reresolve/`DB_PASS_BACKUPS` item is moot for the freeze (0 unresolved) — though still worth verifying the secret so the intrabar lane resolves new rows once the inserter resumes.
