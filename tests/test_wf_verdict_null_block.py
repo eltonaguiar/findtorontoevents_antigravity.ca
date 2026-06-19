@@ -34,8 +34,11 @@ def _base_pick(**overrides):
     """Construct a pick that would otherwise pass all active-gate checks."""
     pick = {
         "id": "test-wf-null-1",
-        "symbol": "BTCUSDT",
-        "asset_class": "CRYPTO",
+        # 2026-06-13: EQUITY base (not CRYPTO LONG) so the M-036 / CRYPTO_PRODUCTION_BLOCK_LONG
+        # production gates do not short-circuit passes_active_gate before the wf_verdict
+        # logic under test runs. These tests target wf_verdict gating, not CRYPTO direction.
+        "symbol": "AAPL",
+        "asset_class": "EQUITY",
         "source_system": "pm_whale_signals",
         "strategy": "pm_whale_0xeee92f",
         "status": "OPEN",
