@@ -1,7 +1,32 @@
 {
-  "generated_at": "2026-06-18 02:09 EDT",
+  "generated_at": "2026-06-19 02:17 EDT",
   "incidents": {
     "OVERALL": [
+      {
+        "incident_id": 140,
+        "asset_class": "OVERALL",
+        "source_ref": null,
+        "title": "at_signal_outcomes ledger frozen 2026-06-12..06-19 (outcome-resolver crash chain)",
+        "description": "The honest intrabar measurement ledger (at_signal_outcomes) silently stopped accruing decisive resolutions from 2026-06-12 to 06-19 (~6 days), starving every per-class verdict and pre-registered forward checkpoint. Root cause: outcome-resolver.yml failed on EVERY hourly run at the Active-Picks-Sync step because active_picks_sync.fetch_live_prices() was yfinance-only for non-crypto and yfinance is IP-blocked from GitHub runners (0/1 EQUITY prices -> fail-closed guard -> job exit 1). The downstream 'Mirror -> at_signal_outcomes' step never ran. Once that crash was fixed, the mirror step exposed a SECOND masked bug: UnboundLocalError on is_emission_allowed in audit_trail/backfill_local_sources.py (a local re-import shadowed the module-level import). trading_picks stayed healthy throughout (purely a price-fetch + scoping failover gap).",
+        "severity": "P0",
+        "status": "RESOLVED",
+        "affected_component": "alpha_engine/active_picks_sync.py; audit_trail/backfill_local_sources.py; .github/workflows/outcome-resolver.yml",
+        "reported_by": "claude-opus-4-8",
+        "assigned_to": null,
+        "recommended_fix": "FMP equity fallback + non-fatal per-class sync + frankfurter FOREX fallback (PR #608); remove the redundant local is_emission_allowed re-imports (PR #614).",
+        "target_release": null,
+        "evidence": null,
+        "resolution_notes": "FIXED + VERIFIED 2026-06-19: outcome-resolver run 27802783438 succeeded end-to-end (all 6 steps incl. the previously-crashing Mirror step); at_signal_outcomes resumed accruing (MAX closed_at = 2026-06-19 03:06). Also shipped #610 intrabar-freshness alarm to catch this class of stall on day 1, and #611 single_regime_warning to flag the single-day cohort it produced.",
+        "duplicate_of": null,
+        "created_at": "2026-06-19 03:17:54",
+        "date_est": null,
+        "time_est": null,
+        "updated_at": "2026-06-19 03:17:54",
+        "resolved_at": null,
+        "link_md_path": null,
+        "link_url": null,
+        "link_github_ref": "608,614,610,611"
+      },
       {
         "incident_id": 128,
         "asset_class": "OVERALL",
@@ -10402,7 +10427,7 @@
     "PENNY": []
   },
   "totals": {
-    "incidents": 195,
+    "incidents": 196,
     "enhancements": 208,
     "findings": 21
   }
