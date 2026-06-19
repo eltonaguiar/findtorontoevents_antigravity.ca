@@ -18303,18 +18303,42 @@ def _render_ueps_section_html(active_picks, closed_picks):
 
 
 def _load_ueps_picks_from_disk():
-    """Load (active, closed) UEPS pick lists from
-    alpha_engine/data/{active,closed}_picks.json. Used when build_html() is
-    called without explicit picks. Defensive: missing files return [], not
-    an error."""
-    active_path = ROOT / "alpha_engine" / "data" / "active_picks.json"
+    """Load (active, closed) UEPS pick lists for the US Equity Picks section.
+
+    PRIMARY source for ACTIVE UEPS picks is audit_dashboard/data/ueps_picks.json
+    — the ueps-pick-runner output {long_picks, swing_picks, short_picks}, where
+    each pick already carries pick_type ('long_term_value' / 'swing') + status.
+    This file is authoritative and refreshed every 4h.
+
+    BUG FIX 2026-06-19: this previously read alpha_engine/data/active_picks.json
+    (the "racy sync_to_active_picks() -> active_picks.json" path the UEPS-format
+    comment warns about). Those rows carry pick_type=None, so the pick_type filter
+    in _render_ueps_section_html matched 0 UEPS picks and the Long-Term Value Holds
+    tab fell back to the template's static "Building (n=0/100)" placeholder — even
+    though ueps_picks.json carried 22 live long_term_value picks. Read the
+    authoritative file directly (short_picks dropped; the renderer handles
+    long_term_value + swing). CLOSED picks still come from closed_picks.json (the
+    caller filters them by pick_type); ueps_picks.json has no closed list. Legacy
+    active_picks.json remains the fallback if ueps_picks.json is missing/malformed.
+    """
+    active: list = []
+    ueps_path = ROOT / "audit_dashboard" / "data" / "ueps_picks.json"
+    ueps_data = _load_json_resilient(ueps_path) if ueps_path.exists() else None
+    if isinstance(ueps_data, dict) and ("long_picks" in ueps_data or "swing_picks" in ueps_data):
+        for sub_key in ("long_picks", "swing_picks"):
+            sub = ueps_data.get(sub_key)
+            if isinstance(sub, list):
+                active.extend(p for p in sub if isinstance(p, dict))
+    else:
+        # Legacy fallback: the older active_picks.json path (only pick_type-tagged
+        # rows survive the caller's filter; untagged rows are harmlessly ignored).
+        active_path = ROOT / "alpha_engine" / "data" / "active_picks.json"
+        legacy_active = _load_json_resilient(active_path) if active_path.exists() else []
+        if isinstance(legacy_active, list):
+            active = legacy_active
+
     closed_path = ROOT / "alpha_engine" / "data" / "closed_picks.json"
-    active = _load_json_resilient(active_path) if active_path.exists() else []
     closed = _load_json_resilient(closed_path) if closed_path.exists() else []
-    active = active or []
-    closed = closed or []
-    if not isinstance(active, list):
-        active = []
     if not isinstance(closed, list):
         closed = []
     return active, closed
