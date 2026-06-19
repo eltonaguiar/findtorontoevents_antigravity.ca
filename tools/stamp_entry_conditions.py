@@ -151,18 +151,49 @@ CONDITIONS = [  # (name, class, definition, predicate(pick, feats))
 ]
 
 
+# Round-trip transaction cost in bps by asset class (master-loop §0: 16bp crypto /
+# 4bp equity-ETF / 2bp FX; commodity/bond/futures ~6bp). intrabar_pnl_pct is in PERCENT
+# units, so cost is bps/100 percent. Override via FORWARD_COST_BPS_<CLASS> env if needed.
+COST_BPS_RT_BY_CLASS = {
+    "CRYPTO": 16, "MEMECOIN": 16, "MEME": 16,
+    "EQUITY": 4, "STOCK": 4, "STOCKS": 4, "ETF": 4, "ETFS": 4, "INDEX": 4, "PENNY": 8,
+    "FOREX": 2, "COMMODITY": 6, "COMMODITIES": 6, "BOND": 6, "BONDS": 6, "FUTURES": 6,
+}
+DEFAULT_COST_BPS_RT = 8
+
+
+def _cost_pct(asset_class) -> float:
+    """Round-trip cost as a PERCENT (matches intrabar_pnl_pct units)."""
+    cls = (asset_class or "").upper().strip()
+    bps = COST_BPS_RT_BY_CLASS.get(cls, DEFAULT_COST_BPS_RT)
+    return bps / 100.0
+
+
 def stats(rows: list[dict]) -> dict:
     n = len(rows)
     if n == 0:
-        return {"n": 0, "wr": None, "pf": None, "avg_pnl": None}
+        return {"n": 0, "wr": None, "pf": None, "avg_pnl": None,
+                "net_pf": None, "net_avg_pnl": None, "net_wr": None}
     wins = sum(1 for r in rows if r["intrabar_status"] == "TP_HIT")
     pnls = [float(r["intrabar_pnl_pct"]) for r in rows if r["intrabar_pnl_pct"] is not None]
     gp = sum(p for p in pnls if p > 0)
     gl = abs(sum(p for p in pnls if p < 0))
     pf = round(gp / gl, 3) if gl > 0 else (None if gp == 0 else float("inf"))
+    # NET of round-trip cost per row's asset class — the HONEST promotion-gate number.
+    # The forward lane previously reported GROSS PF only, so e.g. FOREX (avg ~0.03% gross)
+    # looked positive while being a coin-flip after 2bp. Promotion gates must read net_pf.
+    net = [float(r["intrabar_pnl_pct"]) - _cost_pct(r.get("asset_class"))
+           for r in rows if r["intrabar_pnl_pct"] is not None]
+    ngp = sum(p for p in net if p > 0)
+    ngl = abs(sum(p for p in net if p < 0))
+    npf = round(ngp / ngl, 3) if ngl > 0 else (None if ngp == 0 else float("inf"))
+    net_wins = sum(1 for p in net if p > 0)
     return {"n": n, "wr": round(100.0 * wins / n, 1),
             "pf": (999.0 if pf == float("inf") else pf),
-            "avg_pnl": round(sum(pnls) / len(pnls), 4) if pnls else None}
+            "avg_pnl": round(sum(pnls) / len(pnls), 4) if pnls else None,
+            "net_pf": (999.0 if npf == float("inf") else npf),
+            "net_avg_pnl": round(sum(net) / len(net), 4) if net else None,
+            "net_wr": round(100.0 * net_wins / n, 1)}
 
 
 def main() -> int:
@@ -234,13 +265,14 @@ def main() -> int:
     }
 
     # human-readable per-condition table (stderr so --stdout JSON stays clean)
-    hdr = f"{'condition':<28}{'class':<9}{'n':>5}{'WR%':>7}{'PF':>8}{'avg':>9} | {'n30':>4}{'WR30':>7}{'PF30':>8}"
+    hdr = f"{'condition':<28}{'class':<9}{'n':>5}{'WR%':>7}{'PF':>8}{'netPF':>8}{'avg':>9} | {'n30':>4}{'WR30':>7}{'PF30':>8}"
     print(hdr, file=sys.stderr)
     print("-" * len(hdr), file=sys.stderr)
     for name, c in out_conditions.items():
         l3 = c["last30d"]
         print(f"{name:<28}{c['class']:<9}{c['n']:>5}{c['wr'] if c['wr'] is not None else '-':>7}"
               f"{c['pf'] if c['pf'] is not None else '-':>8}"
+              f"{c.get('net_pf') if c.get('net_pf') is not None else '-':>8}"
               f"{c['avg_pnl'] if c['avg_pnl'] is not None else '-':>9} | "
               f"{l3['n']:>4}{l3['wr'] if l3['wr'] is not None else '-':>7}"
               f"{l3['pf'] if l3['pf'] is not None else '-':>8}", file=sys.stderr)
