@@ -1,11 +1,15 @@
 """
 Walk-forward validated crypto sidecars — VWAP reversion + Bollinger MR (Hyro pilot).
 
-Gates (default OFF):
+Gates (default OFF — opt-in per CLAUDE.md Wire-Up Rule; these sleeves are
+backtest / walk-forward validated, NOT forward-validated, so they must not
+promote into production by default):
   CRYPTO_VERIFIED_VWAP_ENABLED=1
   CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED=1
 
-Requires WALKFORWARD_REPORT.json sleeve verdict PASS (refresh via walkforward_suite --only hyro).
+Requires WALKFORWARD_REPORT.json sleeve verdict PASS (refresh via walkforward_suite
+--only hyro). If that gate module cannot be imported, the sleeve is treated as
+NOT-verified and stays off (fail-closed).
 """
 from __future__ import annotations
 
@@ -20,13 +24,15 @@ DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT"]
 
 
 def _vwap_enabled() -> bool:
-    return os.environ.get("CRYPTO_VERIFIED_VWAP_ENABLED", "1").strip().lower() in (
+    # Default OFF (opt-in): backtest-validated, not forward-validated.
+    return os.environ.get("CRYPTO_VERIFIED_VWAP_ENABLED", "0").strip().lower() in (
         "1", "true", "yes", "on",
     )
 
 
 def _bollinger_enabled() -> bool:
-    return os.environ.get("CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED", "1").strip().lower() in (
+    # Default OFF (opt-in): backtest-validated, not forward-validated.
+    return os.environ.get("CRYPTO_VERIFIED_BOLLINGER_MR_ENABLED", "0").strip().lower() in (
         "1", "true", "yes", "on",
     )
 
@@ -44,7 +50,13 @@ def _gate_ok(gate_fn: Callable[[], bool], sleeve: str) -> bool:
             return False
         return gate_fn() if callable(gate_fn) else True
     except ImportError:
-        return True
+        # Fail-CLOSED: if the walk-forward gate module is unavailable we cannot
+        # confirm the sleeve passed, so treat it as not-verified and keep it off.
+        logger.warning(
+            "crypto_verified_wf: %s gate module unavailable — failing closed (sleeve off)",
+            sleeve,
+        )
+        return False
 
 
 def _scan_with(
