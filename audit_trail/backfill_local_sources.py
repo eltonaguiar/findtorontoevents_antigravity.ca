@@ -192,7 +192,11 @@ def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
     try:
         # P0-B: same central kill gate as insert_outcome (was missing on pick path)
         try:
-            from alpha_engine.emitter_discipline import is_emission_allowed
+            # NOTE: do NOT re-import is_emission_allowed here. It is imported at
+            # module scope (top of file); a local re-import makes the name a
+            # function-local, so the earlier unconditional use above raises
+            # UnboundLocalError (this is exactly what crashed the at_signal_outcomes
+            # mirror step once PR #608 unblocked it from reaching this code). 2026-06-19.
             _allowed, _why = is_emission_allowed(strategy, source_system)
             if not _allowed:
                 return 0
@@ -241,7 +245,11 @@ def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
         # the scanner kept entering the honest ledger through here (#135). One
         # central check; fail-open on import error so ingest never hard-breaks.
         try:
-            from alpha_engine.emitter_discipline import is_emission_allowed
+            # NOTE: do NOT re-import is_emission_allowed here. It is imported at
+            # module scope (top of file); a local re-import makes the name a
+            # function-local, so the earlier unconditional use above raises
+            # UnboundLocalError (this is exactly what crashed the at_signal_outcomes
+            # mirror step once PR #608 unblocked it from reaching this code). 2026-06-19.
             _allowed, _why = is_emission_allowed(strategy, source_system)
             if not _allowed:
                 return 0
