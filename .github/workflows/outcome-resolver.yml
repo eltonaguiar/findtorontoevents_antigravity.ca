@@ -231,3 +231,26 @@ jobs:
           git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
           bash .github/scripts/safe_push.sh
 
+      # FAIL-LOUD un-mask layer for the honest-ledger freeze (2026-06-12..06-18): the
+      # resolver kept reporting GREEN while inserting ~0 rows into at_signal_outcomes
+      # (db_freshness_check tracks staleness, not insert VOLUME vs a baseline). This
+      # guard turns the job RED when 24h insert volume collapses vs the trailing-7d
+      # median. It is the LAST step + `always()` so it never blocks the resolve/mirror/
+      # commit work above — it is purely the alarm. DO NOT add `|| echo non-fatal`: its
+      # failure MUST propagate (that masking is exactly what froze the ledger). It will
+      # stay RED until upstream inflow (pick generation / mirror) recovers — intended.
+      - name: at_signal_outcomes insert-volume guard (un-mask green-on-empty)
+        if: ${{ always() && inputs.dry_run != 'true' }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PORT: '3306'
+        run: |
+          # CRYPTO per-class is advisory (a single-class drought shouldn't hard-fail the job)
+          python tools/at_signal_outcomes_volume_check.py --asset-class CRYPTO || echo "::warning::CRYPTO insert-volume degraded (advisory)"
+          # ALL-scope is the FATAL gate (no `||` — exit 1 turns the job RED)
+          python tools/at_signal_outcomes_volume_check.py
+
