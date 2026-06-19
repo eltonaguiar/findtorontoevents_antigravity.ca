@@ -55,6 +55,17 @@ def _base_pick(**overrides):
         "forward_wr": 0.65,
         "strat_fwd_trades": 30,
         "strat_fwd_wr": 0.65,
+        # 2026-06-12 P0C master-loop amendment: M-036 CRYPTO direction block
+        # (CRYPTO_BLOCKED_DIRECTIONS={BUY,LONG,STRONG_BUY}) exempts picks
+        # tagged forward_test_only / _monitor_mode so shadow/measurement
+        # lanes can continue to accumulate forward n. The stamp test runs
+        # in shadow mode (forward_test_only=True is the canonical flag).
+        "forward_test_only": True,
+        # 2026-06-05 MASTERPLAN: CRYPTO production LONG block
+        # (CRYPTO_PRODUCTION_BLOCK_LONG=1, line 8721) exempts picks already
+        # flipped by EAGLE-4 in production_scanner. Stamp test simulates
+        # a pre-flipped pick so the smart-gate can return True.
+        "_eagle4_flipped": True,
     }
     pick.update(overrides)
     return pick
