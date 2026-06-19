@@ -1,6 +1,8 @@
 # Deep-Dive Fleet — Synthesis & Honest Verdict (2026-06-19)
 **Author:** claude-opus · **Mode:** Ultracode (adversarial-verify) · **Inputs:** 5 read-only deep-dive subagents (A1–A5) + 1 main-agent pre-registered backtest (H-126) · **Plan:** `reports/DEEP_DIVE_FLEET_PLAN_2026-06-19.md` (peer-reviewed, 3-model :4000)
 
+> **UPDATE (later 2026-06-19):** H-130 + H-131 crypto-funding hypotheses were RUN (real first-touch) and **BOTH REFUTED** — mean-reversion net PF 0.64 / CI-LB 0.40 / WR 28.7%; carry net PF 0.84 / CI-LB 0.62. Data caveat: `crypto_ohlcv` 1h covers only ~181 days (single negative-funding regime) — window-limited verdicts; FDR families closed. Also found+unmasked a **7-week silent `daily_prices` freeze** (404 endpoint behind green CI, commit `9f501250`). Full infra build plan + sequencing: `reports/MONEY_READY_NEXT_STEPS_BUILD_PLAN_2026-06-19.md`.
+
 ## TL;DR
 The fleet hunted **new-data** edge across all 6 classes + audited the audit surfaces. **Result: still 0/10 promotable** — but with one genuinely new, adversarially-tested candidate and a clear, ranked set of forward-shadow lanes.
 
@@ -48,8 +50,8 @@ All FORWARD-SHADOW, never sized. Promotion ONLY at: net-of-cost PF **CI-LB>1.15 
 | **H-127** | COMMODITY | COT commercial-hedger positioning extreme (Briese; CFTC) | Fetcher exists; **DB-cold** (must land CFTC COT table + schedule) | forward-shadow; untested honest avenue |
 | **H-128** | FOREX | Time-series momentum, macro-gated (Moskowitz-Ooi-Pedersen 2012) | Buildable; **net-cost amplitude is the blocker** (FX moves small vs 2-6bp) | forward-shadow |
 | **H-129** | FOREX | Carry (Lustig-Verdelhan 2007; Koijen 2018) | Buildable | forward-shadow, lower priority |
-| **H-130** | CRYPTO | Funding-rate **mean-reversion** (Alexander-Heck 2022) — *re-scope of existing H-006, run as REAL `crypto_ohlcv` 1h first-touch backtest, not its synthetic plan* | Feasible HIGH (Binance fapi funding history → 2020; 1h bars 2022-09→2026-06) | forward-shadow; the 32 funding rows in `at_signal_outcomes` are **placeholder stamps** (0 real TP_HITs) — must build fresh |
-| **H-131** | CRYPTO | Funding **carry** tilt (Koijen 2018) | Feasible HIGH (same plumbing) | forward-shadow |
+| **H-130** | CRYPTO | Funding-rate **mean-reversion** (Alexander-Heck 2022) — *re-scope of existing H-006, run as REAL `crypto_ohlcv` 1h first-touch backtest, not its synthetic plan* | Feasible HIGH (Binance fapi funding history → 2020; 1h bars 2022-09→2026-06) | forward-shadow; **REFUTED 2026-06-19** (real first-touch): mean-rev net PF 0.64/CI-LB 0.40/WR 28.7%; the 32 prior rows were placeholder stamps. 181d single-regime caveat. |
+| **H-131** | CRYPTO | Funding **carry** tilt (Koijen 2018) | Feasible HIGH | **REFUTED 2026-06-19**: carry net PF 0.84/CI-LB 0.62; LONG-perp price drift down swamps carry |
 | *(resume)* **H-002** | EQUITY | PEAD / SUE drift (Bernard-Thomas 1989) | **NOT feasible as historical backtest** — no stored announce dates (`quarter_end` only); SUE needs ≥4 quarters → only ~52 events, no time-split | **resume existing H-002 shadow + H-20260612 forward-obs**; do NOT open a new ID |
 
 **Crypto on-chain/whale/social: DEAD avenue** — `crypto_whale_movements`/`crypto_whale_wallets`/`social_sentiment` all 0 rows; `crypto_exchange_netflow` 20 rows (4-day Feb snapshot). No on-chain hypothesis is feasible. Funding rate is the *only* viable new crypto source.
