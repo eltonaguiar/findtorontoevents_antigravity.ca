@@ -73,6 +73,33 @@ def build() -> dict:
             "n": n, "wr_pct": wr, "pf": pf, "avg_pnl_pct": float(r["avg_pnl"] or 0.0),
             "verdict": _verdict(n, wr, pf),
         }
+    # ----- Cohort de-concentration guard (ADDITIVE, non-breaking; 2026-06-18) -----
+    # A class verdict dominated by ONE resolution day is a single-regime mirage, not a
+    # durable read. This cycle the decisive cohort was 87-92% on 2026-06-09 across every
+    # class, so COMMODITY (PF 1.05) and FOREX rsi2 (net PF 2.89) looked promising but
+    # collapsed out-of-sample. These fields let consumers flag/skip single-regime verdicts.
+    # Existing keys are untouched.
+    cur.execute(
+        """
+        SELECT asset_class AS ac, DATE(intrabar_resolved_at) AS d, COUNT(*) AS c
+        FROM at_signal_outcomes
+        WHERE intrabar_resolved_at IS NOT NULL AND intrabar_status IN ('TP_HIT','SL_HIT')
+        GROUP BY asset_class, DATE(intrabar_resolved_at)
+        """
+    )
+    day_counts: dict = {}
+    for r in cur.fetchall():
+        ac = (r["ac"] or "UNKNOWN").upper().strip() or "UNKNOWN"
+        day_counts.setdefault(ac, []).append(int(r["c"] or 0))
+    for ac, meta in classes.items():
+        counts = day_counts.get(ac, [])
+        total = sum(counts)
+        top = max(counts) if counts else 0
+        conc = round(top / total, 3) if total else 0.0
+        n_days = len(counts)
+        meta["day_concentration"] = conc          # max fraction of decisive rows on one day
+        meta["n_distinct_days"] = n_days          # distinct resolution days
+        meta["single_regime_warning"] = bool(total and (conc > 0.60 or n_days < 5))
     # Cleanest single strategy per class (n>=10) — forward-track candidates, NOT sized.
     cur.execute(
         """
