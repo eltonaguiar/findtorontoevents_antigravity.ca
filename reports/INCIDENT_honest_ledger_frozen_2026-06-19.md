@@ -44,3 +44,24 @@ Split the two tables — they froze for DIFFERENT reasons:
 - Switch the active-picks-sync equity price fetch **off yfinance** to the keyed providers already in ENV (FINNHUB / FMP_API_KEY / TIINGO / ALPHAVANTAGE — see `reference-equity-prices-2026-verified`), with failover. yfinance is unreliable on GH-runner IPs.
 - OR run `active_picks_sync` from a non-blocked host (local works) until the source is switched.
 - The reresolve/`DB_PASS_BACKUPS` item is moot for the freeze (0 unresolved) — though still worth verifying the secret so the intrabar lane resolves new rows once the inserter resumes.
+
+---
+
+## CONVERGED FINAL ROOT CAUSE + COMPLETE FIX (2026-06-19 ~03:0xZ)
+
+The honest-ledger freeze was **NOT** a yfinance outage, NOT DB_PASS_BACKUPS, NOT a code gap — it was a **secret-not-wired-to-env** plumbing miss:
+
+- A peer added an **FMP equity-price fallback** to `active_picks_sync` on 2026-06-18 (`audit_trail/fetch_stock_prices`, yfinance→FMP) — the code on `main` is correct.
+- BUT `FMP_API_KEY` (which the fallback reads via `os.getenv`) was **never added to the env of the active_picks_sync steps** in `outcome-resolver.yml` or `audit-dashboard.yml`. So the FMP fallback was silently disabled → only rate-limited yfinance → 0 equity prices → `active_picks_sync` safety-halts ("refusing to proceed") → outcome-resolver fails 6/6 → `at_signal_outcomes` frozen since 06-12.
+- **The `FMP_API_KEY` secret EXISTS** (repo secret since 2026-06-06, with FINNHUB/ALPHA_VANTAGE). So **no operator action needed** — just the env wiring.
+
+### Fix (complete, on main)
+- `outcome-resolver.yml`: `FMP_API_KEY: ${{ secrets.FMP_API_KEY }}` wired onto the active_picks_sync step (`7a78863b5`).
+- `audit-dashboard.yml`: same wiring onto its active-picks-sync step (`4451526a6`).
+- Triggered `outcome-resolver.yml` to verify the un-freeze.
+
+### Note
+My local edit to `alpha_engine/active_picks_sync.py` (keyed-fetch-first) was **redundant** — `main` already had the equivalent FMP fallback. NOT committed to main (verified before commit; would have clobbered main's newer 172-line-diverged version). The real gap was purely the env wiring above.
+
+### Verify
+Next `outcome-resolver.yml` run should go green WITH equity prices fetched; `at_signal_outcomes max(created_at)` advances past 06-12; rows/day returns to ~5k; the `crypto_rsi5070_us` lead resumes accruing.
