@@ -2002,6 +2002,36 @@
       "data_sample_lock": "crypto_ohlcv 1h (epoch-ms) + fxp_price_history daily, 2026+",
       "result": "ALL 4 NULL. short_dominant_engine n=896 net 1.06/CI-LB 0.948 (OOS-decays, SHORT-only); copy_hl_lb_None n=195 net 0.85/CI-LB 0.642; myfxbook_retail_contrarian n=117 net 0.99/CI-LB 0.704; pm_momentum_detector n=97 net 0.66/CI-LB 0.463. (non_crypto_consensus FOREX already NULL via H-118 honest 1.02.)",
       "kill_reason": "No daily-only source hides an honest edge. Combined with H-119/H-121/H-122 + the 307-group per-strategy sweep, the honest-edge search is EXHAUSTIVE across every granularity: 0 promotable winners; crypto_rsi5070_us (sub-bar on n, Jun-25 gate) is the sole genuine lead. Confirms daily-resolution inflation generalizes universally."
+    },
+    {
+      "id": "H-124",
+      "asset_class": "CRYPTO",
+      "family": "crypto_xsectional_reversal",
+      "description": "Cross-sectional short-horizon reversal: daily rebalance, LONG bottom-decile / SHORT top-decile of prior-day close-to-close return across crypto_ohlcv (315 symbols, hourly->daily). MARKET-NEUTRAL (equal long & short) so a pure BTC move cancels. Net of 10bp/side crypto cost. Distinct from refuted CRYPTO direction-flip + specific book strategies; a structural cross-sectional test never run here.",
+      "test_statistic": "daily long-short net return series: mean/day, PF, ann Sharpe, %positive; BTC-beta (OLS vs BTCUSDT daily ret); monkey-test t-stat vs random same-count baskets",
+      "acceptance_criteria": "PROMOTE-to-shadow iff net-positive daily-LS mean in BOTH IS and OOS halves AND |BTC-beta|<0.3 AND daily-return PF>=1.3 AND beats monkey-test 95th pct.",
+      "falsification": "REFUTED (-> negative knowledge, family CLOSED) if the market-neutral daily-LS mean is <=0 in EITHER calendar half, OR |BTC-beta|>=0.3 (it's just beta, not reversal alpha), OR it fails the monkey-test (does not exceed the 95th pct of random same-count baskets). ONE FDR family; closes after this single pre-registered comparison \u2014 no variant-fishing on decile pct / hold / cost.",
+      "economic_prior": "Short-horizon overreaction/reversal (Lehmann 1990; crypto retail-overreaction). Market-neutral long-short = built-in beta control. 10bp/side cost per leg.",
+      "status": "REFUTED",
+      "registered_at": "2026-06-18T21:18:22Z",
+      "data_sample_lock": "crypto_ohlcv as of 2026-06-18 (~182 daily bars x 315 symbols, hourly source); locked before replay",
+      "result": "NET daily LS (10bp/side, 302 non-stable syms, 180 days): mean/day -0.176%, PF 0.708, Sharpe -2.49, 47% pos, cum -28.4%. IS mean -0.048%/OOS mean -0.304% (BOTH negative). BTC-beta +0.059 (market-neutral, so it's real negative-alpha not beta). LONG-loser leg -0.57%/day, SHORT-winner leg +0.22%/day -> crypto daily is MOMENTUM not reversal. monkey-test t=-1.75 vs p95 -2.12 (both negative; not edge).",
+      "kill_reason": "Falsified: market-neutral cross-sectional reversal LS is net-negative in BOTH calendar halves (primary falsification trigger). Daily crypto exhibits short-horizon momentum, not reversal; the long-loser leg bleeds and the 20bp/day rebalance cost compounds it. Family CLOSED."
+    },
+    {
+      "id": "H-125",
+      "asset_class": "CRYPTO",
+      "family": "crypto_weekly_xsec_momentum",
+      "description": "WEEKLY cross-sectional momentum: every 7 days, LONG top-decile / SHORT bottom-decile by prior-7-day return across crypto_ohlcv (~302 non-stable symbols), hold 1 week, MARKET-NEUTRAL. Net 10bp/side. Motivated by H-124's leg finding (daily crypto trends, not reverts) + the cost insight (weekly turnover ~5x less drag than daily, which killed both daily directions). DISTINCT hypothesis (weekly momentum, not daily reversal); not variant-fishing on H-124 (closed).",
+      "test_statistic": "weekly long-short net return series: mean/week, PF, ann Sharpe (sqrt(52)), %positive; BTC-beta (OLS vs BTC weekly ret); monkey-test t-stat vs random same-count weekly baskets",
+      "acceptance_criteria": "PROMOTE-to-shadow iff net-positive weekly-LS mean in BOTH IS and OOS halves AND |BTC-beta|<0.3 AND weekly PF>=1.3 AND beats monkey-test 95th pct.",
+      "falsification": "REFUTED (-> negative knowledge, family CLOSED) if weekly-LS mean<=0 in EITHER half OR |BTC-beta|>=0.3 OR fails monkey-test. ONE FDR family; closes after this single comparison (no variant-fishing on lookback/hold/decile).",
+      "economic_prior": "Cross-sectional crypto momentum is a documented effect at weekly+ horizons; weekly rebalance keeps cost (10bp/side) ~5x below the daily drag that refuted H-124. Market-neutral = BTC-beta control.",
+      "status": "REFUTED",
+      "registered_at": "2026-06-18T21:48:08Z",
+      "data_sample_lock": "crypto_ohlcv as of 2026-06-18 (~182 daily bars -> ~26 weekly obs x 302 symbols); locked before replay",
+      "result": "NET weekly LS (24 wks, 302 syms, 10bp/side): mean/wk -0.844%, PF 0.519, Sharpe -1.87, 46% pos, cum -19.4%. IS mean -1.916% (PF 0.28) / OOS +0.227% (PF 1.27) \u2014 IS negative. LONG-winner leg -3.06%/wk (winners reverted), SHORT-loser leg +1.37%/wk. BTC-beta -0.225. monkey-test cand t=-1.27 < null p95 1.11 (FAILS).",
+      "kill_reason": "Falsified: weekly momentum LS net-negative, IS half <=0, fails monkey-test. Combined with H-124 (daily reversal also refuted), the cross-sectional leg signs FLIP with horizon (daily losers trend / weekly winners revert) => no stable exploitable cross-sectional autocorrelation in crypto at these horizons net-of-cost. Avenue exhausted; no more variants (anti-circling: reversal+momentum x daily+weekly all tested). Family CLOSED."
     }
   ],
   "fork2_new_signals": [
