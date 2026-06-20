@@ -66,7 +66,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-06-19 02:17 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-06-20 01:59 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -220,7 +220,7 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-      <div class="update-entry" style="--dot-color: #ef4444;" data-tags="money-ready,p0,data-integrity,resolver,ci,swarm-review,goal-1" data-category="trading" data-types="fix,feature,analysis">
+  <div class="update-entry" style="--dot-color: #ef4444;" data-tags="money-ready,p0,data-integrity,resolver,ci,swarm-review,goal-1" data-category="trading" data-types="fix,feature,analysis">
       <div class="update-date" style="line-height:1.5">Jun 18, 2026 11:00 PM EDT &mdash; <strong style="color:#ef4444;">P0: un-froze the honest measurement layer + 5 hardening/research PRs (6 merged, swarm-reviewed)</strong></div>
       <div class="update-content">
         <p><strong>The headline is a P0 catch.</strong> The honest intrabar ledger (<code>at_signal_outcomes.intrabar_resolved_at</code>) had been <strong>silently frozen for ~6 days</strong> (last decisive resolution 2026-06-13) &mdash; every per-class verdict and pre-registered forward checkpoint was reading a stale single-day snapshot. Root cause (traced from direct evidence): the hourly <code>outcome-resolver.yml</code> was <em>failing on every run</em> at the Active-Picks-Sync step because <code>active_picks_sync.fetch_live_prices()</code> was <strong>yfinance-only</strong> for non-crypto and yfinance is IP-blocked from GitHub runners &rarr; 0/1 EQUITY prices &rarr; a fail-closed guard crashed the job &rarr; the downstream &ldquo;mirror &rarr; <code>at_signal_outcomes</code>&rdquo; step never ran. <code>trading_picks</code> stayed healthy the whole time (338 closes), so it was purely a price-fetch failover gap.</p>
