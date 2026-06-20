@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-06-20T10:22:00.956588+00:00",
+    "timestamp": "2026-06-20T12:51:43.601969+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 4,
+    "mutations_triggered": 4,
+    "mutations_silent": 1,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -12,13 +12,129 @@
     "version": "v2",
     "focus": "loss_prevention"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "symbol": "TRXUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.325,
+      "take_profit": 0.326615,
+      "stop_loss": 0.323789,
+      "confidence": 0.6946,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 momentum: vol=2.3x + 3-bar momentum=0.46%, 5 green bars \u2014 continuation confirmed, not dead cat",
+      "timestamp": "2026-06-20T12:51:43.594910+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "momentum_continuation",
+      "volume_ratio": 2.27,
+      "momentum_3d": 0.0046,
+      "green_bars": 5,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_fear_greed_filter_v2",
+      "symbol": "OPUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.1016,
+      "take_profit": 0.104411,
+      "stop_loss": 0.099492,
+      "confidence": 0.6744,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 extreme-fear: vol=1.9x at F&G=23 (<30), RSI=41.6 \u2014 institutional accumulation during panic",
+      "timestamp": "2026-06-20T12:51:43.601139+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "extreme_fear_contrarian",
+      "volume_ratio": 1.93,
+      "fear_greed": 23,
+      "rsi_14": 41.6,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "symbol": "TRXUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.325,
+      "take_profit": 0.326615,
+      "stop_loss": 0.323789,
+      "confidence": 0.616,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 BTC-correlated: vol=2.3x, BTC bullish (>$63476 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
+      "timestamp": "2026-06-20T12:51:43.590579+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "btc_correlation",
+      "volume_ratio": 2.27,
+      "btc_bullish": true,
+      "btc_ema20": 63475.77,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "TRXUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.325,
+      "take_profit": 0.326615,
+      "stop_loss": 0.323789,
+      "confidence": 0.5818,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=2.3x, price $0.3250 > EMA50=$0.3220 > EMA20=$0.3231 (EMA stack aligned) \u2014 uptrend pump only",
+      "timestamp": "2026-06-20T12:51:43.586488+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 2.27,
+      "ema_50": 0.322037,
+      "ema_20": 0.32309,
+      "ema_aligned": true,
+      "trend_strength": 0.0092,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "btc_correlation",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "momentum_continuation",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_fear_greed_filter_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "extreme_fear_contrarian",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
-    "pump_btc_correlated_v2",
-    "pump_large_cap_only_v2",
-    "pump_momentum_continuation_v2",
-    "pump_fear_greed_filter_v2"
+    "pump_large_cap_only_v2"
   ]
 }
