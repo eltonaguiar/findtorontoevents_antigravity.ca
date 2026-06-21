@@ -8804,6 +8804,16 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
         and _truthy(os.environ.get("CRYPTO_PRODUCTION_BLOCK_LONG"), "1")
         and not pick.get("_eagle4_flipped")
         and os.environ.get("CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE", "0") != "1"
+        # 2026-06-21: replicate M-036's forward-lane carve-out (this file, ~L7291).
+        # forward_test_only / _monitor_mode picks are MEASUREMENT-ONLY (never sized) and
+        # must be allowed to accrue forward-n for the designated honest lead
+        # crypto_rsi5070_us (honest net PF 1.36; n 108 -> 150 gate ~2026-06-25). M-036
+        # already exempts them at ~L7291, but this later production block did NOT — so the
+        # author's intended carve-out was silently defeated and the blanket CRYPTO-LONG
+        # block starved the program's single best honest CRYPTO-LONG lead (own-goal). This
+        # exemption only ever lets through picks already tagged measurement-only; it does
+        # NOT change any production (sized) pick's gating.
+        and not (pick.get("forward_test_only") or pick.get("_monitor_mode"))
     ):
         pick["_hf_quality_gate_reason"] = "crypto_production_block_long"
         logger.info(
