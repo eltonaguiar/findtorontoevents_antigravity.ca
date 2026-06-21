@@ -1,0 +1,33 @@
+name: Insider Trades Refresh
+# Weekly DB-landing of SEC Form-4 insider trades into gm_sec_insider_trades.
+# Revives the dead alt-data feed so the open-market-buy (P) anomaly can accrue
+# forward (P-buys are sparse on US large-caps; this builds the sample over time).
+# Manual one-time 400d backfill done 2026-06-21; this keeps it fresh (30d incremental).
+on:
+  schedule:
+    - cron: '0 11 * * 1'   # Mondays 11:00 UTC (after weekend Form-4 filings settle)
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: 'Form-4 lookback window (days)'
+        default: '30'
+      max_filings:
+        description: 'Max Form-4 filings per ticker'
+        default: '12'
+jobs:
+  refresh-insider:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pymysql requests
+      - name: Land SEC Form-4 insider trades (gm_sec_insider_trades)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_NAME_STOCKS: ejaguiar1_stocks
+        run: |
+          python3 tools/refresh_insider_trades.py --execute \
+            --lookback-days "${{ github.event.inputs.lookback_days || '30' }}" \
+            --max-filings "${{ github.event.inputs.max_filings || '12' }}"
