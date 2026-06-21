@@ -4,8 +4,19 @@ name: Edge stability refresh
 
 'on':
   schedule:
-    - cron: '30 0 * * *'  # daily 00:30 UTC
+    - cron: '30 1 * * *'  # daily 01:30 UTC — staggered +1h from edge-stability-refresh.yml (00:30) to end the nightly push race
   workflow_dispatch:
+
+# 2026-06-21: shared serialize group with edge-stability-refresh.yml (identical name +
+# output). Same group string -> the two never run simultaneously; cancel-in-progress:false.
+# NOTE (follow-up, operator/peer): this file (MySQL-direct, fresher data) and the -refresh
+# file (curl + FTP-deploy-to-live) are redundant. The right consolidation is ONE workflow
+# combining this file's --mysql generation with -refresh's rebase-retry push + FTP-deploy
+# step (this -daily variant lacks the FTP step, so on nights it wins the live page stays
+# stale). This stopgap only stops the failure; it does not consolidate.
+concurrency:
+  group: edge-stability-shared
+  cancel-in-progress: false
 
 permissions:
   contents: write
