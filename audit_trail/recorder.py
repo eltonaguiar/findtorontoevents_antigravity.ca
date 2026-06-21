@@ -234,6 +234,47 @@ def finish_run(run_id: str, consensus_count: int, systems_loaded: int = 0,
             _log.warning("MySQL finish_run failed: %s", e)
 
 
+# 2026-06-21: per-class (max_tp_pct, max_sl_pct) sane barriers, mirrors alpha_engine/
+# scanner.py:_TP_SL_MAX. Used to sanity-clamp ABSURD barriers at the universal raw-pick
+# choke point (record_raw_pick), so an emitter that ships a stop ~17x from entry (observed:
+# alpha_engine CRYPTO, avg SL distance 1712%, n=86 — a stop that can never be hit, forcing
+# the pick to TIME_EXIT and polluting ~19% of the honest CRYPTO TIME_EXIT cohort) can't
+# enter the ledger with an unreachable stop.
+_RAW_TP_SL_MAX = {
+    "CRYPTO": (15.0, 8.0), "MEME": (15.0, 8.0), "MEMECOIN": (15.0, 8.0),
+    "EQUITY": (8.0, 5.0), "STOCK": (8.0, 5.0), "STOCKS": (8.0, 5.0), "PENNY": (8.0, 5.0),
+    "FOREX": (1.5, 1.0), "COMMODITY": (5.0, 3.0), "COMMODITIES": (5.0, 3.0),
+    "FUTURES": (5.0, 3.0), "INDEX": (3.0, 2.0), "ETF": (4.0, 2.5), "ETFS": (4.0, 2.5),
+    "BOND": (6.0, 4.0), "BONDS": (6.0, 4.0),
+}
+_RAW_TP_SL_DEFAULT = (5.0, 3.0)
+# Any barrier farther than this from entry is broken data, not a real stop/target.
+# Set well above every legitimate per-class max (8% crypto) so NORMAL picks are never touched.
+_ABSURD_BARRIER_PCT = 50.0
+
+
+def _sanity_clamp_barriers(entry, tp, sl, direction, asset_class):
+    """Clamp absurd TP/SL distances (> _ABSURD_BARRIER_PCT from entry) to a per-class sane
+    max so a broken stop can't force a permanent TIME_EXIT. Returns
+    (tp, sl, sl_clamped, tp_clamped). Pure + defensive — NEVER raises (a clamp failure must
+    never block a legitimate pick from being recorded)."""
+    try:
+        if not entry or entry <= 0:
+            return tp, sl, False, False
+        max_tp, max_sl = _RAW_TP_SL_MAX.get(str(asset_class or "").upper(), _RAW_TP_SL_DEFAULT)
+        is_long = str(direction).upper() == "LONG"
+        sl_clamped = tp_clamped = False
+        if sl and abs(sl - entry) / entry * 100.0 > _ABSURD_BARRIER_PCT:
+            sl = round(entry * (1 - max_sl / 100.0) if is_long else entry * (1 + max_sl / 100.0), 8)
+            sl_clamped = True
+        if tp and abs(tp - entry) / entry * 100.0 > _ABSURD_BARRIER_PCT:
+            tp = round(entry * (1 + max_tp / 100.0) if is_long else entry * (1 - max_tp / 100.0), 8)
+            tp_clamped = True
+        return tp, sl, sl_clamped, tp_clamped
+    except Exception:
+        return tp, sl, False, False
+
+
 def record_raw_pick(source_system: str, pick: dict, run_id: str) -> Optional[str]:
     """Record a raw pick from a source system. Returns pick_id or None if invalid/duplicate."""
     err = _validate_pick(pick, source_system)
@@ -248,6 +289,19 @@ def record_raw_pick(source_system: str, pick: dict, run_id: str) -> Optional[str
     entry = _extract_price(pick, "entry_price", "entryPrice", "entry", "price")
     tp = _extract_price(pick, "take_profit", "targetPrice", "tp_price", "tp", "target_price")
     sl = _extract_price(pick, "stop_loss", "stopPrice", "sl_price", "sl", "stop_price")
+    # Sanity-clamp absurd (unreachable) barriers BEFORE the RR computation + DB write, so the
+    # clamped values flow to both the SQLite INSERT and the MySQL dual-write below. Only ever
+    # touches barriers > _ABSURD_BARRIER_PCT (50%) from entry — normal picks are untouched.
+    tp, sl, _sl_clamped, _tp_clamped = _sanity_clamp_barriers(
+        entry, tp, sl, direction, derive_asset_class(symbol)
+    )
+    if _sl_clamped or _tp_clamped:
+        pick["_barrier_sanity_clamped"] = True
+        _log.warning(
+            "record_raw_pick: clamped absurd %s barrier(s) for %s (source=%s) to per-class max",
+            "SL+TP" if (_sl_clamped and _tp_clamped) else ("SL" if _sl_clamped else "TP"),
+            symbol, source_system,
+        )
     conf = _extract_price(pick, "confidence", "ml_score") or 0.5
     strategy = _extract_strategy(pick)
     signal_ts = pick.get("timestamp", pick.get("generated_at", pick.get("time", "")))
