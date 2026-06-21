@@ -2140,6 +2140,24 @@
       "status": "REFUTED",
       "kill_reason": "falsification met (net CI-LB<=1.0)",
       "result": "REFUTED on available data: n=1480 deduped, net PF 0.84 CI-LB 0.62 (entry-date), WR 43.9%. Price-only drift -0.021%/trade (DOWN) — the LONG-perp price loss swamps the small negative-funding carry + 16bp. IS/OOS 0.75/0.95. Top sym FETUSDT 9.2% (diversified). Meets falsification (total net CI-LB<=1.0 + price drift offsets carry). Same 181d single-regime OHLCV caveat as H-130. Run 2026-06-19."
+    },
+    {
+      "id": "H-132",
+      "asset_class": "CRYPTO",
+      "family": "cointegration_pairs",
+      "description": "Engle-Granger cointegration stat-arb: rank C(n,2) crypto pairs by ADF p on IS log-spread; keep p<0.05 & half-life 4-120h; OOS trade IS-estimated spread z (enter |z|>2, exit z->0, stop |z|>3.5); net 32bp/trade (2 legs).",
+      "economic_prior": "Gatev-Goetzmann-Rouwenhorst pairs trading; Engle-Granger. Market-neutral relative-value, structurally orthogonal to directional signals.",
+      "test_statistic": "net PF CI-LB (entry-date clusters), honest spread first-touch",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 FORWARD + time-split + conc<35%"
+      },
+      "data_sample_lock": "crypto_ohlcv 1h, 23 syms, ~180d (IS 60%/OOS 40%)",
+      "registered_at": "2026-06-20",
+      "status": "REFUTED",
+      "kill_reason": "IS cointegration broke OOS",
+      "result": "REFUTED on available data: 49 cointegrated pairs (IS ADF p<0.05), OOS net PF 0.315 WR 21.7% on 14131 trades (14061 STOP vs 41 TP). IS spread mean/std did NOT hold OOS — spreads drifted through the |z|>3.5 stop. Same 180d single-regime crypto_ohlcv limitation as H-130/H-131. FDR family closed. Run 2026-06-20."
     }
   ],
   "fork2_new_signals": [
