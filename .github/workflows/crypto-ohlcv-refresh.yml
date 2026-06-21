@@ -53,8 +53,12 @@ jobs:
           mx = cur.fetchone()[0]
           age_h = (time.time() * 1000 - mx) / 3600000 if mx else 9999
           print(f'crypto_ohlcv latest bar age: {age_h:.1f}h')
-          if age_h > 12:
-              print(f'::error title=crypto_ohlcv_stale::latest bar {age_h:.1f}h old AFTER refresh — ingestion is broken, the honest crypto cohort will freeze')
+          # 2026-06-21: tightened 12h -> 8h. The cron runs every 6h, so a working refresh
+          # keeps the latest bar < ~6-7h old; >8h means this run did NOT advance the bars
+          # (e.g. the Binance-451 geo-block no-op that the 12h threshold let pass borderline
+          # at 11.85h, masking a dead ingestion for hours).
+          if age_h > 8:
+              print(f'::error title=crypto_ohlcv_stale::latest bar {age_h:.1f}h old AFTER refresh — ingestion did not advance (broken fetch?); the honest crypto cohort will freeze')
               sys.exit(1)
           print('crypto_ohlcv fresh: OK')
           "
