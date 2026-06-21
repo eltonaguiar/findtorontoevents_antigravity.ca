@@ -8,6 +8,12 @@ on:
   schedule:
     - cron: '*/30 * * * *'  # Every 30 minutes
 
+# 2026-06-21: serialize overlapping runs so this */30 self-pushing workflow can't race on a
+# non-fast-forward push to main (cancel-in-progress:false = let an in-flight push finish).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
