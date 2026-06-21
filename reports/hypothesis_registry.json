@@ -2212,6 +2212,24 @@
       "status": "REFUTED",
       "kill_reason": "CI-LB<1.15 + OOS decay + n_eff<80",
       "result": "SUB-BAR: n=255 net PF 1.252 CI-LB 0.925 n_eff(month)=48 (<80) WR 51.8% mean +0.716%/trade. Apparent improvement is FRONT-LOADED: IS/OOS PF 1.60/1.00 (OOS=breakeven, edge decayed). Both pre-registered COT horizons (5d H-134, 20d H-135) sub-bar -> family CLOSED. COT anomaly is real-but-weak, not promotable net of cost. Run 2026-06-21."
+    },
+    {
+      "id": "H-136",
+      "asset_class": "COMMODITY",
+      "family": "commodity_tsmom",
+      "description": "Commodity time-series momentum: sign of trailing 252d return -> LONG/SHORT the future, monthly rebalance, hold 21d, net@3bp. Plain + inverse-vol-scaled variants. On futures_daily_ohlcv (5yr daily, 11 commodities, newly landed).",
+      "economic_prior": "Moskowitz-Ooi-Pedersen 2012 (Time Series Momentum); canonical CTA/managed-futures edge.",
+      "test_statistic": "net PF CI-LB (month clusters)",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 + time-split + conc<35%"
+      },
+      "data_sample_lock": "futures_daily_ohlcv 2021-06..2026-06, 11 commodities",
+      "registered_at": "2026-06-21",
+      "status": "REFUTED",
+      "kill_reason": "CI-LB<1.15 + n_eff<80 + regime-unstable",
+      "result": "SUB-BAR both variants: plain n=517 netPF 0.979 CI-LB 0.719 (breakeven/losing); vol-scaled netPF 1.086 CI-LB 0.814. n_eff(month)=47 (<80, structural for 5yr monthly). REGIME-UNSTABLE: IS/OOS 0.74/1.30 (plain), 0.76/1.59 (vol-scaled) — apparent edge is entirely a recent-regime artifact, not stable. top CL=F 9%. Commodity avenue exhausted both ways (COT positioning H-134/135 + TSMOM price H-136 all sub-bar). Run 2026-06-21."
     }
   ],
   "fork2_new_signals": [
