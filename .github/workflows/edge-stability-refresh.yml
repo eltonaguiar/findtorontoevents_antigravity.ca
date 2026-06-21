@@ -6,6 +6,15 @@ name: Edge stability refresh
     - cron: '30 0 * * *'  # daily 00:30 UTC
   workflow_dispatch:
 
+# 2026-06-21: shared serialize group with edge-stability-daily.yml (identical name +
+# identical output JSONs + identical cron). Without this the two ran simultaneously and
+# one lost the non-fast-forward push race to main, FAILING nearly every night. Same group
+# string in both files -> GitHub serializes them; cancel-in-progress:false so an in-flight
+# rebase/push is never aborted. (Proper fix: consolidate to one workflow — see daily file.)
+concurrency:
+  group: edge-stability-shared
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
