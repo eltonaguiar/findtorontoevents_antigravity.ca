@@ -16,15 +16,15 @@ from alpha_engine.per_class_position_caps import (
 
 
 def test_position_pct_per_class_returns_calibrated_value():
-    """Each defined class returns its calibrated position size cap."""
-    assert get_max_position_pct("EQUITY") == 0.08, "EQUITY should be uplifted (T2 candidate)"
-    assert get_max_position_pct("COMMODITY") == 0.07, "COMMODITY meets T2 PF — uplift"
-    assert get_max_position_pct("CRYPTO") == 0.05
-    assert get_max_position_pct("MEME") == 0.02, "MEME high-vol — downsized"
-    assert get_max_position_pct("FOREX") == 0.03, "FOREX sub-floor — downsized"
-    assert get_max_position_pct("BOND") == 0.04
-    assert get_max_position_pct("ETF") == 0.05
-    assert get_max_position_pct("FUTURES") == 0.03
+    """Each defined class returns its calibrated position size cap (2026-06-12 50% cut)."""
+    assert get_max_position_pct("EQUITY") == 0.04
+    assert get_max_position_pct("COMMODITY") == 0.035
+    assert get_max_position_pct("CRYPTO") == 0.025
+    assert get_max_position_pct("MEME") == 0.01
+    assert get_max_position_pct("FOREX") == 0.015
+    assert get_max_position_pct("BOND") == 0.02
+    assert get_max_position_pct("ETF") == 0.025
+    assert get_max_position_pct("FUTURES") == 0.015
 
 
 def test_position_pct_falls_back_to_universal_for_unknown():
@@ -34,8 +34,8 @@ def test_position_pct_falls_back_to_universal_for_unknown():
 
 
 def test_position_pct_is_case_insensitive():
-    assert get_max_position_pct("equity") == 0.08
-    assert get_max_position_pct("Forex") == 0.03
+    assert get_max_position_pct("equity") == 0.04
+    assert get_max_position_pct("Forex") == 0.015
 
 
 def test_position_pct_disabled_env_returns_universal(monkeypatch):
