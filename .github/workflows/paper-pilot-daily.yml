@@ -92,7 +92,15 @@ jobs:
           if [ -f "$STATUS" ]; then
             git add "$STATUS"
             git diff --cached --quiet || git commit -m "chore(paper-pilot): daily status ${DATE}"
-            git push || echo "::warning::push failed (likely concurrent commit) — will retry next cycle"
+            # 2026-06-21: rebase-retry so a concurrent commit on main doesn't make this a
+            # non-fast-forward skip (was a single naive `git push`). Still annotates on
+            # final failure (visibility preserved).
+            _pushed=0
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash origin main && git push origin HEAD:main && { _pushed=1; break; }
+              sleep $((i * 3))
+            done
+            [ "$_pushed" = "1" ] || echo "::warning::paper-pilot push failed after 5 rebase-retry attempts (concurrent commit) — will retry next cycle"
           else
             echo "::warning::no status file at $STATUS"
           fi

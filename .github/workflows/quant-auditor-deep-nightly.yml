@@ -167,7 +167,14 @@ jobs:
             echo "no audit-trail change to commit"
           else
             git commit -m "chore(audit): quant-auditor-deep nightly $DATE_ONLY [skip ci]"
-            git push origin main || echo "::warning::push failed — likely concurrent main update; will retry next run"
+            # 2026-06-21: rebase-retry so a concurrent commit on main doesn't make this a
+            # non-fast-forward skip (was a single naive `git push origin main`).
+            _pushed=0
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash origin main && git push origin HEAD:main && { _pushed=1; break; }
+              sleep $((i * 3))
+            done
+            [ "$_pushed" = "1" ] || echo "::warning::quant-auditor push failed after 5 rebase-retry attempts (concurrent main update) — will retry next run"
           fi
         env:
           # Must match OUT= in the step body (date-only), not TIMESTAMP —
