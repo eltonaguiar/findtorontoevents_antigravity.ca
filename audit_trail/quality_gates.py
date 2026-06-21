@@ -3229,7 +3229,7 @@ def tag_rsi5070_shadow(pick: dict) -> dict:
     generation). RSI precedence: enrichment.rsi.rsi_14_1h -> rsi_14_1h -> rsi -> rsi_14."""
     try:
         if os.environ.get("CRYPTO_RSI5070_SHADOW_ENABLE", "0").strip().lower() not in (
-            "1", "true", "yes", "on"
+            "1", "true", "yes", "on",
         ):
             return pick
         _enrich = pick.get("enrichment") or {}
@@ -3255,6 +3255,23 @@ def tag_rsi5070_shadow(pick: dict) -> dict:
         pass  # shadow tagging must NEVER affect production gating
     return pick
 
+
+def is_shadow_monitor_pick(pick: dict) -> bool:
+    """True when pick is in a stats-only shadow/monitor lane (never sized or surfaced)."""
+    if pick.get("_monitor_mode") in (True, 1, "1", "true", "True"):
+        return True
+    return str(pick.get("_sizing_override") or "").strip().lower() == "zero"
+
+
+def enforce_sizing_override(pick: dict) -> bool:
+    """Zero capital allocation fields when _sizing_override=zero / _monitor_mode. In-place."""
+    if not is_shadow_monitor_pick(pick):
+        return False
+    pick["position_multiplier"] = 0.0
+    pick["_sizing_multiplier"] = 0.0
+    pick["position_size_usd"] = 0.0
+    pick["correlation_adjusted_size_usd"] = 0.0
+    return True
 
 
 # ── BABY_STRATEGY_MONITOR (2026-05-28) ──
@@ -6742,13 +6759,10 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     # Promotion criteria: n>=20, WR>=50%, PF>=1.2, per-strategy manual review.
     tag_baby_monitor(pick)
 
-    # ── RSI5070 SHADOW (2026-06-21): forward-measurement carve-out for the designated honest
-    # lead crypto_rsi5070_us. DEFAULT OFF (CRYPTO_RSI5070_SHADOW_ENABLE=1 to enable). When on,
-    # rsi5070-condition CRYPTO LONG picks are tagged forward_test_only/_monitor_mode here —
-    # BEFORE the M-036 / CRYPTO_PRODUCTION_BLOCK_LONG blocks below — so they pass via the
-    # forward-lane exemptions (#624) and accrue honest forward-n toward the n>=150 gate
-    # without being sized. Completes the un-own-goal (#623 restored emission; #624 opened the
-    # gate exemption; this tags the lead's picks so they actually use it).
+    # ── RSI5070 SHADOW (2026-06-21): forward-measurement carve-out for crypto_rsi5070_us.
+    # DEFAULT OFF (CRYPTO_RSI5070_SHADOW_ENABLE=1 to enable). Tagged picks pass M-036 /
+    # CRYPTO_PRODUCTION_BLOCK_LONG via forward-lane exemptions (#624) and accrue honest
+    # forward-n without sizing or dashboard surfacing (enforce_sizing_override + display gate).
     tag_rsi5070_shadow(pick)
 
 
@@ -9364,6 +9378,15 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
       - Prefer SWING mode, HTF alignment, R:R 2.0-3.0
     """
     if not passes_active_gate(pick):
+        return False
+
+    # Shadow/monitor lanes (futures stats, baby shadow, rsi5070 lead) pass active_gate
+    # for MySQL accrual but must never surface as Smart Picks or receive capital.
+    if is_shadow_monitor_pick(pick):
+        logger.debug(
+            "Smart gate: shadow_monitor_excluded tag=%s",
+            pick.get("_monitor_tag", "?"),
+        )
         return False
 
     # ── Anti-overfit validator (DSR/PBO) — ENABLED BY DEFAULT ──

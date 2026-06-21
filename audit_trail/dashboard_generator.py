@@ -14189,10 +14189,23 @@ def _filter_active_picks_with_gate(active_picks: list[dict]) -> tuple[list[dict]
     push a pick below the final visibility floor, so the published
     ``payload["picks"]["active"]`` must be re-checked against the same gate
     before downstream summaries are computed.
+
+    Shadow/monitor picks (_monitor_mode / _sizing_override=zero) pass active_gate
+    for MySQL accrual but are excluded from the published /audit active list.
     """
+    try:
+        from audit_trail.quality_gates import is_shadow_monitor_pick
+    except ImportError:
+        def is_shadow_monitor_pick(pick):  # type: ignore[misc]
+            return bool(pick.get("_monitor_mode"))
+
     filtered_active: list[dict] = []
     filtered_out = 0
     for pick in active_picks:
+        if is_shadow_monitor_pick(pick):
+            pick["_gate_passed"] = False
+            filtered_out += 1
+            continue
         if passes_active_gate(pick):
             pick["_gate_passed"] = True
             filtered_active.append(pick)

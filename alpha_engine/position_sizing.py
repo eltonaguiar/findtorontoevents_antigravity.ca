@@ -428,6 +428,13 @@ def get_position_size(
         "vol_sizing_multiplier": 1.0,
     }
 
+    if (
+        signal.get("_monitor_mode") in (True, 1, "1", "true", "True")
+        or str(signal.get("_sizing_override") or "").strip().lower() == "zero"
+    ):
+        result["capped_by"] = "shadow_monitor_lane"
+        return result
+
     if entry_price <= 0 or account_equity <= 0:
         result["capped_by"] = "invalid_entry"
         return result

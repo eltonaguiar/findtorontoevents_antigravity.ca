@@ -6756,6 +6756,21 @@ def main():
         if indices:
             track["whale_index_avg"] = round(sum(indices) / len(indices), 1)
 
+    # 6o. Shadow/monitor lane sizing lock — zero capital before writeback/alerts.
+    # Futures stats, baby shadow, and rsi5070 lead picks carry _sizing_override=zero;
+    # enforce here so premium_signals.json / Discord never allocate real capital.
+    try:
+        from audit_trail.quality_gates import enforce_sizing_override
+
+        _shadow_zeroed = sum(1 for _p in active if enforce_sizing_override(_p))
+        if _shadow_zeroed:
+            print(
+                f"  [SHADOW] Zero-sized {_shadow_zeroed} monitor/shadow picks "
+                f"(_sizing_override=zero)"
+            )
+    except Exception as _shadow_sz_err:
+        print(f"  [SHADOW] Sizing override enforcement skipped (non-fatal): {_shadow_sz_err}")
+
     # 7. Write premium_signals.json
     write_premium_signals(market_ctx, active, track)
 
