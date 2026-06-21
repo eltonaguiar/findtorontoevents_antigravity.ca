@@ -107,6 +107,59 @@ def normalize_binance_symbol(raw: str) -> Optional[str]:
     return s + "USDT"
 
 
+KUCOIN_CANDLES_URL = "https://api.kucoin.com/api/v1/market/candles"
+
+
+def _to_kucoin_symbol(binance_symbol: str) -> Optional[str]:
+    """BTCUSDT -> BTC-USDT (KuCoin uses a hyphen before the quote asset)."""
+    for quote in ("USDT", "USDC", "BTC", "ETH"):
+        if binance_symbol.endswith(quote) and len(binance_symbol) > len(quote):
+            return f"{binance_symbol[:-len(quote)]}-{quote}"
+    return None
+
+
+def fetch_kucoin_klines(
+    binance_symbol: str,
+    interval: str = TIMEFRAME,
+    limit: int = DEFAULT_LIMIT,
+    start_time_ms: Optional[int] = None,
+    end_time_ms: Optional[int] = None,
+) -> List[list]:
+    """Fallback fetch from KuCoin when Binance is geo-blocked (451 on GitHub runners).
+
+    KuCoin candle order is [time_s, open, close, high, low, volume, turnover], newest
+    first. Returned remapped to the Binance kline shape that klines_to_rows expects:
+    [open_time_ms, open, high, low, close, volume], oldest first. Only 1h is supported.
+    """
+    ks = _to_kucoin_symbol(binance_symbol)
+    if not ks or interval != "1h":
+        return []
+    end_s = int((end_time_ms if end_time_ms is not None else time.time() * 1000) / 1000)
+    if start_time_ms is not None:
+        start_s = int(start_time_ms / 1000)
+    else:
+        start_s = end_s - min(limit, 1500) * 3600
+    url = f"{KUCOIN_CANDLES_URL}?type=1hour&symbol={ks}&startAt={start_s}&endAt={end_s}"
+    req = urllib.request.Request(url, headers={"User-Agent": "refresh_crypto_ohlcv/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            d = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        logger.warning("KuCoin fetch failed for %s (%s): %s", binance_symbol, ks, exc)
+        return []
+    if not isinstance(d, dict) or d.get("code") != "200000" or not isinstance(d.get("data"), list):
+        return []
+    out: List[list] = []
+    for c in d["data"]:
+        try:
+            # [time_s, open, close, high, low, vol] -> [open_ms, open, high, low, close, vol]
+            out.append([int(c[0]) * 1000, c[1], c[3], c[4], c[2], c[5]])
+        except (IndexError, ValueError, TypeError):
+            continue
+    out.sort(key=lambda r: r[0])  # oldest-first, matching Binance
+    return out
+
+
 def fetch_binance_klines(
     symbol: str,
     interval: str = TIMEFRAME,
@@ -114,7 +167,8 @@ def fetch_binance_klines(
     start_time_ms: Optional[int] = None,
     end_time_ms: Optional[int] = None,
 ) -> List[list]:
-    """Fetch klines from Binance mirrors. Returns raw JSON list or empty on failure."""
+    """Fetch klines from Binance mirrors, with KuCoin failover. Returns raw JSON list
+    (Binance kline shape) or empty on total failure."""
     params = f"symbol={symbol}&interval={interval}&limit={min(limit, MAX_KLINE_LIMIT)}"
     if start_time_ms is not None:
         params += f"&startTime={int(start_time_ms)}"
@@ -137,7 +191,16 @@ def fetch_binance_klines(
             logger.warning("Binance HTTP error for %s on %s: %s", symbol, host, exc.code)
         except Exception as exc:
             logger.warning("Binance fetch failed for %s on %s: %s", symbol, host, exc)
-    return []
+    # All Binance mirrors failed (notably 451 geo-block on GitHub runners) — fall through
+    # to KuCoin per the CLAUDE.md API failover rule. Without this the GH-runner cron runs
+    # green but upserts 0 rows (Binance 451), so crypto_ohlcv silently re-stales.
+    kc = fetch_kucoin_klines(
+        symbol, interval=interval, limit=limit,
+        start_time_ms=start_time_ms, end_time_ms=end_time_ms,
+    )
+    if kc:
+        logger.info("KuCoin failover succeeded for %s (%d bars)", symbol, len(kc))
+    return kc
 
 
 def fetch_binance_klines_days(symbol: str, days: int, interval: str = TIMEFRAME) -> List[list]:

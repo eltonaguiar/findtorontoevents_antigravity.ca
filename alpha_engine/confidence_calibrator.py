@@ -16,17 +16,21 @@ Confirmed inversion (n=3,497 closed picks, audit_dashboard/data/dashboard_data.j
 Strategy
 --------
 Fit an isotonic regression per asset class mapping raw confidence -> realised
-P(win). Apply during pick scoring. Off by default until A/B-validated.
+P(win). Apply during pick scoring. ON BY DEFAULT since PR #571 (2026-06-12),
+after the confidence inversion was confirmed (n=3,497 closed picks) and the
+per-class isotonic calibrators were fit + monthly-refit (monthly-calibrator-
+refit.yml). Set CONFIDENCE_CALIBRATION_ENABLED=0 to disable.
 
 Wiring
 ------
 Fit (offline, daily): `python -m alpha_engine.confidence_calibrator fit`
 Apply (production):    `from alpha_engine.confidence_calibrator import calibrate`
-                       behind env flag `CONFIDENCE_CALIBRATION_ENABLED=1`.
+                       behind env flag `CONFIDENCE_CALIBRATION_ENABLED` (default
+                       ON; =0 disables).
 Persisted calibrators: alpha_engine/data/confidence_calibrators.json
 
 Wire-Up Rule status: WIRED. Caller is alpha_engine/smart_picks_engine.py
-in `_compute_ml_composite()` (default-off env flag).
+in `_compute_ml_composite()` (default-ON env flag; =0 disables).
 
 Known limitations (cross-AI review 2026-05-02)
 ----------------------------------------------
@@ -146,7 +150,8 @@ def calibrate(pick: dict[str, Any]) -> dict[str, Any]:
     """Mutate pick with a calibrated confidence value.
 
     No-op when:
-      - env flag CONFIDENCE_CALIBRATION_ENABLED is unset/0/false
+      - env flag CONFIDENCE_CALIBRATION_ENABLED is explicitly 0/false
+        (the flag DEFAULTS TO ON since PR #571 — an unset flag calibrates)
       - no calibrator exists for the pick's asset_class
       - confidence field missing or non-numeric
 

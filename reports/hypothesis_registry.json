@@ -2176,6 +2176,42 @@
       "status": "REFUTED",
       "kill_reason": "n_eff-starved (16<<80)",
       "result": "SUB-BAR + n_eff-STARVED: top-quintile n=104 WR 65.4% netPF 1.86 but CI-LB 0.817 @ n_eff=16 (monthly rebalance x 2yr x thin cross-section -> only 16 entry-date clusters, structurally below 80). Quintile gradient U-SHAPED: Q0 losers +2.0%/PF 2.19 AND Q4 winners +1.9%/PF 1.86 both beat middle (reversal+momentum barbell); not monotone. Survivorship (74 tickers). Completes the equity price-only avenue with H-126 reversal; both real-ish but n-starved by the 2yr/monthly/thin-ticker data limit. NOT promotable. Run 2026-06-20."
+    },
+    {
+      "id": "H-134",
+      "asset_class": "COMMODITY",
+      "family": "cot_commercial_hedger",
+      "description": "COT commercial-hedger positioning: trailing-52wk z-score of comm_net_pct_of_oi; |z|>1 -> LONG if commercials net-long extreme / SHORT if net-short (Briese 'smart money'). Enter daily futures bar >= report_date+5d (post-release), hold 5 trading days, net@3bp.",
+      "economic_prior": "Briese (Commitments of Traders); commercials=hedgers whose extreme net positioning precedes reversals. Sanctioned non-crypto source per /audit incident guard.",
+      "test_statistic": "net PF CI-LB (report-date clusters); cftc_cot_weekly signal x futures_daily_ohlcv price (both 5yr, NEWLY landed)",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 + time-split + conc<35%"
+      },
+      "data_sample_lock": "cftc_cot_weekly 2021-06..2026-06 + futures_daily_ohlcv 2021-06..2026-06 (11 commodities)",
+      "registered_at": "2026-06-21",
+      "status": "REFUTED",
+      "kill_reason": "CI-LB<1.15",
+      "result": "FIRST properly-powered new-data test (n_eff=207>>80, NOT n-starved). SUB-BAR: n=1006 net PF 1.072 CI-LB 0.886 WR 51.0%, balanced LONG/SHORT, IS/OOS 1.11/1.04, top commodity CT 12%, mean +0.130%/trade. Weak-positive real tilt but does not clear the 1.15 bar net of 3bp. Run 2026-06-21."
+    },
+    {
+      "id": "H-135",
+      "asset_class": "COMMODITY",
+      "family": "cot_commercial_hedger",
+      "description": "Same COT commercial-hedger signal as H-134 at the literature-standard ~20-day (4-week) horizon, non-overlapping (step=4w), month-clustered.",
+      "economic_prior": "Briese COT drift is documented at multi-week horizons; spec-corrected horizon for H-134.",
+      "test_statistic": "net PF CI-LB (month clusters)",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 + time-split + conc<35%"
+      },
+      "data_sample_lock": "same as H-134",
+      "registered_at": "2026-06-21",
+      "status": "REFUTED",
+      "kill_reason": "CI-LB<1.15 + OOS decay + n_eff<80",
+      "result": "SUB-BAR: n=255 net PF 1.252 CI-LB 0.925 n_eff(month)=48 (<80) WR 51.8% mean +0.716%/trade. Apparent improvement is FRONT-LOADED: IS/OOS PF 1.60/1.00 (OOS=breakeven, edge decayed). Both pre-registered COT horizons (5d H-134, 20d H-135) sub-bar -> family CLOSED. COT anomaly is real-but-weak, not promotable net of cost. Run 2026-06-21."
     }
   ],
   "fork2_new_signals": [

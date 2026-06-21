@@ -1,8 +1,10 @@
 """Smoke tests for alpha_engine/confidence_calibrator.py.
 
 Verifies:
-  1. With CONFIDENCE_CALIBRATION_ENABLED unset, calibrate() is a no-op.
-  2. With the flag set and a fitted calibrator on disk, CRYPTO confidence
+  1. With CONFIDENCE_CALIBRATION_ENABLED=0 (explicit disable), calibrate() is a
+     no-op. NOTE: the flag DEFAULTS TO ON since PR #571 (2026-06-12) — an unset
+     flag now calibrates, which is the deliberate validated behavior.
+  2. With the flag on (default) and a fitted calibrator on disk, CRYPTO confidence
      is mutated (the inversion fix is the whole point).
   3. Picks without asset_class pass through unmodified.
   4. The smart_picks_engine.py wire-up site picks up the change behind
@@ -28,11 +30,28 @@ class CalibratorContractTests(unittest.TestCase):
         os.environ.pop("CONFIDENCE_CALIBRATION_ENABLED", None)
         self.cc.reset_cache()
 
-    def test_no_op_when_flag_unset(self) -> None:
+    def test_no_op_when_explicitly_disabled(self) -> None:
+        # The calibrator DEFAULTS TO ON since PR #571 (2026-06-12), after the
+        # n=3,497 confidence inversion was confirmed and the per-class isotonic
+        # calibrators were fit (+ monthly refit). The no-op contract therefore
+        # applies to the EXPLICIT-disable path, not an unset flag.
+        os.environ["CONFIDENCE_CALIBRATION_ENABLED"] = "0"
+        self.cc.reset_cache()
         pick = {"asset_class": "CRYPTO", "confidence": 0.85}
         self.cc.calibrate(pick)
         self.assertEqual(pick["confidence"], 0.85)
         self.assertNotIn("confidence_calibrated", pick)
+
+    def test_default_on_calibrates_crypto(self) -> None:
+        # Default-ON (PR #571): with the flag unset and a fitted artifact, a
+        # CRYPTO pick is calibrated (the inversion correction is applied).
+        if not self.cc.CAL_PATH.exists():
+            self.skipTest("calibrator artifact not fitted")
+        # setUp already popped the env var -> default ON
+        pick = {"asset_class": "CRYPTO", "confidence": 0.85}
+        self.cc.calibrate(pick)
+        self.assertTrue(pick.get("confidence_calibrated"))
+        self.assertEqual(pick.get("confidence_raw"), 0.85)
 
     def test_passthrough_when_class_missing(self) -> None:
         os.environ["CONFIDENCE_CALIBRATION_ENABLED"] = "1"
