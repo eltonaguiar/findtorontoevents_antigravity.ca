@@ -1,0 +1,60 @@
+# Durable crypto_ohlcv ingestion — fills the gap that froze the rsi5070 lead 2026-06-21.
+# crypto_ohlcv (1h Binance klines) had NO scheduled refresher and went 11 days stale
+# (ended 2026-06-10), so newly-emitted CRYPTO picks had no bars to intrabar-resolve against
+# and the honest decisive cohort could not grow. This cron keeps it fresh.
+name: crypto-ohlcv refresh
+
+'on':
+  schedule:
+    - cron: '20 */6 * * *'  # every 6h at :20 (offset from the :00/:03/:10 crons)
+  workflow_dispatch:
+
+concurrency:
+  group: crypto-ohlcv-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DB_STOCKS_HOST: mysql.50webs.com
+      DB_STOCKS_USER: ejaguiar1_stocks
+      DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+      DB_STOCKS_NAME: ejaguiar1_stocks
+      DB_STOCKS_PORT: '3306'
+      PYTHONPATH: ${{ github.workspace }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install deps
+        run: pip install pymysql requests pytz
+      - name: Refresh crypto_ohlcv (Binance 1h klines, 3+ failover, idempotent upsert)
+        run: python3 tools/refresh_crypto_ohlcv.py --execute --top-symbols 150
+      - name: Freshness assert (fail-LOUD if still stale)
+        run: |
+          python3 -c "
+          import sys; sys.path.insert(0, '.')
+          import time, pymysql
+          from tools.db_env import get_stocks_creds
+          keep = ('host','user','password','database','port','connect_timeout')
+          c = pymysql.connect(**{k: v for k, v in get_stocks_creds().items() if k in keep})
+          cur = c.cursor(); cur.execute('SELECT MAX(timestamp) FROM crypto_ohlcv')
+          mx = cur.fetchone()[0]
+          age_h = (time.time() * 1000 - mx) / 3600000 if mx else 9999
+          print(f'crypto_ohlcv latest bar age: {age_h:.1f}h')
+          if age_h > 12:
+              print(f'::error title=crypto_ohlcv_stale::latest bar {age_h:.1f}h old AFTER refresh — ingestion is broken, the honest crypto cohort will freeze')
+              sys.exit(1)
+          print('crypto_ohlcv fresh: OK')
+          "
