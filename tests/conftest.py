@@ -94,6 +94,12 @@ os.environ.setdefault("EQUITY_ML_SCORE_GATE_ENABLED", "0")
 # CRYPTO_PRODUCTION_BLOCK_LONG=1 + CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE=1.
 os.environ.setdefault("CRYPTO_PRODUCTION_BLOCK_LONG", "0")
 os.environ.setdefault("CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE", "0")
+# M-036 P0C (2026-06-12): CRYPTO_BLOCKED_DIRECTIONS in config.py now includes
+# LONG/STRONG_BUY (not just BUY). Legacy tests fixture CRYPTO LONG picks for
+# OTHER gates and fail when CRYPTO_BUY_DIRECTION_GATE_ENABLED defaults ON.
+# test_crypto_gates_p0.py sets the env to "1" explicitly to exercise the gate.
+os.environ.setdefault("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "0")
+os.environ.setdefault("CRYPTO_SIZED_LONG_BLOCK", "0")
 # HF_QUALITY_GATE default flipped to ON 2026-04-28. Pre-existing test fixtures
 # (test_hf_quality_gate_wire.py, test_hf_gate_default_on_safety.py) explicitly
 # set HF_QUALITY_GATE_ENABLED=0 to test the OFF path; those still work. But

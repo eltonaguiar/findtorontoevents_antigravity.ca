@@ -2158,6 +2158,24 @@
       "status": "REFUTED",
       "kill_reason": "IS cointegration broke OOS",
       "result": "REFUTED on available data: 49 cointegrated pairs (IS ADF p<0.05), OOS net PF 0.315 WR 21.7% on 14131 trades (14061 STOP vs 41 TP). IS spread mean/std did NOT hold OOS — spreads drifted through the |z|>3.5 stop. Same 180d single-regime crypto_ohlcv limitation as H-130/H-131. FDR family closed. Run 2026-06-20."
+    },
+    {
+      "id": "H-133",
+      "asset_class": "EQUITY",
+      "family": "cross_sectional_momentum",
+      "description": "Cross-sectional 12-1 month momentum (Jegadeesh-Titman): rank by trailing 252-21d return, long top quintile, hold 21 trading days. daily_prices, 74 tickers >=300 bars, monthly steps, net@8bp.",
+      "economic_prior": "Jegadeesh-Titman 1993 momentum — the most-documented equity anomaly. Tested as the natural complement to H-126 (5-day reversal).",
+      "test_statistic": "net PF CI-LB, ENTRY-DATE clusters",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 FORWARD + time-split + conc<35%"
+      },
+      "data_sample_lock": "daily_prices 2024-02..2026-04 (frozen), 74 tickers, ~16 monthly entry dates",
+      "registered_at": "2026-06-20",
+      "status": "REFUTED",
+      "kill_reason": "n_eff-starved (16<<80)",
+      "result": "SUB-BAR + n_eff-STARVED: top-quintile n=104 WR 65.4% netPF 1.86 but CI-LB 0.817 @ n_eff=16 (monthly rebalance x 2yr x thin cross-section -> only 16 entry-date clusters, structurally below 80). Quintile gradient U-SHAPED: Q0 losers +2.0%/PF 2.19 AND Q4 winners +1.9%/PF 1.86 both beat middle (reversal+momentum barbell); not monotone. Survivorship (74 tickers). Completes the equity price-only avenue with H-126 reversal; both real-ish but n-starved by the 2yr/monthly/thin-ticker data limit. NOT promotable. Run 2026-06-20."
     }
   ],
   "fork2_new_signals": [
