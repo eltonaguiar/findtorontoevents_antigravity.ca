@@ -3200,6 +3200,62 @@ def tag_futures_monitor(pick: dict) -> dict:
     return pick
 
 
+def _rsi5070_shadow_match(asset_class, direction, rsi, utc_hour) -> bool:
+    """Pure canonical crypto_rsi5070_us lead predicate (tools/stamp_entry_conditions.py:
+    F3 RSI(14,1h) band == '50-70', F5 session == 'US', LONG via direction != SHORT):
+    CRYPTO AND direction in (LONG, BUY) AND 50 <= RSI <= 70 AND 13.5 <= UTC hour < 21."""
+    try:
+        if str(asset_class or "").upper() != "CRYPTO":
+            return False
+        if str(direction or "").upper() not in ("LONG", "BUY"):
+            return False
+        if rsi is None or not (50.0 <= float(rsi) <= 70.0):
+            return False
+        return 13.5 <= float(utc_hour) < 21.0
+    except (TypeError, ValueError):
+        return False
+
+
+def tag_rsi5070_shadow(pick: dict) -> dict:
+    """Forward-measurement shadow tag for the designated honest lead crypto_rsi5070_us.
+
+    When CRYPTO_RSI5070_SHADOW_ENABLE=1 (DEFAULT OFF — additive no-op until set), a pick
+    matching the canonical rsi5070 predicate is tagged forward_test_only + _monitor_mode so
+    it SURVIVES the M-036 / CRYPTO_PRODUCTION_BLOCK_LONG blocks (via their forward-lane
+    exemptions, PR #624) and accrues honest forward-n toward the n>=150 gate WITHOUT being
+    sized (_sizing_override=zero). Mirrors tag_futures_monitor / tag_baby_monitor. In-place.
+
+    Session note: uses the current UTC hour as the session proxy (picks are gated near
+    generation). RSI precedence: enrichment.rsi.rsi_14_1h -> rsi_14_1h -> rsi -> rsi_14."""
+    try:
+        if os.environ.get("CRYPTO_RSI5070_SHADOW_ENABLE", "0").strip().lower() not in (
+            "1", "true", "yes", "on"
+        ):
+            return pick
+        _enrich = pick.get("enrichment") or {}
+        _rsi = None
+        for _v in ((_enrich.get("rsi") or {}).get("rsi_14_1h"),
+                   pick.get("rsi_14_1h"), pick.get("rsi"), pick.get("rsi_14")):
+            if _v is not None:
+                _rsi = _v
+                break
+        from datetime import datetime, timezone
+        _now = datetime.now(timezone.utc)
+        _utc_hour = _now.hour + _now.minute / 60.0
+        if _rsi5070_shadow_match(
+            pick.get("asset_class") or pick.get("category"),
+            pick.get("direction") or pick.get("side"),
+            _rsi, _utc_hour,
+        ):
+            pick["_monitor_mode"] = True
+            pick["forward_test_only"] = True
+            pick["_monitor_tag"] = "RSI5070_SHADOW"
+            pick["_sizing_override"] = "zero"
+    except Exception:
+        pass  # shadow tagging must NEVER affect production gating
+    return pick
+
+
 
 # ── BABY_STRATEGY_MONITOR (2026-05-28) ──
 # Shadow/monitor mode for 6 new baby strategies wired into production.
@@ -6685,6 +6741,15 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     # on the live dashboard or triggering trading signals.
     # Promotion criteria: n>=20, WR>=50%, PF>=1.2, per-strategy manual review.
     tag_baby_monitor(pick)
+
+    # ── RSI5070 SHADOW (2026-06-21): forward-measurement carve-out for the designated honest
+    # lead crypto_rsi5070_us. DEFAULT OFF (CRYPTO_RSI5070_SHADOW_ENABLE=1 to enable). When on,
+    # rsi5070-condition CRYPTO LONG picks are tagged forward_test_only/_monitor_mode here —
+    # BEFORE the M-036 / CRYPTO_PRODUCTION_BLOCK_LONG blocks below — so they pass via the
+    # forward-lane exemptions (#624) and accrue honest forward-n toward the n>=150 gate
+    # without being sized. Completes the un-own-goal (#623 restored emission; #624 opened the
+    # gate exemption; this tags the lead's picks so they actually use it).
+    tag_rsi5070_shadow(pick)
 
 
     # ── M-110: Pick Lifecycle Logger — entry scan (fail-soft, 2026-05-18) ──
