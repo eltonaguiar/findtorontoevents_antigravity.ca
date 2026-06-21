@@ -1,0 +1,26 @@
+name: CFTC COT Refresh
+# Weekly DB-landing of CFTC Commitments-of-Traders into cftc_cot_weekly.
+# Revives a SANCTIONED non-crypto edge source (commercial-hedger positioning).
+# COT releases Friday ~3:30pm ET (data-date = prior Tuesday). Sat cron picks it up.
+on:
+  schedule:
+    - cron: '0 12 * * 6'   # Saturdays 12:00 UTC (after Fri COT release)
+  workflow_dispatch:
+    inputs:
+      weeks:
+        description: 'Weeks of COT history per symbol'
+        default: '12'
+jobs:
+  refresh-cot:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pymysql
+      - name: Land CFTC COT (cftc_cot_weekly)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_NAME_STOCKS: ejaguiar1_stocks
+        run: python3 tools/refresh_cftc_cot.py --execute --weeks "${{ github.event.inputs.weeks || '12' }}"
