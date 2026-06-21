@@ -37,6 +37,7 @@ router_settings:
     - free-mode: ["free-mode-large"]
     - hybrid-model: ["free-mode-large"]
     - paid-mode: ["paid-mode-large", "free-mode-large"]
+    - minimax-m3-direct: ["paid-mode-large", "free-mode-large"]
   fallbacks:
     # Generic fallbacks — catch any failure (incl. 413, mid-stream 429, etc.)
     # not just ContextWindowExceededError. Every group needs at least one
@@ -52,6 +53,7 @@ router_settings:
     - free-mode-fast:    ["free-mode", "free-mode-large", "paid-mode-fast"]
     - paid-mode-fast:    ["paid-mode", "free-mode-fast", "free-mode"]
     - free-mode-tools:   ["paid-mode-fast", "paid-mode", "free-mode-fast"]   # tool-safe escalates to paid-fast first to preserve parallel-tool semantics
+    - minimax-m3-direct: ["paid-mode-large", "paid-mode", "free-mode-large"]
   retry_policy:
     BadRequestErrorRetries: 1
     AuthenticationErrorRetries: 0
@@ -249,6 +251,9 @@ model_list:
   - {model_name: paid-mode, litellm_params: {model: openai/openai/gpt-oss-120b,       api_key: os.environ/BLUESMIND_API_KEY, api_base: https://api.bluesminds.com/v1}}
   - {model_name: paid-mode, litellm_params: {model: openai/stepfun-ai/step-3.5-flash, api_key: os.environ/BLUESMIND_API_KEY, api_base: https://api.bluesminds.com/v1}}
   - {model_name: paid-mode, litellm_params: {model: openai/z-ai/glm-5.1,              api_key: os.environ/BLUESMIND_API_KEY, api_base: https://api.bluesminds.com/v1}}
+  # MiniMax-M3 — 428B MoE (23B active), frontier coding/agentic, via OpenRouter. Added 2026-06-13.
+  - {model_name: paid-mode, litellm_params: {model: openai/minimax/minimax-m3, api_key: os.environ/OPENROUTER_API_KEY, api_base: https://openrouter.ai/api/v1}}
+  - {model_name: minimax-m3-direct, litellm_params: {model: openai/minimax/minimax-m3, api_key: os.environ/OPENROUTER_API_KEY, api_base: https://openrouter.ai/api/v1}}
 
   # ====================================================================
   # PAID MODE LARGE — long-context paid fallback

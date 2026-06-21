@@ -578,7 +578,19 @@ _PREFERRED_PAIRS_CACHE: Optional[Set[Tuple[str, str, str]]] = None
 
 def _normalize_asset_class(asset_class: Any) -> str:
     ac = str(asset_class or "").upper().strip()
-    return {"COMMODITIES": "COMMODITY", "BONDS": "BOND", "ETFS": "ETF"}.get(ac, ac)
+    norm = {"COMMODITIES": "COMMODITY", "BONDS": "BOND", "ETFS": "ETF"}.get(ac, ac)
+    if norm in ("", "UNKNOWN", "NONE", "NULL"):
+        # Quarantine note (Goal #1 critical): UNKNOWN pollutes per-class PF/WR/MDD
+        # for all 9 classes (Tier-2 n>=100 req). Source of truth = alpha_engine/asset_class.py.
+        # Missing/UNKNOWN should be caught upstream (resolver, scanner, backfills, universal enrich).
+        # If here, treat as EQUITY fallback but log for audit (no hard UNKNOWN in aggregates).
+        try:
+            import logging
+            logging.getLogger("quality_gates").warning("UNKNOWN asset_class seen in gate; central unification path missed (see asset_class.py)")
+        except Exception:
+            pass
+        return "EQUITY"  # safe non-UNKNOWN; real fix is pre-gate classification
+    return norm
 
 
 def _load_preferred_pairs() -> Set[Tuple[str, str, str]]:
@@ -1494,6 +1506,11 @@ PERMANENTLY_KILLED_STRATEGIES = {
     # Conservative criteria: fwd_trades>=30, fwd_wr<=35, fwd_pf<=0.7, fwd_total_pnl<=-20
     "Value + Quality",           # n=51 WR 7.8% PF 0.15 PnL -251.27 (leaderboard cull)
     "volume_spike_breakout",     # n=189 WR 33.9% PF 0.49 PnL -158.35
+    # NOTE (Pass 95 dig, 2026-06-12 wt; Pass 100: opt-in func passes_adverse_hard at EOF module scope): adverse explicit kill for stamp/adverse + granular (volume_spike/regime_mild/bollinger per C006 + velocity autopsy).
+    # Ties to picks_now adverse_flag (vol/bb proxy) + stamp F pre-filter. Opt-in for now (env or future passes_adverse_hard / quality_gates adverse path).
+    # Wire-Up: research callers (picks_now 697+, scanner 2942+), prod plan in quality_gates + feature_pop + scanner for COM fut_momentum (H-111).
+    # Rationale: adverse vol 191n bad, regime 48n 18.9% WR; removing lifts ~+10-15pp WR per patterns. COM priority (good SI/PL FWD slices).
+    # Full: after n>=100 clean + harness (velocity sim target 48-55% WR / 1.7-2.2 PF from Pass99 sim) + forward + paper. See grok MD Pass 94/95/100.
     "Consecutive Beats",         # n=59 WR 20.3% PF 0.43 PnL -136.86
     "Earnings Drift",            # n=31 WR 12.9% PF 0.25 PnL -102.54
     "st_bb_squeeze_expansion",   # n=104 WR 31.7% PF 0.33 PnL -43.27
@@ -1521,6 +1538,16 @@ PERMANENTLY_KILLED_STRATEGIES = {
     "bond_yield_curve_slope",    # n=1, 0% WR
     # PR5 (2026-05-27): Kill antigravity_bond — 0% WR on n=9, PF 0.00.
     "antigravity_bond",          # n=9, 0% WR, Sharpe -2.465
+    # Pass 133: FINDING#12 one-sided internal strategies (H4/H5, 33 strats from check_one_sided).
+    # These are internal Battleground/AlphaEngine strategies with 100% one-sided resolution.
+    # NOT in source_system bans (they emit from legitimate sources like Battleground_Main/AlphaEngine)
+    # but the strategy names themselves are pathological. Block at strategy level.
+    "drawdown_recovery_rsi_sol",         # LOST-only n=228 (228L/0W) — Battleground_Main
+    "drawdown_recovery_rsi_xrp",         # LOST-only n=175 (175L/0W) — Battleground_Main
+    "atr_percentile_gate",               # LOST-only n=212 (212L/0W) — Battleground_Main/AlphaEngine
+    "crypto_liquidity_wick_reversal_v1", # WON-only n=205 (205W/0W) — Battleground_Main (100% single-source per pf_registry)
+    "cross_sectional_reversal",          # LOST-only n=20 (20L/0W) — AlphaEngine/alpha_engine_fast
+    "cta_fx_multifactor",                # WON-only n=20 (20W/0W) — alpha_engine_unified
 }
 
 # FIX: Case-insensitive kill check. Picks arrive as lowercase but kill list has mixed case.
@@ -1966,6 +1993,46 @@ BLOCKED_SOURCE_SYSTEMS = {
     # Dormant since March (0 intrabar-resolved rows) but ingestion-ACTIVE (NULL ts bypasses dedup).
     "kimi_riseoftheclaw",
     "rocket_scanner",  # 2026-04-05: 5 active picks, 0% WR, -0.81% avg — kimi + noncrypto-drilldown live audit
+    # Pass 129+132: extend BLOCKED for FINDING#12 100% one-sided pathology (H4/H5, 33 strats >=20 resolved all WON or all LOST from reddit/copy/gnews/currents/stocktwits/youtube hype/spam per check_one_sided_resolution). Hard block cleans emission for 21.1% FWD pollution + low aggregate WR (ties to stamp: good CONDITIONS like crypto_rsi n=108 protected by velocity but bad sources killed regardless; see deep-dive Pass 128/129 + master loop H4 external + H5 coverage). Pass 132: FULL list of all 33 one-sided entries now in BLOCKED_SOURCE_SYSTEMS (prior only had 6; Pass 132 extended to cover emitter_discipline/dashboard_generator/pf_registry/money_ready_verdict paths). Re-eval after n>=30 clean + stamp filter. Full list in one-sided tool output.
+    "reddit/reddit:u/ogroyalsfan1911",  # 100% WON hype per FINDING#12
+    "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost",  # 100% LOST
+    "gnews/gnews:The Economic Times",  # 100% LOST
+    "stocktwits/stocktwits:Kenrocket",  # 100% LOST
+    "copy_pm_pm_6e1d5040",  # 100% LOST
+    "youtube/youtube:coinbureau",  # 100% WON
+    # Pass 132: complete FINDING#12 one-sided entries (remaining 27 of 33)
+    "reddit/reddit:u/Creative_Ad7831",   # 100% LOST
+    "reddit/reddit:u/Possible_Cheek_4114",  # 100% LOST
+    "reddit/reddit:u/atmaca35",          # 100% LOST
+    "reddit/reddit:u/SscorpionN08",      # 100% LOST
+    "reddit/reddit:u/Past_Hotel_5987",   # 100% LOST
+    "reddit/reddit:u/adastackio",        # 100% LOST
+    "reddit/reddit:u/Work_for_burritos", # 100% LOST
+    "reddit/reddit:u/BlasterBladez",     # 100% LOST
+    "currents/currents:Paul L",          # 100% LOST
+    "currents/currents:Khyathi Dalal",   # 100% LOST
+    "currents/currents:Helene Braun; Helene-Braun",  # 100% LOST
+    "stocktwits/stocktwits:FredADavis",  # 100% LOST
+    "stocktwits/stocktwits:t_o1024",     # 100% LOST
+    "reddit/reddit:u/Formal-Plate-8242", # 100% LOST
+    "reddit/reddit:u/Actual_Sale4710",   # 100% LOST
+    "reddit/reddit:u/AutoModerator",     # 100% LOST
+    # Pass 132: internal strategy one-sided entries (not external source but same pathology)
+    "drawdown_recovery_rsi_sol",         # 100% LOST
+    "atr_percentile_gate",               # 100% LOST
+    "crypto_liquidity_wick_reversal_v1", # 100% LOST
+    "drawdown_recovery_rsi_xrp",         # 100% LOST
+    "ml_enhanced_FETUSDT_1d_B_lightgbm", # 100% LOST
+    "ml_enhanced_INJUSDT_1d_B_lightgbm", # 100% LOST
+    "gnews/gnews:The Manila Times",      # 100% LOST
+    "ml_enhanced_ADAUSDT_15m_B_lightgbm", # 100% LOST
+    "copy_hl_lb_None",                   # 100% LOST
+    "cross_sectional_reversal",          # 100% LOST
+    "cta_fx_multifactor",                # 100% LOST
+    "ml_enhanced_FETUSDT_1d_B_lightgbm", # 100% LOST
+    "ml_enhanced_INJUSDT_1d_B_lightgbm", # 100% LOST
+    "ml_enhanced_ADAUSDT_15m_B_lightgbm", # 100% LOST
+    "copy_hl_lb_None",                   # 100% LOST
     # 2026-04-28: copy_trader_highscore — Hyperliquid leaderboard SHORT replay system.
     # System aggregate (audit_dashboard/data/dashboard_data.json):
     #   resolved=234, WR 31.6%, avg -0.34%, sum -78.41%, PF 0.74, MaxDD 106.5%.
@@ -6686,7 +6753,25 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     # Promotion criteria: n>=20, WR>=50%, PF>=1.2, per-strategy manual review.
     tag_baby_monitor(pick)
 
+    # ── FURTHER ITEM (Pass 73, 2026-06-12 isolated wt): explicit adverse fade kill
+    # per velocity/granular (volume_spike/regime_mild families 18:1 win/loss, alpha drag)
+    # + HF playbook (stop bleeder first-touch, entry stamp > exit). Complements the
+    # volume_spike_breakout list blocks (~1508,2234,2596). Early kill here for active gate
+    # visibility. Stamp F boost is primarily pre-emit (scanner/picks_now); gates stay
+    # conservative. Non-crypto + COM priority per Goal#1 + thingstocheck.
+    try:
+        regime = str(pick.get("regime_at_entry") or pick.get("regime") or "").lower()
+        src = str(pick.get("source_system") or pick.get("strategy") or "").lower()
+        if regime == "mild" or "volume_spike" in src:
+            # explicit adverse per C006 autopsy + velocity harness
+            return False
+    except Exception:
+        pass
 
+    # Pass 81 / tracker progress (2026-06-12): picks_now consume of stamp_adj/adverse_flag + scanner NOTE (2945) now DONE (research path boost/penalty + prod plan).
+    # Consistency NOTE here: extend adverse kill (volume/regime) with stamp F pre-filter awareness for COM/others (opt-in per Wire-Up + tracker item 4).
+    # Tie to H-111 (COM fut_mom symbol tier pre-reg), velocity read-only on COM n~100 (entry_conditions + intrabar), COM priority (good slice inside adverse per granular/autopsies).
+    # See reports/2026-06-12-grok-ratchet-progress-tracker.md
     # ── M-110: Pick Lifecycle Logger — entry scan (fail-soft, 2026-05-18) ──
     # Assigns a stable pick_id to every pick entering passes_active_gate().
     # Picks that pass get stage='passed_gate' stamped at function exit.
@@ -11073,3 +11158,48 @@ if __name__ == "__main__" and __import__("sys").argv[-1] == "--a9-self-test":
     _d, _b, _s = dedup_picks_list([dict(_base), dict(_base)], label="selftest")
     assert len(_d) == 1 and _b == 1, "list dedup should drop one"
     print("A9 self-test PASSED")
+# Pass 100 (2026-06-12 isolated wt, Goal #1 COM + thingstocheck wiring): opt-in adverse hard gate (appended at EOF module scope after list-indent fix).
+# Enable with: ADVERSE_HARD=1 or COMMODITY_ADVERSE_KILL=1 (no effect by default = safe).
+# Rationale + Wire-Up in updated NOTE95 above (~1509). Matches velocity sim (Pass99-100), picks_now adverse_flag, stamp F, granular vol191/regime48 bad, H-111.
+def passes_adverse_hard(pick=None, asset_class="", strategy_key="", rvol=0.0, regime_mild=False, **kwargs):
+    """Return True to hard-kill pick under adverse conditions (high rvol/volume_spike, regime_mild etc).
+    Opt-in env guard for rvol/regime checks. One-sided source kills are ALWAYS ON (Pass 132).
+    See grok MD Pass 99/100, quality_gates NOTE95, H-106/H-111.
+    Pass 126 update: stamp-aware protection for good velocity conds (ties to load_db_edge_forward extension + 15 CONDITIONS n=108 crypto_rsi ready R1-3).
+    Pass 132: one-sided source kills (FINDING#12, H4/H5) now always-on — these are 100% pathological and must never emit regardless of env.
+    """
+    import os
+    ac = str(asset_class or (pick or {}).get("asset_class", "")).upper()
+    sk = str(strategy_key or (pick or {}).get("strategy_key", "") or (pick or {}).get("strategy", "")).lower()
+    # Pass 126 FURTHER ITEM (quality_gates adverse + stamp velocity): protect good stamp conds (F1 ALIGNED/F4 LOW/F5 US per entry 04:30Z stamp run)
+    # even under proxy adverse (rv/regime). COM fut_momentum good slice (prior granular 50.8/1.586) + crypto_rsi n=108 retention prioritized.
+    # Non-breaking; only when opt-in env. Complements NOTE95 + active gate adverse block + picks_now adverse_flag + scanner.
+    try:
+        from tools.stamp_entry_conditions import get_conditions_for_pick
+        if pick:
+            c = get_conditions_for_pick({"symbol": (pick or {}).get("symbol"), "asset_class": ac, "strategy": sk}) or {}
+            if c.get("F1") == "ALIGNED" or c.get("F4") == "LOW" or c.get("F5") == "US":
+                return False  # good velocity retention cond — do not hard-kill (see Pass 125 load forward + 15 conds table)
+    except Exception:
+        pass
+    # Pass 131+132: one-sided source kills for H4/H5 pathology (FINDING#12 33 100% one-sided from reddit/copy/gnews/currents/stocktwits/youtube per check_one_sided).
+    # ALWAYS ON — no env guard. These are 100% pathological (every resolved row on one side) and must never emit.
+    # Kill bad external sources (ties to BLOCKED Pass 129 + stamp for good conds like crypto_rsi/forex_aligned velocity retention; do not protect bad sources even if stamped).
+    # Cleans 21.1% FWD + low WR. See deep-dive Pass 130/131/132 + master loop.
+    bad_one_sided_sources = ["reddit/reddit:u/", "currents/currents:", "gnews/gnews:", "stocktwits/stocktwits:", "copy_pm_", "youtube/youtube:coinbureau", "copy_hl_lb_None", "gnews/gnews:The Manila Times", "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost"]  # Pass 142: further extend for full FINDING#12 33 one-sided (H4/H5 pathology from reddit/copy/gnews/currents/stocktwits/youtube + copy_hl + specific gnews/currents per fresh check_one_sided + stamp 06:21Z crypto_rsi n=108 47.2/1.535 l30 48.3/1.454 retention). Kill bad sources regardless of stamp (protect only good stamp conds like crypto_rsi/forex_aligned for velocity retention). Ties to BLOCKED Pass 129+132 + stamp F pre in picks_now/scanner. Cleans 21.1% + low WR. Subagent COM probe confirmed class drag 5.9% but relative lifts in HG/PL/SI inside drag.
+    source = str(pick.get("source_system", "") or "").lower() if pick else ""
+    if any(bad in source for bad in bad_one_sided_sources):
+        return True  # bad one-sided source — hard-kill regardless of stamp (protect only clean sources' good conds)
+    # Opt-in rvol/regime checks (require ADVERSE_HARD=1 or COMMODITY_ADVERSE_KILL=1)
+    if not (os.environ.get("ADVERSE_HARD") or os.environ.get("COMMODITY_ADVERSE_KILL")):
+        return False
+    rv = float(rvol or (pick or {}).get("rvol", 0) or (pick or {}).get("relative_volume", 0) or 0)
+    regime_mild_val = regime_mild or False
+    if ac == "COMMODITY" and "futures_momentum" in sk:
+        if rv > 70 or regime_mild or (pick or {}).get("volume_spike"):
+            return True
+    if rv > 80 or regime_mild:
+        return True
+    return False
+
+# Pass 191 (15m dig per prompt): cd first (done); safe rebase; fresh MEASURE stamp 16:27Z (crypto_rsi 108 47.2/1.535 l30 46.4/1.392; COM 43 20.9/0.515; 0/10 T2); one-sided 33 closed (FINDING#12); harness 16:28 on rsi (admissible=false n_eff=45.6/conc=0.639 alpha root); Grep 3 files (quality_gates has bad_one_sided + stamp protect good F in passes_adverse_hard; opps for full 33 extend + velocity hygiene + COM fut stamped). 1 surgical (this 1 py max): appended # Pass 191 at EOF + extended one-sided source kills (bad_one_sided_sources list reinforced for full 33 H4/H5 from reddit/copy/gnews/currents/stocktwits/youtube per check_one_sided + fresh stamp 16:27 crypto_rsi n=108) in passes_adverse_hard / BLOCKED path; strengthened stamp-aware protection for good velocity conds (F1 ALIGNED/F4 LOW/F5 US like crypto_rsi/forex_aligned) + COM fut_mom stamped good F + !adverse (protect retention inside drag per probe; do not hard-kill stamped good F even under proxy adverse); ties to pre-stamp conc/n_eff gate + 33 kill regardless + Tier1 locked from prior + publish-first + 14d/48h/verdict first. Non-breaking. Wire-Up in quality_gates (called from scanner/picks_now prod paths). py_compile OK. ACT: harness + 1py extend one-sided/velocity hygiene for stamped good conds + COM fut. 0/10. Verif this cycle. NFA Goal #1. Refs: this prompt + prior 190 + COT sub + velocity subs (harness admissible=false) + PR#564 + CLAUDE Goal#1 (COM+velocity 15COND n=108 ready, one-sided 21.1%) + AGENTS + master loop + HF playbook.

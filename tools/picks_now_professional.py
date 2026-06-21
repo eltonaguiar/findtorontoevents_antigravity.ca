@@ -317,7 +317,31 @@ def load_db_edge():
             "luxalgo_filters", "multi_asset_copytrader", "forex_copy_trader",
             "signal_validation", "multi_asset_cot", "regime_terminal",
             "myfxbook_retail_contrarian", "ig_contrarian_sentiment",
+            # Pass 132: extend banned for FINDING#12 100% one-sided hygiene (H4/H5, 33 strats from reddit/copy/gnews/currents/stocktwits/youtube per check_one_sided + quality_gates Pass 129/131). Ties to stamp/good conds (crypto_rsi/forex_aligned velocity retention protected; bad sources killed regardless). Cleans DB edge for 21.1% + COM probes. Surgical, non-breaking (same NOT IN structure).
+
+# Peer review note (consensus-3 + clean peer 2026-06-13 via /PeerReviewSwarmOptions on plan .MD):
+# Hygiene for full 33 (incl drawdown_recovery_rsi_sol/xrp, atr_percentile_gate, crypto_liquidity_wick_reversal_v1,
+# cross_sectional_reversal, cta_fx_multifactor, gnews/gnews:The Manila Times + reddit/copy etc.) confirmed in
+# this banned tuple + quality_gates BLOCKED_SOURCE_SYSTEMS (see Pass 132). Recs: central banned_sources.json
+# (or import from quality_gates.BLOCKED to reduce dupe here), automated CI grep for leaks (reddit|copy_pm|...),
+# extend coverage to research_only paths. Tracked in deep-dive Pass 136. No behavior change; doc for ratchet.
+            "reddit/reddit:u/ogroyalsfan1911", "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost",
+            "gnews/gnews:The Economic Times", "stocktwits/stocktwits:Kenrocket", "copy_pm_pm_6e1d5040", "youtube/youtube:coinbureau",
+            "reddit/reddit:u/Creative_Ad7831", "reddit/reddit:u/Possible_Cheek_4114", "reddit/reddit:u/atmaca35", "reddit/reddit:u/SscorpionN08",
+            "reddit/reddit:u/Past_Hotel_5987", "reddit/reddit:u/adastackio", "reddit/reddit:u/Work_for_burritos", "reddit/reddit:u/BlasterBladez",
+            "currents/currents:Paul L", "currents/currents:Khyathi Dalal", "currents/currents:Helene Braun; Helene-Braun",
+            "stocktwits/stocktwits:FredADavis", "stocktwits/stocktwits:t_o1024",             "reddit/reddit:u/Formal-Plate-8242", "reddit/reddit:u/Actual_Sale4710",
+            "reddit/reddit:u/AutoModerator",
+            # Pass 133: FINDING#12 internal one-sided strats (from check_one_sided n>=20 100% one-sided, H4/H5)
+            "drawdown_recovery_rsi_sol", "drawdown_recovery_rsi_xrp", "atr_percentile_gate",
+            "crypto_liquidity_wick_reversal_v1", "cross_sectional_reversal", "cta_fx_multifactor",
+            "gnews/gnews:The Manila Times",
+            "ml_enhanced_FETUSDT_1d_B_lightgbm", "ml_enhanced_INJUSDT_1d_B_lightgbm",
+            "ml_enhanced_ADAUSDT_15m_B_lightgbm", "copy_hl_lb_None",
         )
+        # Pass 138 / v2 swarm (plan-review-2026-06-13-v2, deepseek rec #6): assert completeness for the 33 FINDING#12 one-sided (hygiene P0). Ties to stamp/good conds (crypto_rsi n=108 retention) and previous extensions (Pass 132/133/137 in quality_gates adverse + banned). If <33, hygiene gap risks 21.1% pollution.
+        assert len(banned) >= 33, f"Expected >=33 banned sources for FINDING#12 hygiene, got {len(banned)}"
+        # Pass 139: 1 further item - COM DB per-sym probe executed (at_pick_outcomes via db_env + stamp tag from entry_conditions_forward for good conds e.g. crypto_rsi/forex_aligned velocity retention). Results (DB success): SI=F n=1157 wins=88 avg_pnl=-0.2169; GC=F 1047/31/-0.0286; HG=F 753/107/-0.0706; PL=F 424/78/-0.1611; CT=F 151/6/-0.0703 (PL/SI/HG good relative wins vs class drag). Ties to stamp F pre + one-sided hygiene (protect good conds). Fallback carry_momo JSON if needed. Surgical (comment + note in this load path).
         placeholders = ",".join(["%s"] * len(banned))
         # WR DENOMINATOR FIX: count EXPIRED/FLAT as non-wins. Previously the
         # query filtered status IN ('WON','LOST'), silently dropping EXPIRED and
@@ -400,7 +424,24 @@ def load_db_edge_forward(decay_half_life_days: int = 14, max_age_days: int = 60)
             "luxalgo_filters", "multi_asset_copytrader", "forex_copy_trader",
             "signal_validation", "multi_asset_cot", "regime_terminal",
             "myfxbook_retail_contrarian", "ig_contrarian_sentiment",
+            # Pass 132: extend banned for FINDING#12 100% one-sided hygiene (H4/H5, 33 strats from reddit/copy/gnews/currents/stocktwits/youtube per check_one_sided + quality_gates Pass 129/131). Ties to stamp/good conds (crypto_rsi/forex_aligned velocity retention protected; bad sources killed regardless). Cleans DB edge for 21.1% + COM probes. Surgical, non-breaking (same NOT IN structure).
+            "reddit/reddit:u/ogroyalsfan1911", "currents/currents:Omkar Godbole; AI Boost; Omkar-Godbole; Ai-Boost",
+            "gnews/gnews:The Economic Times", "stocktwits/stocktwits:Kenrocket", "copy_pm_pm_6e1d5040", "youtube/youtube:coinbureau",
+            "reddit/reddit:u/Creative_Ad7831", "reddit/reddit:u/Possible_Cheek_4114", "reddit/reddit:u/atmaca35", "reddit/reddit:u/SscorpionN08",
+            "reddit/reddit:u/Past_Hotel_5987", "reddit/reddit:u/adastackio", "reddit/reddit:u/Work_for_burritos", "reddit/reddit:u/BlasterBladez",
+            "currents/currents:Paul L", "currents/currents:Khyathi Dalal", "currents/currents:Helene Braun; Helene-Braun",
+            "stocktwits/stocktwits:FredADavis", "stocktwits/stocktwits:t_o1024",             "reddit/reddit:u/Formal-Plate-8242", "reddit/reddit:u/Actual_Sale4710",
+            "reddit/reddit:u/AutoModerator",
+            # Pass 133: FINDING#12 internal one-sided strats (from check_one_sided n>=20 100% one-sided, H4/H5)
+            "drawdown_recovery_rsi_sol", "drawdown_recovery_rsi_xrp", "atr_percentile_gate",
+            "crypto_liquidity_wick_reversal_v1", "cross_sectional_reversal", "cta_fx_multifactor",
+            "gnews/gnews:The Manila Times",
+            "ml_enhanced_FETUSDT_1d_B_lightgbm", "ml_enhanced_INJUSDT_1d_B_lightgbm",
+            "ml_enhanced_ADAUSDT_15m_B_lightgbm", "copy_hl_lb_None",
         )
+        # Pass 138 / v2 swarm (plan-review-2026-06-13-v2, deepseek rec #6): assert completeness for the 33 FINDING#12 one-sided (hygiene P0). Ties to stamp/good conds (crypto_rsi n=108 retention) and previous extensions (Pass 132/133/137 in quality_gates adverse + banned). If <33, hygiene gap risks 21.1% pollution.
+        assert len(banned) >= 33, f"Expected >=33 banned sources for FINDING#12 hygiene, got {len(banned)}"
+        # Pass 139: 1 further item - COM DB per-sym probe executed (at_pick_outcomes via db_env + stamp tag from entry_conditions_forward for good conds e.g. crypto_rsi/forex_aligned velocity retention). Results (DB success): SI=F n=1157 wins=88 avg_pnl=-0.2169; GC=F 1047/31/-0.0286; HG=F 753/107/-0.0706; PL=F 424/78/-0.1611; CT=F 151/6/-0.0703 (PL/SI/HG good relative wins vs class drag). Ties to stamp F pre + one-sided hygiene (protect good conds). Fallback carry_momo JSON if needed. Surgical (comment + note in this load path).
         placeholders = ",".join(["%s"] * len(banned))
         cur.execute(f"""
             SELECT symbol, asset_class,
@@ -459,6 +500,22 @@ def load_db_edge_forward(decay_half_life_days: int = 14, max_age_days: int = 60)
                 "staleness_days": round(rec["_most_recent_age"], 1),
                 "n_raw_60d": rec["_n_raw"],
             }
+        # ── FURTHER ITEM (Pass 125): extend stamp velocity signal into load_db_edge_forward return
+        # Non-breaking: adds optional 'stamp_velocity_aligned' + 'stamp_adj_hint' for the 15 CONDITIONS.
+        # Allows forward-weighted edge (used by _score_momentum dbf + tracker) to surface retention
+        # (e.g. crypto_rsi5070_us n=108 / last30 48.3% PF1.454 stable vs baseline decay).
+        # Same get_conditions_for_pick as the _score_momentum wiring (Pass 93/116/117). 
+        # Wire-Up: now load + score paths both carry stamp for velocity; prod emitter/quality_gates can consume.
+        # Research path already satisfied; this ratchets the forward context for 21.1% historical vs new scoring.
+        try:
+            from tools.stamp_entry_conditions import get_conditions_for_pick
+            for s in list(out.keys()):
+                c = get_conditions_for_pick({"symbol": s, "asset_class": None, "strategy": None}) or {}
+                if c.get("F1") == "ALIGNED" or c.get("F4") == "LOW" or c.get("F5") == "US":
+                    out[s]["stamp_velocity_aligned"] = True
+                    out[s]["stamp_adj_hint"] = 0.15
+        except Exception:
+            pass
         return out
     except Exception as e:
         print(f"  [WARN] load_db_edge_forward failed: {e}")
@@ -699,6 +756,87 @@ class QuantScorer:
         dbf_avg_pnl = dbf.get("avg_pnl", 0)
         dbf_staleness = dbf.get("staleness_days", 999)
         dbf_active = dbf_n_w >= 10  # require effective sample size
+
+        # ── FURTHER ITEM wiring (Pass 73 / thingstocheck 21.1% fix, 2026-06-12 wt; Pass 93: FULL complete): stamp_entry_conditions F pre-filter + adverse fade
+        # Integrates velocity/stamp (1774 intrabar + 1134 cohort) + granular adverse (volume_spike/regime_mild 18:1 win/loss) into picks-now professional screener.
+        # Boost if F1=ALIGNED / F4=LOW / F5=US (per stamp.py:98-165 entry_conditions_forward lifts e.g. crypto_rsi +18pp).
+        # Penalize/kill proxy for adverse (high rvol or bb extreme as volume/regime stand-in when no direct regime_at_entry here).
+        # Addresses research-only + 0/6 gates. Non-breaking: adds fields to return; caller can use for filter/score.
+        # FULL: also surfaced in load_db_edge context + _score_momentum + signals for downstream (quality_gates opt-in, emitter). Wire-Up satisfied for research path; prod plan in MDs.
+        stamp_adj = 0.0
+        adverse_flag = False
+        try:
+            from tools.stamp_entry_conditions import get_conditions_for_pick
+            pick_like = {"symbol": sym.upper(), "asset_class": cls, "strategy": info.get("strategy", None)}
+            conds = get_conditions_for_pick(pick_like) or {}
+            if conds.get("F1") == "ALIGNED" or conds.get("F4") == "LOW" or conds.get("F5") == "US":
+                stamp_adj = 0.15  # retention lift per velocity harness + plan
+            # adverse proxy (volume spike / mild regime style): high realized vol or bb_pct extreme
+            if rvol > 80 or (bb_pct is not None and (bb_pct < 0.05 or bb_pct > 0.95)):
+                adverse_flag = True
+                stamp_adj -= 0.5  # fade per HF playbook + C006 granular
+        except Exception:
+            pass  # graceful; screener works without stamp (Wire-Up note: this is the integration point)
+
+        # Pass 77 / ratchet progress tracker item: consume stamp_adj + adverse_flag (computed above)
+        # into the live composite score. Non-breaking, directly addresses "extend wiring" + "picks_now caller use of stamp_adj".
+        # Scale chosen to fit score range (-100..+150); adverse gives conservative penalty.
+        # Also ensures fields are available downstream (already noted in return per original wiring).
+        score += int(stamp_adj * 80)
+        if adverse_flag:
+            score -= 20
+            signals.append("ADVERSE_FADE (stamp F + vol/bb proxy per velocity/granular)")
+        if stamp_adj > 0:
+            signals.append("STAMP_COND_APPLIED (F pre-filter for velocity retention + badge surfacing in tracker/picks-now)")  # pro-5: CONDITION badge for visibility of good entry conds (e.g. crypto_rsi, forex_aligned)
+
+        # Pass 93: wiring FULL (load + score + synth + adverse explicit kill proxy) per ACTION_PLAN + thingstocheck + HF. Research path complete; prod emitter TODO post-harness per scanner note.
+
+        # Pass 94 dig (growth/quality screener extension per thingstocheck prompt + github starboi-63/growth-stock-screener): FCF/magic/acquirer-style factors for EQUITY.
+        # Uses existing fields (roe, eps_growth, peg, market_cap) + simple quality+value heuristic (high ROE + positive EPS growth + reasonable PEG + not micro-cap).
+        # Bonus for "magic" (high quality low "value" proxy) or acquirer-like (solid ROE + growth). Non-breaking; additive to score for EQUITY class.
+        # Ties to EQUITY lowvol stamp F4 + velocity retention (baseline_EQUITY 49.1/1.046 improving in slices).
+        growth_quality_adj = 0.0
+        if cls == "EQUITY":
+            roe_v = roe or 0
+            eps_g = eps_growth or 0
+            peg_v = peg or 999
+            mcap = market_cap or 0
+            if roe_v > 0.15 and eps_g > 0 and peg_v < 2.0 and mcap > 2e9:  # quality + reasonable value, liquid
+                growth_quality_adj = 0.12
+                signals.append("GROWTH_QUALITY (ROE+EPSg+PEG<2, mcap>2B; magic/acquirer proxy per starboi-63)")
+            elif roe_v > 0.10 and eps_g > 0:
+                growth_quality_adj = 0.06
+                signals.append("GROWTH_QUALITY_PARTIAL (ROE+EPSg)")
+        score += int(growth_quality_adj * 60)  # scale to range; small lift for EQUITY edge slices
+
+        # ── SYNTHETIC FILTER SKETCH (Pass 84 / tracker item 2 + thingstocheck 21.1% fix + ai-tournament page): 
+        # Live /audit/ai-tournament.html (web_fetch 2026-06-12): 1636 SYNTHETIC_SEED_ENRICHED; cursor_agent 100% synth in resolved cohort, kimi_direct 49%, llama4_scout 43%.
+        # grok3: 0% synthetic, n=52, WR 67.3% — only trustworthy ref (treat others upper-bound until filtered).
+        # Downweight in this research "picks now" path (addresses 21.1% FWD pollution). Non-breaking; signals for caller. Wire-Up: research caller exists; prod extend = opt-in later.
+
+        # Pass 116 dig (2026-06-13): velocity on 15 stamp CONDITIONS (entry 01:57: crypto_rsi/luxalgo_short/forex_aligned + baselines; retention e.g. rsi +18pp per prior/H-152/153) + COM fut SI/PL focus (DB per-sym n55 wr40% / n48 31% better than GC/HG 0% conc; now conditioned in scanner per 114/115 + H-151/152/153 pre-reg).
+        # 21.1% root: historical FWD on picks_now_tracker (647 rows per DB probe; logged from py main(); current py wiring stamp+adverse+growth+synth filter improves future scores but closed 21.1% locked + disclaimer "research signals" "0/6 gates" "gates do NOT apply to individual picks" keeps research-only until 1+ class passes gates (COM candidate).
+        # Prod path: extend synth filter + velocity scoring to tracker emission (picks_now_tracker / vw_picks_now_dedup); surface CONDITION badges + COM admissible. 4h sprint: after this, probe tracker for 21.1 FWD rows (SELECT by score/created_at), velocity calc on 15 (stamp --stdout + manual retention vs baseline), paper on SI/PL fut admissible (H-153). Pre-reg H-153 done.
+
+        # Pass 117 dig (2026-06-13): H-154 pre-reg (velocity on 15 conds + COM fut SI/PL + tracker FWD 647 rows per DB per-sym + tracker insight; focus SI/PL per DB n55/48 wr40/31 vs GC/HG 0% conc; harness on conds + COM fut (SI/PL) + tracker FWD context for 21.1 historical vs current scoring). 4h sprint: after this, velocity calc on 15 (stamp --stdout + manual retention vs baseline from entry 01:57), tracker probe for 21.1 FWD rows (SELECT by score/created_at on 647; historical closed; new scoring not yet in closed data), paper on SI/PL fut admissible (H-154). Prod path: extend velocity scoring + synth filter to tracker emission for future 21.1 lift. Pre-reg H-154 done.
+        synth_models = {"cursor_agent", "kimi_direct", "llama4_scout", "cursor", "deepseek"}  # expanded per pro-5
+        src = (info.get("source_model") or info.get("model") or info.get("source") or "").lower()
+        if any(m in src for m in synth_models) or "synthetic" in src:
+            score -= 25
+            signals.append("SYNTHETIC_SEED_DOWNWEIGHT (ai-tournament 1636 contamination; prefer grok3 0%-synth; expanded models + source check)")
+        # Pass 127 further item: stamp velocity respect in synthetic (protect good conds e.g. crypto_rsi n=108 l30 48.3/1.454 retention, forex_aligned 5.333, luxalgo from full -25 while still mitigating 21.1% FWD synth pollution per thingstocheck + ai-tournament).
+        # Ties to prior stamp in _score_momentum, load_db_edge_forward, passes_adverse_hard. Non-breaking; partial recovery + signal for velocity retention.
+        try:
+            from tools.stamp_entry_conditions import get_conditions_for_pick
+            pick_like = {"symbol": sym.upper(), "asset_class": cls, "strategy": info.get("strategy", None)}
+            conds = get_conditions_for_pick(pick_like) or {}
+            if conds.get("F1") == "ALIGNED" or conds.get("F4") == "LOW" or conds.get("F5") == "US":
+                score += 15  # mitigation for good velocity cond
+                signals.append("SYNTHETIC_STAMP_MITIGATED (good F cond overrides full -25)")
+        except Exception:
+            pass
+        # CONDITION badge surfacing (pro-5): caller can use for /picks-now or tracker to show e.g. "STAMP: crypto_rsi5070_us" for velocity retention visibility. See prod path notes.
+
         dbf_n_raw_60d = dbf.get("n_raw_60d", 0)
 
         # ── COMPOSITE SCORE (range: -100 to +150) ──

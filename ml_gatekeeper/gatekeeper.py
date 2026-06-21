@@ -1320,6 +1320,10 @@ def main():
     X, y, meta = load_training_data()
     if len(X) < 100:
         print(f"[gatekeeper] Only {len(X)} picks — need 100+ for reliable training")
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         # #134 (2026-06-13): the A/B dual-write below lived AFTER this retraining-sample
         # guard, so on low-closed-volume hours main() returned here and the sidecar +
         # ab_history went dead for weeks. But scoring active picks reuses the ALREADY-
@@ -1328,11 +1332,53 @@ def main():
         # models/strategy_router.json — it needs NO fresh training data. Run it here
         # (on-disk bundles + persisted router) so the A/B keeps accruing. Fail-safe:
         # any error falls back to the heuristic path with a logged reason (no silent mask).
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+        # #134 (2026-06-13): the A/B dual-write was unreachable on low-closed-volume
+        # hours because it lived AFTER this retraining-sample guard. But scoring active
+        # picks reuses the ALREADY-TRAINED on-disk bundles (score_active_picks_ab
+        # joblib.loads OLD/NEW itself) and its only training dependency, strategy_router,
+        # is persisted to models/strategy_router.json — so it needs NO fresh training
+        # data. Run it here (with on-disk bundles + persisted router) so the A/B sidecar
+        # + ab_history keep accruing instead of going dead for weeks. This is consistent
+        # with the >=100 path (OLD-ML → prod, NEW-ML → sidecar). Fail-safe: any error
+        # falls back to the heuristic path with a logged reason (no silent mask).
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         if AB_ENABLED and MODEL_DIR_OLD.exists() and MODEL_DIR_NEW.exists():
             try:
                 _rp = MODEL_DIR / "strategy_router.json"
                 _sr = json.loads(_rp.read_text(encoding="utf-8")) if _rp.exists() else {}
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 print("[gatekeeper] #134: insufficient retrain data \u2192 A/B dual-write with on-disk bundles")
+=======
+                print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
+>>>>>>> Stashed changes
+=======
+                print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
+>>>>>>> Stashed changes
+=======
+                print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
+>>>>>>> Stashed changes
+=======
+                print("[gatekeeper] #134: insufficient retrain data → A/B dual-write with on-disk bundles")
+>>>>>>> Stashed changes
                 score_active_picks_ab(_sr)
             except Exception as _e:
                 print(f"[gatekeeper] #134 low-data A/B dual-write failed ({_e!r}); using heuristic fallback")

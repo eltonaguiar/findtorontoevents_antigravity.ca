@@ -636,7 +636,7 @@ jobs:
           python -m alpha_engine.score_booster || echo "Score booster warning (non-fatal)"
           python -m audit_dashboard.blueprint_generator
           # MASTERPLAN 2026-06-05: keep pick_funnel 48h/14d panels fresh (was ~7d stale)
-          python tools/audit_pick_funnel/build_recency_summary.py \
+          python tools/audit_pick_funnel/build_recency_summary.py --force-db \
             || echo "::warning::build_recency_summary.py failed (soft-fail)"
           # P1-3 (2026-06-12): hourly DB-backed pick_funnel + nav surface refresh.
           # Nightly job at 04:00 UTC was clobbered within the hour when audit-dashboard

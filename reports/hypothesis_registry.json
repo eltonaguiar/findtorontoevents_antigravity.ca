@@ -3331,6 +3331,53 @@
       "registered_at": "2026-05-19",
       "data_sample_lock": null,
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY. Pre-registered per M-107 BEFORE any data fetch or backtest. No caller in any pick-generation / scoring path. Target caller (gated on edge_stability_harness.is_admissible() clearing): audit_trail/quality_gates.py::passes_active_gate. Scaffold doc: reports/h035_scaffold_2026-05-19.md. Reproducer: python tools/h035_futures_tsmom_research.py"
+    },
+    {
+      "id": "H-155",
+      "asset_class": "CRYPTO",
+      "family": "concentration_fix_alpha_engine",
+      "description": "Fix alpha_engine 64% source concentration blocking crypto_rsi5070_us n_eff>=80. Velocity harness Pass 133 found crypto_rsi5070_us (n=108, WR=47.2%, PF=1.535) FAILS Addendum H because alpha_engine contributes 63.9% of picks (concentration >35% threshold), reducing n_eff from 108 to 45.6. Hypothesis: diversifying sources (adding non-alpha_engine emitters for the same RSI 50-70 + US session condition) will raise n_eff above 80 while maintaining PF>=1.5 and WR>=48%. Test: run velocity_harness.py on the condition after source-diversification, verify all Addendum H checks pass.",
+      "test_statistic": "n_eff (effective sample size adjusted for concentration), plus full Addendum H suite (walk-forward stability, split-half, binomial, CI, recency)",
+      "acceptance_criteria": {
+        "min_n_eff": 80,
+        "min_n": 100,
+        "min_wr": 48.0,
+        "min_pf": 1.5,
+        "min_ci_lb": 1.15,
+        "max_concentration": 0.35,
+        "min_windows_admissible": 3,
+        "validation": "velocity_harness.py --condition crypto_rsi5070_us"
+      },
+      "economic_prior": "Source concentration is an artifact of emission pipeline design (alpha_engine dominates CRYPTO picks), not a property of the RSI 50-70 + US session signal itself. Diversifying sources should not degrade the signal's edge if the edge is genuine.",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-06-13",
+      "data_sample_lock": "at_signal_outcomes cohort as of 2026-06-13 05:00Z (1205 raw, 1162 stamped)",
+      "result": null,
+      "kill_reason": null,
+      "wiring": "READ-ONLY measurement via velocity_harness.py. No emission path changes until harness passes."
+    },
+    {
+      "id": "H-156",
+      "asset_class": "COMMODITY",
+      "family": "futures_velocity_sipl",
+      "description": "Velocity harness on COMMODITY futures SI=F (Silver) and PL=F (Platinum) \u2014 the only viable COM futures with n>=35 in at_signal_outcomes. DB probe found SI=F n=55 WR=29.1% and PL=F n=48 WR=31.2% for futures_momentum strategy. Hypothesis: applying entry conditions (F1 trend alignment, F4 vol regime, F5 session) to COM futures may improve WR above 50% with PF>=1.5 at n_eff>=80. Requires source diversification beyond alpha_engine (95% of COM picks) and ongoing n accrual toward n>=100.",
+      "test_statistic": "Full Addendum H suite via velocity_harness.py on COM fut-momentum subset conditioned on entry features",
+      "acceptance_criteria": {
+        "min_n_eff": 80,
+        "min_n": 100,
+        "min_wr": 48.0,
+        "min_pf": 1.5,
+        "min_ci_lb": 1.15,
+        "max_concentration": 0.35,
+        "validation": "velocity_harness.py on COM fut subset"
+      },
+      "economic_prior": "SI=F and PL=F show ~30% WR in raw intrabar data, but conditioning on trend alignment (F1 ALIGNED) and low volatility (F4 LOW) may filter out the losing regime. The granular good slice (50.8% WR / PF 1.586) from prior velocity autopsy supports this.",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-06-13",
+      "data_sample_lock": "at_signal_outcomes COM futures as of 2026-06-13 05:00Z",
+      "result": null,
+      "kill_reason": null,
+      "wiring": "READ-ONLY measurement. COM futures_momentum remains blanket-blocked in production_scanner._BLOCKED_CATEGORY_STRATEGIES until harness passes."
     }
   ],
   "h040_equity_sector_momentum": [
@@ -3357,6 +3404,32 @@
       "registered_at": "2026-05-19",
       "data_sample_lock": null,
       "wiring": "OPT-IN RESEARCH SIDECAR ONLY. Pre-registered per M-107 BEFORE any data fetch or backtest. No caller in any pick-generation / scoring path. Target caller (gated on edge_stability_harness.is_admissible() clearing): audit_trail/quality_gates.py::passes_active_gate. Scaffold doc: reports/h033_scaffold_2026-05-19.md. Reproducer: python tools/h033_equity_sector_momentum_research.py (uses tools/cache/h033_equity_sector_momentum_cache.json; --refresh-cache to re-fetch; --no-trend-filter is the alternate config, separately registered if ever evaluated)."
+    }
+  ],
+  "h157_velocity_harness_tier1_15_conditions_com_fut": [
+    {
+      "id": "H-157",
+      "asset_class": "CRYPTO,COMMODITY",
+      "family": "velocity_harness_tier1_15_conditions_com_fut",
+      "description": "Velocity harness Tier1 admissible on 15 CONDITIONS (crypto_rsi5070_us n=108 47.2/1.535 retention lift + stable forex_trend_aligned 68.8/5.333 + luxalgo_short 71.1/2.211) + COM fut_momentum slices (SI=F/PL=F/HG=F good relative wins vs class drag from prior per-sym probes) with stamp F pre (F1 ALIGNED/F4 LOW/F5) + adverse fade (volume/regime_mild/bollinger) + one-sided hygiene guard (kill bad sources like reddit/copy/gnews/currents/stocktwits/youtube/coinbureau/ml_enhanced/copy_hl regardless of stamp to protect only good stamped conds). Target 48-55%WR / 1.7+PF at n_eff>=80 + full AddH (n_eff/stress/monkey95/CI/recency/conc<35/binomial) + forward n accrual + conc<35 + CI LB>1.15. Locked cohort: entry-anchored first-touch SL-wins, net costs 2-16bp, dedup sym/dir/day, time-split.",
+      "test_statistic": "velocity_harness.py (AddH suite: walk-forward, split-half, concentration HHI, Wilson CI, binomial, n_eff) + edge_stability_harness.is_admissible() on conditioned slices",
+      "acceptance_criteria": {
+        "min_n": 100,
+        "min_n_eff": 80,
+        "min_wr": 48.0,
+        "min_pf": 1.5,
+        "min_ci_lb": 1.15,
+        "max_concentration": 0.35,
+        "min_stable_windows": 3,
+        "validation": "velocity_harness.py thresholds + full AddH on 15 CONDITIONS + COM fut subset conditioned on stamp F + !adverse"
+      },
+      "economic_prior": "Stamp F pre-filter + adverse fade selects for higher quality entry conditions with proven retention lift vs baseline decay (crypto_rsi +18pp). One-sided hygiene (FINDING#12 33 100% one-sided) removes pathological pollution sources. Velocity replay enables fast iteration and measurement of real edge across classes. COM granular fut_momentum + velocity inside class drag offers best visible risk/reward (per-sym SI/PL/HG relative better; class drag from GC/HG/CT). Sound causal prior (entry selection + noise removal) before any curve fit.",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-06-13",
+      "data_sample_lock": "at_signal_outcomes + stamp_entry_conditions 2026-06-13 06:13Z cohort (intrabar TP/SL first-touch)",
+      "result": {"verdict": "UNTESTED", "reason": "Pre-registered per M-107 before formal admissibility harness run. Local measurement run via velocity_harness.py showed crypto_rsi n_eff=45.6 fail, conc=0.639 alpha fail, walk_forward unstable, admissible=false — for diagnosis in next Pass."},
+      "banned_check": "Distinct from killed one-sided families (drawdown_recovery_rsi_*, atr_percentile_*, copy_hl_lb_None, ml_enhanced bad, reddit u/ hype, currents/stocktwits/gnews/youtube/coinbureau per FINDING#12 33). Not re-test of prior velocity or COM momentum without stamp/adverse/hygiene guards. Not H-156 COM futures_velocity_sipl (different conditioning).",
+      "wiring": "READ-ONLY measurement via velocity_harness.py + edge_stability_harness. No prod caller until full pass + paper + 14d/48h + verdict. Target: production_scanner + quality_gates for stamped velocity conds. Reproducer: python3 tools/velocity_harness.py --condition crypto_rsi5070_us --json (and full 15 + COM fut)."
     }
   ]
 }
