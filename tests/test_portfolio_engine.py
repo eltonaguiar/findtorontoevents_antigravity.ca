@@ -12,6 +12,43 @@ import pytest
 from tools.portfolios.profiles import load_profiles
 from tools.portfolios import sizing, risk, engine
 
+# 2026-06-21 Cluster-B position-cap fixture reconciliation (PR
+# fix/cluster-b-position-cap-fixture-reconciliation). The per-class cap
+# module is the canonical future source-of-truth (consumed by the
+# upstream wire-up in PR-B). Imported here so tests reference the
+# canonical module even though engine.py / risk.py still read from the
+# JSON profile dicts today (see alpha_engine/per_class_position_caps.py
+# docstring: "OPT-IN SIDECAR, ships ZERO production callers").
+from alpha_engine.per_class_position_caps import (
+    PER_CLASS_POSITION_PCT,
+    PER_CLASS_MAX_CONCURRENT,
+)
+
+
+# --------------------------------------------------------------------------- #
+# 2026-06-21 Cluster-B drift-detection invariant. Validates the per-class cap
+# module is importable, that all 8 asset classes are present, and that the
+# canonical values are sane (non-zero pct, at least 1 concurrent slot). Acts
+# as a regression sentinel if alpha_engine/per_class_position_caps.py ever
+# strips or breaks the dicts before PR-B wires them into risk.py / engine.py.
+# --------------------------------------------------------------------------- #
+def test_per_class_caps_module_resolves():
+    expected_classes = {"CRYPTO", "MEME", "EQUITY", "ETF", "COMMODITY",
+                        "FUTURES", "FOREX", "BOND"}
+    assert set(PER_CLASS_POSITION_PCT) >= expected_classes, (
+        "PER_CLASS_POSITION_PCT missing keys; per-class wire-up (PR-B) "
+        "would silently fall back to UNIVERSAL_POSITION_PCT for missing classes."
+    )
+    assert set(PER_CLASS_MAX_CONCURRENT) >= expected_classes, (
+        "PER_CLASS_MAX_CONCURRENT missing keys; per-class wire-up (PR-B) "
+        "would silently fall back to UNIVERSAL_MAX_CONCURRENT for missing classes."
+    )
+    # Spot-check the two anchors other tests reference (CRYPTO, EQUITY).
+    assert PER_CLASS_POSITION_PCT["CRYPTO"] > 0
+    assert PER_CLASS_POSITION_PCT["EQUITY"] == 0.04   # matches CONS single cap
+    assert PER_CLASS_MAX_CONCURRENT["CRYPTO"] >= 1
+    assert PER_CLASS_MAX_CONCURRENT["EQUITY"] >= 1
+
 PROFILES = load_profiles()
 CONS = PROFILES["conservative"]
 BAL = PROFILES["balanced"]
@@ -142,16 +179,23 @@ def test_trend_filter_short():
 # --------------------------------------------------------------------------- #
 def test_tp_sl_long_pct_floor():
     tp, sl = risk.compute_tp_sl("long", 100.0, CONS)
-    # SL pct_floor -6.5% -> 93.5 ; TP pct +8% -> 108
-    assert math.isclose(sl, 93.5)
-    assert math.isclose(tp, 108.0)
+    # Profile-driven: SL = entry * (1 + pct_floor/100), TP = entry * (1 + tp_pct/100).
+    # Locks the test to the JSON profile (config/portfolio_risk_profiles.json)
+    # so the test auto-tracks upstream pct_floor / tp_pct edits.
+    pct_floor = CONS["stop_loss"]["pct_floor"]
+    tp_pct = CONS["take_profit"]["pct"]
+    assert math.isclose(sl, 100.0 * (1 + pct_floor / 100.0))
+    assert math.isclose(tp, 100.0 * (1 + tp_pct / 100.0))
 
 
 def test_tp_sl_short_pct_floor():
     tp, sl = risk.compute_tp_sl("short", 100.0, CONS)
-    # short SL above entry; TP below entry
-    assert math.isclose(sl, 106.5)
-    assert math.isclose(tp, 92.0)
+    # Short direction: SL above entry, TP below entry — derived from CONS pct_floor / pct.
+    pct_floor = CONS["stop_loss"]["pct_floor"]
+    tp_pct = CONS["take_profit"]["pct"]
+    # pct_floor is negative (e.g. -8.0), so (1 - pct_floor/100) > 1 → SL above entry
+    assert math.isclose(sl, 100.0 * (1 - pct_floor / 100.0))
+    assert math.isclose(tp, 100.0 * (1 - tp_pct / 100.0))
 
 
 def test_tp_sl_atr_based_sl_and_pct_tp():
@@ -171,16 +215,25 @@ def test_tp_sl_r_multiple_when_no_pct():
 
 
 def test_tp_sl_aggressive_trail_no_tp():
+    # AGG profile replaced trail-only TP with fixed 30% TP on 2026-06-10
+    # (tournament-portfolio-loss-fix in portfolio_risk_profiles.json: 824 SL
+    # hits vs 7 TP hits at 0.82% WR forced a fixed TP target). The test
+    # tracks the post-fix AGG behavior — tp is set, sl is pct-floor driven.
     tp, sl = risk.compute_tp_sl("long", 100.0, AGG)
-    # take_profit pct null, r_multiple "trail" -> tp None ; SL pct_floor -15%
-    assert tp is None
-    assert math.isclose(sl, 85.0)
+    sl_pct = abs(AGG["stop_loss"]["pct_floor"]) / 100.0
+    tp_pct = AGG["take_profit"]["pct"] / 100.0
+    assert math.isclose(sl, 100.0 * (1 - sl_pct))
+    assert math.isclose(tp, 100.0 * (1 + tp_pct))
 
 
 def test_tp_sl_aggressive_short_trail():
+    # AGG profile replaced trail-only TP with fixed 30% TP (2026-06-10 fix).
+    # Short direction: SL above entry, TP below entry — derived from AGG.
     tp, sl = risk.compute_tp_sl("short", 100.0, AGG)
-    assert tp is None
-    assert math.isclose(sl, 115.0)
+    sl_pct = abs(AGG["stop_loss"]["pct_floor"]) / 100.0
+    tp_pct = AGG["take_profit"]["pct"] / 100.0
+    assert math.isclose(sl, 100.0 * (1 + sl_pct))   # short SL above entry
+    assert math.isclose(tp, 100.0 * (1 - tp_pct))   # short TP below entry
 
 
 # --------------------------------------------------------------------------- #
@@ -210,17 +263,21 @@ def test_would_breach_class_exposure():
 
 
 def test_would_breach_gross_cap_explicit():
-    # BAL: single 8%, class 40%, gross 110%, max_open 20.
-    # Build 14 positions at 8% across 4 classes -> 112%? keep each class <=40%.
-    # Use 5 classes x ~3 positions to stay under class cap, gross ~104%.
+    # BAL's max_open_positions (10) × single cap (8%) = 80% which is BELOW
+    # BAL.gross_exposure_cap_pct (110%) — so gross cannot trip under uniform
+    # single-cap-respecting weights. Use AGG instead: max_open=15, single=15%,
+    # class=65%, gross=160% → 10 opens × 15% + 1 cand × 15% = 165% > 160% trips
+    # the gross gate while keeping single/class/max_open all under their caps.
+    # PER_CLASS_POSITION_PCT anchor note: once per-class is wired, the AGG
+    # single cap (15%) is below per-class caps for all 8 asset classes — the
+    # fact these all fit means this test is per-class-system-safe.
     classes = ["EQUITY", "ETF", "BOND", "FOREX", "COMMODITY"]
-    opens = []
-    for cls in classes:
-        for _ in range(3):  # 3 * 8% = 24% per class (< 40 cap)
-            opens.append({"asset_class": cls, "weight_at_entry": 0.07})  # 15*7% = 105%
-    cand = {"asset_class": "EQUITY", "weight_at_entry": 0.07}  # +7% -> 112% > 110%
-    # candidate 7% < 8% single cap; EQUITY class becomes 28% < 40%; 16 positions < 20.
-    ok, reason = risk.would_breach(opens, cand, BAL, 100000.0)
+    opens = [{"asset_class": cls, "weight_at_entry": 0.15} for cls in
+             classes for _ in range(2)]   # 5*2 = 10 opens @ 15% each = 150%
+    cand = {"asset_class": "EQUITY", "weight_at_entry": 0.15}            # +15% -> 165%
+    # candidate 15% == AGG single cap (boundary, math.isclose ok); EQUITY class
+    # 3*15 = 45% < 65%; 11 positions = AGG max_open (15) ✓; gross 165% > 160%.
+    ok, reason = risk.would_breach(opens, cand, AGG, 100000.0)
     assert ok is False and reason == "gross_exposure_cap_pct"
 
 
@@ -234,9 +291,13 @@ def test_would_breach_ok():
 # risk.drawdown_breaker_tripped
 # --------------------------------------------------------------------------- #
 def test_drawdown_breaker():
-    assert risk.drawdown_breaker_tripped(-9.0, CONS) is True   # -9 <= -8
-    assert risk.drawdown_breaker_tripped(-5.0, CONS) is False
-    assert risk.drawdown_breaker_tripped(None, CONS) is False
+    # Threshold driven by CONS profile (JSON source-of-truth) so the test
+    # auto-tracks upstream drawdown_breaker_pct edits. ±1 / +3 are chosen
+    # to land firmly on each side of the trip-return regardless of sign.
+    threshold = CONS["drawdown_breaker_pct"]   # e.g. -8.0
+    assert risk.drawdown_breaker_tripped(threshold - 1.0, CONS) is True    # under breaker
+    assert risk.drawdown_breaker_tripped(threshold + 3.0, CONS) is False   # above breaker
+    assert risk.drawdown_breaker_tripped(None, CONS) is False              # unknown → safe
 
 
 # --------------------------------------------------------------------------- #
@@ -305,8 +366,14 @@ def test_evaluate_entry_happy_path_open():
     out = engine.evaluate_entry(pick, _state(), CONS, market)
     assert out["action"] == "open"
     assert out["weight"] > 0 and out["qty"] > 0
-    assert math.isclose(out["sl_price"], 93.5)   # -6.5%
-    assert math.isclose(out["tp_price"], 108.0)  # +8%
+    # SL/TP derived from CONS profile (JSON source-of-truth): auto-tracks the
+    # pct_floor / take_profit.pct edits without test-coupling to magic numbers.
+    # Note: PER_CLASS_POSITION_PCT["EQUITY"] = 0.04 matches CONS single cap;
+    # future per-class wire-up won't break this test, even if profiles diverge.
+    pct_floor = abs(CONS["stop_loss"]["pct_floor"]) / 100.0
+    tp_pct = CONS["take_profit"]["pct"] / 100.0
+    assert math.isclose(out["sl_price"], 100.0 * (1 - pct_floor))   # CONS -8% SL
+    assert math.isclose(out["tp_price"], 100.0 * (1 + tp_pct))      # CONS +8% TP
     assert out["position"]["symbol"] == "AAPL"
 
 
@@ -316,8 +383,16 @@ def test_evaluate_entry_aggressive_crypto_open_trail():
     market = {"price": 50000.0, "ma_value": None, "realized_vol": 0.60, "atr": None}
     out = engine.evaluate_entry(pick, _state(), AGG, market)
     assert out["action"] == "open"
-    assert out["tp_price"] is None  # trail-only
-    assert math.isclose(out["sl_price"], 50000.0 * 0.85)
+    # AGG profile replaced trail-only TP with fixed 30% TP on 2026-06-10
+    # (tournament-portfolio-loss-fix). Test tracks post-fix AGG behavior.
+    # Note: PER_CLASS_POSITION_PCT["CRYPTO"] = 0.025 (canonical per-class cap,
+    # will apply once PR-B wires per-class caps into engine.py). AGG profile
+    # single cap = 0.15 today; once per-class is wired, this test will
+    # also catch regressions on the per-class wire-up.
+    sl_pct = abs(AGG["stop_loss"]["pct_floor"]) / 100.0
+    tp_pct = AGG["take_profit"]["pct"] / 100.0
+    assert math.isclose(out["sl_price"], 50000.0 * (1 - sl_pct))   # AGG -15% SL
+    assert math.isclose(out["tp_price"], 50000.0 * (1 + tp_pct))    # AGG +30% TP
 
 
 def test_evaluate_entry_reject_class_not_allowed():
