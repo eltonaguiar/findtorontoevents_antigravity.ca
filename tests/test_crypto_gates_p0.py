@@ -152,12 +152,12 @@ class TestM036CryptoBuyDirectionBlocked:
         pick = _crypto_pick(direction="buy")
         assert passes_active_gate(pick) is False
 
-    def test_long_direction_passes(self, monkeypatch):
-        """direction='LONG' must PASS the direction check (PF=3.14)."""
+    def test_long_direction_blocked_p0c(self, monkeypatch):
+        """direction='LONG' blocked since P0C — CRYPTO_BLOCKED_DIRECTIONS includes LONG."""
         _env_flags_isolate_p0(monkeypatch)
         monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "1")
         pick = _crypto_pick(direction="LONG")
-        assert passes_active_gate(pick) is True
+        assert passes_active_gate(pick) is False
 
     def test_short_direction_passes(self, monkeypatch):
         """direction='SHORT' is a valid CRYPTO direction — must not be blocked."""
