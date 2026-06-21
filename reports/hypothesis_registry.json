@@ -2248,6 +2248,24 @@
       "status": "REFUTED",
       "kill_reason": "net PF<1 (losing) at full power",
       "result": "DEFINITIVELY REFUTED (fully powered, n_eff=239): n=1434 net PF 0.856 (LOSING) CI-LB 0.747 WR 49.9% IS/OOS 0.81/0.90 mean -0.341%/trade, top NG=F 15%. Commodity avenue FULLY CLOSED: COT (H-134/135) + TSMOM (H-136) + X-sectional (H-137) all sub-bar/losing at proper power. Run 2026-06-21."
+    },
+    {
+      "id": "H-138",
+      "asset_class": "EQUITY",
+      "family": "insider_open_market_buy",
+      "description": "Insider open-market PURCHASE (Form-4 code P) drift: P-buy on a daily_prices ticker -> LONG next trading day, hold 21d, net@4bp.",
+      "economic_prior": "Cohen-Malloy-Pomorski 2012 'Decoding Inside Information'; Lakonishok-Lee 2001. Open-market insider buys predict positive drift. Signal feed REVIVED this session (tools/refresh_insider_trades.py; 17->106 P-buys).",
+      "test_statistic": "net PF CI-LB (ticker clusters); gm_sec_insider_trades signal x daily_prices",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 FORWARD + time-split + conc<35%"
+      },
+      "data_sample_lock": "46 resolvable P-buys (daily_prices coverage 2024-02..2026-04-29); n-starved",
+      "registered_at": "2026-06-21",
+      "status": "FORWARD_SHADOW",
+      "kill_reason": null,
+      "result": "PROMISING but N-STARVED (preliminary): n=46 net PF 1.660 mean +1.59%/trade WR 54.3% IS/OOS 1.27/2.02 (both positive), top ticker AXP 15% (diversified). CI-LB 0.566 @ n_eff(ticker)=25 (<<80) -> NOT promotable yet. The ONLY new-data signal with a positive point estimate worth waiting for (vs the refuted commodity/funding H-130..137). FORWARD-SHADOW: weekly insider workflow accrues P-buys; revisit at ~150 resolvable P-buys. CAVEAT n=46 fragile + partly recent-equity-bull; insider buys are firm-specific (low market beta) which mitigates. Run 2026-06-21."
     }
   ],
   "fork2_new_signals": [
