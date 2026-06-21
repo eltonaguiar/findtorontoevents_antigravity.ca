@@ -2230,6 +2230,24 @@
       "status": "REFUTED",
       "kill_reason": "CI-LB<1.15 + n_eff<80 + regime-unstable",
       "result": "SUB-BAR both variants: plain n=517 netPF 0.979 CI-LB 0.719 (breakeven/losing); vol-scaled netPF 1.086 CI-LB 0.814. n_eff(month)=47 (<80, structural for 5yr monthly). REGIME-UNSTABLE: IS/OOS 0.74/1.30 (plain), 0.76/1.59 (vol-scaled) — apparent edge is entirely a recent-regime artifact, not stable. top CL=F 9%. Commodity avenue exhausted both ways (COT positioning H-134/135 + TSMOM price H-136 all sub-bar). Run 2026-06-21."
+    },
+    {
+      "id": "H-137",
+      "asset_class": "COMMODITY",
+      "family": "commodity_xsectional_momentum",
+      "description": "Cross-sectional commodity momentum: weekly, rank 11 commodities by trailing 60d return, LONG top-3/SHORT bottom-3, hold 5d, net@3bp/leg. futures_daily_ohlcv 5yr.",
+      "economic_prior": "cross-sectional momentum (Asness et al.); distinct from time-series TSMOM (H-136). Weekly -> properly powered (n_eff~239).",
+      "test_statistic": "net PF CI-LB (week clusters)",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 + time-split + conc<35%"
+      },
+      "data_sample_lock": "futures_daily_ohlcv 2021-06..2026-06, 11 commodities",
+      "registered_at": "2026-06-21",
+      "status": "REFUTED",
+      "kill_reason": "net PF<1 (losing) at full power",
+      "result": "DEFINITIVELY REFUTED (fully powered, n_eff=239): n=1434 net PF 0.856 (LOSING) CI-LB 0.747 WR 49.9% IS/OOS 0.81/0.90 mean -0.341%/trade, top NG=F 15%. Commodity avenue FULLY CLOSED: COT (H-134/135) + TSMOM (H-136) + X-sectional (H-137) all sub-bar/losing at proper power. Run 2026-06-21."
     }
   ],
   "fork2_new_signals": [
