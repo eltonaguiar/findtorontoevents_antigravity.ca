@@ -7,6 +7,12 @@ on:
   workflow_dispatch:
     # Trigger manually: gh workflow run swarm-sync-v2.yml
 
+# 2026-06-21: serialize overlapping runs so this */30 self-pushing sync can't race on a
+# non-fast-forward push to main (cancel-in-progress:false = let an in-flight push finish).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
