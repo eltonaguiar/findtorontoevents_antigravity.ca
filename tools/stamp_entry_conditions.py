@@ -137,11 +137,12 @@ def features(pick: dict, bars: list, skips: dict) -> dict | None:
 CONDITIONS = [  # (name, class, definition, predicate(pick, feats))
     ("crypto_rsi5070_us", "CRYPTO", "F3 RSI(14,1h)=50-70 AND F5 session=US",
      lambda p, f: p["_cls"] == "CRYPTO" and f["F3"] == "50-70" and f["F5"] == "US"),
-    # Surfaced by tools/mine_entry_condition_cells.py (2026-06-22): the SHORT side of the
-    # RSI50-70 band screened net_PF 1.52 (n=45), time-split IS/OOS 1.14/1.94 (OOS stronger),
-    # top-symbol concentration 16%. Underpowered (binom_p 0.30) -> FORWARD-track toward an
-    # n>=80 gate; mirror of the rsi5070-LONG lead on the SHORT side. EXPLORATORY, never sizes.
-    ("crypto_short_rsi5070", "CRYPTO", "F3 RSI(14,1h)=50-70 AND direction=SHORT (miner 2026-06-22)",
+    # Surfaced by mine_entry_condition_cells.py (2026-06-22) then REFUTED-as-standalone-edge by
+    # falsification (reports/CRYPTO_SHORT_RSI5070_REFUTED_2026-06-22.md): it is a REGIME BET, not an
+    # RSI edge — won only in BTC-down months (May/Jun) and lost 0/7 in the one up-month (Mar +2.2%);
+    # 82% of net P&L from 3 symbols (RENDER/ARB/ETH); US-clustered (US 82% WR vs EU 17%). Kept as a
+    # REGIME MONITOR only: does the SHORT side survive a future BTC-up window? NEVER sizes.
+    ("crypto_short_rsi5070_REGIMEWATCH", "CRYPTO", "REGIME-dependent, refuted as edge: RSI50-70 SHORT",
      lambda p, f: p["_cls"] == "CRYPTO" and f["F3"] == "50-70"
      and str(p.get("direction") or "").upper() in ("SHORT", "SELL")),
     ("luxalgo_short", "*", "strategy=luxalgo_confluence AND direction=SHORT",
