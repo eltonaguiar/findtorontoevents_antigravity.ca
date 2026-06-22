@@ -6,7 +6,10 @@ name: crypto-ohlcv refresh
 
 'on':
   schedule:
-    - cron: '20 */6 * * *'  # every 6h at :20 (offset from the :00/:03/:10 crons)
+    - cron: '20 */4 * * *'  # every 4h at :20. Was */6, but GitHub scheduled-run congestion
+      # repeatedly skipped/delayed runs and let crypto_ohlcv drift toward the 8h staleness gate
+      # (needing manual keep-alive dispatches). At */4 a single skipped run still leaves the bar
+      # <~5h, so the honest crypto cohort keeps resolving without babysitting. Idempotent upsert.
   workflow_dispatch:
 
 concurrency:
