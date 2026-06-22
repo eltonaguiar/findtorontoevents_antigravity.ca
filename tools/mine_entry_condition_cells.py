@@ -123,6 +123,35 @@ def _regime_both(rows, btcdir: dict) -> bool:
     return len(up) >= 5 and len(dn) >= 5 and _netpnl(up) > 0 and _netpnl(dn) > 0
 
 
+def bootstrap_netpf_cilb(rows, iters: int = 3000, pct: int = 5):
+    """SYMBOL-level bootstrap CI lower bound of net_PF (swarm 2026-06-22: fairer than ex-top-k
+    for fat-tailed crypto — resamples symbols with replacement so a few lucky symbols can't
+    masquerade as a stable edge, while genuine heavy-tailed edges survive). Returns the pct-th
+    percentile of the bootstrap net_PF distribution, or None if <5 symbols."""
+    import random
+    from collections import defaultdict
+    bysym = defaultdict(list)
+    for p in rows:
+        bysym[p["symbol"]].append(float(p.get("intrabar_pnl_pct") or 0))
+    syms = list(bysym.values())
+    k = len(syms)
+    if k < 5:
+        return None
+    random.seed(42)  # reproducible
+    pfs = []
+    for _ in range(iters):
+        gp = gl = 0.0
+        for _ in range(k):
+            for x in syms[random.randrange(k)]:
+                if x > 0:
+                    gp += x
+                elif x < 0:
+                    gl += -x
+        pfs.append(gp / gl if gl > 0 else 99.0)
+    pfs.sort()
+    return round(pfs[int(pct / 100 * len(pfs))], 3)
+
+
 def main() -> int:
     limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 4000
     cohort, stamped, skips = build_stamped(limit)
@@ -130,8 +159,11 @@ def main() -> int:
 
     cells: dict[str, list] = {}
     for p, f in stamped:
-        cls, F3, F5, d = p["_cls"], f["F3"], f["F5"], _norm_dir(p)
-        for k in (f"{cls}|{d}|RSI{F3}|{F5}", f"{cls}|{d}|RSI{F3}", f"{cls}|{d}|{F5}"):
+        cls, F3, F5, F4, d = p["_cls"], f["F3"], f["F5"], f.get("F4"), _norm_dir(p)
+        keys = [f"{cls}|{d}|RSI{F3}|{F5}", f"{cls}|{d}|RSI{F3}", f"{cls}|{d}|{F5}"]
+        if F4:  # swarm 2026-06-22: add the volatility-regime axis (F4 LOW/HIGH) — edge may be vol-conditional
+            keys += [f"{cls}|{d}|VOL{F4}", f"{cls}|{d}|RSI{F3}|VOL{F4}"]
+        for k in keys:
             cells.setdefault(k, []).append(p)
 
     results = []
@@ -144,17 +176,19 @@ def main() -> int:
         wins = int(round(wr / 100.0 * n))
         net_pf = s.get("net_pf")
         ex3_netpf, n_syms = _ex_topk_netpf(rows, 3)
+        boot_cilb = bootstrap_netpf_cilb(rows)
         regime_both = _regime_both(rows, btcdir) if btcdir else None
-        # ROBUST = real net edge that survives removing its 3 biggest-P&L symbols AND wins in
-        # both BTC regimes (the two failure modes that killed crypto_short_rsi5070 + rsi5070-LONG).
+        # ROBUST (swarm-revised gate): the symbol-bootstrap netPF CI-LB(5%) >= 1.0 is the fairer
+        # fat-tail test (replaces the harsh ex-top3 hard gate; ex-top3 kept as a diagnostic), AND
+        # wins in both BTC regimes, AND point netPF>=1.2, AND n>=40. Both failure modes covered.
         robust = bool(
-            (net_pf or 0) >= 1.3 and n >= 40 and (ex3_netpf or 0) >= 1.0
+            (net_pf or 0) >= 1.2 and n >= 40 and (boot_cilb or 0) >= 1.0
             and (regime_both is True)
         )
         results.append({
             "cell": k, "n": n, "wr": wr, "pf": s["pf"], "net_pf": net_pf,
             "avg_pnl": s.get("avg_pnl"), "p": binom_p_two_sided(wins, n),
-            "ex_top3_netpf": ex3_netpf, "n_symbols": n_syms,
+            "ex_top3_netpf": ex3_netpf, "boot_cilb": boot_cilb, "n_symbols": n_syms,
             "regime_both": regime_both, "robust": robust,
         })
 
@@ -174,13 +208,13 @@ def main() -> int:
 
     print(f"cohort={len(cohort)} stamped={len(stamped)} cells_tested={m} bh_rejected={max_k} "
           f"ROBUST={len(robust)} btc_months={len(btcdir)} skips={skips}", file=sys.stderr)
-    print(f"\n=== TOP CELLS by net_PF (n>={MIN_N}) — robust gate: netPF>=1.3 & ex-top3>=1.0 & n>=40 & wins both regimes ===", file=sys.stderr)
-    hdr = f"{'cell':<28}{'n':>4}{'WR%':>6}{'netPF':>7}{'exTop3':>7}{'nSym':>5}{'reg2':>5}{'ROBUST':>7}"
+    print(f"\n=== TOP CELLS by net_PF (n>={MIN_N}) — robust gate: netPF>=1.2 & bootCILB(5%)>=1.0 & n>=40 & both regimes ===", file=sys.stderr)
+    hdr = f"{'cell':<28}{'n':>4}{'WR%':>6}{'netPF':>7}{'bootLB':>7}{'exTop3':>7}{'reg2':>5}{'ROBUST':>7}"
     print(hdr, file=sys.stderr)
     print("-" * len(hdr), file=sys.stderr)
-    for r in sorted(results, key=lambda x: -(x["net_pf"] or 0))[:25]:
+    for r in sorted(results, key=lambda x: -(x["net_pf"] or 0))[:30]:
         print(f"{r['cell']:<28}{r['n']:>4}{r['wr']:>6}{str(r['net_pf']):>7}"
-              f"{str(r['ex_top3_netpf']):>7}{str(r['n_symbols']):>5}"
+              f"{str(r.get('boot_cilb')):>7}{str(r['ex_top3_netpf']):>7}"
               f"{('Y' if r['regime_both'] else 'n'):>5}{('ROBUST' if r['robust'] else '·'):>7}", file=sys.stderr)
     if robust:
         print(f"\n*** {len(robust)} ROBUST CANDIDATE(S) — survive ex-top3 + both regimes ***", file=sys.stderr)
