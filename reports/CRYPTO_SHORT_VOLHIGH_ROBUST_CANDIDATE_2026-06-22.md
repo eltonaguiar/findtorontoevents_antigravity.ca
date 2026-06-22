@@ -33,6 +33,22 @@ both regimes.
 - **It's a SHORT** — real-money execution needs perps/margin/borrow; model funding + borrow cost.
 - Cells overlap in the miner; treat the FDR/bootstrap as a screen, confirm on a fresh forward window.
 
+## Addendum — swarm-verify + crash-fade decomposition (2026-06-22)
+Consensus-3 swarm: both engines rate the edge **plausible** (vol-mean-reversion: panic selling +
+leverage-liquidation cascades overshoot then reverse) and the IS/OOS-63% match **stable, not a leak**;
+verdicts paper-pilot (deepseek now-tiny / kilo after n>=80). Ran their top falsifications:
+- **Crash-catch (BTC daily-return split):** BTC-down-days n=41 WR 68.3% netPF 2.13 (+49.4 pnl) vs
+  BTC-up-days n=13 WR 46.2% netPF 1.11 (+3.6). **Net-positive on up-days too (not pure crash-catching),
+  but heavily DOWNSIDE-SKEWED** — ~93% of P&L is from down-days. Honest re-characterization: this is a
+  **crash-fade / downside-vol-reversion** edge, NOT regime-neutral. Expect it to barely earn (or chop)
+  in calm/up-vol markets and carry its weight in selloffs.
+- **Breadth (per-symbol):** 16/19 symbols net-positive (broad, not coincidental); RENDER 4 picks 75% WR
+  is a real pattern; JUP/WIF only 2 picks each (small, discount).
+
+Implication for sizing: treat as a **convex downside hedge / selloff-fade sleeve**, not an all-weather
+edge. Its value is partly that it's net-positive on up-days while paying off in down-vol — but do not
+expect 63% WR in a sustained calm bull. Still the best honest lead; the characterization is now precise.
+
 ## Status & next steps
 - FORWARD-REGISTERED as `crypto_short_volhigh` in `stamp_entry_conditions.py` (tracker toward n>=80).
 - Swarm-verify the vol-conditional mean-reversion thesis (TICK-15) before any paper-pilot.
