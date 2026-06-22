@@ -1,0 +1,70 @@
+{
+  "_schema_note": "Hand-curated operator-review sidecar (2026-06-22). Generated daily by tools/build_operator_review_today.py OR manually edited. Read-only to all sizing/sync paths: every config path that would treat this as a sizing surface must check operator_review_only=true and refuse to ingest.",
+  "generated_at": "2026-06-22T05:00:00+00:00",
+  "generated_by": "manual curate (initial)",
+  "ttl_hours": 24,
+  "operator_review_only": true,
+  "warning_banner": "MANUAL CANDIDATES — NOT auto-emitted tonight. Operator decides per-pick per-day. ADAUSDT LONG specifically is gated out of the production sizing lane by M-036b (CRYPTO_SIZED_LONG_BLOCK=1) — surfacing here is visibility-only; do not enable the kill-switch override without explicit confirmation.",
+  "console_banner_text": "🌅 Operator Review — Manual Candidates",
+  "picks": [
+    {
+      "id": "oprt-2026-06-22-001",
+      "symbol": "ENAUSDT",
+      "asset_class": "CRYPTO",
+      "direction": "SHORT",
+      "restriction": "M-036 N/A (SHORT direction unaffected by BUY-block). M-036b N/A (sized-LONG-only block — opposite side is clear).",
+      "live_n": 39,
+      "live_wr_pct": 71.8,
+      "live_pf_gross": 2.294,
+      "live_pf_net": 2.092,
+      "live_last30d_n": 39,
+      "live_last30d_wr_pct": 71.8,
+      "live_last30d_pf_net": 2.092,
+      "source_strategies": [
+        {"name": "luxalgo_short condition", "strategy_id": "luxalgo_confluence", "direction": "SHORT", "cite": "entry_conditions_forward.json::conditions.luxalgo_short", "cohort_n": 39, "net_wr_pct": 71.8, "net_pf": 2.092, "verdict_note": "accruing forward n; below the n>=100 gate"}
+      ],
+      "per_symbol_per_dir_intrabar_index": {"lookup": "ENAUSDT|SHORT|luxalgo_confluence via intrabar_sym_dir_fwd.json::by_key", "n": 4, "wr_pct": 25.0, "pf": 0.881, "note": "sub-cohort of the luxalgo_short condition; n<5 is below the 30-pick promotion bar — listed only for traceability"},
+      "expected_edge": "Mean-reversion on extreme 1h funding-rate dislocation (positive funding flip), with US-session liquidity backstop. SHORT side has historically been the higher-WR half of the luxalgo condition.",
+      "suggested_size_pct_of_normal": 0.5,
+      "suggested_tp_pct": 1.5,
+      "suggested_sl_pct": 0.75,
+      "operator_decision_required": "Review entry/TP/SL on TradingView TV-paper-portfolio. If accepted, set order; if rejected, leave pick untouched and update operator_review_dismissed.json with reason.",
+      "stage": "OPPORTUNITY",
+      "added_to_review_at": "2026-06-22T05:00:00+00:00"
+    },
+    {
+      "id": "oprt-2026-06-22-002",
+      "symbol": "ADAUSDT",
+      "asset_class": "CRYPTO",
+      "direction": "LONG",
+      "restriction": "M-036b BLOCKED — CRYPTO sized LONG hard-rejected at quality_gates.py:7317-7349 (CRYPTO_BLOCKED_DIRECTIONS_SIZED includes LONG; CRYPTO_SIZED_LONG_BLOCK=1 active). Class-wide CRYPTO LONG is in a SIZE-BLOCK regime (PF=0.38 anti-predictive in M-036 era). Visible here because the operator-review panel deliberately BYPASSES the gate so a human eye sees it before the kill-switch does.",
+      "live_n": 1205,
+      "live_wr_pct": 32.61,
+      "live_pf": 0.7879,
+      "verdict_anchor": "money_ready_verdict.json::classes.CRYPTO.verdict = NOT_READY; class-wide CRYPTO LONG is in M-036b SIZE-BLOCK regime",
+      "source_strategies": [
+        {"name": "ADAUSDT per-symbol-per-dir intrabar index", "cite": "intrabar_sym_dir_fwd.json::by_key ADAUSDT|LONG|luxalgo_confluence", "cohort_n": 4, "wr_pct": 25.0, "pf": 0.392, "note": "sub-30-pick cohort — listed for traceability, NOT a promotion candidate"},
+        {"name": "CRYPTO class-wide honest intrabar", "cite": "money_ready_verdict.json::classes.CRYPTO.intrabar_truth + sizing_source=intrabar_truth", "cohort_n": 1205, "wr_pct": 32.61, "pf": 0.7879, "note": "is the basis of the M-036b BLOCK — PF<1, WR<33% would lose money on average"}
+      ],
+      "expected_edge": "Low-correlation large-cap exposure test. Class is gated for a reason; this single candidate is a low-cost probe of whether the gate-still-applies regime holds. NOT expected to clear M-036b re-validation — sized as a stretch test, not a re-enabler.",
+      "suggested_size_pct_of_normal": 0.1,
+      "suggested_tp_pct": 1.0,
+      "suggested_sl_pct": 0.5,
+      "operator_decision_required": "If accepted: tag the entry as 'oversized-paper-probe' in the journal. Manually set size to 10% of normal CRYPTO LONG bracket. Do NOT enable production env switch CRYPTO_SIZED_LONG_BLOCK=0 — this remains visibility-only. If rejected: dismiss with reason in operator_review_dismissed.json so we can correlate.",
+      "stage": "OPPORTUNITY",
+      "added_to_review_at": "2026-06-22T05:00:00+00:00"
+    }
+  ],
+  "asof_references": {
+    "money_ready_verdict_CRYPTO_verdict": "NOT_READY",
+    "money_ready_verdict_CRYPTO_n_resolved": 1205,
+    "money_ready_verdict_CRYPTO_intrabar_wr_pct": 32.61,
+    "money_ready_verdict_CRYPTO_intrabar_pf": 0.7879,
+    "money_ready_verdict_CRYPTO_sizing_source": "intrabar_truth",
+    "entry_conditions_forward_luxalgo_short_n": 39,
+    "entry_conditions_forward_luxalgo_short_wr_pct": 71.8,
+    "entry_conditions_forward_luxalgo_short_pf_net": 2.092,
+    "entry_conditions_forward_luxalgo_short_verdict_note": "accruing forward n; below the n>=100 gate"
+  },
+  "dismissed_picks_audit": "audit_dashboard/data/operator_review_dismissed.json (created by operator decisions; this panel must render against BOTH current picks[] AND dismissed[] for the past 7d for the operator's mental model)"
+}

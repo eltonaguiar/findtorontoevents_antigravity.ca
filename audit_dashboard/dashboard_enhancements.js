@@ -85,6 +85,170 @@
     document.head.appendChild(style);
   }
 
+  // ── Operator Review — Manual Candidates (2026-06-22) ──────────
+  // Hand-curated sidecar (audit_dashboard/data/operator_review_today.json).
+  // Renders a STRIP above today's Picks showing each candidate with
+  // HARD-VISUAL differentiation from auto-emissions: amber-on-black
+  // striped border, "MANUAL CANDIDATES — NOT auto-emitted" banner,
+  // always-on guidance copy. FAIL-CLOSED: if the JSON is missing,
+  // malformed, or operator_review_only !== true, the panel renders
+  // NOTHING (no stale auto-emission appearance).
+  //
+  // Spec lineage:
+  //   tools/crypto_rsi5070_forward_tracker.py (shadow-sidecar pattern, 2026-06)
+  //   tools/build_operator_review_today.py auto-regenerates daily at 0 7 * * *
+  //   .github/workflows/operator-review-today.yml is the cron owner.
+  //
+  // IMPORTANT: this panel BYPASSES the M-036 / M-036b kill-switches by design —
+  // the user explicitly asked for manual candidates the production lane would
+  // reject (e.g. ADAUSDT LONG is M-036b blocked). Visual differentiation is the
+  // ONLY thing keeping an operator from misreading this as a sizing signal.
+  let _oprtRenderGuard = false;
+  let _oprtRenderedAt = 0;
+  async function renderOperatorReviewToday() {
+    if (_oprtRenderGuard) return;
+    _oprtRenderGuard = true;
+    setTimeout(() => { _oprtRenderGuard = false; }, 1500); // debounce dashboard-data-loaded re-fire
+    if (_oprtRenderedAt && (Date.now() - _oprtRenderedAt) < 60_000) return;
+    let payload;
+    try {
+      const resp = await fetch('data/operator_review_today.json', {cache: 'no-cache'});
+      if (!resp.ok) return; // FAIL-CLOSED: no panel if JSON missing
+      payload = await resp.json();
+    } catch (e) { return; }
+    if (!payload || payload.operator_review_only !== true) return; // fail-closed
+    if (!Array.isArray(payload.picks) || payload.picks.length === 0) return;
+    _oprtRenderedAt = Date.now();
+
+    // De-dup: if we already injected on this page, do not double-mount.
+    if (document.getElementById('enh-operator-review-today')) return;
+
+    // ── Banner copy ───────────────────────────────────────────
+    const banner = htmlEscape(payload.warning_banner || 'MANUAL CANDIDATES — NOT auto-emitted. Operator decides per-pick per-day.');
+    const title = htmlEscape(payload.console_banner_text || '🌅 Operator Review — Manual Candidates');
+    const asof = payload.generated_at ? htmlEscape(String(payload.generated_at).slice(0, 16).replace('T', ' ') + 'Z') : '—';
+    const ttlHrs = payload.ttl_hours != null ? payload.ttl_hours : 24;
+
+    // ── Per-pick cards ────────────────────────────────────────
+    const cards = payload.picks.map(function (p) {
+      const dir = htmlEscape(p.direction || '?').toUpperCase();
+      const dirColor = (dir === 'LONG' || dir === 'BUY') ? '#22c55e' : (dir === 'SHORT' || dir === 'SELL') ? '#ef4444' : '#94a3b8';
+      const dirBG = (dir === 'LONG' || dir === 'BUY')
+        ? 'rgba(34,197,94,0.25)'
+        : (dir === 'SHORT' || dir === 'SELL')
+          ? 'rgba(239,68,68,0.25)'
+          : 'rgba(148,163,184,0.25)';
+      const nVal = (p.live_n != null) ? htmlEscape(String(p.live_n)) : '—';
+      const wrVal = (p.live_wr_pct != null) ? htmlEscape(String(p.live_wr_pct)) + '%' : '—';
+      const pfVal = (p.live_pf_net != null) ? htmlEscape(String(p.live_pf_net))
+                    : (p.live_pf_gross != null ? htmlEscape(String(p.live_pf_gross)) : null)
+                    : null;
+      const pfStr = pfVal != null ? 'PF ' + pfVal : 'PF —';
+      const restrict = htmlEscape(p.restriction || 'unspecified');
+      const sz = (p.suggested_size_pct_of_normal != null) ? Math.round(p.suggested_size_pct_of_normal * 100) + '%' : '—';
+      const tp = (p.suggested_tp_pct != null) ? htmlEscape(String(p.suggested_tp_pct)) + '%' : '—';
+      const sl = (p.suggested_sl_pct != null) ? htmlEscape(String(p.suggested_sl_pct)) + '%' : '—';
+      const opHint = htmlEscape(p.operator_decision_required || 'Operator: review and decide.');
+      const sym = htmlEscape(p.symbol || '?');
+      const ac = htmlEscape(p.asset_class || '?');
+      const stage = htmlEscape(p.stage || 'OPPORTUNITY');
+      const stageColor = stage === 'OPPORTUNITY' ? '#fbbf24' : (stage === 'OPEN' ? '#22c55e' : '#94a3b8');
+      const srcRows = (p.source_strategies || []).map(function (s) {
+        const sn = htmlEscape(s.name || s.cite || '?');
+        const co = (s.cohort_n != null) ? 'cohort n=' + htmlEscape(String(s.cohort_n)) : '';
+        const wr = (s.net_wr_pct != null) ? 'WR ' + htmlEscape(String(s.net_wr_pct)) + '%'
+                : (s.wr_pct != null ? 'WR ' + htmlEscape(String(s.wr_pct)) + '%' : '');
+        const pfc = (s.net_pf != null) ? 'PF ' + htmlEscape(String(s.net_pf))
+                  : (s.pf != null ? 'PF ' + htmlEscape(String(s.pf)) : '');
+        const meta = [co, wr, pfc].filter(Boolean).join(' · ');
+        let note = '';
+        if (s.note) note = '<div style="font-size:10px;color:#94a3b8;margin-top:2px">' + htmlEscape(s.note) + '</div>';
+        return '<div style="padding:3px 0;border-top:1px solid rgba(148,163,184,0.15)"><code style="color:#a78bfa;font-size:11px">' + sn + '</code>'
+          + (meta ? ' <span style="color:#cbd5e1;font-size:11px">' + meta + '</span>' : '')
+          + note + '</div>';
+      }).join('');
+      return '<div class="enh-card" style="border-left:3px solid ' + dirColor + '">'
+        + '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:6px">'
+        +   '<div>'
+        +     '<span style="font-size:14px;font-weight:700;color:#fbbf24;letter-spacing:0.5px">' + sym + '</span>'
+        +     ' <span style="display:inline-block;background:' + dirBG + ';color:' + dirColor + ';border:1px solid ' + dirColor + ';border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px">' + dir + '</span>'
+        +     ' <span style="background:rgba(167,139,250,0.18);color:#a78bfa;border:1px solid rgba(167,139,250,0.35);border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:4px;letter-spacing:0.3px">' + ac + '</span>'
+        +   '</div>'
+        +   '<span style="background:rgba(251,191,36,0.18);color:' + stageColor + ';border:1px solid ' + stageColor + ';border-radius:6px;padding:1px 7px;font-size:10px;font-weight:700;letter-spacing:0.4px">' + stage + '</span>'
+        + '</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:6px 0;font-size:11px">'
+        +   '<div style="text-align:center"><div style="color:#94a3b8;font-size:9px;text-transform:uppercase">n (cohort)</div><div style="color:#fbbf24;font-weight:700;font-size:14px">' + nVal + '</div></div>'
+        +   '<div style="text-align:center"><div style="color:#94a3b8;font-size:9px;text-transform:uppercase">WR%</div><div style="color:#fbbf24;font-weight:700;font-size:14px">' + wrVal + '</div></div>'
+        +   '<div style="text-align:center"><div style="color:#94a3b8;font-size:9px;text-transform:uppercase">PF</div><div style="color:#fbbf24;font-weight:700;font-size:14px">' + pfStr.replace('PF ','') + '</div></div>'
+        +   '<div style="text-align:center"><div style="color:#94a3b8;font-size:9px;text-transform:uppercase">size%</div><div style="color:#fbbf24;font-weight:700;font-size:14px">' + sz + '</div></div>'
+        + '</div>'
+        + '<div style="font-size:11px;line-height:1.5;margin:6px 0">'
+        +   '<div style="color:#cbd5e1"><strong style="color:#fbbf24">restriction:</strong> ' + restrict + '</div>'
+        +   '<div style="color:#cbd5e1;margin-top:3px"><strong style="color:#fbbf24">TP/SL:</strong> ' + tp + ' / ' + sl + '</div>'
+        + '</div>'
+        + '<details style="margin-top:6px"><summary style="cursor:pointer;color:#06b6d4;font-size:11px;user-select:none">▸ source strategies & decision required</summary>'
+        +   '<div style="margin-top:6px">' + srcRows + '</div>'
+        +   '<div style="margin-top:6px;color:#fbbf24;font-size:12px;line-height:1.55">⚠ ' + opHint + '</div>'
+        + '</details>'
+        + '</div>';
+    }).join('');
+
+    // ── CSS injection (only once) ──────────────────────────────
+    if (!document.getElementById('oprt-styles')) {
+      const s = document.createElement('style');
+      s.id = 'oprt-styles';
+      s.textContent = ''
+        + '@keyframes oprtAmberStripe { 0% { background-position: 0 0; } 100% { background-position: 60px 0; } }'
+        + '.oprt-strip { background: linear-gradient(90deg,rgba(245,158,11,0.18) 0px,rgba(245,158,11,0.18) 30px,rgba(15,23,42,0.95) 30px,rgba(20,16,40,0.95) 60px) 0 0/60px 100% repeat-x, linear-gradient(135deg,rgba(15,23,42,0.95),rgba(20,16,40,0.95)); border:1px solid rgba(245,158,11,0.55); border-radius:12px; padding:14px 18px; margin:12px 0; color:#fef3c7; animation: oprtAmberStripe 3s linear infinite; position:relative; }'
+        + '.oprt-strip-banner { font-size:13px; font-weight:800; color:#fbbf24; letter-spacing:1.2px; margin-bottom:8px; display:flex; align-items:center; gap:8px }'
+        + '.oprt-strip-banner .pill { background:#fbbf24; color:#1a1340; padding:1px 8px; border-radius:10px; font-size:10px; font-weight:800; letter-spacing:0.4px }'
+        + '.oprt-strip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:10px }';
+      document.head.appendChild(s);
+    }
+
+    const html = '<div class="enh-section oprt-strip" id="enh-operator-review-today">'
+      + '<div class="oprt-strip-banner">'
+      +   '<span class="pill">MANUAL CANDIDATES</span>'
+      +   '<span>' + title + '</span>'
+      + '</div>'
+      + '<div style="font-size:12px;color:#fde68a;margin:4px 0 10px;line-height:1.55">'
+      +   banner
+      + '</div>'
+      + '<div style="font-size:11px;color:#94a3b8;margin-bottom:10px">'
+      +   'Generated <span style="color:#cbd5e1">' + asof + '</span>'
+      +   ' · ttl=' + ttlHrs + 'h · <span style="color:#fbbf24">NOT auto-emitted</span> · <span style="color:#fbbf24">NOT sized</span> · operator must click /act'
+      + '</div>'
+      + '<div class="oprt-strip-grid">'
+      +   cards
+      + '</div>'
+      + '</div>';
+
+    // Anchor: ABOVE the today tab content. Falls back to: end of header.
+    function inject() {
+      if (document.getElementById('enh-operator-review-today')) return; // de-dup
+      const anchor = document.getElementById('tab-today')
+        || document.getElementById('today')
+        || document.querySelector('[data-tab="today"]')
+        || document.querySelector('.tab-content')
+        || document.querySelector('main')
+        || document.body.firstChild;
+      if (anchor && anchor.parentNode) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        anchor.parentNode.insertBefore(wrapper.firstElementChild, anchor);
+      } else {
+        document.body.prepend(html);
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', inject);
+    } else {
+      inject();
+    }
+  }
+
+  window.renderOperatorReviewToday = renderOperatorReviewToday;
+
   // ── Feature 1: System Health Trends (4h/8h/24h vs all-time) ──
   function renderSystemTrends(D) {
     const closed = (D.picks?.recent_closed || []).filter(p => isClosed(p));
@@ -200,7 +364,7 @@
     if (active.length === 0) return;
 
     // Build per-strategy WR from closed picks
-    const strategyWR = {}; // strategyName -> { wins, total, symbols: { sym -> { wins, total } } }
+    const strategyWR = {};
     for (const p of closed) {
       const strategies = p.source_strategies || {};
       const strats = Object.keys(strategies).length > 0 ? Object.keys(strategies) : [p.strategy || p.strategy_id || 'unknown'];
@@ -224,7 +388,6 @@
       const strategies = p.source_strategies || {};
       const strats = Object.keys(strategies).length > 0 ? Object.keys(strategies) : [p.strategy || p.strategy_id || 'unknown'];
 
-      // Count strategies with WR >= 50%
       let winningStrats = [];
       let totalStrats = strats.length;
       for (const strat of strats) {
@@ -237,7 +400,6 @@
         }
       }
 
-      // Also check symbol-specific WR
       let symbolWinStrats = [];
       for (const strat of strats) {
         const sr = strategyWR[strat];
@@ -267,7 +429,6 @@
 
     if (consensusData.length === 0) return;
 
-    // Sort: HIGH first, then MEDIUM, then LOW
     const convOrder = { HIGH: 0, MEDIUM: 1, LOW: 2, NONE: 3 };
     consensusData.sort((a, b) => (convOrder[a.conviction] - convOrder[b.conviction]) || (b.score - a.score));
 
@@ -297,7 +458,6 @@
 
     html += '</tbody></table></div>';
 
-    // Inject after the agreement matrix
     const agreementMatrix = el('agreement-matrix');
     if (agreementMatrix) {
       agreementMatrix.insertAdjacentHTML('afterend', html);
@@ -322,7 +482,6 @@
     const now = Date.now();
     const allSystems = [...new Set(closed.map(p => p.source_system).filter(Boolean))];
 
-    // Compute per-system stats for each window
     const windowData = {};
     for (const w of windows) {
       const cutoff = w.ms === Infinity ? 0 : now - w.ms;
@@ -337,7 +496,6 @@
         const total = sp.length;
         const wr = total > 0 ? (wins / total * 100) : 0;
 
-        // Calculate PnL
         let pnl = 0;
         for (const p of sp) {
           if (p.pnl_pct != null) pnl += parseFloat(p.pnl_pct) || 0;
@@ -353,7 +511,6 @@
     html += '<h3>Time-Window System Leaderboard <span class="enh-badge enh-badge-neutral">TREND</span></h3>';
     html += '<p style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Compare system performance across time windows. Spot which systems are improving or degrading recently.</p>';
 
-    // Tab buttons
     html += '<div class="enh-tabs" id="enh-tw-tabs">';
     for (let i = 0; i < windows.length; i++) {
       const w = windows[i];
@@ -361,7 +518,6 @@
     }
     html += '</div>';
 
-    // Tab content panels
     for (let i = 0; i < windows.length; i++) {
       const w = windows[i];
       const systems = windowData[w.key];
@@ -384,7 +540,6 @@
           const wrColor = s.wr >= 55 ? '#22c55e' : s.wr >= 45 ? '#eab308' : '#ef4444';
           const pnlColor = s.pnl >= 0 ? '#22c55e' : '#ef4444';
 
-          // Trend: compare this window vs all-time
           const allStats = windowData['all'][sys];
           let trendHtml = '';
           if (allStats && w.key !== 'all' && s.total >= 2) {
@@ -415,7 +570,6 @@
 
     html += '</div>';
 
-    // Inject after the system trends section or after tab-overview
     const trendsSection = el('enh-system-trends');
     if (trendsSection) {
       trendsSection.insertAdjacentHTML('afterend', html);
@@ -425,7 +579,6 @@
     }
   }
 
-  // Tab switching for time-window leaderboard
   window._enhSwitchTW = function (key) {
     document.querySelectorAll('[data-enh-tw]').forEach(t => t.classList.toggle('active', t.dataset.enhTw === key));
     document.querySelectorAll('[id^="enh-tw-panel-"]').forEach(p => p.style.display = p.id === 'enh-tw-panel-' + key ? 'block' : 'none');
@@ -436,10 +589,6 @@
   // leakage features) and ml_gatekeeper/data/active_picks_ab_new.json
   // (NEW sleeve, leakage-purged). Per design at
   // reports/ml_gatekeeper_ab_sleeve_design_2026-05-12.md.
-  //
-  // Note paths are project-relative to /audit. If 50/50 split holds and
-  // either file is empty for >7 cron cycles, the Phase E auto-rollback
-  // path expects an alert; this panel surfaces the warning.
   async function renderMLGatekeeperAB() {
     async function fetchJson(path) {
       try {
@@ -449,12 +598,9 @@
       } catch (e) { return null; }
     }
     const oldData = await fetchJson('../ml_gatekeeper/data/active_picks.json');
-    // 2026-05-19: active_picks_ab_new.json is never produced by any repo
-    // pipeline -> permanent 404. Dropped. The NEW sleeve degrades to "no
-    // data" until a real producer ships that file.
     const newData = null;
     if (!Array.isArray(oldData) && !Array.isArray(newData)) {
-      return; // No A/B data shipped yet
+      return;
     }
     const oldCount = Array.isArray(oldData) ? oldData.length : 0;
     const newCount = Array.isArray(newData) ? newData.length : 0;
@@ -488,9 +634,6 @@
     const oldClassDist = classDist(oldData);
     const newClassDist = classDist(newData);
 
-    // Rollback armed if NEW emits 0 picks for one cycle. Real auto-rollback
-    // requires 7 consecutive cycles tracked server-side; this panel just
-    // surfaces the current cycle warning.
     const rollbackWarning = newCount === 0 && Array.isArray(newData);
 
     let html = '<div class="enh-section" id="enh-ml-gatekeeper-ab">';
@@ -528,7 +671,6 @@
                  (rollbackWarning ? ' &middot; <strong style="color:#ef4444">ROLLBACK WARNING — 0 emissions this cycle</strong>' : ''))
               : 'A/B NEW sleeve: no data') +
             '</div></div>';
-    // Score delta diagnostic
     if (oldAvg != null && newAvg != null) {
       const delta = newAvg - oldAvg;
       html += '<div class="enh-card">' +
@@ -538,7 +680,6 @@
               '<div class="enh-card-sub">Pre-30d decision. Need realized WR delta &ge;2pp to declare NEW winner.</div></div>';
     }
     html += '</div>';
-    // Class distribution side-by-side
     const allClasses = new Set([...Object.keys(oldClassDist), ...Object.keys(newClassDist)]);
     if (allClasses.size) {
       html += '<details style="margin-top:12px"><summary style="cursor:pointer;color:#06b6d4;font-size:12px">' +
@@ -563,9 +704,6 @@
   }
 
   // ── DB Health Cards (async; reads audit_dashboard/data/db_health.json) ──
-  // Surfaces PnL integrity %, ghost-row count, OPEN bloat warning. Generated
-  // hourly by tools/db_health_check.py. Fully isolated — section is its own
-  // <div id="enh-db-health">; if fetch fails, no other section is impacted.
   async function renderDbHealth() {
     let payload;
     try {
@@ -577,8 +715,6 @@
       return;
     }
     const checks = (payload && payload.checks) || {};
-    // 2026-06-04: render timestamps as human-readable EST/EDT, not raw ISO
-    // (was "2026-06-04T15:43:20.828520+00:00"). Reuse window._fmtEST when present.
     var _fmtEST = window._fmtEST || function (iso) {
       if (!iso) return 'unknown';
       try {
@@ -592,7 +728,6 @@
       } catch (e) { return String(iso); }
     };
 
-    // helper: extract data + tier; degrade gracefully if check failed
     function pick(name) {
       const c = checks[name];
       if (!c || !c.ok || !c.data) return null;
@@ -601,7 +736,6 @@
 
     const tierColor = t => t === 'red' ? '#e74c3c' : t === 'yellow' ? '#f39c12' : t === 'green' ? '#27ae60' : '#888';
 
-    // build 6 cards; missing data shows a dim placeholder
     const cards = [];
 
     const pnl = pick('pnl_integrity');
@@ -676,10 +810,8 @@
       html += '</div>';
     }
     html += '</div>';
-    // Only show alarm banner for Tier 1 RED checks (not Tier 2/3 informational)
     var isTier1Red = payload.overall && (payload.overall.any_red_t1 || payload.overall.any_red);
     if (isTier1Red) {
-      // Build dynamic list of which checks are actually RED
       var _redChecks = [];
       var _checks = payload.checks || {};
       for (var _ck in _checks) {
@@ -700,8 +832,6 @@
               'See <a href="/updates/2026-05-31-pr1-data-integrity-repair.md" style="color:#fde68a;text-decoration:underline">PR #1 data integrity repair</a> and <a href="/updates/2026-05-31-incidents-enhancements-audit-summary.md" style="color:#fde68a;text-decoration:underline">incidents audit summary</a> for the full fix log.</span>';
       html += '</div>';
     } else if (payload.overall && payload.overall.harness_healthy === false) {
-      // Soft-warning banner: harness itself is broken (one or more checks errored OR failed threshold),
-      // so any_red may be falsely-green by exclusion. Distinct from the hard DATA INTEGRITY banner above.
       var _failedN = payload.overall.checks_failed != null ? payload.overall.checks_failed : '?';
       var _runN = payload.overall.checks_run != null ? payload.overall.checks_run : '?';
       html += '<div style="margin-top:10px;padding:12px;background:#3a2a0a;border-left:4px solid #f59e0b;border-radius:4px;font-size:13px;line-height:1.6;">';
@@ -712,25 +842,17 @@
     }
     html += '</div>';
 
-    // Insert at top of #enh-host (or body if missing) so it's visible
     const host = document.getElementById('enh-host') || document.body;
     const wrapper = document.createElement('div');
     wrapper.innerHTML = html;
     const node = wrapper.firstElementChild;
-    // Remove existing if re-rendering
     const existing = document.getElementById('enh-db-health');
     if (existing) existing.remove();
     host.insertBefore(node, host.firstChild);
   }
 
   // ── Top-N Rank Backtest card ─────────────────────────────────
-  // Reads audit_dashboard/data/top_n_rank_backtest.json (hindsight replay:
-  // rank each day's EQUITY closed picks by score, take top-10, measure
-  // realized pnl_pct). Answers user's question: "if I bought the top-10
-  // ranked scores today / yesterday / 1 month ago, would I have been
-  // profitable?" Cron emits via tools/top_n_rank_backtest.py.
   let _topNRenderGen = 0;
-
   async function renderTopNRankBacktest() {
     const gen = ++_topNRenderGen;
     let payload;
@@ -798,7 +920,6 @@
     }
     html += '</div>';
 
-    // Per-day detail (today / yesterday / day_before): show which symbols
     const detailOrder = ['today', 'yesterday', 'day_before_yesterday'];
     const detailLabels = {today: 'Today', yesterday: 'Yesterday', day_before_yesterday: '2 Days Ago'};
     let hasDetail = false;
@@ -856,14 +977,7 @@
   }
 
   // ── Commodity / Futures friendly-name tooltips ───────────────
-  // User feedback 2026-05-12: commodity symbols like CT=F, KC=F, GC=F are
-  // opaque without context. Add hover tooltips with friendly names + a
-  // one-liner of the contract spec. Decorates ANY text node containing one
-  // of the known tickers; runs on init + after data refresh.
-  //
-  // Map: yfinance ticker → friendly name + contract hint.
   const COMMODITY_FRIENDLY = {
-    // Softs / agricultural
     'CT=F':  { name: 'Cotton Futures',      hint: '50,000 lbs · ICE · $5/tick' },
     'KC=F':  { name: 'Coffee Futures',      hint: '37,500 lbs · ICE · $3.75/tick' },
     'SB=F':  { name: 'Sugar #11 Futures',   hint: '112,000 lbs · ICE · $11.20/tick' },
@@ -876,23 +990,19 @@
     'ZL=F':  { name: 'Soybean Oil Futures',  hint: '60,000 lbs · CBOT · $6/tick' },
     'ZO=F':  { name: 'Oats Futures',        hint: '5,000 bu · CBOT' },
     'ZR=F':  { name: 'Rice Futures',        hint: '2,000 cwt · CBOT' },
-    // Metals
     'GC=F':  { name: 'Gold Futures',        hint: '100 troy oz · COMEX · $10/tick' },
     'SI=F':  { name: 'Silver Futures',      hint: '5,000 troy oz · COMEX · $25/tick' },
     'HG=F':  { name: 'Copper Futures',      hint: '25,000 lbs · COMEX · $12.50/tick' },
     'PL=F':  { name: 'Platinum Futures',    hint: '50 troy oz · NYMEX · $5/tick' },
     'PA=F':  { name: 'Palladium Futures',   hint: '100 troy oz · NYMEX · $5/tick' },
-    // Energy
     'CL=F':  { name: 'WTI Crude Oil Futures',    hint: '1,000 bbl · NYMEX · $10/tick' },
     'BZ=F':  { name: 'Brent Crude Futures',      hint: '1,000 bbl · ICE · $10/tick' },
     'NG=F':  { name: 'Natural Gas Futures',      hint: '10,000 MMBtu · NYMEX · $10/tick' },
     'RB=F':  { name: 'RBOB Gasoline Futures',    hint: '42,000 gal · NYMEX · $4.20/tick' },
     'HO=F':  { name: 'Heating Oil Futures',      hint: '42,000 gal · NYMEX · $4.20/tick' },
-    // Livestock
     'LE=F':  { name: 'Live Cattle Futures',      hint: '40,000 lbs · CME · $10/tick' },
     'GF=F':  { name: 'Feeder Cattle Futures',    hint: '50,000 lbs · CME · $12.50/tick' },
     'HE=F':  { name: 'Lean Hogs Futures',        hint: '40,000 lbs · CME · $10/tick' },
-    // Equity-index futures (sometimes tagged COMMODITY or FUTURES)
     'ES=F':  { name: 'S&P 500 E-mini',       hint: '$50 × index · CME · $12.50/tick' },
     'NQ=F':  { name: 'NASDAQ 100 E-mini',    hint: '$20 × index · CME · $5/tick' },
     'RTY=F': { name: 'Russell 2000 E-mini',  hint: '$50 × index · CME · $5/tick' },
@@ -901,19 +1011,16 @@
     'MNQ=F': { name: 'Micro NASDAQ 100',     hint: '$2 × index · CME · $0.50/tick' },
     'M2K=F': { name: 'Micro Russell 2000',   hint: '$5 × index · CME · $0.50/tick' },
     'MYM=F': { name: 'Micro Dow',            hint: '$0.50 × index · CBOT · $0.50/tick' },
-    // Rates / bonds
     'ZB=F':  { name: '30-Year T-Bond Futures', hint: '$100k face · CBOT · $31.25/tick' },
     'ZN=F':  { name: '10-Year T-Note Futures', hint: '$100k face · CBOT · $15.625/tick' },
     'ZF=F':  { name: '5-Year T-Note Futures',  hint: '$100k face · CBOT · $7.8125/tick' },
     'ZT=F':  { name: '2-Year T-Note Futures',  hint: '$200k face · CBOT · $7.8125/tick' },
-    // Currencies (FX futures, distinct from yfinance =X pairs)
     '6E=F':  { name: 'Euro FX Futures',         hint: '€125k · CME · $12.50/tick' },
     '6J=F':  { name: 'Japanese Yen Futures',    hint: '¥12.5M · CME · $12.50/tick' },
     '6B=F':  { name: 'British Pound Futures',   hint: '£62.5k · CME · $6.25/tick' },
     '6A=F':  { name: 'Australian Dollar Futures', hint: 'A$100k · CME · $10/tick' },
     '6C=F':  { name: 'Canadian Dollar Futures', hint: 'C$100k · CME · $10/tick' },
     '6S=F':  { name: 'Swiss Franc Futures',     hint: 'CHF 125k · CME · $12.50/tick' },
-    // Crypto futures
     'BTC=F': { name: 'Bitcoin Futures',         hint: '5 BTC · CME · $25/tick' },
     'MBT=F': { name: 'Micro Bitcoin Futures',   hint: '0.1 BTC · CME · $0.50/tick' },
     'ETH=F': { name: 'Ether Futures',           hint: '50 ETH · CME · $2.50/tick' },
@@ -922,20 +1029,15 @@
 
   function attachCommodityTooltips(root) {
     root = root || document;
-    // Build a regex from the map keys, with word-ish boundaries that respect '=' / '_'.
-    // Match `XX=F` or `XXX=F` (uppercase letters/digits before =F).
     const re = /\b([A-Z0-9]{1,4}=F)\b/g;
-    // Walk text nodes; for each match, wrap the symbol in a <span title="...">.
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
         if (!n.nodeValue) return NodeFilter.FILTER_REJECT;
-        // Skip nodes inside <script>, <style>, or already-decorated tooltip spans.
         const p = n.parentNode;
         if (!p) return NodeFilter.FILTER_REJECT;
         const tag = (p.tagName || '').toUpperCase();
         if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') return NodeFilter.FILTER_REJECT;
         if (p.classList && p.classList.contains('commodity-friendly')) return NodeFilter.FILTER_REJECT;
-        // Cheap pre-filter — only walk into text that contains the '=F' suffix
         return n.nodeValue.indexOf('=F') >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
       }
     });
@@ -969,15 +1071,9 @@
     });
   }
 
-  // Expose so other scripts / template.html can trigger after dynamic renders.
   window.attachCommodityTooltips = attachCommodityTooltips;
 
   // ── EAGLE2 Phase 0: policy-clean honesty strip (sizes from money_ready only) ──
-  // Render-once. Guarded against the async race that duplicated the strip on
-  // /audit: initEnhancements runs twice (DOMContentLoaded + dashboard-data-loaded),
-  // and the getElementById guard was checked BEFORE the await fetch — so both
-  // calls passed it and both inserted. _eagle2Started is a SYNCHRONOUS flag set
-  // before the await, so the second concurrent call returns immediately.
   let _eagle2Started = false;
   async function renderEagle2PolicyStrip() {
     if (_eagle2Started || document.getElementById('enh-eagle2-policy-strip')) return;
@@ -1024,7 +1120,6 @@
         ready.length + '/9 money-ready)</div>' +
         '<div style="line-height:1.6">Tournament &amp; pick_funnel cells are discovery/paper — not sizing surfaces. ' +
         rows + '</div>' + pilotLine;
-      // Belt-and-suspenders: re-check synchronously immediately before insert.
       if (document.getElementById('enh-eagle2-policy-strip')) return;
       const anchor = document.querySelector('.header') || document.querySelector('header') || document.body.firstChild;
       if (anchor && anchor.parentNode) {
@@ -1045,7 +1140,6 @@
       return;
     }
 
-    // Prevent double-init
     if (window._enhInitDone) return;
     window._enhInitDone = true;
 
@@ -1055,45 +1149,27 @@
     try { renderSystemTrends(D); } catch (e) { console.warn('[Enhancements] System Trends error:', e); }
     try { renderStrategyConsensus(D); } catch (e) { console.warn('[Enhancements] Strategy Consensus error:', e); }
     try { renderTimeWindowBreakdown(D); } catch (e) { console.warn('[Enhancements] Time-Window Leaderboard error:', e); }
-    // DB health cards — async; isolated try/catch so a fetch error never breaks other sections
     renderDbHealth().catch(e => console.warn('[Enhancements] DB Health error:', e));
-    // Top-N rank backtest — async; reads data/top_n_rank_backtest.json
     renderTopNRankBacktest().catch(e => console.warn('[Enhancements] Top-N Rank Backtest error:', e));
-    // ML Gatekeeper A/B sleeve panel — async; reads both ml_gatekeeper/data/* JSONs
     renderMLGatekeeperAB().catch(e => console.warn('[Enhancements] ML Gatekeeper A/B error:', e));
-    // Commodity / futures friendly-name tooltips — decorate the whole page once
-    // after enhancements rendered. Cheap idempotent walk; safe to re-run on
-    // dashboard-data-loaded.
     try { attachCommodityTooltips(document.body); } catch (e) { console.warn('[Enhancements] Commodity tooltips error:', e); }
-    // 2026-06-09: EAGLE2 policy strip REMOVED per operator (verbose, duplicated the
-    // MAJOR GOAL / Money-ready bridge messaging). The honest "size on policy-clean
-    // only / 0-9 money-ready" message is preserved by the kept Money-ready bridge.
-    // Function renderEagle2PolicyStrip() retained below but no longer invoked.
-    // renderEagle2PolicyStrip().catch(e => console.warn('[Enhancements] EAGLE2 policy strip error:', e));
-
-    console.log('[Dashboard Enhancements] Loaded: System Trends, Strategy Consensus, Time-Window Leaderboard, DB Health, Top-N Backtest, Commodity Tooltips');
+    renderOperatorReviewToday().catch(e => console.warn('[Enhancements] Operator Review Today error:', e));
+    console.log('[Dashboard Enhancements] Loaded: System Trends, Strategy Consensus, Time-Window Leaderboard, DB Health, Top-N Backtest, Commodity Tooltips, Operator Review Today');
   }
 
-  // Start on DOM ready or immediately
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(initEnhancements, 1000));
   } else {
     setTimeout(initEnhancements, 1000);
   }
 
-  // Re-run once after external JSON lands (debounced — template may fire this event 2-3×
-  // in quick succession: external-data path, embedded-data path, load event.
-  // 3000ms debounce ensures only the last fire triggers a re-render.
-  // Nodes are faded (not removed) while re-render is in-flight so sections
-  // never flash blank — each render fn removes the faded node when ready.
   let _enhRefreshTimer = null;
   document.addEventListener('dashboard-data-loaded', function () {
     clearTimeout(_enhRefreshTimer);
     _enhRefreshTimer = setTimeout(function () {
       window._enhInitDone = false;
-      ['enh-system-trends', 'enh-strategy-consensus', 'enh-time-window-leaderboard', 'enh-db-health', 'enh-top-n-rank-backtest', 'enh-ml-gatekeeper-ab'].forEach(id => {
+      ['enh-system-trends', 'enh-strategy-consensus', 'enh-time-window-leaderboard', 'enh-db-health', 'enh-top-n-rank-backtest', 'enh-ml-gatekeeper-ab', 'enh-operator-review-today'].forEach(id => {
         const node = document.getElementById(id);
-        // Fade rather than delete — keeps section visible during async re-fetch
         if (node) { node.style.opacity = '0.45'; node.style.pointerEvents = 'none'; }
       });
       initEnhancements();
