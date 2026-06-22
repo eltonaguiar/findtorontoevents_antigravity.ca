@@ -149,6 +149,15 @@ CONDITIONS = [  # (name, class, definition, predicate(pick, feats))
     ("crypto_short_rsi5070_REGIMEWATCH", "CRYPTO", "REGIME-dependent, refuted as edge: RSI50-70 SHORT",
      lambda p, f: p["_cls"] == "CRYPTO" and f["F3"] == "50-70"
      and str(p.get("direction") or "").upper() in ("SHORT", "SELL")),
+    # BEST honest lead found (reports/CRYPTO_SHORT_VOLHIGH_ROBUST_CANDIDATE_2026-06-22.md): SHORT a
+    # CRYPTO pair when entry-bar vol regime=HIGH (F4). First cell to pass the FULL robust gate —
+    # n=54 netPF 1.86, symbol-bootstrap CI-LB 1.41, time-split IS/OOS 1.78/1.94 (both WR 63%), wins
+    # BOTH BTC regimes (incl. up-month Mar 83% WR), conc 47%. Conditioning on vol disentangled the
+    # regime confound that made plain RSI50-70-SHORT a down-only artifact. NEEDS n>=80 + CI-LB hold
+    # before any paper-pilot; EU session weak; it's a SHORT (perps/borrow). Tracker only, never sizes.
+    ("crypto_short_volhigh", "CRYPTO", "F4 vol regime=HIGH AND direction=SHORT (robust lead 2026-06-22)",
+     lambda p, f: p["_cls"] == "CRYPTO" and f.get("F4") == "HIGH"
+     and str(p.get("direction") or "").upper() in ("SHORT", "SELL")),
     ("luxalgo_short", "*", "strategy=luxalgo_confluence AND direction=SHORT",
      lambda p, f: "luxalgo_confluence" in ((p.get("strategy") or "") + (p.get("source_system") or ""))
      and p["direction"] == "SHORT"),
