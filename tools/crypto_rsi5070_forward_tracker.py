@@ -112,6 +112,14 @@ def compute_status(limit: int = 4000) -> dict:
     net_ci = pf_ci_lower(net, clusters=clusters)
     ne = effective_n(net, clusters)
     wr = round(100.0 * sum(1 for x in pnls if x > 0) / n, 1)
+    # LAST-30D WR + n slices for the daily-snapshot /audit panel
+    # (mirrors tools/stamp_entry_conditions.py:313-314 cutoff pattern).
+    # Trim-only of the dedup'd cohort (no double dedup); recency drift signal.
+    cutoff_30d = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) - dt.timedelta(days=30)
+    last30 = [r for r in rows if r["opened_at"] >= cutoff_30d]
+    n_last30 = len(last30)
+    wr_last30 = (round(100.0 * sum(1 for r in last30 if float(r["intrabar_pnl_pct"]) > 0) / n_last30, 1)
+                 if n_last30 else None)
 
     rows_sorted = sorted(rows, key=lambda p: p["opened_at"])
     mid = n // 2
@@ -144,6 +152,8 @@ def compute_status(limit: int = 4000) -> dict:
         "status": status,
         "promotable": promotable,
         "wr_pct": wr,
+        "wr_pct_last30d": wr_last30,
+        "n_last30d": n_last30,
         "avg_pnl_pct": round(sum(pnls) / n, 4),
         "gross_pf": gross_ci["pf"],
         "gross_ci_lb": gross_ci["pf_ci_lower"],
