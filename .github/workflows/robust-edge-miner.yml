@@ -62,11 +62,16 @@ jobs:
               d = json.load(open('reports/entry_cell_scan_robust_latest.json'))
           except Exception as e:
               print(f'::error title=miner_no_output::scan JSON unreadable: {e}'); sys.exit(1)
+          # Already-found + falsified + forward-registered robust cells. Alert ONLY on NEW ones,
+          # else the cron would fail every run on the known crypto_short_volhigh lead (alert fatigue).
+          KNOWN = {'CRYPTO|SHORT|VOLHIGH'}
           robust = d.get('robust_candidates') or []
-          print(f'cells_tested={d.get(\"cells_tested\")} cohort_n={d.get(\"cohort_n\")} robust={len(robust)}')
-          if robust:
-              cells = ', '.join(r.get('cell','?') for r in robust)
-              print(f'::error title=ROBUST_EDGE_CANDIDATE::{len(robust)} cell(s) passed the full robustness gate (netPF>=1.3, ex-top3>=1.0, n>=40, both regimes): {cells}. GOOD NEWS — review + forward-register + swarm-verify before any sizing.')
+          new = [r for r in robust if r.get('cell') not in KNOWN]
+          known_hit = [r.get('cell') for r in robust if r.get('cell') in KNOWN]
+          print(f'cells_tested={d.get(\"cells_tested\")} cohort_n={d.get(\"cohort_n\")} robust={len(robust)} known={known_hit} new={len(new)}')
+          if new:
+              cells = ', '.join(r.get('cell','?') for r in new)
+              print(f'::error title=NEW_ROBUST_EDGE::{len(new)} NEW cell(s) passed the full gate (netPF>=1.2, bootCILB>=1.0, n>=40, both regimes): {cells}. GOOD NEWS — falsify (crash-catch/per-symbol/time-split) + forward-register + swarm-verify before any sizing.')
               sys.exit(1)
-          print('0 robust candidates — current cohort still has no robust edge (expected until forward-n grows).')
+          print(f'No NEW robust candidates (known still robust: {known_hit or \"none\"}). Expected until forward-n surfaces a new edge.')
           "
