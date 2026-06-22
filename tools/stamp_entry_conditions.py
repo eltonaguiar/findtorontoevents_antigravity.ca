@@ -135,6 +135,10 @@ def features(pick: dict, bars: list, skips: dict) -> dict | None:
 
 
 CONDITIONS = [  # (name, class, definition, predicate(pick, feats))
+    # LEAD but CAVEATED (reports/WINNER_HUNT_HONEST_SCORECARD_2026-06-22.md): passes regime (wins
+    # up+down months) + IS/OOS + count-diversification (63 symbols), BUT P&L is fat-tail concentrated
+    # — ex-top-3-symbols it is netPF 0.74 (n=91, WR 36%). netPF window-sensitive (1.02-1.28). Low-WR
+    # (40%); needs n>=150 + net-PF CI-LB>1.15 to tell skill from luck. Do NOT size yet.
     ("crypto_rsi5070_us", "CRYPTO", "F3 RSI(14,1h)=50-70 AND F5 session=US",
      lambda p, f: p["_cls"] == "CRYPTO" and f["F3"] == "50-70" and f["F5"] == "US"),
     # Surfaced by mine_entry_condition_cells.py (2026-06-22) then REFUTED-as-standalone-edge by
