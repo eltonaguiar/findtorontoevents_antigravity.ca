@@ -1,0 +1,42 @@
+{
+  "_seed_note": "Hand-curated by operator/agent nightly. tools/build_operator_review_today.py enriches each entry with live-data lookups (luxalgo_short + class verdict + per-symbol-per-dir index) and writes audit_dashboard/data/operator_review_today.json. The dashboard reads the enriched file, NOT this seed directly. Keep this file small (2-5 picks) — it's a human-curated daily harvest.",
+  "ttl_hours": 24,
+  "warning_banner": "MANUAL CANDIDATES — NOT auto-emitted tonight. Operator decides per-pick per-day. ADAUSDT LONG is M-036b BLOCKED at the production sizing lane (CRYPTO_SIZED_LONG_BLOCK=1 active); visible here ONLY because this panel deliberately bypasses the gate so a human eye sees what the kill-switch would otherwise filter.",
+  "console_banner_text": "🌅 Operator Review — Manual Candidates (2026-06-22)",
+  "picks": [
+    {
+      "id": "oprt-2026-06-22-001",
+      "symbol": "ENAUSDT",
+      "asset_class": "CRYPTO",
+      "direction": "SHORT",
+      "stage": "OPPORTUNITY",
+      "cite_condition_key": "luxalgo_short",
+      "source_strategies": [
+        {"name": "luxalgo_confluence", "strategy_id": "luxalgo_confluence"}
+      ],
+      "restriction": "M-036 N/A (SHORT direction unaffected by BUY-block). M-036b N/A (sized-LONG-only block — opposite side is clear). Class CRYPTO verdict NOT_READY but is on the SHORT side of luxalgo_confluence which has net_pf=2.092.",
+      "expected_edge": "Short side of luxalgo_confluence, conditioned on positive funding-rate flip on ENAUSDT 1h. Backtest cohort n=39 net_WR=71.8% net_PF=2.092 — strongest honest intrabar cell currently in the STA-04 cohort table.",
+      "suggested_size_pct_of_normal": 0.5,
+      "suggested_tp_pct": 1.5,
+      "suggested_sl_pct": 0.75,
+      "operator_decision_required": "Review entry/TP/SL on TradingView TV-paper-portfolio. If accepted, set order; if rejected, leave pick untouched and update operator_review_dismissed.json with reason."
+    },
+    {
+      "id": "oprt-2026-06-22-002",
+      "symbol": "ADAUSDT",
+      "asset_class": "CRYPTO",
+      "direction": "LONG",
+      "stage": "OPPORTUNITY",
+      "cite_condition_key": null,
+      "source_strategies": [
+        {"name": "low-correlation large-cap probe", "strategy_id": "manual_curate"}
+      ],
+      "restriction": "M-036b BLOCKED — CRYPTO sized LONG hard-rejected at audit_trail/quality_gates.py:7317-7349 (CRYPTO_BLOCKED_DIRECTIONS_SIZED includes LONG; CRYPTO_SIZED_LONG_BLOCK=1 active). Class-wide CRYPTO LONG is in a SIZE-BLOCK regime (intrabar_truth PF 0.79 WR 32.6% would average down). Operator-review surfaces this so a human can decide before the kill-switch does.",
+      "expected_edge": "Single-shot low-cost probe sizing at 10% of the normal CRYPTO LONG bracket. NOT expected to clear M-036b re-validation — this is a stretch-test, not a re-enabler.",
+      "suggested_size_pct_of_normal": 0.10,
+      "suggested_tp_pct": 1.0,
+      "suggested_sl_pct": 0.5,
+      "operator_decision_required": "If accepted: tag entry as 'oversized-paper-probe' in the journal; do NOT flip CRYPTO_SIZED_LONG_BLOCK=0 — this remains visibility-only. If rejected: dismiss with reason in operator_review_dismissed.json for correlation."
+    }
+  ]
+}

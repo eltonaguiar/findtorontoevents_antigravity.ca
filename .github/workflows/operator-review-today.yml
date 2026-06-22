@@ -1,0 +1,171 @@
+# Operator Review — Manual Candidates daily refresh (2026-06-22)
+#
+# Reads tools/operator_review_seed.json (hand-curated daily; in git),
+# runs tools/build_operator_review_today.py --apply to enrich with
+# live-data lookups (luxalgo_short + class verdict + per-symbol-per-dir
+# intrabar index), commits ONLY the resulting
+# audit_dashboard/data/operator_review_today.json back to main.
+#
+# Concurrency: shares dashboard-publish group with audit-dashboard.yml so
+# the 35-min hourly job serializes against this 25-min daily job (prevents
+# mid-write corruption of operator_review_today.json + dashboard_data.json).
+#
+# Manual dispatch: gh workflow run operator-review-today.yml --ref main
+# Schedule: 0 7 * * * (UTC) — 50 min after audit-dashboard's HOURLY :10 run
+# (cron `'10 * * * *'`), so for a typical 35min run the 06:10 cycle completes
+# at ~06:45 with fresh luxalgo_short cohort. Under worst-case 115min timeout
+# the 06:10 cycle spills into ~08:05; our 7:00 run queues behind it on the
+# shared `dashboard-publish` concurrency group (#cancel-in-progress:false),
+# so the JSON it produces reflects the MOST RECENT COMPLETED audit-dashboard
+# cycle, not strictly yesterday's data. audit-dashboard.yml is hourly, so
+# the freshness window is at most ~110 min — well within entry_conditions_forward
+# 24h cache TTL.
+
+name: Operator Review — Manual Candidates daily snapshot
+
+'on':
+  schedule:
+    - cron: '0 7 * * *'  # Daily at 07:00 UTC (after audit-dashboard 06:10 hourly runs ~35min)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  # Shares dashboard-publish with audit-dashboard.yml so the 35-min hourly job
+  # serializes against this daily. cancel-in-progress=false queues, never
+  # cancels. Lost-queue ordering is OK because the JSON write is idempotent
+  # (regenerable from seed + live data on every run).
+  group: dashboard-publish
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25  # 90s generator + 4-min commit retry + buffer
+    env:
+      # DB env vars intentionally NOT passed: build script reads JSON
+      # artifacts the audit-dashboard cron has already written. No live DB
+      # query at this step. Keeps the snapshot job headless + cheap.
+      PYTHONUTF8: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Sanity-check the seed file (fail-loud if malformed)
+        run: |
+          python3 - <<'PYEOF'
+          import json, sys
+          seed = json.load(open("tools/operator_review_seed.json"))
+          if not isinstance(seed.get("picks"), list):
+              sys.exit("SEED: 'picks' must be a list (possibly empty)")
+          for i, p in enumerate(seed["picks"]):
+              for k in ("symbol", "asset_class", "direction"):
+                  if not p.get(k):
+                      sys.exit(f"SEED: pick #{i} missing {k!r}")
+          print(f"seed OK: {len(seed['picks'])} pick(s)", file=sys.stderr)
+          PYEOF
+
+      - name: Build operator_review_today.json (writes to disk; --apply)
+        # continue-on-error: a malformed seed SHOULD fail-loud (handled by
+        # sanity-check above), but a missing lookup-source JSON (e.g. if the
+        # hourly audit-dashboard hasn't run yet) should NOT block the
+        # snapshot — instead the panel renders with empty live_* fields.
+        run: python3 tools/build_operator_review_today.py --apply
+
+      - name: Validate the written JSON (fail-loud if schema drift)
+        run: |
+          python3 - <<'PYEOF'
+          import json, sys, datetime as dt
+          out = "audit_dashboard/data/operator_review_today.json"
+          d = json.load(open(out))
+          # Mid-mandatory gates — the dashboard_enhancements.js reads these to
+          # fail-closed. Any drift here surfaces a `:::error:::` warning in the
+          # GHA log AND prevents the commit.
+          required = ["generated_at", "operator_review_only", "warning_banner", "picks"]
+          for k in required:
+              if k not in d:
+                  sys.exit(f"SCHEMA DRIFT: {out} missing top-level key {k!r}")
+          if d.get("operator_review_only") is not True:
+              sys.exit(f"SCHEMA DRIFT: operator_review_only must be True; got {d.get('operator_review_only')!r}")
+          if not isinstance(d["picks"], list):
+              sys.exit(f"SCHEMA DRIFT: picks must be a list; got {type(d['picks']).__name__}")
+          for pick_idx, p in enumerate(d["picks"]):
+              for k in ("symbol", "asset_class", "direction", "restriction"):
+                  if not p.get(k):
+                      sys.exit(f"SCHEMA DRIFT: pick #{pick_idx} missing {k!r}")
+          # TTL sanity: if generated_at is older than ttl_hours, that's NOT
+          # strictly a build failure (the JSON is well-formed) — but the
+          # dashboard would still render the stale content, so flag.
+          ts = dt.datetime.fromisoformat(d["generated_at"].replace("Z","+00:00"))
+          ttl = d.get("ttl_hours") or 24
+          age_h = (dt.datetime.now(dt.timezone.utc) - ts).total_seconds() / 3600
+          if age_h > ttl + 1:
+              print(f"::warning::operator_review_today.json age {age_h:.1f}h > ttl {ttl}h — still committed (renders stale to operator)", file=sys.stderr)
+          print(f"schema OK: {len(d['picks'])} pick(s), age {age_h:.2f}h, ttl {ttl}h", file=sys.stderr)
+          PYEOF
+
+      - name: Commit JSON back to main
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          git config --global submodule.recurse false
+          # Only the operator-review JSON — never touch seed, build script,
+          # dashboard_enhancements.js, or any other file from this workflow.
+          git add audit_dashboard/data/operator_review_today.json
+          # Diff against origin/main to detect no-op runs (existing commit
+          # identical to regenerated = skip the push to avoid branch-pressure).
+          if git diff --cached --quiet; then
+            echo "no operator_review_today.json diff vs HEAD; nothing to commit"
+            exit 0
+          fi
+          n_picks=$(python3 -c "import json; print(len(json.load(open('audit_dashboard/data/operator_review_today.json'))['picks']))")
+          git commit -m "chore(operator-review): daily manual-candidates snapshot n=${n_picks} [skip ci]"
+          # 5-attempt push loop mirroring safe_push.sh — fast retries on lock
+          # contention. Persistent rejection (branch protection) skips the
+          # remaining attempts.
+          push_ok=false
+          for i in 1 2 3 4 5; do
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              push_ok=true
+              break
+            fi
+            if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
+              echo "ERROR: Push permanently rejected — aborting"
+              break
+            fi
+            delay=$((2 ** i + RANDOM % 5))
+            [ $delay -gt 60 ] && delay=$((60 + RANDOM % 5))
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: Push failed after 5 attempts"
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Operator Review snapshot — $(date -u +'%Y-%m-%d %H:%M UTC')"
+          n_picks=$(python3 -c "import json,sys; d=json.load(open('audit_dashboard/data/operator_review_today.json')); print(len(d.get('picks',[])))")
+          echo "- picks: \"$n_picks\""
+          echo "- workflow: operator-review-today"
+          echo "- queue-group: dashboard-publish (shares with audit-dashboard)"
+          echo "- cron: 0 7 * * * (UTC)"
+          echo "- manual: gh workflow run operator-review-today.yml --ref main"
