@@ -1,0 +1,239 @@
+# Durable daily forward-test snapshot for the crypto_rsi5070_us lead
+# ----------------------------------------------------------------
+# The /audit dashboard's rsi5070 forward-status JSON needs to advance
+# LEGITIMATELY (no backtest cruelty) toward the n>=150 + CI-LB>=1.15 promotion
+# gate. This cron writes the JSON snapshot DAILY at 06:30 UTC (after
+# crypto-ohlcv-refresh at 06:20 + alpha-engine-live's 06:00 cycle + the hourly
+# audit-dashboard's re-resolve), then commits BOTH status JSONs to main so the
+# git log shows daily n advancement (the hourly audit-dashboard run writes
+# locally + FTP-deploys, but rarely commits to main because the 17MB
+# dashboard_data.json clobbers its commit lists).
+#
+# RATIONALE: without a daily commit, the operator-facing
+# crypto_rsi5070_us_forward_status.json stays at whatever n it had the last time
+# someone manually re-ran the script. With this cron, n grows monotonically +
+# audit-able per day, and a single cron-miss is instantly visible in git log.
+#
+# FAIL-LOUD: no `|| echo ... non-fatal` masking (per the audit pattern). If
+# either script errors, the job RED and the operator gets a GitHub notification.
+#
+# CONCURRENCY: separate group `rsi5070-forward-snapshot` from audit-dashboard's
+# `dashboard-publish` — these runs are independent writes to separate files
+# and should NOT queue behind the 35-min hourly job (which is cancel-cascade
+# sensitive per #623/#625 epoch).
+---
+name: rsi5070 Forward-Test Snapshot (Daily)
+
+'on':
+  schedule:
+    # 07:00 UTC daily — after crypto-ohlcv-refresh ~06:20 + alpha ~06:00 + the
+    # hourly audit-dashboard 06:10 (which jobs comment cites "30-35 min" duration;
+    # 06:10 + 35 min = ~06:45, so 07:00 has 15 min safety padding).
+    # Outside the observed GitHub cron-congestion window (~22:30-01:30Z). Offset
+    # from the :00/:10/:20 minutes to avoid minute-collision contention.
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner (ubuntu-latest or self-hosted)'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+      limit:
+        description: 'Cohort row limit (default 4000 = full cohort)'
+        required: false
+        default: '4000'
+        type: string
+
+concurrency:
+  # SHARES `dashboard-publish` group with audit-dashboard.yml. We write to the
+  # SAME output JSONs (`audit_dashboard/data/crypto_rsi5070_us_forward_status.json`
+  # + `audit_dashboard/data/entry_conditions_forward.json`) as the hourly job —
+  # without serializing, two writes to the same file mid-flight would corrupt
+  # the file. The audit-dashboard cron has timeout-minutes: 115 and is documented
+  # to take 30-35 min, so worst case our 25-min snapshot waits ~115 min behind
+  # it. Acceptable for a daily cron (the snapshot just lands later that day).
+  group: dashboard-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 25
+    env:
+      # 2026-06-19 P0 pattern (per audit-dashboard.yml:384) — explicit DB creds
+      # so the script connects (it uses tools.db_env:get_stocks_creds() which
+      # accepts both legacy + new naming; legecy is OK here, mirror the
+      # `tracker-sidecar` sibling so the failure mode is identical).
+      DB_STOCKS_HOST: mysql.50webs.com
+      DB_STOCKS_USER: ejaguiar1_stocks
+      DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+      DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
+      DB_STOCKS_NAME: ejaguiar1_stocks
+      PYTHONPATH: ${{ github.workspace }}
+      PYTHONUTF8: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pymysql -q
+          # Validation: confirm tools.rsi5070_forward_tracker.py imports cleanly
+          python -c "import tools.crypto_rsi5070_forward_tracker; print('tracker imports OK')"
+
+      - name: Run rsi5070 forward tracker (writes status JSON)
+        # FAIL-LOUD (no `|| echo` masking) — the operator must be paged if the
+        # n-150 path stops advancing.
+        run: |
+          python tools/crypto_rsi5070_forward_tracker.py --limit ${{ inputs.limit || '4000' }}
+          echo "=== sanity check on the emitted JSON ==="
+          python -c "
+          import json, sys
+          p = 'audit_dashboard/data/crypto_rsi5070_us_forward_status.json'
+          d = json.load(open(p))
+          # Belt-and-suspenders: required fields are present + status is known.
+          # wr_pct_last30d is ALLOWED to be None when there are zero recent
+          # picks (n_last30d == 0) — the field is null in that case, mirroring
+          # the `'-'`/`None` convention from tools/stamp_entry_conditions.py.
+          always_required = ['n','n_gate','net_pf','net_ci_lb','wr_pct','n_last30d','status','verdict']
+          for k in always_required:
+              v = d.get(k)
+              print(f'  {k}: {v!r}')
+              if v is None:
+                  print(f'::error::missing required field {k}', file=sys.stderr)
+                  sys.exit(1)
+          # wr_pct_last30d: required only if there ARE recent picks
+          w30 = d.get('wr_pct_last30d')
+          if d.get('n_last30d', 0) > 0 and w30 is None:
+              print(f'::error::wr_pct_last30d is None despite n_last30d={d[\"n_last30d\"]}>0', file=sys.stderr)
+              sys.exit(1)
+          print(f'  wr_pct_last30d: {w30!r} (n_last30d={d.get(\"n_last30d\")}) [allowed None when no recent picks]')
+          if d['status'] not in ('SHADOW_TRACKING','PROMOTABLE_PROBATION','INSUFFICIENT_N'):
+              print(f'::error::unexpected status: {d[\"status\"]}', file=sys.stderr)
+              sys.exit(1)
+          print('schema OK | n=' + str(d['n']) + '/' + str(d['n_gate']) + ' | net_ci_lb=' + str(d['net_ci_lb']) + ' | wr30=' + str(w30))
+          "
+
+      - name: Run STA-09 stamp entry conditions (writes broader cohort JSON)
+        # FAIL-LOUD — measurement-only sidecar that discovers additional
+        # gate-relevant conditions beyond rsi5070. Stays in tool inventory
+        # so the next confirmed lead can be detected via git-log deltas.
+        run: |
+          python tools/stamp_entry_conditions.py --limit 4000
+          echo "=== sanity check on the STA-09 JSON ==="
+          python -c "
+          import json, sys
+          p = 'audit_dashboard/data/entry_conditions_forward.json'
+          d = json.load(open(p))
+          # rsi5070 must be present with non-null n + verdict
+          c = d.get('conditions', {}).get('crypto_rsi5070_us')
+          print(f'  crypto_rsi5070_us: n={c.get(\"n\")} wr={c.get(\"wr\")} net_pf={c.get(\"net_pf\")} verdict_note={c.get(\"verdict_note\")!r}')
+          if not c or c.get('n') is None:
+              print('::error::rsi5070 missing or n=None in entry_conditions_forward.json')
+              sys.exit(1)
+          print('STA-09 OK')
+          "
+
+      - name: Alert if lead became PROMOTABLE
+        if: always()
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          try:
+              d = json.load(open('audit_dashboard/data/crypto_rsi5070_us_forward_status.json'))
+          except Exception as e:
+              print(f"::warning title=promotable-check failed::could not read status JSON ({e})")
+              sys.exit(0)
+          status = d.get('status')
+          n = d.get('n'); n_gate = d.get('n_gate')
+          ci_lb = d.get('net_ci_lb')
+          wr30 = d.get('wr_pct_last30d')
+          print(f"rsi5070 status={status} n={n}/{n_gate} net_ci_lb={ci_lb} wr30={wr30}")
+          if status == 'PROMOTABLE_PROBATION':
+              msg = f"@here rsi5070 lead HIT the promotion gate: n={n}, net_ci_lb={ci_lb}, wr30={wr30}%. READY for R1/R2/R3 + size-eligibility review."
+              webhook = os.environ.get('DISCORD_WEBHOOK_RSI5070_PROMOTION')
+              if webhook:
+                  # minimal Discord-compatible markdown
+                  import urllib.request, urllib.parse
+                  try:
+                      req = urllib.request.Request(webhook, data=json.dumps({"content": msg}).encode(), headers={"Content-Type": "application/json"})
+                      urllib.request.urlopen(req, timeout=10).read()
+                      print("discord alert posted")
+                  except Exception as e:
+                      print(f"discord post failed (non-fatal): {e}")
+              else:
+                  print("DISCORD_WEBHOOK_RSI5070_PROMOTION not configured — surfacing in CI log only")
+                  print(f"::notice title=rsi5070 PROMOTABLE::{msg}")
+          PY
+
+      - name: Commit updated JSONs to main
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "rsi5070-snapshot-bot"
+          git config user.email "bot@antigravity.ca"
+          # Two small JSONs only — git-log shows n advancement, NOT a 17MB
+          # dashboard_data.json (the repo-bloat guard per reports/AUDIT_STAT_*
+          # 2026-05-22).
+          git add audit_dashboard/data/crypto_rsi5070_us_forward_status.json || true
+          git add audit_dashboard/data/entry_conditions_forward.json || true
+          # Block conflict-marker commits (per #141)
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          if git diff --cached --quiet; then
+            echo "No JSON changes to commit (cohort unchanged from previous snapshot — n did NOT grow today)"
+            echo "::notice title=rsi5070 snapshot no-op::n did not advance today. Check pipeline state."
+            exit 0
+          fi
+          DATE_UTC=$(date -u +%Y-%m-%d)
+          # Include n in the commit subject so git log can grep single-number
+          # changes AND differentiates workflow_dispatch re-runs from the same
+          # day's cron run (date-only would collide on re-dispatch same day).
+          # The `|| echo "?"` fallback keeps the commit message valid even on a
+          # JSON parse error (defense per code review — code-reviewer-minimax-m3).
+          N_NOW=$(python -c 'import json;print(json.load(open("audit_dashboard/data/crypto_rsi5070_us_forward_status.json"))["n"])' 2>/dev/null || echo "?")
+          git commit -m "chore(rsi5070-snapshot): daily forward-test snapshot ${DATE_UTC} n=${N_NOW}/150 [skip ci]"
+          # Proven rebase-retry loop from PR #629 / safe_push.sh pattern.
+          # Fail-fast on permanent rejection (branch protection / hooks) so
+          # we don't burn retries on a known-bad commit.
+          push_ok=false
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            push_rc=0
+            push_output=$(git push origin HEAD:main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed successfully on attempt $i"
+              push_ok=true
+              break
+            fi
+            # Permanent rejection
+            if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
+              echo "ERROR: Push permanently rejected — aborting"
+              exit 1
+            fi
+            delay=$((2 ** i + RANDOM % 10)); [ $delay -gt 60 ] && delay=$((60 + RANDOM % 10))
+            echo "Push attempt $i failed, retrying in ${delay}s..."
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: All push attempts failed"
+            exit 1
+          fi
