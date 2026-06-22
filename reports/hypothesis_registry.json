@@ -2284,6 +2284,24 @@
       "status": "REFUTED",
       "kill_reason": "CI-LB(ROI)<=0 + stale-snapshot",
       "result": "NO proven edge: n=1039 +EV bets/46 events ROI +8.68% pt but CI-LB -9.1% (event-clustered). NHL bulk (752) flat +0.3%; MLB +40.6% is a 16-event FLUKE (CI-LB -37.6%, confirmed). Stale-snapshot (not closing lines) caveat. Same dissolution pattern as trading. Run 2026-06-22."
+    },
+    {
+      "id": "H-140",
+      "asset_class": "EQUITY",
+      "family": "low_volatility_BAB",
+      "description": "Low-volatility / betting-against-beta (Frazzini-Pedersen): rank by trailing-60d realized vol, long lowest-vol quintile; market-hedged (minus SPY) + long-short (low-vol minus high-vol). equity_daily_ohlcv 229 tickers x 5yr, hold 21d, net@8bp.",
+      "economic_prior": "Frazzini-Pedersen 2014 'Betting Against Beta'; the anti-beta factor (tests for alpha where momentum's was just beta).",
+      "test_statistic": "net PF CI-LB (month clusters), beta-neutral variants",
+      "acceptance_criteria": {
+        "min_ci_lb": 1.15,
+        "min_n_eff": 80,
+        "rule": "net CI-LB>1.15 at n_eff>=80 + time-split + conc<35%"
+      },
+      "data_sample_lock": "equity_daily_ohlcv 2021-06..2026-06, 229 tickers (survivorship-biased)",
+      "registered_at": "2026-06-22",
+      "status": "REFUTED",
+      "kill_reason": "beta-neutral LOSING (regime + survivorship)",
+      "result": "REFUTED: long-only PF 1.16 (beta) but MARKET-HEDGED 0.76 (losing) + LONG-SHORT 0.85 (losing) -- betting-against-beta LOST in the 2021-26 high-beta regime (high-vol/growth won). n_eff=56. Completes the big-three equity price-only factor suite (momentum H-133 alpha 0.98, reversal H-126 0.98, low-vol H-140 beta-neutral 0.76) -- NONE has beta-neutral alpha on our data. Equity price-only avenue definitively closed. Run 2026-06-22."
     }
   ],
   "fork2_new_signals": [
