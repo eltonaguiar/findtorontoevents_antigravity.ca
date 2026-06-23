@@ -131,6 +131,8 @@ UNIVERSE = {
             "F", "GM", "RIVN", "LCID",
             # Canadian
             "SHOP", "CNQ", "SU", "BNS", "RY",
+            # Trending / catalyst names (also FEATURED below — always shown + tracked)
+            "TTWO",
         ],
         "benchmark": "SPY",
     },
@@ -234,6 +236,19 @@ UNIVERSE = {
         ],
         "benchmark": "IEF",
     },
+}
+
+
+# Featured trending names — ALWAYS scored (added to UNIVERSE), ALWAYS shown + tracked in
+# picks_now_tracker regardless of score rank, annotated with the real catalyst. Each carries
+# its REAL screener-computed direction/score/TP/SL (no fabricated targets). Researched
+# 2026-06-23 (WebSearch + analyst consensus); keep liquid names the failover feeds can fetch.
+FEATURED_TRENDING = {
+    "TTWO": "GTA VI confirmed Nov 19 2026 — Piper Sandler Overweight $280, consensus Buy (~$277-288); Q3 net bookings +25% YoY, FY27 guide $8.0-8.2B",
+    "MU": "AI/HBM memory super-cycle; quarterly earnings catalyst (blowout results + guidance)",
+    "GOOGL": "AI integration across Search/YouTube + ad dominance; Gemini momentum",
+    "NFLX": "Ad-tier scaling + live events; pricing power and margin expansion",
+    "PLTR": "AIP + government/commercial AI demand; high-growth Rule-of-40 profile",
 }
 
 
@@ -1464,6 +1479,17 @@ def main():
     json_picks = (df_res[df_res['direction'].isin(["STRONG_BUY", "BUY"])]
                   .sort_values('score', ascending=False)
                   .head(20))
+    # Featured trending names (e.g. TTWO / GTA VI): ALWAYS surfaced + tracked regardless of score
+    # rank, annotated with the real catalyst. Their direction/score/TP/SL are the REAL screener
+    # outputs (no fabricated targets). Union into the tracked set so performance is tracked.
+    _featured = df_res[df_res['symbol'].astype(str).str.upper().isin(FEATURED_TRENDING)].copy()
+    if not _featured.empty:
+        _featured['eli5_reason'] = _featured.apply(
+            lambda rr: f"📈 TRENDING — {FEATURED_TRENDING.get(str(rr['symbol']).upper(), '')} || "
+                       + str(rr.get('eli5_reason') or ''), axis=1)
+        _tracked = pd.concat([_featured, json_picks]).drop_duplicates(subset='symbol', keep='first')
+    else:
+        _tracked = json_picks
     regime = "RISK_OFF" if any(
         r['ret_5d'] and r['ret_5d'] < -3 for _, r in
         df_res[df_res['symbol'].isin(["SPY", "QQQ", "BTC-USD"])].iterrows()
@@ -1500,7 +1526,8 @@ def main():
         "market_regime": regime,
         "risk_off_explanation": risk_off_explanation,
         "n_scored": len(df_res),
-        "picks": _dedup_by_symbol(json_picks.to_dict("records")),
+        "picks": _dedup_by_symbol(_tracked.to_dict("records")),
+        "trending": _dedup_by_symbol(_featured.to_dict("records")) if not _featured.empty else [],
         "all": _dedup_by_symbol(df_res.sort_values('score', ascending=False).head(60).to_dict("records"))[:50],
         "safest": _dedup_by_symbol(safest.to_dict("records")),
         "intrabar_overlay_generated_at": _intrabar_overlay_ts,
@@ -1545,7 +1572,7 @@ def main():
         # per symbol per UTC-session day.
         db_cur.execute("SELECT DISTINCT symbol FROM picks_now_tracker WHERE DATE(generated_at)=CURDATE()")
         _todays_syms = {row[0] for row in db_cur.fetchall()}
-        for _, r in json_picks.iterrows():
+        for _, r in _tracked.iterrows():
             _sym = r['symbol']
             if _sym in _todays_syms:
                 skipped += 1
