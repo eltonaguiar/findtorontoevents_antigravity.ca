@@ -89,38 +89,36 @@ jobs:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
         run: python3 tools/resolve_picks_now.py --apply || echo "[resolve] non-fatal"
 
-      - name: Commit updated picks JSON
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add audit_dashboard/data/picks_now.json
-          git diff --cached --quiet || \
-            git commit -m "chore(picks-now): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
-
-      - name: Push data commit
-        # continue-on-error so a lost push race NEVER blocks the FTP deploy below
-        # (FINDING #14: without this, a conflicted rebase exit-1'd the step and the
-        # FTP step was SKIPPED — picks-now neither pushed NOR deployed on race runs).
+      - name: Commit + push picks_now.json (plumbing — reliable on contended main, working-tree-safe)
+        # WHY: the old rebase loop aborted on EVERY run — main is so contended that `git pull --rebase`
+        # always conflicted on OTHER agents' data files; resolving only picks_now.json left the rebase
+        # stuck -> abort -> nothing pushed. The committed picks_now.json sat 11 DAYS stale, and other
+        # uncoordinated audit-data deployers kept shipping that stale file to the live page (erasing
+        # TTWO/featured-trending within the hour). FIX: build the commit with git plumbing DIRECTLY on
+        # origin/main (only picks_now.json changed) using an ISOLATED temp index, so the working tree is
+        # untouched (the FTP step still ships the fresh local file) and a push race just retries. Worst
+        # case = push fails = status quo (no regression; FTP still deploys fresh).
         continue-on-error: true
         run: |
-          # main is hot (many agents/crons push). A single pull+push loses the
-          # race; retry rebase+push up to 5x. picks_now.json is fully regenerated
-          # each run, so on a rebase conflict we KEEP our freshly-built version and
-          # continue (never leave a conflicted rebase stuck, which made all 5
-          # retries no-op before).
+          pf=audit_dashboard/data/picks_now.json
+          [ -f "$pf" ] || { echo "no picks_now.json to push"; exit 0; }
           pushed=0
           for i in 1 2 3 4 5; do
-            if ! git pull --rebase origin main; then
-              # conflict (almost always the regenerated picks_now.json) — take OURS
-              git checkout --theirs audit_dashboard/data/picks_now.json 2>/dev/null \
-                || git checkout --ours audit_dashboard/data/picks_now.json 2>/dev/null || true
-              git add audit_dashboard/data/picks_now.json 2>/dev/null || true
-              GIT_EDITOR=true git rebase --continue 2>/dev/null || git rebase --abort 2>/dev/null || true
-            fi
-            if git push origin main; then echo "pushed on attempt $i"; pushed=1; break; fi
-            echo "push attempt $i lost the race — retrying"; sleep 5
+            git fetch -q origin main || { sleep 3; continue; }
+            base=$(git rev-parse FETCH_HEAD)
+            blob=$(git hash-object -w "$pf")
+            idx=$(mktemp)
+            GIT_INDEX_FILE="$idx" git read-tree "$base"
+            GIT_INDEX_FILE="$idx" git update-index --add --cacheinfo 100644,"$blob","$pf"
+            tree=$(GIT_INDEX_FILE="$idx" git write-tree)
+            rm -f "$idx"
+            if [ "$tree" = "$(git rev-parse "$base^{tree}")" ]; then echo "picks_now.json unchanged vs origin/main"; pushed=1; break; fi
+            commit=$(git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit-tree "$tree" -p "$base" -m "chore(picks-now): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]")
+            if git push -q origin "$commit:refs/heads/main"; then echo "pushed picks_now.json on attempt $i"; pushed=1; break; fi
+            echo "push attempt $i lost the race — retrying"; sleep $(( (RANDOM % 6) + 2 ))
           done
-          [ "$pushed" = 1 ] || echo "::warning::picks-now data push failed after 5 retries; FTP deploy still ships the data, next cron re-pushes"
+          [ "$pushed" = 1 ] || echo "::warning::picks_now.json push failed after 5 retries (FTP still ships fresh; next run retries)"
 
       - name: FTP deploy picks-now assets to production
         env:
