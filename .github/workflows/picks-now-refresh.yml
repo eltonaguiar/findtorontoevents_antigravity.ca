@@ -43,6 +43,29 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python3 tools/picks_now_professional.py
 
+      - name: Freshness assert (fail-LOUD if picks_now.json was NOT regenerated)
+        # The screener can exit 0 without writing a fresh JSON (data-fetch fallbacks), so the
+        # Commit/FTP steps ship the STALE file and the live page silently freezes — observed
+        # 11 days stale (2026-06-12 -> 06-23) while every run reported "success". Assert the
+        # just-written picks_now.json is from THIS run (<2h old) and non-empty.
+        run: |
+          python3 -c "
+          import json, sys, datetime as dt
+          p = 'audit_dashboard/data/picks_now.json'
+          d = json.load(open(p))
+          n = len(d.get('picks', []))
+          g = (d.get('generated_at') or '')[:19]
+          try:
+              age_h = (dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(d['generated_at'].replace('Z','+00:00'))).total_seconds()/3600
+          except Exception:
+              age_h = 9999
+          print(f'picks_now.json generated_at={g} age={age_h:.1f}h picks={n}')
+          if age_h > 2 or n == 0:
+              print(f'::error title=picks_now_stale::picks_now.json was NOT regenerated this run (age {age_h:.1f}h, {n} picks). The screener fell back to a stale file; live picks-now would freeze. Failing so it is visible.')
+              sys.exit(1)
+          print('picks_now.json fresh: OK')
+          "
+
       - name: Sync genome mega_mutation picks to at_raw_picks
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
