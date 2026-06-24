@@ -47,6 +47,109 @@ MAX_HOLD_HOURS_BY_CLASS = {
 }
 
 
+# ── B1: Backfill Price Guard (2026-06-24) ─────────────────────────────────────
+# Origin: 06-10 NULL-pnl backfill resurrected 87 corrupt-exit rows:
+#   * AUDUSD=X exit 663.13 on entry 0.70          -> +93,965% TP_HIT
+#   * SOFI    exit 381.67 on entry 16.03         -> +2,280%  TP_HIT
+#   * TRXUSDT exits pinned at stale 0.06697 feed -> wrong-magnitude row
+# Sign-coherence passes corrupt LOSSes (sign correct, magnitude wrong). Without
+# this guard, those rows enter WR/PF averages via apply_pnl_clamp_to_pick.
+#
+# The June 11 fix lived at tools/backfill_resolved_pnl.py@0b0106c34c; that file
+# was removed by refactor and the guard was NEVER re-propagated to the upstream
+# resolution-write pipeline (this file). B1 closes that gap at the WRITE point.
+#
+# Defaults match user spec (±50%). Per-class overrides tightened for low-vol
+# classes (FX, BOND) where 50% is implausibly loose and would let known corrupt
+# cases through to the WR scoreboard.
+MAX_EXIT_RATIO_DEVIATION_BY_CLASS = {
+    "CRYPTO":    0.50,  # ±50% covers volatile ALT moves
+    "EQUITY":    0.50,  # ±50% default; catches 100-2000% corruption
+    "ETF":       0.50,  # ±50% default
+    "COMMODITY": 0.50,  # ±50% default
+    "FUTURES":   0.50,  # ±50% default
+    "FOREX":     0.12,  # ±12%: FX rarely moves 5% weekly; catches AUDUSD +93,965%
+    "BOND":      0.10,  # ±10%: regime-class volatility
+}
+_MAX_EXIT_RATIO_DEVIATION_DEFAULT = 0.50
+_QUARANTINE_FILE = ROOT / "audit_trail" / "data" / "quarantine_implausible_exits.json"
+
+
+def _exit_price_is_plausible(pick, exit_price, system_name=""):
+    """Return True iff exit_price is a sane magnitude match for pick's entry_price.
+
+    Bypassed when:
+      - entry_price is missing or non-positive  (legitimate TIME_EXIT-before-entry)
+      - exit_price is missing or non-positive  (resolve-error path)
+      - pick is a Prediction-Market pick      (0-1 share price semantics)
+
+    Magnitude check (symmetric for LONG vs SHORT):
+        |exit_price / entry_price - 1.0| <= MAX_EXIT_RATIO_DEVIATION_BY_CLASS[asset_class]
+
+    Falls back to ±50% for unknown / missing asset_class.
+
+    Origin: see docstring above MAX_EXIT_RATIO_DEVIATION_BY_CLASS.
+    """
+    entry = _float(pick.get("entry_price") or 0)
+    if entry <= 0:
+        return True
+    ep = _float(exit_price)
+    if ep <= 0:
+        return True
+    if system_name and _is_prediction_market_pick(system_name, pick):
+        return True
+    ac_raw = str(pick.get("asset_class") or "").upper()
+    try:
+        ac_norm = normalize_asset_class(pick) or ac_raw
+        ac = (ac_norm or ac_raw).upper()
+    except Exception:
+        ac = ac_raw
+    max_dev = MAX_EXIT_RATIO_DEVIATION_BY_CLASS.get(ac, _MAX_EXIT_RATIO_DEVIATION_DEFAULT)
+    try:
+        ratio = ep / entry
+    except ZeroDivisionError:
+        return True
+    return abs(ratio - 1.0) <= max_dev
+
+
+def _write_to_quarantine_sidecar(resolved):
+    """Persist a price-plausibility-failed resolution to JSON sidecar.
+
+    Modeled on the June 11 'tp_xsym_contam_q2_20260611T214419Z' quarantine:
+    append-only JSON list. Idempotent on (id+resolved_at). NEVER blocks the
+    resolver even if the sidecar write itself fails.
+
+    Future cleanup: a daily job can re-instantiate this sidecar into the main
+    resolved-picks file once the upstream corrupt-exit feed is fixed.
+    """
+    try:
+        if _QUARANTINE_FILE.exists():
+            try:
+                data = json.loads(_QUARANTINE_FILE.read_text())
+                if not isinstance(data, list):
+                    data = []
+            except (json.JSONDecodeError, ValueError):
+                data = []
+        else:
+            _QUARANTINE_FILE.parent.mkdir(parents=True, exist_ok=True)
+            data = []
+        pid = resolved.get("id") or resolved.get("pick_id")
+        r_at = resolved.get("resolved_at")
+        if pid and r_at and any(
+            (r.get("id") == pid or r.get("pick_id") == pid)
+            and r.get("resolved_at") == r_at
+            for r in data
+        ):
+            return
+        data.append(resolved)
+        _QUARANTINE_FILE.write_text(json.dumps(data, separators=(",", ":"), default=str))
+    except Exception as e:
+        log.warning(
+            "  quarantine sidecar write failed for pick id=%s: %s",
+            resolved.get("id") or "<no-id>", e,
+        )
+
+
 def _max_hold_hours_for(pick: dict) -> int:
     """Return the per-asset-class TIME_EXIT window in hours.
 
@@ -1365,6 +1468,25 @@ def main():
                     "_resolver_version": RESOLVER_VERSION,
                     "_resolver_source": RESOLVER_SOURCE_ID,
                 }
+                # ── B1: backfill price guard ───────────────────────────────────────
+                # Catches sign-coherent-but-magnitude-implausible exits BEFORE
+                # apply_pnl_clamp_to_pick rots them into WR/PF averages.
+                if not _exit_price_is_plausible(pick, exit_price, system_name):
+                    resolved["exit_reason"] = "price_plausibility_fail"
+                    resolved["status"] = "QUARANTINED"
+                    resolved["pnl_pct"] = "NO_DATA"
+                    _write_to_quarantine_sidecar(resolved)
+                    stats[system_name].setdefault("implausible_exit", 0)
+                    stats[system_name]["implausible_exit"] += 1
+                    log.warning(
+                        "  IMPLAUSIBLE EXIT %s %s entry=%s exit=%s ratio=%.2fx (class=%s); quarantined",
+                        system_name, pick["symbol"], pick.get("entry_price"),
+                        exit_price,
+                        (exit_price / pick["entry_price"]) if pick.get("entry_price", 0) else 0,
+                        pick.get("asset_class") or "?",
+                    )
+                    resolved_ids.add(pick_id)
+                    continue
                 apply_pnl_clamp_to_pick(resolved)
                 newly_resolved.append(resolved)
                 resolved_ids.add(pick_id)
@@ -1395,6 +1517,25 @@ def main():
                     "_resolver_source": RESOLVER_SOURCE_ID,
                     "hold_hours": round((now - pick_dt).total_seconds() / 3600, 1),
                 }
+                # ── B1: backfill price guard — TIME_EXIT path ────────────────────
+                # A TIME_EXIT write can persist a corrupt tape quote (current_price);
+                # hold the current_price-to-entry ratio to per-class plausibility too.
+                if not _exit_price_is_plausible(pick, current_price, system_name):
+                    resolved["exit_reason"] = "price_plausibility_fail"
+                    resolved["status"] = "QUARANTINED"
+                    resolved["pnl_pct"] = "NO_DATA"
+                    _write_to_quarantine_sidecar(resolved)
+                    stats[system_name].setdefault("implausible_exit", 0)
+                    stats[system_name]["implausible_exit"] += 1
+                    log.warning(
+                        "  IMPLAUSIBLE TIME_EXIT %s %s entry=%s exit=%s ratio=%.2fx (class=%s); quarantined",
+                        system_name, pick["symbol"], pick.get("entry_price"),
+                        current_price,
+                        (current_price / pick["entry_price"]) if pick.get("entry_price", 0) else 0,
+                        pick.get("asset_class") or "?",
+                    )
+                    resolved_ids.add(pick_id)
+                    continue
                 apply_pnl_clamp_to_pick(resolved)
                 newly_resolved.append(resolved)
                 resolved_ids.add(pick_id)
