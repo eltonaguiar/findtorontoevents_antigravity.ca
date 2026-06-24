@@ -1,6 +1,6 @@
 # Social Media Algo Trader Database Report
 
-**Generated:** 2026-06-23T12:49:17.057500
+**Generated:** 2026-06-24T12:37:44.143800
 
 ## Summary Statistics
 - **Total Traders:** 2
@@ -9,8 +9,8 @@
 - **Fake:** 0
 
 ## By Platform
-- **Twitter:** 1 traders (0 verified)
 - **Reddit:** 1 traders (1 verified)
+- **Twitter:** 1 traders (0 verified)
 
 ## Top Verified Traders
 
