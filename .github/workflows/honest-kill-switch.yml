@@ -1,0 +1,56 @@
+name: Honest Kill Switch
+
+on:
+  schedule:
+    # Every 12 hours — re-evaluate strategy health from honest ledger
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run honest kill switch (apply kills)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 alpha_engine/honest_kill_switch.py --apply
+
+      - name: Run blacklist impact simulation
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: python3 tools/blacklist_impact_simulation.py
+
+      - name: Commit if changed
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/honest_kill_switch.json
+          git add alpha_engine/strategy_kill_list.json
+          git add reports/blacklist_impact_simulation.json
+          git diff --cached --quiet || git commit -m "honest-kill-switch: re-evaluate $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "Push attempt $i failed, retrying..."
+            sleep 5
+          done

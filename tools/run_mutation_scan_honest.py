@@ -28,7 +28,6 @@ def _db_password() -> str:
     for i, line in enumerate(lines):
         if line.strip() == "ejaguiar1_stocks" and i + 1 < len(lines):
             return lines[i + 1].strip()
-    import os
     return os.environ.get("DB_PASS_STOCKS", "") or os.environ.get("MYSQL_PASSWORD", "")
 
 
