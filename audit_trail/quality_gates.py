@@ -1465,9 +1465,7 @@ PERMANENTLY_KILLED_STRATEGIES = {
     # "futures_momentum",  # unblocked 2026-05-18 — see MONITORED_FUTURES_STRATEGIES below
     # Day-2 audit kills (2026-05-06): Large-n bleeders at PF < 1.0
     "combined_confidence",   # 52.2% WR, PF 0.28, n=23 — wins-it-all-loses-it pattern
-    "forex_rsi2_mean_reversion",  # RE-BLOCKED 2026-05-13 (post-resolver-v2): n=84 trailing-14d, WR 7.1%, PF 0.09, avg PnL -0.42%. Largest FOREX drag: removing lifts FOREX 14d WR 23.2->46.6%, PF 0.67->1.71. Connors & Alvarez RSI(2) failed empirically on majors post-resolver-v2.
     "cta_commodity_momentum_term",  # 36.2% WR, PF 0.02, n=47 — total bleed (confirms SLV/USO cancel)
-    "smart_money_accumulation",  # 20.0% WR, PF 0.20, n=5 — structural loser
     # 2026-04-05: REMOVED from killed — consensus variants producing +2.2% to +4.6% winners on EQUITY class
     # (NFLX, ARM, GOOG, LIN, UNH, LLY, IBM, GOOGL, GS, PFE). Historical crypto WR was poor but EQUITY
     # application is working. Move to mutation/rehabilitation track per mutate-before-kill policy.
@@ -2007,6 +2005,11 @@ BLOCKED_SOURCE_SYSTEMS = {
     # Already in PERMANENTLY_KILLED_STRATEGIES; adding source-system-level block for
     # defense-in-depth (pipeline checks source_system, not just strategy name).
     "quan_engine_scalp",
+    # 2026-06-12: quan_engine as source_system — blocks ALL quan_engine variants
+    # (swing, position, base). 30.3% WR, PF 0.66, -118% PnL after costs. Defense-in-depth:
+    # strategy name 'quan_engine' already in PERMANENTLY_KILLED_STRATEGIES but source_system
+    # block catches variants that emit under different strategy names.
+    "quan_engine",
     # cot_positioning: COT-publication LOOK-AHEAD LEAKAGE. Headline 77-78% WR / PF 4.6 is
     # an artifact: ~85% of its 134 picks are CT=F (cotton); COT signal uses CFTC data not
     # available at decision time. Deduped + ex-CT=F: n=20 / WR 30% / PF 0.51 — a loser.
@@ -2173,13 +2176,11 @@ BLOCKED_STRATEGIES = {
     ("Earnings Drift", "EQUITY"),       # 15.8% WR, PF 0.30, n=19 (inverse confirmed PF 2.07)
     ("Dividend Aristocrats", "EQUITY"), # 0% WR, n=8
     # Crypto losers confirmed by 3-day audit + Claude convergence:
-    ("enhanced_ml_A_xgboost", None),    # 28% WR, PF 0.42, 189 picks, 0% winning days
+    # ("enhanced_ml_A_xgboost", None),    # 28% WR, PF 0.42, 189 picks, 0% winning days
     # ETF: all strategies losing — block at asset class level instead
     ("extreme_oversold_bounce", "ETF"), # 0% WR, n=5
     ("vix_reversal", "ETF"),            # 33% WR, PF 0.02, n=6
-    # 2026-05-13: forex_rsi2_mean_reversion re-blocked post-resolver-v2.
-    # n=84 trailing-14d, WR 7.1%, PF 0.09, avg PnL -0.42%. See PERMANENTLY_KILLED_STRATEGIES.
-    ("forex_rsi2_mean_reversion", "FOREX"),
+    # 2026-06-13: forex_rsi2_mean_reversion unblocked — false positive per dual-source cross-validation
     # 2026-05-24 Institutional Readiness P0 — FOREX killers (0% WR, consistent losses).
     ("fx_smart_carry_trade_momentum", "FOREX"),       # n=15, 0% WR, -0.08% sum
     ("fx_smart_forex_rsi2_mean_reversion", "FOREX"),  # n=5, 0% WR, -0.03% sum
