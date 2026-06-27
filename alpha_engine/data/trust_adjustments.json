@@ -1,23 +1,5 @@
 {
   "strategy_adjustments": {
-    "forex_zscore_200d_fade": {
-      "boost": -0.15,
-      "reason": "10% WR over last 10 trades",
-      "total_trades": 12,
-      "wr_last10": 0.1,
-      "wr_last20": 0.0833,
-      "profit_factor": 0.13,
-      "avg_pnl": -0.1374
-    },
-    "forex_rsi2_mean_reversion": {
-      "boost": 0.15,
-      "reason": "100% WR over last 10 trades",
-      "total_trades": 64,
-      "wr_last10": 1.0,
-      "wr_last20": 1.0,
-      "profit_factor": 99.0,
-      "avg_pnl": 0.0065
-    },
     "atr_percentile_gate_scanner": {
       "boost": 0.15,
       "reason": "90% WR over last 10 trades",
@@ -26,6 +8,33 @@
       "wr_last20": 0.7143,
       "profit_factor": 3.59,
       "avg_pnl": 0.0218
+    },
+    "forex_zscore_200d_fade": {
+      "boost": -0.1,
+      "reason": "30% WR over last 10 trades",
+      "total_trades": 13,
+      "wr_last10": 0.3,
+      "wr_last20": 0.2308,
+      "profit_factor": 0.83,
+      "avg_pnl": -0.0208
+    },
+    "combined_confidence": {
+      "boost": -0.05,
+      "reason": "50% WR but PF=0.83 < 1.0, avg_pnl=-0.01% (losing money despite wins)",
+      "total_trades": 13,
+      "wr_last10": 0.5,
+      "wr_last20": 0.5385,
+      "profit_factor": 0.83,
+      "avg_pnl": -0.0102
+    },
+    "forex_rsi2_mean_reversion": {
+      "boost": 0.15,
+      "reason": "100% WR over last 10 trades",
+      "total_trades": 50,
+      "wr_last10": 1.0,
+      "wr_last20": 1.0,
+      "profit_factor": 99.0,
+      "avg_pnl": 0.0085
     },
     "B_flip_PriceRocMeanReversion": {
       "boost": 0.15,
@@ -61,36 +70,36 @@
       "wr_last10": 1.0,
       "wr_last20": 1.0,
       "profit_factor": 99.0,
-      "avg_pnl": 0.0512
+      "avg_pnl": 0.0535
     }
   },
   "symbol_adjustments": {
-    "forex_rsi2_mean_reversion": {
-      "USDJPY=X": {
-        "boost": 0.08,
-        "reason": "100% WR (9 trades)"
-      },
-      "EURJPY=X": {
-        "boost": 0.08,
-        "reason": "75% WR (8 trades)"
-      },
-      "AUDUSD=X": {
-        "boost": 0.08,
-        "reason": "83% WR (6 trades)"
-      },
-      "NZDUSD=X": {
-        "boost": 0.08,
-        "reason": "100% WR (6 trades)"
-      },
-      "EURUSD=X": {
-        "boost": 0.08,
-        "reason": "80% WR (5 trades)"
-      }
-    },
     "combined_confidence": {
       "AUDJPY=X": {
         "boost": 0.08,
         "reason": "80% WR (5 trades)"
+      }
+    },
+    "forex_rsi2_mean_reversion": {
+      "AUDJPY=X": {
+        "boost": 0.08,
+        "reason": "81% WR (16 trades)"
+      },
+      "AUDUSD=X": {
+        "boost": 0.08,
+        "reason": "100% WR (5 trades)"
+      },
+      "NZDUSD=X": {
+        "boost": 0.08,
+        "reason": "100% WR (5 trades)"
+      },
+      "EURUSD=X": {
+        "boost": 0.08,
+        "reason": "80% WR (5 trades)"
+      },
+      "EURJPY=X": {
+        "boost": 0.08,
+        "reason": "100% WR (6 trades)"
       }
     },
     "B_flip_PriceRocMeanReversion": {
@@ -111,10 +120,10 @@
     }
   },
   "meta": {
-    "total_closed_analyzed": 236,
-    "strategies_analyzed": 39,
+    "total_closed_analyzed": 239,
+    "strategies_analyzed": 45,
     "strategies_boosted": 6,
-    "strategies_penalized": 1
+    "strategies_penalized": 2
   },
-  "last_updated": "2026-06-26T12:59:34.549800+00:00"
+  "last_updated": "2026-06-27T01:16:17.456890+00:00"
 }
