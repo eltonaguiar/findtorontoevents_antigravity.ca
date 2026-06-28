@@ -1,24 +1,112 @@
 {
   "metadata": {
-    "timestamp": "2026-06-27T21:40:00.535211+00:00",
+    "timestamp": "2026-06-28T00:48:02.940838+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 3,
+    "mutations_triggered": 3,
+    "mutations_silent": 2,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
-    "fear_greed": 15,
+    "fear_greed": 18,
     "version": "v2",
     "focus": "loss_prevention"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "pump_fear_greed_filter_v2",
+      "symbol": "DOTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.812,
+      "take_profit": 0.828097,
+      "stop_loss": 0.799927,
+      "confidence": 0.7547,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 extreme-fear: vol=1.9x at F&G=18 (<30), RSI=25.8 \u2014 institutional accumulation during panic",
+      "timestamp": "2026-06-28T00:48:02.937398+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "extreme_fear_contrarian",
+      "volume_ratio": 1.88,
+      "fear_greed": 18,
+      "rsi_14": 25.8,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "symbol": "TRXUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.3219,
+      "take_profit": 0.323032,
+      "stop_loss": 0.321051,
+      "confidence": 0.6396,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 momentum: vol=3.3x + 3-bar momentum=0.28%, 2 green bars \u2014 continuation confirmed, not dead cat",
+      "timestamp": "2026-06-28T00:48:02.931211+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "momentum_continuation",
+      "volume_ratio": 3.28,
+      "momentum_3d": 0.0028,
+      "green_bars": 2,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "TRXUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.3219,
+      "take_profit": 0.323032,
+      "stop_loss": 0.321051,
+      "confidence": 0.5643,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=3.3x, price $0.3219 > EMA50=$0.3218 > EMA20=$0.3210  \u2014 uptrend pump only",
+      "timestamp": "2026-06-28T00:48:02.920817+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 3.28,
+      "ema_50": 0.321846,
+      "ema_20": 0.321043,
+      "ema_aligned": false,
+      "trend_strength": 0.0002,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "momentum_continuation",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_fear_greed_filter_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "extreme_fear_contrarian",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
     "pump_btc_correlated_v2",
-    "pump_large_cap_only_v2",
-    "pump_momentum_continuation_v2",
-    "pump_fear_greed_filter_v2"
+    "pump_large_cap_only_v2"
   ]
 }
