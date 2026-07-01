@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-01T15:46:54.358957+00:00",
-  "total_trades": 1014,
+  "generated_at": "2026-07-01T17:32:52.937871+00:00",
+  "total_trades": 1013,
   "bucket_stats": {
     "0-19": {
       "bucket": [
@@ -11,8 +11,8 @@
       "wins": 33,
       "losses": 36,
       "win_rate": 47.8,
-      "avg_pnl_pct": -6.16,
-      "total_pnl_pct": -425.21
+      "avg_pnl_pct": -2.12,
+      "total_pnl_pct": -146.04
     },
     "20-39": {
       "bucket": [
@@ -43,12 +43,12 @@
         60,
         80
       ],
-      "trades": 364,
+      "trades": 363,
       "wins": 89,
-      "losses": 275,
+      "losses": 274,
       "win_rate": 24.5,
-      "avg_pnl_pct": -3.88,
-      "total_pnl_pct": -1412.8
+      "avg_pnl_pct": -3.92,
+      "total_pnl_pct": -1421.19
     },
     "80-100": {
       "bucket": [
@@ -65,6 +65,15 @@
   },
   "inversions": [
     {
+      "type": "pnl_inversion",
+      "lower_bucket": "0-19",
+      "higher_bucket": "20-39",
+      "lower_avg_pnl": -2.12,
+      "higher_avg_pnl": -3.91,
+      "delta": 1.79,
+      "severity": "MEDIUM"
+    },
+    {
       "type": "win_rate_inversion",
       "lower_bucket": "0-19",
       "higher_bucket": "40-59",
@@ -77,9 +86,9 @@
       "type": "pnl_inversion",
       "lower_bucket": "0-19",
       "higher_bucket": "40-59",
-      "lower_avg_pnl": -6.16,
+      "lower_avg_pnl": -2.12,
       "higher_avg_pnl": -41.48,
-      "delta": 35.32,
+      "delta": 39.36,
       "severity": "HIGH"
     },
     {
@@ -90,6 +99,15 @@
       "higher_wr": 24.5,
       "delta": 23.3,
       "severity": "HIGH"
+    },
+    {
+      "type": "pnl_inversion",
+      "lower_bucket": "0-19",
+      "higher_bucket": "60-79",
+      "lower_avg_pnl": -2.12,
+      "higher_avg_pnl": -3.92,
+      "delta": 1.8,
+      "severity": "MEDIUM"
     },
     {
       "type": "win_rate_inversion",
@@ -104,9 +122,9 @@
       "type": "pnl_inversion",
       "lower_bucket": "0-19",
       "higher_bucket": "80-100",
-      "lower_avg_pnl": -6.16,
+      "lower_avg_pnl": -2.12,
       "higher_avg_pnl": -15.16,
-      "delta": 9.0,
+      "delta": 13.04,
       "severity": "HIGH"
     },
     {
@@ -149,9 +167,9 @@
       "type": "pnl_inversion",
       "lower_bucket": "60-79",
       "higher_bucket": "80-100",
-      "lower_avg_pnl": -3.88,
+      "lower_avg_pnl": -3.92,
       "higher_avg_pnl": -15.16,
-      "delta": 11.28,
+      "delta": 11.24,
       "severity": "HIGH"
     }
   ],
@@ -175,7 +193,7 @@
       "trades_sampled": 9
     },
     "40-59": {
-      "adjustment": -14.0,
+      "adjustment": -14.1,
       "expected_wr": 34.3,
       "actual_wr": 16.7,
       "deviation": -17.6,
@@ -190,7 +208,7 @@
       "deviation": -15.8,
       "reason": "WR 24% vs expected 40% (underperforming)",
       "confidence": "HIGH",
-      "trades_sampled": 364
+      "trades_sampled": 363
     },
     "80-100": {
       "adjustment": -5.6,
@@ -204,37 +222,26 @@
   },
   "strategy_corrections": {
     "forex_rsi2_mean_reversion": {
-      "trades": 109,
-      "wins": 18,
-      "win_rate": 16.5,
+      "trades": 108,
+      "wins": 19,
+      "win_rate": 17.6,
       "avg_score": 72.3,
       "avg_pnl_pct": 0.12,
-      "adjustment": -10.6,
+      "adjustment": -10.0,
       "inflated": true,
       "deflated": false,
       "flag": "INFLATED_SCORE"
     },
     "futures_momentum": {
-      "trades": 144,
+      "trades": 146,
       "wins": 4,
-      "win_rate": 2.8,
+      "win_rate": 2.7,
       "avg_score": 73.1,
       "avg_pnl_pct": -0.04,
       "adjustment": -15,
       "inflated": true,
       "deflated": false,
       "flag": "INFLATED_SCORE"
-    },
-    "commodity_tsmom_12m": {
-      "trades": 9,
-      "wins": 6,
-      "win_rate": 66.7,
-      "avg_score": 45.4,
-      "avg_pnl_pct": 3.01,
-      "adjustment": 15,
-      "inflated": false,
-      "deflated": false,
-      "flag": "OK"
     },
     "": {
       "trades": 32,
@@ -253,7 +260,7 @@
       "win_rate": 33.3,
       "avg_score": 49.5,
       "avg_pnl_pct": -4.31,
-      "adjustment": -0.5,
+      "adjustment": -0.6,
       "inflated": false,
       "deflated": false,
       "flag": "OK"
@@ -263,7 +270,18 @@
       "wins": 29,
       "win_rate": 65.9,
       "avg_score": 14.4,
-      "avg_pnl_pct": -3.23,
+      "avg_pnl_pct": -0.4,
+      "adjustment": 15,
+      "inflated": false,
+      "deflated": true,
+      "flag": "DEFLATED_SCORE"
+    },
+    "commodity_tsmom_12m": {
+      "trades": 8,
+      "wins": 6,
+      "win_rate": 75.0,
+      "avg_score": 41.7,
+      "avg_pnl_pct": 3.38,
       "adjustment": 15,
       "inflated": false,
       "deflated": true,
@@ -308,7 +326,7 @@
       "win_rate": 20.0,
       "avg_score": 100.0,
       "avg_pnl_pct": -147.24,
-      "adjustment": -8.5,
+      "adjustment": -8.6,
       "inflated": true,
       "deflated": false,
       "flag": "INFLATED_SCORE"
@@ -319,7 +337,7 @@
       "win_rate": 16.7,
       "avg_score": 100.0,
       "avg_pnl_pct": -14.7,
-      "adjustment": -10.5,
+      "adjustment": -10.6,
       "inflated": true,
       "deflated": false,
       "flag": "INFLATED_SCORE"
