@@ -1,58 +1,40 @@
 {
   "strategy_adjustments": {
-    "B_flip_PriceRocMeanReversion": {
-      "boost": 0.15,
-      "reason": "90% WR over last 10 trades",
-      "total_trades": 11,
-      "wr_last10": 0.9,
-      "wr_last20": 0.9091,
-      "profit_factor": 33.8,
-      "avg_pnl": 0.0378
-    },
-    "luxalgo_confluence": {
-      "boost": 0.15,
-      "reason": "90% WR over last 10 trades",
-      "total_trades": 16,
-      "wr_last10": 0.9,
-      "wr_last20": 0.8125,
-      "profit_factor": 3.28,
-      "avg_pnl": 0.0146
+    "regime_accumulation": {
+      "boost": -0.05,
+      "reason": "60% WR but PF=0.01 < 1.0, avg_pnl=-0.23% (losing money despite wins)",
+      "total_trades": 5,
+      "wr_last10": 0.6,
+      "wr_last20": 0.6,
+      "profit_factor": 0.01,
+      "avg_pnl": -0.235
     },
     "prediction_market_consensus": {
       "boost": -0.15,
       "reason": "20% WR over last 10 trades",
-      "total_trades": 24,
+      "total_trades": 17,
       "wr_last10": 0.2,
-      "wr_last20": 0.4,
-      "profit_factor": 1.09,
-      "avg_pnl": 0.0109
-    },
-    "atr_percentile_gate_scanner": {
-      "boost": 0.15,
-      "reason": "80% WR over last 10 trades",
-      "total_trades": 16,
-      "wr_last10": 0.8,
-      "wr_last20": 0.75,
-      "profit_factor": 3.85,
-      "avg_pnl": 0.0237
-    },
-    "forex_zscore_200d_fade": {
-      "boost": 0.05,
-      "reason": "50% WR over last 8 trades",
-      "total_trades": 8,
-      "wr_last10": 0.5,
-      "wr_last20": 0.5,
-      "profit_factor": 21.66,
-      "avg_pnl": 0.1711
+      "wr_last20": 0.1765,
+      "profit_factor": 0.67,
+      "avg_pnl": -0.0448
     },
     "": {
       "boost": 0.15,
       "reason": "100% WR over last 10 trades",
-      "total_trades": 19,
+      "total_trades": 23,
       "wr_last10": 1.0,
       "wr_last20": 1.0,
       "profit_factor": 99.0,
-      "avg_pnl": 0.0183
+      "avg_pnl": 0.0185
+    },
+    "luxalgo_confluence": {
+      "boost": 0.15,
+      "reason": "90% WR over last 10 trades",
+      "total_trades": 14,
+      "wr_last10": 0.9,
+      "wr_last20": 0.7857,
+      "profit_factor": 2.35,
+      "avg_pnl": 0.0099
     },
     "smart_money_accumulation": {
       "boost": 0.05,
@@ -63,14 +45,32 @@
       "profit_factor": 99.0,
       "avg_pnl": 0.0209
     },
+    "macd_crossover": {
+      "boost": 0.15,
+      "reason": "90% WR over last 10 trades",
+      "total_trades": 10,
+      "wr_last10": 0.9,
+      "wr_last20": 0.9,
+      "profit_factor": 450.0,
+      "avg_pnl": 0.0269
+    },
     "forex_rsi2_mean_reversion": {
+      "boost": 0.15,
+      "reason": "90% WR over last 10 trades",
+      "total_trades": 17,
+      "wr_last10": 0.9,
+      "wr_last20": 0.7059,
+      "profit_factor": 5.25,
+      "avg_pnl": 0.0046
+    },
+    "commodity_tsmom_12m": {
       "boost": 0.05,
-      "reason": "50% WR over last 6 trades",
-      "total_trades": 6,
-      "wr_last10": 0.5,
-      "wr_last20": 0.5,
-      "profit_factor": 2.79,
-      "avg_pnl": 0.0025
+      "reason": "86% WR over last 7 trades",
+      "total_trades": 7,
+      "wr_last10": 0.8571,
+      "wr_last20": 0.8571,
+      "profit_factor": 78.3,
+      "avg_pnl": 0.0401
     },
     "vt_equity_two_day_rsi_reversal": {
       "boost": 0.05,
@@ -80,40 +80,31 @@
       "wr_last20": 1.0,
       "profit_factor": 99.0,
       "avg_pnl": 0.0137
-    },
-    "commodity_tsmom_12m": {
-      "boost": 0.05,
-      "reason": "100% WR over last 5 trades",
-      "total_trades": 5,
-      "wr_last10": 1.0,
-      "wr_last20": 1.0,
-      "profit_factor": 99.0,
-      "avg_pnl": 0.0564
     }
   },
   "symbol_adjustments": {
-    "B_flip_PriceRocMeanReversion": {
-      "ETHUSDT": {
-        "boost": 0.08,
-        "reason": "100% WR (6 trades)"
-      }
-    },
-    "prediction_market_consensus": {
-      "ETHUSDT": {
-        "boost": 0.08,
-        "reason": "83% WR (6 trades)"
-      }
-    },
     "": {
       "AAVE-USD": {
         "boost": 0.08,
-        "reason": "100% WR (5 trades)"
+        "reason": "100% WR (6 trades)"
       }
     },
     "smart_money_accumulation": {
       "TXN": {
         "boost": 0.08,
         "reason": "100% WR (6 trades)"
+      }
+    },
+    "futures_momentum": {
+      "SI=F": {
+        "boost": 0.08,
+        "reason": "80% WR (5 trades)"
+      }
+    },
+    "forex_rsi2_mean_reversion": {
+      "GBPJPY=X": {
+        "boost": 0.08,
+        "reason": "75% WR (8 trades)"
       }
     },
     "vt_equity_two_day_rsi_reversal": {
@@ -124,10 +115,10 @@
     }
   },
   "meta": {
-    "total_closed_analyzed": 204,
-    "strategies_analyzed": 48,
-    "strategies_boosted": 9,
-    "strategies_penalized": 1
+    "total_closed_analyzed": 222,
+    "strategies_analyzed": 52,
+    "strategies_boosted": 7,
+    "strategies_penalized": 2
   },
-  "last_updated": "2026-06-30T12:58:23.598982+00:00"
+  "last_updated": "2026-07-01T01:23:13.801955+00:00"
 }
