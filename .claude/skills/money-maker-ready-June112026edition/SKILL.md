@@ -8,6 +8,15 @@ description: The June-2026 EDITION of the money-ready program — executes the s
 **Canonical plan:** `docs/MONEY_READY_MASTER_LOOP_2026-06.md` — READ IT FIRST; this skill is the executor.
 **Edition discipline:** this is a DATED edition. On the 11th of each month, run the edition review (Section E below) and either re-stamp or supersede with a new edition skill. Editions never silently mutate — improvements are visible diffs.
 
+## ⛔ MANDATORY — ALL ASSET CLASSES + ALL DATA SOURCES (do NOT tunnel on crypto)
+
+**The #1 recurring failure of agents on this repo is looking ONLY at the crypto `at_signal_outcomes` ledger and concluding "no edge."** That ledger is ~93% crypto AND is contaminated (see the `entry_price` P0 below). Concluding "no edge across all classes" from crypto alone is WRONG and has cost months. Before ANY "no edge" verdict you MUST have surveyed, at minimum:
+
+- **All 9 databases** (creds `/home/eaguiar2015/dbpasses.txt`, convention `ejaguiar1_<name>` / `<name>1234560` @ the `tools/db_env.py` host — NEVER echo/commit): `ejaguiar1_stocks` (at_signal_outcomes, daily_prices, crypto_ohlcv, **futures_daily_ohlcv**, **equity_daily_ohlcv**), `ejaguiar1_backtests` (**bt_backtest_trades 32.7M rows w/ real entry+exit+TP+SL**, bt_backtest_runs 285 aggregated PF/Sharpe), `ejaguiar1_memecoin` (58 tables: bt100_results, mc_winners…), `ejaguiar1_news` (sentiment), plus events/deals/favcreators. (Sports `ejaguiar1_sportsbet` is a separate goal — operator may de-scope.)
+- **Every asset class**: CRYPTO, MEMECOIN, EQUITY, ETF, FOREX, COMMODITY, FUTURES, BOND — AND the cross-cutting SOURCES the operator expects edge from: **copytraders / public trades** (Hyperliquid `copy_hl`, `multi_asset_copytrader`), **stock fundamentals / value**, **prediction markets (Kalshi / Polymarket** `copy_pm`, `prediction_market_consensus`). If a class/source has too few resolved rows to judge, say so and check whether the emitter is wired + resolving — do NOT silently omit it.
+
+**P0 DATA-INTEGRITY GATE (read `reports/DATA_INTEGRITY_entry_price_2026-07-03.md`):** `at_signal_outcomes.entry_price` is only ~29% clean (37% >10% off bar, 7% >50%), systematically +1.3% (inflates SHORT / deflates LONG), and `intrabar_pnl_pct` RIDES it. Prefer `bt_backtest_trades` (real entry+exit) or re-resolve from bar-aligned NEXT-bar entries. Every candidate must pass the **3 mandatory controls** (memory `feedback-entry-price-contamination-regime-2026-07-03`): (1) entry_price vs OHLCV-bar integrity, (2) regime control vs matched-random entries + check market direction, (3) look-ahead control (shift entry to next bar — signal-bar entry is look-ahead-biased).
+
 ## What this skill does (one weekly cycle)
 
 1. **MEASURE** — refresh the honest ledger + coverage metrics; run the H1 structural audit:
