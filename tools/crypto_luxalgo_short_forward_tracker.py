@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""crypto_luxalgo_short_forward_tracker.py — forward-shadow gate tracker for the
+"""crypto_luxalgo_short_forward_tracker.py
+
+!!! ENTRY_PRICE_CAVEAT (2026-07-03) — this tracker reads the honest ledger's
+intrabar_pnl_pct, which is resolved off `entry_price`. That column mismatches
+the OHLCV bar by ~2.9% median for luxalgo SHORT (9.9% for volume_spike). A
+correct-bar-entry replay across all TP/SL bands LOSES (netPF 0.51-0.89) and does
+NOT beat random shorts (regime control). See reports/FALSIFICATION_luxalgo_short_2026-07-03.md.
+This status is therefore an UPPER BOUND, not a promotion verdict. Do NOT size on
+PROMOTABLE_PROBATION until the ledger is re-resolved from correct bar-aligned entries.
+ — forward-shadow gate tracker for the
 program's strongest honest candidate: luxalgo_confluence SHORT (CRYPTO).
 
 Pre-registered as H-20260612-luxalgo_confluence_v2_short (registered 2026-06-12,
