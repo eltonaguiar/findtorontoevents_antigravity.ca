@@ -35,5 +35,13 @@ This mechanically produces the CRYPTO **LONG 0.55 / SHORT 1.40** split I earlier
 3. **Quarantine gross rows** (|entry−bar|>10%, 37%) from all verdict-grade queries immediately as a stopgap.
 4. Apply the same check to EQUITY/FOREX/COMMODITY (their price feeds differ; verify independently).
 
+## The corrected picture (clean bar-aligned entry replay, first-touch, net 16bp, dedup)
+| cohort | contaminated ledger PF | **clean-entry PF** |
+|---|---|---|
+| CRYPTO LONG (n=432) | 0.55 | **0.66–0.69** (bug deflated) |
+| CRYPTO SHORT (n=157) | 1.40 | **1.05–1.14** (bug inflated) |
+
+The bug inflated shorts ~+0.3 PF and deflated longs ~−0.1 PF — most of the apparent L/S asymmetry. With clean entries there is **no promotable directional edge**: LONG still loses (~0.67), and SHORT is only ~1.1 (regime-level in a bearish window, near the random-short baseline — not a durable signal edge). This is the honest crypto picture once the entry bug is removed.
+
 ## Bottom line
 The program's "no durable edge / everything dissolves" pattern now has a concrete mechanical cause on top of small-sample + regime: **the entry price the PnL is measured from is wrong ~71% of the time and biased +1.3% in the short-favoring direction.** Fixing `entry_price`/re-resolving the ledger is the single highest-leverage action — above any strategy, gate, or new-data work. Until then, treat all ledger directional PnL (especially SHORT-crypto) as unverified. See `FALSIFICATION_luxalgo_short_2026-07-03.md` and the two-control checklist in memory `feedback-entry-price-contamination-regime-2026-07-03`.
