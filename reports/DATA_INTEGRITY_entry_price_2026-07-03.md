@@ -46,5 +46,16 @@ The bug inflated shorts ~+0.3 PF and deflated longs ~−0.1 PF — most of the a
 ### Regime-benchmark confirmation (2026-07-03, decisive)
 The window is confirmed **bearish**: BTC **−26.7%**, ETH **−30.0%**, SOL **−16.4%** (2026-05-15→07-02). A random-entry clean replay (same code, 600 draws) returns **RANDOM LONG PF 0.65 / RANDOM SHORT PF 1.06** — i.e. shorting-anything mildly wins purely because the market fell. The clean **pooled** book (LONG 0.67 / SHORT ~1.1) **matches this random baseline almost exactly → the crypto book has NO signal edge; it is entirely regime.** (Caveat: a per-strategy clean run appeared to show some LONG strategies winning — macd_rsi 2.47, volume_spike 1.60, rsi_bounce 5.39 — but these are **contradicted by the random-LONG baseline of 0.65** and are therefore untrusted look-ahead/small-sample artifacts, not real edges.) Net: the entry bug manufactured illusory SHORT alpha on top of an already-edgeless (regime-only) book.
 
+## Look-ahead correction (2026-07-03, final — verified my own tool)
+The clean-entry replays above enter at the **signal-bar close**. Re-running with entry shifted to the **next bar close** (realistic execution, look-ahead-free) collapses everything:
+
+| strategy (LONG) | signal-bar entry | next-bar entry |
+|---|---|---|
+| macd_rsi_confluence | 2.47 | **0.37** |
+| volume_spike_breakout | 1.60 | **0.33** |
+| rsi_bounce | 5.39 | **0.20** |
+
+100% of the apparent LONG "edge" lived in the one bar between signal and next bar → a look-ahead artifact (entering at a price the signal already reflected). The **implication cuts the other way too**: my earlier "clean" short/pooled numbers (SHORT ~1.1, LONG ~0.67) also used signal-bar entry, so they were mildly look-ahead-*favorable*; with realistic next-bar entry, **all cells collapse to 0.2–0.4.** Verdict hardens: **there is no tradeable directional edge in the crypto book under look-ahead-free execution** — the ledger's apparent edges are entry-price inflation + regime + (in replays) signal-bar look-ahead. Any future clean re-resolution MUST use next-bar (or intrabar-fill-lagged) entries.
+
 ## Bottom line
 The program's "no durable edge / everything dissolves" pattern now has a concrete mechanical cause on top of small-sample + regime: **the entry price the PnL is measured from is wrong ~71% of the time and biased +1.3% in the short-favoring direction.** Fixing `entry_price`/re-resolving the ledger is the single highest-leverage action — above any strategy, gate, or new-data work. Until then, treat all ledger directional PnL (especially SHORT-crypto) as unverified. See `FALSIFICATION_luxalgo_short_2026-07-03.md` and the two-control checklist in memory `feedback-entry-price-contamination-regime-2026-07-03`.
