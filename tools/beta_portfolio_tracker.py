@@ -70,19 +70,23 @@ def _eqw_index(rows_by_day):
     return idx
 
 
+# Deployable sleeves = the actual liquid ETFs (survivorship-free — SPY *is* the index),
+# ingested into etf_daily_ohlcv via yfinance. BONDS + GOLD included for REGIME
+# diversification even though they dragged 2021-26 (worst rate-hike cycle in 40yr);
+# inverse-vol sizing naturally down-weights the high-vol sleeves. Do NOT drop bonds
+# because they lagged recently — that is recency-overfit; they pay off when rates fall.
+SLEEVE_ETFS = {"EQUITY": "SPY", "COMMODITY": "DBC", "BONDS": "AGG", "GOLD": "GLD"}
+
+
 def _load_sleeves(conn):
     sleeves = {}
     with conn.cursor() as cur:
-        cur.execute("SELECT symbol,trade_date,close FROM equity_daily_ohlcv WHERE close>0 AND symbol<>'SPY' ORDER BY trade_date")
-        eq = defaultdict(dict)
-        for s, d, cl in cur.fetchall():
-            eq[str(d)][s] = float(cl)
-        sleeves["EQUITY"] = _eqw_index(eq)
-        cur.execute("SELECT symbol,trade_date,close FROM futures_daily_ohlcv WHERE close>0 ORDER BY trade_date")
-        co = defaultdict(dict)
-        for s, d, cl in cur.fetchall():
-            co[str(d)][s] = float(cl)
-        sleeves["COMMODITY"] = _eqw_index(co)
+        for name, etf in SLEEVE_ETFS.items():
+            cur.execute("SELECT trade_date,close FROM etf_daily_ohlcv WHERE symbol=%s AND close>0 ORDER BY trade_date", (etf,))
+            series = {str(d): float(cl) for d, cl in cur.fetchall()}
+            if len(series) > MA_LEN + 2:
+                sleeves[name] = series
+        # CRYPTO sleeve — BTC daily from crypto_ohlcv (short history; small sleeve)
         cur.execute(
             """SELECT DATE(FROM_UNIXTIME(timestamp/1000)) d,
                       CAST(SUBSTRING_INDEX(GROUP_CONCAT(close ORDER BY timestamp),',',-1) AS DECIMAL(30,10))
@@ -147,10 +151,10 @@ def compute_status():
         "generated_at": now.isoformat(),
         "target_weights": target,
         "cash_weight": cash,
-        "deployable_proxies": {"EQUITY": "VTI/SPY", "COMMODITY": "DBC", "CRYPTO": "BTC (small)", "BONDS": "AGG/TLT (add a feed to enable)"},
+        "deployable_proxies": {"EQUITY": "SPY", "COMMODITY": "DBC", "BONDS": "AGG", "GOLD": "GLD", "CRYPTO": "BTC (small)"},
         "sleeve_info": info,
         "rebalance": "monthly or quarterly; benchmark vs 60/40, not vs alpha",
-        "note": "Crash guard halves a sleeve below its 200d MA (leaks to cash). Bonds sleeve recommended but not in the free DB.",
+        "note": "Sleeves are liquid ETFs (survivorship-free). Crash guard halves a sleeve below its 200d MA (leaks to cash). Bonds+gold held for REGIME diversification though they lagged 2021-26; inverse-vol sizes them. On 2021-26 alone, SPY+DBC risk-parity scored best (Sharpe 1.04) but that is recency-specific.",
     }
 
 
