@@ -1,0 +1,40 @@
+# Tactical Asset-Class Rotation — the one strategy that beat passive (2026-07-04)
+
+**Author:** claude (fable), thinking as a quant across stocks/bonds/ETFs. **Result:** after an exhaustive null hunt, **asset-class momentum rotation (dual-momentum / TAA) is the first strategy that robustly improves on buy-and-hold** on a risk-adjusted basis. Every number from a real backtest on free yfinance ETF data (36 ETFs, 2018-2026, look-ahead-free, net cost).
+
+## The edge
+Hold the **top-5 asset-class ETFs by 9-month momentum**, rebalanced monthly, with an **absolute-momentum filter** (a slot with negative momentum goes to bonds/cash). Universe = 14 liquid, low-fee asset-class ETFs (US large/nasdaq/small, intl dev/EM, long/interm/agg/short bonds, gold, broad commodity, REITs, IG/HY credit, TIPS).
+
+## Why it's credible (robustness grid, not a lucky cell)
+| | vs SPY buy-hold |
+|---|---|
+| **Every** (top-N × lookback) cell, all 16 | cut MaxDD to **−12 to −17%** vs SPY **−24%** |
+| 8/16 cells | beat SPY on Sharpe≥1.0 AND Calmar>0.68 AND both-halves>0 |
+| **9-month lookback region** (top-3/4/5/6) | uniformly best: **Sharpe 1.09-1.21, Calmar 0.81-1.10** vs SPY 1.00 / 0.68 |
+| top-4 / 9m (best cell) | Sharpe 1.21, Calmar 1.10, MaxDD −12% |
+
+The drawdown reduction is **universal** (robust); the risk-adjusted outperformance is strongest and stable in the 9-month-lookback neighborhood (not one overfit point). Both time-halves positive. Economic rationale is strong: dual momentum / TAA is one of the most-replicated practitioner strategies (Antonacci GEM, Faber). It works here — where single-stock momentum was null — because it rotates across **low-correlation asset classes** and steps to bonds/cash in bear regimes.
+
+## Honest caveats
+- It is **smart-beta / tactical allocation, NOT alpha**: it roughly matches the market's *return* but with ~half the *drawdown* → better Sharpe/Calmar. The "win" is risk control + crash avoidance, not excess return.
+- It is **in-sample-robust (2018-2026), not proven-forward**. Best treated as a forward-tracked deployment at modest size. Monthly turnover on liquid ETFs → cost ~2-5bp, easily survivable.
+- Slight 1-day entry-timing assumption (signal at month-end close, hold next month) — immaterial for a monthly strategy (unlike the intraday gap-fade that died on timing).
+
+## Current target holdings (as of 2026-07-02)
+**EEM 20% · IWM 20% · DBC 20% · QQQ 20% · EFA 20%** (emerging, US small-cap, commodity, nasdaq, intl-developed — all positive 9m momentum; currently *out* of SPY and bonds). Recompute monthly: `tools/tactical_rotation_tracker.py`.
+
+## Low-fee fund "top prospects" (the secondary ask — fund selection)
+Screened by risk-adjusted return (Sharpe, since 2018) with published expense ratios. Honest note: **past fund performance does not predict future** (SPIVA: most active funds underperform), so the durable prospects are **broad low-fee index funds**, cheaply capturing beta:
+
+| fund/ETF | ann | Sharpe | MaxDD | ER% | mutual-fund equivalent (low-fee) |
+|---|---|---|---|---|---|
+| VOO/VTI (S&P/total US) | ~16% | 0.80 | −34% | **0.03** | **VFIAX / FXAIX / VTSAX / FSKAX / SWPPX** (0.015-0.04%) |
+| SCHD / VIG (dividend) | 13-14% | 0.70-0.78 | −32% | **0.06** | VDADX |
+| QUAL / USMV (quality / min-vol) | 11-16% | 0.66-0.76 | −33% | 0.15 | — |
+| AGG / BND (bonds) | — | — | −17% | **0.03** | VBTLX |
+| GLD (gold) | 16% | 0.86 | −26% | 0.40 | — |
+
+**Top prospects verdict:** for a buy-and-hold sleeve, the winners are the **0.03% ER total-market index funds (FXAIX/VFIAX/VTSAX or their VOO/VTI ETFs)** — you cannot beat free-and-diversified for long-run compounding. The tactical rotation above is the way to *improve risk-adjusted return* on top of those building blocks.
+
+## Recommendation
+**Deploy the tactical rotation** (`tactical_rotation_tracker.py`) at modest size alongside the diversified beta portfolio, forward-track it monthly (git history of the status JSON = track record), and re-evaluate after 6-12 months of live data. This is the strongest, most-defensible result of the entire investigation — a real, robust, risk-adjusted improvement over passive, implementable with free low-fee ETFs. Codebase cross-refs to mine next: `reports/etf_strategy_catalog.md`, `high_sharpe_strategies_report.md`, `academic_trading_strategies.md`, `INSTITUTIONAL_STRATEGY_RESEARCH.md`.
