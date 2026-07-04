@@ -15,8 +15,18 @@
   - CRYPTO → BTC, small (crypto_ohlcv; short history)
   - **BONDS → AGG/TLT — recommended but NOT in the free DB.** Add a free bond price feed (e.g., yfinance AGG/TLT daily) to complete an all-weather mix; this is the one build-out that would materially improve diversification.
 
-## Backtest sanity (free feeds, 2021-2026, look-ahead-free, net cost)
-Diversified 50/50 Equity+Commodity buy-hold: **ann +11.4%, Sharpe 0.96, MaxDD −16%.** That is a genuinely reasonable beta portfolio (better than ~99% of undisciplined retail trading). Adding an inverse-vol crypto sleeve + bonds would raise diversification further. (Equity leg's *level* is partly survivorship-inflated by the current-constituents universe — a live account using VTI/SPY avoids that.)
+## Backtest — real, survivorship-free ETFs (2021-2026, monthly rebalance, look-ahead-free, net cost)
+Upgraded from the survivorship-biased basket to actual liquid ETFs ingested via yfinance into `etf_daily_ohlcv` (SPY, DBC, AGG, TLT, IEF, GLD):
+
+| portfolio | Sharpe | MaxDD | Calmar | both-halves |
+|---|---|---|---|---|
+| SPY only | 0.93 | −24% | 0.62 | 0.47 / 1.46 |
+| 60/40 SPY/AGG | 0.86 | −21% | 0.44 | 0.24 / 1.59 |
+| **SPY+DBC inverse-vol** | **1.04** | **−18%** | **0.81** | 0.85 / 1.32 |
+| +AGG+GLD (4-sleeve) | 0.95 | −15% | 0.46 | 0.11 / 1.97 |
+| +TLT (5-sleeve) | 0.65 | −17% | 0.27 | −0.22 / 1.72 |
+
+**Key finding (honest + non-obvious):** equity+commodity risk-parity **beat everything on 2021-26 — including 60/40 and the bonds-heavy all-weather** — because bonds had their worst rate-hike cycle in 40 years (2022 crash). **But that is recency-specific:** bonds pay off when rates fall, so the deployed tracker still holds them for *regime* diversification (inverse-vol sizes them; do not drop a sleeve for lagging recently — that is the exact recency-overfit trap that killed prior "edges"). The crash guard again slightly *reduced* risk-adjusted return (4-sleeve 0.95→0.89) — kept only as light tail insurance for sustained bears.
 
 ## The tool
 `tools/beta_portfolio_tracker.py` — read-only sidecar. Each run computes the current target weights (inverse-vol + crash guard) and writes `audit_dashboard/data/beta_portfolio_status.json`. Places no orders. Current output (2026-07-04): EQUITY 44.8% / COMMODITY 35.9% / CRYPTO 9.7% / CASH 9.7% (crypto crash-guarded — BTC below its 200d MA). Wire into a monthly/weekly cron next to the other trackers to log a live NAV track record.
