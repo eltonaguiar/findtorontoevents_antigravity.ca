@@ -441,7 +441,10 @@ ML_PROVEN_STRATEGIES: dict[str, float] = {
     'ml_enhanced_FETUSDT_1d_B_lightgbm': 93.8,
     'ml_enhanced_RENDERUSDT_1h_D_ensemble_stack': 87.5,
     'ml_enhanced_RENDERUSDT_4h_D_ensemble_stack': 87.5,
-    'copy_hl_NMTD_25M': 81.3,
+    # copy_hl_NMTD_25M REMOVED 2026-07-04 — the 81.3% WR was FABRICATED: the DB has 0 resolved
+    # trades for it (101,761 rows all status=OPEN); its sibling copy_hl_lb is blocklisted at 0% WR.
+    # It was granting an unbacked strategy elite_score=1. See reports/CROSS_ASSET_EDGE_SYNTHESIS_2026-07-04.md.
+    # Now falls back to the real (data-driven) scorer, which floors a no-resolved-trade strategy.
     'quan_engine_swing': 88.0,
     'quan_engine_scalp': 86.0,
 }
