@@ -1,0 +1,55 @@
+name: POC Picks Checkpoint (2-week reminder)
+
+# Durable self-executing reminder: on the POC measurement window, resolve the
+# open poc_picks (fetch current prices, compute pnl, update DB) and commit the
+# verdict report — did the tactical-rotation picks beat SPY? Set 2026-07-04 for
+# poc_id tactical_asset_rotation_v1 (measurement_date 2026-07-18). Fires 07-18
+# (Sat) and 07-20 (Mon, fresh prices); resolver is idempotent (only OPEN picks).
+
+on:
+  schedule:
+    - cron: "0 21 18 7 *"   # 2026-07-18 21:00 UTC
+    - cron: "0 21 20 7 *"   # 2026-07-20 21:00 UTC (Monday, after US close)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: poc-picks-checkpoint
+  cancel-in-progress: false
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    env:
+      DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+      DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+      DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+      DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+      DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install --quiet pymysql yfinance pandas
+      - name: Resolve POC picks + write verdict
+        run: |
+          python3 tools/resolve_poc_picks.py | tee /tmp/poc_verdict.txt
+          {
+            echo "# POC Checkpoint verdict — $(date -u +%Y-%m-%d)"
+            echo '```'
+            cat /tmp/poc_verdict.txt
+            echo '```'
+          } > reports/POC_CHECKPOINT_VERDICT.md
+      - name: Commit verdict
+        run: |
+          git config user.name "poc-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add reports/POC_CHECKPOINT_VERDICT.md || true
+          git commit -m "chore(poc): 2-week checkpoint verdict $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
+          git push || echo "push skipped"
