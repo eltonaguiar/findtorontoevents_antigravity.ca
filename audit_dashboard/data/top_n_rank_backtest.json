@@ -1,19 +1,22 @@
 {
-  "generated_at": "2026-07-08T01:27:21.738339+00:00",
+  "generated_at": "2026-07-08T02:23:11.493822+00:00",
   "asset_class": "EQUITY",
   "top_n": 10,
   "lookback_days": 90,
   "method": "hindsight replay: rank each day's closed picks by score, take top-N, measure mean realized pnl_pct. Answers 'if I bought top-N T days ago by score, would I have been profitable?' on REALIZED outcomes only.",
   "windows": {
     "today": {
-      "days": 0,
-      "n_total_picks": 0
+      "days": 1,
+      "n_total_picks": 1,
+      "mean_daily_pnl_pct": 1.37,
+      "cum_pnl_pct_if_held_daily_topn": 1.37,
+      "wr_pct_across_topn_picks": 100.0
     },
     "yesterday": {
       "days": 1,
-      "n_total_picks": 2,
-      "mean_daily_pnl_pct": 1.43,
-      "cum_pnl_pct_if_held_daily_topn": 1.43,
+      "n_total_picks": 5,
+      "mean_daily_pnl_pct": 2.676,
+      "cum_pnl_pct_if_held_daily_topn": 2.676,
       "wr_pct_across_topn_picks": 100.0
     },
     "day_before_yesterday": {
@@ -24,43 +27,86 @@
       "wr_pct_across_topn_picks": 100.0
     },
     "last_7d": {
-      "days": 4,
-      "n_total_picks": 9,
-      "mean_daily_pnl_pct": 1.147,
-      "cum_pnl_pct_if_held_daily_topn": 4.59,
-      "wr_pct_across_topn_picks": 77.78
+      "days": 5,
+      "n_total_picks": 13,
+      "mean_daily_pnl_pct": 1.441,
+      "cum_pnl_pct_if_held_daily_topn": 7.206,
+      "wr_pct_across_topn_picks": 84.62
     },
     "last_30d": {
-      "days": 22,
-      "n_total_picks": 83,
-      "mean_daily_pnl_pct": 0.514,
-      "cum_pnl_pct_if_held_daily_topn": 11.304,
-      "wr_pct_across_topn_picks": 62.65
+      "days": 23,
+      "n_total_picks": 89,
+      "mean_daily_pnl_pct": 0.593,
+      "cum_pnl_pct_if_held_daily_topn": 13.649,
+      "wr_pct_across_topn_picks": 62.92
     },
     "all_lookback": {
-      "days": 48,
-      "n_total_picks": 242,
-      "mean_daily_pnl_pct": -0.156,
-      "cum_pnl_pct_if_held_daily_topn": -7.49,
-      "wr_pct_across_topn_picks": 44.63
+      "days": 49,
+      "n_total_picks": 248,
+      "mean_daily_pnl_pct": -0.105,
+      "cum_pnl_pct_if_held_daily_topn": -5.145,
+      "wr_pct_across_topn_picks": 45.16
     }
   },
   "per_day_detail": {
     "today": {
       "date": "2026-07-08",
-      "n_picked": 0,
-      "note": "no closed picks created on this day"
+      "n_picked": 1,
+      "n_wins": 1,
+      "n_losses": 0,
+      "wr_pct": 100.0,
+      "mean_pnl_pct": 1.37,
+      "cum_pnl_pct": 1.37,
+      "profit_factor": null,
+      "picks": [
+        {
+          "symbol": "AAPL",
+          "strategy": "vt_equity_two_day_rsi_reversal",
+          "direction": "LONG",
+          "score": 47.0,
+          "pnl_pct": 1.37,
+          "status": "TP_HIT",
+          "id": "vt_equity_two_day_rsi_reversal::AAPL::2026-07-08"
+        }
+      ]
     },
     "yesterday": {
       "date": "2026-07-07",
-      "n_picked": 2,
-      "n_wins": 2,
+      "n_picked": 5,
+      "n_wins": 5,
       "n_losses": 0,
       "wr_pct": 100.0,
-      "mean_pnl_pct": 1.43,
-      "cum_pnl_pct": 2.86,
+      "mean_pnl_pct": 2.676,
+      "cum_pnl_pct": 13.38,
       "profit_factor": null,
       "picks": [
+        {
+          "symbol": "AMD",
+          "strategy": "regime_crash",
+          "direction": "SHORT",
+          "score": 57.0,
+          "pnl_pct": 6.52,
+          "status": "TP_HIT",
+          "id": "iso_regime_terminal_AMD_8888683574"
+        },
+        {
+          "symbol": "MSFT",
+          "strategy": "regime_mild_bull",
+          "direction": "LONG",
+          "score": 57.0,
+          "pnl_pct": 2.0,
+          "status": "TP_HIT",
+          "id": "iso_regime_terminal_MSFT_6664054772"
+        },
+        {
+          "symbol": "QQQ",
+          "strategy": "regime_strong_bear",
+          "direction": "SHORT",
+          "score": 57.0,
+          "pnl_pct": 2.0,
+          "status": "TP_HIT",
+          "id": "iso_regime_terminal_QQQ_162989900"
+        },
         {
           "symbol": "RIVN",
           "strategy": "smart_money_accumulation",
