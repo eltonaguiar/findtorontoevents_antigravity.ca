@@ -1,37 +1,60 @@
 {
-  "generated_at": "2026-07-08T02:23:13.480542+00:00",
+  "generated_at": "2026-07-08T03:54:27.610678+00:00",
   "method": "Newey-West-style autocorrelation correction with Bartlett kernel; L = max(1, floor(n^0.25))",
   "config": {
     "min_n": 30,
     "asset_class_filter": null,
     "strategy_filter": null
   },
-  "by_strategy": [],
-  "by_class": [
+  "by_strategy": [
     {
-      "n": 87,
-      "n_eff": 80.88,
-      "deflation_pct": 7.03,
+      "n": 34,
+      "n_eff": 24.68,
+      "deflation_pct": 27.42,
       "autocorr_lags": [
         {
           "lag": 1,
-          "rho": -0.0136,
+          "rho": 0.2974,
+          "bartlett_weight": 0.6667
+        },
+        {
+          "lag": 2,
+          "rho": -0.0283,
+          "bartlett_weight": 0.3333
+        }
+      ],
+      "L": 2,
+      "asset_class": "CRYPTO",
+      "strategy": "prediction_market_consensus",
+      "mean_pnl_pct": 0.4983,
+      "flag": "MODERATE_AUTOCORR"
+    }
+  ],
+  "by_class": [
+    {
+      "n": 136,
+      "n_eff": 77.55,
+      "deflation_pct": 42.98,
+      "autocorr_lags": [
+        {
+          "lag": 1,
+          "rho": 0.3595,
           "bartlett_weight": 0.75
         },
         {
           "lag": 2,
-          "rho": 0.1393,
+          "rho": 0.2253,
           "bartlett_weight": 0.5
         },
         {
           "lag": 3,
-          "rho": -0.0865,
+          "rho": -0.0217,
           "bartlett_weight": 0.25
         }
       ],
       "L": 3,
       "asset_class": "CRYPTO",
-      "mean_pnl_pct": -0.0328
+      "mean_pnl_pct": 0.2667
     },
     {
       "n": 83,
@@ -60,10 +83,10 @@
     }
   ],
   "summary": {
-    "n_strategies_audited": 0,
+    "n_strategies_audited": 1,
     "n_classes_audited": 2,
     "strategies_high_autocorr": 0,
-    "strategies_moderate_autocorr": 0
+    "strategies_moderate_autocorr": 1
   },
   "nfa": "Diagnostic only. Does not change any gate. Tier thresholds downstream should consider n_eff alongside raw n for statistical-significance claims."
 }
