@@ -135,7 +135,7 @@
         "warnings": [
           "Price at lower Bollinger Band",
           "ML cross-strategy match: using cci_divergence ranking for ema_pullback_adx/SOLUSDT",
-          "ML optimizer: F \u2014 weak edge (0.1)"
+          "ML optimizer: F \u2014 weak edge (0.3)"
         ]
       },
       "backtest": {
@@ -418,7 +418,7 @@
         "notes": [],
         "warnings": [
           "Price at lower Bollinger Band",
-          "ML optimizer: F \u2014 weak edge (0.2)"
+          "ML optimizer: F \u2014 weak edge (0.5)"
         ]
       },
       "backtest": {
@@ -442,7 +442,7 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.2,
+        "ml_score": 0.5,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -450,6 +450,100 @@
       },
       "processed_at": "2026-07-08T20:54:59.457893+00:00",
       "ml_rank": 4
+    },
+    {
+      "id": "hyro-v2-btc-adxvol",
+      "rank": 7,
+      "asset_class": "CRYPTO",
+      "label": "Bitcoin \u2014 ADX Vol Breakout",
+      "symbol_hint": "BTCUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 82,
+      "timeframe": "1H",
+      "strategy": "adx_vol_breakout",
+      "backtest_grade": "B+",
+      "backtest_stats": "+$619 PnL, PF 1.46, 37% WR, $327 max DD, 57 trades/6mo",
+      "thesis": "BTC ADX vol breakout \u2014 same strategy as ETH but wider DD ($327). Still passes with $173 buffer. Use as secondary BTC setup when CCI is not signaling.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR. Confirm ADX > 25 and volume surge before entry.",
+      "take_profit_plan": "TP = 2\u00d7 risk.",
+      "technical_indicators": {
+        "rsi": 44.64,
+        "macd": {
+          "macd": 25.8673,
+          "signal": 281.8481,
+          "histogram": -255.9808,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 64333.6,
+          "middle": 63089.96,
+          "lower": 61846.32,
+          "pct_b": 0.12,
+          "squeeze": false
+        },
+        "atr_pct": 1.321,
+        "volume": {
+          "ratio": 0.78,
+          "expansion": false,
+          "direction": "neutral"
+        },
+        "trend": "downtrend",
+        "sma_20": 63089.96,
+        "sma_50": 61983.07,
+        "current_price": 62145.06
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 60,
+        "breakdown": {
+          "base": 82,
+          "bb_oversold": -3,
+          "ml_edge_blend": -19,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "moderate",
+        "notes": [],
+        "warnings": [
+          "Price at lower Bollinger Band",
+          "ML optimizer: F \u2014 weak edge (16.1)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 26.2,
+        "avg_pnl": -0.65,
+        "total_trades": 160,
+        "wins": 42,
+        "losses": 118,
+        "avg_bars_held": 16.8
+      },
+      "short_term_entry": {
+        "entry_quality": 61,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "trend_aligned",
+          "macd_support",
+          "atr_in_tradeable_band",
+          "backtest_wr_weak"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 16.1,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-07-08T19:48:42.638288+00:00",
+      "ml_rank": 5
     },
     {
       "id": "hyro-v2-avax-cmf",
