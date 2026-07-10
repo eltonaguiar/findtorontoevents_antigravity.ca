@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-10T09:54:12.646986+00:00",
+  "generated_at": "2026-07-10T11:48:39.314335+00:00",
   "method": "Newey-West-style autocorrelation correction with Bartlett kernel; L = max(1, floor(n^0.25))",
   "config": {
     "min_n": 30,
@@ -7,6 +7,28 @@
     "strategy_filter": null
   },
   "by_strategy": [
+    {
+      "n": 30,
+      "n_eff": 11.72,
+      "deflation_pct": 60.95,
+      "autocorr_lags": [
+        {
+          "lag": 1,
+          "rho": 0.8227,
+          "bartlett_weight": 0.6667
+        },
+        {
+          "lag": 2,
+          "rho": 0.6957,
+          "bartlett_weight": 0.3333
+        }
+      ],
+      "L": 2,
+      "asset_class": "CRYPTO",
+      "strategy": "prediction_market_consensus",
+      "mean_pnl_pct": -0.4006,
+      "flag": "HIGH_AUTOCORR"
+    },
     {
       "n": 31,
       "n_eff": 12.5,
@@ -32,29 +54,29 @@
   ],
   "by_class": [
     {
-      "n": 103,
-      "n_eff": 103.0,
-      "deflation_pct": 0.0,
+      "n": 117,
+      "n_eff": 63.39,
+      "deflation_pct": 45.82,
       "autocorr_lags": [
         {
           "lag": 1,
-          "rho": -0.0137,
+          "rho": 0.3642,
           "bartlett_weight": 0.75
         },
         {
           "lag": 2,
-          "rho": -0.0258,
+          "rho": 0.2166,
           "bartlett_weight": 0.5
         },
         {
           "lag": 3,
-          "rho": -0.0795,
+          "rho": 0.1657,
           "bartlett_weight": 0.25
         }
       ],
       "L": 3,
       "asset_class": "CRYPTO",
-      "mean_pnl_pct": -0.0261
+      "mean_pnl_pct": -0.1258
     },
     {
       "n": 80,
@@ -75,32 +97,12 @@
       "L": 2,
       "asset_class": "FOREX",
       "mean_pnl_pct": 0.0263
-    },
-    {
-      "n": 30,
-      "n_eff": 20.15,
-      "deflation_pct": 32.85,
-      "autocorr_lags": [
-        {
-          "lag": 1,
-          "rho": 0.3801,
-          "bartlett_weight": 0.6667
-        },
-        {
-          "lag": 2,
-          "rho": -0.0264,
-          "bartlett_weight": 0.3333
-        }
-      ],
-      "L": 2,
-      "asset_class": "UNKNOWN",
-      "mean_pnl_pct": 0.0196
     }
   ],
   "summary": {
-    "n_strategies_audited": 1,
-    "n_classes_audited": 3,
-    "strategies_high_autocorr": 1,
+    "n_strategies_audited": 2,
+    "n_classes_audited": 2,
+    "strategies_high_autocorr": 2,
     "strategies_moderate_autocorr": 0
   },
   "nfa": "Diagnostic only. Does not change any gate. Tier thresholds downstream should consider n_eff alongside raw n for statistical-significance claims."
