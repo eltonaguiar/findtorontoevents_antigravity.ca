@@ -1,0 +1,27 @@
+name: Daily Prices yfinance Refresh
+# Replaces the DEAD fetch_prices.php (HTTP 404) that froze daily_prices at 2026-04-29.
+on:
+  schedule:
+    - cron: "40 22 * * 1-5"   # weekdays 22:40 UTC (after US close)
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: daily-prices-yf-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+      DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+      DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+      DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+      DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet pymysql yfinance pandas
+      - run: python3 tools/refresh_daily_prices_yf.py --days 30
