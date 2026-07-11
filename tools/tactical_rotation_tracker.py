@@ -39,7 +39,12 @@ import pymysql  # noqa: E402
 OUT_PATH = os.path.join(REPO, "audit_dashboard", "data", "tactical_rotation_status.json")
 UNIVERSE = ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "AGG", "GLD", "DBC", "VNQ", "LQD", "HYG", "TIP"]
 TOP_N = 5
-LOOKBACK_MONTHS = 9
+# 6-month lookback is the REGIME-ROBUST default: over 2007-2026 (incl the 2008 GFC where SPY
+# drew down -51%) top5-6m had Sharpe 0.88 vs SPY 0.74, MaxDD -19%, positive in all 3 time-thirds.
+# (9-month was marginally better in the 2018-26 window only; 6-month generalizes across crashes.)
+# The POC picks (poc_picks, entered 2026-07-04) were locked with the 9-month signal — both are in
+# the robust region; future rebalances use 6-month.
+LOOKBACK_MONTHS = 6
 CASH_ASSET = "AGG"  # where negative-absolute-momentum slots go
 
 
