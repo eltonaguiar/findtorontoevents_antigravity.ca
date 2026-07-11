@@ -967,6 +967,17 @@ def revive_ml_picks() -> list[dict]:
 
     Returns list of picks in alpha_engine format.
     """
+    # DISABLED 2026-07-11 (reports/ML_AUDIT_2026-07-04.md): this reviver's hardcoded
+    # historical_wr/closed_picks are FABRICATED — verified vs live at_signal_outcomes:
+    # FET 0.941/17-closed -> DB 5 trades @ 40%; BNB 0.60/35 -> 0 trades; RENDER 1.0/3 -> 0.
+    # The ml_enhanced_* class it revives is a 28% WR / -0.96%-net LOSER, and the ML layer is
+    # globally halted (ml_trading_enabled=False). This path was re-injecting losing ML picks.
+    # Gated OFF by default; set ML_REVIVER_ENABLED=1 only after retraining on clean data +
+    # look-ahead-free validation (the 3 controls).
+    import os as _os
+    if _os.environ.get("ML_REVIVER_ENABLED", "0") != "1":
+        print("[ML REVIVER] DISABLED — fabricated WRs + halted ML layer (ML_AUDIT_2026-07-04). No picks emitted.")
+        return []
     now = datetime.now(timezone.utc)
     all_picks: list[dict] = []
     bridged_strategies: set[str] = set()
