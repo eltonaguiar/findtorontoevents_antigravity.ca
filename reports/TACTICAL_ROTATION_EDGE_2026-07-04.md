@@ -49,3 +49,14 @@ Extended etf_daily_ohlcv to 2005 and re-ran over ~229 months across every major 
 | top4-6m | +9.5% | 0.85 | -24% | 0.40 | 0.68 / 0.76 / 1.17 |
 
 **The edge holds across 20 years.** In 2008 buy-hold SPY lost -51%; the rotation lost only -19% (it rotated to bonds/gold/cash as everything trended down). Roughly matches return, ~2.3x better Calmar, positive in all three time-thirds (survives GFC, mid, recent — not just the recent bull). **6-month lookback is now the regime-robust default** (was 9m, best only in the 2018-26 window). Crash avoidance is the real, durable value.
+
+
+## Corroborating strategy: VAA-G4 (validated 2026-07-11)
+Tested Keller's Vigilant Asset Allocation (VAA-G4: offensive [SPY,EFA,EEM,AGG], defensive [LQD,IEF,SHY], 13612W momentum, canary risk-on/off) look-ahead-free on etf_daily_ohlcv 2007-2026:
+| | ann | Sharpe | MaxDD | Calmar | thirds |
+|---|---|---|---|---|---|
+| SPY buy-hold | +10.8% | 0.74 | -51% | 0.21 | 0.35/0.94/1.05 |
+| VAA-G4 | +8.1% | 0.77 | -20% | 0.40 | 1.03/0.66/0.56 |
+| top5-6m rotation | +9.2% | 0.88 | -19% | 0.48 | 0.72/0.73/1.20 |
+
+VAA-G4 also beats SPY (Sharpe+Calmar, all-thirds+, MaxDD -20%) — a 2nd independent TAA strategy that works, slightly weaker than the top5-6m rotation. **Key insight:** the two are REGIME-COMPLEMENTARY — VAA strong early/GFC (1.03), rotation strong recent (1.20) → a 50/50 blend of the two would likely smooth regime dependence (candidate for a v2 POC). That multiple independent TAA variants all cut drawdown ~2.5x vs SPY strongly corroborates the family is robust, not a single overfit cell.
