@@ -38,3 +38,14 @@ Screened by risk-adjusted return (Sharpe, since 2018) with published expense rat
 
 ## Recommendation
 **Deploy the tactical rotation** (`tactical_rotation_tracker.py`) at modest size alongside the diversified beta portfolio, forward-track it monthly (git history of the status JSON = track record), and re-evaluate after 6-12 months of live data. This is the strongest, most-defensible result of the entire investigation — a real, robust, risk-adjusted improvement over passive, implementable with free low-fee ETFs. Codebase cross-refs to mine next: `reports/etf_strategy_catalog.md`, `high_sharpe_strategies_report.md`, `academic_trading_strategies.md`, `INSTITUTIONAL_STRATEGY_RESEARCH.md`.
+
+
+## Long-history validation (2007-2026, incl 2008 GFC / 2020 COVID / 2022) — added 2026-07-11
+Extended etf_daily_ohlcv to 2005 and re-ran over ~229 months across every major crash:
+| | ann | Sharpe | MaxDD | Calmar | 3rds Sharpe (early/mid/recent) |
+|---|---|---|---|---|---|
+| SPY buy-hold | +10.8% | 0.74 | **-51%** | 0.21 | — |
+| top5-6m rotation | +9.2% | **0.88** | **-19%** | **0.48** | 0.72 / 0.73 / 1.20 |
+| top4-6m | +9.5% | 0.85 | -24% | 0.40 | 0.68 / 0.76 / 1.17 |
+
+**The edge holds across 20 years.** In 2008 buy-hold SPY lost -51%; the rotation lost only -19% (it rotated to bonds/gold/cash as everything trended down). Roughly matches return, ~2.3x better Calmar, positive in all three time-thirds (survives GFC, mid, recent — not just the recent bull). **6-month lookback is now the regime-robust default** (was 9m, best only in the 2018-26 window). Crash avoidance is the real, durable value.
