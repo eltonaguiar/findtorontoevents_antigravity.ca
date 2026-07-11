@@ -460,6 +460,26 @@ def run_merger(dry_run: bool = False) -> dict:
 
     now = datetime.now(timezone.utc)
 
+    # HALT GATE (2026-07-11, reports/ML_AUDIT_2026-07-04.md + emission audit): the ML layer is
+    # globally halted (alpha_engine/data/ml_health_status.json: ml_trading_enabled=False) yet this
+    # merger kept emitting ml_enhanced_* picks (honest 28% WR / -0.52%/trade net LOSER, n=112) into
+    # trading_picks every 2h, polluting the audit ledger. production_scanner only gated the downstream
+    # SELECTOR; the EMITTER was ungated. Respect the halt flag here, fail-closed. Re-enable via
+    # ML_EMIT_ENABLED=1 only after a clean retrain + look-ahead-free validation (the 3 controls).
+    import os as _os
+    import json as _json
+    if _os.environ.get("ML_EMIT_ENABLED", "0") != "1":
+        _halted = True
+        try:
+            _hs_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "data", "ml_health_status.json")
+            with open(_hs_path) as _f:
+                _halted = not bool(_json.load(_f).get("ml_trading_enabled", False))
+        except Exception:
+            _halted = True  # fail-closed: missing/unreadable health status -> do NOT emit
+        if _halted:
+            print("[ML MERGER] HALTED — ml_trading_enabled=False (ML_AUDIT_2026-07-04). No picks emitted. Set ML_EMIT_ENABLED=1 after a clean retrain + look-ahead-free validation.")
+            return {"status": "halted", "emitted": 0, "reason": "ml_trading_enabled=False", "generated_at": now.isoformat()}
+
     # -- Step 1: Load all source picks --
     all_picks = load_json(ML_ALL_PICKS)
     ml_closed = load_json(ML_CLOSED_PICKS)
