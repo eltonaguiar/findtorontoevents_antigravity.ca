@@ -60,3 +60,13 @@ Tested Keller's Vigilant Asset Allocation (VAA-G4: offensive [SPY,EFA,EEM,AGG], 
 | top5-6m rotation | +9.2% | 0.88 | -19% | 0.48 | 0.72/0.73/1.20 |
 
 VAA-G4 also beats SPY (Sharpe+Calmar, all-thirds+, MaxDD -20%) — a 2nd independent TAA strategy that works, slightly weaker than the top5-6m rotation. **Key insight:** the two are REGIME-COMPLEMENTARY — VAA strong early/GFC (1.03), rotation strong recent (1.20) → a 50/50 blend of the two would likely smooth regime dependence (candidate for a v2 POC). That multiple independent TAA variants all cut drawdown ~2.5x vs SPY strongly corroborates the family is robust, not a single overfit cell.
+
+
+## v2 POC: 50/50 rotation+VAA BLEND (2026-07-11) — the best of the family
+| | Sharpe | MaxDD | Calmar | thirds |
+|---|---|---|---|---|
+| SPY | 0.74 | -51% | 0.21 | 0.35/0.94/1.05 |
+| rotation top5-6m | 0.82 | -21% | 0.42 | 0.71/0.72/1.04 |
+| VAA-G4 | 0.73 | -21% | 0.37 | 1.00/0.61/0.52 |
+| **50/50 BLEND** | **0.89** | **-16%** | **0.50** | **0.98/0.77/0.92** |
+The blend beats BOTH components on Sharpe AND Calmar AND has the lowest MaxDD AND the smoothest thirds (regime diversification of two complementary strategies). This is the v2 proof-of-concept — the strongest, most-robust result of the investigation. Tool: tools/tactical_blend_tracker.py.
