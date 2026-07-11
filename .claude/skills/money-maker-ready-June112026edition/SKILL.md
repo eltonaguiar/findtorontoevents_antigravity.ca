@@ -5,6 +5,8 @@ description: The June-2026 EDITION of the money-ready program — executes the s
 
 # /money-maker-ready-June112026edition — the Master Loop (June 2026 edition)
 
+> ⚠️ **SUPERSEDED 2026-07-11 by `money-maker-ready-July112026edition`** (see `reports/edition_review_2026-07.md`). The June structural bet — mine the crypto ledger for directional alpha — was EXHAUSTED (no net-of-cost alpha; root cause = entry_price P0 + ~90% unresolved). The July edition pivots the primary track to ETF **tactical asset allocation** (the one validated find) + treats the crypto ledger as fix-before-mine. Use the July edition. This block below is retained for history.
+
 **Canonical plan:** `docs/MONEY_READY_MASTER_LOOP_2026-06.md` — READ IT FIRST; this skill is the executor.
 **Edition discipline:** this is a DATED edition. On the 11th of each month, run the edition review (Section E below) and either re-stamp or supersede with a new edition skill. Editions never silently mutate — improvements are visible diffs.
 
