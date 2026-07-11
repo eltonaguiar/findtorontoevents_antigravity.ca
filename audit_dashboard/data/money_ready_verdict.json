@@ -1,8 +1,176 @@
 {
-  "generated_at": "2026-07-11T00:26:51.825411+00:00",
+  "generated_at": "2026-07-11T02:48:26.546158+00:00",
   "generated_date": "2026-07-11",
   "source": "alpha_engine/money_ready_verdict.py --json",
   "classes": {
+    "FOREX": {
+      "intrabar_truth": {
+        "n": 245,
+        "wr": 0.3673,
+        "pf": 0.8456,
+        "source": "at_signal_outcomes.intrabar_*"
+      },
+      "sizing_source": "intrabar_truth",
+      "intrabar_daily_divergence": {
+        "daily_pf": 1.535,
+        "daily_wr": 0.5441,
+        "honest_pf": 0.8456,
+        "honest_wr": 0.3673,
+        "honest_n": 245,
+        "pf_inflation_x": 1.82,
+        "wr_inflation_pp": 17.7,
+        "gate_source": "intrabar_truth",
+        "flag": true
+      },
+      "policy_clean_n": 272,
+      "policy_clean_wr": 0.5441,
+      "policy_clean_wr_pct": 54.41,
+      "policy_clean_pf": 1.535,
+      "n_resolved": 245,
+      "wr": 0.3673,
+      "wr_pct": 36.73,
+      "pf": 0.8456,
+      "n_ok": true,
+      "wr_ok": false,
+      "pf_ok": false,
+      "dsr_ok": true,
+      "dsr_score": 1.0,
+      "pbo_ok": null,
+      "pbo": null,
+      "spa_ok": true,
+      "spa_p": 0.0,
+      "n_spa_pass": 1,
+      "expectancy": -0.014414,
+      "expectancy_ok": false,
+      "_slippage_gate_enabled": true,
+      "_slippage_recommend": null,
+      "_ml_enhanced_quarantine_enabled": true,
+      "_ml_enhanced_quarantine_n": 0,
+      "_ml_enhanced_quarantine_recommend": null,
+      "_mdd_gate_enforce": true,
+      "mdd": 0.9999,
+      "mdd_ok": false,
+      "cvar_95": -66.0531,
+      "cvar_ok": false,
+      "_mdd_cvar_gate_ok": false,
+      "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 1,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": true,
+      "n_profitable_multi_source": 1,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
+      "recency_ok": true,
+      "recency_gate_48h": true,
+      "recency_days_since_last": 0.16,
+      "recency_most_recent": "2026-07-10T23:00:58.455029+00:00",
+      "recency_note": "ok",
+      "bootstrap_ci_lower": -0.01009,
+      "bootstrap_ci_upper": 0.052419,
+      "bootstrap_ci_ok": false,
+      "wf_oos_ratio": 1.7599,
+      "wf_oos_is_pf": 1.4656,
+      "wf_oos_oos_pf": 2.5793,
+      "wf_oos_ok": true,
+      "top_sleeves": [
+        {
+          "strategy": "non_crypto_consensus",
+          "n": 223,
+          "wr": 52.91,
+          "pf": 9.677,
+          "is_single_source": false,
+          "source": "resolver_grade",
+          "policy_blocked": false,
+          "note": "resolver_grade"
+        },
+        {
+          "strategy": "forex_rsi2_mean_reversion",
+          "n": 145,
+          "wr": 51.03,
+          "pf": 1.9198,
+          "is_single_source": true,
+          "source": "policy_clean",
+          "policy_blocked": false,
+          "note": "single-source"
+        }
+      ],
+      "_recency_warn": false,
+      "verdict": "NOT_READY",
+      "policy_frozen": true,
+      "data_source": "closed_picks",
+      "top_symbol": "USDJPY=X",
+      "top_symbol_share": 0.2022,
+      "concentration_capped": false,
+      "top_source": "UNKNOWN",
+      "top_source_share": 0.8272,
+      "source_concentration_capped": true,
+      "high_conviction_rate": 1.0,
+      "long_term_stability_rate": 1.0,
+      "details": {
+        "dsr": {
+          "ok": true,
+          "dsr_score": 1.0,
+          "note": ""
+        },
+        "pbo": {
+          "ok": null,
+          "note": "need \u22652 strategies with n\u226520, got 1",
+          "pbo": null
+        },
+        "spa": {
+          "ok": true,
+          "spa_p": 0.0,
+          "n_spa_pass": 1,
+          "n_strategies_tested": 1,
+          "note": ""
+        },
+        "expectancy": {
+          "expectancy": -0.014414,
+          "expectancy_ok": false,
+          "adj_win": 0.111117,
+          "adj_loss": 0.087288,
+          "slippage_bps": 5.0,
+          "note": ""
+        },
+        "mdd_cvar": {
+          "mdd": 0.9999,
+          "mdd_ok": false,
+          "cvar_95": -66.0531,
+          "cvar_ok": false,
+          "gate_ok": false,
+          "mdd_source": "registry"
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 1,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 1"
+        },
+        "single_source": {
+          "ok": true,
+          "n_profitable": 1,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 1,
+          "single_source_strategies": [],
+          "note": ""
+        },
+        "recency": {
+          "ok": true,
+          "gate_48h": true,
+          "most_recent": "2026-07-10T23:00:58.455029+00:00",
+          "days_since_last": 0.16,
+          "note": "ok"
+        }
+      }
+    },
     "CRYPTO": {
       "intrabar_truth": {
         "n": 1447,
@@ -12,8 +180,8 @@
       },
       "sizing_source": "intrabar_truth",
       "intrabar_daily_divergence": {
-        "daily_pf": 0.3057,
-        "daily_wr": 0.3806,
+        "daily_pf": 0.3075,
+        "daily_wr": 0.3809,
         "honest_pf": 0.7929,
         "honest_wr": 0.3296,
         "honest_n": 1447,
@@ -22,10 +190,10 @@
         "gate_source": "intrabar_truth",
         "flag": false
       },
-      "policy_clean_n": 4398,
-      "policy_clean_wr": 0.3806,
-      "policy_clean_wr_pct": 38.06,
-      "policy_clean_pf": 0.3057,
+      "policy_clean_n": 4413,
+      "policy_clean_wr": 0.3809,
+      "policy_clean_wr_pct": 38.09,
+      "policy_clean_pf": 0.3075,
       "n_resolved": 1447,
       "wr": 0.3296,
       "wr_pct": 32.96,
@@ -40,17 +208,17 @@
       "spa_ok": true,
       "spa_p": 0.0,
       "n_spa_pass": 6,
-      "expectancy": -0.047992,
+      "expectancy": -0.047578,
       "expectancy_ok": false,
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
       "_ml_enhanced_quarantine_enabled": true,
-      "_ml_enhanced_quarantine_n": 357,
+      "_ml_enhanced_quarantine_n": 358,
       "_ml_enhanced_quarantine_recommend": null,
       "_mdd_gate_enforce": true,
       "mdd": 1.0009,
       "mdd_ok": false,
-      "cvar_95": -88.7191,
+      "cvar_95": -88.0035,
       "cvar_ok": false,
       "_mdd_cvar_gate_ok": false,
       "_mdd_cvar_recommend": null,
@@ -68,14 +236,14 @@
       "recency_ok": true,
       "recency_gate_48h": true,
       "recency_days_since_last": 0.06,
-      "recency_most_recent": "2026-07-10T23:00:58.266552+00:00",
+      "recency_most_recent": "2026-07-11T01:19:26.817524+00:00",
       "recency_note": "ok",
-      "bootstrap_ci_lower": -0.046358,
-      "bootstrap_ci_upper": -0.03303,
+      "bootstrap_ci_lower": -0.04539,
+      "bootstrap_ci_upper": -0.033595,
       "bootstrap_ci_ok": false,
-      "wf_oos_ratio": 1.6555,
-      "wf_oos_is_pf": 0.2381,
-      "wf_oos_oos_pf": 0.3941,
+      "wf_oos_ratio": 1.6694,
+      "wf_oos_is_pf": 0.2387,
+      "wf_oos_oos_pf": 0.3985,
       "wf_oos_ok": true,
       "top_sleeves": [
         {
@@ -90,9 +258,9 @@
         },
         {
           "strategy": "Bollinger Squeeze Breakout",
-          "n": 58,
-          "wr": 82.76,
-          "pf": 7.8923,
+          "n": 59,
+          "wr": 83.05,
+          "pf": 8.0567,
           "is_single_source": true,
           "source": "policy_clean",
           "policy_blocked": false,
@@ -134,7 +302,7 @@
       "policy_frozen": false,
       "data_source": "closed_picks",
       "top_symbol": "BTCUSDT",
-      "top_symbol_share": 0.1271,
+      "top_symbol_share": 0.1274,
       "concentration_capped": false,
       "top_source": "UNKNOWN",
       "top_source_share": 0.9823,
@@ -161,17 +329,17 @@
           "note": ""
         },
         "expectancy": {
-          "expectancy": -0.047992,
+          "expectancy": -0.047578,
           "expectancy_ok": false,
-          "adj_win": 0.044173,
-          "adj_loss": 0.093305,
+          "adj_win": 0.044046,
+          "adj_loss": 0.092625,
           "slippage_bps": 15.0,
           "note": ""
         },
         "mdd_cvar": {
           "mdd": 1.0009,
           "mdd_ok": false,
-          "cvar_95": -88.7191,
+          "cvar_95": -88.0035,
           "cvar_ok": false,
           "gate_ok": false,
           "mdd_source": "registry"
@@ -202,175 +370,7 @@
         "recency": {
           "ok": true,
           "gate_48h": true,
-          "most_recent": "2026-07-10T23:00:58.266552+00:00",
-          "days_since_last": 0.06,
-          "note": "ok"
-        }
-      }
-    },
-    "FOREX": {
-      "intrabar_truth": {
-        "n": 245,
-        "wr": 0.3673,
-        "pf": 0.8456,
-        "source": "at_signal_outcomes.intrabar_*"
-      },
-      "sizing_source": "intrabar_truth",
-      "intrabar_daily_divergence": {
-        "daily_pf": 1.5366,
-        "daily_wr": 0.5495,
-        "honest_pf": 0.8456,
-        "honest_wr": 0.3673,
-        "honest_n": 245,
-        "pf_inflation_x": 1.82,
-        "wr_inflation_pp": 18.2,
-        "gate_source": "intrabar_truth",
-        "flag": true
-      },
-      "policy_clean_n": 273,
-      "policy_clean_wr": 0.5495,
-      "policy_clean_wr_pct": 54.95,
-      "policy_clean_pf": 1.5366,
-      "n_resolved": 245,
-      "wr": 0.3673,
-      "wr_pct": 36.73,
-      "pf": 0.8456,
-      "n_ok": true,
-      "wr_ok": false,
-      "pf_ok": false,
-      "dsr_ok": true,
-      "dsr_score": 1.0,
-      "pbo_ok": null,
-      "pbo": null,
-      "spa_ok": true,
-      "spa_p": 0.0,
-      "n_spa_pass": 1,
-      "expectancy": -0.015359,
-      "expectancy_ok": false,
-      "_slippage_gate_enabled": true,
-      "_slippage_recommend": null,
-      "_ml_enhanced_quarantine_enabled": true,
-      "_ml_enhanced_quarantine_n": 0,
-      "_ml_enhanced_quarantine_recommend": null,
-      "_mdd_gate_enforce": true,
-      "mdd": 0.9999,
-      "mdd_ok": false,
-      "cvar_95": -66.0531,
-      "cvar_ok": false,
-      "_mdd_cvar_gate_ok": false,
-      "_mdd_cvar_recommend": null,
-      "_fdr_gate_enforce": false,
-      "fdr_ok": null,
-      "n_fdr_pass": 0,
-      "n_bonferroni_pass": 0,
-      "n_fdr_tested": 1,
-      "_fdr_recommend": null,
-      "_single_source_gate_enforce": false,
-      "single_source_ok": true,
-      "n_profitable_multi_source": 1,
-      "n_profitable_single_source": 0,
-      "_single_source_recommend": null,
-      "recency_ok": true,
-      "recency_gate_48h": true,
-      "recency_days_since_last": 0.06,
-      "recency_most_recent": "2026-07-10T23:00:58.455029+00:00",
-      "recency_note": "ok",
-      "bootstrap_ci_lower": -0.007666,
-      "bootstrap_ci_upper": 0.051993,
-      "bootstrap_ci_ok": false,
-      "wf_oos_ratio": 1.7435,
-      "wf_oos_is_pf": 1.468,
-      "wf_oos_oos_pf": 2.5595,
-      "wf_oos_ok": true,
-      "top_sleeves": [
-        {
-          "strategy": "non_crypto_consensus",
-          "n": 223,
-          "wr": 52.91,
-          "pf": 9.677,
-          "is_single_source": false,
-          "source": "resolver_grade",
-          "policy_blocked": false,
-          "note": "resolver_grade"
-        },
-        {
-          "strategy": "forex_rsi2_mean_reversion",
-          "n": 145,
-          "wr": 51.03,
-          "pf": 1.9198,
-          "is_single_source": true,
-          "source": "policy_clean",
-          "policy_blocked": false,
-          "note": "single-source"
-        }
-      ],
-      "_recency_warn": false,
-      "verdict": "NOT_READY",
-      "policy_frozen": true,
-      "data_source": "closed_picks",
-      "top_symbol": "USDJPY=X",
-      "top_symbol_share": 0.2088,
-      "concentration_capped": false,
-      "top_source": "UNKNOWN",
-      "top_source_share": 0.8242,
-      "source_concentration_capped": true,
-      "high_conviction_rate": 1.0,
-      "long_term_stability_rate": 1.0,
-      "details": {
-        "dsr": {
-          "ok": true,
-          "dsr_score": 1.0,
-          "note": ""
-        },
-        "pbo": {
-          "ok": null,
-          "note": "need \u22652 strategies with n\u226520, got 1",
-          "pbo": null
-        },
-        "spa": {
-          "ok": true,
-          "spa_p": 0.0,
-          "n_spa_pass": 1,
-          "n_strategies_tested": 1,
-          "note": ""
-        },
-        "expectancy": {
-          "expectancy": -0.015359,
-          "expectancy_ok": false,
-          "adj_win": 0.10969,
-          "adj_loss": 0.087953,
-          "slippage_bps": 5.0,
-          "note": ""
-        },
-        "mdd_cvar": {
-          "mdd": 0.9999,
-          "mdd_ok": false,
-          "cvar_95": -66.0531,
-          "cvar_ok": false,
-          "gate_ok": false,
-          "mdd_source": "registry"
-        },
-        "fdr": {
-          "ok": null,
-          "n_tested": 1,
-          "n_fdr_pass": 0,
-          "n_bonferroni_pass": 0,
-          "min_p": null,
-          "fdr_q": 0.1,
-          "note": "need >=2 testable strategies (n>=20), got 1"
-        },
-        "single_source": {
-          "ok": true,
-          "n_profitable": 1,
-          "n_profitable_single_source": 0,
-          "n_profitable_multi_source": 1,
-          "single_source_strategies": [],
-          "note": ""
-        },
-        "recency": {
-          "ok": true,
-          "gate_48h": true,
-          "most_recent": "2026-07-10T23:00:58.455029+00:00",
+          "most_recent": "2026-07-11T01:19:26.817524+00:00",
           "days_since_last": 0.06,
           "note": "ok"
         }
@@ -440,11 +440,11 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 1.46,
+      "recency_days_since_last": 1.56,
       "recency_most_recent": "2026-07-09T13:23:37.403292+00:00",
       "recency_note": "ok",
-      "bootstrap_ci_lower": -0.07956,
-      "bootstrap_ci_upper": 0.383585,
+      "bootstrap_ci_lower": -0.080391,
+      "bootstrap_ci_upper": 0.368467,
       "bootstrap_ci_ok": false,
       "wf_oos_ratio": null,
       "wf_oos_is_pf": null,
@@ -516,7 +516,7 @@
           "ok": true,
           "gate_48h": true,
           "most_recent": "2026-07-09T13:23:37.403292+00:00",
-          "days_since_last": 1.46,
+          "days_since_last": 1.56,
           "note": "ok"
         }
       }
@@ -558,7 +558,7 @@
       "spa_ok": null,
       "spa_p": null,
       "n_spa_pass": 0,
-      "expectancy": 0.003122,
+      "expectancy": 0.002689,
       "expectancy_ok": true,
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
@@ -585,15 +585,15 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 0.22,
-      "recency_most_recent": "2026-07-10T19:08:46.840096+00:00",
+      "recency_days_since_last": 0.06,
+      "recency_most_recent": "2026-07-11T01:19:26.620366+00:00",
       "recency_note": "ok",
-      "bootstrap_ci_lower": -0.00866,
-      "bootstrap_ci_upper": 0.037921,
+      "bootstrap_ci_lower": -0.009281,
+      "bootstrap_ci_upper": 0.035634,
       "bootstrap_ci_ok": false,
-      "wf_oos_ratio": 1.2646,
-      "wf_oos_is_pf": 1.5357,
-      "wf_oos_oos_pf": 1.9421,
+      "wf_oos_ratio": 1.2237,
+      "wf_oos_is_pf": 1.5582,
+      "wf_oos_oos_pf": 1.9068,
       "wf_oos_ok": true,
       "top_sleeves": [],
       "_recency_warn": false,
@@ -601,13 +601,13 @@
       "policy_frozen": false,
       "data_source": "dashboard_fallback",
       "top_symbol": "AAPL",
-      "top_symbol_share": 0.1316,
+      "top_symbol_share": 0.1429,
       "concentration_capped": false,
       "top_source": "UNKNOWN",
-      "top_source_share": 0.8289,
+      "top_source_share": 0.8312,
       "source_concentration_capped": true,
-      "high_conviction_rate": 0.1689,
-      "long_term_stability_rate": 0.1689,
+      "high_conviction_rate": 0.1711,
+      "long_term_stability_rate": 0.1711,
       "details": {
         "dsr": {
           "ok": true,
@@ -626,9 +626,9 @@
           "n_spa_pass": 0
         },
         "expectancy": {
-          "expectancy": 0.003122,
+          "expectancy": 0.002689,
           "expectancy_ok": true,
-          "adj_win": 0.048369,
+          "adj_win": 0.047339,
           "adj_loss": 0.029736,
           "slippage_bps": 10.0,
           "note": ""
@@ -660,8 +660,8 @@
         "recency": {
           "ok": true,
           "gate_48h": true,
-          "most_recent": "2026-07-10T19:08:46.840096+00:00",
-          "days_since_last": 0.22,
+          "most_recent": "2026-07-11T01:19:26.620366+00:00",
+          "days_since_last": 0.06,
           "note": "ok"
         }
       }
@@ -730,11 +730,11 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 0.3,
+      "recency_days_since_last": 0.4,
       "recency_most_recent": "2026-07-10T17:11:06.046279+00:00",
       "recency_note": "ok",
-      "bootstrap_ci_lower": -0.138717,
-      "bootstrap_ci_upper": 0.056506,
+      "bootstrap_ci_lower": -0.139437,
+      "bootstrap_ci_upper": 0.054426,
       "bootstrap_ci_ok": false,
       "wf_oos_ratio": null,
       "wf_oos_is_pf": null,
@@ -806,7 +806,7 @@
           "ok": true,
           "gate_48h": true,
           "most_recent": "2026-07-10T17:11:06.046279+00:00",
-          "days_since_last": 0.3,
+          "days_since_last": 0.4,
           "note": "ok"
         }
       }
@@ -875,9 +875,9 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": false,
-      "recency_days_since_last": 2.37,
+      "recency_days_since_last": 2.47,
       "recency_most_recent": "2026-07-08T15:34:33.261001+00:00",
-      "recency_note": "no picks closed in last 48h (last=2.4d ago)",
+      "recency_note": "no picks closed in last 48h (last=2.5d ago)",
       "bootstrap_ci_lower": null,
       "bootstrap_ci_upper": null,
       "bootstrap_ci_ok": null,
@@ -951,8 +951,8 @@
           "ok": true,
           "gate_48h": false,
           "most_recent": "2026-07-08T15:34:33.261001+00:00",
-          "days_since_last": 2.37,
-          "note": "no picks closed in last 48h (last=2.4d ago)"
+          "days_since_last": 2.47,
+          "note": "no picks closed in last 48h (last=2.5d ago)"
         }
       }
     },
@@ -1015,9 +1015,9 @@
       "_single_source_recommend": null,
       "recency_ok": false,
       "recency_gate_48h": false,
-      "recency_days_since_last": 121.02,
+      "recency_days_since_last": 121.12,
       "recency_most_recent": "2026-03-11T23:57:30.269572+00:00",
-      "recency_note": "no picks closed in last 14d (last=121.0d ago)",
+      "recency_note": "no picks closed in last 14d (last=121.1d ago)",
       "bootstrap_ci_lower": null,
       "bootstrap_ci_upper": null,
       "bootstrap_ci_ok": null,
@@ -1088,8 +1088,8 @@
           "ok": false,
           "gate_48h": false,
           "most_recent": "2026-03-11T23:57:30.269572+00:00",
-          "days_since_last": 121.02,
-          "note": "no picks closed in last 14d (last=121.0d ago)"
+          "days_since_last": 121.12,
+          "note": "no picks closed in last 14d (last=121.1d ago)"
         }
       }
     },
@@ -1157,9 +1157,9 @@
       "_single_source_recommend": null,
       "recency_ok": false,
       "recency_gate_48h": false,
-      "recency_days_since_last": 40.48,
+      "recency_days_since_last": 40.58,
       "recency_most_recent": "2026-05-31T12:51:21+00:00",
-      "recency_note": "no picks closed in last 14d (last=40.5d ago)",
+      "recency_note": "no picks closed in last 14d (last=40.6d ago)",
       "bootstrap_ci_lower": null,
       "bootstrap_ci_upper": null,
       "bootstrap_ci_ok": null,
@@ -1230,8 +1230,8 @@
           "ok": false,
           "gate_48h": false,
           "most_recent": "2026-05-31T12:51:21+00:00",
-          "days_since_last": 40.48,
-          "note": "no picks closed in last 14d (last=40.5d ago)"
+          "days_since_last": 40.58,
+          "note": "no picks closed in last 14d (last=40.6d ago)"
         }
       }
     },
@@ -1376,17 +1376,8 @@
     }
   },
   "drift": {
-    "baseline": "2026-07-10T22:19:58.027346+00:00",
+    "baseline": "2026-07-10T23:25:32.336528+00:00",
     "per_class": {
-      "CRYPTO": {
-        "verdict_from": "NOT_READY",
-        "verdict_to": "NOT_READY",
-        "verdict_changed": false,
-        "wr_delta": -0.0003,
-        "pf_delta": -0.0004,
-        "n_delta": 1,
-        "gate_flips": {}
-      },
       "FOREX": {
         "verdict_from": "NOT_READY",
         "verdict_to": "NOT_READY",
@@ -1394,6 +1385,15 @@
         "wr_delta": 0.0,
         "pf_delta": 0.0,
         "n_delta": 0,
+        "gate_flips": {}
+      },
+      "CRYPTO": {
+        "verdict_from": "NOT_READY",
+        "verdict_to": "NOT_READY",
+        "verdict_changed": false,
+        "wr_delta": -0.0003,
+        "pf_delta": -0.0004,
+        "n_delta": 1,
         "gate_flips": {}
       },
       "ETF": {
