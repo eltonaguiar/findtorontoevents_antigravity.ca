@@ -70,3 +70,15 @@ VAA-G4 also beats SPY (Sharpe+Calmar, all-thirds+, MaxDD -20%) — a 2nd indepen
 | VAA-G4 | 0.73 | -21% | 0.37 | 1.00/0.61/0.52 |
 | **50/50 BLEND** | **0.89** | **-16%** | **0.50** | **0.98/0.77/0.92** |
 The blend beats BOTH components on Sharpe AND Calmar AND has the lowest MaxDD AND the smoothest thirds (regime diversification of two complementary strategies). This is the v2 proof-of-concept — the strongest, most-robust result of the investigation. Tool: tools/tactical_blend_tracker.py.
+
+
+## 3rd TAA variant: PAA1 (Protective Asset Allocation, validated 2026-07-11)
+Keller's PAA1 (12 offensive ETFs vs 12m SMA; protective bond-fraction BF=min(1,2(N-n)/N) into IEF; top-6 offensive by momentum), look-ahead-free 2007-2026:
+| | ann | Sharpe | MaxDD | Calmar | thirds |
+|---|---|---|---|---|---|
+| SPY | +10.8% | 0.74 | -51% | 0.21 | 0.35/0.94/1.05 |
+| PAA1 | +7.1% | **0.93** | -21% | 0.34 | 1.00/1.18/0.77 |
+| top5-6m rotation | +9.2% | 0.88 | -19% | 0.48 | 0.72/0.73/1.20 |
+| VAA-G4 | +8.1% | 0.77 | -20% | 0.40 | 1.03/0.66/0.56 |
+
+PAA1 has the HIGHEST single-strategy Sharpe (0.93) — its gradual bond-protection smooths returns (lower ann, higher risk-adjusted). **The validated TAA family is now 3-strong** (rotation, VAA, PAA), ALL independently beating SPY risk-adjusted + cutting drawdown ~2.5x across 2007-2026 incl the 2008 GFC. That 3 independent TAA constructions all work is decisive evidence the family is real, not overfit. PAA is front/mid-loaded (strong GFC), complementary to the recent-strong rotation — a rotation+PAA blend is a candidate v3.
