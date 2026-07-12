@@ -136,7 +136,7 @@
         ],
         "warnings": [
           "ML cross-strategy match: using cci_divergence ranking for ema_pullback_adx/SOLUSDT",
-          "ML optimizer: F \u2014 weak edge (0.2)"
+          "ML optimizer: F \u2014 weak edge (0.3)"
         ]
       },
       "backtest": {
@@ -158,7 +158,7 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.2,
+        "ml_score": 0.3,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -312,11 +312,11 @@
         "current_price": 64000.0
       },
       "enhanced_scoring": {
-        "enhanced_score": 70,
+        "enhanced_score": 71,
         "breakdown": {
           "base": 92,
           "bb_squeeze": 3,
-          "ml_edge_blend": -25,
+          "ml_edge_blend": -24,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "moderate",
@@ -356,6 +356,100 @@
       },
       "processed_at": "2026-07-12T21:47:09.559650+00:00",
       "ml_rank": 3
+    },
+    {
+      "id": "hyro-v2-btc-adxvol",
+      "rank": 7,
+      "asset_class": "CRYPTO",
+      "label": "Bitcoin \u2014 ADX Vol Breakout",
+      "symbol_hint": "BTCUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 82,
+      "timeframe": "1H",
+      "strategy": "adx_vol_breakout",
+      "backtest_grade": "B+",
+      "backtest_stats": "+$619 PnL, PF 1.46, 37% WR, $327 max DD, 57 trades/6mo",
+      "thesis": "BTC ADX vol breakout \u2014 same strategy as ETH but wider DD ($327). Still passes with $173 buffer. Use as secondary BTC setup when CCI is not signaling.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR. Confirm ADX > 25 and volume surge before entry.",
+      "take_profit_plan": "TP = 2\u00d7 risk.",
+      "technical_indicators": {
+        "rsi": 57.28,
+        "macd": {
+          "macd": 281.5099,
+          "signal": 313.7052,
+          "histogram": -32.1953,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 64621.41,
+          "middle": 64027.8,
+          "lower": 63434.18,
+          "pct_b": 0.642,
+          "squeeze": true
+        },
+        "atr_pct": 0.778,
+        "volume": {
+          "ratio": 0.0,
+          "expansion": false,
+          "direction": "neutral"
+        },
+        "trend": "strong_uptrend",
+        "sma_20": 64027.8,
+        "sma_50": 63407.49,
+        "current_price": 64196.48
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 64,
+        "breakdown": {
+          "base": 82,
+          "bb_squeeze": 3,
+          "ml_edge_blend": -21,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "moderate",
+        "notes": [
+          "Bollinger squeeze - volatility compression"
+        ],
+        "warnings": [
+          "Low volatility: 0.778% ATR - limited move potential",
+          "ML optimizer: F \u2014 weak edge (13.9)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 40.6,
+        "avg_pnl": -0.41,
+        "total_trades": 160,
+        "wins": 65,
+        "losses": 95,
+        "avg_bars_held": 17.8
+      },
+      "short_term_entry": {
+        "entry_quality": 48,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "macd_support",
+          "backtest_wr_weak"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 13.9,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-07-12T20:43:16.353231+00:00",
+      "ml_rank": 4
     },
     {
       "id": "hyro-v2-eth-adxvol",
@@ -604,7 +698,7 @@
           "Bollinger squeeze - volatility compression"
         ],
         "warnings": [
-          "ML optimizer: F \u2014 weak edge (0.2)"
+          "ML optimizer: F \u2014 weak edge (0.3)"
         ]
       },
       "backtest": {
@@ -626,7 +720,7 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.2,
+        "ml_score": 0.3,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
