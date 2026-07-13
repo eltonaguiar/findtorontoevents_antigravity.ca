@@ -1,5 +1,5 @@
 # ASSET CLASS STRATEGY SCORECARD
-## Generated: 2026-07-13 20:39 UTC
+## Generated: 2026-07-13 22:33 UTC
 
 ### CRYPTO
 Strategy                            Tier                n      WR     PF  Sharpe    p-value
