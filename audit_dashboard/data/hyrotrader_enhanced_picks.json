@@ -451,18 +451,18 @@
       "ml_rank": 4
     },
     {
-      "id": "hyro-v2-avax-cmf",
-      "rank": 3,
+      "id": "hyro-v2-eth-adxvol",
+      "rank": 2,
       "asset_class": "CRYPTO",
-      "label": "Avalanche \u2014 CMF Cross",
-      "symbol_hint": "AVAXUSDT",
+      "label": "Ethereum \u2014 ADX Vol Breakout",
+      "symbol_hint": "ETHUSDT",
       "direction": "BOTH",
-      "confidence_pct": 87,
+      "confidence_pct": 90,
       "timeframe": "1H",
-      "strategy": "cmf_cross",
+      "strategy": "adx_vol_breakout",
       "backtest_grade": "A",
-      "backtest_stats": "+$962 PnL, PF 1.53, 44% WR, $230 max DD, 85 trades/6mo",
-      "thesis": "Chaikin Money Flow detects institutional accumulation/distribution. Cross above +0.05 = long (money flowing in); below -0.05 = short. High trade count ensures consistency rule compliance.",
+      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
+      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -471,8 +471,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR. CMF direction confirms volume-price agreement.",
-      "take_profit_plan": "TP = 2\u00d7 risk. 85 trades/6mo = ~3-4/week \u2014 good for 10-day minimum.",
+      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
+      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
       "technical_indicators": {
         "rsi": 56.85,
         "macd": {
@@ -502,13 +502,15 @@
       "enhanced_scoring": {
         "enhanced_score": 66,
         "breakdown": {
-          "base": 87,
+          "base": 90,
+          "rsi_overbought": 10,
           "bb_overbought": 5,
           "ml_edge_blend": -26,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "high_conviction",
         "notes": [
+          "RSI overbought (bearish momentum)",
           "Price at upper Bollinger Band"
         ],
         "warnings": [
@@ -525,10 +527,11 @@
         "avg_bars_held": 14.0
       },
       "short_term_entry": {
-        "entry_quality": 47,
+        "entry_quality": 55,
         "actionable": false,
         "horizon": "4-24h",
         "reasons": [
+          "rsi_rally_short",
           "atr_in_tradeable_band",
           "backtest_wr_weak"
         ]
