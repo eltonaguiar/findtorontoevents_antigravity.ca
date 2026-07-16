@@ -1,13 +1,26 @@
 {
-  "generated_at": "2026-07-16T11:47:12.639778+00:00",
+  "generated_at": "2026-07-16T13:51:53.384396+00:00",
   "host": "mysql.50webs.com",
   "database": "ejaguiar1_stocks",
   "engine": "MySQL 8.4.7",
   "checks": {
+    "status_standardization": {
+      "name": "status_standardization",
+      "ok": true,
+      "elapsed_s": 0.7,
+      "attempts": 1,
+      "data": {
+        "non_canonical": {},
+        "n_non_canonical": 0,
+        "tier": "green",
+        "threshold_pass": true
+      },
+      "tier_label": "Tier 1"
+    },
     "won_pnl_contradiction": {
       "name": "won_pnl_contradiction",
       "ok": true,
-      "elapsed_s": 0.25,
+      "elapsed_s": 0.58,
       "attempts": 1,
       "data": {
         "by_status": [
@@ -19,15 +32,15 @@
           },
           {
             "status": "SL_HIT",
-            "n": 2252,
-            "avg_pnl": -3.61453885,
-            "negative_pnl_count": 2250
+            "n": 2254,
+            "avg_pnl": -3.61194388,
+            "negative_pnl_count": 2252
           },
           {
             "status": "LOST",
             "n": 4605,
-            "avg_pnl": -1.7871036,
-            "negative_pnl_count": 4578
+            "avg_pnl": -1.78587016,
+            "negative_pnl_count": 4577
           }
         ],
         "contradiction_detected": false,
@@ -36,14 +49,36 @@
       },
       "tier_label": "Tier 3"
     },
+    "pnl_integrity": {
+      "name": "pnl_integrity",
+      "ok": true,
+      "elapsed_s": 1.57,
+      "attempts": 1,
+      "data": {
+        "sampled": 24158,
+        "id_range": [
+          16262086,
+          16462086
+        ],
+        "metric": "sign_consistency (direction-aware, leverage-agnostic)",
+        "gt1pct_mismatch": 130,
+        "sign_mismatch": 130,
+        "mismatch_pct": 0.54,
+        "naive_magnitude_mismatch": 6535,
+        "naive_magnitude_mismatch_pct": 27.05,
+        "tier": "green",
+        "threshold_pass": true
+      },
+      "tier_label": "Tier 1"
+    },
     "open_bloat": {
       "name": "open_bloat",
       "ok": true,
-      "elapsed_s": 30.98,
+      "elapsed_s": 29.45,
       "attempts": 1,
       "data": {
-        "open_count": 23154,
-        "info_schema_estimate": 46166,
+        "open_count": 23213,
+        "info_schema_estimate": 46170,
         "bt_backtest_trades": {
           "open_count": 29247197,
           "total_count": 32441049,
@@ -51,41 +86,15 @@
           "count_suspect": false
         },
         "trading_picks": {
-          "open_count": 23154,
+          "open_count": 23213,
           "active_count": 21,
-          "total_count": 69827,
-          "info_schema_estimate": 46166,
+          "total_count": 69888,
+          "info_schema_estimate": 46170,
           "count_suspect": false
         },
-        "last_terminal_write": "2026-07-16 09:11:52",
+        "last_terminal_write": "2026-07-16 11:11:16",
         "hours_since_last_close": 2,
         "validator_frozen": false,
-        "tier": "green",
-        "threshold_pass": true
-      },
-      "tier_label": "Tier 1"
-    },
-    "pnl_integrity": {
-      "name": "pnl_integrity",
-      "ok": true,
-      "elapsed_s": 0.53,
-      "attempts": 1,
-      "data": {
-        "non_canonical": {},
-        "n_non_canonical": 0,
-        "tier": "green",
-        "threshold_pass": true
-      },
-      "tier_label": "Tier 1"
-    },
-    "status_standardization": {
-      "name": "status_standardization",
-      "ok": true,
-      "elapsed_s": 0.08,
-      "attempts": 1,
-      "data": {
-        "non_canonical": {},
-        "n_non_canonical": 0,
         "tier": "green",
         "threshold_pass": true
       },
@@ -94,7 +103,7 @@
     "ghost_rows": {
       "name": "ghost_rows",
       "ok": true,
-      "elapsed_s": 463.29,
+      "elapsed_s": 483.89,
       "attempts": 1,
       "data": {
         "total_ghost_rows": 22947,
@@ -220,7 +229,7 @@
     }
   },
   "overall": {
-    "elapsed_s": 495.14,
+    "elapsed_s": 516.19,
     "checks_run": 5,
     "checks_passed": 5,
     "checks_failed": 0,
