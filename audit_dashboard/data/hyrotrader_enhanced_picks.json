@@ -123,15 +123,17 @@
         "current_price": 76.17
       },
       "enhanced_scoring": {
-        "enhanced_score": 77,
+        "enhanced_score": 82,
         "breakdown": {
           "base": 88,
+          "bb_overbought": 5,
           "bb_squeeze": 3,
           "ml_edge_blend": -14,
           "ml_blend_weights": "85%/15%"
         },
         "validation": "high_conviction",
         "notes": [
+          "Price at upper Bollinger Band",
           "Bollinger squeeze - volatility compression"
         ],
         "warnings": [
@@ -216,11 +218,11 @@
         "current_price": 1.0978
       },
       "enhanced_scoring": {
-        "enhanced_score": 75,
+        "enhanced_score": 78,
         "breakdown": {
           "base": 85,
           "bb_squeeze": 3,
-          "ml_edge_blend": -13,
+          "ml_edge_blend": -10,
           "ml_blend_weights": "85%/15%"
         },
         "validation": "moderate",
@@ -681,11 +683,105 @@
         "current_price": 76.17
       },
       "enhanced_scoring": {
-        "enhanced_score": 61,
+        "enhanced_score": 64,
         "breakdown": {
           "base": 84,
+          "bb_overbought": 5,
           "bb_squeeze": 3,
-          "ml_edge_blend": -26,
+          "ml_edge_blend": -28,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "high_conviction",
+        "notes": [
+          "Price at upper Bollinger Band",
+          "Bollinger squeeze - volatility compression"
+        ],
+        "warnings": [
+          "ML optimizer: F \u2014 weak edge (0.2)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 54.4,
+        "avg_pnl": 0.17,
+        "total_trades": 160,
+        "wins": 87,
+        "losses": 71,
+        "avg_bars_held": 18.2
+      },
+      "short_term_entry": {
+        "entry_quality": 55,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "atr_in_tradeable_band"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 0.2,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-07-19T10:48:58.522576+00:00",
+      "ml_rank": 5
+    },
+    {
+      "id": "hyro-v2-avax-cmf",
+      "rank": 3,
+      "asset_class": "CRYPTO",
+      "label": "Avalanche \u2014 CMF Cross",
+      "symbol_hint": "AVAXUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 87,
+      "timeframe": "1H",
+      "strategy": "cmf_cross",
+      "backtest_grade": "A",
+      "backtest_stats": "+$962 PnL, PF 1.53, 44% WR, $230 max DD, 85 trades/6mo",
+      "thesis": "Chaikin Money Flow detects institutional accumulation/distribution. Cross above +0.05 = long (money flowing in); below -0.05 = short. High trade count ensures consistency rule compliance.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR. CMF direction confirms volume-price agreement.",
+      "take_profit_plan": "TP = 2\u00d7 risk. 85 trades/6mo = ~3-4/week \u2014 good for 10-day minimum.",
+      "technical_indicators": {
+        "rsi": 45.73,
+        "macd": {
+          "macd": -0.0084,
+          "signal": -0.0077,
+          "histogram": -0.0007,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 6.66,
+          "middle": 6.56,
+          "lower": 6.47,
+          "pct_b": 0.337,
+          "squeeze": true
+        },
+        "atr_pct": 1.229,
+        "volume": {
+          "ratio": 1.56,
+          "expansion": true,
+          "direction": "distribution"
+        },
+        "trend": "strong_downtrend",
+        "sma_20": 6.56,
+        "sma_50": 6.58,
+        "current_price": 6.532
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 63,
+        "breakdown": {
+          "base": 87,
+          "bb_squeeze": 3,
+          "ml_edge_blend": -27,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "high_conviction",
