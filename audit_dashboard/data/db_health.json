@@ -1,27 +1,56 @@
 {
-  "generated_at": "2026-07-24T08:34:21.609600+00:00",
+  "generated_at": "2026-07-24T09:25:18.902030+00:00",
   "host": "mysql.50webs.com",
   "database": "ejaguiar1_stocks",
   "engine": "MySQL 8.4.7",
   "checks": {
+    "open_bloat": {
+      "name": "open_bloat",
+      "ok": true,
+      "elapsed_s": 30.18,
+      "attempts": 1,
+      "data": {
+        "open_count": 27692,
+        "info_schema_estimate": 46148,
+        "bt_backtest_trades": {
+          "open_count": 29247197,
+          "total_count": 32441049,
+          "info_schema_estimate": 27212129,
+          "count_suspect": false
+        },
+        "trading_picks": {
+          "open_count": 27692,
+          "active_count": 21,
+          "total_count": 74853,
+          "info_schema_estimate": 46148,
+          "count_suspect": false
+        },
+        "last_terminal_write": "2026-07-24 09:13:51",
+        "hours_since_last_close": 0,
+        "validator_frozen": false,
+        "tier": "green",
+        "threshold_pass": true
+      },
+      "tier_label": "Tier 1"
+    },
     "won_pnl_contradiction": {
       "name": "won_pnl_contradiction",
       "ok": true,
-      "elapsed_s": 0.27,
+      "elapsed_s": 0.28,
       "attempts": 1,
       "data": {
         "by_status": [
           {
             "status": "TP_HIT",
-            "n": 4952,
-            "avg_pnl": 3.56056024,
+            "n": 4953,
+            "avg_pnl": 3.56004327,
             "negative_pnl_count": 0
           },
           {
             "status": "SL_HIT",
-            "n": 2359,
-            "avg_pnl": -3.52372662,
-            "negative_pnl_count": 2357
+            "n": 2360,
+            "avg_pnl": -3.52269538,
+            "negative_pnl_count": 2358
           },
           {
             "status": "LOST",
@@ -36,74 +65,10 @@
       },
       "tier_label": "Tier 3"
     },
-    "status_standardization": {
-      "name": "status_standardization",
-      "ok": true,
-      "elapsed_s": 0.44,
-      "attempts": 1,
-      "data": {
-        "non_canonical": {},
-        "n_non_canonical": 0,
-        "tier": "green",
-        "threshold_pass": true
-      },
-      "tier_label": "Tier 1"
-    },
-    "pnl_integrity": {
-      "name": "pnl_integrity",
-      "ok": true,
-      "elapsed_s": 0.74,
-      "attempts": 1,
-      "data": {
-        "sampled": 24158,
-        "id_range": [
-          16262086,
-          16462086
-        ],
-        "metric": "sign_consistency (direction-aware, leverage-agnostic)",
-        "gt1pct_mismatch": 130,
-        "sign_mismatch": 130,
-        "mismatch_pct": 0.54,
-        "naive_magnitude_mismatch": 6535,
-        "naive_magnitude_mismatch_pct": 27.05,
-        "tier": "green",
-        "threshold_pass": true
-      },
-      "tier_label": "Tier 1"
-    },
-    "open_bloat": {
-      "name": "open_bloat",
-      "ok": true,
-      "elapsed_s": 29.48,
-      "attempts": 1,
-      "data": {
-        "open_count": 27681,
-        "info_schema_estimate": 46175,
-        "bt_backtest_trades": {
-          "open_count": 29247197,
-          "total_count": 32441049,
-          "info_schema_estimate": 27212129,
-          "count_suspect": false
-        },
-        "trading_picks": {
-          "open_count": 27681,
-          "active_count": 21,
-          "total_count": 74840,
-          "info_schema_estimate": 46175,
-          "count_suspect": false
-        },
-        "last_terminal_write": "2026-07-24 07:44:00",
-        "hours_since_last_close": 0,
-        "validator_frozen": false,
-        "tier": "green",
-        "threshold_pass": true
-      },
-      "tier_label": "Tier 1"
-    },
     "ghost_rows": {
       "name": "ghost_rows",
       "ok": true,
-      "elapsed_s": 464.72,
+      "elapsed_s": 461.32,
       "attempts": 1,
       "data": {
         "total_ghost_rows": 22947,
@@ -226,10 +191,45 @@
         "threshold_pass": true
       },
       "tier_label": "Tier 1"
+    },
+    "pnl_integrity": {
+      "name": "pnl_integrity",
+      "ok": true,
+      "elapsed_s": 0.53,
+      "attempts": 1,
+      "data": {
+        "sampled": 24158,
+        "id_range": [
+          16262086,
+          16462086
+        ],
+        "metric": "sign_consistency (direction-aware, leverage-agnostic)",
+        "gt1pct_mismatch": 130,
+        "sign_mismatch": 130,
+        "mismatch_pct": 0.54,
+        "naive_magnitude_mismatch": 6535,
+        "naive_magnitude_mismatch_pct": 27.05,
+        "tier": "green",
+        "threshold_pass": true
+      },
+      "tier_label": "Tier 1"
+    },
+    "status_standardization": {
+      "name": "status_standardization",
+      "ok": true,
+      "elapsed_s": 0.34,
+      "attempts": 1,
+      "data": {
+        "non_canonical": {},
+        "n_non_canonical": 0,
+        "tier": "green",
+        "threshold_pass": true
+      },
+      "tier_label": "Tier 1"
     }
   },
   "overall": {
-    "elapsed_s": 495.65,
+    "elapsed_s": 492.65,
     "checks_run": 5,
     "checks_passed": 5,
     "checks_failed": 0,
