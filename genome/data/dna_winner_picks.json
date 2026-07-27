@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-07-27T00:40:05.904822+00:00",
+    "timestamp": "2026-07-27T04:33:26.291797+00:00",
     "total_mutations": 18,
     "total_picks": 2,
-    "mutations_triggered": 1,
-    "mutations_silent": 17,
+    "mutations_triggered": 2,
+    "mutations_silent": 16,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_winner_mutations"
@@ -12,60 +12,63 @@
   "picks": [
     {
       "strategy": "gainer_compression_relaxed_mut",
-      "symbol": "XRPUSDT",
+      "symbol": "NEARUSDT",
       "signal_type": "BUY",
-      "entry_price": 1.1088,
-      "take_profit": 1.1172,
-      "stop_loss": 1.1037,
+      "entry_price": 1.842,
+      "take_profit": 1.8714,
+      "stop_loss": 1.8244,
       "confidence": 0.72,
       "risk_reward": 1.67,
-      "reason": "Gainer compression: BB width=0.004 (<3%), RSI=61.0, vol=1.1x, 10-bar mom=0.82%",
-      "timestamp": "2026-07-27T00:40:05.786707+00:00",
+      "reason": "Gainer compression: BB width=0.013 (<3%), RSI=63.6, vol=0.9x, 10-bar mom=2.73%",
+      "timestamp": "2026-07-27T04:33:26.182292+00:00",
       "category": "crypto",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "claude_gainer",
       "mutation_type": "conservative",
-      "bb_width": 0.0039,
-      "rsi_14": 61.0,
-      "volume_ratio": 1.07,
+      "bb_width": 0.013,
+      "rsi_14": 63.6,
+      "volume_ratio": 0.88,
       "timeframe": "1h"
     },
     {
-      "strategy": "gainer_compression_relaxed_mut",
+      "strategy": "kimi_funding_arb_relaxed_mut",
       "symbol": "DOTUSDT",
       "signal_type": "BUY",
-      "entry_price": 0.825,
-      "take_profit": 0.835507,
-      "stop_loss": 0.818696,
-      "confidence": 0.72,
-      "risk_reward": 1.67,
-      "reason": "Gainer compression: BB width=0.004 (<3%), RSI=55.2, vol=1.6x, 10-bar mom=0.36%",
-      "timestamp": "2026-07-27T00:40:05.797078+00:00",
+      "entry_price": 0.817,
+      "take_profit": 0.828131,
+      "stop_loss": 0.808652,
+      "confidence": 0.5924,
+      "risk_reward": 1.33,
+      "reason": "KIMI Funding Arb relaxed: VWMA z-score=-1.92 (threshold<-1.5), price deeply below volume-weighted fair value",
+      "timestamp": "2026-07-27T04:33:26.137140+00:00",
       "category": "crypto",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
-      "parent_system": "claude_gainer",
+      "parent_system": "kimi_signal_tracking",
       "mutation_type": "conservative",
-      "bb_width": 0.004,
-      "rsi_14": 55.2,
-      "volume_ratio": 1.62,
-      "timeframe": "1h"
+      "z_score": -1.924,
+      "timeframe": "1d"
     }
   ],
   "mutations_triggered": [
     {
+      "strategy": "kimi_funding_arb_relaxed_mut",
+      "parent": "kimi_signal_tracking",
+      "mutation": "conservative",
+      "picks": 1
+    },
+    {
       "strategy": "gainer_compression_relaxed_mut",
       "parent": "claude_gainer",
       "mutation": "conservative",
-      "picks": 2
+      "picks": 1
     }
   ],
   "mutations_silent": [
     "claude_ml_conservative_mut",
     "claude_ml_moderate_mut",
     "claude_ml_aggressive_mut",
-    "kimi_funding_arb_relaxed_mut",
     "kimi_flash_crash_relaxed_mut",
     "kimi_bollinger_aggressive_mut",
     "kimi_drought_adaptive_mut",
