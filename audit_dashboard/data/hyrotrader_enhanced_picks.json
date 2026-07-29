@@ -132,8 +132,8 @@
         "validation": "high_conviction",
         "notes": [],
         "warnings": [
-          "ML cross-strategy match: using cci_divergence ranking for ema_pullback_adx/SOLUSDT",
-          "ML optimizer: F \u2014 weak edge (0.1)"
+          "ML cross-strategy match: using volume ranking for ema_pullback_adx/SOLUSDT",
+          "ML optimizer: F \u2014 weak edge (0.2)"
         ]
       },
       "backtest": {
@@ -156,7 +156,7 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.1,
+        "ml_score": 0.2,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -533,6 +533,96 @@
       },
       "processed_at": "2026-07-29T15:03:51.464991+00:00",
       "ml_rank": 5
+    },
+    {
+      "id": "hyro-v2-btc-adxvol",
+      "rank": 7,
+      "asset_class": "CRYPTO",
+      "label": "Bitcoin \u2014 ADX Vol Breakout",
+      "symbol_hint": "BTCUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 82,
+      "timeframe": "1H",
+      "strategy": "adx_vol_breakout",
+      "backtest_grade": "B+",
+      "backtest_stats": "+$619 PnL, PF 1.46, 37% WR, $327 max DD, 57 trades/6mo",
+      "thesis": "BTC ADX vol breakout \u2014 same strategy as ETH but wider DD ($327). Still passes with $173 buffer. Use as secondary BTC setup when CCI is not signaling.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR. Confirm ADX > 25 and volume surge before entry.",
+      "take_profit_plan": "TP = 2\u00d7 risk.",
+      "technical_indicators": {
+        "rsi": 49.66,
+        "macd": {
+          "macd": -158.7361,
+          "signal": -214.9979,
+          "histogram": 56.2618,
+          "direction": "bullish"
+        },
+        "bollinger": {
+          "upper": 65670.32,
+          "middle": 64371.56,
+          "lower": 63072.8,
+          "pct_b": 0.488,
+          "squeeze": false
+        },
+        "atr_pct": 0.918,
+        "volume": {
+          "ratio": 0.64,
+          "expansion": false,
+          "direction": "neutral"
+        },
+        "trend": "strong_downtrend",
+        "sma_20": 64371.56,
+        "sma_50": 64874.82,
+        "current_price": 64340.45
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 60,
+        "breakdown": {
+          "base": 82,
+          "ml_edge_blend": -22,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "moderate",
+        "notes": [],
+        "warnings": [
+          "Low volatility: 0.918% ATR - limited move potential",
+          "ML optimizer: F \u2014 weak edge (8.6)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 52.5,
+        "avg_pnl": 0.36,
+        "total_trades": 160,
+        "wins": 84,
+        "losses": 74,
+        "avg_bars_held": 20.0
+      },
+      "short_term_entry": {
+        "entry_quality": 58,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "trend_aligned"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 8.6,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-07-29T13:57:27.053730+00:00",
+      "ml_rank": 6
     },
     {
       "id": "hyro-v2-sol-cci",
