@@ -126,7 +126,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>PROVEN</td><td>50+ closed trades, WR ≥ 50%, PF ≥ 1.0, documented forward results.</td><td>0.8−1.0x</td></tr>
         <tr><td>PROBATION</td><td>Documented poor performance: broken risk mgmt, consistently losing, or system errors.</td><td>0.10−0.15x</td></tr>
         <tr><td>DEMOTED</td><td>Strategy works on some assets but fails on others (asset-specific demotion).</td><td>0.25x</td></tr>
-        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 16 of 60 systems are grade F.</td><td>0x (disabled)</td></tr>
+        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 14 of 60 systems are grade F.</td><td>0x (disabled)</td></tr>
       </tbody></table>
 
       <h3>Kill Criteria (Mercury AI Recommended)</h3>
@@ -138,7 +138,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <br>• <b>Max Drawdown &gt; 30%</b> on $100 position sizing — unacceptable risk
         <br>• <b>No trades generated</b> in 14+ days — dormant/broken system
         <br>• <b>3 consecutive losing months</b> — persistent underperformance
-        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 16/60 grade-F systems remain active, generating noise and diluting signal quality.
+        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 14/60 grade-F systems remain active, generating noise and diluting signal quality.
       </div>
     </div></div>
 <div id="s1">
@@ -186,7 +186,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         </tr><tr>
           <td><b>super signals</b><br><span class="dim" style="font-size:11px">Cross-system consensus super signals. Only fires when multiple independent systems agree on direction + symbol. High-con</span></td>
           <td style="text-align:center;color:#22c55e;font-weight:700;font-size:18px">A</td>
-          <td class="num">11</td>
+          <td class="num">10</td>
           <td class="num">170</td>
           <td class="num">74</td><td class="num">60</td>
           <td class="num" style="color:#22c55e">55.2%</td>
@@ -750,7 +750,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         </tr><tr>
           <td><b>aggregated picks</b><br><span class="dim" style="font-size:11px">Cross-system aggregated picks. Merges picks from all systems with symbol normalization and deduplication.</span></td>
           <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
-          <td class="num">2</td>
+          <td class="num">3</td>
           <td class="num">27</td>
           <td class="num">12</td><td class="num">15</td>
           <td class="num" style="color:#ef4444">44.4%</td>
@@ -1189,14 +1189,19 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
       <table><thead><tr>
         <th>Date</th><th>Picks</th><th>Directions</th><th>Top Symbols</th><th>Top Systems</th>
       </tr></thead><tbody><tr>
+          <td>2026-08-01</td><td class="num">1</td>
+          <td class="dim">SHORT:1</td>
+          <td style="font-size:11px">BTC(1)</td>
+          <td style="font-size:11px">pm_kalshi_signals(1)</td>
+        </tr><tr>
           <td>2026-07-30</td><td class="num">2</td>
           <td class="dim">SHORT:2</td>
           <td style="font-size:11px">AVAX(1), ARB(1)</td>
           <td style="font-size:11px">mega_mutation(1), inverse_mutations(1)</td>
         </tr></tbody></table>
       <div class="verdict-box neutral">
-        <b>Volume Analysis:</b> The system generates 2 crypto picks over 7 days
-        (avg 2/day).
+        <b>Volume Analysis:</b> The system generates 3 crypto picks over 7 days
+        (avg 1/day).
         Volume is manageable but may miss opportunities if too conservative.
       </div>
     </div></div>
@@ -1251,6 +1256,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">1</td>
               <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
               <td class="dim" style="font-size:11px">inverse_mutations</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">63112.94</td><td class="num">61648.719792</td><td class="num">63989.71856766</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.78</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">4</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>B) Top 20 by Score</h3>
@@ -1292,6 +1308,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">1</td>
               <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
               <td class="dim" style="font-size:11px">inverse_mutations</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">63112.94</td><td class="num">61648.719792</td><td class="num">63989.71856766</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.78</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">4</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>C) Top 20 Vetted Only (Forward WR ≥ 55%, Forward Trades ≥ 10)</h3>
@@ -1327,7 +1354,7 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
       <h3>D) Top 20 High Agreement (≥3 systems agree)</h3>
       
         <div class="sim-summary">
-          <span><b>1</b> picks</span>
+          <span><b>2</b> picks</span>
           <span>WR: <b style="color:#22c55e">100.0%</b></span>
           <span>Total PnL: <b style="color:#22c55e">+2.10%</b> (unrealized)</span>
           <span>PF: <b style="color:#22c55e">99</b></span>
@@ -1352,6 +1379,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">5</td>
               <td class="dim" style="font-size:11px">ema_momentum_m006</td>
               <td class="dim" style="font-size:11px">mega_mutation</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">63112.94</td><td class="num">61648.719792</td><td class="num">63989.71856766</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.78</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">4</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>E) Mercury AI Recommended Scoring (FWD-weighted)</h3>
@@ -1388,6 +1426,17 @@ Key change: FWD WR weight increased from 0.25→0.30, R:R removed, trust tier ad
               <td class="num">5</td>
               <td class="dim" style="font-size:11px">ema_momentum_m006</td>
               <td class="dim" style="font-size:11px">mega_mutation</td>
+            </tr><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">63112.94</td><td class="num">61648.719792</td><td class="num">63989.71856766</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.78</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">4</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr><tr>
               <td>ARB</td>
               <td style="color:#ef4444">SHORT</td>
@@ -1871,7 +1920,7 @@ Key changes:
           <td>CADJPY=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#22c55e;font-weight:700">BUY</td>
-          <td class="num">112.274002</td><td class="num">112.91452518</td><td class="num">111.71263199</td>
+          <td class="num">112.274002</td><td class="num">112.91430063</td><td class="num">111.71263199</td>
           <td class="num">0.80</td><td class="num">3.0</td>
           <td class="num" style="color:#888">+0.00%</td>
           <td class="num">0d</td>
