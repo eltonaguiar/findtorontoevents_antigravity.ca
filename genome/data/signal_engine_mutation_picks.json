@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-08-01T13:19:25.951839+00:00",
+    "timestamp": "2026-08-01T15:39:03.028647+00:00",
     "total_mutations": 4,
-    "total_picks": 1,
-    "mutations_triggered": 1,
-    "mutations_silent": 3,
+    "total_picks": 2,
+    "mutations_triggered": 2,
+    "mutations_silent": 2,
     "symbols_scanned": 15,
     "interval": "1h",
     "system": "dna_signal_engine_mutations"
@@ -12,31 +12,61 @@
   "picks": [
     {
       "strategy": "signal_engine_momentum_mut",
-      "symbol": "ADAUSDT",
+      "symbol": "DOTUSDT",
       "signal_type": "BUY",
-      "entry_price": 0.1747,
-      "take_profit": 0.177838,
-      "stop_loss": 0.172433,
-      "confidence": 0.7335,
+      "entry_price": 0.778,
+      "take_profit": 0.788078,
+      "stop_loss": 0.770721,
+      "confidence": 0.78,
       "risk_reward": 1.38,
-      "reason": "Signal engine momentum-only: MACD>0, EMA9>21, RSI=68.5, mom3d=+1.3%, mom7d=+2.9% \u2014 pure trend follow",
-      "timestamp": "2026-08-01T13:19:25.910822+00:00",
+      "reason": "Signal engine momentum-only: MACD>0, EMA9>21, RSI=64.2, mom3d=+1.0%, mom7d=+2.1% \u2014 pure trend follow",
+      "timestamp": "2026-08-01T15:39:03.005478+00:00",
       "category": "crypto",
       "source_system": "genome",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "crypto_signal_engine",
       "mutation_type": "aggressive",
-      "momentum_score": 0.38,
-      "rsi_14": 68.5,
-      "macd_hist": 0.00043004,
+      "momentum_score": 0.57,
+      "rsi_14": 64.2,
+      "macd_hist": 0.00193306,
       "ema_cross": 1,
-      "momentum_3d": 0.0128,
-      "momentum_7d": 0.0289,
+      "momentum_3d": 0.0104,
+      "momentum_7d": 0.021,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "signal_engine_wide_net_mut",
+      "symbol": "DOTUSDT",
+      "signal_type": "BUY",
+      "entry_price": 0.778,
+      "take_profit": 0.789198,
+      "stop_loss": 0.769602,
+      "confidence": 0.705,
+      "risk_reward": 1.33,
+      "reason": "Signal engine wide net: conf_score=0.57 (>= 0.45), RSI=64.2, vol=2.1x (>= 0.8), 15-symbol scan",
+      "timestamp": "2026-08-01T15:39:02.910404+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "crypto_signal_engine",
+      "mutation_type": "moderate",
+      "conf_score": 0.57,
+      "rsi_14": 64.2,
+      "volume_ratio": 2.05,
+      "bb_position": 1.028,
+      "momentum_3d": 0.0104,
       "timeframe": "1h"
     }
   ],
   "mutations_triggered": [
+    {
+      "strategy": "signal_engine_wide_net_mut",
+      "parent": "crypto_signal_engine",
+      "mutation": "moderate",
+      "picks": 1
+    },
     {
       "strategy": "signal_engine_momentum_mut",
       "parent": "crypto_signal_engine",
@@ -46,7 +76,6 @@
   ],
   "mutations_silent": [
     "signal_engine_relaxed_mut",
-    "signal_engine_wide_net_mut",
     "signal_engine_no_premium_mut"
   ]
 }
