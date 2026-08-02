@@ -1,32 +1,40 @@
 {
-  "generated_at": "2026-08-02T12:10:33Z",
-  "market_direction": "LONG",
-  "cross_pair_ratio": 0.603,
-  "active_symbols": 63,
+  "generated_at": "2026-08-02T13:06:52Z",
+  "market_direction": "NEUTRAL",
+  "cross_pair_ratio": 0.5,
+  "active_symbols": 66,
   "systems_reporting": 7,
   "super_signals": [
     {
-      "symbol": "ETHUSDT",
-      "direction": "LONG",
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
       "confidence": 0.99,
-      "raw_confidence": 42.0,
-      "entry_price": 1866.43,
-      "take_profit": 1956.62714286,
-      "stop_loss": 1806.29857143,
+      "raw_confidence": 0.864,
+      "entry_price": 63159.99,
+      "take_profit": 61580.99025,
+      "stop_loss": 64107.38985,
       "agreeing_systems": [
         "alpha_engine",
-        "kimi"
+        "kol_consensus",
+        "luxalgo_filters",
+        "quan_engine"
       ],
-      "agreement_count": 2,
-      "cross_pair_ratio": 0.603,
+      "agreement_count": 4,
+      "cross_pair_ratio": 0.5,
       "signal_tier": "STRONG",
-      "source_system": "kimi",
-      "generated_at": "2026-08-02T12:10:33Z",
-      "strategy": "super signal (strong) via kimi",
+      "source_system": "alpha_engine",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via alpha_engine",
       "conflict_resolution": {
-        "recommended_direction": "LONG",
-        "conflict_confidence": 0.5238,
-        "rules_applied": [],
+        "recommended_direction": "SHORT",
+        "conflict_confidence": 0.99,
+        "rules_applied": [
+          {
+            "rule_id": 2,
+            "rule": "SUPER consensus (4+ systems) beats any individual signal",
+            "effect": "4 systems agree on SHORT \u2014 confidence boosted to 0.99"
+          }
+        ],
         "overrides": [],
         "warnings": [
           "kimi (kimi_standalone) is BANNED \u2014 signal suppressed (20% WR solo, only useful as confirmer)"
@@ -36,36 +44,69 @@
         ]
       },
       "_conflict_lessons": {
-        "system_canonical": "kimi_standalone",
-        "trust_weight": 0.0,
-        "is_suppressed": true,
-        "suppression_reason": "20% WR solo, only useful as confirmer",
-        "historical_wr": 0.2,
-        "historical_pnl": -125.38,
+        "system_canonical": "alpha_engine_short",
+        "trust_weight": 1.1,
+        "is_suppressed": false,
         "age_hours": 0.0,
         "applicable_rules": []
       }
     },
     {
-      "symbol": "BNBUSDT",
-      "direction": "LONG",
-      "confidence": 0.99,
-      "raw_confidence": 42.0,
-      "entry_price": 582.72,
-      "take_profit": 600.85521429,
-      "stop_loss": 570.62985714,
+      "symbol": "STXUSDT",
+      "direction": "SHORT",
+      "confidence": 0.802,
+      "raw_confidence": 0.752,
+      "entry_price": 0.1397,
+      "take_profit": 0.13651,
+      "stop_loss": 0.141585,
       "agreeing_systems": [
         "alpha_engine",
-        "kimi"
+        "luxalgo_filters"
       ],
       "agreement_count": 2,
-      "cross_pair_ratio": 0.603,
+      "cross_pair_ratio": 0.5,
       "signal_tier": "STRONG",
-      "source_system": "kimi",
-      "generated_at": "2026-08-02T12:10:33Z",
-      "strategy": "super signal (strong) via kimi",
+      "source_system": "luxalgo_filters",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via luxalgo_filters",
       "conflict_resolution": {
-        "recommended_direction": "LONG",
+        "recommended_direction": "SHORT",
+        "conflict_confidence": 1.0,
+        "rules_applied": [],
+        "overrides": [],
+        "warnings": [],
+        "suppressed_systems": []
+      },
+      "_conflict_lessons": {
+        "system_canonical": "luxalgo_sell",
+        "trust_weight": 1.0,
+        "is_suppressed": false,
+        "age_hours": 0.0,
+        "applicable_rules": [
+          "RULE3: LuxAlgo SELL on STXUSDT \u2014 historically overridden by Mega Mutation on alts"
+        ]
+      }
+    },
+    {
+      "symbol": "SOLUSDT",
+      "direction": "SHORT",
+      "confidence": 0.753,
+      "raw_confidence": 0.703,
+      "entry_price": 73.18,
+      "take_profit": 72.125571,
+      "stop_loss": 73.803071,
+      "agreeing_systems": [
+        "alpha_engine",
+        "luxalgo_filters"
+      ],
+      "agreement_count": 2,
+      "cross_pair_ratio": 0.5,
+      "signal_tier": "STRONG",
+      "source_system": "luxalgo_filters",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via luxalgo_filters",
+      "conflict_resolution": {
+        "recommended_direction": "SHORT",
         "conflict_confidence": 1.0,
         "rules_applied": [],
         "overrides": [],
@@ -77,161 +118,33 @@
         ]
       },
       "_conflict_lessons": {
-        "system_canonical": "kimi_standalone",
-        "trust_weight": 0.0,
-        "is_suppressed": true,
-        "suppression_reason": "20% WR solo, only useful as confirmer",
-        "historical_wr": 0.2,
-        "historical_pnl": -125.38,
+        "system_canonical": "luxalgo_sell",
+        "trust_weight": 1.0,
+        "is_suppressed": false,
         "age_hours": 0.0,
         "applicable_rules": []
       }
     },
     {
-      "symbol": "DOGEUSDT",
-      "direction": "LONG",
-      "confidence": 0.99,
-      "raw_confidence": 34.0,
-      "entry_price": 0.070207,
-      "take_profit": 0.07360051,
-      "stop_loss": 0.06794516,
-      "agreeing_systems": [
-        "kimi",
-        "quan_engine"
-      ],
-      "agreement_count": 2,
-      "cross_pair_ratio": 0.603,
-      "signal_tier": "STRONG",
-      "source_system": "kimi",
-      "generated_at": "2026-08-02T12:10:33Z",
-      "strategy": "super signal (strong) via kimi",
-      "conflict_resolution": {
-        "recommended_direction": "SHORT",
-        "conflict_confidence": 0.5789,
-        "rules_applied": [],
-        "overrides": [],
-        "warnings": [
-          "kimi (kimi_standalone) is BANNED \u2014 signal suppressed (20% WR solo, only useful as confirmer)"
-        ],
-        "suppressed_systems": [
-          "kimi"
-        ],
-        "direction_conflict": true,
-        "conflict_note": "Consensus says LONG but conflict rules recommend SHORT"
-      },
-      "_conflict_lessons": {
-        "system_canonical": "kimi_standalone",
-        "trust_weight": 0.0,
-        "is_suppressed": true,
-        "suppression_reason": "20% WR solo, only useful as confirmer",
-        "historical_wr": 0.2,
-        "historical_pnl": -125.38,
-        "age_hours": 0.0,
-        "applicable_rules": []
-      }
-    },
-    {
-      "symbol": "NEARUSDT",
-      "direction": "LONG",
-      "confidence": 0.99,
-      "raw_confidence": 47.0,
-      "entry_price": 1.6486,
-      "take_profit": 1.790875,
-      "stop_loss": 1.55375,
-      "agreeing_systems": [
-        "alpha_engine",
-        "kimi"
-      ],
-      "agreement_count": 2,
-      "cross_pair_ratio": 0.603,
-      "signal_tier": "STRONG",
-      "source_system": "kimi",
-      "generated_at": "2026-08-02T12:10:33Z",
-      "strategy": "super signal (strong) via kimi",
-      "conflict_resolution": {
-        "recommended_direction": "LONG",
-        "conflict_confidence": 0.5238,
-        "rules_applied": [],
-        "overrides": [],
-        "warnings": [
-          "kimi (kimi_standalone) is BANNED \u2014 signal suppressed (20% WR solo, only useful as confirmer)"
-        ],
-        "suppressed_systems": [
-          "kimi"
-        ]
-      },
-      "_conflict_lessons": {
-        "system_canonical": "kimi_standalone",
-        "trust_weight": 0.0,
-        "is_suppressed": true,
-        "suppression_reason": "20% WR solo, only useful as confirmer",
-        "historical_wr": 0.2,
-        "historical_pnl": -125.38,
-        "age_hours": 0.0,
-        "applicable_rules": []
-      }
-    },
-    {
-      "symbol": "AVAXUSDT",
-      "direction": "LONG",
-      "confidence": 0.99,
-      "raw_confidence": 42.0,
-      "entry_price": 6.327,
-      "take_profit": 6.74185714,
-      "stop_loss": 6.05042857,
-      "agreeing_systems": [
-        "alpha_engine",
-        "kimi"
-      ],
-      "agreement_count": 2,
-      "cross_pair_ratio": 0.603,
-      "signal_tier": "STRONG",
-      "source_system": "kimi",
-      "generated_at": "2026-08-02T12:10:33Z",
-      "strategy": "super signal (strong) via kimi",
-      "conflict_resolution": {
-        "recommended_direction": "LONG",
-        "conflict_confidence": 0.5238,
-        "rules_applied": [],
-        "overrides": [],
-        "warnings": [
-          "kimi (kimi_standalone) is BANNED \u2014 signal suppressed (20% WR solo, only useful as confirmer)"
-        ],
-        "suppressed_systems": [
-          "kimi"
-        ]
-      },
-      "_conflict_lessons": {
-        "system_canonical": "kimi_standalone",
-        "trust_weight": 0.0,
-        "is_suppressed": true,
-        "suppression_reason": "20% WR solo, only useful as confirmer",
-        "historical_wr": 0.2,
-        "historical_pnl": -125.38,
-        "age_hours": 0.0,
-        "applicable_rules": []
-      }
-    },
-    {
-      "symbol": "GOOGL",
-      "direction": "LONG",
-      "confidence": 0.76,
+      "symbol": "RENDERUSDT",
+      "direction": "SHORT",
+      "confidence": 0.75,
       "raw_confidence": 0.7,
-      "entry_price": 356.130005,
-      "take_profit": 395.875715,
-      "stop_loss": 336.25715,
+      "entry_price": 1.581,
+      "take_profit": 1.4229,
+      "stop_loss": 1.66005,
       "agreeing_systems": [
         "alpha_engine",
-        "smart_money"
+        "luxalgo_filters"
       ],
       "agreement_count": 2,
-      "cross_pair_ratio": 0.603,
+      "cross_pair_ratio": 0.5,
       "signal_tier": "STRONG",
       "source_system": "alpha_engine",
-      "generated_at": "2026-08-02T12:10:33Z",
+      "generated_at": "2026-08-02T13:06:52Z",
       "strategy": "super signal (strong) via alpha_engine",
       "conflict_resolution": {
-        "recommended_direction": "LONG",
+        "recommended_direction": "SHORT",
         "conflict_confidence": 1.0,
         "rules_applied": [],
         "overrides": [],
@@ -247,25 +160,63 @@
       }
     },
     {
-      "symbol": "AMZN",
-      "direction": "LONG",
-      "confidence": 0.71,
-      "raw_confidence": 0.65,
-      "entry_price": 271.5799865722656,
-      "take_profit": 291.95,
-      "stop_loss": 259.36,
+      "symbol": "XRPUSDT",
+      "direction": "SHORT",
+      "confidence": 0.726,
+      "raw_confidence": 0.676,
+      "entry_price": 1.0813,
+      "take_profit": 1.0542675,
+      "stop_loss": 1.0975195,
       "agreeing_systems": [
         "alpha_engine",
-        "smart_money"
+        "luxalgo_filters"
       ],
       "agreement_count": 2,
-      "cross_pair_ratio": 0.603,
+      "cross_pair_ratio": 0.5,
       "signal_tier": "STRONG",
-      "source_system": "smart_money",
-      "generated_at": "2026-08-02T12:10:33Z",
-      "strategy": "super signal (strong) via smart_money",
+      "source_system": "alpha_engine",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via alpha_engine",
       "conflict_resolution": {
-        "recommended_direction": "LONG",
+        "recommended_direction": "SHORT",
+        "conflict_confidence": 1.0,
+        "rules_applied": [],
+        "overrides": [],
+        "warnings": [
+          "kimi (kimi_standalone) is BANNED \u2014 signal suppressed (20% WR solo, only useful as confirmer)"
+        ],
+        "suppressed_systems": [
+          "kimi"
+        ]
+      },
+      "_conflict_lessons": {
+        "system_canonical": "alpha_engine_short",
+        "trust_weight": 1.1,
+        "is_suppressed": false,
+        "age_hours": 0.0,
+        "applicable_rules": []
+      }
+    },
+    {
+      "symbol": "JUPUSDT",
+      "direction": "SHORT",
+      "confidence": 0.673,
+      "raw_confidence": 0.623,
+      "entry_price": 0.1963,
+      "take_profit": 0.193079,
+      "stop_loss": 0.198204,
+      "agreeing_systems": [
+        "alpha_engine",
+        "luxalgo_filters"
+      ],
+      "agreement_count": 2,
+      "cross_pair_ratio": 0.5,
+      "signal_tier": "STRONG",
+      "source_system": "luxalgo_filters",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via luxalgo_filters",
+      "conflict_resolution": {
+        "recommended_direction": "SHORT",
         "conflict_confidence": 1.0,
         "rules_applied": [],
         "overrides": [],
@@ -273,8 +224,120 @@
         "suppressed_systems": []
       },
       "_conflict_lessons": {
-        "system_canonical": "smart_money",
-        "trust_weight": 0.8,
+        "system_canonical": "luxalgo_sell",
+        "trust_weight": 1.0,
+        "is_suppressed": false,
+        "age_hours": 0.0,
+        "applicable_rules": [
+          "RULE3: LuxAlgo SELL on JUPUSDT \u2014 historically overridden by Mega Mutation on alts"
+        ]
+      }
+    },
+    {
+      "symbol": "SUIUSDT",
+      "direction": "SHORT",
+      "confidence": 0.673,
+      "raw_confidence": 0.623,
+      "entry_price": 0.6874,
+      "take_profit": 0.677264,
+      "stop_loss": 0.693389,
+      "agreeing_systems": [
+        "alpha_engine",
+        "luxalgo_filters"
+      ],
+      "agreement_count": 2,
+      "cross_pair_ratio": 0.5,
+      "signal_tier": "STRONG",
+      "source_system": "luxalgo_filters",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via luxalgo_filters",
+      "conflict_resolution": {
+        "recommended_direction": "SHORT",
+        "conflict_confidence": 1.0,
+        "rules_applied": [],
+        "overrides": [],
+        "warnings": [],
+        "suppressed_systems": []
+      },
+      "_conflict_lessons": {
+        "system_canonical": "luxalgo_sell",
+        "trust_weight": 1.0,
+        "is_suppressed": false,
+        "age_hours": 0.0,
+        "applicable_rules": []
+      }
+    },
+    {
+      "symbol": "ADAUSDT",
+      "direction": "SHORT",
+      "confidence": 0.66,
+      "raw_confidence": 0.61,
+      "entry_price": 0.1852,
+      "take_profit": 0.17836834,
+      "stop_loss": 0.19183386,
+      "agreeing_systems": [
+        "alpha_engine",
+        "luxalgo_filters"
+      ],
+      "agreement_count": 2,
+      "cross_pair_ratio": 0.5,
+      "signal_tier": "STRONG",
+      "source_system": "alpha_engine",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via alpha_engine",
+      "conflict_resolution": {
+        "recommended_direction": "SHORT",
+        "conflict_confidence": 0.7241,
+        "rules_applied": [],
+        "overrides": [],
+        "warnings": [
+          "kimi (kimi_standalone) is BANNED \u2014 signal suppressed (20% WR solo, only useful as confirmer)"
+        ],
+        "suppressed_systems": [
+          "kimi"
+        ]
+      },
+      "_conflict_lessons": {
+        "system_canonical": "alpha_engine_short",
+        "trust_weight": 1.1,
+        "is_suppressed": false,
+        "age_hours": 0.0,
+        "applicable_rules": []
+      }
+    },
+    {
+      "symbol": "DOTUSDT",
+      "direction": "SHORT",
+      "confidence": 0.633,
+      "raw_confidence": 0.583,
+      "entry_price": 0.799,
+      "take_profit": 0.784543,
+      "stop_loss": 0.807543,
+      "agreeing_systems": [
+        "alpha_engine",
+        "luxalgo_filters"
+      ],
+      "agreement_count": 2,
+      "cross_pair_ratio": 0.5,
+      "signal_tier": "STRONG",
+      "source_system": "luxalgo_filters",
+      "generated_at": "2026-08-02T13:06:52Z",
+      "strategy": "super signal (strong) via luxalgo_filters",
+      "conflict_resolution": {
+        "recommended_direction": "SHORT",
+        "conflict_confidence": 0.7241,
+        "rules_applied": [],
+        "overrides": [],
+        "warnings": [
+          "kimi (kimi_standalone) is BANNED \u2014 signal suppressed (20% WR solo, only useful as confirmer)"
+        ],
+        "suppressed_systems": [
+          "kimi"
+        ]
+      },
+      "_conflict_lessons": {
+        "system_canonical": "luxalgo_sell",
+        "trust_weight": 1.0,
         "is_suppressed": false,
         "age_hours": 0.0,
         "applicable_rules": []
@@ -285,8 +348,8 @@
     "BTCUSDT": {
       "dominant_direction": "SHORT",
       "system_agreement": 5,
-      "long": 2,
-      "short": 3,
+      "long": 1,
+      "short": 4,
       "systems": [
         "alpha_engine",
         "kimi",
@@ -297,8 +360,8 @@
       "system_details": [
         {
           "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_ABC_41M",
+          "direction": "SHORT",
+          "strategy": "prediction_market_consensus",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -389,7 +452,7 @@
         {
           "system": "alpha_engine",
           "direction": "SHORT",
-          "strategy": "clone_hl_copy_lb_None",
+          "strategy": "luxalgo_confluence",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -450,40 +513,6 @@
         }
       ]
     },
-    "DOGEUSDT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 3,
-      "long": 2,
-      "short": 1,
-      "systems": [
-        "alpha_engine",
-        "kimi",
-        "quan_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "SHORT",
-          "strategy": "clone_hl_copy_lb_None",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        },
-        {
-          "system": "kimi",
-          "direction": "LONG",
-          "strategy": "",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
-        },
-        {
-          "system": "quan_engine",
-          "direction": "LONG",
-          "strategy": "",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
-        }
-      ]
-    },
     "SOLUSDT": {
       "dominant_direction": "SHORT",
       "system_agreement": 3,
@@ -498,7 +527,7 @@
         {
           "system": "alpha_engine",
           "direction": "SHORT",
-          "strategy": "clone_hl_copy_lb_None",
+          "strategy": "luxalgo_confluence",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -532,41 +561,7 @@
         {
           "system": "alpha_engine",
           "direction": "SHORT",
-          "strategy": "clone_hl_copy_lb_None",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        },
-        {
-          "system": "kimi",
-          "direction": "LONG",
-          "strategy": "",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
-        },
-        {
-          "system": "luxalgo_filters",
-          "direction": "SHORT",
-          "strategy": "luxalgo_confluence",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "NEARUSDT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 3,
-      "long": 2,
-      "short": 1,
-      "systems": [
-        "alpha_engine",
-        "kimi",
-        "luxalgo_filters"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
+          "strategy": "prediction_market_consensus",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -592,20 +587,20 @@
       "long": 2,
       "short": 1,
       "systems": [
-        "alpha_engine",
         "kimi",
+        "quan_engine",
         "luxalgo_filters"
       ],
       "system_details": [
         {
-          "system": "alpha_engine",
+          "system": "kimi",
           "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
+          "strategy": "",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
         },
         {
-          "system": "kimi",
+          "system": "quan_engine",
           "direction": "LONG",
           "strategy": "",
           "trust_tier": "WATCH",
@@ -633,7 +628,7 @@
         {
           "system": "alpha_engine",
           "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
+          "strategy": "high_trust_momentum",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -686,6 +681,58 @@
           "system": "alpha_engine",
           "direction": "SHORT",
           "strategy": "regime_strong_bear",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        },
+        {
+          "system": "kimi",
+          "direction": "LONG",
+          "strategy": "",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
+        }
+      ]
+    },
+    "MSFT": {
+      "dominant_direction": "LONG",
+      "system_agreement": 2,
+      "long": 2,
+      "short": 0,
+      "systems": [
+        "alpha_engine",
+        "smart_money"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "regime_mild_bull",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        },
+        {
+          "system": "smart_money",
+          "direction": "LONG",
+          "strategy": "smart_money_consensus",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
+        }
+      ]
+    },
+    "DOGEUSDT": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 2,
+      "long": 1,
+      "short": 1,
+      "systems": [
+        "alpha_engine",
+        "kimi"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "SHORT",
+          "strategy": "prediction_market_consensus",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -751,10 +798,10 @@
       ]
     },
     "RENDERUSDT": {
-      "dominant_direction": "LONG",
+      "dominant_direction": "SHORT",
       "system_agreement": 2,
-      "long": 1,
-      "short": 1,
+      "long": 0,
+      "short": 2,
       "systems": [
         "alpha_engine",
         "luxalgo_filters"
@@ -762,8 +809,8 @@
       "system_details": [
         {
           "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
+          "direction": "SHORT",
+          "strategy": "inverse_ml_enhanced_RENDERUSDT_4h_D",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -777,10 +824,10 @@
       ]
     },
     "SUIUSDT": {
-      "dominant_direction": "LONG",
+      "dominant_direction": "SHORT",
       "system_agreement": 2,
-      "long": 1,
-      "short": 1,
+      "long": 0,
+      "short": 2,
       "systems": [
         "alpha_engine",
         "luxalgo_filters"
@@ -788,86 +835,8 @@
       "system_details": [
         {
           "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        },
-        {
-          "system": "luxalgo_filters",
           "direction": "SHORT",
           "strategy": "luxalgo_confluence",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "LINKUSDT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 2,
-      "long": 1,
-      "short": 1,
-      "systems": [
-        "alpha_engine",
-        "luxalgo_filters"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        },
-        {
-          "system": "luxalgo_filters",
-          "direction": "SHORT",
-          "strategy": "luxalgo_confluence",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "HYPEUSDT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 2,
-      "long": 1,
-      "short": 1,
-      "systems": [
-        "alpha_engine",
-        "quan_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_ABC_41M",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        },
-        {
-          "system": "quan_engine",
-          "direction": "SHORT",
-          "strategy": "",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
-        }
-      ]
-    },
-    "ENAUSDT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 2,
-      "long": 1,
-      "short": 1,
-      "systems": [
-        "alpha_engine",
-        "luxalgo_filters"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -903,6 +872,32 @@
           "strategy": "",
           "trust_tier": "WATCH",
           "vote_weight": 1.0
+        }
+      ]
+    },
+    "LINKUSDT": {
+      "dominant_direction": "LONG",
+      "system_agreement": 2,
+      "long": 1,
+      "short": 1,
+      "systems": [
+        "alpha_engine",
+        "luxalgo_filters"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "ml_enhanced_LINKUSDT_4h_A_xgboost",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        },
+        {
+          "system": "luxalgo_filters",
+          "direction": "SHORT",
+          "strategy": "luxalgo_confluence",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
         }
       ]
     },
@@ -1036,6 +1031,32 @@
         }
       ]
     },
+    "NEARUSDT": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 2,
+      "long": 1,
+      "short": 1,
+      "systems": [
+        "kimi",
+        "luxalgo_filters"
+      ],
+      "system_details": [
+        {
+          "system": "kimi",
+          "direction": "LONG",
+          "strategy": "",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
+        },
+        {
+          "system": "luxalgo_filters",
+          "direction": "SHORT",
+          "strategy": "luxalgo_confluence",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
     "AAPL": {
       "dominant_direction": "SHORT",
       "system_agreement": 1,
@@ -1090,6 +1111,24 @@
         }
       ]
     },
+    "IONQ": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 1,
+      "long": 0,
+      "short": 1,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "SHORT",
+          "strategy": "regime_strong_bear",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
     "NG=F": {
       "dominant_direction": "SHORT",
       "system_agreement": 1,
@@ -1126,6 +1165,24 @@
         }
       ]
     },
+    "CL=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "commodity_momentum",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
     "ZW=F": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
@@ -1138,7 +1195,7 @@
         {
           "system": "alpha_engine",
           "direction": "LONG",
-          "strategy": "commodity_term_cot",
+          "strategy": "futures_momentum",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
@@ -1157,24 +1214,6 @@
           "system": "alpha_engine",
           "direction": "LONG",
           "strategy": "turn_of_month_scanner",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "EURJPY=X": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "forex_zscore_200d_fade",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
@@ -1252,6 +1291,24 @@
         }
       ]
     },
+    "EURJPY=X": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "forex_zscore_200d_fade",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
     "AUDJPY=X": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
@@ -1270,7 +1327,7 @@
         }
       ]
     },
-    "ONDOUSDT": {
+    "TRXUSDT": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
       "long": 1,
@@ -1282,13 +1339,13 @@
         {
           "system": "alpha_engine",
           "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
+          "strategy": "ml_enhanced_TRXUSDT_4h_D_ensemble_stack",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
       ]
     },
-    "FETUSDT": {
+    "ARBUSDT": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
       "long": 1,
@@ -1300,13 +1357,13 @@
         {
           "system": "alpha_engine",
           "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
+          "strategy": "ml_enhanced_ARBUSDT_1h_D_ensemble_stack",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
       ]
     },
-    "METISUSDT": {
+    "LTCUSDT": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
       "long": 1,
@@ -1318,25 +1375,7 @@
         {
           "system": "alpha_engine",
           "direction": "LONG",
-          "strategy": "clone_hl_copy_ABC_41M",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "PENGUUSDT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "clone_hl_copy_Auros_66M",
+          "strategy": "ml_enhanced_LTCUSDT_4h_A_xgboost",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
@@ -1379,18 +1418,18 @@
       ]
     },
     "ZC=F": {
-      "dominant_direction": "LONG",
+      "dominant_direction": "SHORT",
       "system_agreement": 1,
-      "long": 1,
-      "short": 0,
+      "long": 0,
+      "short": 1,
       "systems": [
         "alpha_engine"
       ],
       "system_details": [
         {
           "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "futures_momentum",
+          "direction": "SHORT",
+          "strategy": "cta_commodity_momentum_term",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
@@ -1427,6 +1466,24 @@
           "system": "alpha_engine",
           "direction": "SHORT",
           "strategy": "cta_cross_asset_tsmom",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "ZS=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "commodity_term_cot",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
@@ -1576,7 +1633,7 @@
         }
       ]
     },
-    "LTCUSDT": {
+    "ICPUSDT": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
       "long": 1,
@@ -1594,25 +1651,7 @@
         }
       ]
     },
-    "XLMUSDT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "quan_engine"
-      ],
-      "system_details": [
-        {
-          "system": "quan_engine",
-          "direction": "LONG",
-          "strategy": "",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
-        }
-      ]
-    },
-    "KASUSDT": {
+    "ONDOUSDT": {
       "dominant_direction": "SHORT",
       "system_agreement": 1,
       "long": 0,
@@ -1648,7 +1687,43 @@
         }
       ]
     },
-    "WIFUSDT": {
+    "XLMUSDT": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "quan_engine"
+      ],
+      "system_details": [
+        {
+          "system": "quan_engine",
+          "direction": "LONG",
+          "strategy": "",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
+        }
+      ]
+    },
+    "HYPEUSDT": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 1,
+      "long": 0,
+      "short": 1,
+      "systems": [
+        "quan_engine"
+      ],
+      "system_details": [
+        {
+          "system": "quan_engine",
+          "direction": "SHORT",
+          "strategy": "",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
+        }
+      ]
+    },
+    "ENAUSDT": {
       "dominant_direction": "SHORT",
       "system_agreement": 1,
       "long": 0,
@@ -1666,21 +1741,21 @@
         }
       ]
     },
-    "MSFT": {
-      "dominant_direction": "LONG",
+    "WIFUSDT": {
+      "dominant_direction": "SHORT",
       "system_agreement": 1,
-      "long": 1,
-      "short": 0,
+      "long": 0,
+      "short": 1,
       "systems": [
-        "smart_money"
+        "luxalgo_filters"
       ],
       "system_details": [
         {
-          "system": "smart_money",
-          "direction": "LONG",
-          "strategy": "smart_money_consensus",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
+          "system": "luxalgo_filters",
+          "direction": "SHORT",
+          "strategy": "luxalgo_confluence",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
         }
       ]
     },
@@ -1728,57 +1803,71 @@
   },
   "conflict_lessons": {
     "engine_available": true,
-    "symbols_analyzed": 7,
-    "all_aligned": false,
+    "symbols_analyzed": 9,
+    "all_aligned": true,
     "summary": {
-      "ETHUSDT": {
-        "consensus_dir": "LONG",
-        "lessons_dir": "LONG",
-        "aligned": true,
-        "rules_count": 0,
-        "warnings_count": 1
-      },
-      "BNBUSDT": {
-        "consensus_dir": "LONG",
-        "lessons_dir": "LONG",
-        "aligned": true,
-        "rules_count": 0,
-        "warnings_count": 1
-      },
-      "DOGEUSDT": {
-        "consensus_dir": "LONG",
+      "BTCUSDT": {
+        "consensus_dir": "SHORT",
         "lessons_dir": "SHORT",
-        "aligned": false,
-        "rules_count": 0,
-        "warnings_count": 1
-      },
-      "NEARUSDT": {
-        "consensus_dir": "LONG",
-        "lessons_dir": "LONG",
         "aligned": true,
-        "rules_count": 0,
+        "rules_count": 1,
         "warnings_count": 1
       },
-      "AVAXUSDT": {
-        "consensus_dir": "LONG",
-        "lessons_dir": "LONG",
-        "aligned": true,
-        "rules_count": 0,
-        "warnings_count": 1
-      },
-      "GOOGL": {
-        "consensus_dir": "LONG",
-        "lessons_dir": "LONG",
+      "STXUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
         "aligned": true,
         "rules_count": 0,
         "warnings_count": 0
       },
-      "AMZN": {
-        "consensus_dir": "LONG",
-        "lessons_dir": "LONG",
+      "SOLUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
+        "aligned": true,
+        "rules_count": 0,
+        "warnings_count": 1
+      },
+      "RENDERUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
         "aligned": true,
         "rules_count": 0,
         "warnings_count": 0
+      },
+      "XRPUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
+        "aligned": true,
+        "rules_count": 0,
+        "warnings_count": 1
+      },
+      "JUPUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
+        "aligned": true,
+        "rules_count": 0,
+        "warnings_count": 0
+      },
+      "SUIUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
+        "aligned": true,
+        "rules_count": 0,
+        "warnings_count": 0
+      },
+      "ADAUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
+        "aligned": true,
+        "rules_count": 0,
+        "warnings_count": 1
+      },
+      "DOTUSDT": {
+        "consensus_dir": "SHORT",
+        "lessons_dir": "SHORT",
+        "aligned": true,
+        "rules_count": 0,
+        "warnings_count": 1
       }
     }
   }
