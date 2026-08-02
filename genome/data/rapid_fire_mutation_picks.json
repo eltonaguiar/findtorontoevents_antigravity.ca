@@ -1,20 +1,97 @@
 {
   "metadata": {
-    "timestamp": "2026-08-02T15:42:39.820007+00:00",
+    "timestamp": "2026-08-02T18:35:38.081295+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 3,
+    "mutations_triggered": 2,
+    "mutations_silent": 3,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_rapid_fire_mutations"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "rapid_volume_gate_mut",
+      "symbol": "NEARUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 1.72,
+      "take_profit": 1.7473,
+      "stop_loss": 1.6995,
+      "confidence": 0.6922,
+      "risk_reward": 1.33,
+      "reason": "RapidFire volume-confirmed: BUY, vol=3.8x avg (>1.3x threshold) \u2014 move has real participation",
+      "timestamp": "2026-08-02T18:35:38.067813+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "volume_gate",
+      "volume_ratio": 3.82,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "rapid_trend_only_mut",
+      "symbol": "ARBUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.0814,
+      "take_profit": 0.082749,
+      "stop_loss": 0.080388,
+      "confidence": 0.4454,
+      "risk_reward": 1.33,
+      "reason": "RapidFire trend-only: BUY with 200-EMA trend, price above EMA200=$0.0804 (1.27% distance) \u2014 no counter-trend trades",
+      "timestamp": "2026-08-02T18:35:38.057587+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "trend_filter",
+      "ema_200": 0.08038,
+      "trend_distance": 0.0127,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "rapid_trend_only_mut",
+      "symbol": "NEARUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 1.72,
+      "take_profit": 1.7473,
+      "stop_loss": 1.6995,
+      "confidence": 0.4244,
+      "risk_reward": 1.33,
+      "reason": "RapidFire trend-only: BUY with 200-EMA trend, price above EMA200=$1.7163 (0.22% distance) \u2014 no counter-trend trades",
+      "timestamp": "2026-08-02T18:35:38.053645+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "trend_filter",
+      "ema_200": 1.7163,
+      "trend_distance": 0.0022,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "rapid_trend_only_mut",
+      "parent": "rapid_fire",
+      "mutation": "trend_filter",
+      "picks": 2
+    },
+    {
+      "strategy": "rapid_volume_gate_mut",
+      "parent": "rapid_fire",
+      "mutation": "volume_gate",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "rapid_trend_only_mut",
     "rapid_momentum_filter_mut",
-    "rapid_volume_gate_mut",
     "rapid_top10_only_mut",
     "rapid_rsi_filter_mut"
   ]
