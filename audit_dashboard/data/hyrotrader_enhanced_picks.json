@@ -139,7 +139,7 @@
       "backtest": {
         "status": "completed",
         "win_rate": 50.0,
-        "avg_pnl": -0.06,
+        "avg_pnl": -0.07,
         "total_trades": 160,
         "wins": 80,
         "losses": 79,
@@ -346,18 +346,18 @@
       "ml_rank": 3
     },
     {
-      "id": "hyro-v2-eth-adxvol",
-      "rank": 2,
+      "id": "hyro-v2-xrp-bbsqueeze",
+      "rank": 4,
       "asset_class": "CRYPTO",
-      "label": "Ethereum \u2014 ADX Vol Breakout",
-      "symbol_hint": "ETHUSDT",
+      "label": "XRP \u2014 BB Squeeze Breakout",
+      "symbol_hint": "XRPUSDT",
       "direction": "BOTH",
-      "confidence_pct": 90,
+      "confidence_pct": 85,
       "timeframe": "1H",
-      "strategy": "adx_vol_breakout",
+      "strategy": "squeeze_breakout",
       "backtest_grade": "A",
-      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
-      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
+      "backtest_stats": "+$947 PnL, PF 1.41, 40% WR, $279 max DD, 101 trades/6mo",
+      "thesis": "BB width at 40-bar low (squeeze) + volume breakout above upper/below lower BB + EMA50 trend confirmation. Captures explosive moves after low-vol compression.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -366,8 +366,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
-      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
+      "stop_plan": "SL = 1.4\u00d7 ATR. Only fires when BB is in squeeze \u2014 avoids choppy conditions.",
+      "take_profit_plan": "TP = 2.2\u00d7 risk. Breakout targets are wider because squeeze precedes volatility expansion.",
       "technical_indicators": {
         "rsi": 50.63,
         "macd": {
@@ -395,19 +395,18 @@
         "current_price": 1872.57
       },
       "enhanced_scoring": {
-        "enhanced_score": 65,
+        "enhanced_score": 72,
         "breakdown": {
-          "base": 90,
-          "bb_squeeze": 3,
-          "ml_edge_blend": -28,
-          "ml_blend_weights": "70%/30%"
+          "base": 85,
+          "ml_edge_blend": -13,
+          "ml_blend_weights": "85%/15%"
         },
-        "validation": "high_conviction",
-        "notes": [
-          "Bollinger squeeze - volatility compression"
-        ],
+        "validation": "moderate",
+        "notes": [],
         "warnings": [
-          "ML optimizer: F \u2014 weak edge (0.3)"
+          "Low volatility: 0.884% ATR - limited move potential",
+          "ML cross-strategy match: using cci_divergence ranking for squeeze_breakout/XRPUSDT",
+          "ML optimizer: F \u2014 weak edge (1.1)"
         ]
       },
       "backtest": {
@@ -420,22 +419,20 @@
         "avg_bars_held": 17.5
       },
       "short_term_entry": {
-        "entry_quality": 55,
+        "entry_quality": 50,
         "actionable": false,
         "horizon": "4-24h",
-        "reasons": [
-          "atr_in_tradeable_band"
-        ]
+        "reasons": []
       },
       "ml_edge": {
-        "ml_score": 0.3,
+        "ml_score": 1.1,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
-        "ml_cross_strategy_match": false
+        "ml_cross_strategy_match": true
       },
-      "processed_at": "2026-08-04T13:45:35.021235+00:00",
-      "ml_rank": 4
+      "processed_at": "2026-08-04T12:44:03.260129+00:00",
+      "ml_rank": 3
     },
     {
       "id": "hyro-v2-btc-adxvol",
@@ -460,6 +457,99 @@
       "sl_confirmed": false,
       "stop_plan": "SL = 1.5\u00d7 ATR. Confirm ADX > 25 and volume surge before entry.",
       "take_profit_plan": "TP = 2\u00d7 risk.",
+      "technical_indicators": {
+        "rsi": 56.06,
+        "macd": {
+          "macd": 49.5507,
+          "signal": -86.4889,
+          "histogram": 136.0395,
+          "direction": "bullish"
+        },
+        "bollinger": {
+          "upper": 64243.65,
+          "middle": 63303.74,
+          "lower": 62363.84,
+          "pct_b": 0.867,
+          "squeeze": false
+        },
+        "atr_pct": 0.862,
+        "volume": {
+          "ratio": 0.03,
+          "expansion": false,
+          "direction": "neutral"
+        },
+        "trend": "uptrend",
+        "sma_20": 63303.74,
+        "sma_50": 63699.43,
+        "current_price": 63992.78
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 66,
+        "breakdown": {
+          "base": 82,
+          "bb_overbought": 5,
+          "ml_edge_blend": -21,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "moderate",
+        "notes": [
+          "Price at upper Bollinger Band"
+        ],
+        "warnings": [
+          "Low volatility: 0.862% ATR - limited move potential",
+          "ML optimizer: F \u2014 weak edge (15.8)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 42.5,
+        "avg_pnl": -0.09,
+        "total_trades": 160,
+        "wins": 68,
+        "losses": 91,
+        "avg_bars_held": 19.2
+      },
+      "short_term_entry": {
+        "entry_quality": 42,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "backtest_wr_weak"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 15.8,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-08-04T13:45:35.021235+00:00",
+      "ml_rank": 4
+    },
+    {
+      "id": "hyro-v2-btc-adxvol",
+      "rank": 7,
+      "asset_class": "CRYPTO",
+      "label": "Ethereum \u2014 ADX Vol Breakout",
+      "symbol_hint": "ETHUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 90,
+      "timeframe": "1H",
+      "strategy": "adx_vol_breakout",
+      "backtest_grade": "A",
+      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
+      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
+      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
       "technical_indicators": {
         "rsi": 55.51,
         "macd": {
@@ -505,19 +595,19 @@
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 42.5,
-        "avg_pnl": -0.09,
+        "win_rate": 51.2,
+        "avg_pnl": 0.01,
         "total_trades": 160,
-        "wins": 68,
-        "losses": 91,
-        "avg_bars_held": 19.2
+        "wins": 82,
+        "losses": 78,
+        "avg_bars_held": 17.4
       },
       "short_term_entry": {
-        "entry_quality": 42,
+        "entry_quality": 55,
         "actionable": false,
         "horizon": "4-24h",
         "reasons": [
-          "backtest_wr_weak"
+          "atr_in_tradeable_band"
         ]
       },
       "ml_edge": {
@@ -685,7 +775,7 @@
       "backtest": {
         "status": "completed",
         "win_rate": 50.0,
-        "avg_pnl": -0.06,
+        "avg_pnl": -0.07,
         "total_trades": 160,
         "wins": 80,
         "losses": 79,
