@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-08-05T10:13:04.449539+00:00",
+    "timestamp": "2026-08-05T12:52:26.650290+00:00",
     "total_mutations": 4,
-    "total_picks": 1,
-    "mutations_triggered": 1,
-    "mutations_silent": 3,
+    "total_picks": 3,
+    "mutations_triggered": 2,
+    "mutations_silent": 2,
     "symbols_scanned": 15,
     "interval": "1h",
     "system": "dna_signal_engine_mutations"
@@ -12,15 +12,40 @@
   "picks": [
     {
       "strategy": "signal_engine_momentum_mut",
-      "symbol": "ADAUSDT",
+      "symbol": "APTUSDT",
       "signal_type": "BUY",
-      "entry_price": 0.1957,
-      "take_profit": 0.199719,
-      "stop_loss": 0.192797,
-      "confidence": 0.7446,
+      "entry_price": 0.59,
+      "take_profit": 0.597724,
+      "stop_loss": 0.584422,
+      "confidence": 0.7585,
       "risk_reward": 1.38,
-      "reason": "Signal engine momentum-only: MACD>0, EMA9>21, RSI=59.4, mom3d=+0.9%, mom7d=+2.6% \u2014 pure trend follow",
-      "timestamp": "2026-08-05T10:13:04.424534+00:00",
+      "reason": "Signal engine momentum-only: MACD>0, EMA9>21, RSI=68.8, mom3d=+1.0%, mom7d=+1.5% \u2014 pure trend follow",
+      "timestamp": "2026-08-05T12:52:26.639106+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "crypto_signal_engine",
+      "mutation_type": "aggressive",
+      "momentum_score": 0.43,
+      "rsi_14": 68.8,
+      "macd_hist": 0.00065153,
+      "ema_cross": 1,
+      "momentum_3d": 0.0103,
+      "momentum_7d": 0.0155,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "signal_engine_momentum_mut",
+      "symbol": "ETHUSDT",
+      "signal_type": "BUY",
+      "entry_price": 1878.42,
+      "take_profit": 1896.21,
+      "stop_loss": 1865.57,
+      "confidence": 0.7329,
+      "risk_reward": 1.38,
+      "reason": "Signal engine momentum-only: MACD>0, EMA9>21, RSI=57.5, mom3d=+0.3%, mom7d=+0.3% \u2014 pure trend follow",
+      "timestamp": "2026-08-05T12:52:26.604038+00:00",
       "category": "crypto",
       "source_system": "genome",
       "trust_tier": "SANDBOX",
@@ -28,24 +53,53 @@
       "parent_system": "crypto_signal_engine",
       "mutation_type": "aggressive",
       "momentum_score": 0.41,
-      "rsi_14": 59.4,
-      "macd_hist": 0.00043156,
+      "rsi_14": 57.5,
+      "macd_hist": 0.02262071,
       "ema_cross": 1,
-      "momentum_3d": 0.0093,
-      "momentum_7d": 0.0262,
+      "momentum_3d": 0.0035,
+      "momentum_7d": 0.0026,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "signal_engine_relaxed_mut",
+      "symbol": "ETHUSDT",
+      "signal_type": "BUY",
+      "entry_price": 1878.42,
+      "take_profit": 1898.19,
+      "stop_loss": 1863.59,
+      "confidence": 0.655,
+      "risk_reward": 1.33,
+      "reason": "Signal engine relaxed: conf_score=0.41 (>= 0.40), RSI=57.5, MACD=0.022621, BB_pos=0.96 \u2014 no trend filter",
+      "timestamp": "2026-08-05T12:52:26.518231+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "crypto_signal_engine",
+      "mutation_type": "conservative",
+      "conf_score": 0.41,
+      "rsi_14": 57.5,
+      "bb_position": 0.959,
+      "volume_ratio": 1.81,
+      "above_200": 0,
       "timeframe": "1h"
     }
   ],
   "mutations_triggered": [
     {
+      "strategy": "signal_engine_relaxed_mut",
+      "parent": "crypto_signal_engine",
+      "mutation": "conservative",
+      "picks": 1
+    },
+    {
       "strategy": "signal_engine_momentum_mut",
       "parent": "crypto_signal_engine",
       "mutation": "aggressive",
-      "picks": 1
+      "picks": 2
     }
   ],
   "mutations_silent": [
-    "signal_engine_relaxed_mut",
     "signal_engine_wide_net_mut",
     "signal_engine_no_premium_mut"
   ]
