@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "engine": "Gaussian HMM (hmmlearn)",
-  "generated_at": "2026-08-05T19:31:56Z",
-  "elapsed_seconds": 90.8,
+  "generated_at": "2026-08-05T20:09:17Z",
+  "elapsed_seconds": 95.0,
   "config": {
     "n_regimes": 7,
     "covariance_type": "full",
@@ -12,9 +12,9 @@
     "hysteresis_bars": 3
   },
   "market_overview": {
-    "bull_count": 11,
+    "bull_count": 9,
     "bear_count": 10,
-    "neutral_count": 22,
+    "neutral_count": 24,
     "total_scanned": 43
   },
   "signals": [
@@ -50,6 +50,17 @@
       "confirmations": 5,
       "price": 0.8564,
       "rsi": 52.2
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "category": "forex",
+      "signal": "LONG",
+      "regime": "Accumulation",
+      "confidence": 0.9878,
+      "leverage": 0.75,
+      "confirmations": 5,
+      "price": 1.3451,
+      "rsi": 42.8
     },
     {
       "ticker": "QUBT",
@@ -1704,13 +1715,115 @@
       "EURUSD=X": {
         "ticker": "EURUSD=X",
         "category": "forex",
-        "price": 1.1507,
-        "regime": "Accumulation",
-        "confidence": 0.9312,
+        "price": 1.1532,
+        "regime": "Chop/Neutral",
+        "confidence": 0.9966,
         "signal": "WAIT",
-        "signal_reason": "Regime 'Accumulation' not confirmed (3-bar hysteresis)",
+        "signal_reason": "Regime 'Chop/Neutral' not confirmed (3-bar hysteresis)",
         "leverage": 0.0,
         "regime_stable": false,
+        "most_likely_next": "Chop/Neutral",
+        "confirmations": 5,
+        "confirmations_met": true,
+        "confirmation_details": {
+          "rsi": true,
+          "macd": true,
+          "ema_cross": true,
+          "volume": false,
+          "momentum": true,
+          "bb_position": true,
+          "atr_expansion": false,
+          "trend_align": false
+        },
+        "rsi": 58.0,
+        "transition_probs": {
+          "Crash": 4.685468742626701e-29,
+          "Strong Bear": 2.285992753398195e-133,
+          "Mild Bear": 4.1123370004758027e-25,
+          "Chop/Neutral": 0.8299669520169864,
+          "Accumulation": 0.17003304798301344,
+          "Mild Bull": 1.5774248390192086e-31,
+          "Strong Bull": 3.0807328556901883e-21
+        },
+        "all_probabilities": {
+          "Crash": 2.6211472299142596e-08,
+          "Strong Bear": 2.047700649135023e-11,
+          "Mild Bear": 0.0005992319636997733,
+          "Chop/Neutral": 0.9965569477984851,
+          "Accumulation": 0.00271733491314675,
+          "Mild Bull": 1.2225569212329864e-07,
+          "Strong Bull": 0.00012633683681303535
+        },
+        "regime_stats": {
+          "state_id": 2,
+          "mean_return": -3.157484000332919e-06,
+          "mean_volatility": 0.004660793401809388,
+          "mean_volume_change": 0.04937179929740031,
+          "mean_momentum_5d": 0.0020467317034945135,
+          "mean_momentum_20d": 0.02303616283386851,
+          "return_std": 0.0027865036951265775,
+          "stationary_probability": 0.1971591451607002
+        },
+        "training_points": 498,
+        "returns": {
+          "1d": 0.22,
+          "7d": 1.21,
+          "30d": 1.34,
+          "90d": -0.36
+        },
+        "volatility_30d": 0.27,
+        "history": {
+          "distribution": {
+            "Crash": {
+              "count": 15,
+              "percentage": 3.0
+            },
+            "Strong Bear": {
+              "count": 94,
+              "percentage": 18.9
+            },
+            "Mild Bear": {
+              "count": 117,
+              "percentage": 23.5
+            },
+            "Chop/Neutral": {
+              "count": 100,
+              "percentage": 20.1
+            },
+            "Accumulation": {
+              "count": 56,
+              "percentage": 11.2
+            },
+            "Mild Bull": {
+              "count": 81,
+              "percentage": 16.3
+            },
+            "Strong Bull": {
+              "count": 35,
+              "percentage": 7.0
+            }
+          },
+          "avg_duration": {
+            "Crash": 1.0,
+            "Strong Bear": 7.2,
+            "Mild Bear": 7.3,
+            "Chop/Neutral": 5.9,
+            "Accumulation": 1.0,
+            "Mild Bull": 1.5,
+            "Strong Bull": 3.9
+          }
+        }
+      },
+      "GBPUSD=X": {
+        "ticker": "GBPUSD=X",
+        "category": "forex",
+        "price": 1.3451,
+        "regime": "Accumulation",
+        "confidence": 0.9878,
+        "signal": "LONG",
+        "signal_reason": "Bullish regime 'Accumulation' confirmed, leverage 0.75x",
+        "leverage": 0.75,
+        "regime_stable": true,
         "most_likely_next": "Accumulation",
         "confirmations": 5,
         "confirmations_met": true,
@@ -1724,193 +1837,91 @@
           "atr_expansion": false,
           "trend_align": false
         },
-        "rsi": 60.1,
+        "rsi": 42.8,
         "transition_probs": {
-          "Crash": 4.453528854832919e-16,
-          "Strong Bear": 0.02638669511705819,
-          "Mild Bear": 0.0252565697037602,
-          "Chop/Neutral": 0.03918493699254895,
-          "Accumulation": 0.9091717981866323,
-          "Mild Bull": 2.2524233212171986e-23,
-          "Strong Bull": 1.747653684193233e-37
+          "Crash": 0.2069913668109472,
+          "Strong Bear": 0.0071340656481824315,
+          "Mild Bear": 9.401670178779486e-230,
+          "Chop/Neutral": 0.015817714984145213,
+          "Accumulation": 0.7700568525567252,
+          "Mild Bull": 2.176448279121972e-276,
+          "Strong Bull": 4.5667090422038055e-36
         },
         "all_probabilities": {
-          "Crash": 0.058224832357468545,
-          "Strong Bear": 0.00022866590288469148,
-          "Mild Bear": 0.0028413932572598647,
-          "Chop/Neutral": 0.007065971526134214,
-          "Accumulation": 0.9311849272381726,
-          "Mild Bull": 0.0001912132457128629,
-          "Strong Bull": 0.00026299647230357466
+          "Crash": 0.0002337752066181821,
+          "Strong Bear": 2.3886039751794245e-05,
+          "Mild Bear": 1.2250750659625969e-12,
+          "Chop/Neutral": 0.011970822386517884,
+          "Accumulation": 0.9877712922534728,
+          "Mild Bull": 9.28813597717808e-08,
+          "Strong Bull": 1.3123096665183235e-07
         },
         "regime_stats": {
-          "state_id": 0,
-          "mean_return": 0.00013815095899772593,
-          "mean_volatility": 0.004549504534461634,
-          "mean_volume_change": 0.10057089255852146,
-          "mean_momentum_5d": 0.0016525871064723588,
-          "mean_momentum_20d": 0.013005179186212782,
-          "return_std": 0.0031875063789860466,
-          "stationary_probability": 0.2650630280806692
+          "state_id": 6,
+          "mean_return": -0.00032940717626579985,
+          "mean_volatility": 0.004868990094140366,
+          "mean_volume_change": 0.052673157541527446,
+          "mean_momentum_5d": 0.003880794905599809,
+          "mean_momentum_20d": 0.017432483395984678,
+          "return_std": 0.0031630633727000525,
+          "stationary_probability": 0.25600543186011593
         },
-        "training_points": 497,
+        "training_points": 498,
         "returns": {
-          "1d": -0.32,
-          "7d": 1.15,
-          "30d": 0.7,
-          "90d": 0.41
-        },
-        "volatility_30d": 0.28,
-        "history": {
-          "distribution": {
-            "Crash": {
-              "count": 38,
-              "percentage": 7.6
-            },
-            "Strong Bear": {
-              "count": 49,
-              "percentage": 9.9
-            },
-            "Mild Bear": {
-              "count": 75,
-              "percentage": 15.1
-            },
-            "Chop/Neutral": {
-              "count": 140,
-              "percentage": 28.2
-            },
-            "Accumulation": {
-              "count": 131,
-              "percentage": 26.4
-            },
-            "Mild Bull": {
-              "count": 28,
-              "percentage": 5.6
-            },
-            "Strong Bull": {
-              "count": 36,
-              "percentage": 7.2
-            }
-          },
-          "avg_duration": {
-            "Crash": 1.0,
-            "Strong Bear": 1.0,
-            "Mild Bear": 3.8,
-            "Chop/Neutral": 6.4,
-            "Accumulation": 11.9,
-            "Mild Bull": 5.6,
-            "Strong Bull": 1.1
-          }
-        }
-      },
-      "GBPUSD=X": {
-        "ticker": "GBPUSD=X",
-        "category": "forex",
-        "price": 1.3427,
-        "regime": "Mild Bull",
-        "confidence": 0.9981,
-        "signal": "WAIT",
-        "signal_reason": "Regime 'Mild Bull' not confirmed (3-bar hysteresis)",
-        "leverage": 0.0,
-        "regime_stable": false,
-        "most_likely_next": "Mild Bear",
-        "confirmations": 6,
-        "confirmations_met": true,
-        "confirmation_details": {
-          "rsi": true,
-          "macd": true,
-          "ema_cross": true,
-          "volume": false,
-          "momentum": true,
-          "bb_position": true,
-          "atr_expansion": true,
-          "trend_align": false
-        },
-        "rsi": 52.0,
-        "transition_probs": {
-          "Crash": 0.03554110918257036,
-          "Strong Bear": 0.0,
-          "Mild Bear": 0.8117371734054161,
-          "Chop/Neutral": 9.764091499229297e-95,
-          "Accumulation": 2.4621761223447713e-17,
-          "Mild Bull": 0.15272171741201343,
-          "Strong Bull": 3.32448258154453e-155
-        },
-        "all_probabilities": {
-          "Crash": 2.381072839118464e-06,
-          "Strong Bear": 1.1718698185140597e-07,
-          "Mild Bear": 4.528101217783897e-06,
-          "Chop/Neutral": 5.887701681117947e-10,
-          "Accumulation": 0.0009726286280806707,
-          "Mild Bull": 0.9981143418855638,
-          "Strong Bull": 0.0009060025366475457
-        },
-        "regime_stats": {
-          "state_id": 3,
-          "mean_return": -5.535378089390578e-05,
-          "mean_volatility": 0.0035594747426327816,
-          "mean_volume_change": -0.289107208608801,
-          "mean_momentum_5d": 0.0024445759055385635,
-          "mean_momentum_20d": 0.013212291885043784,
-          "return_std": 0.003764083945910123,
-          "stationary_probability": 0.16865865240869968
-        },
-        "training_points": 497,
-        "returns": {
-          "1d": -0.48,
-          "7d": 0.86,
-          "30d": 1.36,
-          "90d": 1.93
+          "1d": 0.18,
+          "7d": 0.75,
+          "30d": 1.9,
+          "90d": 1.57
         },
         "volatility_30d": 0.39,
         "history": {
           "distribution": {
             "Crash": {
-              "count": 45,
-              "percentage": 9.1
+              "count": 36,
+              "percentage": 7.2
             },
             "Strong Bear": {
-              "count": 55,
-              "percentage": 11.1
+              "count": 31,
+              "percentage": 6.2
             },
             "Mild Bear": {
-              "count": 69,
-              "percentage": 13.9
+              "count": 53,
+              "percentage": 10.6
             },
             "Chop/Neutral": {
-              "count": 41,
-              "percentage": 8.2
+              "count": 95,
+              "percentage": 19.1
             },
             "Accumulation": {
-              "count": 140,
-              "percentage": 28.2
+              "count": 130,
+              "percentage": 26.1
             },
             "Mild Bull": {
-              "count": 83,
-              "percentage": 16.7
+              "count": 92,
+              "percentage": 18.5
             },
             "Strong Bull": {
-              "count": 64,
-              "percentage": 12.9
+              "count": 61,
+              "percentage": 12.2
             }
           },
           "avg_duration": {
-            "Crash": 1.0,
-            "Strong Bear": 1.3,
-            "Mild Bear": 1.0,
-            "Chop/Neutral": 1.6,
-            "Accumulation": 4.7,
-            "Mild Bull": 1.1,
-            "Strong Bull": 2.7
+            "Crash": 1.4,
+            "Strong Bear": 1.0,
+            "Mild Bear": 2.5,
+            "Chop/Neutral": 5.9,
+            "Accumulation": 4.3,
+            "Mild Bull": 4.2,
+            "Strong Bull": 2.1
           }
         }
       },
       "USDJPY=X": {
         "ticker": "USDJPY=X",
         "category": "forex",
-        "price": 157.529,
+        "price": 157.692,
         "regime": "Crash",
-        "confidence": 0.9892,
+        "confidence": 0.9865,
         "signal": "SHORT",
         "signal_reason": "Bearish regime 'Crash' confirmed, leverage 2.0x",
         "leverage": -2.0,
@@ -1928,96 +1939,96 @@
           "atr_expansion": true,
           "trend_align": true
         },
-        "rsi": 24.0,
+        "rsi": 25.6,
         "transition_probs": {
-          "Crash": 0.8235120016446785,
-          "Strong Bear": 0.1077500598674401,
-          "Mild Bear": 8.607951952779395e-134,
-          "Chop/Neutral": 6.524620801987147e-16,
-          "Accumulation": 6.058214604958417e-26,
-          "Mild Bull": 2.5439142014478786e-243,
-          "Strong Bull": 0.06873793848788072
+          "Crash": 0.8404520249521751,
+          "Strong Bear": 0.011443637708215408,
+          "Mild Bear": 0.014337165803087831,
+          "Chop/Neutral": 3.903965652907005e-56,
+          "Accumulation": 0.016686005144149366,
+          "Mild Bull": 4.4038308398408235e-25,
+          "Strong Bull": 0.11708116639237236
         },
         "all_probabilities": {
-          "Crash": 0.989155584468533,
-          "Strong Bear": 0.01083593313291992,
-          "Mild Bear": 1.1120207049746478e-08,
-          "Chop/Neutral": 1.1628980730614218e-28,
-          "Accumulation": 9.122112734198117e-26,
-          "Mild Bull": 7.780965861634406e-20,
-          "Strong Bull": 8.471278140601953e-06
+          "Crash": 0.9865406458793243,
+          "Strong Bear": 7.240928736744065e-05,
+          "Mild Bear": 3.460050436121345e-07,
+          "Chop/Neutral": 1.3297243814534428e-27,
+          "Accumulation": 0.0,
+          "Mild Bull": 2.2032940153945932e-09,
+          "Strong Bull": 0.013386596624839072
         },
         "regime_stats": {
-          "state_id": 6,
-          "mean_return": -0.0031092158184922157,
-          "mean_volatility": 0.009907794893899553,
-          "mean_volume_change": -0.06274763360110472,
-          "mean_momentum_5d": -0.013837226768135282,
-          "mean_momentum_20d": -0.02900268034521089,
-          "return_std": 0.008503196053744472,
-          "stationary_probability": 0.16066572700498455
+          "state_id": 1,
+          "mean_return": -0.002463854240970928,
+          "mean_volatility": 0.008574292695092642,
+          "mean_volume_change": -0.05728255054250733,
+          "mean_momentum_5d": -0.006459209341798619,
+          "mean_momentum_20d": -0.023785176299909568,
+          "return_std": 0.0074091207437738445,
+          "stationary_probability": 0.2383120400305063
         },
-        "training_points": 497,
+        "training_points": 498,
         "returns": {
-          "1d": -0.03,
-          "7d": -3.85,
-          "30d": -2.5,
-          "90d": -1.45
+          "1d": 0.1,
+          "7d": -3.62,
+          "30d": -2.42,
+          "90d": -0.56
         },
         "volatility_30d": 0.52,
         "history": {
           "distribution": {
             "Crash": {
-              "count": 74,
-              "percentage": 14.9
+              "count": 116,
+              "percentage": 23.3
             },
             "Strong Bear": {
-              "count": 31,
-              "percentage": 6.2
+              "count": 107,
+              "percentage": 21.5
             },
             "Mild Bear": {
-              "count": 111,
-              "percentage": 22.3
+              "count": 72,
+              "percentage": 14.5
             },
             "Chop/Neutral": {
-              "count": 62,
-              "percentage": 12.5
+              "count": 84,
+              "percentage": 16.9
             },
             "Accumulation": {
-              "count": 74,
-              "percentage": 14.9
+              "count": 7,
+              "percentage": 1.4
             },
             "Mild Bull": {
-              "count": 34,
-              "percentage": 6.8
+              "count": 75,
+              "percentage": 15.1
             },
             "Strong Bull": {
-              "count": 111,
-              "percentage": 22.3
+              "count": 37,
+              "percentage": 7.4
             }
           },
           "avg_duration": {
-            "Crash": 5.7,
-            "Strong Bear": 1.0,
-            "Mild Bear": 2.8,
-            "Chop/Neutral": 1.0,
-            "Accumulation": 1.2,
+            "Crash": 6.1,
+            "Strong Bear": 2.3,
+            "Mild Bear": 1.0,
+            "Chop/Neutral": 12.0,
+            "Accumulation": 1.0,
             "Mild Bull": 1.1,
-            "Strong Bull": 3.8
+            "Strong Bull": 1.6
           }
         }
       },
       "AUDUSD=X": {
         "ticker": "AUDUSD=X",
         "category": "forex",
-        "price": 0.6998,
-        "regime": "Chop/Neutral",
-        "confidence": 0.7424,
-        "signal": "CASH",
-        "signal_reason": "Neutral regime 'Chop/Neutral', stay flat",
+        "price": 0.7047,
+        "regime": "Accumulation",
+        "confidence": 0.717,
+        "signal": "WAIT",
+        "signal_reason": "Regime 'Accumulation' not confirmed (3-bar hysteresis)",
         "leverage": 0.0,
-        "regime_stable": true,
-        "most_likely_next": "Chop/Neutral",
+        "regime_stable": false,
+        "most_likely_next": "Accumulation",
         "confirmations": 7,
         "confirmations_met": true,
         "confirmation_details": {
@@ -2030,96 +2041,96 @@
           "atr_expansion": true,
           "trend_align": true
         },
-        "rsi": 53.4,
+        "rsi": 55.8,
         "transition_probs": {
-          "Crash": 0.07778059184667396,
-          "Strong Bear": 0.005610133314641615,
-          "Mild Bear": 2.6017285380990355e-34,
-          "Chop/Neutral": 0.8796909165939982,
-          "Accumulation": 0.00522551389241106,
-          "Mild Bull": 1.3409267497141902e-32,
-          "Strong Bull": 0.031692844352275346
+          "Crash": 0.01987075958584164,
+          "Strong Bear": 0.025887181553813317,
+          "Mild Bear": 0.402567572593045,
+          "Chop/Neutral": 0.029307059863952843,
+          "Accumulation": 0.5223674115846403,
+          "Mild Bull": 1.4818706914237063e-08,
+          "Strong Bull": 2.35199009386709e-37
         },
         "all_probabilities": {
-          "Crash": 0.25600245920758563,
-          "Strong Bear": 7.728635067466026e-07,
-          "Mild Bear": 9.10643674251895e-14,
-          "Chop/Neutral": 0.7424427196362037,
-          "Accumulation": 1.8885757736701616e-09,
-          "Mild Bull": 1.128942374453809e-08,
-          "Strong Bull": 0.0015540351145940901
+          "Crash": 5.514990358448888e-05,
+          "Strong Bear": 7.114595408249415e-05,
+          "Mild Bear": 0.2824110353627942,
+          "Chop/Neutral": 2.5628262150598587e-07,
+          "Accumulation": 0.7170333045580968,
+          "Mild Bull": 6.250937265871677e-06,
+          "Strong Bull": 0.0004228570015160845
         },
         "regime_stats": {
-          "state_id": 0,
-          "mean_return": 0.0007300559115507642,
-          "mean_volatility": 0.0069752039758348,
-          "mean_volume_change": 0.08232708718310022,
-          "mean_momentum_5d": 0.004749531005874471,
-          "mean_momentum_20d": 0.01214855621531178,
-          "return_std": 0.00430835309136361,
-          "stationary_probability": 0.37064940792010453
+          "state_id": 2,
+          "mean_return": 0.000838449104115121,
+          "mean_volatility": 0.007280736045561815,
+          "mean_volume_change": 0.27499210531664064,
+          "mean_momentum_5d": 0.003682780207353412,
+          "mean_momentum_20d": 0.010135375313168559,
+          "return_std": 0.003832754008368263,
+          "stationary_probability": 0.29464370355991915
         },
-        "training_points": 497,
+        "training_points": 498,
         "returns": {
-          "1d": -0.69,
-          "7d": 0.44,
-          "30d": 0.04,
-          "90d": 2.22
+          "1d": 0.7,
+          "7d": 0.75,
+          "30d": 1.9,
+          "90d": 1.82
         },
-        "volatility_30d": 0.43,
+        "volatility_30d": 0.39,
         "history": {
           "distribution": {
             "Crash": {
-              "count": 55,
-              "percentage": 11.1
+              "count": 32,
+              "percentage": 6.4
             },
             "Strong Bear": {
-              "count": 17,
-              "percentage": 3.4
+              "count": 138,
+              "percentage": 27.7
             },
             "Mild Bear": {
-              "count": 21,
-              "percentage": 4.2
+              "count": 74,
+              "percentage": 14.9
             },
             "Chop/Neutral": {
-              "count": 180,
-              "percentage": 36.2
+              "count": 37,
+              "percentage": 7.4
             },
             "Accumulation": {
-              "count": 85,
-              "percentage": 17.1
+              "count": 139,
+              "percentage": 27.9
             },
             "Mild Bull": {
-              "count": 67,
-              "percentage": 13.5
+              "count": 57,
+              "percentage": 11.4
             },
             "Strong Bull": {
-              "count": 72,
-              "percentage": 14.5
+              "count": 21,
+              "percentage": 4.2
             }
           },
           "avg_duration": {
-            "Crash": 1.1,
-            "Strong Bear": 2.1,
+            "Crash": 1.0,
+            "Strong Bear": 3.6,
             "Mild Bear": 1.0,
-            "Chop/Neutral": 8.2,
-            "Accumulation": 3.4,
-            "Mild Bull": 1.5,
-            "Strong Bull": 7.2
+            "Chop/Neutral": 1.0,
+            "Accumulation": 1.9,
+            "Mild Bull": 1.7,
+            "Strong Bull": 2.3
           }
         }
       },
       "USDCAD=X": {
         "ticker": "USDCAD=X",
         "category": "forex",
-        "price": 1.4046,
-        "regime": "Strong Bear",
-        "confidence": 0.3915,
-        "signal": "WAIT",
-        "signal_reason": "Regime 'Strong Bear' not confirmed (3-bar hysteresis)",
+        "price": 1.4066,
+        "regime": "Chop/Neutral",
+        "confidence": 0.9981,
+        "signal": "CASH",
+        "signal_reason": "Neutral regime 'Chop/Neutral', stay flat",
         "leverage": 0.0,
-        "regime_stable": false,
-        "most_likely_next": "Accumulation",
+        "regime_stable": true,
+        "most_likely_next": "Chop/Neutral",
         "confirmations": 2,
         "confirmations_met": false,
         "confirmation_details": {
@@ -2132,91 +2143,91 @@
           "atr_expansion": false,
           "trend_align": true
         },
-        "rsi": 49.2,
+        "rsi": 54.3,
         "transition_probs": {
-          "Crash": 5.47295162258018e-84,
-          "Strong Bear": 0.06989335996823343,
-          "Mild Bear": 5.937898640012185e-12,
-          "Chop/Neutral": 1.9863165499273503e-108,
-          "Accumulation": 0.9301066400258287,
-          "Mild Bull": 1.162927203857198e-62,
-          "Strong Bull": 5.844882543670723e-34
+          "Crash": 5.505591332934681e-46,
+          "Strong Bear": 7.701216111742669e-22,
+          "Mild Bear": 1.4704199625132095e-39,
+          "Chop/Neutral": 0.9089305120958108,
+          "Accumulation": 3.696577223109843e-61,
+          "Mild Bull": 0.09106948790418924,
+          "Strong Bull": 1.3579945921684107e-24
         },
         "all_probabilities": {
-          "Crash": 7.488703321337604e-06,
-          "Strong Bear": 0.39149889844467556,
-          "Mild Bear": 5.70815008527975e-07,
-          "Chop/Neutral": 1.6000856334829884e-06,
-          "Accumulation": 0.5203622443067065,
-          "Mild Bull": 3.036151017166102e-07,
-          "Strong Bull": 0.08812889402965474
+          "Crash": 1.60870511959814e-07,
+          "Strong Bear": 2.1163491026215018e-11,
+          "Mild Bear": 0.0017802772457871628,
+          "Chop/Neutral": 0.9981237888541582,
+          "Accumulation": 2.9912268469038816e-06,
+          "Mild Bull": 8.952089516864195e-05,
+          "Strong Bull": 3.2608862319292236e-06
         },
         "regime_stats": {
-          "state_id": 1,
-          "mean_return": -0.002705366549195445,
-          "mean_volatility": 0.0031844903645814543,
-          "mean_volume_change": -0.2481746497376857,
-          "mean_momentum_5d": -0.006175338351747538,
-          "mean_momentum_20d": -0.01282498971259331,
-          "return_std": 0.0028111086185630455,
-          "stationary_probability": 0.11127915853903092
+          "state_id": 3,
+          "mean_return": -0.00011954727550113154,
+          "mean_volatility": 0.0038138680298599745,
+          "mean_volume_change": 0.13968072422329764,
+          "mean_momentum_5d": -0.004047509048464295,
+          "mean_momentum_20d": -0.020825586218154793,
+          "return_std": 0.0027670143255996314,
+          "stationary_probability": 0.1530083430258993
         },
-        "training_points": 497,
+        "training_points": 498,
         "returns": {
-          "1d": 0.24,
-          "7d": -0.27,
-          "30d": -0.79,
-          "90d": 0.85
+          "1d": 0.14,
+          "7d": -0.15,
+          "30d": -1.01,
+          "90d": 1.17
         },
-        "volatility_30d": 0.23,
+        "volatility_30d": 0.22,
         "history": {
           "distribution": {
             "Crash": {
-              "count": 23,
-              "percentage": 4.6
+              "count": 32,
+              "percentage": 6.4
             },
             "Strong Bear": {
-              "count": 55,
-              "percentage": 11.1
+              "count": 57,
+              "percentage": 11.4
             },
             "Mild Bear": {
-              "count": 43,
-              "percentage": 8.7
+              "count": 118,
+              "percentage": 23.7
             },
             "Chop/Neutral": {
-              "count": 42,
-              "percentage": 8.5
+              "count": 69,
+              "percentage": 13.9
             },
             "Accumulation": {
-              "count": 67,
-              "percentage": 13.5
+              "count": 158,
+              "percentage": 31.7
             },
             "Mild Bull": {
-              "count": 184,
-              "percentage": 37.0
+              "count": 38,
+              "percentage": 7.6
             },
             "Strong Bull": {
-              "count": 83,
-              "percentage": 16.7
+              "count": 26,
+              "percentage": 5.2
             }
           },
           "avg_duration": {
-            "Crash": 3.3,
+            "Crash": 3.6,
             "Strong Bear": 1.0,
-            "Mild Bear": 1.0,
-            "Chop/Neutral": 1.3,
-            "Accumulation": 1.3,
-            "Mild Bull": 8.8,
-            "Strong Bull": 3.0
+            "Mild Bear": 3.1,
+            "Chop/Neutral": 9.9,
+            "Accumulation": 8.3,
+            "Mild Bull": 3.2,
+            "Strong Bull": 1.0
           }
         }
       },
       "NZDUSD=X": {
         "ticker": "NZDUSD=X",
         "category": "forex",
-        "price": 0.5867,
+        "price": 0.5876,
         "regime": "Chop/Neutral",
-        "confidence": 0.9986,
+        "confidence": 0.9754,
         "signal": "CASH",
         "signal_reason": "Neutral regime 'Chop/Neutral', stay flat",
         "leverage": 0.0,
@@ -2234,98 +2245,98 @@
           "atr_expansion": false,
           "trend_align": false
         },
-        "rsi": 57.7,
+        "rsi": 54.4,
         "transition_probs": {
-          "Crash": 6.483517438462156e-147,
-          "Strong Bear": 0.0129863776054452,
-          "Mild Bear": 3.849846341362057e-128,
-          "Chop/Neutral": 0.9271258486373248,
-          "Accumulation": 4.944806834347549e-26,
-          "Mild Bull": 0.03777854505260918,
-          "Strong Bull": 0.022109228704620745
+          "Crash": 5.016739675033547e-28,
+          "Strong Bear": 0.31054765873121176,
+          "Mild Bear": 0.0486020335372829,
+          "Chop/Neutral": 0.6408338151465633,
+          "Accumulation": 1.9440697531066387e-162,
+          "Mild Bull": 1.1832019904308592e-21,
+          "Strong Bull": 1.6492584941965962e-05
         },
         "all_probabilities": {
-          "Crash": 9.984751518409817e-11,
-          "Strong Bear": 5.623503618405701e-07,
-          "Mild Bear": 1.9755529708331317e-11,
-          "Chop/Neutral": 0.9985762661620264,
-          "Accumulation": 3.434933663058523e-06,
-          "Mild Bull": 0.0014184158436626908,
-          "Strong Bull": 1.3205909058221823e-06
+          "Crash": 6.026886090318036e-09,
+          "Strong Bear": 0.00914881406912186,
+          "Mild Bear": 0.015402417049409757,
+          "Chop/Neutral": 0.9754456349731829,
+          "Accumulation": 4.1678759965817163e-16,
+          "Mild Bull": 2.0560747913060205e-06,
+          "Strong Bull": 1.071806740398692e-06
         },
         "regime_stats": {
-          "state_id": 0,
-          "mean_return": -0.0005154626937201906,
-          "mean_volatility": 0.00798671635226857,
-          "mean_volume_change": 0.10059775128829014,
-          "mean_momentum_5d": 0.0003983258792840059,
-          "mean_momentum_20d": 0.032932729640590325,
-          "return_std": 0.005586060830812089,
-          "stationary_probability": 0.1685436681080075
+          "state_id": 1,
+          "mean_return": 0.00017030835094736843,
+          "mean_volatility": 0.0057221813611100375,
+          "mean_volume_change": 0.09417754047590421,
+          "mean_momentum_5d": 0.006075493660723918,
+          "mean_momentum_20d": 0.010280701519492357,
+          "return_std": 0.0032198769413604575,
+          "stationary_probability": 0.2166774296500724
         },
-        "training_points": 497,
+        "training_points": 498,
         "returns": {
-          "1d": -0.53,
-          "7d": 1.61,
-          "30d": 2.72,
-          "90d": 2.62
+          "1d": 0.16,
+          "7d": 1.34,
+          "30d": 3.74,
+          "90d": 2.09
         },
-        "volatility_30d": 0.48,
+        "volatility_30d": 0.45,
         "history": {
           "distribution": {
             "Crash": {
-              "count": 28,
-              "percentage": 5.6
+              "count": 158,
+              "percentage": 31.7
             },
             "Strong Bear": {
-              "count": 70,
-              "percentage": 14.1
+              "count": 54,
+              "percentage": 10.8
             },
             "Mild Bear": {
-              "count": 159,
-              "percentage": 32.0
+              "count": 51,
+              "percentage": 10.2
             },
             "Chop/Neutral": {
-              "count": 85,
-              "percentage": 17.1
+              "count": 109,
+              "percentage": 21.9
             },
             "Accumulation": {
-              "count": 23,
-              "percentage": 4.6
+              "count": 11,
+              "percentage": 2.2
             },
             "Mild Bull": {
-              "count": 108,
-              "percentage": 21.7
+              "count": 49,
+              "percentage": 9.8
             },
             "Strong Bull": {
-              "count": 24,
-              "percentage": 4.8
+              "count": 66,
+              "percentage": 13.3
             }
           },
           "avg_duration": {
-            "Crash": 2.5,
-            "Strong Bear": 4.4,
-            "Mild Bear": 13.2,
-            "Chop/Neutral": 12.1,
-            "Accumulation": 1.0,
-            "Mild Bull": 6.4,
-            "Strong Bull": 1.0
+            "Crash": 7.5,
+            "Strong Bear": 1.0,
+            "Mild Bear": 8.5,
+            "Chop/Neutral": 2.7,
+            "Accumulation": 2.8,
+            "Mild Bull": 1.0,
+            "Strong Bull": 3.1
           }
         }
       },
       "USDCHF=X": {
         "ticker": "USDCHF=X",
         "category": "forex",
-        "price": 0.8104,
-        "regime": "Strong Bull",
-        "confidence": 0.6453,
+        "price": 0.8091,
+        "regime": "Crash",
+        "confidence": 0.7783,
         "signal": "WAIT",
-        "signal_reason": "Regime 'Strong Bull' not confirmed (3-bar hysteresis)",
+        "signal_reason": "Regime 'Crash' not confirmed (3-bar hysteresis)",
         "leverage": 0.0,
         "regime_stable": false,
-        "most_likely_next": "Accumulation",
-        "confirmations": 4,
-        "confirmations_met": true,
+        "most_likely_next": "Strong Bull",
+        "confirmations": 3,
+        "confirmations_met": false,
         "confirmation_details": {
           "rsi": true,
           "macd": false,
@@ -2333,85 +2344,85 @@
           "volume": false,
           "momentum": false,
           "bb_position": false,
-          "atr_expansion": true,
+          "atr_expansion": false,
           "trend_align": true
         },
-        "rsi": 51.7,
+        "rsi": 56.3,
         "transition_probs": {
-          "Crash": 5.631846279831921e-281,
-          "Strong Bear": 0.31767716534872403,
-          "Mild Bear": 6.433956667901412e-140,
-          "Chop/Neutral": 8.101708637014112e-82,
-          "Accumulation": 0.45876293354590164,
-          "Mild Bull": 8.921444601831986e-62,
-          "Strong Bull": 0.22355990110537427
+          "Crash": 0.4029049796613766,
+          "Strong Bear": 8.323051568277648e-61,
+          "Mild Bear": 0.05379605413769298,
+          "Chop/Neutral": 1.2927135533462289e-33,
+          "Accumulation": 1.6667704402035936e-05,
+          "Mild Bull": 0.0458235997741962,
+          "Strong Bull": 0.4974586987223322
         },
         "all_probabilities": {
-          "Crash": 2.9282094290347796e-06,
-          "Strong Bear": 0.0007789686366237372,
-          "Mild Bear": 0.00012441917325537336,
-          "Chop/Neutral": 0.004814228858940387,
-          "Accumulation": 0.19449796891006227,
-          "Mild Bull": 0.1544809032856352,
-          "Strong Bull": 0.6453005829261451
+          "Crash": 0.7782892826887351,
+          "Strong Bear": 3.226290705558635e-05,
+          "Mild Bear": 3.137159891997465e-09,
+          "Chop/Neutral": 0.0007411700399843859,
+          "Accumulation": 0.21723810293064946,
+          "Mild Bull": 0.0036988197473976675,
+          "Strong Bull": 3.5854899749492744e-07
         },
         "regime_stats": {
-          "state_id": 1,
-          "mean_return": 0.0033813124669793138,
-          "mean_volatility": 0.0051485748840941,
-          "mean_volume_change": -0.21900321243204518,
-          "mean_momentum_5d": 0.005653527526489181,
-          "mean_momentum_20d": 0.01614589409852118,
-          "return_std": 0.003440869245934941,
-          "stationary_probability": 0.18985161572631037
+          "state_id": 2,
+          "mean_return": -0.0019275175239019254,
+          "mean_volatility": 0.005974857879443408,
+          "mean_volume_change": 0.25425979528297826,
+          "mean_momentum_5d": -0.003469600004198427,
+          "mean_momentum_20d": -0.003329630709234572,
+          "return_std": 0.003212029609684385,
+          "stationary_probability": 0.20292472144565063
         },
-        "training_points": 497,
+        "training_points": 498,
         "returns": {
-          "1d": 0.42,
-          "7d": -0.8,
-          "30d": 0.19,
-          "90d": 1.31
+          "1d": -0.15,
+          "7d": -0.87,
+          "30d": -0.07,
+          "90d": 1.44
         },
         "volatility_30d": 0.4,
         "history": {
           "distribution": {
             "Crash": {
-              "count": 15,
-              "percentage": 3.0
+              "count": 100,
+              "percentage": 20.1
             },
             "Strong Bear": {
-              "count": 72,
-              "percentage": 14.5
+              "count": 33,
+              "percentage": 6.6
             },
             "Mild Bear": {
-              "count": 47,
-              "percentage": 9.5
+              "count": 116,
+              "percentage": 23.3
             },
             "Chop/Neutral": {
-              "count": 106,
-              "percentage": 21.3
+              "count": 82,
+              "percentage": 16.5
             },
             "Accumulation": {
-              "count": 80,
-              "percentage": 16.1
+              "count": 85,
+              "percentage": 17.1
             },
             "Mild Bull": {
-              "count": 74,
-              "percentage": 14.9
+              "count": 22,
+              "percentage": 4.4
             },
             "Strong Bull": {
-              "count": 103,
-              "percentage": 20.7
+              "count": 60,
+              "percentage": 12.0
             }
           },
           "avg_duration": {
-            "Crash": 7.5,
-            "Strong Bear": 1.2,
-            "Mild Bear": 5.2,
-            "Chop/Neutral": 1.4,
-            "Accumulation": 1.0,
+            "Crash": 1.7,
+            "Strong Bear": 11.0,
+            "Mild Bear": 16.6,
+            "Chop/Neutral": 1.0,
+            "Accumulation": 1.4,
             "Mild Bull": 1.0,
-            "Strong Bull": 1.4
+            "Strong Bull": 1.2
           }
         }
       }
@@ -2442,32 +2453,32 @@
         },
         "rsi": 59.7,
         "transition_probs": {
-          "Crash": 2.509246439912311e-73,
-          "Strong Bear": 0.11655252571518408,
-          "Mild Bear": 7.992034358717477e-29,
-          "Chop/Neutral": 4.423257258247271e-64,
-          "Accumulation": 1.421435882096227e-30,
-          "Mild Bull": 0.22035834357296244,
-          "Strong Bull": 0.6630891307118535
+          "Crash": 2.5105785804199748e-73,
+          "Strong Bear": 0.1165530811584701,
+          "Mild Bear": 7.987370318714988e-29,
+          "Chop/Neutral": 4.411780010476318e-64,
+          "Accumulation": 1.420904551698646e-30,
+          "Mild Bull": 0.22035846861397126,
+          "Strong Bull": 0.6630884502275586
         },
         "all_probabilities": {
-          "Crash": 6.145680251548911e-10,
-          "Strong Bear": 0.012800581535895956,
-          "Mild Bear": 0.007198941074864889,
-          "Chop/Neutral": 5.69393894522663e-09,
-          "Accumulation": 0.0057009649670447075,
-          "Mild Bull": 4.103774331000517e-17,
-          "Strong Bull": 0.9742995061137553
+          "Crash": 6.146479985110521e-10,
+          "Strong Bear": 0.01280114937455337,
+          "Mild Bear": 0.007199316722037173,
+          "Chop/Neutral": 5.6944721136688845e-09,
+          "Accumulation": 0.005701296122377233,
+          "Mild Bull": 4.1046738415857686e-17,
+          "Strong Bull": 0.9742982314718303
         },
         "regime_stats": {
           "state_id": 4,
-          "mean_return": 0.00985601226020417,
-          "mean_volatility": 0.016813072309098964,
-          "mean_volume_change": 0.03969954293055824,
-          "mean_momentum_5d": 0.020624951045944084,
-          "mean_momentum_20d": -0.03357486439869315,
-          "return_std": 0.012523436042963933,
-          "stationary_probability": 0.07442551222031511
+          "mean_return": 0.009855983091444908,
+          "mean_volatility": 0.016813077422398546,
+          "mean_volume_change": 0.03970013455121982,
+          "mean_momentum_5d": 0.020624936296785818,
+          "mean_momentum_20d": -0.033574919481759204,
+          "return_std": 0.012523463208568418,
+          "stationary_probability": 0.0744254685462556
         },
         "training_points": 481,
         "returns": {
@@ -2544,32 +2555,32 @@
         },
         "rsi": 52.1,
         "transition_probs": {
-          "Crash": 0.01570045320519592,
-          "Strong Bear": 0.04007374500749418,
-          "Mild Bear": 6.823704787026122e-44,
-          "Chop/Neutral": 2.8522836355432097e-68,
-          "Accumulation": 0.9200873597928622,
-          "Mild Bull": 0.024138441994447847,
-          "Strong Bull": 1.2756128016935539e-78
+          "Crash": 0.0157002118110967,
+          "Strong Bear": 0.040073626848247744,
+          "Mild Bear": 6.828529373648239e-44,
+          "Chop/Neutral": 2.8570271882249457e-68,
+          "Accumulation": 0.9200877419589535,
+          "Mild Bull": 0.024138419381702126,
+          "Strong Bull": 1.2779125344471728e-78
         },
         "all_probabilities": {
-          "Crash": 1.4515109437732307e-31,
-          "Strong Bear": 1.7857792301164824e-13,
-          "Mild Bear": 5.094496469289876e-19,
-          "Chop/Neutral": 4.487678645159023e-25,
-          "Accumulation": 0.9999988642786858,
-          "Mild Bull": 1.13572093702721e-06,
-          "Strong Bull": 1.0633073910400927e-28
+          "Crash": 1.4524874812431663e-31,
+          "Strong Bear": 1.7856320209592247e-13,
+          "Mild Bear": 5.094434193874461e-19,
+          "Chop/Neutral": 4.486673132918331e-25,
+          "Accumulation": 0.9999988643064254,
+          "Mild Bull": 1.1356935848524207e-06,
+          "Strong Bull": 1.0631470483123135e-28
         },
         "regime_stats": {
           "state_id": 6,
-          "mean_return": 0.0026882723070052465,
-          "mean_volatility": 0.021354472732456026,
-          "mean_volume_change": 0.004084148684775704,
-          "mean_momentum_5d": 0.004662538417802939,
-          "mean_momentum_20d": -0.036813889216902415,
-          "return_std": 0.018175459380285395,
-          "stationary_probability": 0.19349800465833383
+          "mean_return": 0.002688265501294678,
+          "mean_volatility": 0.021354476109078327,
+          "mean_volume_change": 0.004084295022526767,
+          "mean_momentum_5d": 0.00466252369534037,
+          "mean_momentum_20d": -0.03681387581120646,
+          "return_std": 0.018175453548301697,
+          "stationary_probability": 0.1934981988514028
         },
         "training_points": 481,
         "returns": {
@@ -2646,32 +2657,32 @@
         },
         "rsi": 38.9,
         "transition_probs": {
-          "Crash": 0.07978177062274909,
-          "Strong Bear": 0.10542414665388693,
-          "Mild Bear": 3.601589506132214e-84,
-          "Chop/Neutral": 0.6800204234302066,
-          "Accumulation": 0.03951942155163304,
-          "Mild Bull": 0.03966217019295561,
-          "Strong Bull": 0.055592067548568734
+          "Crash": 0.07978202142065452,
+          "Strong Bear": 0.105423516281177,
+          "Mild Bear": 3.611987287557142e-84,
+          "Chop/Neutral": 0.6800207285692439,
+          "Accumulation": 0.03951828468595136,
+          "Mild Bull": 0.03966348515486266,
+          "Strong Bull": 0.05559196388811057
         },
         "all_probabilities": {
-          "Crash": 9.106699218023039e-05,
-          "Strong Bear": 1.6319421961565517e-10,
-          "Mild Bear": 7.172974782418412e-23,
-          "Chop/Neutral": 0.9999087830397366,
-          "Accumulation": 1.4499410288558929e-07,
-          "Mild Bull": 4.4599283691008885e-09,
-          "Strong Bull": 3.5068960324108713e-10
+          "Crash": 9.106582848295724e-05,
+          "Strong Bear": 1.631930327018917e-10,
+          "Mild Bear": 7.173226717913171e-23,
+          "Chop/Neutral": 0.999908784211059,
+          "Accumulation": 1.4498596080993043e-07,
+          "Mild Bull": 4.46042607786497e-09,
+          "Strong Bull": 3.5069623610617474e-10
         },
         "regime_stats": {
           "state_id": 0,
-          "mean_return": 0.0033155129912806735,
-          "mean_volatility": 0.023280343119684833,
-          "mean_volume_change": -0.05148710407406515,
-          "mean_momentum_5d": -0.03656872145514227,
-          "mean_momentum_20d": -0.01778939300397688,
-          "return_std": 0.013732570677920415,
-          "stationary_probability": 0.12914741713020939
+          "mean_return": 0.003315518064942162,
+          "mean_volatility": 0.023280335872596657,
+          "mean_volume_change": -0.05148708117355866,
+          "mean_momentum_5d": -0.03656866532293174,
+          "mean_momentum_20d": -0.017789346020035655,
+          "return_std": 0.013732580262592971,
+          "stationary_probability": 0.12914767732211513
         },
         "training_points": 481,
         "returns": {
@@ -2748,32 +2759,32 @@
         },
         "rsi": 80.6,
         "transition_probs": {
-          "Crash": 0.11417132024680794,
-          "Strong Bear": 0.0714839367734307,
-          "Mild Bear": 3.281266664441078e-237,
-          "Chop/Neutral": 1.1487053878429737e-136,
-          "Accumulation": 1.444048613078653e-26,
-          "Mild Bull": 0.8143447429797613,
-          "Strong Bull": 5.261523093661576e-201
+          "Crash": 0.11417149704290164,
+          "Strong Bear": 0.07148390034011845,
+          "Mild Bear": 3.263887733489245e-237,
+          "Chop/Neutral": 1.1455944606445553e-136,
+          "Accumulation": 1.4400240721498333e-26,
+          "Mild Bull": 0.8143446026169799,
+          "Strong Bull": 5.240954324417397e-201
         },
         "all_probabilities": {
-          "Crash": 8.481957257842163e-12,
-          "Strong Bear": 9.651415364744474e-39,
-          "Mild Bear": 9.413126230987304e-33,
-          "Chop/Neutral": 2.5587766820614857e-61,
-          "Accumulation": 1.3575292187060536e-87,
+          "Crash": 8.481995301938483e-12,
+          "Strong Bear": 9.651100328131796e-39,
+          "Mild Bear": 9.414371267659386e-33,
+          "Chop/Neutral": 2.5588101797005295e-61,
+          "Accumulation": 1.3574434155868767e-87,
           "Mild Bull": 0.9999999999913598,
-          "Strong Bull": 1.6098379816586272e-34
+          "Strong Bull": 1.6097201297080542e-34
         },
         "regime_stats": {
           "state_id": 6,
-          "mean_return": 0.007362061430551839,
-          "mean_volatility": 0.019145235868632444,
-          "mean_volume_change": -0.05659725801102295,
-          "mean_momentum_5d": 0.041908329185607385,
-          "mean_momentum_20d": 0.15096260418340168,
-          "return_std": 0.01361213856203851,
-          "stationary_probability": 0.09982138635986369
+          "mean_return": 0.007362068772257437,
+          "mean_volatility": 0.019145235639148054,
+          "mean_volume_change": -0.056597257925963367,
+          "mean_momentum_5d": 0.04190833090892861,
+          "mean_momentum_20d": 0.15096259972052997,
+          "return_std": 0.013612145877006095,
+          "stationary_probability": 0.09982138691325947
         },
         "training_points": 481,
         "returns": {
@@ -2850,32 +2861,32 @@
         },
         "rsi": 49.6,
         "transition_probs": {
-          "Crash": 0.052022146649012814,
-          "Strong Bear": 0.0779605774866348,
-          "Mild Bear": 0.8373689386570562,
-          "Chop/Neutral": 1.2139918806837247e-60,
-          "Accumulation": 2.095118223455858e-07,
-          "Mild Bull": 9.054988022252328e-15,
-          "Strong Bull": 0.0326481276954648
+          "Crash": 0.052022105101759475,
+          "Strong Bear": 0.07796084521035637,
+          "Mild Bear": 0.8373687846680079,
+          "Chop/Neutral": 1.21454623118238e-60,
+          "Accumulation": 2.0960762730009192e-07,
+          "Mild Bull": 9.060169084911755e-15,
+          "Strong Bull": 0.03264805541224001
         },
         "all_probabilities": {
-          "Crash": 0.09262058748988146,
-          "Strong Bear": 0.000151366836591717,
-          "Mild Bear": 0.7341174615316352,
-          "Chop/Neutral": 0.00012321917686439128,
-          "Accumulation": 0.006987354690993994,
-          "Mild Bull": 0.16340247545974565,
-          "Strong Bull": 0.0025975348142294862
+          "Crash": 0.09262063347045289,
+          "Strong Bear": 0.00015136471004795972,
+          "Mild Bear": 0.7341171483903499,
+          "Chop/Neutral": 0.0001232178559750799,
+          "Accumulation": 0.0069873439415235475,
+          "Mild Bull": 0.1634028507471093,
+          "Strong Bull": 0.0025974408843605066
         },
         "regime_stats": {
           "state_id": 6,
-          "mean_return": 0.0004122892095159759,
-          "mean_volatility": 0.027175949075493082,
-          "mean_volume_change": 0.014483620055546903,
-          "mean_momentum_5d": -0.014976888951539416,
-          "mean_momentum_20d": 0.020343116271474834,
-          "return_std": 0.020363287836607825,
-          "stationary_probability": 0.21604458949667496
+          "mean_return": 0.0004122981273101472,
+          "mean_volatility": 0.027175955374197005,
+          "mean_volume_change": 0.014483513301094396,
+          "mean_momentum_5d": -0.014976919658191461,
+          "mean_momentum_20d": 0.020343088340357918,
+          "return_std": 0.020363297295442794,
+          "stationary_probability": 0.21604464805430018
         },
         "training_points": 481,
         "returns": {
@@ -3156,32 +3167,32 @@
         },
         "rsi": 26.2,
         "transition_probs": {
-          "Crash": 1.504199160744361e-69,
-          "Strong Bear": 0.015199388821260859,
-          "Mild Bear": 0.8940458744161633,
-          "Chop/Neutral": 1.3037400904719536e-09,
-          "Accumulation": 0.030855513644081328,
-          "Mild Bull": 2.627956596416071e-22,
-          "Strong Bull": 0.05989922181475433
+          "Crash": 1.5026262126368659e-69,
+          "Strong Bear": 0.015199411251322738,
+          "Mild Bear": 0.8940459535516212,
+          "Chop/Neutral": 1.302803456219254e-09,
+          "Accumulation": 0.030855423407133698,
+          "Mild Bull": 2.6263113380017246e-22,
+          "Strong Bull": 0.05989921048711883
         },
         "all_probabilities": {
-          "Crash": 3.107075303545419e-13,
-          "Strong Bear": 2.5552021063222287e-08,
-          "Mild Bear": 0.9832669994003529,
-          "Chop/Neutral": 4.661706475490248e-12,
-          "Accumulation": 2.385087267372193e-13,
-          "Mild Bull": 0.0013957053332878163,
-          "Strong Bull": 0.015337269709271751
+          "Crash": 3.107147058985849e-13,
+          "Strong Bear": 2.5551442098562077e-08,
+          "Mild Bear": 0.9832669665898095,
+          "Chop/Neutral": 4.66180643955919e-12,
+          "Accumulation": 2.3851353008665754e-13,
+          "Mild Bull": 0.0013957076028062987,
+          "Strong Bull": 0.015337300250860619
         },
         "regime_stats": {
           "state_id": 6,
-          "mean_return": -0.0003362784031820789,
-          "mean_volatility": 0.02127023082312744,
-          "mean_volume_change": 0.015048760189713115,
-          "mean_momentum_5d": -0.0077116359343588296,
-          "mean_momentum_20d": -0.03418822141114192,
-          "return_std": 0.014413605751463972,
-          "stationary_probability": 0.300253527167002
+          "mean_return": -0.00033627526846772833,
+          "mean_volatility": 0.021270234005731106,
+          "mean_volume_change": 0.01504883627315811,
+          "mean_momentum_5d": -0.007711622820669942,
+          "mean_momentum_20d": -0.03418823537583437,
+          "return_std": 0.014413626849032305,
+          "stationary_probability": 0.3002533906239829
         },
         "training_points": 481,
         "returns": {
@@ -3360,32 +3371,32 @@
         },
         "rsi": 52.6,
         "transition_probs": {
-          "Crash": 1.686238380400178e-98,
-          "Strong Bear": 0.031302553798033074,
-          "Mild Bear": 0.29915442848358087,
-          "Chop/Neutral": 0.04448084391263362,
-          "Accumulation": 0.5869900781507437,
-          "Mild Bull": 2.2605251209084005e-91,
-          "Strong Bull": 0.038072095655008735
+          "Crash": 1.6863361762423174e-98,
+          "Strong Bear": 0.03130255962175932,
+          "Mild Bear": 0.2991544859943884,
+          "Chop/Neutral": 0.04448079920796051,
+          "Accumulation": 0.5869900585459976,
+          "Mild Bull": 2.2574667755771967e-91,
+          "Strong Bull": 0.03807209662989421
         },
         "all_probabilities": {
-          "Crash": 5.893196424632071e-13,
-          "Strong Bear": 3.4878900735915955e-08,
-          "Mild Bear": 3.230455219691933e-10,
-          "Chop/Neutral": 7.421224150235189e-08,
-          "Accumulation": 0.9975639686210409,
-          "Mild Bull": 4.964756509097484e-10,
-          "Strong Bull": 0.0024359214676810473
+          "Crash": 5.893298135759782e-13,
+          "Strong Bear": 3.487950594529915e-08,
+          "Mild Bear": 3.230567740782272e-10,
+          "Chop/Neutral": 7.421360313129504e-08,
+          "Accumulation": 0.9975639574048026,
+          "Mild Bull": 4.964746286967594e-10,
+          "Strong Bull": 0.0024359326821840987
         },
         "regime_stats": {
           "state_id": 0,
-          "mean_return": 0.004781917265343116,
-          "mean_volatility": 0.030375908597390356,
-          "mean_volume_change": -0.1743277766464268,
-          "mean_momentum_5d": 0.08840569164623531,
-          "mean_momentum_20d": 0.10935299655439029,
-          "return_std": 0.024091448517349488,
-          "stationary_probability": 0.07161243126319979
+          "mean_return": 0.004781927731636516,
+          "mean_volatility": 0.030375909178452166,
+          "mean_volume_change": -0.17432786506029818,
+          "mean_momentum_5d": 0.08840566254949489,
+          "mean_momentum_20d": 0.10935295177441537,
+          "return_std": 0.02409144800070075,
+          "stationary_probability": 0.07161242241760252
         },
         "training_points": 481,
         "returns": {
