@@ -4,18 +4,37 @@
   "database": "ejaguiar1_stocks",
   "engine": "MySQL 8.4.7",
   "checks": {
-    "status_standardization": {
-      "name": "status_standardization",
+    "won_pnl_contradiction": {
+      "name": "won_pnl_contradiction",
       "ok": true,
       "elapsed_s": 0.14,
       "attempts": 1,
       "data": {
-        "non_canonical": {},
-        "n_non_canonical": 0,
+        "by_status": [
+          {
+            "status": "TP_HIT",
+            "n": 5264,
+            "avg_pnl": 3.47114557,
+            "negative_pnl_count": 0
+          },
+          {
+            "status": "SL_HIT",
+            "n": 2555,
+            "avg_pnl": -3.38558012,
+            "negative_pnl_count": 2553
+          },
+          {
+            "status": "LOST",
+            "n": 4945,
+            "avg_pnl": -1.7584256,
+            "negative_pnl_count": 4918
+          }
+        ],
+        "contradiction_detected": false,
         "tier": "green",
         "threshold_pass": true
       },
-      "tier_label": "Tier 1"
+      "tier_label": "Tier 3"
     },
     "ghost_rows": {
       "name": "ghost_rows",
