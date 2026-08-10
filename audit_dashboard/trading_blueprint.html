@@ -126,7 +126,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>PROVEN</td><td>50+ closed trades, WR ≥ 50%, PF ≥ 1.0, documented forward results.</td><td>0.8−1.0x</td></tr>
         <tr><td>PROBATION</td><td>Documented poor performance: broken risk mgmt, consistently losing, or system errors.</td><td>0.10−0.15x</td></tr>
         <tr><td>DEMOTED</td><td>Strategy works on some assets but fails on others (asset-specific demotion).</td><td>0.25x</td></tr>
-        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 13 of 58 systems are grade F.</td><td>0x (disabled)</td></tr>
+        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 13 of 57 systems are grade F.</td><td>0x (disabled)</td></tr>
       </tbody></table>
 
       <h3>Kill Criteria (Mercury AI Recommended)</h3>
@@ -138,7 +138,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <br>• <b>Max Drawdown &gt; 30%</b> on $100 position sizing — unacceptable risk
         <br>• <b>No trades generated</b> in 14+ days — dormant/broken system
         <br>• <b>3 consecutive losing months</b> — persistent underperformance
-        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 13/58 grade-F systems remain active, generating noise and diluting signal quality.
+        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 13/57 grade-F systems remain active, generating noise and diluting signal quality.
       </div>
     </div></div>
 <div id="s1">
@@ -165,7 +165,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
     </div></div>
 <div id="s2">
     <div class="section">
-      <h2>2. System-by-System Breakdown (58 crypto systems with data)</h2>
+      <h2>2. System-by-System Breakdown (57 crypto systems with data)</h2>
       <p class="dim">Grade: A = proven profitable (WR≥55, PF≥1.5, 20+ trades), B = positive edge, C = marginal, D = insufficient data, F = unprofitable</p>
       <div class="table-wrap">
       <table><thead><tr>
@@ -832,6 +832,18 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td class="num">+3.0%</td>
           <td class="num">-2.0%</td>
         </tr><tr>
+          <td><b>alpha engine</b><br><span class="dim" style="font-size:11px">Proven Underdog Portfolio. 100 statistically-validated strategies (Connors RSI-2 75% WR, VIX Spike 72% WR). Scans crypto</span></td>
+          <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
+          <td class="num">19</td>
+          <td class="num">1368</td>
+          <td class="num">112</td><td class="num">160</td>
+          <td class="num" style="color:#ef4444">41.0%</td>
+          <td class="num" style="color:#ef4444">-138.15%</td>
+          <td class="num" style="color:#ef4444">0.65</td>
+          <td class="num" style="color:#ef4444">-0.51%</td>
+          <td class="num">+2.3%</td>
+          <td class="num">-2.5%</td>
+        </tr><tr>
           <td><b>mercury2 fast</b><br><span class="dim" style="font-size:11px">Mercury2 fast variant with shorter timeframes. WARNING: Has shown broken entry prices ($1M+) - on probation.</span></td>
           <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
           <td class="num">0</td>
@@ -886,7 +898,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td class="num" style="font-size:11px">BTC, ETH</td>
           <td class="num">n/a</td>
           <td class="num" style="color:#ef4444">0.0%</td>
-          <td class="num">0</td>
+          <td class="num">1</td>
           <td class="num" style="color:#ef4444">0.00</td>
           <td class="num">0.73</td>
           <td class="num">0.0</td>
@@ -1235,9 +1247,9 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">1h</td>
               <td class="num">0.67</td><td class="num">0.0</td>
               <td class="num" style="color:#ef4444">0%</td>
-              <td class="num">5</td>
-              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
-              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
+              <td class="dim" style="font-size:11px">inverse_mutations</td>
             </tr></tbody></table>
 
       <h3>B) Top 20 by Score</h3>
@@ -1287,9 +1299,9 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">1h</td>
               <td class="num">0.67</td><td class="num">0.0</td>
               <td class="num" style="color:#ef4444">0%</td>
-              <td class="num">5</td>
-              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
-              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
+              <td class="dim" style="font-size:11px">inverse_mutations</td>
             </tr></tbody></table>
 
       <h3>C) Top 20 Vetted Only (Forward WR ≥ 55%, Forward Trades ≥ 10)</h3>
@@ -1360,7 +1372,7 @@ Key change: FWD WR weight increased from 0.25→0.30, R:R removed, trust tier ad
           <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL (unreal.)</th>
           <th>Age(h)</th><th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
         </tr></thead><tbody><tr>
-              <td>ETH</td>
+              <td>ARB</td>
               <td style="color:#ef4444">SHORT</td>
               <td class="num">1926.36</td><td class="num">1881.2061216</td><td class="num">1953.39825054</td>
               <td class="num" style="color:#888">+0.00%</td>
@@ -1880,6 +1892,16 @@ Key changes:
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
           <td class="dim" style="font-size:11px">Z-score=-1.73 below 200d SMA (114.07095), RSI=35. Backtest: 68.3% WR on 167 trad</td>
+        </tr><tr>
+          <td>CADJPY=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">113.427002</td><td class="num">114.071318</td><td class="num">112.859867</td>
+          <td class="num">0.67</td><td class="num">1.1</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
+          <td class="dim" style="font-size:11px">Z-score=-1.68 below 200d SMA (114.07132), RSI=36. Backtest: 68.3% WR on 167 trad</td>
         </tr><tr>
           <td>NZDUSD=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
