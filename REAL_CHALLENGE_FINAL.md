@@ -1,6 +1,6 @@
 # 🏆 2-HOUR STRATEGY CHALLENGE - FINAL RESULTS
 
-**Completed:** 2026-08-10T14:23:11.583841 UTC
+**Completed:** 2026-08-11T14:22:56.657251 UTC
 
 ## 🥇 WINNER: News_Scalping_AAPL
 
@@ -13,6 +13,6 @@
 | Rank | Strategy | P&L | Return % | Trades |
 |------|----------|-----|----------|--------|
 | 1 | News_Scalping_AAPL | $0.00 | +0.00% | 0 |
-| 2 | VWAP_Scalping_AAPL | $0.00 | +0.00% | 0 |
-| 3 | Funding_Arbitrage | $0.00 | +0.00% | 0 |
-| 4 | Momentum_EMA_SPY | $-99.75 | -1.00% | 2 |
+| 2 | Momentum_EMA_SPY | $0.00 | +0.00% | 0 |
+| 3 | VWAP_Scalping_AAPL | $0.00 | +0.00% | 0 |
+| 4 | Funding_Arbitrage | $0.00 | +0.00% | 0 |
