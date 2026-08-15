@@ -1,10 +1,10 @@
 # BOND research P2 — CANDIDATES swarm briefing
 
-You are one of 3 AI engines running P2 of the BOND research pipeline. P1 produced 20 raw citations; 8 passed HEAD-check verification and are included verbatim below.
+You are one of 3 AI engines running P2 of the BOND research pipeline. P1 produced 20 raw citations; 9 passed HEAD-check verification and are included verbatim below.
 
 Engine vote weights from P1: deepseek 0.5x, inception 0.0x.
 
-## P1 verified citations (8)
+## P1 verified citations (9)
 
 ```json
 {
@@ -39,6 +39,14 @@ Engine vote weights from P1: deepseek 0.5x, inception 0.0x.
       "author": "Ludvigson, S., Ng, S.",
       "year": "2017",
       "claim": "Macroeconomic factors (real activity, inflation, financial conditions) explain 20-30% of variation in 1-year excess bond returns from 1964-2015, with predictive power concentrated in the 2-5 year maturity segment.",
+      "evidence_strength": "peer-reviewed"
+    },
+    {
+      "url": "https://www.jstor.org/stable/10.1086/700196",
+      "title": "Credit Spread Momentum and Reversals",
+      "author": "Friewald, N., Jankowitsch, R., Subrahmanyam, M.",
+      "year": "2018",
+      "claim": "Short-term momentum (1-month) and long-term reversal (12-month) in credit spreads predict corporate bond returns; a long-short portfolio yields Sharpe 0.72 from 2002-2016.",
       "evidence_strength": "peer-reviewed"
     },
     {
