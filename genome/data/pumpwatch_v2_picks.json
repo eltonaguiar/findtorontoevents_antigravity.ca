@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-08-18T06:23:48.520576+00:00",
+    "timestamp": "2026-08-18T09:38:56.839764+00:00",
     "total_mutations": 5,
-    "total_picks": 1,
-    "mutations_triggered": 1,
-    "mutations_silent": 4,
+    "total_picks": 2,
+    "mutations_triggered": 2,
+    "mutations_silent": 3,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -15,29 +15,60 @@
   "picks": [
     {
       "strategy": "pump_btc_correlated_v2",
-      "symbol": "BONKUSDT",
+      "symbol": "ARBUSDT",
       "signal_type": "BUY",
       "direction": "BUY",
-      "entry_price": 2.3e-06,
-      "take_profit": 2.35e-06,
-      "stop_loss": 2.27e-06,
-      "confidence": 0.6584,
+      "entry_price": 0.0755,
+      "take_profit": 0.076804,
+      "stop_loss": 0.074522,
+      "confidence": 0.6384,
       "risk_reward": 1.33,
-      "reason": "PumpV2 BTC-correlated: vol=3.0x, BTC bullish (>$64109 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
-      "timestamp": "2026-08-18T06:23:48.515259+00:00",
+      "reason": "PumpV2 BTC-correlated: vol=2.6x, BTC bullish (>$64139 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
+      "timestamp": "2026-08-18T09:38:56.835771+00:00",
       "category": "crypto",
       "source_system": "genome",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "pumpwatch_v2",
       "mutation_type": "btc_correlation",
-      "volume_ratio": 2.97,
+      "volume_ratio": 2.64,
       "btc_bullish": true,
-      "btc_ema20": 64108.75,
+      "btc_ema20": 64138.78,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "ARBUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.0755,
+      "take_profit": 0.076804,
+      "stop_loss": 0.074522,
+      "confidence": 0.6025,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=2.6x, price $0.0755 > EMA50=$0.0747 > EMA20=$0.0749 (EMA stack aligned) \u2014 uptrend pump only",
+      "timestamp": "2026-08-18T09:38:56.831440+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 2.64,
+      "ema_50": 0.074732,
+      "ema_20": 0.074931,
+      "ema_aligned": true,
+      "trend_strength": 0.0103,
       "timeframe": "1h"
     }
   ],
   "mutations_triggered": [
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
     {
       "strategy": "pump_btc_correlated_v2",
       "parent": "pumpwatch_v2",
@@ -46,7 +77,6 @@
     }
   ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
     "pump_large_cap_only_v2",
     "pump_momentum_continuation_v2",
     "pump_fear_greed_filter_v2"
