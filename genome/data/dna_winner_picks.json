@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-08-20T06:24:25.036561+00:00",
+    "timestamp": "2026-08-20T09:28:03.525772+00:00",
     "total_mutations": 18,
-    "total_picks": 1,
-    "mutations_triggered": 1,
-    "mutations_silent": 17,
+    "total_picks": 3,
+    "mutations_triggered": 3,
+    "mutations_silent": 15,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_winner_mutations"
@@ -14,35 +14,88 @@
       "strategy": "battleground_contrarian_sell_mut",
       "symbol": "AVAXUSDT",
       "signal_type": "SELL",
-      "entry_price": 6.748,
-      "take_profit": 6.6118,
-      "stop_loss": 6.8502,
-      "confidence": 0.6055,
+      "entry_price": 6.913,
+      "take_profit": 6.7669,
+      "stop_loss": 7.0226,
+      "confidence": 0.72,
       "risk_reward": 1.33,
-      "reason": "Battleground contrarian SELL: RSI14=66.8 (>65, falling), RSI50=60.9 (>60), VWAP dev=+1.74% \u2014 overbought fade",
-      "timestamp": "2026-08-20T06:24:25.023674+00:00",
+      "reason": "Battleground contrarian SELL: RSI14=76.6 (>65, falling), RSI50=65.3 (>60), VWAP dev=+3.65% \u2014 overbought fade",
+      "timestamp": "2026-08-20T09:28:03.506545+00:00",
       "category": "crypto",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "battleground",
       "mutation_type": "contrarian",
-      "rsi_14": 66.8,
-      "rsi_50": 60.9,
-      "vwap_deviation": 0.0174,
+      "rsi_14": 76.6,
+      "rsi_50": 65.3,
+      "vwap_deviation": 0.0365,
+      "timeframe": "4h"
+    },
+    {
+      "strategy": "claude_ml_moderate_mut",
+      "symbol": "APTUSDT",
+      "signal_type": "BUY",
+      "entry_price": 0.566,
+      "take_profit": 0.580028,
+      "stop_loss": 0.555479,
+      "confidence": 0.624,
+      "risk_reward": 1.33,
+      "reason": "Claude ML moderate: pump_score=0.48 (threshold>=0.45), RSI=62.8, vol=5.3x, mom7d=0.71%",
+      "timestamp": "2026-08-20T09:28:03.334709+00:00",
+      "category": "crypto",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "claude_gainer_ml_perf",
+      "mutation_type": "moderate",
+      "rsi_14": 62.8,
+      "volume_ratio": 5.3,
+      "pump_score": 0.48,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "justin_aggressive_mut",
+      "symbol": "XRPUSDT",
+      "signal_type": "BUY",
+      "entry_price": 1.1561,
+      "take_profit": 1.1998,
+      "stop_loss": 1.0825,
+      "confidence": 0.5791,
+      "risk_reward": 0.59,
+      "reason": "Justin aggressive: 10-bar breakout, vol=1.29x, RSI=78.9, range=6.27%, ATR_mult=3.0",
+      "timestamp": "2026-08-20T09:28:03.520091+00:00",
+      "category": "crypto",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "justin_breakout_volume_v2",
+      "mutation_type": "aggressive",
+      "volume_ratio": 1.29,
+      "rsi_14": 78.9,
+      "range_pct": 0.0627,
       "timeframe": "4h"
     }
   ],
   "mutations_triggered": [
     {
+      "strategy": "claude_ml_moderate_mut",
+      "parent": "claude_gainer_ml_perf",
+      "mutation": "moderate",
+      "picks": 1
+    },
+    {
       "strategy": "battleground_contrarian_sell_mut",
       "parent": "battleground",
       "mutation": "contrarian",
+      "picks": 1
+    },
+    {
+      "strategy": "justin_aggressive_mut",
+      "parent": "justin_breakout_volume_v2",
+      "mutation": "aggressive",
       "picks": 1
     }
   ],
   "mutations_silent": [
     "claude_ml_conservative_mut",
-    "claude_ml_moderate_mut",
     "claude_ml_aggressive_mut",
     "kimi_funding_arb_relaxed_mut",
     "kimi_flash_crash_relaxed_mut",
@@ -56,7 +109,6 @@
     "battleground_vwap_1h_mut",
     "justin_conservative_mut",
     "justin_moderate_mut",
-    "justin_aggressive_mut",
     "justin_scalper_mut"
   ]
 }
