@@ -149,13 +149,14 @@
         "avg_bars_held": 12.4
       },
       "short_term_entry": {
-        "entry_quality": 61,
+        "entry_quality": 66,
         "actionable": false,
         "horizon": "4-24h",
         "reasons": [
           "rsi_rally_short",
           "macd_support",
           "atr_in_tradeable_band",
+          "volume_confirmation",
           "backtest_wr_weak"
         ]
       },
@@ -521,6 +522,102 @@
         "status": "completed",
         "win_rate": 18.8,
         "avg_pnl": -0.95,
+        "total_trades": 160,
+        "wins": 30,
+        "losses": 130,
+        "avg_bars_held": 13.1
+      },
+      "short_term_entry": {
+        "entry_quality": 66,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "rsi_rally_short",
+          "macd_support",
+          "atr_in_tradeable_band",
+          "volume_confirmation",
+          "backtest_wr_weak"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 0.1,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-08-23T03:36:49.163183+00:00",
+      "ml_rank": 5
+    },
+    {
+      "id": "hyro-v2-eth-adxvol",
+      "rank": 2,
+      "asset_class": "CRYPTO",
+      "label": "Ethereum \u2014 ADX Vol Breakout",
+      "symbol_hint": "ETHUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 90,
+      "timeframe": "1H",
+      "strategy": "adx_vol_breakout",
+      "backtest_grade": "A",
+      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
+      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
+      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
+      "technical_indicators": {
+        "rsi": 68.26,
+        "macd": {
+          "macd": 101.9582,
+          "signal": 114.8934,
+          "histogram": -12.9352,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 2531.63,
+          "middle": 2374.53,
+          "lower": 2217.43,
+          "pct_b": 0.614,
+          "squeeze": true
+        },
+        "atr_pct": 2.191,
+        "volume": {
+          "ratio": 0.29,
+          "expansion": false,
+          "direction": "neutral"
+        },
+        "trend": "strong_uptrend",
+        "sma_20": 2374.53,
+        "sma_50": 2095.67,
+        "current_price": 2410.33
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 65,
+        "breakdown": {
+          "base": 90,
+          "bb_squeeze": 3,
+          "ml_edge_blend": -28,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "high_conviction",
+        "notes": [
+          "Bollinger squeeze - volatility compression"
+        ],
+        "warnings": [
+          "ML optimizer: F \u2014 weak edge (0.2)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 18.8,
+        "avg_pnl": -0.96,
         "total_trades": 160,
         "wins": 30,
         "losses": 130,
