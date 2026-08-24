@@ -74,6 +74,103 @@
   },
   "picks": [
     {
+      "id": "hyro-v2-btc-cci",
+      "rank": 1,
+      "asset_class": "CRYPTO",
+      "label": "Bitcoin \u2014 CCI Divergence",
+      "symbol_hint": "BTCUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 92,
+      "timeframe": "1H",
+      "strategy": "cci_divergence",
+      "backtest_grade": "A+",
+      "backtest_stats": "+$1125 PnL, PF 2.15, 52% WR, $263 max DD, 54 trades/6mo",
+      "thesis": "Best backtest passer. CCI(20) crosses above -100 = long; crosses below +100 = short. Highest profit factor of all tested strategies. Moderate DD leaves $237 buffer from $500 limit.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR below entry (long) or above entry (short). Must be live within 5 min.",
+      "take_profit_plan": "TP = 2\u00d7 risk. Book profits at target \u2014 trailing DD punishes round-trips.",
+      "technical_indicators": {
+        "rsi": 68.55,
+        "macd": {
+          "macd": 1783.3418,
+          "signal": 2112.9475,
+          "histogram": -329.6057,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 78580.09,
+          "middle": 77348.91,
+          "lower": 76117.73,
+          "pct_b": 0.825,
+          "squeeze": true
+        },
+        "atr_pct": 1.404,
+        "volume": {
+          "ratio": 0.09,
+          "expansion": false,
+          "direction": "neutral"
+        },
+        "trend": "strong_uptrend",
+        "sma_20": 77348.91,
+        "sma_50": 70981.25,
+        "current_price": 78149.76
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 82,
+        "breakdown": {
+          "base": 92,
+          "bb_overbought": 5,
+          "bb_squeeze": 3,
+          "ml_edge_blend": -18,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "high_conviction",
+        "notes": [
+          "Price at upper Bollinger Band",
+          "Bollinger squeeze - volatility compression"
+        ],
+        "warnings": [
+          "ML optimizer: D \u2014 weak edge (38.8)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 21.9,
+        "avg_pnl": -0.96,
+        "total_trades": 160,
+        "wins": 35,
+        "losses": 125,
+        "avg_bars_held": 14.4
+      },
+      "short_term_entry": {
+        "entry_quality": 61,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "rsi_rally_short",
+          "macd_support",
+          "atr_in_tradeable_band",
+          "backtest_wr_weak"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 38.8,
+        "ml_grade": "D",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-08-24T12:19:03.528071+00:00",
+      "ml_rank": 1
+    },
+    {
       "id": "hyro-v2-sol-multiema",
       "rank": 5,
       "asset_class": "CRYPTO",
@@ -632,8 +729,8 @@
         "win_rate": 23.8,
         "avg_pnl": -0.91,
         "total_trades": 160,
-        "wins": 38,
-        "losses": 122,
+        "wins": 39,
+        "losses": 121,
         "avg_bars_held": 11.1
       },
       "short_term_entry": {
