@@ -1,22 +1,40 @@
 {
   "alerts": [
     {
-      "type": "MODEL_FLAT",
-      "severity": "WARNING",
-      "message": "Prediction variance 0.0017 < 0.01 -- model not discriminating between good and bad picks",
-      "timestamp": "2026-08-28T21:27:13.469939+00:00"
-    },
-    {
       "type": "PSI_SHIFT",
       "severity": "CRITICAL",
-      "message": "PSI = 2.301 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
-      "timestamp": "2026-08-28T21:27:13.469939+00:00"
+      "message": "PSI = 1.509 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-08-28T22:22:56.498177+00:00"
+    },
+    {
+      "type": "OUT_OF_DISTRIBUTION",
+      "severity": "WARNING",
+      "message": "ZC=F (futures_bb_mean_reversion) is OOD -- 2 features beyond 3.0 sigma, confidence reduced by 0.05",
+      "symbol": "ZC=F",
+      "strategy": "futures_bb_mean_reversion",
+      "timestamp": "2026-08-28T22:22:56.655173+00:00"
+    },
+    {
+      "type": "OUT_OF_DISTRIBUTION",
+      "severity": "WARNING",
+      "message": "ZS=F (futures_bb_mean_reversion) is OOD -- 2 features beyond 3.0 sigma, confidence reduced by 0.05",
+      "symbol": "ZS=F",
+      "strategy": "futures_bb_mean_reversion",
+      "timestamp": "2026-08-28T22:22:56.656231+00:00"
+    },
+    {
+      "type": "CONSECUTIVE_LOSSES",
+      "severity": "WARNING",
+      "message": "Strategy 'regime_accumulation' has 6 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
+      "strategy": "regime_accumulation",
+      "streak": 6,
+      "timestamp": "2026-08-28T22:22:56.657423+00:00"
     }
   ],
   "summary": {
-    "total_alerts": 2,
+    "total_alerts": 4,
     "critical": 1,
-    "warning": 1,
+    "warning": 3,
     "info": 0,
     "sizing_multiplier": 0.5
   },
@@ -26,9 +44,9 @@
     "center_line": null
   },
   "prediction_dist": {
-    "psi": 2.3008,
-    "mean_shift": 0.002,
-    "current_var": 0.0017
+    "psi": 1.5089,
+    "mean_shift": 0.0429,
+    "current_var": 0.0186
   },
-  "updated_at": "2026-08-28T21:27:13.469939+00:00"
+  "updated_at": "2026-08-28T22:22:56.498177+00:00"
 }
