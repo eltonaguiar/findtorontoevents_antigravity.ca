@@ -1,0 +1,82 @@
+[
+  {
+    "spec_id": "forex_momentum_uup_v1",
+    "asset_class": "FOREX",
+    "entry": "long UUP when 60d momentum > 0 AND 90d realized volatility of UUP < 8%",
+    "exit": "exit when 60d momentum flips sign OR after 30 calendar days, whichever comes first",
+    "sizing": "allocate full capital (100%) to the position; risk-adjusted size = 1 / rolling 60d volatility of UUP to target 8% annualized vol",
+    "universe": [
+      "UUP"
+    ],
+    "regime_filter": "skip trade on any day where 90d realized volatility of UUP > 12% (high-vol regime)",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/A-Century-of-Evidence-on-Trend-Following"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "forex_value_momentum_combo_fxA_v1",
+    "asset_class": "FOREX",
+    "entry": "compute value = log(price / 200d SMA) and momentum = 20d return of FXA; combined_signal = 0.5*value + 0.5*momentum; go long FXA when combined_signal > 0",
+    "exit": "exit when combined_signal \u2264 0 OR after 60 calendar days, whichever occurs first",
+    "sizing": "risk-parity: position size = 1 / rolling 60d volatility of FXA to target 8% annualized vol",
+    "universe": [
+      "FXA"
+    ],
+    "regime_filter": "skip when 30d realized volatility of UUP (proxy for global risk) > 10%",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Value-and-Momentum-Everywhere"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "forex_regime_conditional_hybrid_fxA_v1",
+    "asset_class": "FOREX",
+    "entry": "if UUP 30d return > 0 (expansion regime) AND FXA 30d momentum > 0 then go long FXA; otherwise stay in cash",
+    "exit": "exit when either condition fails or after 45 calendar days, whichever comes first",
+    "sizing": "risk-parity: position size = 1 / rolling 60d volatility of FXA to target 8% annualized vol",
+    "universe": [
+      "FXA"
+    ],
+    "regime_filter": "skip when 90d realized volatility of UUP > 12% (high-vol regime)",
+    "source_refs": [
+      "https://www.ecb.europa.eu/pub/pdf/scpwps/ecb.wp2219.en.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "forex_dollar_carry_uup_v1",
+    "asset_class": "FOREX",
+    "entry": "compute spread = UUP 30d return - FXE 30d return; if spread > 0 AND UUP 30d momentum > 0 then go long UUP; else stay in cash",
+    "exit": "exit when spread \u2264 0 OR after 30 calendar days, whichever occurs first",
+    "sizing": "risk-parity: position size = 1 / rolling 60d volatility of UUP to target 8% annualized vol",
+    "universe": [
+      "UUP",
+      "FXE"
+    ],
+    "regime_filter": "skip when spread < 0.5% over the past 30 days (compressed yield differential) OR when 90d realized volatility of UUP > 12%",
+    "source_refs": [
+      "https://www.bis.org/publ/work790.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "forex_risk_parity_multi_etf_v1",
+    "asset_class": "FOREX",
+    "entry": "daily compute 60d covariance of returns of [UUP, FXE, FXA, FXB, FXF]; solve for weights that equalize risk contributions to achieve 8% annualized portfolio volatility; rebalance on the first trading day of each month",
+    "exit": "no explicit exit; positions are held until next monthly rebalance; if regime filter triggers, set all weights to zero for that month",
+    "sizing": "risk-parity weights as described in entry; target portfolio volatility = 8% annualized",
+    "universe": [
+      "UUP",
+      "FXE",
+      "FXA",
+      "FXB",
+      "FXF"
+    ],
+    "regime_filter": "skip (set all weights to zero) on any month where the portfolio's 60d realized volatility exceeds 15% (high-risk regime)",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Currency-Strategies-in-a-Low-Yield-Environment"
+    ],
+    "proposed_by_engine": "cerebras"
+  }
+]

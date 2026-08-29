@@ -1,0 +1,82 @@
+[
+  {
+    "spec_id": "equity_ts_momentum_v1",
+    "asset_class": "EQUITY",
+    "entry": "long ETF when 12M momentum > 0; i.e., if (price_today / price_252d_ago - 1) > 0 then go 100% long the ETF, else stay in cash",
+    "exit": "exit when 12M momentum <= 0 or after 60 calendar days whichever comes first",
+    "sizing": "risk-parity to target 10% annualized volatility: weight = 0.10 / (annualized_std_20d * sqrt(252))",
+    "universe": [
+      "SPY",
+      "QQQ",
+      "IWM",
+      "VTI"
+    ],
+    "regime_filter": "skip if 20-day realized volatility of SPY > 30% (high-vol regime)",
+    "source_refs": [
+      "https://doi.org/10.1016/j.jfineco.2012.06.001"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "equity_vol_target_v1",
+    "asset_class": "EQUITY",
+    "entry": "always in market; set exposure = target_vol / recent_vol where target_vol = 10% annualized and recent_vol = annualized 20-day realized volatility of SPY",
+    "exit": "no explicit exit; position weight is recomputed daily; if recent_vol > 40% set exposure to 0 (skip day)",
+    "sizing": "exposure = min(1, target_vol / recent_vol)",
+    "universe": [
+      "SPY"
+    ],
+    "regime_filter": "skip when 20-day realized volatility of SPY exceeds 40% (extreme market stress)",
+    "source_refs": [
+      "https://doi.org/10.1016/j.jfineco.2017.02.001"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "equity_carry_pair_v1",
+    "asset_class": "EQUITY",
+    "entry": "long VTI and short SPY when dividend_yield_spread = div_yield(VTI) - div_yield(SPY) > 0.5%; allocate equal dollar amount to each leg",
+    "exit": "close both legs when dividend_yield_spread < 0.3% or after 90 calendar days, whichever occurs first",
+    "sizing": "fixed dollar exposure of $10,000 per leg; net market exposure = 0 (market-neutral)",
+    "universe": [
+      "VTI",
+      "SPY"
+    ],
+    "regime_filter": "skip when 20-day realized volatility of SPY > 35% (high-vol regime)",
+    "source_refs": [
+      "https://doi.org/10.1016/j.jfineco.2013.04.001"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "equity_hmm_momentum_v1",
+    "asset_class": "EQUITY",
+    "entry": "if HMM bull probability (computed on 60-day rolling window of SPY returns) > 0.6 AND 12M momentum of QQQ > 0 then go 100% long QQQ",
+    "exit": "exit when bull probability falls below 0.6 OR 12M momentum of QQQ <= 0",
+    "sizing": "risk-parity to target 9% annualized volatility based on QQQ 20-day realized vol",
+    "universe": [
+      "QQQ"
+    ],
+    "regime_filter": "skip when bull probability < 0.6 (i.e., bear regime)",
+    "source_refs": [
+      "https://doi.org/10.1016/j.jfineco.2020.09.001"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "equity_bab_pair_v1",
+    "asset_class": "EQUITY",
+    "entry": "compute 60-day beta of each ETF relative to SPY; rank ETFs; long the lowest-beta ETF (typically VTI) and short the highest-beta ETF (typically QQQ) when beta_spread = beta_high - beta_low > 0.2; allocate equal dollar amount to each leg",
+    "exit": "close both legs when beta_spread <= 0.1 or after 60 calendar days",
+    "sizing": "fixed $15,000 per leg; net market exposure = 0 (beta-neutral)",
+    "universe": [
+      "VTI",
+      "QQQ"
+    ],
+    "regime_filter": "skip when 20-day realized volatility of SPY > 30% (high-vol regime)",
+    "source_refs": [
+      "https://www.nber.org/papers/w16865"
+    ],
+    "proposed_by_engine": "cerebras"
+  }
+]
