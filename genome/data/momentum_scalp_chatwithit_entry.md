@@ -1,22 +1,22 @@
-### Momentum Scalp Scanner (2026-08-31 04:01 UTC)
+### Momentum Scalp Scanner (2026-08-31 08:01 UTC)
 
 **New symbols scanned:** 30 gainers + 10 bounce candidates
-**Picks generated:** 40
+**Picks generated:** 49
 
 | # | Symbol | Dir | Entry | TP | SL | R:R | Conf | Strategy | 24h% | Reason |
 |---|--------|-----|-------|----|----|-----|------|----------|------|--------|
-| 1 | HEMIUSDT | LONG | 0.01575 | 0.017563 | 0.01439 | 1.33 | 90% | `genesis_momentum_blend` | +37.7% | Genesis score 9/10: ST=bull ADX=6 RSI=83 mom5=14.5% |
-| 2 | AXLUSDT | LONG | 0.0467 | 0.049743 | 0.044418 | 1.33 | 90% | `genesis_momentum_blend` | +16.8% | Genesis score 9/10: ST=bull ADX=3 RSI=72 mom5=16.5% |
-| 3 | 0GUSDT | LONG | 0.1878 | 0.197529 | 0.180504 | 1.33 | 90% | `genesis_momentum_blend` | +16.1% | Genesis score 9/10: ST=bull ADX=3 RSI=83 mom5=14.1% |
-| 4 | TNSRUSDT | LONG | 0.0394 | 0.044186 | 0.035811 | 1.33 | 90% | `genesis_momentum_blend` | +15.9% | Genesis score 9/10: ST=bull ADX=6 RSI=46 mom5=5.6% |
-| 5 | NOTUSDT | LONG | 0.00045 | 0.00047029 | 0.00043479 | 1.33 | 90% | `genesis_momentum_blend` | +11.4% | Genesis score 9/10: ST=bull ADX=2 RSI=72 mom5=10.6% |
-| 6 | LAUSDT | LONG | 0.0609 | 0.064314 | 0.058339 | 1.33 | 90% | `genesis_momentum_blend` | +9.8% | Genesis score 9/10: ST=bull ADX=3 RSI=61 mom5=5.2% |
-| 7 | ANIMEUSDT | LONG | 0.00287 | 0.00311714 | 0.00268464 | 1.33 | 90% | `genesis_momentum_blend` | +9.5% | Genesis score 9/10: ST=bull ADX=4 RSI=59 mom5=6.3% |
-| 8 | TREEUSDT | LONG | 0.0417 | 0.0436 | 0.040275 | 1.33 | 90% | `genesis_momentum_blend` | +8.9% | Genesis score 9/10: ST=bull ADX=2 RSI=68 mom5=9.4% |
-| 9 | KATUSDT | LONG | 0.00483 | 0.00502 | 0.0046875 | 1.33 | 90% | `genesis_momentum_blend` | +6.2% | Genesis score 9/10: ST=bull ADX=2 RSI=67 mom5=8.8% |
-| 10 | TOMOUSDT | LONG | 1.3819 | 1.4464 | 1.3335 | 1.33 | 90% | `genesis_momentum_blend` | +3.2% | Genesis score 9/10: ST=bull ADX=2 RSI=88 mom5=9.3% |
-| 11 | ENSOUSDT | LONG | 0.883 | 0.911857 | 0.861357 | 1.33 | 90% | `genesis_momentum_blend` | +2.3% | Genesis score 8/10: ST=bull ADX=2 RSI=50 mom5=4.4% |
-| 12 | OPGUSDT | LONG | 0.0975 | 0.100814 | 0.095014 | 1.33 | 90% | `genesis_momentum_blend` | +1.8% | Genesis score 10/10: ST=bull ADX=2 RSI=54 mom5=5.2% |
-| 13 | SXTUSDT | LONG | 0.00872 | 0.00906571 | 0.00846071 | 1.33 | 90% | `genesis_momentum_blend` | +1.5% | Genesis score 9/10: ST=bull ADX=2 RSI=43 mom5=5.4% |
-| 14 | ZKCUSDT | LONG | 0.0634 | 0.072971 | 0.056221 | 1.33 | 85% | `genesis_momentum_blend` | +36.2% | Genesis score 7/10: ST=bull ADX=8 RSI=35 mom5=5.0% |
-| 15 | MIRAUSDT | LONG | 0.04554 | 0.048131 | 0.043596 | 1.33 | 85% | `genesis_momentum_blend` | +9.3% | Genesis score 7/10: ST=bull ADX=3 RSI=56 mom5=2.9% |
+| 1 | LAUSDT | LONG | 0.0645 | 0.068857 | 0.061232 | 1.33 | 90% | `genesis_momentum_blend` | +13.3% | Genesis score 9/10: ST=bull ADX=3 RSI=70 mom5=6.6% |
+| 2 | SCRUSDT | LONG | 0.0249 | 0.025856 | 0.024183 | 1.33 | 90% | `genesis_momentum_blend` | +7.7% | Genesis score 9/10: ST=bull ADX=2 RSI=61 mom5=6.8% |
+| 3 | BARDUSDT | LONG | 0.1313 | 0.136657 | 0.127282 | 1.33 | 90% | `genesis_momentum_blend` | +5.5% | Genesis score 10/10: ST=bull ADX=2 RSI=48 mom5=5.3% |
+| 4 | EGLDUSDT | LONG | 3.993 | 4.137 | 3.885 | 1.33 | 90% | `genesis_momentum_blend` | +4.7% | Genesis score 9/10: ST=bull ADX=2 RSI=66 mom5=5.6% |
+| 5 | ENSUSDT | LONG | 5.79 | 5.9714 | 5.6539 | 1.33 | 90% | `genesis_momentum_blend` | +4.0% | Genesis score 8/10: ST=bull ADX=2 RSI=39 mom5=3.2% |
+| 6 | UNIUSDT | LONG | 5.162 | 5.3774 | 5.0004 | 1.33 | 85% | `genesis_momentum_blend` | +5.7% | Genesis score 7/10: ST=bull ADX=2 RSI=26 mom5=2.4% |
+| 7 | FORMUSDT | LONG | 0.2639 | 0.275871 | 0.254921 | 1.33 | 85% | `genesis_momentum_blend` | +4.9% | Genesis score 7/10: ST=bull ADX=2 RSI=48 mom5=2.8% |
+| 8 | PLUMEUSDT | LONG | 0.01492 | 0.015487 | 0.014495 | 1.33 | 85% | `genesis_momentum_blend` | +4.6% | Genesis score 7/10: ST=bull ADX=2 RSI=57 mom5=2.7% |
+| 9 | ENSOUSDT | LONG | 0.905 | 0.944 | 0.87575 | 1.33 | 85% | `genesis_momentum_blend` | +3.5% | Genesis score 7/10: ST=bull ADX=2 RSI=64 mom5=2.8% |
+| 10 | LISTAUSDT | LONG | 0.0702 | 0.073029 | 0.068079 | 1.33 | 85% | `genesis_momentum_blend` | -10.7% | Genesis score 7/10: ST=bull ADX=2 RSI=37 mom5=2.9% |
+| 11 | ZBTUSDT | LONG | 0.0836 | 0.086614 | 0.081339 | 1.33 | 80% | `genesis_momentum_blend` | +4.5% | Genesis score 6/10: ST=bull ADX=2 RSI=53 mom5=1.2% |
+| 12 | MORPHOUSDT | LONG | 2.531 | 2.6013 | 2.4783 | 1.33 | 80% | `genesis_momentum_blend` | +4.2% | Genesis score 6/10: ST=bull ADX=1 RSI=52 mom5=2.1% |
+| 13 | MOVRUSDT | LONG | 0.826 | 0.862286 | 0.798786 | 1.33 | 80% | `genesis_momentum_blend` | -10.6% | Genesis score 6/10: ST=bull ADX=2 RSI=45 mom5=1.3% |
+| 14 | HEMIUSDT | LONG | 0.01541 | 0.0175 | 0.013843 | 1.33 | 75% | `genesis_momentum_blend` | +35.1% | Genesis score 5/10: ST=bull ADX=7 RSI=70 mom5=-2.0% |
+| 15 | 0GUSDT | LONG | 0.187 | 0.204386 | 0.173961 | 1.33 | 75% | `genesis_momentum_blend` | +14.7% | Genesis score 5/10: ST=bull ADX=5 RSI=69 mom5=0.3% |
