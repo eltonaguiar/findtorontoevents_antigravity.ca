@@ -25,6 +25,7 @@ ADAUSDT LONG is the test case for the "operator-review sidecar" pattern — the 
 | tools/operator_review_seed.json | NEW (~3.2KB) | Hand-curated 2-pick seed (operator edits nightly before 07 UTC commit). |
 | audit_dashboard/dashboard_enhancements.js | MODIFIED (~1178 lines; +90 LOC; 9 functions preserved) | ADDS `renderOperatorReviewToday()` async fn — fail-closed fetch from operator_review_today.json + amber-striped MANUAL CANDIDATES card panel. PRESERVES all 8 pre-existing functions (System Trends, Strategy Consensus, Time-Window Leaderboard, DB Health, Top-N Backtest, ML Gatekeeper A/B, EAGLE2, Commodity Tooltips). |
 | .github/workflows/operator-review-today.yml | NEW (~8KB) | Daily cron `0 7 * * *` UTC + manual workflow_dispatch. Concurrency group `dashboard-publish` (shared with audit-dashboard). Validates schema before commit, retries push up to 5x. |
+| tests/test_no_sizing_consumer.py | NEW (~190L) | Pre-merge contract: any *.py under tools/ + audit_trail/ + alpha_engine/ that reads operator_review_today.json MUST reference operator_review_only OR carry # allowed: operator-review consumer. Catches Q7c papercut. |
 | updates/2026-06-22-operator-review-today-panel.md | NEW (this file) | Documentation per AGENTS.md "Document Every Fix" rule. |
 
 ## Why
@@ -75,3 +76,20 @@ ENAUSDT SHORT sits on the `luxalgo_short` cell of `entry_conditions_forward.json
 - **Manual override:** Operator can edit `audit_dashboard/data/operator_review_today.json` directly for same-day edits; next daily cron overwrites.
 - **Audit trail:** Operator accept/reject decisions go to `audit_dashboard/data/operator_review_dismissed.json` (TODO: `tools/build_dismissed_audit.py` to write to that file on operator click events).
 - **Spec lineage:** Mirrors the `crypto_rsi5070_us_forward_status.json` shadow-sidecar pattern (audit_dashboard/data/crypto_rsi5070_us_forward_status.json) — that one tracks a single forward-tracking lead; this one tracks the operator's daily manual candidates.
+
+## Contract enforcement
+
+Sidecar isolation discipline is enforced as a fail-closed gate by `tests/test_no_sizing_consumer.py`, wired into this cron as a step AFTER the JSON validate + BEFORE the commit:
+
+| Layer | Behavior |
+|---|---|
+| **Payload contract** | `audit_dashboard/data/operator_review_today.json` must carry `_schema_note` (string) AND `operator_review_only` (strict `True` boolean, not just truthy) — these are the human-readable + machine-readable gate that fail-closed consumers read |
+| **Unguarded-reader scan** | Any `*.py` under `tools/` + `audit_trail/` + `alpha_engine/` that opens the sidecar must EITHER reference the `operator_review_only` gate-flag string OR carry a `# allowed: operator-review consumer` line marker. Exempt: the writer (`tools/build_operator_review_today.py`) + the test file itself |
+| **Cron-mode fail-closed** | When the workflow step sets `OPERATOR_REVIEW_CRON_MODE: "1"` at its env block (scoped to that one step only — not workflow-env, not job-env), a missing sidecar AFTER the build step ran becomes a hard `pytest.fail()` (not a graceful `pytest.skip()`). The step runs `python3 -m pytest tests/test_no_sizing_consumer.py -v --tb=short` AFTER `pip install pytest` |
+
+Pre-merge gates this catches: dummy consumer scripts that silently re-ingest the sidecar as a sizing surface; build scripts that silently drop the payload (`--apply` writes empty seed → empty panel); schema drift that strips the `_schema_note` / `operator_review_only` keys.
+
+This addresses two papercuts from the same code-review:
+
+1. **Q7c** — `_schema_note` was a docstring-only contract previously; now it's a pre-merge test.
+2. **(implicit)** — without the cron-mode env var, the test's `pytest.skip("sidecar missing")` would mask a regression in the cron flow (build ran but sidecar absent). The env var converts that skip into a fail pre-commit.
