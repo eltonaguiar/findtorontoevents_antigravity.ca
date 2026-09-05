@@ -1,10 +1,10 @@
 # COMMODITY research P2 — CANDIDATES swarm briefing
 
-You are one of 3 AI engines running P2 of the COMMODITY research pipeline. P1 produced 20 raw citations; 6 passed HEAD-check verification and are included verbatim below.
+You are one of 3 AI engines running P2 of the COMMODITY research pipeline. P1 produced 20 raw citations; 5 passed HEAD-check verification and are included verbatim below.
 
-Engine vote weights from P1: deepseek 0.5x, xai 0.0x.
+Engine vote weights from P1: deepseek 0.0x, xai 0.0x.
 
-## P1 verified citations (6)
+## P1 verified citations (5)
 
 ```json
 {
@@ -40,14 +40,6 @@ Engine vote weights from P1: deepseek 0.5x, xai 0.0x.
       "year": "2013",
       "claim": "Commodity momentum (both time-series and cross-sectional) is a robust factor across 1972-2011, with average monthly return of 0.8% and Sharpe ratio 0.6, partially explained by business cycle risk.",
       "evidence_strength": "peer-reviewed"
-    },
-    {
-      "url": "https://www.bis.org/publ/work732.pdf",
-      "title": "Commodity index investing and commodity futures prices",
-      "author": "Hamilton, J.D. and Wu, J.C.",
-      "year": "2018",
-      "claim": "Commodity index roll yield (carry) explains 40% of commodity futures returns from 2000-2016, with backwardation providing positive returns and contango negative returns.",
-      "evidence_strength": "empirical"
     },
     {
       "url": "https://www.aqr.com/Insights/Research/Journal-Article/Superstar-Investors",

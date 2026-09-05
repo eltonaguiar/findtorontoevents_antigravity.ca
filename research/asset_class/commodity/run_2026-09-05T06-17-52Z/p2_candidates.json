@@ -1,0 +1,84 @@
+[
+  {
+    "spec_id": "commodity_ts_momentum_gold_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long GLD when 30d return > 0 AND 60d SMA of GLD is rising",
+    "exit": "close position when 30d return <= 0 OR after 90 days",
+    "sizing": "allocate 2% of portfolio equity to each GLD trade (fixed fractional)",
+    "universe": [
+      "GLD"
+    ],
+    "regime_filter": "skip when 30d rolling volatility of GLD > 2.0%",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum-in-Commodities"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_cross_sectional_momentum_v1",
+    "asset_class": "COMMODITY",
+    "entry": "at month start compute 60d total return for each ETF in ['GLD','SLV','PPLT','PALL','CPER','DBA']; go long top 2 and short bottom 2",
+    "exit": "rebalance monthly, closing all positions at month end",
+    "sizing": "equal risk weight to each leg targeting 10% annualized portfolio volatility",
+    "universe": [
+      "GLD",
+      "SLV",
+      "PPLT",
+      "PALL",
+      "CPER",
+      "DBA"
+    ],
+    "regime_filter": "skip month when 30d rolling volatility of SPY > 1.5%",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_carry_value_gold_silver_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long GLD when price < 0.95 * 200d SMA AND short GLD when price > 1.05 * 200d SMA; same rule for SLV",
+    "exit": "close when price crosses its 200d SMA",
+    "sizing": "fixed 1% of portfolio equity per leg (long or short)",
+    "universe": [
+      "GLD",
+      "SLV"
+    ],
+    "regime_filter": "skip when 30d rolling volatility of GLD or SLV > 2.5%",
+    "source_refs": [
+      "https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_energy_momentum_carry_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long CPER when 30d return > 0 AND CPER price > 12-month SMA (proxy for backwardation)",
+    "exit": "close when 30d return <= 0 OR CPER price falls below 12-month SMA",
+    "sizing": "scale to target 8% annualized portfolio volatility",
+    "universe": [
+      "CPER"
+    ],
+    "regime_filter": "skip when VIX (proxied by 30d SPY volatility) > 25",
+    "source_refs": [
+      "https://www.bis.org/publ/work853.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_agri_momentum_value_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long DBA when 60d return > 0 AND DBA price < 0.97 * 200d SMA",
+    "exit": "close when 60d return <= 0 OR price crosses above 200d SMA",
+    "sizing": "fixed 2% of portfolio equity per trade",
+    "universe": [
+      "DBA"
+    ],
+    "regime_filter": "skip when 30d rolling volatility of DBA > 2.0% OR when 30d SPY volatility > 1.5%",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective",
+      "https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  }
+]
