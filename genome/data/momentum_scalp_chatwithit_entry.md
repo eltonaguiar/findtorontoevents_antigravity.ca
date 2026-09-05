@@ -1,11 +1,11 @@
-### Momentum Scalp Scanner (2026-09-05 04:01 UTC)
+### Momentum Scalp Scanner (2026-09-05 08:01 UTC)
 
 **New symbols scanned:** 4 gainers + 4 bounce candidates
 **Picks generated:** 4
 
 | # | Symbol | Dir | Entry | TP | SL | R:R | Conf | Strategy | 24h% | Reason |
 |---|--------|-----|-------|----|----|-----|------|----------|------|--------|
-| 1 | DASHUSDT | LONG | 66.76 | 72.04 | 62.8 | 1.33 | 90% | `genesis_momentum_blend` | +29.0% | Genesis score 9/10: ST=bull ADX=4 RSI=88 mom5=6.9% |
-| 2 | DASHUSDT | LONG | 66.76 | 72.04 | 62.8 | 1.33 | 90% | `genesis_momentum_blend` | +29.0% | Genesis score 9/10: ST=bull ADX=4 RSI=88 mom5=6.9% |
-| 3 | ZECUSDT | LONG | 1025.09 | 1064.23 | 995.7382 | 1.33 | 55% | `ema_momentum_volume` | +8.3% | EMA stack aligned (9>1021.0804 > 21>1005.8198 > 50) vol=0.0x |
-| 4 | ZECUSDT | LONG | 1025.09 | 1064.23 | 995.7382 | 1.33 | 55% | `ema_momentum_volume` | +8.3% | EMA stack aligned (9>1021.0804 > 21>1005.8198 > 50) vol=0.0x |
+| 1 | DASHUSDT | LONG | 65.29 | 71.5086 | 60.6261 | 1.33 | 55% | `ema_momentum_volume` | +29.6% | EMA stack aligned (9>66.3627 > 21>61.9825 > 50) vol=0.0x RSI |
+| 2 | ZECUSDT | LONG | 1001.96 | 1027.86 | 982.5361 | 1.33 | 55% | `ema_momentum_volume` | +3.5% | EMA stack aligned (9>1012.3498 > 21>1006.0993 > 50) vol=0.0x |
+| 3 | DASHUSDT | LONG | 65.29 | 71.5086 | 60.6261 | 1.33 | 55% | `ema_momentum_volume` | +29.6% | EMA stack aligned (9>66.3627 > 21>61.9825 > 50) vol=0.0x RSI |
+| 4 | ZECUSDT | LONG | 1001.96 | 1027.86 | 982.5361 | 1.33 | 55% | `ema_momentum_volume` | +3.5% | EMA stack aligned (9>1012.3498 > 21>1006.0993 > 50) vol=0.0x |
