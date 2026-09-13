@@ -1,21 +1,124 @@
 {
   "metadata": {
-    "timestamp": "2026-09-12T21:26:40.676184+00:00",
+    "timestamp": "2026-09-13T00:27:38.318717+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 4,
+    "mutations_triggered": 3,
+    "mutations_silent": 2,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_rapid_fire_mutations"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "rapid_momentum_filter_mut",
+      "symbol": "SUIUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.7281,
+      "take_profit": 0.739185,
+      "stop_loss": 0.719786,
+      "confidence": 0.8,
+      "risk_reward": 1.33,
+      "reason": "RapidFire MACD-confirmed: BUY, histogram=0.000546 (accelerating) \u2014 momentum confirmed",
+      "timestamp": "2026-09-13T00:27:38.307156+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "momentum_filter",
+      "macd_histogram": 0.00054589,
+      "histogram_accelerating": true,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "rapid_rsi_filter_mut",
+      "symbol": "SUIUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.7281,
+      "take_profit": 0.739185,
+      "stop_loss": 0.719786,
+      "confidence": 0.4932,
+      "risk_reward": 1.33,
+      "reason": "RapidFire RSI-filtered: BUY, RSI=52.0 (<60 room to run) \u2014 not chasing extremes",
+      "timestamp": "2026-09-13T00:27:38.315836+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "rsi_filter",
+      "rsi_14": 52.0,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "rapid_rsi_filter_mut",
+      "symbol": "TRXUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.3402,
+      "take_profit": 0.341561,
+      "stop_loss": 0.339179,
+      "confidence": 0.4792,
+      "risk_reward": 1.33,
+      "reason": "RapidFire RSI-filtered: BUY, RSI=54.1 (<60 room to run) \u2014 not chasing extremes",
+      "timestamp": "2026-09-13T00:27:38.317877+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "rsi_filter",
+      "rsi_14": 54.1,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "rapid_trend_only_mut",
+      "symbol": "TRXUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.3402,
+      "take_profit": 0.341561,
+      "stop_loss": 0.339179,
+      "confidence": 0.4387,
+      "risk_reward": 1.33,
+      "reason": "RapidFire trend-only: BUY with 200-EMA trend, price above EMA200=$0.3370 (0.94% distance) \u2014 no counter-trend trades",
+      "timestamp": "2026-09-13T00:27:38.303949+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "trend_filter",
+      "ema_200": 0.337043,
+      "trend_distance": 0.0094,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "rapid_trend_only_mut",
+      "parent": "rapid_fire",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "rapid_momentum_filter_mut",
+      "parent": "rapid_fire",
+      "mutation": "momentum_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "rapid_rsi_filter_mut",
+      "parent": "rapid_fire",
+      "mutation": "rsi_filter",
+      "picks": 2
+    }
+  ],
   "mutations_silent": [
-    "rapid_trend_only_mut",
-    "rapid_momentum_filter_mut",
     "rapid_volume_gate_mut",
-    "rapid_top10_only_mut",
-    "rapid_rsi_filter_mut"
+    "rapid_top10_only_mut"
   ]
 }
