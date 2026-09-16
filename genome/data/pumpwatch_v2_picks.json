@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-09-16T09:21:24.939559+00:00",
+    "timestamp": "2026-09-16T12:24:41.719098+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 3,
+    "mutations_triggered": 3,
+    "mutations_silent": 2,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -12,13 +12,101 @@
     "version": "v2",
     "focus": "loss_prevention"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "symbol": "DOTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.98,
+      "take_profit": 1.0046,
+      "stop_loss": 0.961573,
+      "confidence": 0.7609,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 momentum: vol=3.3x + 3-bar momentum=2.30%, 4 green bars \u2014 continuation confirmed, not dead cat",
+      "timestamp": "2026-09-16T12:24:41.716774+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "momentum_continuation",
+      "volume_ratio": 3.3,
+      "momentum_3d": 0.023,
+      "green_bars": 4,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_large_cap_only_v2",
+      "symbol": "DOTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.98,
+      "take_profit": 1.0046,
+      "stop_loss": 0.961573,
+      "confidence": 0.7213,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 large-cap: DOTUSDT (top-10), vol=3.3x, RSI=59.7, price > SMA20 \u2014 high-quality universe only",
+      "timestamp": "2026-09-16T12:24:41.713745+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "large_cap_filter",
+      "volume_ratio": 3.3,
+      "rsi_14": 59.7,
+      "is_top10": true,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "DOTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.98,
+      "take_profit": 1.0046,
+      "stop_loss": 0.961573,
+      "confidence": 0.5717,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=3.3x, price $0.9800 > EMA50=$0.9767 > EMA20=$0.9602  \u2014 uptrend pump only",
+      "timestamp": "2026-09-16T12:24:41.703001+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 3.3,
+      "ema_50": 0.976734,
+      "ema_20": 0.960243,
+      "ema_aligned": false,
+      "trend_strength": 0.0033,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_large_cap_only_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "large_cap_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "momentum_continuation",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
     "pump_btc_correlated_v2",
-    "pump_large_cap_only_v2",
-    "pump_momentum_continuation_v2",
     "pump_fear_greed_filter_v2"
   ]
 }
