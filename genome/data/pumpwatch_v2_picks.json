@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-09-20T00:27:08.878874+00:00",
+    "timestamp": "2026-09-20T03:48:57.315010+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 2,
+    "mutations_triggered": 2,
+    "mutations_silent": 3,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -12,13 +12,73 @@
     "version": "v2",
     "focus": "loss_prevention"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "symbol": "ARBUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.217,
+      "take_profit": 0.229256,
+      "stop_loss": 0.207808,
+      "confidence": 0.8308,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 momentum: vol=3.5x + 3-bar momentum=7.43%, 1 green bars \u2014 continuation confirmed, not dead cat",
+      "timestamp": "2026-09-20T03:48:57.314142+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "momentum_continuation",
+      "volume_ratio": 3.45,
+      "momentum_3d": 0.0743,
+      "green_bars": 1,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "ARBUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.217,
+      "take_profit": 0.229256,
+      "stop_loss": 0.207808,
+      "confidence": 0.7435,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=3.5x, price $0.2170 > EMA50=$0.2046 > EMA20=$0.2086 (EMA stack aligned) \u2014 uptrend pump only",
+      "timestamp": "2026-09-20T03:48:57.303984+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 3.45,
+      "ema_50": 0.204623,
+      "ema_20": 0.208584,
+      "ema_aligned": true,
+      "trend_strength": 0.0605,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "momentum_continuation",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
     "pump_btc_correlated_v2",
     "pump_large_cap_only_v2",
-    "pump_momentum_continuation_v2",
     "pump_fear_greed_filter_v2"
   ]
 }
