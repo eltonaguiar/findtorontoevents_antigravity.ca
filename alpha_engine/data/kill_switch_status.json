@@ -1,8 +1,8 @@
 {
-  "is_killed": false,
-  "kill_reason": "5 consecutive losses across all strategies",
-  "severity": "critical",
-  "recommended_action": "pause_new_entries",
+  "is_killed": true,
+  "kill_reason": "7 consecutive losses across all strategies",
+  "severity": "emergency",
+  "recommended_action": "close_all",
   "conditions": [
     {
       "condition": "feature_health_collapse",
@@ -10,10 +10,15 @@
       "detail": "Dead features: 30/32 (94%) -- health_score=0.06"
     },
     {
-      "condition": "consecutive_losses",
+      "condition": "drawdown_spike",
       "severity": "critical",
-      "detail": "5 consecutive losses across all strategies"
+      "detail": "Recent DD=-21.84% exceeds 2x historical 95th pctile (-6.00%)"
+    },
+    {
+      "condition": "consecutive_losses",
+      "severity": "emergency",
+      "detail": "7 consecutive losses across all strategies"
     }
   ],
-  "checked_at": "2026-09-22T12:27:19.021001+00:00"
+  "checked_at": "2026-09-22T14:18:34.568073+00:00"
 }
