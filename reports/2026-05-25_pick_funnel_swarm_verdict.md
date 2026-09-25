@@ -1,8 +1,8 @@
-# Pick Funnel Swarm Verdict — 2026-09-24 04:10 UTC
+# Pick Funnel Swarm Verdict — 2026-09-25 04:10 UTC
 
 Source: `tools/audit_pick_funnel/run_swarm_verdict.py` (deepseek + xai + cerebras + gemini consult on top_edges_per_class.json).
 
-Swarm run dir: `swarm_runs/pick_funnel_20260924T041031Z`
+Swarm run dir: `swarm_runs/pick_funnel_20260925T041040Z`
 
 ## Per-engine raw responses
 
@@ -12,156 +12,155 @@ Swarm run dir: `swarm_runs/pick_funnel_20260924T041031Z`
 
 ### deepseek  (verdict=COMMENT_ONLY, confidence=LOW)
 
-# Audit Pick-Funnel Verdict — 90-day edge analysis
+# Audit Pick-Funnel Verdict — 90-day Edge Analysis
 
-Before the per-class verdicts, three structural facts that dominate everything below:
+Before the per-class verdicts, three structural facts dominate everything below:
 
-1. **The funnel is broken at the top.** `passed_high_conviction = 0` for **every** asset class. The HC gate (`score>=80, conf>=0.75, trust>=60`) is dead code in production. Every "HC" number in this report is a null result, not a filter result.
-2. **`passed_verified_alpha` is 0 for 8 of 10 classes.** Only CRYPTO (1776) and FUTURES/MEME (1 each) ever clear it. The verified-alpha gate is effectively a CRYPTO-only gate.
-3. **`opened` ≈ `scanned` in every class.** The "Smart" floor is not filtering — it's a rubber stamp. FOREX: 22,838 scanned → 21,548 opened (94%). COMMODITY: 6,171 → 6,048 (98%). The funnel is a straight pipe with a decorative label.
-
-The "PROVEN" cells below are almost all **the same 70 EQUITY trades re-sliced three ways** and **the same 191 CRYPTO trades re-sliced three ways**. That is not three edges. That is one edge, viewed from three angles, with Bonferroni applied to the wrong family.
+1. **`passed_high_conviction = 0` in every single class.** The HC gate (`score>=80, conf>=0.75, trust>=60`) is dead code in production. Every "edge" you're about to read about is *below* your own HC bar. That's the headline.
+2. **`passed_verified_alpha` is 0 for 8 of 10 classes.** Only CRYPTO (1791) and a trickle of FOREX/FUTURES/MEME have any verified-alpha flow. The funnel is essentially Smart-Picks-only.
+3. **`trust=UNK` dominates every "PROVEN" cell.** The trust dimension is not discriminating — it's a constant. Any cell that includes `trust=UNK` is really just the other dims.
 
 ---
 
 ### INDEX
-- Real/noise verdict: **Noise / no data.** n_closed=5, WR=20%, no PROVEN cells, no best_pf cells. `passed_smart=1440/1638` (88%) but only 8 closed — the class is opening trades and never resolving them. This is a data-pipeline problem, not an edge problem. Do not trade.
-- 90d expected P&L (1% risk, $100k): **-$1,200** (5 decisive trades × 1% × -20% WR edge × ~1.2R avg loss; statistically meaningless, n=5).
-- Gate change: `SMART_PICKS_MIN_SCORE_INDEX` — **raise to 85** until close-rate > 30%. Right now the gate is irrelevant because nothing closes.
+- Real/noise verdict: **Noise / no edge.** n_closed=5. WR 20% on 5 trades is statistically meaningless (95% CI roughly 0.5%–71%). `passed_smart=1519` of 1717 scanned (88%) means the Smart floor is not filtering INDEX at all — it's a rubber stamp. 1709 opened vs 8 closed means 99.5% of "opened" positions never resolved in 90d, which is itself a data-integrity red flag (stale open positions inflating the funnel).
+- 90d expected P&L (1% risk, $100k): **-$400** (5 decisive trades × 1% × -0.8R avg, but honestly the sample is too small to quote a number — treat as $0 ± noise).
+- Gate change: `SMART_PICKS_MIN_SCORE_INDEX` → raise to **75** (currently effectively ~0 given 88% pass rate). If no INDEX cell clears n>=20 in 90d, the correct move is to **stop opening INDEX picks entirely** until the scanner produces resolvable signals.
 - Confidence (1-5): **1**
 
+### COMMODITY
+- Real/noise verdict: **Noise.** No PROVEN cells. Best PF cell (`rr=RR1.5-2.0 & score_dec=S50 & source=alpha_engine`) has train_pf=10.6, holdout_pf=0.68 — textbook **overfit that failed holdout**. WR_shrunk=50.0 exactly, wr_z=0.0, bonferroni_pass=false. This is the shape of a cell that got lucky on 12 train trades. Also note H-001 (COT leakage) and H-036 (inventory direction) are already falsified — do not chase commodity "edges" here.
+- 90d expected P&L (1% risk, $100k): **-$1,320** (116 decisive × 1% × -0.114R avg from 43.1% WR at ~1:1 R:R).
+- Gate change: `SMART_PICKS_MIN_SCORE_COMMODITY` → raise to **72**. 3599/6140 = 58.6% pass rate is too loose. Also add a hard `source != 'cot_positioning'` exclusion given H-001.
+- Confidence (1-5): **2** (confident it's noise)
+
 ### BOND
-- Real/noise verdict: **Negative edge, confirmed.** Best cell is `trust=UNK & dir=LONG & source=bond_scanner`: n=20, WR=10%, PF=0.053, holdout_pf=0.325, holdout_pass=false. This is not noise — it's a *reliable loser*. WR_shrunk=30% is still below breakeven for any R:R < 2.3. `passed_smart=7/502` (1.4%) — the Smart floor is correctly rejecting 98.6% of BOND, but the 7 that pass are still opening 475 trades. The gate is being bypassed downstream.
-- 90d expected P&L (1% risk, $100k): **-$4,800** (27 closed × 1% × -0.36% avg PnL × ~50x notional scaling; the -0.36% avg_pnl on 1% risk ≈ -0.36R per trade × 27 = -9.7R ≈ -$9,700, but sizing is unclear — call it **-$5k to -$10k**).
-- Gate change: `SMART_PICKS_MIN_SCORE_BOND` — **set to 999 (hard disable)**. BOND has no edge and a confirmed negative cell. Per MUTATION_THREE_AXIS_PROTOCOL, this is a demote-to-shadow candidate, not a tune.
-- Confidence (1-5): **5** (that it's a loser)
+- Real/noise verdict: **Noise, and one actively bad cell.** `trust=UNK & dir=LONG & source=bond_scanner` has n=20, WR=10%, PF=0.052, wr_z=-3.58. That's a *statistically significant loser*. The other cell (`score_dec=S50`) has train_pf=0.25, holdout_pf=3.75 — sign flip, no edge. `passed_smart=6` of 525 scanned (1.1%) means the Smart floor is doing its job on BOND, but the 492 opened trades are coming from somewhere else (probably a bypass path).
+- 90d expected P&L (1% risk, $100k): **-$1,320** (33 decisive × 1% × -0.4R avg).
+- Gate change: **Kill `source=bond_scanner` for LONG direction** — add to `quality_gates.py` a `BLOCKED_SOURCES_BOND = {'bond_scanner'}` or equivalent. This is the single highest-confidence negative signal in the whole dataset.
+- Confidence (1-5): **4** (confident bond_scanner LONG is a loser)
 
 ### FOREX
-- Real/noise verdict: **Noise, and the "best" cell is a mirage.** The `multi_asset_copytrader` cell (n=46, WR=58.7%, PF=2.838) has `train_pf=0.995, train_n=15, holdout_pf=4.328, holdout_n=31, holdout_pass=false`. The train set is a coin flip; the holdout is 31 trades. This is the classic **single-source concentration** pattern — `multi_asset_copytrader` is one strategy family, likely one signal generator, and the 31 holdout trades are probably clustered in time. `wr_z=1.18` is not significant. `bonferroni_pass=false`. **Do not trade this.** The class-level WR of 43.78% on n=482 is the honest number, and it's below breakeven for typical FX R:R.
-- 90d expected P&L (1% risk, $100k): **-$2,400** (482 decisive × 1% × (0.4378 - 0.5) × ~1.5R avg = -0.093R/trade × 482 ≈ -45R ≈ -$4,500; haircut for slippage → **-$3k to -$5k**).
-- Gate change: `SMART_PICKS_MIN_SCORE_FOREX` — **raise from current to 75**, and add a `MAX_TRADES_PER_SOURCE_PER_DAY` cap of 3 for `multi_asset_copytrader`. The 21,548 opened trades from 22,838 scanned is the real problem — the scanner is firing on nearly every bar.
-- Confidence (1-5): **4** (that it's noise)
-
-### CRYPTO
-- Real/noise verdict: **The only cell in the entire report that survives scrutiny — with caveats.** `conf=C0.75-0.80 & score_dec=S50 & source=alpha_engine`: n=191, WR=74.87%, WR_shrunk=72.51%, PF=3.738, train_pf=3.6 (n=156), holdout_pf=4.195 (n=35), holdout_pass=true, wr_z=6.874, bonferroni_pass=true. This is real. **BUT**: (a) the three "PROVEN" cells are the same 191 trades with `dir=LONG` and `trust=UNK` added as redundant dimensions — `trust=UNK` is true for 100% of the sample, so it adds zero information; (b) `source=alpha_engine` is the house scanner, so this is "our own signal works when confidence is 0.75-0.80 and score_dec=S50" — that's a narrow, possibly overfit band; (c) PF=3.7 on crypto with 1.43% avg PnL per trade is plausible for a 90d bull regime, but **regime-dependent**. The `ml` cell you flagged isn't in this data — the suspicious number here is `alpha_engine`, and it's suspicious because it's *too clean*, not because it's leakage. Check: are the 191 trades concentrated in <10 symbols? If yes, this is single-symbol concentration and should be demoted.
-- 90d expected P&L (1% risk, $100k): **+$18,000 to +$22,000** (191 trades × 1% × 1.43% avg PnL × ~7x effective notional from R:R ≈ +$19k; haircut 15% for slippage/fees on crypto → **+$16k to +$19k**). This assumes the 191-trade cell is tradeable in isolation, which requires the gate change below.
-- Gate change: `SMART_PICKS_MIN_SCORE_CRYPTO` — **set to 50** (currently likely lower, given 3,217/12,530 = 25.7% pass rate). Tightening to 50 would cut the 10,082 opened trades down to roughly the 191-trade cell plus a margin, and would make `passed_verified_alpha` the *actual* gate rather than a post-hoc label. Also: add `MAX_SYMBOL_CONCENTRATION=0.15` to `hc_filter.js` so no single symbol can exceed 15% of the HC book.
-- Confidence (1-5): **4** (real edge, but regime- and concentration-fragile)
-
-### EQUITY
-- Real/noise verdict: **Almost certainly leakage or a data artifact.** The cell `trust=UNK & fam=mean_reversion & score_dec=S40`: n=70, WR=98.57%, WR_shrunk=87.78%, PF=223.9, avg_pnl=1.27%, train_pf=116, holdout_pf=99, wr_z=8.127. **PF of 224 is not a real trading edge.** No mean-reversion strategy on equities produces 69 wins in 70 trades with 1.27% avg PnL. This is one of: (a) look-ahead in the `score_dec=S40` bucket (S40 = score decile 40, which may be computed post-hoc), (b) a single-symbol or single-day cluster, (c) a PnL calculation bug where losers are being dropped before the cell is formed. The fact that all three "PROVEN" cells are the same 70 trades with `conf=C<0.60` and `dir=LONG` as redundant dims confirms this is one artifact, not three edges. **Treat as falsified until proven otherwise.** Note: this is exactly the pattern that H-001 (COT leakage) exhibited — 85% single-instrument concentration, PF inflated by a factor of ~100x.
-- 90d expected P&L (1% risk, $100k): **$0 — do not trade.** If the artifact were real, it would be +$89k (70 × 1% × 1.27% × ~100x notional), which is itself the tell that it's not real.
-- Gate change: `SMART_PICKS_MIN_SCORE_EQUITY` — **raise to 70** and add a hard `MAX_SINGLE_SYMBOL_PCT=0.10` in `hc_filter.js`. The 256/5,580 = 4.6% Smart pass rate is the only healthy-looking number in the report; the problem is the 5,406 opened trades downstream.
-- Confidence (1-5): **5** (that it's an artifact)
-
-### COMMODITY
-- Real/noise verdict: **Noise with a regime flip.** Best cell `rr=RR1.5-2.0 & score_dec=S50 & source=alpha_engine`: n=27, WR=51.85%, PF=4.789, but `train_pf=12.427 (n=13), holdout_pf=0.595 (n=14), holdout_pass=false`. The train/holdout split is a textbook overfit — PF collapses from 12.4 to 0.6 out of sample. `wr_z=0.192` is indistinguishable from zero. Class-level WR=44.26% on n=122. **No edge.** Also note H-001 and H-036 both killed COMMODITY signals; this is consistent.
-- 90d expected P&L (1% risk, $100k): **-$1,500** (122 decisive × 1% × (0.4426 - 0.5) × ~1.5R ≈ -10.5R ≈ -$1,050; with slippage → **-$1k to -$2k**).
-- Gate change: `SMART_PICKS_MIN_SCORE_COMMODITY` — **raise to 80**, and add a `MIN_HOLDOUT_PF=1.2` requirement before any COMMODITY cell is promoted to HC. The current gate lets 3,632/6,171 = 58.9% through, which is why the class is bleeding.
-- Confidence (1-5): **4** (that it's noise)
-
-### FUTURES
-- Real/noise verdict: **Insufficient data.** n_closed=19, no PROVEN cells, no best_pf cells. `passed_verified_alpha=1` out of 168 scanned. H-005 already killed the futures momentum signal. Do not trade.
-- 90d expected P&L (1% risk, $100k): **-$300** (19 decisive × 1% × (0.3684 - 0.5) × ~1.5R ≈ -3.7R ≈ -$370).
-- Gate change: `SMART_PICKS_MIN_SCORE_FUTURES` — **set to 999 (hard disable)** until n_closed > 100. The class is too thin to gate meaningfully.
-- Confidence (1-5): **2** (that it's noise — but n is too small to be confident in anything)
-
-### UNKNOWN
-- Real/noise verdict: **Data hygiene failure.** 1,411 scanned, 1,403 opened, 8 closed, 0 wins, 8 losses. WR=0%. This is not an asset class — it's a routing bug. Every trade in this bucket should be quarantined and the classifier fixed before any edge analysis is meaningful.
-- 90d expected P&L (1% risk, $100k): **-$800** (8 × 1% × -1.0R × ~1.0 = -8R ≈ -$800).
-- Gate change: Add `ASSET_CLASS_REQUIRED=True` to `production_scanner.py` — reject any pick that doesn't resolve to a known class. This is a one-line fix that eliminates 1,403 phantom trades.
-- Confidence (1-5): **5** (that it's a bug)
-
-### MEME
-- Real/noise verdict: **Insufficient data.** n_closed=4. `passed_verified_alpha=1` out of 21. No PROVEN cells. Do not trade.
-- 90d expected P&L (1% risk, $100k): **-$100** (4 × 1% × (0.25 - 0.5) × ~1.5R ≈ -1.5R ≈ -$150).
-- Gate change: `SMART_PICKS_MIN_SCORE_MEME` — **set to 999 (hard disable)** until n_closed > 50. MEME is a noise generator at this sample size.
+- Real/noise verdict: **Mostly noise, one borderline cell.** The `multi_asset_copytrader` LONG RR1.0-1.5 cell has n=46, WR_shrunk=56.1%, PF=2.84, holdout_pass=true — but **bonferroni_pass=false** and wr_z=1.18. That's a ~1.2σ result across a search space of dozens of cells. Expected false-positive rate at that z across ~50 cells is high. The PF=2.84 is driven by a few large winners (avg_pnl 0.34% with 58.7% WR implies fat right tail). **Not proven.** Also: 21779/22763 = 95.7% Smart pass rate — the Smart floor is not filtering FOREX at all.
+- 90d expected P&L (1% risk, $100k): **-$1,080** (486 decisive × 1% × -0.11R avg from 44.65% WR). If you *only* traded the copytrader LONG cell: ~+$1,600 on 46 trades, but with bonferroni=false I would not size to it.
+- Gate change: `SMART_PICKS_MIN_SCORE_FOREX` → raise to **70** (from effective ~0). 95.7% pass rate is the single biggest funnel leak in the system.
 - Confidence (1-5): **2**
 
+### EQUITY
+- Real/noise verdict: **The 98.55% WR cell is almost certainly leakage or single-symbol concentration.** n=69, wins=68, PF=220.8, wr_z=8.07. A PF of 220 is not a real trading edge — it's either (a) one symbol that gapped and got marked as 69 correlated trades, (b) a look-ahead in the `score_dec=S40` bucket (S40 is a *low* score decile — why would the lowest-scoring decile have the highest WR?), or (c) a mean_reversion family that's marking-to-market on intraday noise. The fact that `trust=UNK`, `conf=C<0.60`, and `dir=LONG` all produce *identical* n=69/wins=68/PF=220.8 confirms these are the **same 69 trades** sliced three ways — not three independent confirmations. **Do not trade this.** Flag as potential leakage recurrence per H-001 pattern.
+- 90d expected P&L (1% risk, $100k): **+$1,670** on the headline 66.87% WR (166 decisive × 1% × +0.1R avg) — but I'd haircut this to **~$0** because the 68-win cell is suspect and likely dominates the aggregate.
+- Gate change: `SMART_PICKS_MIN_SCORE_EQUITY` → raise to **65** (256/5545 = 4.6% pass rate is actually reasonable, so the leak is downstream). The real fix is in `hc_filter.js`: add a **`maxTradesPerSymbol` cap of 3 per 24h** to prevent the 69-trade single-symbol concentration that's producing the fake PF=220.
+- Confidence (1-5): **2** (confident the 98.55% cell is fake; less confident about the aggregate)
+
+### CRYPTO
+- Real/noise verdict: **The only class with a plausibly real edge — but the PF numbers are still inflated.** The `conf=C0.75-0.80 & score_dec=S50 & source=alpha_engine` cell: n=188, WR_shrunk=72.1%, PF=3.68, train_pf=3.55, holdout_pf=4.11, wr_z=6.71, bonferroni_pass=true. This is the **only cell in the entire dataset that passes Bonferroni**. That said: PF=3.68 on crypto with 72% WR is high but not impossible for a mean-reversion/breakout hybrid in a trending regime. The concern is **regime dependence** — 90d of crypto is one regime. The holdout split (154 train / 34 holdout) is temporal but short. I'd size this at **half-Kelly**, not full.
+- 90d expected P&L (1% risk, $100k): On the proven cell only (188 trades × 1% × ~+0.4R avg): **+$7,500**. On the full CRYPTO book (2412 decisive × 1% × +0.02R avg from 45.6% WR): **+$4,800**. The proven cell is where the money is.
+- Gate change: `SMART_PICKS_MIN_SCORE_CRYPTO` → **lower to 55** *only for* `source=alpha_engine & conf in [0.75, 0.80] & score_dec=S50`, and **raise to 75 for everything else**. This is a two-tier gate, not a single constant. In `hc_filter.js`, the HC threshold of `score>=80` is why `passed_high_conviction=0` — **lower HC score floor to 70 for CRYPTO only**, keep conf>=0.75 and trust>=60.
+- Confidence (1-5): **4**
+
 ### ETF
-- Real/noise verdict: **Negative edge, small n.** n_closed=7, WR=14.29%. No PROVEN cells. `passed_smart=293/333` (88%) — the Smart floor is not filtering ETF at all.
-- 90d expected P&L (1% risk, $100k): **-$250** (7 × 1% × (0.1429 - 0.5) × ~1.5R ≈ -3.75R ≈ -$375).
-- Gate change: `SMART_PICKS_MIN_SCORE_ETF` — **raise to 80**. The 88% pass rate is the problem.
-- Confidence (1-5): **3** (that it's noise)
+- Real/noise verdict: **Noise.** n_closed=7, WR=14.3%. `passed_smart=293/333 = 88%` — Smart floor is a rubber stamp here too. No PROVEN cells, no best_pf cells. Nothing to see.
+- 90d expected P&L (1% risk, $100k): **-$600** (7 decisive × 1% × -0.7R avg).
+- Gate change: `SMART_PICKS_MIN_SCORE_ETF` → raise to **75**, or **disable ETF scanning** until n_closed >= 30. 7 closed trades in 90d is not a strategy, it's a rounding error.
+- Confidence (1-5): **1**
+
+### FUTURES
+- Real/noise verdict: **Noise.** n_closed=17, WR=29.4%. No PROVEN cells. H-005 already falsified the momentum anti-signal. `passed_smart=108/168 = 64%` pass rate is loose.
+- 90d expected P&L (1% risk, $100k): **-$1,200** (17 decisive × 1% × -0.4R avg).
+- Gate change: `SMART_PICKS_MIN_SCORE_FUTURES` → raise to **72**. Also add `min_closed_trades_for_live = 30` guard so FUTURES doesn't open live positions until it has a track record.
+- Confidence (1-5): **2**
+
+### UNKNOWN
+- Real/noise verdict: **Actively broken.** n_closed=7, WR=0.0%, 1401 opened. `passed_smart=179/1408 = 12.7%` — the Smart floor is filtering, but 1401 trades are still opening. This is a **classification bug**: 1408 scanned picks have no asset class. Every one of these should be blocked at ingestion.
+- 90d expected P&L (1% risk, $100k): **-$700** (7 decisive × 1% × -1.0R avg, all losses).
+- Gate change: In `production_scanner.py`, add `if asset_class == 'UNKNOWN': return None` before scoring. **Hard block.** This is not a gate tuning issue, it's a data hygiene issue.
+- Confidence (1-5): **5** (confident this is a bug, not an edge)
+
+### MEME
+- Real/noise verdict: **Noise.** n_closed=4. Nothing to evaluate. `passed_smart=11/21 = 52%`.
+- 90d expected P&L (1% risk, $100k): **-$200** (4 decisive × 1% × -0.5R avg).
+- Gate change: `SMART_PICKS_MIN_SCORE_MEME` → raise to **80** (MEME should be the strictest class, not the loosest). Or disable until n_closed >= 30.
+- Confidence (1-5): **1**
 
 ---
 
 ## SYSTEM-WIDE CONCLUSION
 
-**Scale up TODAY with real money: CRYPTO only, and only the `conf=C0.75-0.80 & score_dec=S50 & source=alpha_engine` cell.** That is the only cell in the entire report that passes holdout, has n>100, has wr_z>6, and has a plausible (not absurd) PF. Expected 90d P&L at 1% risk on $100k: **+$16k to +$19k**. Before scaling, verify the 191 trades are not concentrated in <10 symbols — if they are, halve the size and add the concentration cap.
+**Scale up TODAY with real money: CRYPTO only, and only the `source=alpha_engine & conf∈[0.75,0.80] & score_dec=S50` cell.** It is the only cell in the entire 90-day dataset that passes Bonferroni correction, has a stable train/holdout PF (3.55 → 4.11), and has n=188. Size at **half-Kelly** (not full 1% risk) because the 90d window is one regime. Expected 90d P&L on this cell alone: **~+$7,500 on $100k notional**. Do not scale the rest of CRYPTO — the aggregate 45.6% WR is a loser.
 
-**Demote per MUTATION_THREE_AXIS_PROTOCOL (mutate before kill):**
+**DEMOTE per `docs/MUTATION_THREE_AXIS_PROTOCOL.md` (mutate before kill):**
 
-- **BOND** — confirmed negative cell (PF=0.053, holdout_pass=false). Mutate: flip direction on `bond_scanner` and re-test in shadow for 30d. If flipped WR < 45%, kill.
-- **EQUITY** — PF=224 is an artifact, not an edge. Mutate: recompute `score_dec=S40` with strict point-in-time data and re-run. If PF drops below 2.0, the artifact is confirmed and the cell is killed.
-- **FOREX** — `multi_asset_copytrader` is a single-source concentration risk. Mutate: cap to 3 trades/source/day and re-test. If WR stays < 48%, kill the source.
-- **COMMODITY** — train/holdout PF flip (12.4 → 0.6) is a classic overfit. Mutate: require `MIN_HOLDOUT_PF=1.2` and re-test. If no cell passes, kill the class.
-- **UNKNOWN** — not a class, a bug. Fix the classifier, don't mutate.
-- **INDEX, FUTURES, MEME, ETF** — insufficient n. Shadow only, no capital.
+1. **BOND** — kill `source=bond_scanner` LONG immediately (wr_z=-3.58, PF=0.052). This is a statistically significant loser, not a mutation candidate. Then mutate the remaining BOND pipeline on the `score_dec` axis (S50 is the only decile with any signal, and it's weak).
+2. **EQUITY** — do **not** trade the 98.55% WR cell. It is almost certainly leakage or single-symbol concentration (three identical slices of the same 69 trades). Mutate on the `symbol` axis: add a per-symbol cap and re-run the edge scan. If the cell survives, it's real; if it collapses, it was concentration.
+3. **FOREX** — mutate on the `source` axis. The `multi_asset_copytrader` LONG cell is the only non-noise signal (PF=2.84, holdout_pass=true) but fails Bonferroni. Kill all other FOREX sources and re-test the copytrader cell in isolation with a longer window.
+4. **INDEX, ETF, FUTURES, UNKNOWN, MEME** — **kill the live pipeline** until n_closed >= 30 per class. These are not strategies, they are noise generators. UNKNOWN in particular is a classification bug that should be fixed at ingestion, not gated.
 
-**The single highest-leverage fix is not a gate constant — it's the funnel itself.** `opened ≈ scanned` in every class means the Smart floor is decorative. Fixing `SMART_PICKS_MIN_SCORE_*` to actually bind (target 10-25% pass rate, not 90%+) would cut trade volume by ~5x and would make every downstream metric in this report meaningful. Right now, 90% of what you're measuring is trades that should never have been opened.
+**The single most important fix:** `passed_high_conviction = 0` across all 10 classes means your HC gate is not firing. Either the thresholds in `hc_filter.js` (`score>=80, conf>=0.75, trust>=60`) are miscalibrated against the actual score distribution, or the client-side gate is not being applied server-side. Until that's resolved, the "HIGH CONVICTION" label on the dashboard is decorative. Lower the HC score floor to **70 for CRYPTO** and **75 for everything else**, and verify server-side enforcement.
+
+**Do not invent edges.** Of the 10 classes, 1 has a real edge (CRYPTO, one cell), 1 has a real anti-edge (BOND bond_scanner LONG), and 8 are noise. That's the honest read.
 
 ### xai  (verdict=COMMENT_ONLY, confidence=LOW)
 
-### INDEX
-- Real/noise verdict: Noise — n_closed=5, no proven cells, all metrics unusable.
-- 90d expected P&L (1% risk, $100k): $0 (no edge).
-- Gate change: SMART_PICKS_MIN_SCORE_INDEX = 85
+### EQUITY
+- Real/noise verdict: Noise/leakage (98.55% WR on n=69 mean_reversion S40 is impossible without single-symbol concentration or look-ahead; PF=220.8 is fabrication-level).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: SMART_PICKS_MIN_SCORE_EQUITY = 85
 - Confidence (1-5): 5
-
-### BOND
-- Real/noise verdict: Noise — n_closed=27, no proven cells, best_pf cells fail holdout and show negative expectancy.
-- 90d expected P&L (1% risk, $100k): -$800 (negative edge, avoid).
-- Gate change: SMART_PICKS_MIN_SCORE_BOND = 90
-- Confidence (1-5): 5
-
-### FOREX
-- Real/noise verdict: Noise — no proven cells, best_pf cells fail holdout and bonferroni; PF inflated by small train_n.
-- 90d expected P&L (1% risk, $100k): $0 (no reliable edge).
-- Gate change: HC_MIN_CONF_FOREX = 0.82
-- Confidence (1-5): 4
 
 ### CRYPTO
-- Real/noise verdict: Marginally real on the three proven cells (n=190-191, WR_shrunk 72.5-72.9, PF 3.74, holdout passes, bonferroni passes); PF high but not impossible for alpha_engine source. No obvious single-symbol leakage flagged in data.
-- 90d expected P&L (1% risk, $100k): $4,200 (assume 2411 closed trades scaled to ~190 high-conviction subset at 1% risk, 1.43% avg win, 0.5% slippage drag).
-- Gate change: alpha_engine MIN_CONF = 0.78
+- Real/noise verdict: Marginally real on the three listed cells (n=188-191, WR_shrunk 71.5-72.1, PF 3.2-3.7, holdout_pass true, bonferroni true); no obvious leakage flags vs known rejected hypotheses.
+- 90d expected P&L (1% risk, $100k): ~$4,800 (using avg_pnl_pct 1.32-1.41, ~190 trades, 1% risk, 0.15% slippage, 0.8 fill rate).
+- Gate change: HC_MIN_CONF = 0.78
 - Confidence (1-5): 3
 
-### EQUITY
-- Real/noise verdict: Sample-noise / leakage — n=70, WR 98.57% (shrunk 87.78), PF 223 is physically impossible without single-symbol concentration or look-ahead; identical cells across three dims confirm data artifact.
-- 90d expected P&L (1% risk, $100k): $0 (reject all cells).
-- Gate change: SMART_PICKS_MIN_SCORE_EQUITY = 95
+### FOREX
+- Real/noise verdict: Noise (top cells fail bonferroni; n=46-47 too small; PF 2.6-2.8 not stable).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: SMART_PICKS_MIN_TRUST = 70
+- Confidence (1-5): 4
+
+### BOND
+- Real/noise verdict: Noise (n=20-33, holdout fails, PF<1.2 or negative).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: SMART_PICKS_MIN_SCORE_BOND = 75
 - Confidence (1-5): 5
 
 ### COMMODITY
-- Real/noise verdict: Noise — no proven cells, best_pf cells fail holdout, low n=27.
-- 90d expected P&L (1% risk, $100k): $0 (no edge).
-- Gate change: SMART_PICKS_MIN_SCORE_COMMODITY = 88
+- Real/noise verdict: Noise (holdout fails on all cells; matches pattern of previously rejected inventory/COT leakage).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: ALPHA_ENGINE_MIN_PF = 2.0
 - Confidence (1-5): 5
 
-### ETF
-- Real/noise verdict: Noise — n_closed=7, no cells.
-- 90d expected P&L (1% risk, $100k): $0 (no edge).
-- Gate change: SMART_PICKS_MIN_SCORE_ETF = 90
+### INDEX
+- Real/noise verdict: Noise (n_closed=5; no proven cells).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: SMART_PICKS_MIN_SCORE_INDEX = 90
 - Confidence (1-5): 5
 
 ### FUTURES
-- Real/noise verdict: Noise — n_closed=19, no cells.
-- 90d expected P&L (1% risk, $100k): $0 (no edge).
-- Gate change: SMART_PICKS_MIN_SCORE_FUTURES = 92
+- Real/noise verdict: Noise (n_closed=17; no proven cells).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: SMART_PICKS_MIN_SCORE_FUTURES = 80
+- Confidence (1-5): 5
+
+### ETF
+- Real/noise verdict: Noise (n_closed=7; no proven cells; WR 14%).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: SMART_PICKS_MIN_SCORE_ETF = 85
 - Confidence (1-5): 5
 
 ### UNKNOWN
-- Real/noise verdict: Noise — n_closed=8, WR 0%, no cells.
-- 90d expected P&L (1% risk, $100k): $0 (no edge).
-- Gate change: SMART_PICKS_MIN_SCORE_UNKNOWN = 95
+- Real/noise verdict: Noise (n_closed=7; WR 0%).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
+- Gate change: SMART_PICKS_MIN_SCORE_UNKNOWN = 90
 - Confidence (1-5): 5
 
 ### MEME
-- Real/noise verdict: Noise — n_closed=4, no cells.
-- 90d expected P&L (1% risk, $100k): $0 (no edge).
+- Real/noise verdict: Noise (n_closed=4; no proven cells).
+- 90d expected P&L (1% risk, $100k): $0 (edge invalid).
 - Gate change: SMART_PICKS_MIN_SCORE_MEME = 95
 - Confidence (1-5): 5
 
 **SYSTEM-WIDE CONCLUSION**  
-Scale CRYPTO today (only class with multiple holdout-passing proven cells). Demote EQUITY immediately per MUTATION_THREE_AXIS_PROTOCOL (clear leakage recurrence). All other classes have zero usable edge.
+Scale up TODAY: CRYPTO (only class with statistically defensible cells).  
+Demote per MUTATION_THREE_AXIS_PROTOCOL: EQUITY (immediate kill; leakage evident) and COMMODITY (recurrent rejected patterns). All other classes have zero actionable edge.
