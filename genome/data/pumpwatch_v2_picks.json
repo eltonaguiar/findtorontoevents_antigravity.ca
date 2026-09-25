@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-09-25T09:22:40.716103+00:00",
+    "timestamp": "2026-09-25T12:23:36.702690+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 3,
+    "mutations_triggered": 2,
+    "mutations_silent": 3,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -12,13 +12,98 @@
     "version": "v2",
     "focus": "loss_prevention"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "symbol": "XRPUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 1.6015,
+      "take_profit": 1.6475,
+      "stop_loss": 1.567,
+      "confidence": 0.7923,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 momentum: vol=2.7x + 3-bar momentum=3.08%, 5 green bars \u2014 continuation confirmed, not dead cat",
+      "timestamp": "2026-09-25T12:23:36.701138+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "momentum_continuation",
+      "volume_ratio": 2.74,
+      "momentum_3d": 0.0308,
+      "green_bars": 5,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "XRPUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 1.6015,
+      "take_profit": 1.6475,
+      "stop_loss": 1.567,
+      "confidence": 0.6782,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=2.7x, price $1.6015 > EMA50=$1.5319 > EMA20=$1.5448 (EMA stack aligned) \u2014 uptrend pump only",
+      "timestamp": "2026-09-25T12:23:36.693269+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 2.74,
+      "ema_50": 1.5319,
+      "ema_20": 1.5448,
+      "ema_aligned": true,
+      "trend_strength": 0.0455,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "SHIBUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 5.86e-06,
+      "take_profit": 6.03e-06,
+      "stop_loss": 5.74e-06,
+      "confidence": 0.6396,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=3.4x, price $0.0000 > EMA50=$0.0000 > EMA20=$0.0000 (EMA stack aligned) \u2014 uptrend pump only",
+      "timestamp": "2026-09-25T12:23:36.696000+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 3.36,
+      "ema_50": 5.8e-06,
+      "ema_20": 5.81e-06,
+      "ema_aligned": true,
+      "trend_strength": 0.0108,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 2
+    },
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "momentum_continuation",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
     "pump_btc_correlated_v2",
     "pump_large_cap_only_v2",
-    "pump_momentum_continuation_v2",
     "pump_fear_greed_filter_v2"
   ]
 }
