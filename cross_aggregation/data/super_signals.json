@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T03:34:10Z",
+  "generated_at": "2026-09-25T03:55:45Z",
   "market_direction": "LONG",
   "cross_pair_ratio": 0.639,
   "active_symbols": 61,
@@ -22,11 +22,11 @@
       "cross_pair_ratio": 0.639,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-09-25T03:34:10Z",
+      "generated_at": "2026-09-25T03:55:45Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
-        "conflict_confidence": 0.7241,
+        "conflict_confidence": 1.0,
         "rules_applied": [],
         "overrides": [],
         "warnings": [
@@ -64,11 +64,11 @@
       "cross_pair_ratio": 0.639,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-09-25T03:34:10Z",
+      "generated_at": "2026-09-25T03:55:45Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
-        "conflict_confidence": 0.7241,
+        "conflict_confidence": 0.5676,
         "rules_applied": [],
         "overrides": [],
         "warnings": [
@@ -105,7 +105,7 @@
       "cross_pair_ratio": 0.639,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-09-25T03:34:10Z",
+      "generated_at": "2026-09-25T03:55:45Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -146,7 +146,7 @@
       "cross_pair_ratio": 0.639,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-09-25T03:34:10Z",
+      "generated_at": "2026-09-25T03:55:45Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -187,7 +187,7 @@
       "cross_pair_ratio": 0.639,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-09-25T03:34:10Z",
+      "generated_at": "2026-09-25T03:55:45Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -228,7 +228,7 @@
       "cross_pair_ratio": 0.639,
       "signal_tier": "STRONG",
       "source_system": "alpha_engine",
-      "generated_at": "2026-09-25T03:34:10Z",
+      "generated_at": "2026-09-25T03:55:45Z",
       "strategy": "super signal (strong) via alpha_engine",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -262,7 +262,7 @@
       "cross_pair_ratio": 0.639,
       "signal_tier": "STRONG",
       "source_system": "alpha_engine",
-      "generated_at": "2026-09-25T03:34:10Z",
+      "generated_at": "2026-09-25T03:55:45Z",
       "strategy": "super signal (strong) via alpha_engine",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -282,22 +282,23 @@
     }
   ],
   "symbol_breakdown": {
-    "ETHUSDT": {
+    "BTCUSDT": {
       "dominant_direction": "LONG",
-      "system_agreement": 4,
+      "system_agreement": 5,
       "long": 3,
-      "short": 1,
+      "short": 2,
       "systems": [
         "alpha_engine",
         "kimi",
         "quan_engine",
-        "luxalgo_filters"
+        "luxalgo_filters",
+        "kol_consensus"
       ],
       "system_details": [
         {
           "system": "alpha_engine",
           "direction": "LONG",
-          "strategy": "high_trust_momentum",
+          "strategy": "copy_hl_lb_None",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -321,25 +322,31 @@
           "strategy": "luxalgo_confluence",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
+        },
+        {
+          "system": "kol_consensus",
+          "direction": "SHORT",
+          "strategy": "kol_consensus_1cat",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
         }
       ]
     },
-    "BTCUSDT": {
+    "ETHUSDT": {
       "dominant_direction": "LONG",
-      "system_agreement": 4,
+      "system_agreement": 3,
       "long": 3,
-      "short": 1,
+      "short": 0,
       "systems": [
         "alpha_engine",
         "kimi",
-        "luxalgo_filters",
-        "kol_consensus"
+        "luxalgo_filters"
       ],
       "system_details": [
         {
           "system": "alpha_engine",
           "direction": "LONG",
-          "strategy": "copy_hl_lb_None",
+          "strategy": "high_trust_momentum",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -356,13 +363,6 @@
           "strategy": "luxalgo_confluence",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
-        },
-        {
-          "system": "kol_consensus",
-          "direction": "SHORT",
-          "strategy": "kol_consensus_1cat",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
         }
       ]
     },
@@ -938,60 +938,6 @@
         }
       ]
     },
-    "YM=F": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "futures_connors_rsi2",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "RTY=F": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "futures_connors_rsi2",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "GBPUSD=X": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "forex_zscore_200d_fade",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
     "HYPEUSDT": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
@@ -1059,6 +1005,60 @@
           "system": "alpha_engine",
           "direction": "LONG",
           "strategy": "clone_hl_copy_Auros_66M",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "YM=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "futures_connors_rsi2",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "RTY=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "futures_connors_rsi2",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "GBPUSD=X": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "forex_zscore_200d_fade",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
