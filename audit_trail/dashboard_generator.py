@@ -14224,6 +14224,91 @@ def _filter_active_picks_with_gate(active_picks: list[dict]) -> tuple[list[dict]
     return filtered_active, filtered_out
 
 
+# Asset classes the operator expects to see on /audit's Active Picks.
+_PER_CLASS_FLOOR_CLASSES = (
+    "CRYPTO",
+    "EQUITY",
+    "ETF",
+    "FOREX",
+    "COMMODITY",
+    "FUTURES",
+    "BOND",
+)
+
+
+def _apply_per_class_visibility_floor(
+    published_active: list,
+    pre_gate_candidates: list,
+) -> list:
+    """Guarantee a minimum number of visible active picks per asset class.
+
+    2026-10-03: the (many, deliberate) admission gates in ``passes_active_gate``
+    can zero out an entire asset class — CRYPTO (crypto LONG/direction block +
+    liquid-core whitelist), FOREX (directional gate), COMMODITY (subclass kills)
+    and FUTURES (matrix symbol allow-list) each published **0** active picks
+    while EQUITY/ETF/BOND published fine. Operators still need per-class
+    coverage, so this floor surfaces the top-scoring candidates of any
+    under-covered class.
+
+    This does NOT relax any gate and does NOT change what may be traded: floored
+    picks are tagged ``_gate_passed=False`` + ``_below_gate=True`` +
+    ``_visibility_floor="per_class"`` so the UI/stats can tell them apart from
+    gate-passing picks. Kill-switch: ``PER_CLASS_ACTIVE_FLOOR=0``.
+    Count per class: ``PER_CLASS_ACTIVE_FLOOR_N`` (default 2).
+    """
+    if os.environ.get("PER_CLASS_ACTIVE_FLOOR", "1").strip().lower() in (
+        "0", "false", "no",
+    ):
+        return published_active
+    try:
+        floor_n = int(os.environ.get("PER_CLASS_ACTIVE_FLOOR_N", "2"))
+    except (TypeError, ValueError):
+        floor_n = 2
+    if floor_n <= 0:
+        return published_active
+
+    have: dict = {}
+    seen: set = set()
+    for p in published_active or []:
+        if isinstance(p, dict):
+            ac = str(p.get("asset_class") or "").upper()
+            have[ac] = have.get(ac, 0) + 1
+            seen.add(id(p))
+
+    extra: list = []
+    for ac in _PER_CLASS_FLOOR_CLASSES:
+        need = floor_n - have.get(ac, 0)
+        if need <= 0:
+            continue
+        pool = [
+            p
+            for p in (pre_gate_candidates or [])
+            if isinstance(p, dict)
+            and str(p.get("asset_class") or "").upper() == ac
+            and id(p) not in seen
+        ]
+        pool.sort(
+            key=lambda x: -(float(x.get("score") or x.get("elite_score") or 0) or 0)
+        )
+        for p in pool[:need]:
+            p["_gate_passed"] = False
+            p["_below_gate"] = True
+            p["_visibility_floor"] = "per_class"
+            extra.append(p)
+            seen.add(id(p))
+
+    if extra:
+        _byc: dict = {}
+        for p in extra:
+            k = str(p.get("asset_class") or "").upper()
+            _byc[k] = _byc.get(k, 0) + 1
+        log.info(
+            "  Per-class visibility floor: surfaced %d below-gate picks: %s",
+            len(extra), _byc,
+        )
+    return (published_active or []) + extra
+
+
 # ── B18: Shadow-mode auto-promotion ──
 
 def _apply_shadow_promotion(
@@ -17606,6 +17691,12 @@ def generate():
         # visibility floor and still remain in payload["picks"]["active"].
         payload["picks"]["active"], _post_score_filtered_out = _filter_active_picks_with_gate(
             payload["picks"]["active"]
+        )
+        # Per-asset-class visibility floor (2026-10-03). Applied AFTER the final
+        # gate so a class whose candidates are all gate-blocked still shows a
+        # few below-gate picks. Tagged, not a gate relaxation — see the helper.
+        payload["picks"]["active"] = _apply_per_class_visibility_floor(
+            payload["picks"]["active"], final_active_picks
         )
         quality_stats["active_filtered_out_post_score"] = _post_score_filtered_out
         quality_stats["active_after_gates"] = len(payload["picks"]["active"])
