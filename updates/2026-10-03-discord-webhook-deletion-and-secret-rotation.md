@@ -71,6 +71,12 @@ The alias mismatches (`DISCORD_FRESHPICKS`, `DISCORD_FRESH_PICKS`, `DISCORD_SAND
 `DISCORD_HEALTH_ALERTS`) are resolved by populating the alias secrets, so no workflow edits were
 needed. `DISCORD_WEBHOOK_URL` and `DISCORD_HEALTH_WEBHOOK` were already live and left untouched.
 
+**Also corrected:** `DISCORD_ML_CHANNEL_ID` was hardcoded to `1469431505439948920` — which is the
+**#notifications** channel id — in `.github/workflows/claude-gainer-tracker.yml`,
+`.github/workflows/crypto-ml-tracker.yml`, `.github/workflows/discord-bot.yml`, and
+`crypto_gainer_ml/live_predictor.py`. All four now use the real **#ml-picks** id
+`1478588195120873472` (confirmed by a `GET` on the #ml-picks webhook).
+
 ## Verification
 
 * `curl -s -o /dev/null -w '%{http_code}' <new webhook>` → **200** (webhook name `Paper Trade hoook`, channel `1478614904733827103`).
@@ -81,8 +87,6 @@ needed. `DISCORD_WEBHOOK_URL` and `DISCORD_HEALTH_WEBHOOK` were already live and
 
 * `DISCORD_BOT_TOKEN` is still unset — Discord *bot commands* (slash commands, `clear-channel`,
   accountability reminders) cannot work without it. A webhook cannot substitute for a bot token.
-  `DISCORD_ML_CHANNEL_ID` in several workflows is hardcoded to `1469431505439948920`, which is the
-  **#notifications** channel id, not #ml-picks — worth correcting.
 * Add response-code validation so a future 404 fails loudly instead of being swallowed.
 * The dead URL still exists in local `.worktrees/` and `.claude/worktrees/` copies (untracked).
 * Consider a pre-commit hook to block future Discord webhook literals in tracked files.
