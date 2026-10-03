@@ -48,14 +48,28 @@ workflow, no Discord message.
 
 ## Fix applied
 
-1. **Stored the replacement #paper-trade webhook as GitHub secrets** (never in the repo):
-   * `DISCORD_WEBHOOK_PAPERTRADE`
-   * `DISCORD_WEBHOOK_PAPER_TRADE` (alias used by `paper_trading/discord_reporter.py` and
-     `strategy_health/hoffman_tracker.py`)
-2. **Removed the hardcoded dead URL** and made both code paths env-only:
+1. **Removed the hardcoded dead URL** and made both code paths env-only:
    * `coinglass_strategies/discord_notify.py` → `os.environ.get("DISCORD_WEBHOOK_PAPERTRADE", "")`
    * `shared/failover_notifications.py` → `os.getenv("DISCORD_WEBHOOK_URL") or os.getenv("DISCORD_WEBHOOK_PAPERTRADE", "")`
-3. **Scrubbed the dead URL from the two plan docs** (replaced with a placeholder).
+2. **Scrubbed the dead URL from the two plan docs** (replaced with a placeholder).
+3. **Wired every channel secret to its real webhook** (stored as GitHub Secrets — never committed;
+   this repo is public). All 10 hooks were verified live via a non-destructive `GET`:
+
+| Secret(s) | Channel | Webhook name |
+|---|---|---|
+| `DISCORD_WEBHOOK_PAPERTRADE`, `DISCORD_WEBHOOK_PAPER_TRADE` | #paper-trade | Paper Trade hoook |
+| `DISCORD_ML_CHANNEL`, `DISCORD_ML_ALERTS` | #ml-picks | MACHINE LEARNING PICKS |
+| `DISCORD_MASTER_PICKS`, `DISCORD_WEBHOOK`, `DISCORD_WEBHOOK_PROPICKS`, `DISCORD_WEBHOOK_DNA_MASTER` | #master-picks | MASTER PICKS |
+| `DISCORD_WEBHOOK_CONVICTION` | #conviction-picks | Conviction Picks |
+| `DISCORD_WEBHOOK_FRESHPICKS`, `DISCORD_FRESHPICKS`, `DISCORD_FRESH_PICKS` | #freshpicks | Fresh Picks |
+| `DISCORD_WEBHOOK_SANDBOX`, `DISCORD_SANDBOX` | #sandbox | SANDBOXER |
+| `DISCORD_NOTIFICATIONS`, `DISCORD_QUALITY_ALERTS`, `DISCORD_REPORTS`, `DISCORD_HEALTH_ALERTS` | #notifications | Captain Hook |
+| `DISCORD_GENERAL` | #general | Spidey Bot |
+| `DISCORD_SIGNAL_ALERTS` | #crypto-automation | Crypto Automation |
+
+The alias mismatches (`DISCORD_FRESHPICKS`, `DISCORD_FRESH_PICKS`, `DISCORD_SANDBOX`,
+`DISCORD_HEALTH_ALERTS`) are resolved by populating the alias secrets, so no workflow edits were
+needed. `DISCORD_WEBHOOK_URL` and `DISCORD_HEALTH_WEBHOOK` were already live and left untouched.
 
 ## Verification
 
@@ -65,11 +79,10 @@ workflow, no Discord message.
 
 ## Follow-ups (not yet done)
 
-* Broken-channel redirect: the user offered to point other broken channels at the #paper-trade
-  hook. Not done unilaterally — that would funnel every alert into one channel. Decide per channel.
-* Fix secret-name aliasing so the existing secrets are found
-  (`DISCORD_FRESHPICKS`→`DISCORD_WEBHOOK_FRESHPICKS`, `DISCORD_SANDBOX`→`DISCORD_WEBHOOK_SANDBOX`,
-  `DISCORD_HEALTH_ALERTS`→`DISCORD_HEALTH_WEBHOOK`, `DISCORD_FRESH_PICKS`→`DISCORD_WEBHOOK_FRESHPICKS`).
-* Add response-code validation so a 404 fails loudly instead of being swallowed.
+* `DISCORD_BOT_TOKEN` is still unset — Discord *bot commands* (slash commands, `clear-channel`,
+  accountability reminders) cannot work without it. A webhook cannot substitute for a bot token.
+  `DISCORD_ML_CHANNEL_ID` in several workflows is hardcoded to `1469431505439948920`, which is the
+  **#notifications** channel id, not #ml-picks — worth correcting.
+* Add response-code validation so a future 404 fails loudly instead of being swallowed.
 * The dead URL still exists in local `.worktrees/` and `.claude/worktrees/` copies (untracked).
-* Consider a `git secret` / pre-commit hook to block future webhook literals.
+* Consider a pre-commit hook to block future Discord webhook literals in tracked files.
