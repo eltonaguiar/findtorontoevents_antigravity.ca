@@ -76,8 +76,17 @@ def _annotate_reverse_split_pick(pick: dict) -> dict:
     out["reverse_split_affected"] = 1
     info = get_reverse_split_info(sym)
     if info:
-        out["reverse_split_ratio"] = info[0]
-        out["reverse_split_date"] = info[1]
+        # get_reverse_split_info() returns a list of (ratio, date) tuples,
+        # newest first — take the most recent split. Indexing the list itself
+        # as if it were one (ratio, date) pair crashed the whole dashboard
+        # build for any single-split symbol (info[1] -> IndexError), which
+        # froze findtorontoevents.ca/audit from 2026-08-30 until this fix.
+        newest = info[0]
+        if isinstance(newest, (list, tuple)):
+            out["reverse_split_ratio"] = newest[0] if len(newest) > 0 else None
+            out["reverse_split_date"] = newest[1] if len(newest) > 1 else None
+        else:  # registry shape changed — never crash the build over a badge
+            out["reverse_split_ratio"] = newest
     if out.get("_reverse_split_adjusted"):
         out["reverse_split_note"] = "Entry/TP/SL adjusted for split ratio"
     else:
