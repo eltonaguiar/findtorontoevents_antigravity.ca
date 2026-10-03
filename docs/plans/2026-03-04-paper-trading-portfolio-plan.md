@@ -2198,14 +2198,14 @@ git commit -m "ci(paper-trading): add GitHub Actions workflow — every 4h scan 
 **Step 1: Add the webhook as a GitHub secret**
 
 ```bash
-gh secret set DISCORD_WEBHOOK_PAPER_TRADE --body "https://discord.com/api/webhooks/1478588243459965008/9TZAjAtrgz5dTvWpV3TP7FO8Fo5JRDCz03PkPiTaSlef0EcIEdHEDUmz8Zi13sZrqgA3"
+gh secret set DISCORD_WEBHOOK_PAPER_TRADE --body "<PASTE_NEW_WEBHOOK_URL>"  # never commit the real URL
 ```
 
 **Step 2: Run a local test to verify**
 
 ```bash
 cd /e/findtorontoevents_antigravity.ca
-DISCORD_WEBHOOK_PAPER_TRADE="https://discord.com/api/webhooks/1478588243459965008/9TZAjAtrgz5dTvWpV3TP7FO8Fo5JRDCz03PkPiTaSlef0EcIEdHEDUmz8Zi13sZrqgA3" python -m paper_trading
+DISCORD_WEBHOOK_PAPER_TRADE="<PASTE_NEW_WEBHOOK_URL>" python -m paper_trading
 ```
 
 **Step 3: Verify Discord received the messages**
