@@ -8415,7 +8415,14 @@ function _picksTableInner(picks, cols) {
             symWrBadge = ` <span title="${v} ${(p.direction||'LONG').toUpperCase()}: ${_sd.wr}% WR on ${_sd.trades} closed trades (avg ${_sd.avg_pnl >= 0 ? '+' : ''}${_sd.avg_pnl}%)" style="cursor:help;font-size:9px;background:${_wrBg};color:${_wrColor};border:1px solid ${_wrColor}44;border-radius:3px;padding:0 3px;margin-left:2px;white-space:nowrap;font-weight:600">${_sd.wr}%</span>`;
           }
         }
-        return `<td><a href="javascript:void(0)" onclick="openSymModal('${v}')" title="${assetTip}" style="text-decoration: underline dotted;cursor:pointer">${v}</a>${dupIcon}${acMini}${symWrBadge}${memeWarn}${rsWarn}${liqWarn}</td>`;
+        // WHY badge: always-visible entry point to the evidence-grounded justification tooltip
+        // (kept out of the column registry so it shows regardless of saved column preferences).
+        var whyBadge = '';
+        try {
+          const _pj = _buildPickJustification(p);
+          whyBadge = ' <span class="strat-tip-wrap" style="margin-left:2px"><span style="cursor:help;font-size:9px;font-weight:800;color:' + _pj.color + ';background:' + _pj.color + '1f;border:1px solid ' + _pj.color + '66;border-radius:3px;padding:0 4px;white-space:nowrap">\u2139 WHY</span><div class="strat-tip" style="min-width:300px;max-width:380px">' + _pj.html + '</div></span>';
+        } catch (e) { whyBadge = ''; }
+        return `<td><a href="javascript:void(0)" onclick="openSymModal('${v}')" title="${assetTip}" style="text-decoration: underline dotted;cursor:pointer">${v}</a>${whyBadge}${dupIcon}${acMini}${symWrBadge}${memeWarn}${rsWarn}${liqWarn}</td>`;
       }
       if (c.key === '_closed_delta_trust_score') {
         const atS = p.at_issue_trust_score != null ? Number(p.at_issue_trust_score) : null;
@@ -14532,6 +14539,145 @@ function _buildPickReason(p) {
   );
   if (sysDesc) parts.push('SYSTEM: ' + sysDesc);
   return parts.join(' /// ') || 'No entry reason available';
+}
+
+/**
+ * Evidence tier for a pick, derived ONLY from fields already on the pick.
+ * PROVEN   = live forward sample (n>=10, WR>=55) OR GOLDEN verified edge OR significant walk-forward
+ * SUPPORTED= smaller forward sample (n>=5, WR>=45) OR VERIFIED verified edge OR trust>=7
+ * THIN     = some signal exists but it is small / not significant
+ * UNPROVEN = no forward or walk-forward evidence at all
+ */
+function _pickEvidenceTier(p) {
+  const fwdWr = _normFwdWrPct(p.strat_fwd_wr != null ? p.strat_fwd_wr : p.forward_wr);
+  const fwdN = Number(p.strat_fwd_trades != null ? p.strat_fwd_trades : (p.forward_trades || 0)) || 0;
+  const wfWr = _parseExportNumber(p.wf_oos_wr);
+  const wfP = _parseExportNumber(p.wf_p_value);
+  const ts = _parseExportNumber(p.trust_score);
+  let vt = { tier: null };
+  try { if (typeof getVerifiedTier === 'function') vt = getVerifiedTier(p) || vt; } catch (e) { vt = { tier: null }; }
+  // A losing symbol\u00d7strategy combo (n>=5 closes, WR<45%) is a direct contradiction
+  // of a strong badge on the SAME pair — never let the two coexist.
+  const _combo = (vt && vt.combo_stats) ? vt.combo_stats : null;
+  const comboBad = !!(_combo && _combo.wr != null && _combo.n != null && Number(_combo.n) >= 5 && Number(_combo.wr) < 45);
+  if (comboBad) return { tier: 'THIN', label: 'THIN EVIDENCE', color: '#f59e0b', comboBad: true, combo: _combo };
+  if ((vt.tier === 'GOLDEN') || (fwdN >= 10 && fwdWr != null && fwdWr >= 55) || (wfP != null && wfP < 0.05 && wfWr != null && wfWr >= 55)) {
+    return { tier: 'PROVEN', label: 'PROVEN EDGE', color: '#22c55e', vt: vt };
+  }
+  if ((vt.tier === 'VERIFIED') || (fwdN >= 5 && fwdWr != null && fwdWr >= 45) || (ts != null && ts >= 7)) {
+    return { tier: 'SUPPORTED', label: 'SUPPORTED', color: '#60a5fa', vt: vt };
+  }
+  if ((fwdN > 0 && fwdWr != null) || wfWr != null || (ts != null && ts >= 5)) {
+    return { tier: 'THIN', label: 'THIN EVIDENCE', color: '#f59e0b', vt: vt };
+  }
+  return { tier: 'UNPROVEN', label: 'UNPROVEN', color: '#ef4444', vt: vt };
+}
+
+/**
+ * Builds a single, evidence-grounded "Why this pick?" justification tooltip:
+ *   1. the signal        — why now (raw entry reason)
+ *   2. the direction     — why this side
+ *   3. statistical basis — forward WR/n, walk-forward OOS + p-value, verified edge,
+ *                          trust + breakdown, ML, R:R, AGV safety
+ *   4. fundamental basis — strategy / system / concept-family descriptions + consensus
+ *   5. an explicit honesty footer stating what is proven vs assumed
+ * Returns { tier, label, color, html }.
+ */
+function _buildPickJustification(p) {
+  const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const ev = _pickEvidenceTier(p);
+  const color = ev.color;
+  const dir = String(p.direction || p.signal_type || '').toUpperCase();
+  const sym = p.symbol || '?';
+  const stratLabel = String(p.strategy || '\u2014').replace(/_/g, ' ');
+  const rows = [];
+  const row = (k, v, c) => {
+    if (v == null || v === '') return;
+    rows.push('<div class="tip-row"><span class="tip-label">' + k + '</span><span class="tip-val"' + (c ? ' style="color:' + c + '"' : '') + '>' + v + '</span></div>');
+  };
+
+  // ---- statistical evidence ----
+  const fwdWrRaw = (p.strat_fwd_wr != null ? p.strat_fwd_wr : p.forward_wr);
+  const fwdWr = _normFwdWrPct(fwdWrRaw);
+  const fwdN = Number(p.strat_fwd_trades != null ? p.strat_fwd_trades : (p.forward_trades || 0)) || 0;
+  if (fwdWr != null && fwdN > 0) {
+    row('Forward WR (live)', fwdWr.toFixed(1) + '% \u00b7 n=' + fwdN, fwdWr >= 55 ? '#22c55e' : fwdWr >= 45 ? '#f59e0b' : '#ef4444');
+    row('Forward validated', p.forward_validated ? 'YES' : 'NO', p.forward_validated ? '#22c55e' : '#94a3b8');
+  } else {
+    row('Forward sample', 'none yet' + (p.forward_status ? ' \u2014 ' + esc(String(p.forward_status).slice(0, 80)) : ''), '#ef4444');
+  }
+  const wfWr = _parseExportNumber(p.wf_oos_wr);
+  const wfP = _parseExportNumber(p.wf_p_value);
+  if (wfWr != null) {
+    const sig = (wfP != null && wfP < 0.05) ? 'significant' : 'not significant';
+    row('Walk-forward OOS WR', wfWr.toFixed(1) + '%' + (wfP != null ? ' \u00b7 p=' + wfP.toFixed(3) + ' (' + sig + ')' : ''), (wfP != null && wfP < 0.05 && wfWr >= 55) ? '#22c55e' : '#f59e0b');
+  }
+  const wfs = _parseExportNumber(p.wf_final_score);
+  if (wfs != null) row('WF composite score', wfs.toFixed(2) + (p.wf_verdict ? ' (' + esc(String(p.wf_verdict)) + ')' : ''));
+  try {
+    var _vt = (typeof getVerifiedTier === 'function') ? getVerifiedTier(p) : null;
+    if (_vt && _vt.tier) {
+      var _st = _vt.combo_stats || _vt.strat_stats || {};
+      var _stBits = [];
+      if (_st.wr != null) _stBits.push('WR ' + Number(_st.wr).toFixed(1) + '%');
+      if (_st.pf != null) _stBits.push('PF ' + Number(_st.pf).toFixed(2));
+      if (_st.n != null) _stBits.push('n=' + _st.n);
+      row('Verified edge', _vt.tier + (_stBits.length ? ' \u2014 ' + _stBits.join(' / ') : ''), _vt.tier === 'GOLDEN' ? '#fbbf24' : '#22c55e');
+    }
+  } catch (e2) { /* verified edge optional */ }
+  const ts = _parseExportNumber(p.trust_score);
+  if (ts != null) {
+    const tb = p.trust_breakdown || {};
+    const tbStr = ['freshness','track_record','edge','regime_alignment','rr_quality']
+      .filter(k => tb[k] != null).map(k => k.replace('_',' ') + ':' + tb[k]).join(', ');
+    row('Trust score', ts + '/10 (' + (p.trust_tier || p.trust_label || '') + ')' + (tbStr ? '  [' + tbStr + ']' : ''), ts >= 7 ? '#22c55e' : ts >= 5 ? '#f59e0b' : '#94a3b8');
+  }
+  const ml = _parseExportNumber(p.ml_score != null ? p.ml_score : p.ml_composite_score);
+  if (ml != null) row('ML score', ml.toFixed(1), ml >= 60 ? '#22c55e' : '#94a3b8');
+  const rr = _parseExportNumber(p.rr_ratio);
+  if (rr != null) row('Reward : Risk', rr.toFixed(2) + 'x', rr >= 1.5 ? '#22c55e' : rr >= 1.0 ? '#f59e0b' : '#ef4444');
+  const agv = _parseExportNumber(p.antigravity_score);
+  if (agv != null) row('Antigravity safety', agv.toFixed(0) + '/100' + (p.antigravity_tooltip ? ' \u2014 ' + esc(String(p.antigravity_tooltip).slice(0, 70)) : ''), agv >= 80 ? '#22c55e' : agv >= 60 ? '#f59e0b' : '#94a3b8');
+  const sdfN = _parseExportNumber(p.sym_dir_fwd_n);
+  if (sdfN != null && sdfN > 0) row('Symbol\u00d7dir intrabar', (p.sym_dir_fwd_wr != null ? Number(p.sym_dir_fwd_wr).toFixed(1) + '%' : 'n/a') + ' (n=' + sdfN + ')', _symDirIntrabarUseable(p) ? '#22c55e' : '#94a3b8');
+
+  // ---- narrative ----
+  const reason = _normalizeExportText(p.reason || p.signal_reason || p.entry_reason || p.raw_reason) || '';
+  const dirReason = _buildDirectionReason(p);
+  const stratDesc = _lookupStrategyDescription(p.strategy);
+  const sysDesc = _lookupSystemDescription(p.source_system);
+
+  const structRows = [];
+  const _usableDesc = (d, notEqual) => d && notEqual && !/^unknown$/i.test(String(d).trim());
+  if (_usableDesc(stratDesc, stratDesc !== stratLabel)) structRows.push('<div style="font-size:10px;color:#cbd5e1;line-height:1.4;margin-bottom:3px"><b style="color:#a5b4fc">Strategy:</b> ' + esc(stratDesc) + '</div>');
+  if (_usableDesc(sysDesc, sysDesc !== p.source_system)) structRows.push('<div style="font-size:10px;color:#cbd5e1;line-height:1.4;margin-bottom:3px"><b style="color:#a5b4fc">System:</b> ' + esc(sysDesc) + '</div>');
+  if (p.concept_family) structRows.push('<div style="font-size:10px;color:#cbd5e1;line-height:1.4;margin-bottom:3px"><b style="color:#a5b4fc">Concept family:</b> ' + esc(String(p.concept_family)) + '</div>');
+  const consStrats = p.confluence_strategies || [];
+  const srcStrats = p.source_strategies || {};
+  const agreeKeys = Object.keys(srcStrats);
+  if (consStrats.length > 0) structRows.push('<div style="font-size:10px;color:#cbd5e1;line-height:1.4;margin-bottom:3px"><b style="color:#a5b4fc">Confluence (' + consStrats.length + ' strategies agree):</b> ' + esc(consStrats.join(', ')) + '</div>');
+  else if (agreeKeys.length > 1) structRows.push('<div style="font-size:10px;color:#cbd5e1;line-height:1.4;margin-bottom:3px"><b style="color:#a5b4fc">Agreeing systems (' + agreeKeys.length + '):</b> ' + esc(agreeKeys.join(', ')) + '</div>');
+  const penalties = Array.isArray(p._penalties) ? p._penalties.filter(x => /blocked|kill|gate/i.test(String(x))) : [];
+
+  // ---- honesty footer ----
+  let honesty;
+  if (ev.tier === 'PROVEN') honesty = 'Edge corroborated by a live forward sample and/or a statistically significant walk-forward test on the closed book. Still not a guarantee.';
+  else if (ev.tier === 'SUPPORTED') honesty = 'Some forward / institutional evidence supports this setup, but the sample is thin or the test is not yet significant. Size accordingly.';
+  else if (ev.tier === 'THIN') honesty = 'Only weak or unvalidated evidence backs this setup (small n, or a walk-forward result that is not statistically significant). Treat as a hypothesis, not a proven edge.';
+  else honesty = 'No forward or walk-forward evidence yet. This is a fresh / unproven signal \u2014 do not size as if it had a validated edge.';
+
+  let h = '';
+  h += '<div class="tip-title" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' + esc(sym) + ' ' + esc(dir) + '<span style="font-size:9px;font-weight:800;color:#0b0b18;background:' + color + ';border-radius:4px;padding:1px 6px;letter-spacing:0.5px">' + ev.label + '</span></div>';
+  h += '<div style="font-size:10px;color:#94a3b8;margin:-2px 0 6px">' + esc(stratLabel) + ' \u00b7 ' + esc(p.source_system || 'unknown') + ' \u00b7 ' + esc(p.asset_class || '?') + '</div>';
+  if (reason) h += '<div style="font-size:11px;color:#e2e8f0;line-height:1.45;margin-bottom:6px"><b style="color:#38bdf8">Why now:</b> ' + esc(reason) + '</div>';
+  if (dirReason) h += '<div style="font-size:10px;color:#cbd5e1;line-height:1.4;margin-bottom:6px"><b style="color:#38bdf8">Direction:</b> ' + esc(dirReason) + '</div>';
+  if (rows.length) h += '<div class="tip-divider"></div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px">Statistical evidence</div>' + rows.join('');
+  if (structRows.length) h += '<div class="tip-divider"></div><div style="font-size:10px;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Fundamental / structural basis</div>' + structRows.join('');
+  if (ev.comboBad && ev.combo) h += '<div class="tip-divider"></div><div style="font-size:10px;color:#fca5a5;line-height:1.4"><b>Conflict:</b> this exact strategy\u00d7symbol combo has a losing record (WR ' + Number(ev.combo.wr).toFixed(1) + '% / PF ' + (ev.combo.pf != null ? Number(ev.combo.pf).toFixed(2) : 'n/a') + ' on n=' + ev.combo.n + ') \u2014 tier capped accordingly.</div>';
+  if (penalties.length) h += '<div class="tip-divider"></div><div style="font-size:10px;color:#fca5a5;line-height:1.4"><b>Gate notes:</b> ' + esc(penalties.slice(0, 5).join(', ')) + '</div>';
+  h += '<div class="tip-divider"></div><div style="font-size:10px;color:' + color + ';line-height:1.4">' + esc(honesty) + '</div>';
+  h += '<div style="font-size:9px;color:#64748b;margin-top:5px">Tier is computed from forward WR / walk-forward OOS / trust / verified-edge fields on this pick. Not investment advice.</div>';
+  return { tier: ev.tier, label: ev.label, color: color, html: h };
 }
 
 function _deriveForwardWR(p) {
