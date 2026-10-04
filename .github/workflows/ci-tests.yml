@@ -196,7 +196,10 @@ jobs:
           # kill-switch (alpha_engine/fred_macro_context.py:62).
           FRED_MACRO_DISABLED: '1'
         run: |
-          DESELECTS=$(sed 's/^[[:space:]]*/--deselect=/' /tmp/known_drift_tests.txt | tr '\n' ' ')
+          # Skip comment/blank lines: the list keeps explanatory `#` comments, and
+          # a bare `--deselect=# 2026-10-04: ...` would word-split into a stray
+          # pytest path arg ("file or directory not found: 2026-10-04:").
+          DESELECTS=$(grep -vE '^[[:space:]]*(#|$)' /tmp/known_drift_tests.txt | sed 's/^[[:space:]]*/--deselect=/' | tr '\n' ' ')
           python -m pytest tests/ paper_trading/tests/ alpha_engine/tests/ tools/tests/ \
             -v \
             --tb=short \
@@ -218,7 +221,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          mapfile -t DRIFT < <(sed 's/^[[:space:]]*//' /tmp/known_drift_tests.txt)
+          mapfile -t DRIFT < <(grep -vE '^[[:space:]]*(#|$)' /tmp/known_drift_tests.txt | sed 's/^[[:space:]]*//')
           python -m pytest "${DRIFT[@]}" \
             -q --tb=line --no-header -p no:cacheprovider --no-cov \
             --timeout=120 --timeout-method=thread \
