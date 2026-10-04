@@ -56,5 +56,11 @@ jobs:
             echo "No tribunal changes to commit"
           else
             git commit -m "chore(tribunal): weekly strategy kill report $(date -u +'%Y-%m-%d') [skip ci]"
-            git push || echo "push skipped (race ok)"
+            # Race-robust push (fetch --rebase + exponential backoff).
+            # A naive `git push || echo skip` was losing to the high-frequency
+            # auto-committers and silently discarding the commit, so neither
+            # reports/strategy_tribunal_*.json nor
+            # audit_dashboard/data/strategy_tribunal_latest.json ever reached
+            # main -- and the live /audit/data/strategy_tribunal_latest.json 404'd.
+            bash .github/scripts/safe_push.sh
           fi
