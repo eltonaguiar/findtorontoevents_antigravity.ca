@@ -87,6 +87,16 @@ small duplicates and per-branch 30 MB uniques):
 Identical findings; **4.6× less data fetched** on the toy repo (the gap grows
 with repo size — the old path fetched *all* blobs, the new one only candidates).
 
+**Live run (real repo, PR #713 branch, run `37184725900`):** the scan step now
+**completes in ~21 min** (`07:05:31` → `07:26:16`) with `success`, producing
+4 genuine findings (duplicate blobs across 3-4 non-main branches), versus the
+previous 2-3h runs that `cancel-in-progress` kept killing before they finished.
+
+Note: because most branches fork from `main`, the candidate set (blobs present
+in >= 3 branches) is large, so 21 min is a big but not maximal improvement.
+Further gains would need cheap blob sizes (e.g. the trees API) — left as a
+follow-up; the job is no longer the never-completing/runner-starving case.
+
 ## Also observed (not changed)
 - `db-freshness-check.yml`, `ml-gatekeeper-ab-bootstrap.yml` — `workflow_dispatch`
   only; their old failures are manual one-shots, superseded by
