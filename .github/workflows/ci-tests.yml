@@ -86,6 +86,12 @@ jobs:
         # the test reads audit_dashboard/template.html, no npm install needed.
         run: node tests/test_card_metrics.js
 
+      - name: Run active-pick WHY justification JS guard
+        # Node test (not pytest) — locks in the per-pick "WHY" evidence tooltip
+        # (statistical + fundamental justification, with an honest tier when the
+        # evidence is thin). Reads audit_dashboard/template.html, no npm install.
+        run: node tests/test_active_pick_why_justification.js
+
       - name: Write known-drift quarantine list
         # ROOT CAUSE of the chronic red CI (2026-06-09/10 diagnosis, runs
         # 27230860484 + 27289298439): the suite does NOT hang or time out —
