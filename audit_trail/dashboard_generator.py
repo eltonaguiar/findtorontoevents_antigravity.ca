@@ -76,8 +76,8 @@ def _annotate_reverse_split_pick(pick: dict) -> dict:
     out["reverse_split_affected"] = 1
     info = get_reverse_split_info(sym)
     if info:
-        out["reverse_split_ratio"] = info[0]
-        out["reverse_split_date"] = info[1]
+        out["reverse_split_ratio"] = info[0][0]
+        out["reverse_split_date"] = info[0][1]
     if out.get("_reverse_split_adjusted"):
         out["reverse_split_note"] = "Entry/TP/SL adjusted for split ratio"
     else:
@@ -10817,6 +10817,8 @@ def _load_dsr_audit() -> dict:
     if _DSR_AUDIT_CACHE is not None:
         return _DSR_AUDIT_CACHE
     try:
+        # allowed: anti-overfit-audit consumer - trust-panel display only.
+        # See tests/test_no_anti_overfit_audit_consumer.py for the contract gate.
         path = ROOT / "audit_dashboard" / "data" / "anti_overfit_audit.json"
         if path.exists():
             raw = json.loads(path.read_text(encoding="utf-8", errors="replace"))
