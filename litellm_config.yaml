@@ -24,7 +24,12 @@ litellm_settings:
   drop_params: true
   set_verbose: false
   request_timeout: 90
-  callbacks: tools.litellm_smart_cooldown.smart_cooldown
+  callbacks:
+    - tools.litellm_smart_cooldown.smart_cooldown
+    # Per-message JSONL log — maps a message marker back to the real provider.
+    # Query: python3 tools/litellm_message_log.py --grep <marker>
+    # See tools/litellm_message_log.py for env knobs (path / content / rotation).
+    - tools.litellm_message_log.message_log
 
 router_settings:
   routing_strategy: simple-shuffle
@@ -41,17 +46,22 @@ router_settings:
     # Generic fallbacks — catch any failure (incl. 413, mid-stream 429, etc.)
     # not just ContextWindowExceededError. Every group needs at least one
     # fallback target or LiteLLM surfaces the upstream error directly.
-    - hybrid-model:      ["free-mode-large", "free-mode", "paid-mode"]
-    - free-mode:         ["free-mode-large", "paid-mode"]
-    - free-mode-large:   ["paid-mode-large", "paid-mode", "free-mode"]
+    #
+    # POLICY (2026-10-03): exhaust EVERY free group before touching a paid one.
+    # Previously free-mode-large jumped straight to paid-mode-large, which is
+    # why opencode bursts landed on xAI Grok while free capacity was merely
+    # rate-limited for a few seconds.
+    - hybrid-model:      ["free-mode", "free-mode-large", "free-mode-fast", "paid-mode"]
+    - free-mode:         ["free-mode-large", "free-mode-fast", "free-mode-tools", "paid-mode"]
+    - free-mode-large:   ["free-mode", "free-mode-fast", "free-mode-tools", "paid-mode-large", "paid-mode"]
     - paid-mode:         ["paid-mode-large", "free-mode-large", "free-mode"]
     - paid-mode-large:   ["free-mode-large", "paid-mode", "free-mode"]
     # Fast modes — narrow pools, fall back to their full-tier siblings
     # if every fast upstream is cooled. Keeps latency goal as primary
     # but doesn't fail the request when all fast are exhausted.
-    - free-mode-fast:    ["free-mode", "free-mode-large", "paid-mode-fast"]
+    - free-mode-fast:    ["free-mode", "free-mode-large", "free-mode-tools", "paid-mode-fast"]
     - paid-mode-fast:    ["paid-mode", "free-mode-fast", "free-mode"]
-    - free-mode-tools:   ["paid-mode-fast", "paid-mode", "free-mode-fast"]   # tool-safe escalates to paid-fast first to preserve parallel-tool semantics
+    - free-mode-tools:   ["free-mode", "free-mode-fast", "free-mode-large", "paid-mode-fast"]   # free-first: tool-safe escalates to paid-fast only after every free group
   retry_policy:
     BadRequestErrorRetries: 1
     AuthenticationErrorRetries: 0
@@ -208,6 +218,48 @@ model_list:
   - {model_name: free-mode-large, litellm_params: {model: openrouter/inclusionai/ring-2.6-1t, api_key: os.environ/OPENROUTER_API_KEY}}
   - {model_name: free-mode-large, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
   - {model_name: free-mode-large, litellm_params: {model: fireworks_ai/accounts/fireworks/models/kimi-k2p5, api_key: os.environ/FIREWORKS_API_KEY}}
+
+  # ====================================================================
+  # OLLAMA — $0, no bearer key required (auth lives in the local daemon at
+  # ~/.ollama/id_ed25519, so dbpasses.txt is NOT needed and there is nothing
+  # to export). The single :11434 daemon serves BOTH:
+  #   * local GPU models      -> billed $0, unlimited, but memory-bound
+  #   * Ollama Cloud models   -> run remotely, billed to the signed-in account
+  # Verified 2026-10-03 on this account:
+  #   INCLUDED FREE : gpt-oss:120b-cloud, gpt-oss:20b-cloud
+  #   NOT included  : minimax-m3:cloud ("add usage credits ... or upgrade")
+  #   retired       : deepseek-v3.1:671b, kimi-k2:1t, glm-4.6, qwen3-coder:480b,
+  #                   deepseek-v3.2, kimi-k2.5, minimax-m2, glm-4.7
+  # NOTE: the ssh-ed25519 value in dbpasses.txt is a PUBLIC KEY, not a token —
+  # it cannot be used as a bearer credential. Do not "fix" it into an api_key.
+  # ====================================================================
+  # Two gotchas when adding a self-hosted/uncapped provider to a group that
+  # also contains rpm-limited cloud entries:
+  #  1. model_info.max_input_tokens must be set, else the entry reports
+  #     max_input_tokens: null.
+  #  2. rpm must be set, because simple-shuffle is WEIGHTED by rpm. Cloud
+  #     entries here declare rpm (1-15); an entry with no rpm gets weight 1
+  #     and is effectively never picked (measured 0/36 picks before adding it).
+  - {model_name: free-mode, litellm_params: {model: ollama_chat/gpt-oss:120b-cloud, api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
+  - {model_name: free-mode, litellm_params: {model: ollama_chat/gpt-oss:20b-cloud,  api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
+  - {model_name: free-mode-large, litellm_params: {model: ollama_chat/gpt-oss:120b-cloud, api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
+  - {model_name: free-mode-large, litellm_params: {model: ollama_chat/gpt-oss:20b-cloud,  api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
+  # Local GPU models — only small ones; the box has ~11-20 GiB free while vLLM
+  # holds its share, so qwen3:30b-a3b (20.7 GiB) and deepseek-r1:32b (24 GiB)
+  # fail to load with "requires more system memory than is available".
+  - {model_name: free-mode, litellm_params: {model: ollama_chat/qwen2.5:7b, api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 32768, max_output_tokens: 8192}}
+  - {model_name: free-mode-fast, litellm_params: {model: ollama_chat/qwen2.5:7b, api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 32768, max_output_tokens: 8192}}
+
+  # ====================================================================
+  # LOCAL vLLM — the GPU box itself, $0 and unlimited (no quota at all).
+  # Started with: .venv/bin/vllm serve Qwen/Qwen2.5-14B-Instruct --port 8000
+  #   --max-model-len 16384 --gpu-memory-utilization 0.85
+  # max_input_tokens is capped below the 16384 max-model-len so vLLM does not
+  # reject the request. NOT added to free-mode-tools: this vLLM was launched
+  # without --enable-auto-tool-choice / --tool-call-parser, so tool calls fail.
+  # ====================================================================
+  - {model_name: free-mode, litellm_params: {model: hosted_vllm/Qwen/Qwen2.5-14B-Instruct, api_base: http://localhost:8000/v1, rpm: 60}, model_info: {max_input_tokens: 12288, max_output_tokens: 4096}}
+  - {model_name: free-mode-large, litellm_params: {model: hosted_vllm/Qwen/Qwen2.5-14B-Instruct, api_base: http://localhost:8000/v1, rpm: 60}, model_info: {max_input_tokens: 12288, max_output_tokens: 4096}}
 
   # ====================================================================
   # PAID MODE — premium frontier models
