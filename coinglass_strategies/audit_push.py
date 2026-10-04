@@ -53,7 +53,7 @@ def normalize(pick: dict) -> dict:
     Coinglass signal_engine outputs dicts with keys like:
       symbol, direction, strategy, confidence, entry_price, take_profit, stop_loss, timestamp
     """
-    return {
+    out = {
         "symbol": pick.get("symbol", ""),
         "direction": pick.get("direction", "LONG"),
         "entry_price": pick.get("entry_price", 0),
@@ -63,6 +63,13 @@ def normalize(pick: dict) -> dict:
         "strategy": pick.get("strategy", "coinglass_dna"),
         "timestamp": pick.get("timestamp", pick.get("generated_at", "")),
     }
+    # Keep the emitter's rationale so it survives into at_raw_picks.raw_payload
+    # and the /audit "Why now:" tooltip. See audit_trail/pick_reason.py.
+    try:
+        from audit_trail.pick_reason import with_pick_reason
+        return with_pick_reason(out, pick)
+    except Exception:  # fail-open: never break the audit push over a rationale
+        return out
 
 
 def push_to_audit(picks: list) -> dict:
