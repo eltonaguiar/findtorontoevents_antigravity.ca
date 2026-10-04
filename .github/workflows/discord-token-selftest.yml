@@ -1,0 +1,58 @@
+name: Discord Token Selftest
+
+# Manual only. Validates the repo's DISCORD_BOT_TOKEN secret server-side
+# (the value is write-only and cannot be read locally) and, optionally, posts
+# a short test message to prove the bot can actually send.
+on:
+  workflow_dispatch:
+    inputs:
+      channel_id:
+        description: "Channel id to post the test message to"
+        required: false
+        default: "1478588195120873472"
+      send:
+        description: "Post a test message ('true') or only validate the token ('false')"
+        required: false
+        default: "true"
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate token + optional test post
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DISCORD_BOT_TOKEN:-}" ]; then
+            echo "::error::DISCORD_BOT_TOKEN secret is empty/missing"
+            exit 1
+          fi
+
+          code=$(curl -s -o /tmp/me.json -w "%{http_code}" \
+            -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+            --max-time 20 https://discord.com/api/v10/users/@me)
+          echo "GET /users/@me -> HTTP $code"
+          cat /tmp/me.json; echo
+          if [ "$code" != "200" ]; then
+            echo "::error::DISCORD_BOT_TOKEN is invalid (HTTP $code)"
+            exit 1
+          fi
+
+          if [ "${{ inputs.send }}" = "true" ]; then
+            post_code=$(curl -s -o /tmp/post.json -w "%{http_code}" -X POST \
+              -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"content":"\u2705 Discord token self-test (automated, safe to ignore) \u2014 the bot token is valid and can post."}' \
+              --max-time 20 \
+              "https://discord.com/api/v10/channels/${{ inputs.channel_id }}/messages")
+            echo "POST /channels/${{ inputs.channel_id }}/messages -> HTTP $post_code"
+            cat /tmp/post.json; echo
+            if [ "$post_code" != "200" ]; then
+              echo "::error::Token is valid but posting failed (HTTP $post_code) — check bot channel permissions"
+              exit 1
+            fi
+            echo "TOKEN OK + POST OK"
+          else
+            echo "TOKEN OK (send=false, skipped post)"
+          fi
