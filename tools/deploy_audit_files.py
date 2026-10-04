@@ -46,6 +46,10 @@ UPLOADS = [
     ("audit_dashboard/data/money_ready_verdict.json",        "/findtorontoevents.ca/audit/data/money_ready_verdict.json",         "audit_data"),
     ("audit_dashboard/data/audit_surface_truth.json",        "/findtorontoevents.ca/audit/data/audit_surface_truth.json",         "audit_data"),
     ("audit_dashboard/audit_surface_truth_banner.js",        "/findtorontoevents.ca/audit/audit_surface_truth_banner.js",         "audit_data"),
+    # Written by tools/strategy_kill_tribunal.py (strategy-tribunal.yml). The
+    # /audit template fetches ./data/strategy_tribunal_latest.json, so it must
+    # be deployed here or the tribunal panel 404s. (local-missing => SKIP.)
+    ("audit_dashboard/data/strategy_tribunal_latest.json",   "/findtorontoevents.ca/audit/data/strategy_tribunal_latest.json",    "audit_data"),
     ("audit_dashboard/dashboard_freshness.js",               "/findtorontoevents.ca/audit/dashboard_freshness.js",                "audit_js"),
     ("audit_dashboard/dashboard_enhancements.js",            "/findtorontoevents.ca/audit/dashboard_enhancements.js",            "audit_js"),
     ("audit_dashboard/validation_metrics.js",                "/findtorontoevents.ca/audit/validation_metrics.js",                "audit_js"),
