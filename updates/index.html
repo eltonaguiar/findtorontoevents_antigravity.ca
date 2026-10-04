@@ -34,6 +34,63 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+  <!-- Update: Oct 4, 2026 — /audit staleness audit: per-TAB "STALE" tags + per-asset-class staleness panel; two CI/CD outages fixed -->
+  <div class="update-entry">
+    <div class="update-date">Oct 4, 2026 &middot; 05:05 EDT · <span class="ie-class">AUDIT</span></div>
+    <h3>&#x1F50D; /audit staleness audit — tabs &amp; asset classes now self-report when their data goes stale</h3>
+
+    <p><strong>Why:</strong> a tab could serve <em>very</em> old data with no visible signal that anything was
+    wrong. We audited freshness across every tab and every asset class, then made staleness visible where the
+    data is actually read.</p>
+
+    <p><strong>What we found — 6 payload sections are stale (124–217 days old):</strong></p>
+    <ul>
+      <li><code>predictions_leaderboard</code> — last updated <strong>2026-02-28</strong> (217d)</li>
+      <li><code>analyst_active_calls</code> / <code>analyst_leaderboard</code> — <strong>2026-03-26</strong> (191d)</li>
+      <li><code>walkforward</code> — <strong>2026-04-15</strong> (171d)</li>
+      <li><code>ml_health</code> — <strong>2026-05-25</strong> (131d) → drives the <strong>ML Health tab</strong></li>
+      <li><code>hf_stats</code> — <strong>2026-06-02</strong> (124d)</li>
+    </ul>
+    <p>The rest is genuinely fresh: <code>picks</code>, <code>systems</code>, <code>performance</code>,
+    <code>asset_class_summary</code>, <code>money_ready_verdicts</code> and <code>research_reports</code> all
+    updated within ~1h. The dashboard itself is healthy — <code>generated_at</code> 04:21Z, age 0.7h,
+    <code>stale_warning: false</code>, newest picks minutes old (active 04:16:38Z, closed 04:15:38Z).</p>
+
+    <p><strong>Per asset class — 2 rows stale:</strong> <code>BOND/active</code> (130h — no new BOND pick in
+    5.4 days) and <code>FUTURES/recent_closed</code> (132h). Aging but not stale:
+    <code>BOND/recent_closed</code> (49h), <code>ETF/recent_closed</code> (39h),
+    <code>BOND/active_raw</code> (29h). CRYPTO, EQUITY, FOREX, COMMODITY and ETF are current.</p>
+
+    <p><strong>What shipped:</strong></p>
+    <ul>
+      <li><strong>Per-tab <code>&#x26A0; STALE</code> tag</strong> — a tab whose backing payload section is
+      over 72h old now shows the tag on the tab button, with a tooltip naming the stale source and what to
+      repair. Firing today on <strong>ML Health</strong> (131d).</li>
+      <li><strong>Per-asset-class staleness panel</strong> — each class shows its newest timestamped pick and
+      age, stale rows tagged. Computed from the payload this page already loads, so it cannot disagree with
+      the tables below.</li>
+    </ul>
+    <p><strong>Honest limitation:</strong> a tab can only be aged if its payload section carries a timestamp.
+    Sections without one are deliberately <em>not</em> tagged rather than guessed. Emitting a per-section
+    <code>generated_at</code> from <code>audit_trail/dashboard_generator.py</code> is the follow-up that
+    unlocks the remaining tabs. Ref: <code>audit_dashboard/dashboard_freshness.js</code>.</p>
+
+    <p><strong>Also this run — two CI/CD outages found and fixed:</strong></p>
+    <ul>
+      <li><strong>The Rise of the Claw dashboard had not deployed for 5 days</strong> (193 of 200 runs
+      cancelled). Root cause was not slowness — the job takes 4–5 min — but a single zombie run stuck in
+      <code>queued</code> since <em>2026-09-29T14:07:55Z</em> holding the concurrency group; with
+      <code>cancel-in-progress: false</code>, and GitHub never expiring a queued run, every later run was
+      replaced. Cancelled the zombie and the next run started within minutes. Durable fix:
+      <code>cancel-in-progress: true</code>. <strong>111 other workflows share this same exposure.</strong></li>
+      <li><strong>Branch Large File Duplicate Guard</strong> was running 11 copies at once (8 push-triggered in
+      15 minutes), one for 2h35m, four killed at GitHub's 6h cap — the scan fetches every branch ref across
+      134 branches. Fixed with a single global concurrency group.</li>
+    </ul>
+    <p><span style="color:#94a3b8;font-size:0.9em">Hover any tab for its data source and age. Staleness is
+    computed from the payload this page already loads — no extra fetch, no hardcoded dates.</span></p>
+  </div>
+
   <!-- Update: Jul 11, 2026 — TAA is the one validated money-ready track; directional/ML/AI-tournament picks remain 0-solid (honestly) -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
