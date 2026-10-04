@@ -66,7 +66,7 @@ def load_picks(data_dir: str) -> tuple[list, list]:
 
 def normalize_pick(pick: dict, source_system: str) -> dict:
     """Normalize an arena pick dict for the audit recorder's field extractors."""
-    return {
+    out = {
         "symbol": pick.get("symbol", ""),
         "direction": pick.get("signal_type", "BUY"),
         "entry_price": pick.get("entry_price", 0),
@@ -76,6 +76,13 @@ def normalize_pick(pick: dict, source_system: str) -> dict:
         "strategy": pick.get("strategy", pick.get("archetype_match", source_system)),
         "timestamp": pick.get("timestamp", ""),
     }
+    # Keep the emitter's rationale so it survives into at_raw_picks.raw_payload
+    # and the /audit "Why now:" tooltip. See audit_trail/pick_reason.py.
+    try:
+        from audit_trail.pick_reason import with_pick_reason
+        return with_pick_reason(out, pick)
+    except Exception:  # fail-open: never break the audit push over a rationale
+        return out
 
 
 def push_to_audit() -> dict:
