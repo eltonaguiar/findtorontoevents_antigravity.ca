@@ -36,9 +36,17 @@ jobs:
       - name: Install deps
         run: pip install --quiet pymysql yfinance pandas
       - name: Refresh diversifier ETF prices (non-fatal)
+        # continue-on-error is intentional: an ETF price-feed outage must not block
+        # the monthly weights recompute. But a masked failure must stay VISIBLE —
+        # scripts/lint_workflow_masking.py flags a bare continue-on-error with no
+        # ::warning as a "silent masker" and fails CI on every PR (this file was
+        # added 2026-10-04 without an annotation, breaking lint-masking repo-wide).
+        # So capture the refresh outcome and emit an annotation naming what was
+        # swallowed, instead of dying quietly.
         continue-on-error: true
         run: |
-          python3 - <<'PY'
+          set +e
+          out=$(python3 - <<'PY'
           import yfinance as yf, pymysql, sys
           sys.path.insert(0, ".")
           from tools.db_env import get_stocks_creds
@@ -67,6 +75,14 @@ jobs:
                   print(f"{t}: {e}")
           c.close()
           PY
+          )
+          rc=$?
+          echo "$out"
+          refreshed=$(printf '%s\n' "$out" | grep -cE '^[A-Z]{3}: [0-9]+ rows')
+          if [ "$rc" -ne 0 ] || [ "$refreshed" -eq 0 ]; then
+            echo "::warning file=.github/workflows/beta-portfolio-refresh.yml,title=ETF price refresh masked::rc=$rc, tickers-refreshed=$refreshed - etf_daily_ohlcv may be stale, so beta portfolio weights can be recomputed from stale prices"
+          fi
+          exit 0
       - name: Recompute target weights
         run: python3 tools/beta_portfolio_tracker.py
       - name: Commit status JSON (track record)
