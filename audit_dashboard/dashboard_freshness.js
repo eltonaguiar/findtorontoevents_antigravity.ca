@@ -362,10 +362,16 @@
   // smartpicks, ueps, verifiedalpha, links. Tabs whose payload keys we cannot
   // prove are deliberately omitted rather than guessed.
   var TAB_SOURCES = {
-    active:       ['picks', 'systems'],
-    closed:       ['picks', 'systems'],
-    overview:     ['performance', 'picks', 'summary', 'systems'],
-    performance:  ['picks', 'walkforward'],
+    // NOTE: use the SPECIFIC array a tab renders, not the whole 'picks' object.
+    // 'picks' also contains picks.active, whose timestamp is always fresh, so a
+    // max over the whole object is dominated by active and the closed/performance
+    // tabs could never be tagged no matter how stale recent_closed became
+    // (verified: rewinding every recent_closed date to 2026-01-05 still yielded a
+    // fresh max via picks.active).
+    active:       ['picks.active', 'systems'],
+    closed:       ['picks.recent_closed', 'systems'],
+    overview:     ['picks.active', 'picks.recent_closed', 'summary', 'systems'],
+    performance:  ['picks.recent_closed', 'walkforward'],
     mlhealth:     ['ml_health'],
     leaderboard:  ['leaderboard'],
     dashboards:   ['audit_events', 'filter_events'],
@@ -423,7 +429,11 @@
     Object.keys(TAB_SOURCES).forEach(function(tab) {
       var btn = document.querySelector('.tab-btn[data-tab="' + tab + '"]');
       if (!btn) return;
-      if (btn.querySelector('[data-stale-tag]')) return;
+      // Recompute every time: a previous run may have tagged this tab, and the
+      // data may since have gone fresh (e.g. after window._freshnessEngine.refresh()).
+      // Was append-only, so a stale tag could never be cleared for the page lifetime.
+      var prior = btn.querySelector('[data-stale-tag]');
+      if (prior) prior.remove();
       var f = tabFreshness(D, TAB_SOURCES[tab]);
       if (f.level !== 'red') return;
       var tag = document.createElement('span');
@@ -463,7 +473,9 @@
         var ac = p.asset_class || 'UNKNOWN';
         var ts = pickTimestamp(p);
         if (!ts) return;
-        if (!byClass[ac] || ts > byClass[ac].ts) byClass[ac] = { ts: ts, n: (byClass[ac] ? byClass[ac].n : 0) + 1 };
+        if (!byClass[ac]) byClass[ac] = { ts: ts, n: 0 };
+        if (ts > byClass[ac].ts) byClass[ac].ts = ts;
+        byClass[ac].n += 1;
       });
       Object.keys(byClass).forEach(function(ac) {
         out.push({ group: g[0], assetClass: ac, ts: byClass[ac].ts, n: byClass[ac].n });
