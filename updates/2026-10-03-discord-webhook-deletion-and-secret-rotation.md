@@ -91,6 +91,15 @@ needed. `DISCORD_WEBHOOK_URL` and `DISCORD_HEALTH_WEBHOOK` were already live and
   *local shell* `DISCORD_BOT_TOKEN` I tested returns **HTTP 401 Unauthorized** from
   `GET /users/@me`, so the local copy is stale/invalid — it does not speak to the GitHub secret
   the workflows use. Re-export the local env if local bot runs are needed.
+* ~~(value unverifiable)~~ **CONFIRMED 2026-10-04:** the GitHub secret is valid and can post.
+  Added `.github/workflows/discord-token-selftest.yml` (manual `workflow_dispatch`) which runs
+  `GET /users/@me` server-side with the secret and posts a labelled test message. Dispatching it:
+  * `GET /users/@me` → **HTTP 200** — bot `MyFavCreators` (id `1469428932980899974`, `verified:true`).
+  * `POST /channels/1478588195120873472/messages` → **HTTP 200** — created message
+    `1556167216179843095` in `#ml-picks`.
+  So the `DISCORD_BOT_TOKEN` secret is good; only the *local shell* copy is stale.
+  Note: `discord-bot.yml` runs `python discord_bot.py || true`, which masks a bad token — its
+  green runs prove nothing; this selftest is the definitive check.
 * The dead URL still exists in local `.worktrees/` and `.claude/worktrees/` copies (untracked).
 * Consider a pre-commit hook to block future Discord webhook literals in tracked files.
 
