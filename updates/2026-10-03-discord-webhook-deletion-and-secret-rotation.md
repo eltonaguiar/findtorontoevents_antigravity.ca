@@ -85,8 +85,12 @@ needed. `DISCORD_WEBHOOK_URL` and `DISCORD_HEALTH_WEBHOOK` were already live and
 
 ## Follow-ups (not yet done)
 
-* `DISCORD_BOT_TOKEN` is still unset — Discord *bot commands* (slash commands, `clear-channel`,
-  accountability reminders) cannot work without it. A webhook cannot substitute for a bot token.
+* ~~`DISCORD_BOT_TOKEN` is still unset~~ **CORRECTED 2026-10-04:** the `DISCORD_BOT_TOKEN` GitHub
+  secret **is set** — `gh secret list` shows it updated **2026-10-03T22:28:47Z** (the original note
+  predated that update). Caveat: the value of a GitHub secret cannot be read back, and the
+  *local shell* `DISCORD_BOT_TOKEN` I tested returns **HTTP 401 Unauthorized** from
+  `GET /users/@me`, so the local copy is stale/invalid — it does not speak to the GitHub secret
+  the workflows use. Re-export the local env if local bot runs are needed.
 * The dead URL still exists in local `.worktrees/` and `.claude/worktrees/` copies (untracked).
 * Consider a pre-commit hook to block future Discord webhook literals in tracked files.
 
