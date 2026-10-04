@@ -87,7 +87,8 @@ def test_blacklisted_row_marked_is_blacklisted():
 def test_ranking_excludes_blacklisted_from_top_n():
     rows = [
         _stub_row("claude_gainer_st", 78.5, 3472),   # would top by fwd_wr
-        _stub_row("kimi_signal_tracking", 70.0, 500),
+        # was "kimi_signal_tracking" — UNBLOCKED 2026-05-16, so no longer blacklisted.
+        _stub_row("quan_engine_scalp", 70.0, 500),
         _stub_row("legit_a", 55.0, 200),
         _stub_row("legit_b", 50.0, 150),
     ]
@@ -98,7 +99,7 @@ def test_ranking_excludes_blacklisted_from_top_n():
     # blacklisted rows must still exist (not deleted) — pushed to bottom
     tail_names = {r["strategy"] for r in out[2:]}
     assert "claude_gainer_st" in tail_names
-    assert "kimi_signal_tracking" in tail_names
+    assert "quan_engine_scalp" in tail_names
 
 
 def test_non_blacklisted_unchanged_relative_order():

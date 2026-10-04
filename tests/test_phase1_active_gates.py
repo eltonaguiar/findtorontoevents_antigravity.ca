@@ -83,8 +83,11 @@ def make_pick(**overrides):
         confidence=0.85,
         direction="LONG",  # was "BUY" — M-036 gate (2026-05-17) hard-blocks BUY for CRYPTO
         source="volume_profile_deviation",
-        source_system="quan_engine",
-        source_systems=["quan_engine", "alpha_engine", "mega_mutation"],  # consensus gate requires >=3
+        # NOTE: was "quan_engine", which joined BLOCKED_SOURCE_SYSTEMS (2026-05-19)
+        # and started rejecting this fixture before the gate under test. Keep the
+        # source non-blocked so the fixture truly isolates the Phase-1 gates.
+        source_system="alpha_engine",
+        source_systems=["alpha_engine", "mega_mutation", "volume_profile_deviation"],  # consensus gate requires >=3
         created_at=created_at,
         timestamp=timestamp,
         is_fresh=True,
@@ -111,6 +114,16 @@ class _ClearPhase1Env:
         "PHASE1_CONF_DEADZONE_HIGH",
         "CRYPTO_PRODUCTION_BLOCK_LONG",
         "CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE",
+        # Cross-cutting gates that were added after these Phase-1 tests were
+        # written and now reject the shared fixture before the gate under test
+        # is even reached (found 2026-10-04 via CI drift reconciliation):
+        #   M-036b  CRYPTO_BUY_DIRECTION_GATE_ENABLED  (blocks CRYPTO LONG)
+        #   M-013   CONCENTRATION_CAP_ENABLED          (per-symbol share cap)
+        #   M-004   CRYPTO_CONCENTRATION_GATE          (source concentration)
+        "CRYPTO_BUY_DIRECTION_GATE_ENABLED",
+        "CONCENTRATION_CAP_ENABLED",
+        "CRYPTO_CONCENTRATION_GATE",
+        "MATRIX_SYMBOL_GATES",
     )
 
     def __enter__(self):
@@ -119,6 +132,11 @@ class _ClearPhase1Env:
         # set it explicitly within their `with` block. Mirrors the
         # OFF-by-default posture used in production tuning runs.
         os.environ.setdefault("CRYPTO_PRODUCTION_BLOCK_LONG", "0")
+        # Neutralize the stack-on-top gates so the fixture isolates Phase-1.
+        os.environ.setdefault("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "0")
+        os.environ.setdefault("CONCENTRATION_CAP_ENABLED", "0")
+        os.environ.setdefault("CRYPTO_CONCENTRATION_GATE", "0")
+        os.environ.setdefault("MATRIX_SYMBOL_GATES", "0")
         return self
 
     def __exit__(self, *exc):
