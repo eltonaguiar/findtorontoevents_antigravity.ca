@@ -23,6 +23,19 @@ on:
           - 'true'
           - 'false'
 
+# 2026-10-04: this workflow is `on: push` for ALL non-main branches and had NO
+# concurrency limit. The scan fetches every branch ref and walks each tree, so a
+# single run takes 2-3h. With 134 non-main branches and constant auto-committer
+# pushes, runs piled up — observed 11 in flight at once, and four runs cancelled
+# after ~6h (GitHub's per-job cap), burning runner minutes for a duplicate-blob
+# lint. The scan is repo-wide (it inspects every branch), so one global group is
+# the correct granularity: only the newest scan needs to be in flight.
+# Cancelling is safe — the only writer ("Update job health page") runs after the
+# long scan completes, so a cancelled run never leaves a partial write.
+concurrency:
+  group: branch-large-file-dup-guard
+  cancel-in-progress: true
+
 permissions:
   contents: write
 

@@ -16,10 +16,22 @@ permissions:
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
+# One concurrent deployment.
+#
+# cancel-in-progress MUST stay true (it was false until 2026-10-04).
+# With `false`, a run that enters the group and never starts blocks every later
+# run FOREVER — GitHub never expires a queued run. That is exactly what happened:
+# run 36580338652 sat in `queued` from 2026-09-29T14:07:55Z, starving the group
+# for 5 days. Of the 200 runs in that window, 193 were cancelled and only 5
+# succeeded — all 5 on 2026-09-29 before the zombie appeared. The Rise of the
+# Claw dashboard silently stopped deploying.
+#
+# With `true`, a newer run cancels the stale queued/pending one, so the group is
+# self-healing. Safe here because the job is fast (4-5 min when it runs) and a
+# re-run redeploys the same content idempotently.
 concurrency:
   group: "deploy-riseoftheclaw"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:

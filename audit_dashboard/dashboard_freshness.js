@@ -342,6 +342,175 @@
     }
   }
 
+  // ── Per-TAB staleness tags (2026-10-04) ───────────────────────
+  // Tags a TAB whose backing payload section is RED (>72h) directly on the tab
+  // button, so staleness is visible where the data would be read and can be
+  // actioned later (by an operator or an AI agent).
+  //
+  // HONESTY NOTE: a tab can only be aged if its payload section actually carries
+  // a timestamp. Sections with no timestamp resolve to 'unknown' and are
+  // deliberately NOT tagged — tagging them would be a guess. The map below is
+  // derived from each tab's render function (which keys it reads from
+  // window.DASHBOARD_DATA), not guessed from section names.
+  //
+  // Follow-up that would let the remaining tabs be aged: emit a per-section
+  // generated_at from audit_trail/dashboard_generator.py.
+  // NOTE: only tabs that actually exist as a `.tab-btn[data-tab=...]` in
+  // template.html are listed — a mapping for a tab with no button would never
+  // render. The tab bar currently exposes: active, closed, overview,
+  // performance, mlhealth, leaderboard, dashboards, permutations, scoretracker,
+  // smartpicks, ueps, verifiedalpha, links. Tabs whose payload keys we cannot
+  // prove are deliberately omitted rather than guessed.
+  var TAB_SOURCES = {
+    active:       ['picks', 'systems'],
+    closed:       ['picks', 'systems'],
+    overview:     ['performance', 'picks', 'summary', 'systems'],
+    performance:  ['picks', 'walkforward'],
+    mlhealth:     ['ml_health'],
+    leaderboard:  ['leaderboard'],
+    dashboards:   ['audit_events', 'filter_events'],
+    permutations: ['cross_strategy_permutations', 'cross_system_permutations']
+  };
+
+  // Deep-resolve a dotted path against the payload.
+  function resolvePath(obj, path) {
+    var cur = obj;
+    var parts = String(path).split('.');
+    for (var i = 0; i < parts.length; i++) {
+      if (cur == null) return null;
+      cur = cur[parts[i]];
+    }
+    return cur;
+  }
+
+  // Newest ISO-ish timestamp anywhere inside a value (bounded walk).
+  function newestTimestamp(o, depth) {
+    if (depth > 4) return null;
+    var best = null, i;
+    if (typeof o === 'string') {
+      return (/^\d{4}-\d{2}-\d{2}/.test(o) && o.length >= 10) ? o : null;
+    }
+    if (Array.isArray(o)) {
+      for (i = 0; i < Math.min(o.length, 500); i++) {
+        var r = newestTimestamp(o[i], (depth || 0) + 1);
+        if (r && (best === null || r > best)) best = r;
+      }
+      return best;
+    }
+    if (o && typeof o === 'object') {
+      for (var k in o) {
+        if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
+        var rr = newestTimestamp(o[k], (depth || 0) + 1);
+        if (rr && (best === null || rr > best)) best = rr;
+      }
+      return best;
+    }
+    return null;
+  }
+
+  function tabFreshness(D, keys) {
+    var best = null;
+    for (var i = 0; i < keys.length; i++) {
+      var ts = newestTimestamp(resolvePath(D, keys[i]), 0);
+      if (ts && (best === null || ts > best)) best = ts;
+    }
+    return best ? freshnessLevel(best) : { level: 'unknown', ageMs: Infinity, label: 'NO DATA', color: '#6b7280', bg: 'rgba(107,114,128,0.12)' };
+  }
+
+  function injectTabStaleBadges() {
+    var D = window.DASHBOARD_DATA;
+    if (!D) return;
+    Object.keys(TAB_SOURCES).forEach(function(tab) {
+      var btn = document.querySelector('.tab-btn[data-tab="' + tab + '"]');
+      if (!btn) return;
+      if (btn.querySelector('[data-stale-tag]')) return;
+      var f = tabFreshness(D, TAB_SOURCES[tab]);
+      if (f.level !== 'red') return;
+      var tag = document.createElement('span');
+      tag.setAttribute('data-stale-tag', tab);
+      tag.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:9px;font-size:9px;font-weight:800;letter-spacing:0.4px;background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.5);margin-left:6px;white-space:nowrap';
+      tag.innerHTML = '&#x26A0; STALE ' + esc(ageText(f.ageMs));
+      tag.title = 'STALE DATA: this tab is backed by ' + TAB_SOURCES[tab].join(', ') +
+        ', whose newest timestamp is ' + esc(ageText(f.ageMs)) + ' old. Not a display bug — the upstream source has stopped updating. Actionable: re-run/repair the producer for ' +
+        TAB_SOURCES[tab].join(', ') + '.';
+      btn.appendChild(tag);
+    });
+  }
+
+  // ── Per-asset-class staleness panel (2026-10-04) ─────────────
+  // "Is every asset class still producing picks?" — computed from the payload's
+  // own pick timestamps, so it needs no extra fetch and cannot disagree with
+  // what the tables above actually show.
+  var CLASS_KEYS = ['closed_at', 'signal_timestamp', 'recorded_at', 'entry_time', 'timestamp', 'created_at'];
+
+  function pickTimestamp(p) {
+    for (var i = 0; i < CLASS_KEYS.length; i++) {
+      var v = p[CLASS_KEYS[i]];
+      if (typeof v === 'string' && v.length >= 10) return v;
+    }
+    return null;
+  }
+
+  function assetClassStaleness(D) {
+    var groups = [['active', (D.picks && D.picks.active) || []],
+                  ['active_raw', (D.picks && D.picks.active_raw) || []],
+                  ['recent_closed', (D.picks && D.picks.recent_closed) || []]];
+    var out = [];
+    groups.forEach(function(g) {
+      var byClass = {};
+      g[1].forEach(function(p) {
+        if (!p || typeof p !== 'object') return;
+        var ac = p.asset_class || 'UNKNOWN';
+        var ts = pickTimestamp(p);
+        if (!ts) return;
+        if (!byClass[ac] || ts > byClass[ac].ts) byClass[ac] = { ts: ts, n: (byClass[ac] ? byClass[ac].n : 0) + 1 };
+      });
+      Object.keys(byClass).forEach(function(ac) {
+        out.push({ group: g[0], assetClass: ac, ts: byClass[ac].ts, n: byClass[ac].n });
+      });
+    });
+    return out;
+  }
+
+  function injectAssetClassStaleness() {
+    var D = window.DASHBOARD_DATA;
+    if (!D || !D.picks) return;
+    var host = document.getElementById('asset-class-staleness');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'asset-class-staleness';
+      host.style.cssText = 'max-width:1180px;margin:8px auto;padding:10px 14px;background:rgba(15,23,42,0.6);border:1px solid rgba(100,116,139,0.4);border-radius:10px';
+      var anchor = document.getElementById('tab-bar');
+      if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(host, anchor);
+      else document.body.insertBefore(host, document.body.firstChild);
+    }
+    var rows = assetClassStaleness(D);
+    if (!rows.length) { host.innerHTML = '<div style="font-size:11px;color:#94a3b8">Asset-class staleness: no timestamped picks in payload.</div>'; return; }
+    var stale = rows.filter(function(r) { return freshnessLevel(r.ts).level === 'red'; });
+    var head = stale.length
+      ? '<strong style="color:#f87171">&#x26A0; ' + stale.length + ' stale asset-class row(s)</strong>'
+      : '<strong style="color:#22c55e">&#x2713; All asset-class rows fresh (&lt;72h)</strong>';
+    var body = '<div style="font-size:11px;color:#94a3b8;margin:4px 0 6px">' + head +
+      ' &middot; newest timestamped pick per class &middot; anything over 72h is tagged STALE for follow-up</div>';
+    body += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    rows.sort(function(a, b) { return (b.ts || '').localeCompare(a.ts || ''); });
+    rows.forEach(function(r) {
+      var f = freshnessLevel(r.ts);
+      var isStale = f.level === 'red';
+      var txt = esc(r.assetClass) + ' <span style="opacity:0.7">' + esc(r.group) + '</span> n=' + r.n + ' &middot; ' + esc(ageText(f.ageMs));
+      body += '<span title="' + esc(r.assetClass + ' / ' + r.group + ' — newest ' + fmtEST(r.ts) + ' EST, n=' + r.n) + '" style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;background:' +
+        f.bg + ';color:' + f.color + ';border:1px solid ' + f.color + '40">' +
+        (isStale ? '&#x26A0; STALE &middot; ' : '') + txt + '</span>';
+    });
+    body += '</div>';
+    if (stale.length) {
+      body += '<div style="font-size:10px;color:#fca5a5;margin-top:6px">Stale: ' +
+        esc(stale.map(function(s) { return s.assetClass + '/' + s.group; }).join(', ')) +
+        ' — no new picks in >72h. Actionable: check that class\'s scanner/emitter is still running.</div>';
+    }
+    host.innerHTML = body;
+  }
+
   // ── Main: fetch all sources and render ────────────────────────
   function init() {
     var results = [];
@@ -372,10 +541,14 @@
 
       // Also try to inject section-header badges (some may depend on DASHBOARD_DATA being loaded)
       injectSectionHeaderBadges();
+      injectTabStaleBadges();
+      injectAssetClassStaleness();
 
       // Listen for late data loads
       document.addEventListener('dashboard-data-loaded', function() {
         setTimeout(injectSectionHeaderBadges, 200);
+        setTimeout(injectTabStaleBadges, 250);
+        setTimeout(injectAssetClassStaleness, 250);
       });
     }
   }
@@ -425,6 +598,8 @@
   // Re-inject section badges after main render completes
   window.addEventListener('load', function() {
     setTimeout(injectSectionHeaderBadges, 2000);
+    setTimeout(injectTabStaleBadges, 2200);
+    setTimeout(injectAssetClassStaleness, 2200);
   });
 
   // Expose for debugging
