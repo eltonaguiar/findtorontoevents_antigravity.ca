@@ -95,9 +95,29 @@ def _sort_key(row):
     return ""
 
 
+def _realization_key(row):
+    """Ordering key for the cumulative P/L curve.
+
+    A pick's P/L is *realized* when it closes, not when it opened, so closed
+    rows are ordered by `closed_at`. Still-open rows have no exit yet, so they
+    are appended after every realized row (ordered by entry). This is what
+    makes the drawdown a genuine realized-then-unrealized equity curve rather
+    than an entry-date-ordered approximation.
+    """
+    if row.get("_open"):
+        return (1, _sort_key(row))
+    ca = (row.get("closed_at") or "").strip()
+    return (0, ca or _sort_key(row))
+
+
 def max_drawdown(rows):
-    """Max peak-to-trough of the cumulative sum of pnl_pct, in pp (>=0)."""
-    ordered = sorted(rows, key=_sort_key)
+    """Max peak-to-trough of the cumulative sum of pnl_pct, in pp (>=0).
+
+    Ordered by realization time (closed_at), then still-open rows last — see
+    `_realization_key`. The value is order-sensitive by construction; this
+    ordering is the economically meaningful one (a realized P/L curve).
+    """
+    ordered = sorted(rows, key=_realization_key)
     cum = 0.0
     peak = 0.0
     mdd = 0.0
@@ -130,6 +150,7 @@ def _metrics(rows):
         "wins": wins,
         "losses": losses,
         "flat": flat,
+        "decided": decided,
         "wr": (100.0 * wins / decided) if decided else None,
         "pl_pct": sum(pnls),
         "avg_pl_pct": (sum(pnls) / len(pnls)) if pnls else None,
@@ -213,6 +234,11 @@ def build(payload, days=14):
             "open date = entry_time when present; else timestamp when it "
             "differs from closed_at; else unknown (excluded from by-date table)"
         ),
+        "wr_basis": "WR = wins / (wins + losses); flat (pnl_pct == 0) rows are not in the denominator",
+        "dd_basis": (
+            "cumulative P/L curve ordered by realization time (closed_at for "
+            "closed rows; still-open rows appended last)"
+        ),
     }
     return {"meta": meta, "by_date": by_date, "by_class": by_class}
 
@@ -220,6 +246,11 @@ def build(payload, days=14):
 # --------------------------------------------------------------------------
 # Rendering
 # --------------------------------------------------------------------------
+
+def _thin(m):
+    """A cohort whose WR/expectancy rests on too few decided picks to trust."""
+    return m["decided"] < 30
+
 
 def _pf(m):
     return "n/a" if m["pf"] is None else f"{m['pf']:.2f}"
@@ -251,31 +282,39 @@ def render_md(res):
              "series, pp.")
     L.append("")
     L.append(f"**Open-date method.** {m['date_method']}.")
+    L.append(f"**Win-rate basis.** {m['wr_basis']}.")
+    L.append(f"**Drawdown basis.** {m['dd_basis']}.")
     L.append("")
     L.append("## By open date × asset class")
     L.append("")
-    L.append("| Open date | Asset class | N | Closed | Open | W/L | WR% | Σ P/L% | PF | DD% | Avg%/pick |")
-    L.append("|---|---|---:|---:|---:|---|---:|---:|---:|---:|---:|")
+    L.append("| Open date | Asset class | N | Closed | Open | W/L/F | Decided | WR% | Σ P/L% | PF | DD% | Avg%/pick |")
+    L.append("|---|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|")
     for r in res["by_date"]:
         wr = "" if r["wr"] is None else f"{r['wr']:.1f}"
+        thin = " †" if _thin(r) else ""
         L.append(
-            f"| {r['date']} | {r['asset_class']} | {r['n']} | {r['closed']} | {r['open']} | "
-            f"{r['wins']}/{r['losses']} | {wr} | "
+            f"| {r['date']} | {r['asset_class']}{thin} | {r['n']} | {r['closed']} | {r['open']} | "
+            f"{r['wins']}/{r['losses']}/{r['flat']} | {r['decided']} | {wr} | "
             f"{_pct(r['pl_pct'])} | {_pf(r)} | {r['max_dd_pct']:.2f} | {_pct(r['avg_pl_pct'])} |"
         )
     L.append("")
     L.append("## By asset class (full book window)")
     L.append("")
-    L.append("| Asset class | N | Closed | Open | W/L | WR% | Realized Σ P/L% | Unrealized Σ P/L% | Current Σ P/L% | PF | MaxDD% | Avg%/pick |")
-    L.append("|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|")
+    L.append("| Asset class | N | Closed | Open | W/L/F | Decided | WR% | Realized Σ P/L% | Unrealized Σ P/L% | Current Σ P/L% | PF | MaxDD% | Avg%/pick |")
+    L.append("|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|")
     for r in res["by_class"]:
         wr = "" if r["wr"] is None else f"{r['wr']:.1f}"
+        thin = " †" if _thin(r) else ""
         L.append(
-            f"| {r['asset_class']} | {r['n']} | {r['closed']} | {r['open']} | "
-            f"{r['wins']}/{r['losses']} | {wr} | {_pct(r['realized_pl_pct'])} | "
+            f"| {r['asset_class']}{thin} | {r['n']} | {r['closed']} | {r['open']} | "
+            f"{r['wins']}/{r['losses']}/{r['flat']} | {r['decided']} | {wr} | {_pct(r['realized_pl_pct'])} | "
             f"{_pct(r['unrealized_pl_pct'])} | {_pct(r['pl_pct'])} | {_pf(r)} | "
             f"{r['max_dd_pct']:.2f} | {_pct(r['avg_pl_pct'])} |"
         )
+    L.append("")
+    L.append("`W/L/F` = wins / losses / flat (pnl_pct exactly 0). `Decided` = W+L; "
+             "**WR% is wins ÷ decided**, so flat rows are excluded from the denominator "
+             "(N is not the denominator). `†` = thin sample (fewer than 30 decided picks).")
     L.append("")
     return "\n".join(L)
 
@@ -300,13 +339,16 @@ def render_html(res):
     rows = []
     for r in res["by_date"]:
         wr = "—" if r["wr"] is None else f"{r['wr']:.1f}"
+        thin = (' <span style="color:#f59e0b" title="thin sample: '
+                'fewer than 30 decided picks">&dagger;</span>') if _thin(r) else ""
         rows.append(
             "<tr>"
-            f'<td>{r["date"]}</td><td><strong>{r["asset_class"]}</strong></td>'
+            f'<td>{r["date"]}</td><td><strong>{r["asset_class"]}</strong>{thin}</td>'
             f'<td style="text-align:right">{r["n"]}</td>'
             f'<td style="text-align:right">{r["closed"]}</td>'
             f'<td style="text-align:right">{r["open"]}</td>'
-            f'<td style="text-align:right">{r["wins"]}/{r["losses"]}</td>'
+            f'<td style="text-align:right">{r["wins"]}/{r["losses"]}/{r["flat"]}</td>'
+            f'<td style="text-align:right">{r["decided"]}</td>'
             f'<td style="text-align:right">{wr}</td>'
             f'<td style="text-align:right">{_td(r["pl_pct"])}</td>'
             f'<td style="text-align:right">{_pf(r)}</td>'
@@ -318,13 +360,16 @@ def render_html(res):
     crows = []
     for r in res["by_class"]:
         wr = "—" if r["wr"] is None else f"{r['wr']:.1f}"
+        thin = (' <span style="color:#f59e0b" title="thin sample: '
+                'fewer than 30 decided picks">&dagger;</span>') if _thin(r) else ""
         crows.append(
             "<tr>"
-            f'<td><strong>{r["asset_class"]}</strong></td>'
+            f'<td><strong>{r["asset_class"]}</strong>{thin}</td>'
             f'<td style="text-align:right">{r["n"]}</td>'
             f'<td style="text-align:right">{r["closed"]}</td>'
             f'<td style="text-align:right">{r["open"]}</td>'
-            f'<td style="text-align:right">{r["wins"]}/{r["losses"]}</td>'
+            f'<td style="text-align:right">{r["wins"]}/{r["losses"]}/{r["flat"]}</td>'
+            f'<td style="text-align:right">{r["decided"]}</td>'
             f'<td style="text-align:right">{wr}</td>'
             f'<td style="text-align:right">{_td(r["realized_pl_pct"])}</td>'
             f'<td style="text-align:right">{_td(r["unrealized_pl_pct"])}</td>'
@@ -343,6 +388,7 @@ def render_html(res):
       <div class="update-date" style="line-height:1.5">Oct 06, 2026 &mdash; <strong style="color:#38bdf8;">Recent picks: stats by open date &times; asset class &mdash; current P/L, profit factor and drawdown</strong></div>
       <div class="update-content">
         <p><strong>What this is:</strong> a read-only breakdown of the picks on <a href="/audit/">/audit</a> by the <strong>date they were opened</strong> and by <strong>asset class</strong>, with the numbers a trader actually asks for &mdash; current P/L, profit factor and max drawdown. It is computed straight from the live audit payload, so it can never disagree with the tables on /audit.</p>
+        <p style="font-size:0.86em;color:#cbd5e1"><strong>Win rate, honestly defined:</strong> <code>WR%</code> is <strong>wins &divide; decided</strong> (wins + losses). Flat picks (<code>pnl_pct</code> exactly 0 &mdash; mostly still-open rows the pricer has not moved yet) sit <em>outside</em> the denominator, so <code>N</code> is <strong>not</strong> the win-rate base. The <code>W/L/F</code> and <code>Decided</code> columns show the real base; classes resting on fewer than 30 decided picks are marked <span style="color:#f59e0b">&dagger;</span>.</p>
 
         <p><strong>Source &amp; books.</strong> Payload generated <code>{ts}</code> (repo_sha <code>{(m['payload_repo_sha'] or '')[:12]}</code>). Realized rows come from <code>recent_closed</code> ({m['books']['recent_closed']}); unrealized rows are <code>active_raw</code> rows still <code>status=OPEN</code> ({m['books']['active_open']}). Window: last <strong>{m['window_days']} days</strong> ({win[0]} &rarr; {win[1]}).</p>
 
@@ -353,19 +399,20 @@ def render_html(res):
         <table style="width:100%;border-collapse:collapse;font-size:0.86em">
           <tr>
             <th {th}>Open date</th><th {th}>Class</th><th {thr}>N</th><th {thr}>Closed</th>
-            <th {thr}>Open</th><th {thr}>W/L</th><th {thr}>WR%</th><th {thr}>&Sigma; P/L%</th>
-            <th {thr}>PF</th><th {thr}>DD%</th><th {thr}>Avg%/pick</th>
+            <th {thr}>Open</th><th {thr}>W/L/F</th><th {thr}>Decided</th><th {thr}>WR%</th>
+            <th {thr}>&Sigma; P/L%</th><th {thr}>PF</th><th {thr}>DD%</th><th {thr}>Avg%/pick</th>
           </tr>
           {''.join(rows)}
         </table>
         </div>
 
-        <h3 style="color:#a78bfa;margin:16px 0 6px">By asset class (full 7-month book window)</h3>
+        <h3 style="color:#a78bfa;margin:16px 0 6px">By asset class (full book &mdash; all rows, no date filter)</h3>
         <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;font-size:0.86em">
           <tr>
             <th {th}>Class</th><th {thr}>N</th><th {thr}>Closed</th><th {thr}>Open</th>
-            <th {thr}>W/L</th><th {thr}>WR%</th><th {thr}>Realized &Sigma; P/L%</th>
+            <th {thr}>W/L/F</th><th {thr}>Decided</th><th {thr}>WR%</th>
+            <th {thr}>Realized &Sigma; P/L%</th>
             <th {thr}>Unrealized &Sigma; P/L%</th><th {thr}>Current &Sigma; P/L%</th>
             <th {thr}>PF</th><th {thr}>MaxDD%</th><th {thr}>Avg%/pick</th>
           </tr>
@@ -373,7 +420,7 @@ def render_html(res):
         </table>
         </div>
 
-        <p style="font-size:0.85em;color:#94a3b8"><strong>Honest limitations.</strong> Open-date coverage &mdash; closed {cov['closed_with_open_date']}/{cov['closed_total']}, active {cov['active_with_open_date']}/{cov['active_total']}; closed rows with no genuine entry timestamp are excluded from the by-date table (but counted in the by-class table). Rows with a missing <code>pnl_pct</code> are excluded from P/L and PF. P/L is an equal-weight sum of per-pick percentage returns, not a compounded portfolio return. Not financial advice &mdash; research/educational.</p>
+        <p style="font-size:0.85em;color:#94a3b8"><strong>Honest limitations.</strong> Open-date coverage &mdash; closed {cov['closed_with_open_date']}/{cov['closed_total']}, active {cov['active_with_open_date']}/{cov['active_total']}; closed rows with no genuine entry timestamp are excluded from the by-date table (but counted in the by-class table). Rows with a missing <code>pnl_pct</code> are excluded from P/L and PF. <code>DD</code> is computed on the cumulative P/L curve ordered by <em>realization time</em> (<code>closed_at</code> for closed rows, still-open rows appended last) &mdash; it is an order-sensitive path metric, not a per-pick average. P/L is an equal-weight sum of per-pick percentage returns, not a compounded portfolio return. Not financial advice &mdash; research/educational.</p>
         <p style="font-size:0.78em;color:#64748b">Generated by <code>tools/recent_picks_by_date_class_stats.py</code> from the live payload. Re-run any time; no writes to the pipeline.</p>
       </div>
     </div>
@@ -412,7 +459,7 @@ def main():
           f"| by_class_rows={len(res['by_class'])}")
     for r in res["by_class"]:
         wr = "n/a" if r["wr"] is None else f"{r['wr']:.1f}%"
-        print(f"  {r['asset_class']:<12} n={r['n']:<5} W/L={r['wins']}/{r['losses']:<5} "
+        print(f"  {r['asset_class']:<12} n={r['n']:<5} W/L/F={r['wins']}/{r['losses']}/{r['flat']:<5} "
               f"WR={wr:<7} curPL={_pct(r['pl_pct'])}% PF={_pf(r)} maxDD={r['max_dd_pct']:.2f}")
     return 0
 
