@@ -116,7 +116,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>Funding rate</td><td>Not included</td><td>Perpetual swap funding can be +/- 0.01-0.10% per 8h. Material for holds &gt;24h.</td></tr>
         <tr><td>PnL calculation</td><td>Entry vs TP/SL hit</td><td>Does NOT include fees. Actual returns ~0.20-0.40% worse than shown per trade.</td></tr>
         <tr><td>Price source</td><td>Binance spot API</td><td>Live prices fetched on page load. During outages, falls back to CoinGecko.</td></tr>
-        <tr><td>Avg hold time</td><td>1h (0.1 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
+        <tr><td>Avg hold time</td><td>13h (0.5 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
       </tbody></table>
 
       <h3>System Lifecycle</h3>
@@ -152,20 +152,20 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <div class="card"><div class="card-label">Total PnL (Realized)</div><div class="card-val" style="color:#22c55e">+3036.88%</div></div>
         <div class="card"><div class="card-label">Profit Factor</div><div class="card-val" style="color:#22c55e">1.52</div></div>
         <div class="card"><div class="card-label">Expectancy / Trade</div><div class="card-val" style="color:#22c55e">+0.67%</div></div>
-        <div class="card"><div class="card-label">Avg Win</div><div class="card-val" style="color:#22c55e">+4.03%</div></div>
-        <div class="card"><div class="card-label">Avg Loss</div><div class="card-val" style="color:#ef4444">-2.47%</div></div>
+        <div class="card"><div class="card-label">Avg Win</div><div class="card-val" style="color:#22c55e">+4.02%</div></div>
+        <div class="card"><div class="card-label">Avg Loss</div><div class="card-val" style="color:#ef4444">-2.48%</div></div>
       </div>
       <div class="verdict-box bad">
-        <b>Honest Assessment:</b> The overall crypto portfolio is <b>unprofitable</b> with a 48.3% win rate and 1.52 profit factor.
+        <b>Honest Assessment:</b> The overall crypto portfolio is <b>unprofitable</b> with a 48.5% win rate and 1.53 profit factor.
         Expectancy is +0.67% per trade — meaning every trade loses on average.
         The system generates too many low-quality signals from unproven strategies. However, a subset of proven strategies shows strong positive results (see Section 4).
-        <br><br><b>Key Problem:</b> Avg loss (2.47%) exceeds avg win (4.03%), AND win rate is below 50%.
+        <br><br><b>Key Problem:</b> Avg loss (2.48%) exceeds avg win (4.02%), AND win rate is below 50%.
         A profitable system needs EITHER a high WR with reasonable R:R, OR a low WR with high R:R. We have neither in aggregate.
       </div>
     </div></div>
 <div id="s2">
     <div class="section">
-      <h2>2. System-by-System Breakdown (64 crypto systems with data)</h2>
+      <h2>2. System-by-System Breakdown (62 crypto systems with data)</h2>
       <p class="dim">Grade: A = proven profitable (WR≥55, PF≥1.5, 20+ trades), B = positive edge, C = marginal, D = insufficient data, F = unprofitable</p>
       <div class="table-wrap">
       <table><thead><tr>
@@ -267,6 +267,18 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td class="num" style="color:#22c55e">+0.42%</td>
           <td class="num">+3.5%</td>
           <td class="num">-2.6%</td>
+        </tr><tr>
+          <td><b>alpha engine</b><br><span class="dim" style="font-size:11px">Proven Underdog Portfolio. 100 statistically-validated strategies (Connors RSI-2 75% WR, VIX Spike 72% WR). Scans crypto</span></td>
+          <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
+          <td class="num">26</td>
+          <td class="num">279</td>
+          <td class="num">86</td><td class="num">106</td>
+          <td class="num" style="color:#ef4444">44.8%</td>
+          <td class="num" style="color:#22c55e">+52.68%</td>
+          <td class="num" style="color:#22c55e">1.15</td>
+          <td class="num" style="color:#22c55e">+0.27%</td>
+          <td class="num">+4.6%</td>
+          <td class="num">-3.2%</td>
         </tr><tr>
           <td><b>battleground</b><br><span class="dim" style="font-size:11px">Forward-testing arena. Runs proven winners (VWAP Deviation +332%, RSI ETH +291%) against live market. Gold standard for </span></td>
           <td style="text-align:center;color:#22c55e;font-weight:700;font-size:18px">A</td>
@@ -498,7 +510,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         </tr><tr>
           <td><b>genetic programmer</b><br><span class="dim" style="font-size:11px">DARWIN GP Engine (GENESIS). Evolves trading strategies using genetic programming - buy/sell formulas are expression tree</span></td>
           <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
-          <td class="num">4</td>
+          <td class="num">5</td>
           <td class="num">0</td>
           <td class="num">0</td><td class="num">0</td>
           <td class="num" style="color:#ef4444">0.0%</td>
@@ -570,7 +582,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         </tr><tr>
           <td><b>mape evolver</b><br><span class="dim" style="font-size:11px">DARWIN MAP-Elites (ATLAS). Quality-Diversity evolution - fills a grid of (volatility x trend) niches with the best strat</span></td>
           <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
-          <td class="num">5</td>
+          <td class="num">3</td>
           <td class="num">0</td>
           <td class="num">0</td><td class="num">0</td>
           <td class="num" style="color:#ef4444">0.0%</td>
@@ -934,7 +946,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td class="num">3395</td>
           <td class="num">1228</td><td class="num">1697</td>
           <td class="num" style="color:#ef4444">42.0%</td>
-          <td class="num" style="color:#ef4444">-191.70%</td>
+          <td class="num" style="color:#ef4444">-193.18%</td>
           <td class="num" style="color:#ef4444">0.95</td>
           <td class="num" style="color:#ef4444">-0.07%</td>
           <td class="num">+3.2%</td>
@@ -1885,29 +1897,49 @@ Key changes:
           <td>AUDUSD=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#22c55e;font-weight:700">BUY</td>
-          <td class="num">0.698665</td><td class="num">0.703151</td><td class="num">0.695172</td>
+          <td class="num">0.698617</td><td class="num">0.70315</td><td class="num">0.695124</td>
           <td class="num">0.70</td><td class="num">1.3</td>
-          <td class="num" style="color:#ef4444">-0.00%</td>
+          <td class="num" style="color:#888">+0.00%</td>
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
-          <td class="dim" style="font-size:11px">Z-score=-1.99 below 200d SMA (0.70315), RSI=29. Backtest: 68.3% WR on 167 trades</td>
+          <td class="dim" style="font-size:11px">Z-score=-2.00 below 200d SMA (0.70315), RSI=29. Backtest: 68.3% WR on 167 trades</td>
         </tr><tr>
           <td>NZDUSD=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#22c55e;font-weight:700">BUY</td>
-          <td class="num">0.561956</td><td class="num">0.57038534</td><td class="num">0.559146</td>
-          <td class="num">0.70</td><td class="num">8.1</td>
-          <td class="num" style="color:#22c55e">+0.00%</td>
+          <td class="num">0.562019</td><td class="num">0.584597</td><td class="num">0.559209</td>
+          <td class="num">0.70</td><td class="num">8.0</td>
+          <td class="num" style="color:#888">+0.00%</td>
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
-          <td class="dim" style="font-size:11px">Z-score=-2.00 below 200d SMA (0.58460), RSI=22. Backtest: 68.3% WR on 167 trades</td>
+          <td class="dim" style="font-size:11px">Z-score=-1.99 below 200d SMA (0.58460), RSI=22. Backtest: 68.3% WR on 167 trades</td>
+        </tr><tr>
+          <td>GBPUSD=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">1.326594</td><td class="num">1.344402</td><td class="num">1.319961</td>
+          <td class="num">0.66</td><td class="num">2.7</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
+          <td class="dim" style="font-size:11px">Z-score=-1.56 below 200d SMA (1.34440), RSI=31. Backtest: 68.3% WR on 167 trades</td>
+        </tr><tr>
+          <td>EURJPY=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">177.770004</td><td class="num">183.94242</td><td class="num">176.881154</td>
+          <td class="num">0.65</td><td class="num">6.9</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
+          <td class="dim" style="font-size:11px">Z-score=-1.51 below 200d SMA (183.94242), RSI=38. Backtest: 68.3% WR on 167 trad</td>
         </tr><tr>
           <td>USDCAD=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#ef4444;font-weight:700">SELL</td>
-          <td class="num">1.42491</td><td class="num">1.40353635</td><td class="num">1.430621</td>
-          <td class="num">0.70</td><td class="num">6.8</td>
-          <td class="num" style="color:#22c55e">+0.00%</td>
+          <td class="num">1.42722</td><td class="num">1.420376</td><td class="num">1.432924</td>
+          <td class="num">0.78</td><td class="num">1.2</td>
+          <td class="num" style="color:#888">+0.00%</td>
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
           <td class="dim" style="font-size:11px">Z-score=2.00 above 200d SMA (1.38588), RSI=94. Backtest: 68.3% WR on 167 trades </td>
