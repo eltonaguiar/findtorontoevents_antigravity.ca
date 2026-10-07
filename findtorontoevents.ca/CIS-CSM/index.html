@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="An independent CIS-CSM study guide: exam blueprint domains and weights, key CSM tables, the Guided Setup wizard, required plugins, exam cost, related micro-certifications, and a tiered ServiceNow University course list with official links." />
+  <title>CIS-CSM Study Briefing | FindTorontoEvents.ca</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #e6edf1;
+      --muted: #aabac4;
+      --brand: #51c7ba;
+      --brand-dark: #83ded3;
+      --brand-soft: #173b3d;
+      --accent: #f0b36e;
+      --paper: #101820;
+      --card: #18232c;
+      --line: #34434d;
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.24);
+      font-family: "Segoe UI", Arial, sans-serif;
+      scroll-behavior: smooth;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.65;
+    }
+    a { color: var(--brand-dark); text-underline-offset: 0.16em; }
+    a:hover { color: #b0fff2; }
+    a:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+    .skip-link {
+      position: absolute;
+      top: -5rem;
+      left: 1rem;
+      z-index: 2;
+      padding: 0.7rem 1rem;
+      color: #101820;
+      background: #e6edf1;
+    }
+    .skip-link:focus { top: 1rem; }
+    .page { width: min(1160px, 100% - 2rem); margin: 0 auto; }
+    .hero {
+      margin: 1.5rem 0 1rem;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--brand);
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .eyebrow {
+      margin: 0 0 0.5rem;
+      color: var(--brand-dark);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { line-height: 1.2; }
+    h1 {
+      max-width: 850px;
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: -0.035em;
+    }
+    .lede {
+      max-width: 800px;
+      margin: 1rem 0 0;
+      color: var(--muted);
+      font-size: 1.12rem;
+    }
+    .notice {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      margin-top: 1.3rem;
+      padding: 0.85rem 1rem;
+      border-left: 4px solid var(--accent);
+      background: #392b1d;
+      color: #ffe2bf;
+      font-size: 0.93rem;
+    }
+    .notice strong { white-space: nowrap; }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 270px) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+    .toc, article, .course-card, .concept, .checklist, .tier {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+      box-shadow: 0 6px 18px rgba(20, 47, 57, 0.04);
+    }
+    .toc {
+      position: sticky;
+      top: 1rem;
+      padding: 1.1rem;
+    }
+    .toc h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1rem;
+    }
+    .toc ol { margin: 0; padding-left: 1.3rem; }
+    .toc li { padding: 0.18rem 0; font-size: 0.91rem; }
+    .toc a { text-decoration: none; }
+    article { min-width: 0; padding: clamp(1.1rem, 3vw, 2rem); }
+    article section + section {
+      margin-top: 2rem;
+      padding-top: 1.6rem;
+      border-top: 1px solid var(--line);
+    }
+    h2 { margin: 0 0 0.8rem; font-size: clamp(1.35rem, 3vw, 1.8rem); }
+    h3 { margin: 1.25rem 0 0.4rem; font-size: 1.08rem; }
+    p { margin: 0.65rem 0; }
+    .muted { color: var(--muted); }
+    .concept-grid, .course-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+    .concept { padding: 1rem; box-shadow: none; }
+    .concept h3 { margin: 0 0 0.35rem; }
+    .concept p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    .flow {
+      margin: 1rem 0;
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      background: var(--brand-soft);
+      color: #d4f5ef;
+      font-weight: 700;
+    }
+    .flow span { color: var(--brand-dark); }
+    .checklist { padding: 1rem 1.2rem; box-shadow: none; }
+    .checklist li { margin: 0.45rem 0; }
+    .course-card { padding: 1.1rem; box-shadow: none; }
+    .course-card h3 { margin: 0 0 0.45rem; }
+    .course-card p { color: var(--muted); font-size: 0.94rem; }
+    .course-card a { font-weight: 700; }
+    .tier { margin-top: 1rem; padding: 1.1rem 1.2rem; box-shadow: none; }
+    .tier-badge {
+      display: inline-block;
+      margin-right: 0.5rem;
+      padding: 0.1rem 0.55rem;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand-dark);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+    .tier h3 { margin-top: 0.2rem; }
+    .tier ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    .tier li { margin: 0.4rem 0; }
+    .source-list { padding-left: 1.25rem; }
+    .source-list li { margin: 0.65rem 0; }
+    details {
+      margin: 0.9rem 0;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #131d25;
+    }
+    summary { cursor: pointer; font-weight: 700; color: var(--brand-dark); }
+    details p { margin: 0.6rem 0 0.2rem; color: var(--muted); }
+    .table-wrap { overflow-x: auto; margin: 1rem 0; }
+    .table-map { width: 100%; border-collapse: collapse; min-width: 620px; }
+    .table-map th, .table-map td {
+      padding: 0.7rem 0.8rem;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    .table-map th { background: #22323d; color: var(--brand-dark); }
+    .table-map code { overflow-wrap: anywhere; }
+    code {
+      padding: 0.05rem 0.3rem;
+      border-radius: 5px;
+      background: #111b22;
+      color: #b7e7df;
+      font-size: 0.9em;
+    }
+    footer {
+      margin: 0 0 2rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+      .toc { position: static; }
+      .concept-grid, .course-grid { grid-template-columns: 1fr; }
+      .notice { display: block; }
+      .notice strong { display: block; margin-bottom: 0.25rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      :root { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to briefing</a>
+  <div class="page">
+    <header class="hero">
+      <p class="eyebrow">ServiceNow Customer Service Management · Study Briefing</p>
+      <h1>CIS-CSM: Customer Service Management</h1>
+      <p class="lede">
+        A practical orientation to the Certified Implementation Specialist – Customer Service
+        Management exam: what the five weighted domains actually test, which tables and plugins
+        you are expected to know, how the in-product setup wizard gets an instance running,
+        what it costs, and which ServiceNow University courses to take in what order.
+      </p>
+      <div class="notice" role="note">
+        <strong>Independent study aid</strong>
+        <span>This is not an official ServiceNow publication or a substitute for the current exam blueprint, product documentation, or training. Credential rules, prices, course names, and release labels change; confirm them in ServiceNow University before you register.</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="toc" aria-label="Table of contents">
+        <h2>On this page</h2>
+        <ol>
+          <li><a href="#credential">Credential at a glance</a></li>
+          <li><a href="#exam-facts">Format, cost, and maintenance</a></li>
+          <li><a href="#curriculum-map">Five-domain curriculum map</a></li>
+          <li><a href="#domain-1">Domain 1: Foundational data model (27%)</a></li>
+          <li><a href="#domain-2">Domain 2: CSM configuration (38%)</a></li>
+          <li><a href="#domain-3">Domain 3: Case management (17%)</a></li>
+          <li><a href="#domain-4">Domain 4: Workspace, portals, analytics (8%)</a></li>
+          <li><a href="#domain-5">Domain 5: Best practices and knowledge (10%)</a></li>
+          <li><a href="#data-model">Key tables</a></li>
+          <li><a href="#getting-started">Guided Setup wizard and plugins</a></li>
+          <li><a href="#implementation">Implementation sequence</a></li>
+          <li><a href="#learning">Course tier list</a></li>
+          <li><a href="#related-credentials">Related credentials and micro-certifications</a></li>
+          <li><a href="#references">Official reference links</a></li>
+        </ol>
+      </nav>
+
+      <main id="main-content">
+        <article>
+          <section id="credential">
+            <h2>1. Credential at a glance</h2>
+            <p>
+              CIS-CSM is ServiceNow’s implementation-specialist credential for the Customer
+              Service Management application. The official blueprint states the exam confirms
+              you can configure, implement, and maintain the ServiceNow CSM application, and
+              validates your ability to manage data models, configure case routing, oversee
+              case processes, and use CSM workspaces, portals, and analytics.
+            </p>
+            <p>
+              Recommended experience is hands-on: practical experience implementing or
+              maintaining CSM in ServiceNow instances, plus working knowledge of customer
+              service processes, industry data structures, and case workflows. Treat the
+              blueprint as the authority for scope and the credential page as the authority
+              for eligibility and registration.
+            </p>
+            <p class="flow">
+              Customer data <span>→</span> entitlement <span>→</span> intake channel
+              <span>→</span> routed case <span>→</span> task and escalation work
+              <span>→</span> resolution, review, and reporting
+            </p>
+            <p>
+              <a href="https://learning.servicenow.com/lxp/en/credentials/certified-implementation-specialist-customer-service-management?id=kb_article_view&amp;sysparm_article=KB0011529" target="_blank" rel="noopener noreferrer">Open the official CIS-CSM mainline exam blueprint</a>
+              ·
+              <a href="https://learning.servicenow.com/lxp/en/customer-service-management/certified-implementation-specialist-customer?id=learning_content_prev&amp;course_id=02542b1d4734f6d0b8d109b4f16d4337" target="_blank" rel="noopener noreferrer">Open the CIS-CSM credential and registration page</a>
+              ·
+              <a href="https://www.servicenow.com/services/training-and-certification/journey/#/" target="_blank" rel="noopener noreferrer">Credentialing Program Guide</a>
+            </p>
+          </section>
+
+          <section id="exam-facts">
+            <h2>2. Format, cost, and maintenance</h2>
+            <p>
+              Facts below come from the current blueprint (updated November 2025) and the
+              official ServiceNow University cost article (updated September 2026). Confirm
+              both again at registration; prices and policies do change.
+            </p>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Item</th><th>What ServiceNow publishes</th></tr></thead>
+                <tbody>
+                  <tr><td>Questions</td><td>60 questions in 90 minutes. Multiple choice (at least three options) and multiple select (at least four options, no partial credit). Each question is worth one point.</td></tr>
+                  <tr><td>Scoring</td><td>Your total is compared with a predetermined cut score that is not published and is not always 70%. Result notifications are conditional and may be audited.</td></tr>
+                  <tr><td>Exam fee</td><td><strong>$450 USD</strong> registration for all CIS exams (CSA, CAD, and CAS-PA are $300 USD). Partner and customer discounts can apply.</td></tr>
+                  <tr><td>Training cost</td><td>On-demand training is provided at no cost, but the exam is purchased separately. Instructor-led training completion includes one free exam attempt.</td></tr>
+                  <tr><td>Delivery</td><td>Register in ServiceNow University, then schedule through Pearson VUE: a test center or online proctored OnVUE session. Registration is payment; you have 90 days to schedule and complete the exam, and fees are non-refundable.</td></tr>
+                  <tr><td>Retakes</td><td>A waiting period applies between attempts and each attempt is paid again; the Credentialing Program Guide holds the full retake rules.</td></tr>
+                  <tr><td>Maintenance</td><td>Annual maintenance exams (deltas) plus the yearly Certification Maintenance Program (CMP) fee. Passing awards a Credly digital badge.</td></tr>
+                  <tr><td>Practice exams</td><td>Official practice exams are sold through MeasureUp; the blueprint points to Knowledge Article KB0013408 for access details.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              <a href="https://learning.servicenow.com/lxp/en/credentials/cost-of-mainline-certification-exams?id=kb_article_view&amp;sysparm_article=KB0013317" target="_blank" rel="noopener noreferrer">Official cost article: Cost of Mainline certification exams</a>
+              ·
+              <a href="https://learning.servicenow.com/lxp?id=kb_article_view&amp;sysparm_article=KB0013408" target="_blank" rel="noopener noreferrer">Official practice exam article (KB0013408)</a>
+            </p>
+          </section>
+
+          <section id="curriculum-map">
+            <h2>Curriculum coverage: all five domains</h2>
+            <p>
+              The blueprint publishes five exam domains with sub-topics and weights. Each has a
+              lesson below with the practical detail worth memorizing, a practice task, a
+              self-check, and official ServiceNow references. The weights total 100%.
+            </p>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Domain</th><th>Weight</th><th>Blueprint sub-topics</th></tr></thead>
+                <tbody>
+                  <tr><td><a href="#domain-1">1. CSM foundational data model</a></td><td>27%</td><td>Business models; product models; install base management; contracts and entitlements.</td></tr>
+                  <tr><td><a href="#domain-2">2. CSM configuration</a></td><td>38%</td><td>CSM in ServiceNow; routing and assignment; case types; channels.</td></tr>
+                  <tr><td><a href="#domain-3">3. Case management</a></td><td>17%</td><td>Case state flows; major issue management; case digests and service definitions; CSM workspace; case actions, tasks, and escalations.</td></tr>
+                  <tr><td><a href="#domain-4">4. CSM Workspace, Portals, Service Catalog, Analytics, and Reporting</a></td><td>8%</td><td>Portals and service catalog; special handling notes, SLAs, and targeted communications; Platform Analytics and reporting.</td></tr>
+                  <tr><td><a href="#domain-5">5. CSM Best Practices and Knowledge Management</a></td><td>10%</td><td>ServiceNow architecture; customer service end-to-end processes; defining project scope; knowledge functionality, Article Quality Index, knowledge blocks and search, bulk translations.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="muted">
+              Reading order matters: Domain 2 is the largest single block of the exam, and it
+              leans on Domain 1, so study the data model before the configuration surface.
+              The sub-topic lists are explicitly not all-inclusive; confirm the current
+              blueprint before booking.
+            </p>
+          </section>
+
+          <section id="domain-1">
+            <h2>Domain 1: CSM foundational data model — 27%</h2>
+            <div data-topic="business-models">
+              <h3>Business models</h3>
+              <p>
+                CSM supports more than one shape of customer. In a B2B model the
+                <strong>Account</strong> is the anchor: contacts, contracts, entitlements, sold
+                products, teams, and escalations all hang off it. In a B2C model the
+                <strong>Consumer</strong> and <strong>Household</strong> records carry that
+                weight, and consumers self-register through the Consumer Service Portal. A
+                B2B2C model layers consumers inside a customer organization, which is why the
+                customer data models for B2B2C plugin depends on install base management.
+                Account relationships are stored as records with a source account and a target
+                account plus a relationship type, so a partner, reseller, or parent company
+                link is data you can query, not a note on a form. Decide the model before you
+                import anything: choosing households versus accounts late means rebuilding
+                contacts, access rules, and portal visibility.
+              </p>
+            </div>
+            <div data-topic="product-models">
+              <h3>Product models</h3>
+              <p>
+                The product side of the model describes what a customer bought and what the
+                service commitment is: product and service definitions, product models, sold
+                products, and the service offerings they connect to. Product context is what
+                makes a case specific — a case about a particular model, version, or offering
+                can inherit the right templates, knowledge, and entitlement checks instead of
+                relying on the agent to ask. Service Model Foundation is the current framing
+                for entities such as business locations and households, and ServiceNow has
+                renamed several table and field labels across recent releases, so study the
+                current labels rather than an older course screenshot. Keep the alignment with
+                the CMDB and CSDM in mind: product and asset identity should reconcile, not
+                fork into a second inventory.
+              </p>
+            </div>
+            <div data-topic="install-base">
+              <h3>Install base management</h3>
+              <p>
+                Install base management captures the current state of what a customer has in
+                service and the relationships that affect how it works. It is delivered by its
+                own plugin, and install base items sit alongside assets and configuration
+                items rather than replacing them: an install base item records the customer’s
+                instance of a product, product instances can reference an asset or a CI, and
+                sold products populate the base. That relationship is the difference between
+                “this account bought plan X” and “these four units are deployed at site Y and
+                unit 3 is the one generating the case.” Expect exam items that test whether
+                you can trace from a case to the affected installed item and its related
+                entities.
+              </p>
+            </div>
+            <div data-topic="contracts-entitlements">
+              <h3>Contracts and entitlements</h3>
+              <p>
+                Contracts record the commercial relationship, contract contacts record who is
+                covered, entitlements record what coverage applies, and case entitlements link
+                that coverage to an individual case through the Entitlements related list.
+                Entitlement is the field a careful implementation checks before promising
+                response times or offering a channel that costs money, and the advanced
+                entitlements system property controls how that related list is displayed.
+                Expect questions that separate the contract from the entitlement and the
+                entitlement from the case: one contract can cover many contacts, one
+                entitlement can apply to many cases, and a case without a matched entitlement
+                is a data-quality signal, not a silent pass.
+              </p>
+            </div>
+            <p><strong>Practice:</strong> Draw a B2B2C chain on paper: account, relationship to a partner account, contact, contract, contract contact, entitlement, sold product, and install base item. Mark which record you would inspect to answer “is this contact covered, and which physical unit is affected?”</p>
+            <details><summary>Check your understanding: is a contract the same thing as an entitlement?</summary><p>No. The contract is the commercial agreement, the entitlement expresses the coverage that agreement grants, and the case entitlement record ties that coverage to a specific case. Contracts, entitlements, and cases are separate records with their own relationships.</p></details>
+            <p class="source-list">Official reading:
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/r_TIWCustomerService.html" target="_blank" rel="noopener noreferrer">Tables installed with Customer Service Management</a>;
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/activate-plugins.html" target="_blank" rel="noopener noreferrer">Activating plugins for Service Model Foundation</a>;
+              <a href="https://www.servicenow.com/docs/r/customer-relationship-management/crm-data-models.html" target="_blank" rel="noopener noreferrer">CRM data models</a>;
+              <a href="https://learning.servicenow.com/lxp/en/customer-service-management/service-catalog-service-definition-and-case?id=learning_course_prev&amp;course_id=5c1fad8c4790225076e07884f16d43f4" target="_blank" rel="noopener noreferrer">Case Types, Service Definition, Service Catalog Fundamentals</a>.
+            </p>
+          </section>
+
+          <section id="domain-2">
+            <h2>Domain 2: CSM configuration — 38%</h2>
+            <div data-topic="csm-in-servicenow">
+              <h3>CSM in ServiceNow</h3>
+              <p>
+                CSM is delivered as plugins on the platform: a Customer Service base plugin
+                with base entities (accounts, contacts, consumers, entitlements), plus a long
+                list of optional feature plugins for case types, case digests, major issue
+                management, install base, portals, walk-up, playbooks, mobility, virtual
+                agent topics, and integrations with ITSM, request, field service, and SPM.
+                Some plugins are demo data and belong only in non-production instances. The
+                platform services CSM leans on — users, groups, roles, access controls,
+                service catalog, SLAs, notifications, flow designer, and reporting — are the
+                same ones you learned as an administrator, so most configuration mistakes are
+                platform mistakes wearing a CSM hat. Guided setup is the documented path
+                through activation and configuration; there is a checklist for it later on
+                this page.
+              </p>
+            </div>
+            <div data-topic="routing">
+              <h3>Routing and assignment</h3>
+              <p>
+                Routing turns an inbound request into owned work. Service channels, presence
+                states, work item queues, Advanced Work Assignment eligibility and reject
+                reasons, and assignment rules decide who sees what and when. Email channel
+                configuration records control how inbound mail becomes an interaction or a
+                case; assignment and routing rules decide the group and agent. The design
+                question is always operational: route to the team that can actually resolve
+                the issue for that account, in that region, in that entitlement tier. Test
+                with the intended agent and supervisor roles, not only with an administrator
+                account, and check for queues that never drain, agents who never receive work
+                because of presence or eligibility settings, and rules that fire on the wrong
+                case type.
+              </p>
+            </div>
+            <div data-topic="case-types">
+              <h3>Case types</h3>
+              <p>
+                A case type is a configured business process, implemented as a table that
+                extends the Case table, plus the definition record that registers it. This is
+                the deepest configuration surface in the exam, and it is heavily documented:
+                create the extended table in a scope other than global, set view rules, create
+                choice records and state flows for the states, add UI policies, client
+                scripts, business rules, and declarative actions, then register the case type
+                and configure its related lists (state flows, special handling notes, SLAs,
+                email templates, quick messages, reports). Then secure it: roles for agents,
+                ACLs for external customers, and Get Case Types flow conditions so agents only
+                see the case types they may create. Configure one Create Case declarative
+                action, not both, and use record producers to expose the type on the portal.
+              </p>
+            </div>
+            <div data-topic="channels">
+              <h3>Channels</h3>
+              <p>
+                CSM meets customers where they are: email, chat, telephony and messaging,
+                web and portal forms, walk-up locations, social channels, and Engagement
+                Messenger embedded on an external site, with contact center integrations for
+                enterprise telephony. Each channel has its own configuration, its own routing
+                implications, and its own cost of failure — an email channel that silently
+                creates duplicates, an unauthenticated chat that never reaches a queue, a
+                portal record producer that bypasses entitlement checks. Know which channels
+                Advanced Work Assignment can serve for CSM, and know that the same issue
+                arriving through two channels should converge on one case where the product
+                supports it, rather than fragmenting the customer’s history.
+              </p>
+            </div>
+            <p><strong>Practice:</strong> Design one case type end to end for a refund request: name the extended table, list the states in its state flow, the UI policy you would add, the role that can create it, the ACL that lets an authenticated portal user view it, and the channel you would expose it on.</p>
+            <details><summary>Check your understanding: does a case type require a new table?</summary><p>Yes. Each case type creates a table extending <code>sn_customerservice_case</code>, which inherits most Case behavior, and a case type definition record in <code>sn_case_type</code> registers it. View rules, state flows, UI policies, client scripts, business rules, and declarative actions are then configured against that table.</p></details>
+            <p class="source-list">Official reading:
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/configure-csm-case-types.html" target="_blank" rel="noopener noreferrer">Configuring customer service case types</a>;
+              <a href="https://www.servicenow.com/docs/r/zurich/customer-service-management/r_CustServMgmtAddtlPluginsTable.html" target="_blank" rel="noopener noreferrer">Additional plugins for Customer Service Management</a>;
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/configure-customer-service.html" target="_blank" rel="noopener noreferrer">Configuring Customer Service Management overview</a>;
+              <a href="https://learning.servicenow.com/lxp/en/customer-service-management/implementation-best-practices?id=learning_course_prev&amp;course_id=f79cf3bd87fb9614e53afc48cebb3546" target="_blank" rel="noopener noreferrer">CSM Best Practices for Implementation</a>.
+            </p>
+          </section>
+
+          <section id="domain-3">
+            <h2>Domain 3: Case management — 17%</h2>
+            <div data-topic="state-flows">
+              <h3>Case state flows</h3>
+              <p>
+                The Case table extends Task, so cases share the task family’s state machinery.
+                State flows define which transitions are allowed between states, and you can
+                configure work to happen during a transition. The blueprint’s own sample
+                question is a useful anchor: the final state of a case is Closed, not
+                Resolved or Completed. For a case type you create choice records for each
+                state on that case type’s table with Element set to State, then build the
+                flow. The exam cares that you understand state is configured behavior with
+                business meaning, not a free-text field an agent edits.
+              </p>
+            </div>
+            <div data-topic="major-issue">
+              <h3>Major issue management</h3>
+              <p>
+                Major issue management is a capability, delivered by its own plugin, for
+                customer-facing communications and resolution work on issues that affect many
+                customers at once. One root cause generates a major issue, related cases are
+                associated with it, and communication is managed centrally instead of each
+                agent improvising. The Case form carries a major case section whose visibility
+                is controlled by an inherited UI policy. Know when a spike of similar cases
+                should become a major issue, who owns the customer communication, and how
+                resolution of the major issue relates to the individual cases.
+              </p>
+            </div>
+            <div data-topic="digests">
+              <h3>Case digests and service definitions</h3>
+              <p>
+                Case digests let an agent send periodic summaries of progress while a case is
+                open, and produce a post case review with root cause, mitigation, and
+                preventive actions when work completes. Case action summaries and post case
+                reviews are configured per case type through the Case Digests configuration
+                and mapped in the CSM table map table. Service definitions connect what was
+                sold and committed to the case process so the right templates, SLAs, and
+                knowledge are available. Both features need their plugins, and both are
+                configured per case type rather than globally — a common implementation
+                mistake is configuring the base case only and assuming new types inherit it.
+              </p>
+            </div>
+            <div data-topic="workspace">
+              <h3>CSM workspace</h3>
+              <p>
+                The agent experience lives in a workspace: the configurable CSM workspace
+                plugin delivers the UI Builder version of the service desk, and CRM Workspace
+                configuration covers lists, notifications, highlighted values, ribbon
+                settings, form headers, and action assignments — including per case type. The
+                point of a workspace is consolidation: case, account, entitlement, related
+                records, knowledge, and channel history in one place, with customer central
+                giving a single view of a customer’s information and activity. Expect items
+                about which pane shows what, and about configuring a workspace differently
+                for different case types.
+              </p>
+            </div>
+            <div data-topic="actions-tasks-escalations">
+              <h3>Case actions, tasks, and escalations</h3>
+              <p>
+                Case actions are the buttons, links, and menu items on forms and lists;
+                declarative actions are the supported way to add them, and inherited actions
+                can be blocked. Case tasks are the child work records for the actual
+                resolution steps, so a case can be split across teams without losing the
+                parent thread. Escalations have their own records with severity definitions
+                and templates that drive notification and priority when a case breaches
+                expectations. Related party and responsibility records add the B2B nuance:
+                which entity — account, contact, or consumer — is responsible for what on
+                this case. Assignments and escalations should be tested with representative
+                cases, not assumed from configuration.
+              </p>
+            </div>
+            <p><strong>Practice:</strong> Take a case that has breached its response commitment. Write down the records involved in order: case, entitlement check, task, escalation record, escalation severity, related party responsibility, and the workspace view an agent would use to recover it.</p>
+            <details><summary>Check your understanding: is Resolved the end of a case?</summary><p>No. Resolved is a working state; the final state of a case is Closed. State flows define the permitted transitions, and closure rules determine how a case gets there.</p></details>
+            <p class="source-list">Official reading:
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/csm-config-workspace-set-up.html" target="_blank" rel="noopener noreferrer">Set up CRM Workspace</a>;
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/r_TIWCustomerService.html" target="_blank" rel="noopener noreferrer">Tables installed with Customer Service Management</a>;
+              <a href="https://www.servicenow.com/docs/r/api-reference/rest-apis/case-api.html" target="_blank" rel="noopener noreferrer">Case API reference</a>;
+              <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=134f614c4750625050593369126d4359" target="_blank" rel="noopener noreferrer">Knowledge Management for Customer Service Management Fundamentals</a>.
+            </p>
+          </section>
+
+          <section id="domain-4">
+            <h2>Domain 4: Workspace, Portals, Service Catalog, Analytics — 8%</h2>
+            <div data-topic="portals-catalog">
+              <h3>Portals and service catalog</h3>
+              <p>
+                Self-service runs through portals: the Customer Service Portal for
+                authenticated customers, the Consumer Service Portal for B2C consumers, and
+                configurable portal widgets for layout and behavior. Record producers expose
+                case types on a portal so a customer can raise the right kind of case without
+                an agent mediating. Knowledge, communities, service catalog, chatbots,
+                appointment booking, and walk-up check-in all live on this side of the
+                boundary. The catalog connection matters twice: as the intake path for
+                requests, and as the service definition context that tells the case what was
+                sold.
+              </p>
+            </div>
+            <div data-topic="shn-sla-targeted">
+              <h3>Special handling notes, SLAs, and targeted communications</h3>
+              <p>
+                Special handling notes annotate a case with standing instructions — a VIP
+                flag, a regulatory caveat, a site access restriction — and are configured per
+                case type through the related list. SLAs on cases and case types set the
+                commitments the case must meet, which is what makes escalation and reporting
+                meaningful rather than decorative. Targeted communications is the supported
+                way to publish and distribute content and articles to internal and external
+                audiences. Together these three are the “context around the case” layer:
+                instructions, commitments, and outbound messaging.
+              </p>
+            </div>
+            <div data-topic="analytics">
+              <h3>Platform Analytics and reporting</h3>
+              <p>
+                Reporting answers whether the implementation works: case volume and aging by
+                channel, first-contact resolution, SLA attainment, deflection on the portal,
+                and agent workload. Case report records store key performance indicators and
+                metrics for cases, and Performance Analytics content packs for Customer
+                Service (plus an advanced pack tied to major issue management, case action
+                status, AWA, and related plugins) supply the out-of-the-box indicators.
+                Performance Analytics is licensed separately, and some content packs display
+                incorrectly if their dependency plugins are missing. Build a small set of
+                reports you trust, then drill into the underlying records to confirm filters
+                and scopes before anyone presents the numbers.
+              </p>
+            </div>
+            <p><strong>Practice:</strong> Pick one executive question — “how many cases did we deflect last month?” — and name the record or indicator you would use, the plugins it depends on, and the filter you would verify first.</p>
+            <details><summary>Check your understanding: do all CSM indicators work as soon as CSM is installed?</summary><p>No. Performance Analytics content packs depend on their own activation and on related feature plugins, and PA itself is a separate license for collecting indicator scores. Missing dependencies show up as blank or incorrect indicators rather than as errors.</p></details>
+            <p class="source-list">Official reading:
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/configure-customer-service.html" target="_blank" rel="noopener noreferrer">Set up self-service and extend capabilities</a>;
+              <a href="https://www.servicenow.com/docs/r/zurich/customer-service-management/r_CustServMgmtAddtlPluginsTable.html" target="_blank" rel="noopener noreferrer">CSM plugins including PA content packs</a>.
+            </p>
+          </section>
+
+          <section id="domain-5">
+            <h2>Domain 5: CSM Best Practices and Knowledge Management — 10%</h2>
+            <div data-topic="architecture">
+              <h3>Best practice: ServiceNow architecture</h3>
+              <p>
+                The architecture question on the exam is really an upgrade question: does your
+                solution survive the next release? Prefer configuration over customization,
+                keep extensions in an application scope rather than global, extend the case
+                table instead of forking the data model, and reuse platform capabilities —
+                flow designer, declarative actions, UI policies, scoped apps — before writing
+                scripts. Align customer, product, and service data with CSDM and the CMDB so
+                the CSM model and the platform model do not diverge. The blueprint’s own
+                sample question asks which methodology ServiceNow uses to manage CSM
+                implementation projects; the answer is Now Create, so know what that
+                methodology asks you to do.
+              </p>
+            </div>
+            <div data-topic="end-to-end">
+              <h3>Best practice: customer service end-to-end processes</h3>
+              <p>
+                Design the whole loop, not the case form: intake through the right channel,
+                identification and entitlement verification, triage and routing, resolution
+                with tasks and escalations, communication while work is in progress, closure
+                with a post case review, and measurement afterwards. Each handoff is where
+                implementations fail — an accurate case with an unknown owner is still
+                stuck. Walk a real scenario with the customer’s process owners and mark
+                where responsibility transfers, because that is where your assignment rules,
+                responsibilities, and notifications must line up.
+              </p>
+            </div>
+            <div data-topic="project-scope">
+              <h3>Best practice: defining project scope</h3>
+              <p>
+                Scope decides what gets configured first. The implementation workshop
+                material frames it as reviewing a statement of work, confirming the purchased
+                package, and working from a capability matrix — business models to customer
+                data models, industry data models, security, governance, and organizational
+                change management. A defensible scope names the case types, channels, portals,
+                integrations, and reporting that are in, the release and plugins being used,
+                and who accepts each piece. Scope creep in CSM usually arrives as “one more
+                case type,” which is cheap to say and expensive to secure, test, and document.
+              </p>
+            </div>
+            <div data-topic="knowledge">
+              <h3>Knowledge management</h3>
+              <p>
+                Knowledge in CSM is customer-facing infrastructure: knowledge bases and
+                articles that serve both agents and portal users, with access controlled by
+                roles, ACLs, and product entitlements that restrict which articles a given
+                customer can see. The Article Quality Index is the published measure of
+                article quality, so treat it as a maintenance target rather than a vanity
+                metric. Knowledge blocks let you reuse a controlled snippet of content across
+                articles, and search configuration determines whether an agent or a customer
+                finds the right article at the moment of need — contextual search on the case
+                form uses the case knowledge base search context. Bulk translations support
+                multilingual portals without maintaining parallel manual copies.
+              </p>
+            </div>
+            <p><strong>Practice:</strong> Take a case type you know and write the end-to-end process in ten steps, then mark each step as “platform configuration,” “data,” or “organizational change.” Anything you marked that nobody owns is a scope gap.</p>
+            <details><summary>Check your understanding: which implementation methodology does ServiceNow use for CSM projects?</summary><p>Now Create. The blueprint’s sample item lists Agile, SIM, Now Create, and OCM, with Now Create as the answer — and the credential’s recommended preparation includes the “Get Started with Now Create” course.</p></details>
+            <p class="source-list">Official reading:
+              <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=f13a1e8ddb6890503e73166e139619a7" target="_blank" rel="noopener noreferrer">Get Started with the Now Create Methodology</a>;
+              <a href="https://learning.servicenow.com/lxp/en/instructor-led-training/customer-service-management-csm-implementation?id=kb_article_view&amp;sysparm_article=KB0012979" target="_blank" rel="noopener noreferrer">CSM Implementation Workshop syllabus</a>;
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/configure-csm-case-types.html" target="_blank" rel="noopener noreferrer">Contextual search for case types</a>.
+            </p>
+          </section>
+
+          <section id="data-model">
+            <h2>Key tables</h2>
+            <p>
+              You are not asked to recite table names for their own sake, but exam items and
+              implementation conversations both assume you can name the record you mean. The
+              list below is drawn from the official ServiceNow documentation for tables
+              installed with Customer Service Management, plus the install base item table.
+              Table labels change between releases; use the current documentation for your
+              instance.
+            </p>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Area</th><th>Table</th><th>What it stores</th></tr></thead>
+                <tbody>
+                  <tr><td>Customer data</td><td><code>customer_account</code></td><td>Customer account and partner records — the anchor of the B2B model.</td></tr>
+                  <tr><td>Customer data</td><td><code>customer_contact</code></td><td>Customer contact records.</td></tr>
+                  <tr><td>Customer data</td><td><code>csm_consumer</code>, <code>csm_household</code>, <code>csm_consumer_user</code></td><td>B2C consumers, households, and consumer self-registration users (extends <code>sys_user</code>).</td></tr>
+                  <tr><td>Relationships</td><td><code>account_relationship</code>, <code>sn_customerservice_account_relationship_type</code></td><td>Bidirectional account-to-account links and their types.</td></tr>
+                  <tr><td>Access</td><td><code>sn_csm_account_access</code>, <code>sn_customerservice_responsibility_def</code>, <code>sn_customerservice_related_party</code></td><td>Restrictions on contact access, responsibility definitions, and the entities related to a case.</td></tr>
+                  <tr><td>Coverage</td><td><code>service_entitlement</code>, <code>sn_customerservice_case_entitlement</code>, <code>contract_rel_contact</code></td><td>Entitlement records, entitlements attached to cases, and contract-to-contact relationships.</td></tr>
+                  <tr><td>Cases</td><td><code>sn_customerservice_case</code></td><td>The customer service case record; every case type table extends it.</td></tr>
+                  <tr><td>Cases</td><td><code>sn_case_type</code>, <code>sn_customerservice_sf_case</code></td><td>Case type definitions and case state flows.</td></tr>
+                  <tr><td>Work</td><td><code>sn_customerservice_task</code>, <code>sn_customerservice_escalation</code>, <code>sn_customerservice_escalation_severity</code>, <code>sn_customerservice_escalation_template</code></td><td>Case tasks, escalations, severity definitions, and escalation templates.</td></tr>
+                  <tr><td>Channels</td><td><code>sn_customerservice_channel_config</code>, <code>sn_customerservice_customer_interaction</code>, <code>sn_customerservice_registration</code></td><td>Email channel configuration, interaction records, and portal self-registration requests.</td></tr>
+                  <tr><td>Teams</td><td><code>sn_customerservice_team_member</code>, <code>sn_customerservice_appointment</code></td><td>Account team members and appointments created for cases.</td></tr>
+                  <tr><td>Products</td><td><code>sn_install_base_item</code>, <code>alm_asset</code>, <code>cmdb_ci</code></td><td>Install base items and the assets/configuration items they can reference.</td></tr>
+                  <tr><td>Measurement</td><td><code>sn_customerservice_case_report</code></td><td>KPIs and metrics for case records.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="muted">
+              Related configuration you will meet in the same documentation: the CSM table map
+              table used by case digest mappings, special handling note configuration, and
+              the case type selector system property that controls the service selector on
+              the Create Case action.
+            </p>
+            <p>
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/r_TIWCustomerService.html" target="_blank" rel="noopener noreferrer">Official table reference: Tables installed with Customer Service Management</a>
+            </p>
+          </section>
+
+          <section id="getting-started">
+            <h2>Getting started: the Guided Setup wizard and plugins</h2>
+            <p>
+              Yes — CSM has an in-product setup wizard. The documentation calls it
+              <strong>Customer Service guided setup</strong>, reached from
+              <strong>Customer Service &gt; Administration &gt; Guided Setup</strong>, and it
+              walks administrators through the entire setup and configuration process in
+              categories (getting started, case types, workspace, integration, and so on).
+              The role called out in the case-type documentation is
+              <code>csm_guided_setup_user</code> or admin. Guided setup reduces the chance of
+              missing a step; it does not replace entitlement checks, prerequisites, or
+              release-matched documentation.
+            </p>
+            <ol class="checklist">
+              <li><strong>Confirm entitlement and release:</strong> licensed CSM application, a compatible ServiceNow release, administrator rights to activate plugins, and the target release’s documentation (release families are renamed regularly — check which one your instance runs).</li>
+              <li><strong>Activate the base plugins:</strong> Customer Service plus customer service base entities, then the feature plugins you actually need: case types, case digests, major issue management, install base, portals, walk-up, playbooks, and the Service Model Foundation plugins for business locations and households.</li>
+              <li><strong>Add demo data only where it belongs:</strong> the CSM demo data plugin and other demo plugins are for non-production instances, so you can exercise features without touching real customers.</li>
+              <li><strong>Run guided setup:</strong> import foundation data (accounts, contacts, users, groups), configure access controls, then work through the guided setup categories for case types, workspace, channels, and portals.</li>
+              <li><strong>Prove it end to end:</strong> use the documented quick start tests for CSM, then create a case through each channel, verify routing, entitlement, tasks, escalation, portal visibility, and reporting with the intended agent and customer roles.</li>
+            </ol>
+            <p>
+              Start with the official
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/configure-customer-service.html" target="_blank" rel="noopener noreferrer">Configuring Customer Service Management</a>
+              page, then the
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/configure-csm-case-types.html" target="_blank" rel="noopener noreferrer">case type configuration procedure</a>
+              (which documents the guided setup entry point) and the
+              <a href="https://www.servicenow.com/docs/r/customer-service-management/quick-start-tests-csm.html" target="_blank" rel="noopener noreferrer">quick start tests for CSM</a>.
+              Use the documentation selector so the pages match the release installed on your
+              instance.
+            </p>
+            <p class="muted">
+              Plugin identifiers matter when you talk to an administrator: the base plugin is
+              <code>com.sn_customerservice</code>, case types are
+              <code>com.snc.csm_case_types</code>, case digests <code>com.sn_csm_case_digest</code>,
+              major issue management <code>com.sn_majorissue_mgt</code>, install base
+              <code>com.snc.install_base</code>, the configurable workspace
+              <code>sn_csm_wrkspc</code>, and walk-up for CSM <code>com.snc.walkup_for_csm</code>.
+            </p>
+          </section>
+
+          <section id="implementation">
+            <h2>Implementation sequence</h2>
+            <p>Use this checklist to structure a first implementation or a focused design review:</p>
+            <ol class="checklist">
+              <li><strong>Set the foundation:</strong> confirm release, entitlement, plugins, roles, and the customer and product data the process depends on.</li>
+              <li><strong>Model the customer:</strong> choose B2B, B2C, or B2B2C deliberately; import accounts, contacts, consumers, relationships, and access rules before configuring anything customer-visible.</li>
+              <li><strong>Attach coverage:</strong> load contracts, entitlements, sold products, and install base items, then verify a case can be matched to them.</li>
+              <li><strong>Configure work:</strong> create case types, state flows, routing and assignment, channels, workspace views, tasks, and escalations in a non-production instance.</li>
+              <li><strong>Expose self-service:</strong> portals, record producers, knowledge bases, and entitlement-aware visibility for external users.</li>
+              <li><strong>Exercise end to end:</strong> one case through every channel, plus an escalated and a major-issue case, inspected with agent, supervisor, and customer roles.</li>
+              <li><strong>Operate and improve:</strong> review SLA attainment, aging queues, knowledge quality index, deflection, and entitlement mismatches; revise configuration from observed cases.</li>
+            </ol>
+            <p class="muted">
+              This is a study framework, not a ServiceNow-prescribed deployment procedure.
+              Follow official product documentation and your organization’s policies.
+            </p>
+          </section>
+
+          <section id="learning">
+            <h2>Course tier list</h2>
+            <p>
+              ServiceNow’s own recommendation is a sequence, not a menu: platform prerequisites
+              first, then the CSM specialization, then the implementation workshop before you
+              sit the exam. The tiers below follow that order, starting with the fundamentals
+              of each core concept and moving into depth. Links go to ServiceNow University;
+              most require sign-in. On-demand English courses are free; the exam is not.
+              Course titles carry a release label (Zurich, Australia, Brazil and so on) —
+              pick the newest English release available to you and check the catalog for a
+              newer one after each ServiceNow release.
+            </p>
+            <p class="notice" role="note">
+              <strong>Release note</strong>
+              <span>ServiceNow renamed its release families: after the city names (Xanadu, Yokohama, Zurich) the sequence moved to country names, with Australia general-availability in 2026 and Brazil following it. If a course below shows an older release in its title, open it and use “view other releases”.</span>
+            </p>
+
+            <div class="tier">
+              <span class="tier-badge">TIER 1</span>
+              <h3>Foundations — start here</h3>
+              <p class="muted">The fundamentals of each core concept: platform, methodology, and CSM itself. Everything else assumes these.</p>
+              <ul>
+                <li><strong>Welcome to ServiceNow</strong> — free orientation to the platform and the University catalog; the credential lists it as the first prerequisite. <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=938eb5358724d91cd3be437e0ebb3597" target="_blank" rel="noopener noreferrer">Course or its micro-certification</a></li>
+                <li><strong>ServiceNow Administration Fundamentals</strong> — navigation, forms, tables, plugins, security, catalog, SLAs, users, groups, and roles. Offered as a three-day class and a self-paced on-demand course. <a href="https://learning.servicenow.com/lxp/en/pages/now-learning-get-certified?id=amap_detail&amp;achievement_id=78c9e8611be7cd50998555fa234bcb93" target="_blank" rel="noopener noreferrer">Open the course page</a></li>
+                <li><strong>Get Started with the Now Create Methodology</strong> — 48 minutes, and the answer to a blueprint sample question. <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=f13a1e8ddb6890503e73166e139619a7" target="_blank" rel="noopener noreferrer">Open the on-demand course</a></li>
+                <li><strong>ServiceNow Platform Implementation</strong> — how implementations are structured and governed. <a href="https://learning.servicenow.com/lxp/en/now-platform/servicenow-platform-implementation-on-demand?id=learning_course_prev&amp;course_id=120ba63fc3545ad4cfdf34ee050131e9" target="_blank" rel="noopener noreferrer">Open the on-demand course</a></li>
+                <li><strong>Customer Service Management (CSM) Essentials</strong> — the core CSM course, about 23–24 hours on demand; the newest English on-demand version is the one to take. <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=55a812f0976acb102192b37de053af4e" target="_blank" rel="noopener noreferrer">Open CSM Essentials (Australia)</a> · <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=d25fc440c39eea10c6009313e4013170" target="_blank" rel="noopener noreferrer">Other releases</a> · <a href="https://learning.servicenow.com/lxp?id=amap_detail&amp;achievement_id=b390e3db1b2b0914998555fa234bcbd5" target="_blank" rel="noopener noreferrer">CSM Fundamentals achievement page</a></li>
+                <li><strong>Customer Service Management (CSM) Essentials Simulator</strong> — practice before the exam without burning an attempt; listed by the blueprint as recommended preparation.</li>
+              </ul>
+            </div>
+
+            <div class="tier">
+              <span class="tier-badge">TIER 2</span>
+              <h3>CIS-CSM core — the blueprint’s recommended preparation</h3>
+              <p class="muted">Directly named in the blueprint. These map onto Domains 1, 2, and 5.</p>
+              <ul>
+                <li><strong>Knowledge Management for Customer Service Management Fundamentals</strong> — how CSM uses knowledge, including customer-facing bases. <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=134f614c4750625050593369126d4359" target="_blank" rel="noopener noreferrer">Open the on-demand course</a></li>
+                <li><strong>Customer Service Management Best Practices for Implementation</strong> — implementation patterns and integrations. <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=f79cf3bd87fb9614e53afc48cebb3546" target="_blank" rel="noopener noreferrer">Open the course</a></li>
+                <li><strong>Case Types, Service Definition, Service Catalog Fundamentals</strong> — the data and catalog context behind case types. <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=5c1fad8c4790225076e07884f16d43f4" target="_blank" rel="noopener noreferrer">Open the course</a></li>
+                <li><strong>Customer Service Management (CSM) Implementation Workshop</strong> — three-day instructor-led, sprint-based configuration of a base instance; ServiceNow recommends completing it before the CIS-CSM exam. <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=3930fd5f97ee5614eb773f11f053af28" target="_blank" rel="noopener noreferrer">Open the workshop</a></li>
+                <li><strong>Recomended Coursework for CSM Certification</strong> — the official learning path collecting the optional recommended courses (about six days of content). <a href="https://learning.servicenow.com/lxp?id=learning_path_prev&amp;path_id=d836d7c887916a906838fd16dabb35c2" target="_blank" rel="noopener noreferrer">Open the learning path</a></li>
+              </ul>
+            </div>
+
+            <div class="tier">
+              <span class="tier-badge">TIER 3</span>
+              <h3>Depth — blueprint “additional resources”, by exam area</h3>
+              <p class="muted">Named in the blueprint’s additional resources. Take the ones that match the domain you are weakest in; search the exact title in the ServiceNow University catalog if a link is not listed here.</p>
+              <ul>
+                <li><strong>Data model depth (Domain 1):</strong> Customer Relationship Management: Customer Data Fundamentals · Customer Relationship Management: Product Fundamentals · Service Model Foundation Essentials.</li>
+                <li><strong>Configuration depth (Domain 2):</strong> Introduction to Playbooks and Process Automation Designer (<a href="https://learning.servicenow.com/lxp/en/pages/now-learning-get-certified?achievement_id=2d29cd021b7f6010b9a2cae3604bcbcd&amp;id=amap_detail" target="_blank" rel="noopener noreferrer">badge page</a>) · Advanced Work Assignment Implementation Guide · Contact Center as a Service (CCaaS) Integration Fundamentals · Engagement Messenger.</li>
+                <li><strong>Workspace and self-service depth (Domains 3–4):</strong> Workspace and UI Builder · Customer Portal and Configurable Portal Widget Fundamentals · Virtual Agent Fundamentals · Virtual Agent Implementation · Workforce Optimization Essentials.</li>
+                <li><strong>Intelligence depth:</strong> Now Assist for CSM — the generative AI features layered on cases and agent work.</li>
+              </ul>
+            </div>
+
+            <div class="tier">
+              <span class="tier-badge">TIER 4</span>
+              <h3>Practice and reference — before and after the course work</h3>
+              <ul>
+                <li><strong>Official exam blueprint</strong> — read it twice, once before you study and once the week of the exam. <a href="https://learning.servicenow.com/lxp/en/credentials/certified-implementation-specialist-customer-service-management?id=kb_article_view&amp;sysparm_article=KB0011529" target="_blank" rel="noopener noreferrer">KB0011529</a></li>
+                <li><strong>Official practice exams via MeasureUp</strong> — the only practice source the blueprint endorses. <a href="https://learning.servicenow.com/lxp?id=kb_article_view&amp;sysparm_article=KB0013408" target="_blank" rel="noopener noreferrer">KB0013408</a></li>
+                <li><strong>Product documentation for your release</strong> — the other official content source named by the blueprint. <a href="https://www.servicenow.com/docs/r/customer-service-management/configure-customer-service.html" target="_blank" rel="noopener noreferrer">Customer Service Management docs</a></li>
+                <li><strong>ServiceNow Developer site</strong> — named by the blueprint as exam content, useful for table and API exploration in a personal developer instance.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section id="related-credentials">
+            <h2>Related credentials and micro-certifications</h2>
+            <p>
+              CIS-CSM does not sit alone. These are the credentials that either feed it or
+              sit beside it, followed by the micro-certifications whose topics show up inside
+              the CIS-CSM domains. Micro-certifications are short, non-proctored, badge-earning
+              assessments tied to a course, so they are cheap ways to test a single concept
+              before paying for the mainline exam.
+            </p>
+            <div class="course-grid">
+              <div class="course-card">
+                <h3>ServiceNow Administration Fundamentals / CSA</h3>
+                <p>The certified system administrator credential is the standard platform foundation; the blueprint assumes platform fluency rather than teaching it.</p>
+                <a href="https://learning.servicenow.com/lxp/en/pages/now-learning-get-certified?id=amap_detail&amp;achievement_id=67e144c0c3bffd5043395230a0013172" target="_blank" rel="noopener noreferrer">Open the course and credential page</a>
+              </div>
+              <div class="course-card">
+                <h3>Data Foundations (CMDB and CSDM) — CIS-DF</h3>
+                <p>Covers the CMDB and CSDM structure that CSM’s product, install base, and asset relationships build on.</p>
+                <a href="https://learning.servicenow.com/lxp/en/certified-implementation-specialist-data-foundations-cmdb-and-csdm-cis-df?id=learning_content_prev&amp;course_id=9e6667194774f6d0b8d109b4f16d4339" target="_blank" rel="noopener noreferrer">Open the credential learning page</a>
+              </div>
+              <div class="course-card">
+                <h3>Micro-Certification — Welcome to ServiceNow</h3>
+                <p>Entry-level platform badge; a low-stakes first assessment if you are new to ServiceNow.</p>
+                <a href="https://learning.servicenow.com/lxp/en/now-platform/micro-certification-welcome-to-servicenow?id=learning_course_prev&amp;course_id=938eb5358724d91cd3be437e0ebb3597" target="_blank" rel="noopener noreferrer">Open the micro-certification</a>
+              </div>
+              <div class="course-card">
+                <h3>Playbooks Essentials Micro-Certification</h3>
+                <p>Maps to the playbook and process automation material in the blueprint’s additional resources.</p>
+                <a href="https://learning.servicenow.com/lxp?id=learning_path_prev&amp;path_id=256e4b3c1b7db4506898edf1b24bcb57" target="_blank" rel="noopener noreferrer">Open the assessment path</a>
+              </div>
+              <div class="course-card">
+                <h3>Micro-Certification — Virtual Agent</h3>
+                <p>Supports the self-service and virtual agent topics used in CSM portals and channels.</p>
+                <a href="https://learning.servicenow.com/lxp/en/pages/now-learning-get-certified?achievement_id=e88e1d77dbc27f40de3cdb85ca961975&amp;id=amap_detail" target="_blank" rel="noopener noreferrer">Open the micro-certification</a>
+              </div>
+              <div class="course-card">
+                <h3>Micro-Certification — Service Portal</h3>
+                <p>Portal configuration depth for the Customer Service and Consumer Service Portals.</p>
+                <a href="https://learning.servicenow.com/lxp/en/pages/now-learning-get-certified?achievement_id=5c8ed977dbc27f40de3cdb85ca9619a0&amp;id=amap_detail" target="_blank" rel="noopener noreferrer">Open the micro-certification</a>
+              </div>
+              <div class="course-card">
+                <h3>Micro-Certification — Platform Analytics</h3>
+                <p>Analytics and reporting depth for the Domain 4 measurement topics.</p>
+                <a href="https://learning.servicenow.com/lxp?id=amap_detail&amp;achievement_id=ac8e1d77dbc27f40de3cdb85ca96198b" target="_blank" rel="noopener noreferrer">Open the micro-certification</a>
+              </div>
+              <div class="course-card">
+                <h3>Micro-Certification — Flows</h3>
+                <p>Flow Designer fundamentals behind case type selection, routing, and process automation.</p>
+                <a href="https://learning.servicenow.com/lxp?achievement_id=a88e1d77dbc27f40de3cdb85ca961950&amp;id=amap_detail" target="_blank" rel="noopener noreferrer">Open the micro-certification</a>
+              </div>
+            </div>
+            <p class="muted">
+              There is no CSM-specific micro-certification listed in the pages referenced by
+              this guide; the badge set above is what maps onto the CIS-CSM domains. Sign in
+              to ServiceNow University and search the catalog to confirm what is current, and
+              note that micro-certifications are a different credential type from the mainline
+              CIS, with their own exam and maintenance rules.
+            </p>
+          </section>
+
+          <section id="references">
+            <h2>Official reference links</h2>
+            <p>
+              Every source below is hosted by ServiceNow. Documentation links are versioned;
+              select the release that matches the instance being implemented.
+            </p>
+            <ul class="source-list">
+              <li><a href="https://learning.servicenow.com/lxp/en/credentials/certified-implementation-specialist-customer-service-management?id=kb_article_view&amp;sysparm_article=KB0011529" target="_blank" rel="noopener noreferrer">CIS-CSM mainline exam blueprint (KB0011529)</a></li>
+              <li><a href="https://learning.servicenow.com/lxp/en/customer-service-management/certified-implementation-specialist-customer?id=learning_content_prev&amp;course_id=02542b1d4734f6d0b8d109b4f16d4337" target="_blank" rel="noopener noreferrer">CIS-CSM credential page and exam registration</a></li>
+              <li><a href="https://learning.servicenow.com/lxp/en/credentials/cost-of-mainline-certification-exams?id=kb_article_view&amp;sysparm_article=KB0013317" target="_blank" rel="noopener noreferrer">Cost of mainline certification exams (KB0013317)</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/customer-service-management/configure-customer-service.html" target="_blank" rel="noopener noreferrer">Configuring Customer Service Management</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/customer-service-management/r_TIWCustomerService.html" target="_blank" rel="noopener noreferrer">Tables installed with Customer Service Management</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/customer-service-management/configure-csm-case-types.html" target="_blank" rel="noopener noreferrer">Configuring customer service case types (guided setup entry point)</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/zurich/customer-service-management/r_CustServMgmtAddtlPluginsTable.html" target="_blank" rel="noopener noreferrer">Additional plugins for Customer Service Management</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/customer-service-management/quick-start-tests-csm.html" target="_blank" rel="noopener noreferrer">Quick start tests for Customer Service Management</a></li>
+              <li><a href="https://www.servicenow.com/products/customer-service-management.html" target="_blank" rel="noopener noreferrer">ServiceNow Customer Service Management product overview</a></li>
+            </ul>
+          </section>
+        </article>
+      </main>
+    </div>
+
+    <footer>
+      <p>
+        Independent educational content. ServiceNow, ServiceNow University, CSM, and related
+        product names are trademarks of ServiceNow. Always use official ServiceNow materials
+        for current product behavior and certification requirements.
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
