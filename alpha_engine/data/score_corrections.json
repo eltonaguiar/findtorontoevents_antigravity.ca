@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-08T01:28:25.525251+00:00",
-  "total_trades": 1213,
+  "generated_at": "2026-10-08T03:17:47.935476+00:00",
+  "total_trades": 1214,
   "bucket_stats": {
     "0-19": {
       "bucket": [
         0,
         20
       ],
-      "trades": 149,
-      "wins": 60,
-      "losses": 89,
-      "win_rate": 40.3,
-      "avg_pnl_pct": -6.04,
-      "total_pnl_pct": -899.88
+      "trades": 151,
+      "wins": 61,
+      "losses": 90,
+      "win_rate": 40.4,
+      "avg_pnl_pct": -4.52,
+      "total_pnl_pct": -682.22
     },
     "20-39": {
       "bucket": [
@@ -43,12 +43,12 @@
         60,
         80
       ],
-      "trades": 358,
-      "wins": 64,
+      "trades": 357,
+      "wins": 63,
       "losses": 294,
-      "win_rate": 17.9,
-      "avg_pnl_pct": -3.07,
-      "total_pnl_pct": -1100.27
+      "win_rate": 17.6,
+      "avg_pnl_pct": -3.08,
+      "total_pnl_pct": -1101.07
     },
     "80-100": {
       "bucket": [
@@ -68,48 +68,57 @@
       "type": "win_rate_inversion",
       "lower_bucket": "0-19",
       "higher_bucket": "40-59",
-      "lower_wr": 40.3,
+      "lower_wr": 40.4,
       "higher_wr": 16.7,
-      "delta": 23.6,
+      "delta": 23.7,
       "severity": "HIGH"
     },
     {
       "type": "pnl_inversion",
       "lower_bucket": "0-19",
       "higher_bucket": "40-59",
-      "lower_avg_pnl": -6.04,
+      "lower_avg_pnl": -4.52,
       "higher_avg_pnl": -39.99,
-      "delta": 33.95,
+      "delta": 35.47,
       "severity": "HIGH"
     },
     {
       "type": "win_rate_inversion",
       "lower_bucket": "0-19",
       "higher_bucket": "60-79",
-      "lower_wr": 40.3,
-      "higher_wr": 17.9,
-      "delta": 22.4,
+      "lower_wr": 40.4,
+      "higher_wr": 17.6,
+      "delta": 22.8,
       "severity": "HIGH"
+    },
+    {
+      "type": "pnl_inversion",
+      "lower_bucket": "0-19",
+      "higher_bucket": "80-100",
+      "lower_avg_pnl": -4.52,
+      "higher_avg_pnl": -6.36,
+      "delta": 1.84,
+      "severity": "MEDIUM"
     },
     {
       "type": "pnl_inversion",
       "lower_bucket": "60-79",
       "higher_bucket": "80-100",
-      "lower_avg_pnl": -3.07,
+      "lower_avg_pnl": -3.08,
       "higher_avg_pnl": -6.36,
-      "delta": 3.29,
+      "delta": 3.28,
       "severity": "HIGH"
     }
   ],
   "correction_map": {
     "0-19": {
-      "adjustment": 12.7,
+      "adjustment": 12.8,
       "expected_wr": 24.4,
-      "actual_wr": 40.3,
-      "deviation": 15.9,
+      "actual_wr": 40.4,
+      "deviation": 16.0,
       "reason": "WR 40% vs expected 24% (outperforming)",
       "confidence": "HIGH",
-      "trades_sampled": 149
+      "trades_sampled": 151
     },
     "20-39": {
       "adjustment": 0,
@@ -126,16 +135,16 @@
       "trades_sampled": 18
     },
     "60-79": {
-      "adjustment": -19.6,
+      "adjustment": -19.8,
       "expected_wr": 42.4,
-      "actual_wr": 17.9,
-      "deviation": -24.5,
+      "actual_wr": 17.6,
+      "deviation": -24.8,
       "reason": "WR 18% vs expected 42% (underperforming)",
       "confidence": "HIGH",
-      "trades_sampled": 358
+      "trades_sampled": 357
     },
     "80-100": {
-      "adjustment": -2.3,
+      "adjustment": -2.2,
       "expected_wr": 48.5,
       "actual_wr": 45.7,
       "deviation": -2.8,
@@ -145,6 +154,17 @@
     }
   },
   "strategy_corrections": {
+    "forex_rsi2_mean_reversion": {
+      "trades": 105,
+      "wins": 6,
+      "win_rate": 5.7,
+      "avg_score": 74.1,
+      "avg_pnl_pct": -0.07,
+      "adjustment": -15,
+      "inflated": true,
+      "deflated": false,
+      "flag": "INFLATED_SCORE"
+    },
     "futures_momentum": {
       "trades": 140,
       "wins": 0,
@@ -156,45 +176,34 @@
       "deflated": false,
       "flag": "INFLATED_SCORE"
     },
-    "luxalgo_confluence": {
-      "trades": 87,
-      "wins": 45,
-      "win_rate": 51.7,
-      "avg_score": 4.4,
-      "avg_pnl_pct": -7.38,
-      "adjustment": 9.2,
-      "inflated": false,
-      "deflated": true,
-      "flag": "DEFLATED_SCORE"
-    },
     "regime_mild_bear": {
       "trades": 31,
       "wins": 6,
       "win_rate": 19.4,
       "avg_score": 0.0,
-      "avg_pnl_pct": 10.95,
+      "avg_pnl_pct": -2.72,
       "adjustment": -10.2,
       "inflated": false,
       "deflated": false,
       "flag": "OK"
     },
-    "forex_rsi2_mean_reversion": {
-      "trades": 107,
-      "wins": 7,
-      "win_rate": 6.5,
-      "avg_score": 74.1,
-      "avg_pnl_pct": -0.06,
-      "adjustment": -15,
-      "inflated": true,
-      "deflated": false,
-      "flag": "INFLATED_SCORE"
+    "luxalgo_confluence": {
+      "trades": 86,
+      "wins": 45,
+      "win_rate": 52.3,
+      "avg_score": 4.5,
+      "avg_pnl_pct": -2.72,
+      "adjustment": 9.6,
+      "inflated": false,
+      "deflated": true,
+      "flag": "DEFLATED_SCORE"
     },
     "st_fear_greed_contrarian (Revival)": {
-      "trades": 10,
+      "trades": 11,
       "wins": 8,
-      "win_rate": 80.0,
+      "win_rate": 72.7,
       "avg_score": 78.0,
-      "avg_pnl_pct": 11.25,
+      "avg_pnl_pct": 10.23,
       "adjustment": 15,
       "inflated": false,
       "deflated": false,
@@ -211,12 +220,23 @@
       "deflated": false,
       "flag": "OK"
     },
-    "rapid_momentum_filter_mut": {
+    "regime_accumulation": {
       "trades": 8,
-      "wins": 7,
-      "win_rate": 87.5,
+      "wins": 1,
+      "win_rate": 12.5,
       "avg_score": 0.0,
-      "avg_pnl_pct": 0.65,
+      "avg_pnl_pct": -2.59,
+      "adjustment": -14.3,
+      "inflated": false,
+      "deflated": false,
+      "flag": "OK"
+    },
+    "rapid_momentum_filter_mut": {
+      "trades": 9,
+      "wins": 7,
+      "win_rate": 77.8,
+      "avg_score": 0.0,
+      "avg_pnl_pct": -24.71,
       "adjustment": 15,
       "inflated": false,
       "deflated": true,
