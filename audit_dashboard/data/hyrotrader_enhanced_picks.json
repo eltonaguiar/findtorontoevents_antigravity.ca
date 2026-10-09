@@ -216,10 +216,10 @@
         "current_price": 83014.0
       },
       "enhanced_scoring": {
-        "enhanced_score": 69,
+        "enhanced_score": 67,
         "breakdown": {
           "base": 92,
-          "ml_edge_blend": -23,
+          "ml_edge_blend": -25,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "high_conviction",
@@ -307,10 +307,11 @@
         "current_price": 109.77
       },
       "enhanced_scoring": {
-        "enhanced_score": 69,
+        "enhanced_score": 66,
         "breakdown": {
           "base": 88,
           "rsi_oversold": -7,
+          "bb_oversold": -3,
           "ml_edge_blend": -12,
           "ml_blend_weights": "85%/15%"
         },
@@ -318,8 +319,9 @@
         "notes": [],
         "warnings": [
           "RSI oversold - possible bounce",
+          "Price at lower Bollinger Band",
           "ML cross-strategy match: using cci_divergence ranking for ema_pullback_adx/SOLUSDT",
-          "ML optimizer: F \u2014 weak edge (0.3)"
+          "ML optimizer: F \u2014 weak edge (0.1)"
         ]
       },
       "backtest": {
@@ -329,7 +331,7 @@
         "total_trades": 160,
         "wins": 100,
         "losses": 60,
-        "avg_bars_held": 17.8
+        "avg_bars_held": 17.7
       },
       "short_term_entry": {
         "entry_quality": 77,
@@ -343,7 +345,7 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.3,
+        "ml_score": 0.1,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -353,18 +355,18 @@
       "ml_rank": 3
     },
     {
-      "id": "hyro-v2-eth-adxvol",
-      "rank": 2,
+      "id": "hyro-v2-avax-cmf",
+      "rank": 3,
       "asset_class": "CRYPTO",
-      "label": "Ethereum \u2014 ADX Vol Breakout",
-      "symbol_hint": "ETHUSDT",
+      "label": "Avalanche \u2014 CMF Cross",
+      "symbol_hint": "AVAXUSDT",
       "direction": "BOTH",
-      "confidence_pct": 90,
+      "confidence_pct": 87,
       "timeframe": "1H",
-      "strategy": "adx_vol_breakout",
+      "strategy": "cmf_cross",
       "backtest_grade": "A",
-      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
-      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
+      "backtest_stats": "+$962 PnL, PF 1.53, 44% WR, $230 max DD, 85 trades/6mo",
+      "thesis": "Chaikin Money Flow detects institutional accumulation/distribution. Cross above +0.05 = long (money flowing in); below -0.05 = short. High trade count ensures consistency rule compliance.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -373,8 +375,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
-      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
+      "stop_plan": "SL = 1.5\u00d7 ATR. CMF direction confirms volume-price agreement.",
+      "take_profit_plan": "TP = 2\u00d7 risk. 85 trades/6mo = ~3-4/week \u2014 good for 10-day minimum.",
       "technical_indicators": {
         "rsi": 32.02,
         "macd": {
@@ -402,40 +404,41 @@
         "current_price": 2490.09
       },
       "enhanced_scoring": {
-        "enhanced_score": 63,
+        "enhanced_score": 60,
         "breakdown": {
-          "base": 90,
-          "ml_edge_blend": -27,
+          "base": 87,
+          "bb_oversold": -3,
+          "ml_edge_blend": -24,
           "ml_blend_weights": "70%/30%"
         },
-        "validation": "high_conviction",
+        "validation": "moderate",
         "notes": [],
         "warnings": [
-          "ML optimizer: F \u2014 weak edge (0.5)"
+          "Price at lower Bollinger Band",
+          "ML optimizer: F \u2014 weak edge (4.4)"
         ]
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 60.0,
-        "avg_pnl": 1.06,
+        "win_rate": 51.9,
+        "avg_pnl": 0.52,
         "total_trades": 160,
         "wins": 96,
         "losses": 64,
         "avg_bars_held": 17.7
       },
       "short_term_entry": {
-        "entry_quality": 77,
+        "entry_quality": 69,
         "actionable": true,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
           "macd_support",
-          "atr_in_tradeable_band",
-          "backtest_wr_support"
+          "atr_in_tradeable_band"
         ]
       },
       "ml_edge": {
-        "ml_score": 0.5,
+        "ml_score": 4.4,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -494,10 +497,10 @@
         "current_price": 83014.0
       },
       "enhanced_scoring": {
-        "enhanced_score": 62,
+        "enhanced_score": 60,
         "breakdown": {
           "base": 82,
-          "ml_edge_blend": -20,
+          "ml_edge_blend": -22,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "high_conviction",
@@ -536,18 +539,18 @@
       "ml_rank": 5
     },
     {
-      "id": "hyro-v2-avax-cmf",
-      "rank": 3,
+      "id": "hyro-v2-eth-adxvol",
+      "rank": 2,
       "asset_class": "CRYPTO",
-      "label": "Avalanche \u2014 CMF Cross",
-      "symbol_hint": "AVAXUSDT",
+      "label": "Ethereum \u2014 ADX Vol Breakout",
+      "symbol_hint": "ETHUSDT",
       "direction": "BOTH",
-      "confidence_pct": 87,
+      "confidence_pct": 90,
       "timeframe": "1H",
-      "strategy": "cmf_cross",
+      "strategy": "adx_vol_breakout",
       "backtest_grade": "A",
-      "backtest_stats": "+$962 PnL, PF 1.53, 44% WR, $230 max DD, 85 trades/6mo",
-      "thesis": "Chaikin Money Flow detects institutional accumulation/distribution. Cross above +0.05 = long (money flowing in); below -0.05 = short. High trade count ensures consistency rule compliance.",
+      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
+      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -556,8 +559,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR. CMF direction confirms volume-price agreement.",
-      "take_profit_plan": "TP = 2\u00d7 risk. 85 trades/6mo = ~3-4/week \u2014 good for 10-day minimum.",
+      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
+      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
       "technical_indicators": {
         "rsi": 37.21,
         "macd": {
@@ -601,21 +604,22 @@
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 51.9,
-        "avg_pnl": 0.52,
+        "win_rate": 60.0,
+        "avg_pnl": 1.06,
         "total_trades": 160,
-        "wins": 83,
-        "losses": 77,
-        "avg_bars_held": 11.1
+        "wins": 96,
+        "losses": 64,
+        "avg_bars_held": 17.6
       },
       "short_term_entry": {
-        "entry_quality": 69,
+        "entry_quality": 77,
         "actionable": true,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
           "macd_support",
-          "atr_in_tradeable_band"
+          "atr_in_tradeable_band",
+          "backtest_wr_support"
         ]
       },
       "ml_edge": {
@@ -678,18 +682,20 @@
         "current_price": 109.77
       },
       "enhanced_scoring": {
-        "enhanced_score": 54,
+        "enhanced_score": 52,
         "breakdown": {
           "base": 84,
           "rsi_oversold": -7,
-          "ml_edge_blend": -23,
+          "bb_oversold": -3,
+          "ml_edge_blend": -22,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "moderate",
         "notes": [],
         "warnings": [
           "RSI oversold - possible bounce",
-          "ML optimizer: F \u2014 weak edge (0.3)"
+          "Price at lower Bollinger Band",
+          "ML optimizer: F \u2014 weak edge (0.1)"
         ]
       },
       "backtest": {
@@ -699,7 +705,7 @@
         "total_trades": 160,
         "wins": 100,
         "losses": 60,
-        "avg_bars_held": 17.8
+        "avg_bars_held": 17.7
       },
       "short_term_entry": {
         "entry_quality": 77,
@@ -713,7 +719,7 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.3,
+        "ml_score": 0.1,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
