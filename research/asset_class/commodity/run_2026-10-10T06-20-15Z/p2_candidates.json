@@ -1,0 +1,165 @@
+[
+  {
+    "spec_id": "commodity_ts_momentum_gold_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long GLD when 30d return > 0 AND 60d SMA of GLD is rising",
+    "exit": "close position when 30d return <= 0 OR after 90 days",
+    "sizing": "allocate 2% of portfolio equity to each GLD trade (fixed fractional)",
+    "universe": [
+      "GLD"
+    ],
+    "regime_filter": "skip when 30d rolling volatility of GLD > 2.0%",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum-in-Commodities"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_cross_sectional_momentum_v1",
+    "asset_class": "COMMODITY",
+    "entry": "at month start compute 60d total return for each ETF in ['GLD','SLV','PPLT','PALL','CPER','DBA']; go long top 2 and short bottom 2",
+    "exit": "rebalance monthly, closing all positions at month end",
+    "sizing": "equal risk weight to each leg targeting 10% annualized portfolio volatility",
+    "universe": [
+      "GLD",
+      "SLV",
+      "PPLT",
+      "PALL",
+      "CPER",
+      "DBA"
+    ],
+    "regime_filter": "skip month when 30d rolling volatility of SPY > 1.5%",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_carry_value_gold_silver_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long GLD when price < 0.95 * 200d SMA AND short GLD when price > 1.05 * 200d SMA; same rule for SLV",
+    "exit": "close when price crosses its 200d SMA",
+    "sizing": "fixed 1% of portfolio equity per leg (long or short)",
+    "universe": [
+      "GLD",
+      "SLV"
+    ],
+    "regime_filter": "skip when 30d rolling volatility of GLD or SLV > 2.5%",
+    "source_refs": [
+      "https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_energy_momentum_carry_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long CPER when 30d return > 0 AND CPER price > 12-month SMA (proxy for backwardation)",
+    "exit": "close when 30d return <= 0 OR CPER price falls below 12-month SMA",
+    "sizing": "scale to target 8% annualized portfolio volatility",
+    "universe": [
+      "CPER"
+    ],
+    "regime_filter": "skip when VIX (proxied by 30d SPY volatility) > 25",
+    "source_refs": [
+      "https://www.bis.org/publ/work853.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_agri_momentum_value_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long DBA when 60d return > 0 AND DBA price < 0.97 * 200d SMA",
+    "exit": "close when 60d return <= 0 OR price crosses above 200d SMA",
+    "sizing": "fixed 2% of portfolio equity per trade",
+    "universe": [
+      "DBA"
+    ],
+    "regime_filter": "skip when 30d rolling volatility of DBA > 2.0% OR when 30d SPY volatility > 1.5%",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective",
+      "https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "commodity_ts_momentum_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long GLD when 12-month (252d) return > 0 AND 1-month (21d) return > 0; short GLD when 12-month return < 0 AND 1-month return < 0",
+    "exit": "exit on 12-month momentum sign flip or 60 trading day hold (whichever first)",
+    "sizing": "fixed 100% of capital per signal (long or short), no leverage",
+    "universe": [
+      "GLD"
+    ],
+    "regime_filter": "skip when GLD 90-day realized volatility > 25% annualized (avoid extreme vol regimes)",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum-in-Commodities"
+    ],
+    "proposed_by_engine": "deepseek"
+  },
+  {
+    "spec_id": "commodity_carry_gold_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long GLD when 3-month futures curve slope (proxied by GLD price vs 3-month forward price from ETF structure) is backwardated (slope > 0); short when contango (slope < 0)",
+    "exit": "exit on carry sign flip or 30 trading day hold",
+    "sizing": "fixed 100% of capital per signal",
+    "universe": [
+      "GLD"
+    ],
+    "regime_filter": "skip when GLD 60-day average daily volume < 5 million shares (low liquidity regime)",
+    "source_refs": [
+      "https://www.bis.org/publ/work853.pdf",
+      "https://www.bis.org/publ/work732.pdf"
+    ],
+    "proposed_by_engine": "deepseek"
+  },
+  {
+    "spec_id": "commodity_value_agriculture_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long DBA when 5-year price relative to 200-day moving average < 0.8 (cheap); short DBA when 5-year price relative to 200-day moving average > 1.2 (expensive)",
+    "exit": "exit when price reverts to 0.95-1.05 of 200-day MA or 90 trading day hold",
+    "sizing": "fixed 100% of capital per signal",
+    "universe": [
+      "DBA"
+    ],
+    "regime_filter": "skip when DBA 200-day volatility > 30% annualized (avoid extreme agricultural shocks)",
+    "source_refs": [
+      "https://www.federalreserve.gov/econres/feds/files/2018075pap.pdf"
+    ],
+    "proposed_by_engine": "deepseek"
+  },
+  {
+    "spec_id": "commodity_momentum_cross_sectional_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long top 2 commodities by 12-month momentum (GLD, SLV, PPLT, PALL, CPER, DBA); short bottom 2 by 12-month momentum; equal-weight long/short",
+    "exit": "rebalance monthly; exit all positions on rebalance day",
+    "sizing": "equal-weight long/short, each leg 50% of capital (net zero beta)",
+    "universe": [
+      "GLD",
+      "SLV",
+      "PPLT",
+      "PALL",
+      "CPER",
+      "DBA"
+    ],
+    "regime_filter": "skip when average cross-sectional dispersion of 12-month returns across universe < 5% (low momentum dispersion regime)",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Commodity-Momentum-A-Perspective"
+    ],
+    "proposed_by_engine": "deepseek"
+  },
+  {
+    "spec_id": "commodity_carry_momentum_combined_v1",
+    "asset_class": "COMMODITY",
+    "entry": "long GLD when both 12-month momentum > 0 AND carry (proxied by 3-month forward curve slope) > 0; short when both < 0; else flat",
+    "exit": "exit on either momentum or carry sign flip, or 45 trading day hold",
+    "sizing": "fixed 100% of capital per signal",
+    "universe": [
+      "GLD"
+    ],
+    "regime_filter": "skip when GLD 30-day correlation to SPY > 0.7 (high equity beta regime reduces commodity-specific edge)",
+    "source_refs": [
+      "https://www.bis.org/publ/work853.pdf"
+    ],
+    "proposed_by_engine": "deepseek"
+  }
+]
