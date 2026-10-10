@@ -308,11 +308,11 @@
         "current_price": 82818.25
       },
       "enhanced_scoring": {
-        "enhanced_score": 69,
+        "enhanced_score": 72,
         "breakdown": {
           "base": 92,
           "bb_squeeze": 3,
-          "ml_edge_blend": -26,
+          "ml_edge_blend": -23,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "moderate",
@@ -326,11 +326,11 @@
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 51.2,
+        "win_rate": 51.9,
         "avg_pnl": 0.23,
         "total_trades": 160,
-        "wins": 82,
-        "losses": 77,
+        "wins": 83,
+        "losses": 76,
         "avg_bars_held": 19.3
       },
       "short_term_entry": {
@@ -340,7 +340,7 @@
         "reasons": []
       },
       "ml_edge": {
-        "ml_score": 6.8,
+        "ml_score": 16.7,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -350,18 +350,18 @@
       "ml_rank": 3
     },
     {
-      "id": "hyro-v2-eth-adxvol",
-      "rank": 2,
+      "id": "hyro-v2-xrp-bbsqueeze",
+      "rank": 4,
       "asset_class": "CRYPTO",
-      "label": "Ethereum \u2014 ADX Vol Breakout",
-      "symbol_hint": "ETHUSDT",
+      "label": "XRP \u2014 BB Squeeze Breakout",
+      "symbol_hint": "XRPUSDT",
       "direction": "BOTH",
-      "confidence_pct": 90,
+      "confidence_pct": 85,
       "timeframe": "1H",
-      "strategy": "adx_vol_breakout",
+      "strategy": "squeeze_breakout",
       "backtest_grade": "A",
-      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
-      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
+      "backtest_stats": "+$947 PnL, PF 1.41, 40% WR, $279 max DD, 101 trades/6mo",
+      "thesis": "BB width at 40-bar low (squeeze) + volume breakout above upper/below lower BB + EMA50 trend confirmation. Captures explosive moves after low-vol compression.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -370,8 +370,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
-      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
+      "stop_plan": "SL = 1.4\u00d7 ATR. Only fires when BB is in squeeze \u2014 avoids choppy conditions.",
+      "take_profit_plan": "TP = 2.2\u00d7 risk. Breakout targets are wider because squeeze precedes volatility expansion.",
       "technical_indicators": {
         "rsi": 36.1,
         "macd": {
@@ -416,19 +416,18 @@
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 56.9,
-        "avg_pnl": 0.95,
+        "win_rate": 55.0,
+        "avg_pnl": 0.96,
         "total_trades": 160,
-        "wins": 91,
-        "losses": 69,
-        "avg_bars_held": 17.8
+        "wins": 88,
+        "losses": 72,
+        "avg_bars_held": 17.0
       },
       "short_term_entry": {
-        "entry_quality": 71,
-        "actionable": true,
+        "entry_quality": 63,
+        "actionable": false,
         "horizon": "4-24h",
         "reasons": [
-          "trend_aligned",
           "atr_in_tradeable_band",
           "backtest_wr_support"
         ]
@@ -438,7 +437,7 @@
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
-        "ml_cross_strategy_match": false
+        "ml_cross_strategy_match": true
       },
       "processed_at": "2026-10-10T13:01:04.256358+00:00",
       "ml_rank": 4
@@ -493,11 +492,11 @@
         "current_price": 82818.25
       },
       "enhanced_scoring": {
-        "enhanced_score": 62,
+        "enhanced_score": 65,
         "breakdown": {
           "base": 82,
           "bb_squeeze": 3,
-          "ml_edge_blend": -23,
+          "ml_edge_blend": -20,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "moderate",
@@ -511,11 +510,11 @@
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 51.2,
+        "win_rate": 51.9,
         "avg_pnl": 0.23,
         "total_trades": 160,
-        "wins": 82,
-        "losses": 77,
+        "wins": 83,
+        "losses": 76,
         "avg_bars_held": 19.3
       },
       "short_term_entry": {
@@ -525,7 +524,7 @@
         "reasons": []
       },
       "ml_edge": {
-        "ml_score": 6.8,
+        "ml_score": 16.7,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -574,7 +573,7 @@
         },
         "atr_pct": 1.94,
         "volume": {
-          "ratio": 0.0,
+          "ratio": 0.01,
           "expansion": false,
           "direction": "neutral"
         },
@@ -584,16 +583,16 @@
         "current_price": 10.551
       },
       "enhanced_scoring": {
-        "enhanced_score": 61,
+        "enhanced_score": 64,
         "breakdown": {
           "base": 87,
-          "ml_edge_blend": -26,
+          "ml_edge_blend": -23,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "high_conviction",
         "notes": [],
         "warnings": [
-          "ML optimizer: F \u2014 weak edge (0.1)"
+          "ML optimizer: F \u2014 weak edge (9.1)"
         ]
       },
       "backtest": {
@@ -616,7 +615,7 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.1,
+        "ml_score": 9.1,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
@@ -684,7 +683,7 @@
         "validation": "high_conviction",
         "notes": [],
         "warnings": [
-          "ML optimizer: F \u2014 weak edge (0.1)"
+          "ML optimizer: F \u2014 weak edge (0.3)"
         ]
       },
       "backtest": {
@@ -697,17 +696,18 @@
         "avg_bars_held": 17.8
       },
       "short_term_entry": {
-        "entry_quality": 71,
+        "entry_quality": 77,
         "actionable": true,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
+          "macd_support",
           "atr_in_tradeable_band",
           "backtest_wr_support"
         ]
       },
       "ml_edge": {
-        "ml_score": 0.1,
+        "ml_score": 0.3,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
