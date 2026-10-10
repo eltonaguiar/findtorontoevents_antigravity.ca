@@ -74,7 +74,7 @@ Tier 3 (broad free): **Together AI**, **Fireworks**, **Mistral**, **Gemini**
 
 Tier 4 (OpenAI-compat gateways): **GitHub Models**, **DeepInfra**, **AIMLAPI**, **Nous**, **Hypereal**
 
-LiteLLM uses `routing_strategy: simple-shuffle` so it picks at random each request, spreading load. On failure it cools the failing instance for `cooldown_time: 300` seconds and retries the next.
+LiteLLM uses `routing_strategy: simple-shuffle` so it picks at random each request, spreading load. On failure it cools the failing instance for `cooldown_time` (65 s in our config) and retries the next — and the call-count blacklist below parks genuinely-dead providers for longer.
 
 ## Observing rotation
 
@@ -119,6 +119,40 @@ The repo's `DOCKER_VLLM.MD` documents how to run vLLM in Docker on port 8000. To
 
 Then restart the proxy. If vLLM is healthy it serves locally for ~free; on local OOM / context-overflow it falls through to the cloud chain.
 
+## Call-count provider blacklist (`tools/litellm_call_blacklist.py`)
+
+LiteLLM's own cooldown is **time-based** (`allowed_fails: 1` + `cooldown_time: 65`). A provider that
+is genuinely down therefore gets retried again ~65 s later, forever, so a slice of user requests
+keeps failing even though healthy providers are available.
+
+This callback adds a **call-count** blacklist: when a deployment fails in a way that means *the
+provider is unhealthy* (dead key / quota / 429 / 5xx), it is dropped from the candidate pool for the
+next **30 client API calls** rather than being retried on a timer.
+
+Request-specific faults (400s, context-window overflow, content policy) deliberately do **not**
+blacklist a provider — only provider-health failures do.
+
+```bash
+python3 tools/litellm_call_blacklist.py status    # who is parked, and for how many more calls
+python3 tools/litellm_call_blacklist.py clear     # un-park everyone
+python3 tools/litellm_call_blacklist.py selftest  # offline logic test (no proxy needed)
+python3 tools/litellm_call_blacklist.py stress --calls 40 --down 40   # acceptance test
+```
+
+Env knobs: `LITELLM_BLACKLIST_CALLS` (default 30), `LITELLM_BLACKLIST_ENABLE=0` to disable,
+`LITELLM_BLACKLIST_STATE` (default `/tmp/litellm_blacklist_state.json`).
+
+**GOTCHA — you must patch TWO Router methods.** On litellm 1.86.0 the *primary* deployment pick path
+calls `Router.async_get_healthy_deployments` (no leading underscore), while retries and the
+scheduler call `Router._async_get_healthy_deployments`. Patching only the underscore variant silently
+does nothing for normal traffic — deployment selection looks fine, filters compute correctly, and
+blacklisted providers still get routed. Patch both.
+
+Design notes: `async_pre_call_hook` advances the call counter and returns `None` so request `data` is
+never touched. Fail-open: if filtering would empty the candidate pool, the unfiltered pool is
+returned, so the blacklist can never turn a working request into a failure. Every hook swallows its
+own exceptions — a bug degrades to "no blacklist", never to "proxy broken".
+
 ## Known issues
 
 - **`enable_fallbacks: true`** triggers a `WARNING: Key 'enable_fallbacks' is not a valid argument for Router.__init__()` on startup. Modern LiteLLM (1.86+) auto-fallbacks based on multiple model_list entries sharing a model_name — the explicit flag is redundant and ignored. Safe to ignore the warning.
@@ -130,6 +164,9 @@ Then restart the proxy. If vLLM is healthy it serves locally for ~free; on local
 
 - `litellm_config.yaml` — provider chain config
 - `tools/start_litellm_proxy.sh` — launcher (sources keys from `~/dbpasses.txt`, exports CF_API_BASE, starts proxy)
+- `tools/litellm_call_blacklist.py` — call-count provider blacklist (status / clear / selftest / stress)
+- `tools/litellm_smart_cooldown.py` — failure classifier + operator-visible cooldown state
+- `/tmp/litellm_blacklist_state.json` — blacklist state (call_seq + parked deployments)
 - `~/dbpasses.txt` — keys file (gitignored, outside repo)
 - `/tmp/litellm_proxy.log` — proxy log
 - `tools/consult_multi.py` — sibling tool; shares the same key file + verified provider configs (use for one-shot consults / fan-outs; use the proxy for application-routing)

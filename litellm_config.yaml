@@ -30,6 +30,14 @@ litellm_settings:
     # Query: python3 tools/litellm_message_log.py --grep <marker>
     # See tools/litellm_message_log.py for env knobs (path / content / rotation).
     - tools.litellm_message_log.message_log
+    # CALL-COUNT blacklist — when a provider fails in a way that means it is
+    # down (dead key / quota / 429 / 5xx), drop it from the candidate pool for
+    # the next N client API calls (default 30) instead of retrying it every
+    # cooldown_time seconds forever.
+    #   knobs: LITELLM_BLACKLIST_CALLS (default 30), LITELLM_BLACKLIST_ENABLE=0
+    #   state: /tmp/litellm_blacklist_state.json
+    #   inspect: python3 tools/litellm_call_blacklist.py status
+    - tools.litellm_call_blacklist.call_blacklist
 
 router_settings:
   routing_strategy: simple-shuffle
