@@ -3110,6 +3110,16 @@
     border-radius: 12px 12px 0 0;
     flex-shrink: 0;
   }
+  /* 2026-10-10 flat-colour-block fix (see updates/2026-10-10-age-gate-16plus-and-thumbnail-banner-crop.md).
+     TPL ships 3925x980 "icon banner" art: the left ~60% is an empty gradient,
+     the artwork lives in the right ~17%. object-fit:cover is centred, so the
+     284x180 card cropped the dead centre (source window 30%-70%) and painted a
+     single flat colour — e.g. EarlyON Family Fun Time rendered solid magenta
+     (visible-region stddev 2.6). Flag ultra-wide sources from JS and anchor
+     their crop to the right edge where the artwork is. */
+  .card-thumbnail.card-thumbnail-wide {
+    object-position: right center;
+  }
   @media (min-width: 640px) {
     .card-thumbnail { height: 180px; }
   }
@@ -4372,6 +4382,18 @@
     return url;
   }
 
+  // 2026-10-10: flag ultra-wide source art (aspect >= 2.2) so the CSS rule
+  // .card-thumbnail-wide can anchor the crop to the artwork side instead of
+  // the dead-centre gradient (the "random colour block" bug).
+  function flagWideThumb(img) {
+    if (!img || img.dataset.wideChecked) return;
+    if (img.naturalWidth >= 320 && img.naturalHeight > 0 &&
+        img.naturalWidth / img.naturalHeight >= 2.2) {
+      img.classList.add('card-thumbnail-wide');
+    }
+    img.dataset.wideChecked = '1';
+  }
+
   // Inject / toggle colour-coded thumbnails on event cards
   function applyThumbnails() {
     if (thumbnailsEnabled) {
@@ -4399,13 +4421,16 @@
       if (!imageUrl) return;
       var thumb = document.createElement('img');
       thumb.className = 'card-thumbnail';
-      thumb.src = imageUrl;
       thumb.alt = title;
       thumb.loading = 'lazy';
       thumb.onerror = function() {
         if (this.parentNode) this.parentNode.removeChild(this);
       };
+      thumb.onload = function() { flagWideThumb(this); };
+      // Assign src last so onload/onerror are already attached.
+      thumb.src = imageUrl;
       card.insertBefore(thumb, card.firstChild);
+      if (thumb.complete) flagWideThumb(thumb);
     });
   }
 

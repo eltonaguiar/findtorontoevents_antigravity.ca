@@ -30,6 +30,7 @@ from events_metadata import max_event_last_updated_iso, write_events_metadata
 
 # Import the unified scraper
 from scrapers.unified_scraper import UnifiedTorontoScraper
+from scrapers.age_gate import apply_age_gate, format_summary
 
 
 def load_existing_events(events_path: Path) -> list:
@@ -241,6 +242,15 @@ def main():
     
     print(f"Added {added_count} new events, updated {updated_count} existing events")
     print(f"Total events: {len(merged)}")
+
+    # Strict 16+ audience gate (policy set 2026-10-10, see
+    # updates/2026-10-10-age-gate-16plus-and-thumbnail-banner-crop.md).
+    # Runs on the merged set — not just the fresh scrape — so legacy rows are
+    # cleaned too. Events whose age cannot be determined are kept. Set
+    # AGE_GATE_LOG=/path/to.jsonl for a per-event audit trail (the summary
+    # below always prints to stdout / the workflow log).
+    merged, gate_summary = apply_age_gate(merged, log_path=os.environ.get("AGE_GATE_LOG"))
+    print(format_summary(gate_summary))
     
     # Count multi-day events
     multi_day_count = sum(1 for e in merged if e.get("is_multi_day"))
