@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-10-10T15:22:38.186575+00:00",
+    "timestamp": "2026-10-10T18:23:29.009039+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 3,
+    "mutations_triggered": 3,
+    "mutations_silent": 2,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -12,13 +12,101 @@
     "version": "v2",
     "focus": "loss_prevention"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "symbol": "APTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.8723,
+      "take_profit": 0.901925,
+      "stop_loss": 0.850081,
+      "confidence": 0.8367,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 momentum: vol=2.1x + 3-bar momentum=5.48%, 5 green bars \u2014 continuation confirmed, not dead cat",
+      "timestamp": "2026-10-10T18:23:29.007291+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "momentum_continuation",
+      "volume_ratio": 2.06,
+      "momentum_3d": 0.0548,
+      "green_bars": 5,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "APTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.8723,
+      "take_profit": 0.901925,
+      "stop_loss": 0.850081,
+      "confidence": 0.7068,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=2.1x, price $0.8723 > EMA50=$0.8100 > EMA20=$0.8272 (EMA stack aligned) \u2014 uptrend pump only",
+      "timestamp": "2026-10-10T18:23:28.996127+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 2.06,
+      "ema_50": 0.809988,
+      "ema_20": 0.827243,
+      "ema_aligned": true,
+      "trend_strength": 0.0769,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "symbol": "APTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.8723,
+      "take_profit": 0.901925,
+      "stop_loss": 0.850081,
+      "confidence": 0.6035,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 BTC-correlated: vol=2.1x, BTC bullish (>$82858 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
+      "timestamp": "2026-10-10T18:23:29.001453+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "btc_correlation",
+      "volume_ratio": 2.06,
+      "btc_bullish": true,
+      "btc_ema20": 82857.89,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "btc_correlation",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_momentum_continuation_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "momentum_continuation",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
-    "pump_btc_correlated_v2",
     "pump_large_cap_only_v2",
-    "pump_momentum_continuation_v2",
     "pump_fear_greed_filter_v2"
   ]
 }
