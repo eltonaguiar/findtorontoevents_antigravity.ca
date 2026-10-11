@@ -16,6 +16,7 @@ dead model), writes a status report, and can rank the alive ones into routing we
 python3 tools/llm_alive_probe.py                     # probe everything, print table + group summary
 python3 tools/llm_alive_probe.py --failures          # only the non-alive rows
 python3 tools/llm_alive_probe.py --free-only         # only free-*/hybrid-* groups
+python3 tools/llm_alive_probe.py --paid-only         # only paid-* groups
 python3 tools/llm_alive_probe.py --group free-mode   # one group
 python3 tools/llm_alive_probe.py --recheck           # re-probe ONLY the previously non-alive ones
 python3 tools/llm_alive_probe.py --status            # show the last report (no probing)
@@ -54,6 +55,37 @@ bash tools/start_ai_servers.sh restart               # 4. reload the proxy
 Always run the **recheck** step before acting on the numbers. In the first full run,
 `alive=35 dead=46 error=11 throttled=35`; the recheck reproduced it almost exactly
 (`35/46/12/34`), which is what makes the result trustworthy rather than probe noise.
+
+## Paid groups
+
+`paid-mode`, `paid-mode-fast`, `paid-mode-large` — 37 deployments. Measured 2026-10-11:
+**alive=9, dead=13, throttled=14, error=1.** Only **four distinct models** are alive:
+
+| model | where | latency |
+|---|---|---|
+| `deepseek/deepseek-chat` | paid-mode, paid-mode-fast, paid-mode-large | 633–1104 ms |
+| `xai/grok-4-fast-non-reasoning` | paid-mode, paid-mode-fast | 627–929 ms |
+| `xai/grok-code-fast-1` | paid-mode | 2515 ms |
+| `xai/grok-3-mini` | paid-mode | 1968 ms |
+
+The 14 throttled are all `openai/`-prefixed aggregator routes (`gpt-5-chat`, `kimi-k2.6`,
+`grok-4.20-fast`, `MiniMax-M2`, `gpt-oss-120b`, `glm-5.1`, `step-3.5-flash`…) returning 429 — spent
+quota, consistent with subscriptions lapsing. Notable: the **direct `xai/` key works while the
+`openai/`-prefixed route to the same Grok model is throttled**, so route choice matters as much as
+the model.
+
+Verified live after weighting: `paid-mode` 5/5 HTTP 200 and `paid-mode-fast` 3/3, served only by
+`deepseek-chat` / `grok-4-fast` / `grok-code-fast-1` — none of the throttled or dead entries.
+
+## Report merging and deployment identity
+
+A partial probe (`--group` / `--free-only` / `--paid-only` / `--recheck`) **merges** into the saved
+report rather than overwriting it, so `--status --apply` always sees the full picture.
+
+Deployment identity is `(group, model, api_base, **api_key**)`. The api_key part is essential: 20
+signatures in this config share `(group, model, api_base)` across 44 deployments, differing only by
+credential (e.g. `GEMINI_API_KEY` vs `GEMINI_API_KEY_ALT`, `GROQ_API_KEY` vs `GROQ_API_KEY_ALT`).
+Keying without it silently drops report rows and lets a dead key inherit an alive sibling's weight.
 
 ## Two gotchas worth knowing
 

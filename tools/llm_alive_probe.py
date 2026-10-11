@@ -187,7 +187,7 @@ def weight_for(status: str, latency_ms: int) -> int:
 
 
 def probe(dep: Dict[str, Any], keys: Dict[str, str], timeout: int) -> Dict[str, Any]:
-    row = {k: dep[k] for k in ("group", "model", "api_base")}
+    row = {k: dep.get(k) for k in ("group", "model", "api_base", "raw_key")}
     key = resolve_key(dep.get("raw_key"), keys)
     provider = str(dep.get("model") or "").split("/")[0]
     if not key:
@@ -264,6 +264,41 @@ def load_report() -> Optional[Dict[str, Any]]:
         return None
 
 
+def row_key(r: Dict[str, Any]) -> tuple:
+    """Identity of a deployment.
+
+    `api_key` MUST be part of the key: the config contains duplicate
+    (group, model, api_base) triples that differ only by credential (e.g.
+    GROQ_API_KEY vs GROQ_API_KEY_ALT). Collapsing them would silently drop report
+    rows AND let a dead key inherit the weight of an alive sibling.
+    """
+    return (r.get("group"), r.get("model"), r.get("api_base"), r.get("raw_key"))
+
+
+def dep_key(d: Dict[str, Any]) -> tuple:
+    return (d.get("group"), d.get("model"), d.get("api_base"), d.get("raw_key"))
+
+
+def merge_report(new_rows: List[Dict[str, Any]],
+                 all_deps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Update the saved report with `new_rows`, keeping rows we did not just probe.
+
+    A partial probe (--group / --free-only / --paid-only / --recheck) must not
+    discard the rest of the report -- otherwise `--status --apply` would silently
+    operate on a subset. Rows for deployments no longer in the config are dropped,
+    and the result is re-sorted into config order.
+    """
+    valid = {dep_key(d) for d in all_deps}
+    idx = {dep_key(d): i for i, d in enumerate(all_deps)}
+    merged: Dict[tuple, Dict[str, Any]] = {}
+    for r in list((load_report() or {}).get("rows", [])) + list(new_rows):
+        k = row_key(r)
+        if k not in valid:
+            continue        # deployment removed from the config
+        merged[k] = r       # last write wins -> freshly probed rows override
+    return [merged[k] for k in sorted(merged, key=lambda k: idx.get(k, 10 ** 9))]
+
+
 ICON = {"alive": "OK  ", "throttled": "THR ", "error": "ERR ", "dead": "DEAD"}
 
 
@@ -304,13 +339,12 @@ def print_group_summary(rows: List[Dict[str, Any]]) -> None:
 def apply_weights(rows: List[Dict[str, Any]], deps: List[Dict[str, Any]]) -> int:
     key_to_weight = {}
     for r in rows:
-        w = weight_for(r["status"], r["latency_ms"])
-        key_to_weight[(r["group"], r["model"], r.get("api_base"))] = w
+        key_to_weight[row_key(r)] = weight_for(r["status"], r["latency_ms"])
 
     lines = CONFIG.read_text().splitlines(keepends=True)
     changed = 0
     for dep in deps:
-        w = key_to_weight.get((dep["group"], dep["model"], dep.get("api_base")))
+        w = key_to_weight.get(dep_key(dep))
         if w is None:
             continue
         ln = dep["line"]
@@ -340,6 +374,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--group", help="only this model_name group")
     ap.add_argument("--free-only", action="store_true",
                     help="only free-* / hybrid-* groups")
+    ap.add_argument("--paid-only", action="store_true",
+                    help="only paid-* groups")
     ap.add_argument("--failures", action="store_true", help="print only non-alive rows")
     ap.add_argument("--apply", action="store_true", help="write weights into the config")
     ap.add_argument("--status", action="store_true", help="show last report, no probing")
@@ -377,6 +413,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         deps = [d for d in deps if d["group"] == args.group]
     elif args.free_only:
         deps = [d for d in deps if str(d["group"]).startswith(("free-", "hybrid-"))]
+    elif args.paid_only:
+        deps = [d for d in deps if str(d["group"]).startswith("paid-")]
     elif args.recheck:
         prev = load_report()
         if not prev:
@@ -397,11 +435,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     rows = run_probe_ordered(deps, keys, args.timeout, args.concurrency)
     elapsed = round(time.time() - t0, 1)
 
-    if args.recheck:
-        # Merge the rechecked rows back into the previous full report, preserving order.
-        prev_rows = (load_report() or {}).get("rows", [])
-        upd = {(r["group"], r["model"], r.get("api_base")): r for r in rows}
-        rows = [upd.get((r["group"], r["model"], r.get("api_base")), r) for r in prev_rows]
+    # Merge into the previous report so partial probes update their subset
+    # without discarding everything else (see merge_report).
+    rows = merge_report(rows, load_deployments())
 
     meta = {
         "probed_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

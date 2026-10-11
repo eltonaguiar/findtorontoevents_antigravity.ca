@@ -94,14 +94,14 @@ model_list:
 
   # Google model limits (from dashboard) are enforced per deployment via rpm.
   # Router pre-call checks + cooldown rotate first, then wait for next window.
-  - {model_name: free-mode, litellm_params: { weight: 1000, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
-  - {model_name: free-mode, litellm_params: { weight: 1000, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
-  - {model_name: free-mode, litellm_params: { weight: 1000, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
-  - {model_name: free-mode, litellm_params: { weight: 1000, model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
-  - {model_name: free-mode, litellm_params: { weight: 1000, model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
+  - {model_name: free-mode, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
+  - {model_name: free-mode, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
+  - {model_name: free-mode, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
+  - {model_name: free-mode, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
+  - {model_name: free-mode, litellm_params: { weight: 500, model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode, litellm_params: { weight: 1000, model: gemini/gemini-3-flash-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
   - {model_name: free-mode, litellm_params: { weight: 1000, model: gemini/gemma-4-26b-a4b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
-  - {model_name: free-mode, litellm_params: { weight: 1, model: gemini/gemma-4-31b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
+  - {model_name: free-mode, litellm_params: { weight: 100, model: gemini/gemma-4-31b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   # Requested additions: currently quota-gated in direct checks; keep low rpm
   # so router can try them opportunistically without causing noisy churn.
   - {model_name: free-mode, litellm_params: { weight: 10, model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
@@ -133,7 +133,7 @@ model_list:
   # Bluesmind — Chinese AI aggregator (OpenAI-compat). Free tier verified
   # 2026-05-25 with meta/llama-3.1-8b-instruct; deepseek-v4-flash returns
   # "Tier Restriction" so don't list it here. Larger models are paid.
-  - {model_name: free-mode, litellm_params: { weight: 1, model: openai/meta/llama-3.1-8b-instruct, api_key: os.environ/BLUESMIND_API_KEY, api_base: https://api.bluesminds.com/v1}}
+  - {model_name: free-mode, litellm_params: { weight: 10, model: openai/meta/llama-3.1-8b-instruct, api_key: os.environ/BLUESMIND_API_KEY, api_base: https://api.bluesminds.com/v1}}
 
   # Kilocode — OpenRouter-compatible gateway with free-tier models.
   # x-ai/grok-code-fast-1:optimized:free is excluded — uses /responses API
@@ -202,7 +202,7 @@ model_list:
   - {model_name: free-mode-tools, litellm_params: { weight: 1, model: openai/gpt-4o-mini,                          api_key: os.environ/GITHUB_MODELS_KEY2, api_base: https://models.inference.ai.azure.com}}
   - {model_name: free-mode-tools, litellm_params: { weight: 10, model: mistral/mistral-small-latest,                api_key: os.environ/MISTRAL_API_KEY}}
   - {model_name: free-mode-tools, litellm_params: { weight: 10, model: mistral/mistral-small-latest,                api_key: os.environ/MISTRAL_API_KEY_ALT}}
-  - {model_name: free-mode-tools, litellm_params: { weight: 500, model: openai/meta-llama/Meta-Llama-3.1-8B-Instruct,api_key: os.environ/DEEPINFRA_API_KEY_ALT, api_base: https://api.deepinfra.com/v1/openai}}
+  - {model_name: free-mode-tools, litellm_params: { weight: 1000, model: openai/meta-llama/Meta-Llama-3.1-8B-Instruct,api_key: os.environ/DEEPINFRA_API_KEY_ALT, api_base: https://api.deepinfra.com/v1/openai}}
   # AIMLAPI free key is intentionally disabled here because the cb876... key
   # currently returns ALL_TIME_LIMIT_EXCEEDED on chat calls.
   - {model_name: free-mode-tools, litellm_params: { weight: 0, model: openai/gpt-5.5-instant,                      api_key: os.environ/HYPEREAL_API_KEY,   api_base: https://api.hypereal.cloud/v1}}
@@ -216,7 +216,7 @@ model_list:
   - {model_name: free-mode-large, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
   - {model_name: free-mode-large, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
   - {model_name: free-mode-large, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
-  - {model_name: free-mode-large, litellm_params: { weight: 500, model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
+  - {model_name: free-mode-large, litellm_params: { weight: 1000, model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode-large, litellm_params: { weight: 1000, model: gemini/gemini-3-flash-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
   - {model_name: free-mode-large, litellm_params: { weight: 1000, model: gemini/gemma-4-26b-a4b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode-large, litellm_params: { weight: 1, model: gemini/gemma-4-31b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
@@ -249,7 +249,7 @@ model_list:
   #     entries here declare rpm (1-15); an entry with no rpm gets weight 1
   #     and is effectively never picked (measured 0/36 picks before adding it).
   - {model_name: free-mode, litellm_params: { weight: 1000, model: ollama_chat/gpt-oss:120b-cloud, api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
-  - {model_name: free-mode, litellm_params: { weight: 500, model: ollama_chat/gpt-oss:20b-cloud,  api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
+  - {model_name: free-mode, litellm_params: { weight: 1000, model: ollama_chat/gpt-oss:20b-cloud,  api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
   - {model_name: free-mode-large, litellm_params: { weight: 1000, model: ollama_chat/gpt-oss:120b-cloud, api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
   - {model_name: free-mode-large, litellm_params: { weight: 500, model: ollama_chat/gpt-oss:20b-cloud,  api_base: http://localhost:11434, rpm: 30}, model_info: {max_input_tokens: 131072, max_output_tokens: 16384}}
   # Local GPU models — only small ones; the box has ~11-20 GiB free while vLLM
@@ -333,7 +333,7 @@ model_list:
   - {model_name: hybrid-model-large, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
   - {model_name: hybrid-model-large, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
   - {model_name: hybrid-model-large, litellm_params: { weight: 10, model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
-  - {model_name: hybrid-model-large, litellm_params: { weight: 1000, model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
+  - {model_name: hybrid-model-large, litellm_params: { weight: 500, model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: hybrid-model-large, litellm_params: { weight: 10, model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
   # Removed 2026-10-11: gemini-2.5-pro / gemini-2.0-flash / gemini-2.0-flash-lite
   # (retired at runtime - see the free-mode block note above).

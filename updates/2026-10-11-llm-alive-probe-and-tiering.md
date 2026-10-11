@@ -97,6 +97,48 @@ retirement. Do not delete entries on a `dead` verdict alone.
    comment-preserving line-based weight injection safe. The probe asserts this shape
    (127 single-line entries == 127 parsed deployments) and refuses to guess otherwise.
 
+## Paid groups: which paid models are actually alive?
+
+37 paid deployments across `paid-mode` / `paid-mode-fast` / `paid-mode-large`:
+**alive=9, dead=13, throttled=14, error=1.** Only **four distinct models** work:
+
+| model | groups | latency |
+|---|---|---|
+| `deepseek/deepseek-chat` | paid-mode, paid-mode-fast, paid-mode-large | 633–1104 ms |
+| `xai/grok-4-fast-non-reasoning` | paid-mode, paid-mode-fast | 627–929 ms |
+| `xai/grok-code-fast-1` | paid-mode | 2515 ms |
+| `xai/grok-3-mini` | paid-mode | 1968 ms |
+
+Everything else is spent or broken, consistent with most paid subscriptions having lapsed:
+
+- **14 throttled** — all `openai/`-prefixed aggregator routes returning 429 (`gpt-5-chat`,
+  `gpt-5-2025-08-07`, `kimi-k2.6`, `kimi-k2.5`, `grok-4.20-fast`, `grok-code-fast-1`,
+  `MiniMax-M2`, `gpt-oss-120b`, `step-3.5-flash`, `glm-5.1`).
+- **13 dead** — `anthropic/claude-haiku-4-5` (dead key, 3 groups), `openai/gpt-5.5-instant`
+  (dead key, 4 groups), `xiaomi-mimo`, `mimo-v2.5-pro`, `moonshot-v1-8k`, plus one
+  `gpt-4o-mini` with no key.
+- **1 error** — `openai/gpt-4o-mini`.
+
+A routing detail worth keeping: the **direct `xai/` key works while the `openai/`-prefixed route
+to the same Grok model is throttled** — route choice matters as much as model choice.
+
+After weighting, paid traffic lands only on live models: `paid-mode` 5/5 and `paid-mode-fast`
+3/3 returned HTTP 200, served exclusively by `deepseek-chat`, `grok-4-fast` and
+`grok-code-fast-1`.
+
+## Two more bugs found while probing paid groups
+
+1. **A partial probe overwrote the whole report.** `--paid-only` replaced the 127-row report with
+   37 rows, so a later `--status --apply` would silently act on a subset. Reports are now merged.
+2. **Deployment identity was not unique.** Keying on `(group, model, api_base)` collapsed 20
+   signatures covering 44 deployments that differ only by credential (`GEMINI_API_KEY` vs `_ALT`
+   vs `_ALT2`, `GROQ_API_KEY` vs `_ALT`), dropping 24 rows from the report (127 → 103). Identity
+   now includes the api_key reference.
+
+   Honest caveat: at fix time **no** duplicate signature had siblings in different states, so no
+   weight had actually been mis-assigned — the real impact was the lost report rows. The fix
+   matters for the case where one key of a pair lapses while its sibling keeps working.
+
 ## Files
 
 | File | Change |
