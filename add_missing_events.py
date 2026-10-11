@@ -16,6 +16,7 @@ from __future__ import annotations
 import datetime as _dt
 import hashlib
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ OVERRIDES_PATH = PROJECT_ROOT / "data" / "manual_event_overrides.json"
 
 sys.path.insert(0, str(PROJECT_ROOT / "tools"))
 from scrapers.unified_scraper import UnifiedTorontoScraper  # noqa: E402
+from scrapers.age_gate import apply_age_gate, format_summary  # noqa: E402
 
 
 def _load_json_array(path: Path) -> list:
@@ -95,6 +97,12 @@ def main() -> int:
 
     catalog, added, skipped = merge_overrides(catalog, overrides)
     print(f"Merged: +{added} new, {skipped} skipped (duplicate or invalid)")
+
+    # Re-apply the strict 16+ audience gate (tools/scrapers/age_gate.py) so
+    # hand-curated overrides can't push an under-16 event back into the feed
+    # after the scraper merge path already filtered it. Idempotent + cheap.
+    catalog, gate_summary = apply_age_gate(catalog, log_path=os.environ.get("AGE_GATE_LOG"))
+    print(format_summary(gate_summary))
 
     if added == 0:
         print("No new events to write.")
