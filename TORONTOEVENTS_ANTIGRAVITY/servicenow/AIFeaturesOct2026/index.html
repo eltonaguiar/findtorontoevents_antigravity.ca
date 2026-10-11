@@ -7,34 +7,37 @@
 <meta name="description" content="A starter guide to ServiceNow's AI-native tiers: Foundation, Advanced, and Prime, including setup guides and course recommendations." />
 <style>
   /* ============================================================
-     Design tokens — grounded in ServiceNow's own brand palette.
-     Brand refs: Pastel Green #62D84E, Blue Whale #032D42,
-     Dark Green #293E40, Sage #81B5A1.
+     Design tokens — palette shared with the ServiceNow JavaScript
+     reference page so both guides read as one family.
+     Accent: teal-green #62f5c7, secondary slate-blue #7aa2ff,
+     on a near-black navy base #080c14.
      ============================================================ */
   :root {
-    /* Brand */
-    --brand-green:#62D84E;
-    --brand-green-bright:#63DF4E;
-    --blue-whale:#032D42;
-    --dark-green:#293E40;
-    --sage:#81B5A1;
+    /* Brand — palette aligned with the ServiceNow JavaScript reference page
+       (findtorontoevents.ca/servicenow/javascript/) so the two guides read as
+       one family: teal-green accent + slate blue on a near-black navy base. */
+    --brand-green:#62f5c7;
+    --brand-green-bright:#7fead0;
+    --blue-whale:#0a1420;
+    --dark-green:#121b2e;
+    --sage:#8fa3bd;
 
-    /* Ink scale — dark base, elevation via lightness steps */
-    --bg-0:#04101a;
-    --bg-1:#062231;
-    --bg-2:#082d40;
-    --bg-3:#0b3a51;
+    /* Ink scale — dark base, elevation via lightness steps (same steps as the JS page) */
+    --bg-0:#080c14;
+    --bg-1:#0c1322;
+    --bg-2:#0f1626;
+    --bg-3:#121b2e;
 
     /* Text */
-    --t-1:#eef4f2;
-    --t-2:#a3bab3;
-    --t-3:#6d857f;
+    --t-1:#e6edf6;
+    --t-2:#a9b6c9;
+    --t-3:#8b98ac;
 
     /* Status */
-    --ok:#34d399;
+    --ok:#4ade80;
     --warn:#fbbf24;
     --bad:#f87171;
-    --critical:#22d3ee;
+    --critical:#7aa2ff;
 
     /* Radii */
     --r-sm:6px; --r-md:10px; --r-lg:14px; --r-xl:20px;
@@ -74,14 +77,27 @@
   .bg-aurora {
     z-index: 0;
     inset: -25%;
+    /* Continuous dynamic background in the JS page's accent hues: teal-green
+       bloom lower-left, slate-blue bloom upper-right, over the shared navy base. */
     background:
-      radial-gradient(38% 44% at 20% 26%, rgba(99,223,78,.30) 0%, transparent 66%),
-      radial-gradient(36% 40% at 78% 20%, rgba(129,181,161,.30) 0%, transparent 64%),
-      radial-gradient(42% 46% at 64% 74%, rgba(34,211,238,.20) 0%, transparent 68%),
-      radial-gradient(38% 42% at 26% 82%, rgba(8,45,64,.85) 0%, transparent 70%);
-    filter: blur(68px) saturate(1.3);
-    animation: aurora-drift 28s ease-in-out infinite alternate;
+      radial-gradient(42% 46% at 18% 22%, rgba(98,245,199,.16) 0%, transparent 66%),
+      radial-gradient(40% 44% at 82% 18%, rgba(122,162,255,.15) 0%, transparent 64%),
+      radial-gradient(46% 50% at 62% 78%, rgba(98,245,199,.07) 0%, transparent 68%),
+      radial-gradient(40% 44% at 24% 84%, rgba(18,27,46,.9) 0%, transparent 70%);
+    filter: blur(82px) saturate(1.05) brightness(.8);
+    animation: aurora-drift 32s ease-in-out infinite alternate;
     will-change: transform;
+    opacity: .8;
+  }
+
+  /* Calming veil over the ambient layers so the blooms never fight body text.
+     Sits above the aurora/grain (z-index 1) but below all content (z-index 2). */
+  .bg-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(8,12,20,.34) 0%, rgba(8,12,20,.52) 55%, rgba(8,12,20,.7) 100%);
   }
 
   @keyframes aurora-drift {
@@ -91,7 +107,7 @@
 
   .bg-grain {
     z-index: 1;
-    opacity: .045;
+    opacity: .03;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
@@ -103,6 +119,8 @@
     position: relative;
     z-index: 2;
   }
+  /* The rail is position:fixed with its own z-index (40) — deliberately NOT
+     in the rule above, which would set position:relative and un-fix it. */
 
   /* Reading-progress bar, native scroll-driven CSS (no JS) */
   .scroll-progress {
@@ -143,14 +161,14 @@
   code {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     font-size: .88em;
-    background: rgba(3,45,66,.75);
-    border: 1px solid rgba(129,181,161,.18);
+    background: rgba(10,20,32,.75);
+    border: 1px solid rgba(143,163,189,.18);
     color: var(--sage);
     padding: .12em .4em;
     border-radius: var(--r-sm);
   }
   strong { color: var(--t-1); font-weight: 650; }
-  ::selection { background: rgba(99,223,78,.28); color: #fff; }
+  ::selection { background: rgba(98,245,199,.28); color: #fff; }
 
   /* ============================================================
      LAYOUT
@@ -165,7 +183,7 @@
     font-size: clamp(1.4rem, 2.6vw, 1.85rem);
     margin: 0 0 1.4rem;
     padding-bottom: .6rem;
-    border-bottom: 1px solid rgba(129,181,161,.16);
+    border-bottom: 1px solid rgba(143,163,189,.16);
     position: relative;
   }
   h2::after {
@@ -188,13 +206,13 @@
   header.hero {
     padding: 5.5rem 1.5rem 4rem;
     text-align: center;
-    border-bottom: 1px solid rgba(129,181,161,.14);
+    border-bottom: 1px solid rgba(143,163,189,.14);
   }
   .hero .kicker {
     display: inline-block;
     padding: .3rem .85rem;
-    background: rgba(99,223,78,.10);
-    border: 1px solid rgba(99,223,78,.42);
+    background: rgba(98,245,199,.10);
+    border: 1px solid rgba(98,245,199,.42);
     border-radius: 999px;
     font-size: .74rem;
     font-weight: 650;
@@ -226,7 +244,7 @@
     display: inline-block;
     padding: .62rem 1.3rem;
     background: var(--brand-green);
-    color: #04101a;
+    color: #080c14;
     border-radius: var(--r-md);
     text-decoration: none;
     font-weight: 650;
@@ -236,17 +254,17 @@
   }
   .btn:hover {
     background: var(--brand-green-bright);
-    color: #04101a;
+    color: #080c14;
     transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(99,223,78,.22);
+    box-shadow: 0 8px 22px rgba(98,245,199,.22);
   }
   .btn:focus-visible { outline: 2px solid var(--brand-green-bright); outline-offset: 3px; }
   .btn.ghost {
-    background: rgba(99,223,78,.07);
-    border: 1px solid rgba(99,223,78,.45);
+    background: rgba(98,245,199,.07);
+    border: 1px solid rgba(98,245,199,.45);
     color: var(--brand-green);
   }
-  .btn.ghost:hover { background: var(--brand-green); color: #04101a; }
+  .btn.ghost:hover { background: var(--brand-green); color: #080c14; }
 
   /* ============================================================
      SURFACES — glassmorphism
@@ -260,10 +278,10 @@
   table,
   .raci-table,
   figure {
-    background: rgba(6,34,49,.62);
+    background: rgba(15,22,38,.62);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(129,181,161,.14);
+    border: 1px solid rgba(143,163,189,.14);
   }
 
   .disclaimer-banner {
@@ -317,6 +335,98 @@
   }
   nav.toc a:hover { color: var(--brand-green); padding-left: .25rem; text-decoration: none; }
 
+  /* ============================================================
+     FIXED LEFT RAIL — persistent wayfinding.
+     Items are generated in JS from nav.toc so the two can never drift
+     apart (the failure mode this page previously shipped).
+     ============================================================ */
+  nav.rail {
+    position: fixed;
+    left: .75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+    padding: .55rem .45rem;
+    background: rgba(8,12,20,.78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(143,163,189,.14);
+    border-radius: var(--r-lg);
+    /* Collapsed by default: marker + number only, so the rail stays inside the
+       left gutter and never overlaps the 1120px centered content column.
+       Labels reveal on hover/focus — see .rail-label below. */
+  }
+  nav.rail a {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .34rem .45rem;
+    border-radius: var(--r-sm);
+    color: var(--t-3);
+    text-decoration: none;
+    font-size: .78rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    transition: color .15s var(--ease), background .15s var(--ease);
+  }
+  /* The marker: a short rule that grows when the section is active. */
+  nav.rail a::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 10px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--t-3);
+    opacity: .55;
+    transition: width .18s var(--ease), background .18s var(--ease), opacity .18s var(--ease);
+  }
+  nav.rail a:hover { color: var(--t-1); background: rgba(98,245,199,.07); }
+  nav.rail a:hover::before { opacity: .9; }
+  nav.rail a.active {
+    color: var(--brand-green);
+    background: rgba(98,245,199,.11);
+  }
+  nav.rail a.active::before {
+    width: 20px;
+    background: var(--brand-green);
+    opacity: 1;
+  }
+  nav.rail .rail-num {
+    font-size: .64rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--t-3);
+    opacity: .8;
+    flex: 0 0 auto;
+  }
+  nav.rail .rail-label {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    transition: max-width .22s var(--ease), opacity .18s var(--ease);
+  }
+  nav.rail:hover .rail-label,
+  nav.rail:focus-within .rail-label {
+    max-width: 17rem;
+    opacity: 1;
+  }
+  nav.rail:hover,
+  nav.rail:focus-within { background: rgba(8,12,20,.95); }
+  nav.rail a.active .rail-num { color: var(--brand-green); opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    nav.rail .rail-label { transition: none; }
+  }
+
+  /* Below 1280px the rail would collide with the 1120px content column.
+     The in-page TOC (nav.toc) already covers navigation there. */
+  @media (max-width: 1279px) {
+    nav.rail { display: none; }
+  }
+
   /* Callouts */
   .callout {
     padding: 1.1rem 1.35rem;
@@ -355,7 +465,7 @@
   .illustrative { font-size: .85em; color: var(--t-3); font-style: italic; }
   .audience-tag {
     display: inline-block;
-    background: rgba(129,181,161,.14);
+    background: rgba(143,163,189,.14);
     color: var(--sage);
     padding: .15em .55em;
     border-radius: var(--r-sm);
@@ -403,23 +513,23 @@
   th, td {
     padding: .7rem .95rem;
     text-align: left;
-    border-bottom: 1px solid rgba(129,181,161,.10);
+    border-bottom: 1px solid rgba(143,163,189,.10);
     vertical-align: top;
   }
   thead th {
-    background: rgba(8,45,64,.92);
+    background: rgba(18,27,46,.92);
     color: var(--sage);
     font-weight: 650;
     font-size: .82rem;
     letter-spacing: .03em;
     text-transform: uppercase;
-    border-bottom: 1px solid rgba(129,181,181,.2);
+    border-bottom: 1px solid rgba(143,163,189,.2);
     position: sticky;
     top: 0;
     z-index: 5;
   }
-  tbody tr:nth-child(even) { background: rgba(129,181,161,.035); }
-  tbody tr:hover { background: rgba(99,223,78,.06); }
+  tbody tr:nth-child(even) { background: rgba(143,163,189,.035); }
+  tbody tr:hover { background: rgba(98,245,199,.06); }
   tbody tr:last-child td { border-bottom: none; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .raci-table { font-size: .8rem; }
@@ -434,7 +544,7 @@
   .checklist li {
     padding: .5rem 0 .5rem 1.6rem;
     position: relative;
-    border-bottom: 1px solid rgba(129,181,161,.08);
+    border-bottom: 1px solid rgba(143,163,189,.08);
   }
   .checklist li:last-child { border-bottom: none; }
   .checklist li::before {
@@ -463,9 +573,9 @@
     margin: 1.5rem 0;
   }
   .stat {
-    background: rgba(6,34,49,.62);
+    background: rgba(15,22,38,.62);
     backdrop-filter: blur(14px);
-    border: 1px solid rgba(129,181,161,.14);
+    border: 1px solid rgba(143,163,189,.14);
     border-left: 3px solid var(--brand-green);
     border-radius: var(--r-md);
     padding: 1.05rem 1.2rem;
@@ -508,12 +618,12 @@
     transition: transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease);
   }
   .sn-link:hover {
-    border-color: rgba(99,223,78,.4);
-    background: rgba(99,223,78,.06);
+    border-color: rgba(98,245,199,.4);
+    background: rgba(98,245,199,.06);
     transform: translateY(-2px);
     text-decoration: none;
   }
-  .sn-link h4 { margin: 0 0 .3rem; color: var(--brand-green); }
+  .sn-link h3 { margin: 0 0 .3rem; color: var(--brand-green); }
   .sn-link p { margin: 0; color: var(--t-2); font-size: .88rem; }
 
   /* Course cards */
@@ -523,11 +633,11 @@
     margin-bottom: 1rem;
     transition: transform .18s var(--ease), border-color .18s var(--ease);
   }
-  .course-card:hover { transform: translateY(-2px); border-color: rgba(99,223,78,.32); }
+  .course-card:hover { transform: translateY(-2px); border-color: rgba(98,245,199,.32); }
   .course-card .title { font-size: 1.05rem; font-weight: 650; margin-bottom: .55rem; }
   .course-card .type {
     display: inline-block;
-    background: rgba(99,223,78,.12);
+    background: rgba(98,245,199,.12);
     color: var(--brand-green);
     padding: .2em .6em;
     border-radius: var(--r-sm);
@@ -542,8 +652,8 @@
 
   /* Preformatted prompt template */
   pre {
-    background: rgba(3,45,66,.75);
-    border: 1px solid rgba(129,181,161,.16);
+    background: rgba(10,20,32,.75);
+    border: 1px solid rgba(143,163,189,.16);
     border-radius: var(--r-md);
     padding: 1rem 1.15rem;
     overflow-x: auto;
@@ -560,7 +670,7 @@
     text-align: center;
     padding: 2.5rem 1.5rem;
     color: var(--t-3);
-    border-top: 1px solid rgba(129,181,161,.14);
+    border-top: 1px solid rgba(143,163,189,.14);
     font-size: .84rem;
   }
   footer p { margin: 0; }
@@ -589,6 +699,7 @@
 <!-- Dynamic background layers: aurora bloom + film grain (decorative only) -->
 <div class="bg-aurora" aria-hidden="true"></div>
 <div class="bg-grain" aria-hidden="true"></div>
+<div class="bg-veil" aria-hidden="true"></div>
 <div class="scroll-progress" aria-hidden="true"></div>
 
 <header class="hero">
@@ -882,7 +993,7 @@
     </thead>
     <tbody>
       <tr><td>What is an Assist?</td><td>Unit of consumption for Now Assist skills and AI Agent runs. One skill invocation = 1 Assist (varies by skill complexity).</td></tr>
-      <tr><td>Tier Allocations</td><td>Foundation: ~500/mo/user; Advanced: ~2,000/mo/user; Prime: ~5,000+/mo/user (exact numbers per contract).</td></tr>
+      <tr><td>Tier Allocations</td><td>Vary by tier and by contract. Do not assume a fixed per-user monthly allowance — confirm your allocation and any top-up terms with your ServiceNow account team.</td></tr>
       <tr><td>Top-up Options</td><td>Purchase Assist packs via ServiceNow account team; auto-top-up can be enabled in Control Tower.</td></tr>
       <tr><td>Monitoring</td><td>Control Tower > Usage Analytics shows daily/monthly burn rate, top consumers, and projected overage.</td></tr>
       <tr><td>Alerts</td><td>Set thresholds at 50%, 80%, 95% of allocation. Notify via email, Slack, or ServiceNow notifications.</td></tr>
@@ -1196,31 +1307,31 @@ Retrieved knowledge:
   <p>Use these as your source of truth. Links may change; search the catalog if a direct link fails.</p>
   <div class="servicenow-links">
     <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/ai-native-sku-overview.html" target="_blank" rel="noopener">
-      <h4>AI-Native SKU Overview (Packaging)</h4>
+      <h3>AI-Native SKU Overview (Packaging)</h3>
       <p>Official tier comparison: Foundation, Advanced, Prime capabilities and entitlements.</p>
     </a>
     <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/now-assist-skill-kit/configuring-now-assist-skill-kit.html" target="_blank" rel="noopener">
-      <h4>Configuring Now Assist Skill Kit</h4>
+      <h3>Configuring Now Assist Skill Kit</h3>
       <p>Prerequisites, plugin installation, role setup, and skill creation workflow.</p>
     </a>
     <a class="sn-link" href="https://www.servicenow.com/community/servicenow-otto-articles/now-assist-skill-kit-tool-and-deployment-options/ta-p/3284803" target="_blank" rel="noopener">
-      <h4>Now Assist Skill Kit: Tools & Deployment Options</h4>
+      <h3>Now Assist Skill Kit: Tools & Deployment Options</h3>
       <p>Community article covering retrievers, scripts, subflows, UI Action deployment, UI Builder constraints, and troubleshooting.</p>
     </a>
     <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/configure-next-best-action-agent.html" target="_blank" rel="noopener">
-      <h4>Configure AI Agents in AI Agent Studio</h4>
+      <h3>Configure AI Agents in AI Agent Studio</h3>
       <p>Agent creation, tools, triggers, security controls, testing, and monitoring.</p>
     </a>
     <a class="sn-link" href="https://www.servicenow.com/products/ai-agents.html" target="_blank" rel="noopener">
-      <h4>ServiceNow AI Agents Product Page</h4>
+      <h3>ServiceNow AI Agents Product Page</h3>
       <p>Capabilities, use cases, and architecture overview.</p>
     </a>
     <a class="sn-link" href="https://learn.servicenow.com" target="_blank" rel="noopener">
-      <h4>ServiceNow Learning Catalog</h4>
+      <h3>ServiceNow Learning Catalog</h3>
       <p>Search for current courses on Now Assist, Predictive Intelligence, Virtual Agent, AI Agent Studio, Skill Kit, and governance.</p>
     </a>
     <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/ai-control-tower.html" target="_blank" rel="noopener">
-      <h4>AI Control Tower Documentation</h4>
+      <h3>AI Control Tower Documentation</h3>
       <p>Model inventory, usage analytics, alert policies, governance workflows.</p>
     </a>
   </div>
@@ -1380,6 +1491,72 @@ Retrieved knowledge:
 <footer>
   <p>&copy; 2026 FindTorontoEvents.ca. All rights reserved. Content for informational purposes only. ServiceNow product names and course titles are trademarks of their respective owners.</p>
 </footer>
+
+<!-- ============================================================
+     FIXED LEFT RAIL — persistent wayfinding + "you are here".
+     Items are generated from nav.toc so the rail and the in-page TOC can
+     never drift apart (that drift is what previously shipped broken).
+     ============================================================ -->
+<nav class="rail" aria-label="Section navigation"></nav>
+
+<script>
+(function () {
+  'use strict';
+
+  var rail = document.querySelector('nav.rail');
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll('nav.toc a[href^="#"]'));
+  if (!rail || tocLinks.length === 0) return;
+
+  // Build rail items 1:1 from the TOC. One source of truth for section order.
+  var items = tocLinks.map(function (a, i) {
+    var id = a.getAttribute('href').slice(1);
+    var target = document.getElementById(id);
+    if (!target) return null;
+    var link = document.createElement('a');
+    link.href = '#' + id;
+    var num = document.createElement('span');
+    num.className = 'rail-num';
+    num.textContent = (i + 1 < 10 ? '0' : '') + (i + 1);
+    var label = document.createElement('span');
+    label.className = 'rail-label';
+    // Full label kept intact; CSS handles truncation (ellipsis) so the rail
+    // stays narrow without chopping words mid-way. title gives the full text.
+    label.textContent = (a.textContent || '').trim().replace(/^\d+[.\s]+/, '');
+    link.title = label.textContent;
+    link.appendChild(num);
+    link.appendChild(label);
+    rail.appendChild(link);
+    return { link: link, target: target };
+  }).filter(Boolean);
+
+  if (items.length === 0) { rail.remove(); return; }
+
+  // Scroll-spy: highlight the section currently occupying the reading line.
+  var current = null;
+  function setActive() {
+    var line = window.scrollY + Math.min(180, window.innerHeight * 0.28);
+    var next = items[0];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].target.offsetTop <= line) next = items[i];
+    }
+    if (next === current) return;
+    if (current) current.link.classList.remove('active');
+    next.link.classList.add('active');
+    current = next;
+  }
+
+  var queued = false;
+  function onScroll() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; setActive(); });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  setActive();
+})();
+</script>
 
 </body>
 </html>
