@@ -68,6 +68,7 @@
      plus a film-grain overlay for texture. No canvas, no JS.
      ============================================================ */
   .bg-aurora,
+  .bg-orbit,
   .bg-grain {
     position: fixed;
     inset: 0;
@@ -90,6 +91,27 @@
     opacity: .8;
   }
 
+  .bg-orbit {
+    z-index: 0;
+    inset: -12%;
+    background:
+      radial-gradient(28% 28% at 22% 30%, rgba(98,245,199,.10) 0%, transparent 72%),
+      radial-gradient(24% 24% at 76% 22%, rgba(122,162,255,.12) 0%, transparent 70%),
+      radial-gradient(34% 34% at 62% 74%, rgba(98,245,199,.08) 0%, transparent 74%),
+      repeating-linear-gradient(
+        125deg,
+        rgba(255,255,255,.00) 0 18px,
+        rgba(122,162,255,.025) 18px 19px,
+        rgba(255,255,255,.00) 19px 44px
+      );
+    mix-blend-mode: screen;
+    filter: blur(1px) saturate(1.02);
+    opacity: .34;
+    animation: orbit-drift 44s linear infinite;
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+
   /* Calming veil over the ambient layers so the blooms never fight body text.
      Sits above the aurora/grain (z-index 1) but below all content (z-index 2). */
   .bg-veil {
@@ -103,6 +125,12 @@
   @keyframes aurora-drift {
     from { transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1); }
     to   { transform: translate3d(3%, 2%, 0) rotate(7deg) scale(1.06); }
+  }
+
+  @keyframes orbit-drift {
+    from { transform: translate3d(-1.5%, 0, 0) rotate(0deg) scale(1); }
+    50%  { transform: translate3d(1%, 1.5%, 0) rotate(5deg) scale(1.03); }
+    to   { transform: translate3d(0, -1%, 0) rotate(10deg) scale(1.05); }
   }
 
   .bg-grain {
@@ -142,7 +170,7 @@
 
   /* Accessibility: honour reduced-motion on every ambient animation */
   @media (prefers-reduced-motion: reduce) {
-    .bg-aurora { animation: none; }
+    .bg-aurora, .bg-orbit { animation: none; }
     .scroll-progress { animation: none; transform: scaleX(1); opacity: .35; }
     html { scroll-behavior: auto; }
     *, *::before, *::after {
@@ -235,7 +263,13 @@
     font-size: 1.05rem;
   }
   .hero .meta { color: var(--t-3); font-size: .88rem; }
-  .hero .actions { margin-top: 1.8rem; }
+  .hero .actions {
+    margin-top: 1.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .75rem;
+  }
 
   /* ============================================================
      BUTTONS
@@ -265,6 +299,10 @@
     color: var(--brand-green);
   }
   .btn.ghost:hover { background: var(--brand-green); color: #080c14; }
+  .btn.micro {
+    padding: .58rem 1rem;
+    font-size: .85rem;
+  }
 
   /* ============================================================
      SURFACES — glassmorphism
@@ -672,7 +710,18 @@
     border-top: 1px solid rgba(143,163,189,.14);
     font-size: .84rem;
   }
-  footer p { margin: 0; }
+  .footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .7rem 1rem;
+    margin: 0 0 1rem;
+  }
+  .footer-nav a.current {
+    color: var(--t-1);
+    font-weight: 700;
+  }
+  footer p { margin: 0 auto; max-width: 68ch; }
   footer a { color: var(--brand-green); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
 
@@ -686,6 +735,7 @@
     table, .raci-table { font-size: .84rem; }
     th, td { padding: .6rem .7rem; }
     .servicenow-links { grid-template-columns: 1fr; }
+    .footer-nav { flex-direction: column; align-items: center; }
   }
   @media (max-width: 600px) {
     table { font-size: .82rem; }
@@ -697,6 +747,7 @@
 
 <!-- Dynamic background layers: aurora bloom + film grain (decorative only) -->
 <div class="bg-aurora" aria-hidden="true"></div>
+<div class="bg-orbit" aria-hidden="true"></div>
 <div class="bg-grain" aria-hidden="true"></div>
 <div class="bg-veil" aria-hidden="true"></div>
 <div class="scroll-progress" aria-hidden="true"></div>
@@ -708,6 +759,9 @@
   <div class="meta">Last reviewed: October 2026 | Based on publicly available information as of this date</div>
   <div class="actions">
     <a class="btn ghost" href="/">Back to events</a>
+    <a class="btn ghost micro" href="/servicenow/javascript/index.html">JavaScript Reference</a>
+    <a class="btn ghost micro" href="/servicenow/CIS-CSM/index.html">CIS-CSM</a>
+    <a class="btn ghost micro" href="/servicenow/CIS-VR/index.html">CIS-VR</a>
   </div>
 </header>
 
@@ -1082,6 +1136,15 @@ Retrieved knowledge:
     <li>No automatic update to a customer-facing field without approval.</li>
     <li>Test cases cover: empty work notes, missing CI, unrelated KB results, sensitive data, and long ticket histories.</li>
   </ul>
+
+  <div class="callout">
+    <strong>Related internal ServiceNow docs:</strong>
+    <ul>
+      <li><a href="/servicenow/javascript/index.html">JavaScript Reference</a> &mdash; scripting patterns, Glide APIs, client/server boundaries, and platform-safe coding examples.</li>
+      <li><a href="/servicenow/CIS-CSM/index.html">CIS-CSM Study Briefing</a> &mdash; focused Customer Service Management certification notes and implementation context.</li>
+      <li><a href="/servicenow/CIS-VR/index.html">CIS-VR Study Briefing</a> &mdash; Vulnerability Response study material plus ServiceNow-specific workflow guidance.</li>
+    </ul>
+  </div>
 
   <h3>Custom Skill vs AI Agent — Decision Guide</h3>
   <p>NASK skills are modular building blocks; AI agents use tools—including custom skills—to complete broader tasks.</p>
@@ -1488,6 +1551,12 @@ Retrieved knowledge:
 </main>
 
 <footer>
+  <nav class="footer-nav" aria-label="ServiceNow training pages">
+    <a href="/servicenow/javascript/index.html">JavaScript Reference</a>
+    <a href="/servicenow/AIFeaturesOct2026/index.html" class="current">AI Features &mdash; Oct 2026</a>
+    <a href="/servicenow/CIS-CSM/index.html">CIS-CSM Study Briefing</a>
+    <a href="/servicenow/CIS-VR/index.html">CIS-VR Study Briefing</a>
+  </nav>
   <p>&copy; 2026 FindTorontoEvents.ca. All rights reserved. Content for informational purposes only. ServiceNow product names and course titles are trademarks of their respective owners.</p>
 </footer>
 
