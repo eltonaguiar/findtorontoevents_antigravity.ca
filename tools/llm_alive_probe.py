@@ -148,20 +148,42 @@ def load_deployments() -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 # probe
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Priority tiers
+# ---------------------------------------------------------------------------
+# Anything that has an ISSUE is pushed an order of magnitude (or more) below a
+# validated-alive model, so the router strongly prefers models we have actually
+# proven work -- while keeping broken ones reachable as a last resort.
+#
+#   P1 validated-alive   1000 / 500 / 200 / 100   (by latency)
+#   P2 throttled            10   works, but quota-limited (429)
+#   P3 error                 1   5xx / timeout, may be transient
+#   P4 dead / no_key         0   retired model, dead key, no credential
+TIER_WEIGHTS = {
+    "alive": (1000, 500, 200, 100),
+    "throttled": (10,),
+    "error": (1,),
+    "dead": (0,),
+}
+TIER_NAMES = {
+    "alive": "P1-alive",
+    "throttled": "P2-throttled",
+    "error": "P3-error",
+    "dead": "P4-dead",
+}
+
+
 def weight_for(status: str, latency_ms: int) -> int:
     if status == "alive":
+        fast, mid, slow, crawl = TIER_WEIGHTS["alive"]
         if latency_ms <= 1500:
-            return 100
+            return fast
         if latency_ms <= 4000:
-            return 70
+            return mid
         if latency_ms <= 10000:
-            return 40
-        return 20
-    if status == "throttled":
-        return 10
-    if status == "error":
-        return 3
-    return 0  # dead / no_key
+            return slow
+        return crawl
+    return TIER_WEIGHTS.get(status, (0,))[0]
 
 
 def probe(dep: Dict[str, Any], keys: Dict[str, str], timeout: int) -> Dict[str, Any]:
@@ -248,11 +270,12 @@ ICON = {"alive": "OK  ", "throttled": "THR ", "error": "ERR ", "dead": "DEAD"}
 def print_table(rows: List[Dict[str, Any]], failures_only: bool = False) -> None:
     if failures_only:
         rows = [r for r in rows if r["status"] != "alive"]
-    print(f"{'grp':<22} {'status':<5} {'ms':>6}  {'category':<14} model")
-    print("-" * 108)
+    print(f"{'grp':<22} {'tier':<13} {'wt':>5} {'ms':>6}  {'category':<14} model")
+    print("-" * 118)
     for r in rows:
-        print(f"{str(r['group'])[:22]:<22} {ICON.get(r['status'], r['status']):<5} "
-              f"{r['latency_ms']:>6}  {str(r['category'])[:14]:<14} {r['model']}")
+        print(f"{str(r['group'])[:22]:<22} {TIER_NAMES.get(r['status'], r['status']):<13} "
+              f"{weight_for(r['status'], r['latency_ms']):>5} {r['latency_ms']:>6}  "
+              f"{str(r['category'])[:14]:<14} {r['model']}")
 
 
 def summarize(rows: List[Dict[str, Any]]) -> Dict[str, int]:

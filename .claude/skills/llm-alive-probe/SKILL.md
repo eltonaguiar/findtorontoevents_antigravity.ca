@@ -26,14 +26,18 @@ python3 tools/llm_alive_probe.py --json > /tmp/alive.json
 `--apply` writes `weight:` into every deployment, so restart the proxy afterwards
 (`bash tools/start_ai_servers.sh restart`, or `tools/start_litellm_proxy.sh --background`).
 
-## Status vocabulary
+## Priority tiers
 
-| status | meaning | weight |
-|---|---|---|
-| `alive` | got a completion back | 100 / 70 / 40 / 20 by latency (`<=1.5s / <=4s / <=10s / slower`) |
-| `throttled` | the model exists and the key works, but the provider returned 429 | 10 |
-| `error` | 5xx / timeout / unknown provider error — may be transient | 3 |
-| `dead` | retired model, dead key, or exhausted quota — will not recover alone | 0 |
+Anything with an **issue** sits at least 10x below a validated model, so the router strongly prefers
+models we have actually proven work — while keeping broken ones reachable as a last resort (P2/P3 are
+deliberately non-zero).
+
+| tier | status | meaning | weight |
+|---|---|---|---|
+| **P1** | `alive` | got a completion back | **1000 / 500 / 200 / 100** by latency (`<=1.5s / <=4s / <=10s / slower`) |
+| **P2** | `throttled` | model + key work, provider returned 429 | `10` |
+| **P3** | `error` | 5xx / timeout / unknown — may be transient | `1` |
+| **P4** | `dead` | retired model, dead key, exhausted quota, missing credential | `0` |
 
 Categories come from the shared classifier (`tools/litellm_smart_cooldown._classify`), so the probe,
 the runtime blacklist, and the config all speak the same language.
