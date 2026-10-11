@@ -1,0 +1,1753 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ServiceNow JavaScript — Developer Console</title>
+  <meta name="description" content="Production-grade ServiceNow JavaScript reference: GlideRecord, GlideAjax, client APIs, security, performance, testing, deployment, and engineering discipline.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080c14;
+      --panel: #0f1626;
+      --panel-2: #121b2e;
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #e6edf6;
+      --muted: #8b98ac;
+      --accent: #62f5c7;
+      --accent-2: #7aa2ff;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --success: #4ade80;
+      --code-bg: #0a0f1a;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; padding: 0;
+      background:
+        radial-gradient(900px 500px at 15% -10%, rgba(98,245,199,0.08), transparent 60%),
+        radial-gradient(900px 600px at 90% 0%, rgba(122,162,255,0.08), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      font-feature-settings: "tnum";
+    }
+
+    a { color: var(--accent-2); text-decoration: none; transition: color .15s ease; }
+    a:hover { color: var(--accent); text-decoration: underline; }
+
+    .page { max-width: 1280px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* HERO */
+    header.hero {
+      position: relative;
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--panel-border);
+      overflow: hidden;
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+    .hero-glow {
+      position: absolute; top: -40%; left: 50%; transform: translateX(-50%);
+      width: 820px; height: 420px;
+      background: radial-gradient(circle at 50% 30%, rgba(98,245,199,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); margin: 0 0 12px;
+    }
+    header.hero h1 {
+      font-size: 2.4rem; line-height: 1.1; margin: 0 0 16px; font-weight: 700;
+    }
+    header.hero h1 .accent { color: var(--accent); }
+    .lede { max-width: 68ch; color: var(--muted); font-size: 1.05rem; margin: 0 0 20px; }
+    .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .badge {
+      display: inline-block; font-size: 0.72rem; padding: 4px 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--panel-border); color: var(--muted);
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0.7rem 1.35rem; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+      cursor: pointer; border: none; text-decoration: none;
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, #62f5c7, #4ade80);
+      color: #04140d; box-shadow: 0 10px 30px rgba(98,245,199,0.25);
+    }
+    .btn.primary:hover { transform: translateY(-1px); box-shadow: 0 14px 36px rgba(98,245,199,0.35); }
+    .btn.ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .btn.ghost:hover { background: rgba(255,255,255,0.04); }
+
+    /* LAYOUT */
+    .layout { display: grid; grid-template-columns: 300px 1fr; gap: 32px; align-items: start; padding-top: 32px; }
+    @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
+
+    /* SIDEBAR TOC */
+    nav.toc {
+      position: sticky; top: 24px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+    }
+    nav.toc .toc-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 4px 12px; border-bottom: 1px solid var(--panel-border); margin-bottom: 12px;
+    }
+    nav.toc .toc-header h3 { margin: 0; font-size: 0.95rem; color: var(--muted); }
+    .toc-search {
+      width: 100%; background: var(--panel-2); border: 1px solid var(--panel-border);
+      color: var(--text); border-radius: 999px; padding: 8px 14px; font-size: 0.9rem; margin-bottom: 14px;
+    }
+    .toc-search:focus { outline: none; border-color: var(--accent); }
+    nav.toc .group { margin-bottom: 14px; }
+    nav.toc .group-title {
+      font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); padding: 0 4px 6px; display: block;
+    }
+    nav.toc ol { margin: 0; padding-left: 4px; list-style: none; }
+    nav.toc li { margin: 2px 0; }
+    nav.toc a {
+      display: block; padding: 6px 10px; border-radius: 8px; color: var(--muted);
+      font-size: 0.92rem; transition: all .1s ease;
+    }
+    nav.toc a:hover { color: var(--text); background: rgba(255,255,255,0.04); text-decoration: none; }
+    nav.toc a.active { color: var(--accent); background: rgba(98,245,199,0.08); font-weight: 600; }
+    .toc-progress {
+      position: absolute; top: 0; left: 0; width: 3px; height: 0;
+      background: linear-gradient(var(--accent), var(--accent-2));
+      border-radius: 3px; transition: height .1s ease;
+    }
+
+    /* MAIN CONTENT */
+    main { min-width: 0; }
+    section { margin: 48px 0; scroll-margin-top: 90px; }
+    h2 {
+      font-size: 1.35rem; margin: 0 0 16px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--panel-border); display: flex; align-items: center; gap: 10px;
+    }
+    h2 .section-chip {
+      font-size: 0.65rem; padding: 2px 9px; border-radius: 999px;
+      background: rgba(255,255,255,0.06); color: var(--muted); font-weight: 500;
+    }
+    h3 { font-size: 1.05rem; margin: 24px 0 10px; color: var(--accent-2); }
+    h4 { font-size: 0.95rem; margin: 16px 0 8px; color: var(--muted); }
+
+    /* CODE CARDS */
+    .code-card {
+      background: var(--code-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      margin: 14px 0;
+    }
+    .code-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; background: rgba(255,255,255,0.025);
+      border-bottom: 1px solid var(--panel-border);
+      font-size: 0.8rem;
+    }
+    .context {
+      padding: 1px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.02em;
+    }
+    .context.server { background: rgba(98,245,199,0.15); color: var(--accent); }
+    .context.client { background: rgba(122,162,255,0.15); color: var(--accent-2); }
+    .context.async { background: rgba(251,191,36,0.15); color: var(--warning); }
+    .context.scoped { background: rgba(122,162,255,0.1); color: #a5b4fc; }
+    .filename { color: var(--muted); flex: 1; font-family: "JetBrains Mono", ui-monospace, monospace; }
+    .copy-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--panel-border);
+      color: var(--muted); padding: 3px 10px; border-radius: 6px; cursor: pointer;
+      font-size: 0.75rem; transition: all .1s ease;
+    }
+    .copy-btn:hover { background: var(--accent); color: #04140d; border-color: var(--accent); }
+    .code-card pre {
+      margin: 0; padding: 16px 18px; overflow-x: auto;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem; line-height: 1.55; color: #d1d9e6;
+    }
+    .code-card code { background: none; border: none; padding: 0; }
+
+    /* CALLOUTS */
+    .notice, .flow, .warning, .success, .danger {
+      padding: 14px 18px; border-radius: var(--radius); margin: 16px 0; border: 1px solid var(--panel-border);
+    }
+    .notice { background: rgba(122,162,255,0.08); color: #c7d2fe; border-color: rgba(122,162,255,0.25); }
+    .flow { background: rgba(98,245,199,0.06); color: #a7f3d0; border-color: rgba(98,245,199,0.2); }
+    .warning { background: rgba(251,191,36,0.08); color: #fde68a; border-color: rgba(251,191,36,0.25); }
+    .success { background: rgba(74,222,128,0.08); color: #a7f3d0; border-color: rgba(74,222,128,0.25); }
+    .danger { background: rgba(248,113,113,0.08); color: #fecaca; border-color: rgba(248,113,113,0.25); }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; margin: 14px 0; }
+    table.table-map {
+      width: 100%; border-collapse: collapse;
+      background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
+    }
+    table.table-map th, table.table-map td {
+      padding: 10px 14px; border-bottom: 1px solid var(--panel-border); text-align: left; vertical-align: top;
+    }
+    table.table-map th { background: rgba(255,255,255,0.04); font-weight: 600; color: var(--muted); font-size: 0.85rem; }
+    table.table-map tr:last-child td { border-bottom: none; }
+
+    /* CONCEPT / API CARDS */
+    .concept-grid, .api-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 16px 0; }
+    .concept, .api-card {
+      background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 16px;
+      min-width: 0; overflow: hidden;
+    }
+    .concept h4, .api-card h4 { margin: 0 0 10px; color: var(--accent-2); font-size: 0.95rem; }
+    .api-card ul { margin: 0; padding-left: 18px; font-size: 0.9rem; }
+    .api-card li { margin: 4px 0; color: var(--muted); }
+
+    /* API-CARD CODE BLOCKS — prevent overflow, match code-card behavior */
+    .api-card pre {
+      margin: 8px 0 0; padding: 12px 14px; overflow-x: auto; overflow-y: hidden;
+      background: var(--code-bg); border-radius: var(--radius-sm);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem; line-height: 1.5; color: #d1d9e6;
+      max-height: 320px;
+    }
+    .api-card code { background: none; border: none; padding: 0; white-space: pre; }
+    .api-card .code-toolbar { margin-top: 8px; }
+
+    /* ES6 examples — single column so long Class.create() blocks have room */
+    .api-grid.es6-examples {
+      grid-template-columns: 1fr;
+    }
+
+    /* CHECKLISTS */
+    .checklist {
+      background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 14px 18px;
+    }
+    .checklist li { margin: 8px 0; padding-left: 4px; }
+    .checklist li::before { content: "✓ "; color: var(--accent); font-weight: 700; }
+
+    /* ANTI-PATTERN COMPARISON */
+    /* minmax(0,1fr) so tracks cannot be blown out by a long code line's min-content */
+    .comparison { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin: 16px 0; }
+    @media (max-width: 720px) { .comparison { grid-template-columns: minmax(0, 1fr); } }
+    .anti, .good {
+      border-radius: var(--radius); padding: 14px 16px; border: 1px solid var(--panel-border);
+      min-width: 0;
+    }
+    .anti { background: rgba(248,113,113,0.06); border-color: rgba(248,113,113,0.2); }
+    .good { background: rgba(74,222,128,0.06); border-color: rgba(74,222,128,0.2); }
+    .anti h4, .good h4 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .anti h4 { color: #fca5a5; }
+    .good h4 { color: #86efac; }
+    .anti pre, .good pre { margin: 10px 0; padding: 10px 12px; font-size: 0.82rem; overflow-x: auto; white-space: pre; }
+    .danger pre, .warning pre, .notice pre, .flow pre, .success pre { overflow-x: auto; white-space: pre; }
+
+    /* EXECUTION LIFECYCLE */
+    .lifecycle {
+      background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
+      padding: 20px; margin: 20px 0;
+    }
+    .lifecycle-steps { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .lifecycle-step {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; background: var(--panel-2); border: 1px solid var(--panel-border);
+      border-radius: 999px; font-size: 0.85rem;
+    }
+    .lifecycle-step.client { border-color: rgba(122,162,255,0.4); }
+    .lifecycle-step.server { border-color: rgba(98,245,199,0.4); }
+    .lifecycle-step.async { border-color: rgba(251,191,36,0.4); }
+    .lifecycle-step.danger { border-color: rgba(248,113,113,0.4); }
+    .lifecycle-arrow { color: var(--muted); font-size: 1.1rem; }
+
+    /* DECISION TABLE */
+    .decision-table table { font-size: 0.88rem; }
+    .decision-table td, .decision-table th { padding: 8px 10px; }
+
+    /* SCROLL PROGRESS — fixed, out of flow, so it cannot affect layout/overflow */
+    .scroll-progress {
+      position: fixed; top: 0; left: 0; width: 100%; height: 2px; z-index: 100;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transform: scaleX(0); transform-origin: 0 50%;
+      pointer-events: none; will-change: transform;
+    }
+
+    /* MOTION — honor the OS setting; the page must stay fully usable without animation */
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+      .scroll-progress { display: none; }
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--panel-border);
+      color: var(--muted); font-size: 0.85rem;
+    }
+    /* Footer site menu — wraps instead of overflowing on narrow viewports */
+    .footer-nav {
+      display: flex; flex-wrap: wrap; gap: 8px 10px; margin: 0 0 16px;
+    }
+    .footer-nav a {
+      color: var(--muted); font-size: 0.8rem; text-decoration: none;
+      padding: 6px 12px; border: 1px solid var(--panel-border); border-radius: 999px;
+      background: var(--panel); white-space: nowrap; transition: all .12s ease;
+    }
+    .footer-nav a:hover { color: var(--accent); border-color: rgba(98,245,199,0.35); background: rgba(98,245,199,0.06); }
+    .footer-nav a.current { color: var(--accent); border-color: rgba(98,245,199,0.45); }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+    /* PRINT */
+    @media print {
+      .toc, .hero-actions, .copy-btn { display: none; }
+      body { background: white; color: black; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-grid"></div>
+      <div class="hero-glow"></div>
+
+      <p class="eyebrow">ServiceNow Platform · JavaScript Reference</p>
+      <h1>
+        Build reliable ServiceNow automation<br>
+        <span class="accent">with production-grade JavaScript</span>
+      </h1>
+
+      <p class="lede">
+        Practical patterns for GlideRecord, GlideAjax, client APIs, security, performance,
+        testing, deployment, and the engineering discipline required for real-world ServiceNow development.
+      </p>
+
+      <div class="hero-badges">
+        <span class="badge">Server + Client</span>
+        <span class="badge">Scoped-app aware</span>
+        <span class="badge">Production-ready patterns</span>
+        <span class="badge">28 sections</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#gliderecord" class="btn primary">Start with GlideRecord</a>
+        <a href="#best-practices" class="btn ghost">Best practices</a>
+      </div>
+    </header>
+
+    <div class="layout">
+
+      <!-- SIDEBAR TOC -->
+      <nav class="toc" aria-label="Table of contents">
+        <div class="toc-header">
+          <h3>Contents</h3>
+        </div>
+        <input type="text" id="toc-search" class="toc-search" placeholder="Filter sections…">
+
+        <div class="group">
+          <span class="group-title">Core APIs</span>
+          <ol>
+            <li><a href="#overview">Overview & Contexts</a></li>
+            <li><a href="#gliderecord">GlideRecord</a></li>
+            <li><a href="#glideencodedquery">GlideEncodedQuery</a></li>
+            <li><a href="#glideaggregate">GlideAggregate</a></li>
+            <li><a href="#glidedatetime">GlideDateTime</a></li>
+            <li><a href="#glidelist">GlideList (g_list)</a></li>
+            <li><a href="#glidesystem">GlideSystem (gs)</a></li>
+          </ol>
+        </div>
+
+        <div class="group">
+          <span class="group-title">Client APIs</span>
+          <ol>
+            <li><a href="#gform">g_form</a></li>
+            <li><a href="#guser">g_user</a></li>
+            <li><a href="#gscratchpad">g_scratchpad</a></li>
+            <li><a href="#glideajax">GlideAjax</a></li>
+          </ol>
+        </div>
+
+        <div class="group">
+          <span class="group-title">Modern JS</span>
+          <ol>
+            <li><a href="#es6">ES6+ Compatibility</a></li>
+          </ol>
+        </div>
+
+        <div class="group">
+          <span class="group-title">Engineering</span>
+          <ol>
+            <li><a href="#best-practices">Best Practices</a></li>
+            <li><a href="#when-not-to-script">When Not to Script</a></li>
+            <li><a href="#testing-debugging">Testing & Debugging</a></li>
+            <li><a href="#deployment">Deployment & Change</a></li>
+            <li><a href="#acl-security">ACL-First Security</a></li>
+            <li><a href="#error-handling">Error Handling</a></li>
+            <li><a href="#performance-advanced">Performance</a></li>
+            <li><a href="#modern-integration">Modern Integration</a></li>
+            <li><a href="#release-scope">Release & Scope</a></li>
+          </ol>
+        </div>
+
+        <div class="group">
+          <span class="group-title">Ship It</span>
+          <ol>
+            <li><a href="#decision-table">Decision Table</a></li>
+            <li><a href="#security-checklist">Security Checklist</a></li>
+            <li><a href="#prod-readiness">Production Checklist</a></li>
+            <li><a href="#anti-patterns">Anti-Patterns</a></li>
+            <li><a href="#maintainability">Maintainability</a></li>
+            <li><a href="#references">References</a></li>
+          </ol>
+        </div>
+      </nav>
+
+      <!-- MAIN -->
+      <main id="main-content">
+        <article>
+
+          <!-- 1. OVERVIEW -->
+          <section id="overview">
+            <h2>1. Overview & Execution Contexts <span class="section-chip">Foundation</span></h2>
+            <p>ServiceNow JavaScript runs in two primary contexts: <strong>server-side</strong> (Java 8 Rhino engine) and <strong>client-side</strong> (browser). Understanding where your code executes determines which APIs are available.</p>
+
+            <div class="concept-grid">
+              <div class="concept">
+                <h4>Server-Side (Rhino)</h4>
+                <ul>
+                  <li>Business Rules, Script Includes, Scheduled Jobs, UI Actions (server), REST Resources</li>
+                  <li>APIs: <code>GlideRecord</code>, <code>GlideSystem (gs)</code>, <code>GlideDateTime</code>, <code>GlideAggregate</code>, <code>GlideAjax</code> (server responder)</li>
+                  <li>Global scope by default; scoped apps require explicit cross-scope grants</li>
+                </ul>
+              </div>
+              <div class="concept">
+                <h4>Client-Side (Browser)</h4>
+                <ul>
+                  <li>Client Scripts, UI Actions (client), UI Pages, Service Portal widgets</li>
+                  <li>APIs: <code>g_form</code>, <code>g_user</code>, <code>g_list</code>, <code>g_scratchpad</code>, <code>GlideAjax</code> (client caller)</li>
+                  <li>Modern ES6+ supported in recent releases (const/let, arrow functions, template literals, destructuring)</li>
+                </ul>
+              </div>
+            </div>
+
+            <h3>Execution Lifecycle</h3>
+            <div class="lifecycle">
+              <div class="lifecycle-steps">
+                <span class="lifecycle-step client">User opens form</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step client">onLoad Client Script</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step server">Display BR → g_scratchpad</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step client">User changes Priority</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step client">onChange Client Script</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step client">Submit</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step client">onSubmit Client Script</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step server">Before Business Rule</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step server">Record insert/update</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step server">After Business Rule</span>
+                <span class="lifecycle-arrow">→</span>
+                <span class="lifecycle-step async">Async Business Rule</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. GLIDERECORD -->
+          <section id="gliderecord">
+            <h2>2. GlideRecord — CRUD Patterns <span class="section-chip">Server</span></h2>
+            <p><code>GlideRecord</code> is the primary server-side API for querying, inserting, updating, and deleting records. Always prefer encoded queries for complex logic and always add query conditions on large tables.</p>
+
+            <h3 id="gr-basic">2.1 Basic Query & Iteration</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">IncidentEscalation.businessrule</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var gr = new GlideRecord('incident');
+gr.addActiveQuery();
+gr.addQuery('priority', 1);
+gr.addQuery('sys_created_on', '>=', 'javascript:gs.daysAgoStart(7)');
+gr.query();
+while (gr.next()) {
+    gs.info('Active P1: {0} — {1}', gr.number, gr.short_description);
+}</code></pre>
+            </div>
+
+            <h3 id="gr-encoded">2.2 Encoded Queries</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">MyUtils.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var gr = new GlideRecord('incident');
+gr.addEncodedQuery('active=true^priority=1^sys_created_on>=javascript:gs.daysAgoStart(7)');
+gr.query();
+while (gr.next()) { /* ... */ }
+
+// Or pass directly to constructor
+var gr2 = new GlideRecord('incident', 'active=true^priority=1');</code></pre>
+            </div>
+
+            <h3 id="gr-encoded-syntax">2.3 Encoded Query Syntax & Operators</h3>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Operator</th><th>Syntax</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Equals</td><td><code>field=value</code></td><td><code>priority=1</code></td></tr>
+                  <tr><td>Not Equals</td><td><code>field!=value</code></td><td><code>state!=6</code></td></tr>
+                  <tr><td>STARTSWITH / CONTAINS</td><td><code>fieldSTARTSWITHval</code></td><td><code>numberSTARTSWITHINC</code></td></tr>
+                  <tr><td>IN / NOT IN</td><td><code>fieldINval1,val2</code></td><td><code>priorityIN1,2</code></td></tr>
+                  <tr><td>DYNAMIC</td><td><code>fieldDYNAMICsys_id</code></td><td><code>assigned_toDYNAMIC90d1921e...</code></td></tr>
+                  <tr><td>ISEMPTY / ISNOTEMPTY</td><td><code>fieldISEMPTY</code></td><td><code>assigned_toISEMPTY</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3 id="gr-insert">2.4 Insert / Update / Delete</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">BulkClose.scheduledjob</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// Insert
+var gr = new GlideRecord('incident');
+gr.initialize();
+gr.short_description = 'Test from script';
+gr.priority = 3;
+var newId = gr.insert();
+
+// Update
+var gr2 = new GlideRecord('incident');
+gr2.addQuery('number', 'INC0010001');
+gr2.query();
+if (gr2.next()) { gr2.work_notes = 'Updated'; gr2.update(); }
+
+// Delete (with safety)
+var gr3 = new GlideRecord('incident');
+gr3.addQuery('active', false);
+gr3.addQuery('sys_created_on', '<', 'javascript:gs.daysAgoEnd(365)');
+gr3.query();
+while (gr3.next()) gr3.deleteRecord();</code></pre>
+            </div>
+          </section>
+
+          <!-- 3. GLIDEENCODEDQUERY -->
+          <section id="glideencodedquery">
+            <h2>3. GlideEncodedQuery — Dynamic Query Builder <span class="section-chip">Server</span></h2>
+            <p><code>GlideEncodedQuery</code> provides a programmatic way to build, manipulate, and combine encoded queries.</p>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">QueryBuilder.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var enc = new GlideEncodedQuery();
+enc.setQueryTerm('active', '=', 'true');
+enc.setQueryTerm('priority', 'IN', '1,2');
+enc.setQueryTerm('sys_created_on', '>=', 'javascript:gs.daysAgoStart(30)');
+
+var gr = new GlideRecord('incident');
+gr.addEncodedQuery(enc.getQuery());
+gr.query();</code></pre>
+            </div>
+          </section>
+
+          <!-- 4. GLIDEAGGREGATE -->
+          <section id="glideaggregate">
+            <h2>4. GlideAggregate — Aggregations <span class="section-chip">Server</span></h2>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">DashboardWidget.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var agg = new GlideAggregate('incident');
+agg.addAggregate('COUNT', 'priority');
+agg.groupBy('priority');
+agg.query();
+while (agg.next()) {
+    gs.info('P{0}: {1}', agg.priority, agg.getAggregate('COUNT','priority'));
+}</code></pre>
+            </div>
+          </section>
+
+          <!-- 5. GLIDEDATETIME -->
+          <section id="glidedatetime">
+            <h2>5. GlideDateTime — Dates & Timezones <span class="section-chip">Server</span></h2>
+            <p><code>GlideDateTime</code> handles timezone-aware date/time operations. Always use this instead of native JavaScript <code>Date</code> for server-side work.</p>
+            <div class="api-grid">
+              <div class="api-card">
+                <h4>Construction</h4>
+                <pre><code>var gdt = new GlideDateTime();                    // now (UTC)
+var gdt2 = new GlideDateTime('2024-06-15 14:30:00'); // parse string
+var gdt3 = new GlideDateTime(gs.nowDateTime());      // from gs helper</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>Display & Value</h4>
+                <pre><code>gdt.getDisplayValue();        // user timezone
+gdt.getValue();               // internal (UTC) string
+gdt.getNumericValue();        // epoch ms
+gdt.getDisplayValueInternal();// yyyy-MM-dd HH:mm:ss
+gdt.getDate();                // GlideDate portion
+gdt.getTime();                // GlideTime portion</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>Component Getters</h4>
+                <pre><code>gdt.getDayOfMonth();          // 1-31
+gdt.getDayOfWeek();           // 1=Sun ... 7=Sat
+gdt.getMonth();               // 1-12
+gdt.getYear();
+gdt.getHours(); gdt.getMinutes(); gdt.getSeconds();</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>Arithmetic</h4>
+                <pre><code>gdt.addDays(5); gdt.addDaysUTC(5);
+gdt.addWeeks(2); gdt.addMonths(1); gdt.addYears(1);
+gdt.subtractDays(3);</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>Comparisons</h4>
+                <pre><code>if (gdt.after(start)) { ... }
+if (gdt.before(end)) { ... }
+if (gdt.equals(other)) { ... }
+var diffMs = end.getNumericValue() - start.getNumericValue();</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>Parsing from Display</h4>
+                <pre><code>var gdt4 = new GlideDateTime();
+gdt4.setDisplayValue('2024-06-15 09:30:00');
+gdt4.setValue('2024-06-15 09:30:00');  // internal format</code></pre>
+              </div>
+            </div>
+
+            <h3>Common Patterns</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">DateRange.pattern</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// Records created in last 30 days
+gr.addQuery('sys_created_on', '>=', 'javascript:gs.daysAgoStart(30)');
+gr.addQuery('sys_created_on', '<=', 'javascript:gs.daysAgoEnd(0)');
+
+// Start / end of today (user TZ)
+var todayStart = new GlideDateTime();
+todayStart.setDisplayValue(gs.beginningOfToday());
+var todayEnd = new GlideDateTime();
+todayEnd.setDisplayValue(gs.endOfToday());
+
+// Age in days
+var created = new GlideDateTime(gr.getValue('sys_created_on'));
+var ageMs = new GlideDateTime().getNumericValue() - created.getNumericValue();
+var ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));</code></pre>
+            </div>
+          </section>
+
+          <!-- 6. GLIDELIST -->
+          <section id="glidelist">
+            <h2>6. GlideList — Client-Side List API (g_list) <span class="section-chip">Client</span></h2>
+            <p><code>g_list</code> (or <code>GlideList2</code>) provides client-side control over list views. Available in list context (not forms).</p>
+            <div class="api-grid">
+              <div class="api-card">
+                <h4>Selection & Navigation</h4>
+                <pre><code>g_list.getChecked();           // sys_ids of checked rows (comma sep)
+g_list.getSelectedRows();      // array of selected row elements
+g_list.getRowCount();          // visible row count
+g_list.getTotalRows();         // total matching query
+g_list.getTableName();         // table being listed
+g_list.getViewName();          // current view
+g_list.getQuery();             // current encoded query</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>Manipulation</h4>
+                <pre><code>g_list.sortBy('number', 'desc');     // sort column
+g_list.refresh();                     // reload list
+g_list.refreshWithOrderBy('sys_created_on', 'desc');
+g_list.setFilter('active=true^priority=1');
+g_list.clearFilter();
+g_list.showHideGroups(true);          // expand/collapse groups</code></pre>
+              </div>
+            </div>
+
+            <h3>UI Action on a List</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">Incident — UI Action — Bulk Note (List)</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// Condition: current.getTableName() == 'incident' && g_list.getChecked() != ''
+
+var ids = g_list.getChecked().split(',');
+var gr = new GlideRecord('incident');
+gr.addQuery('sys_id', 'IN', ids.join(','));
+gr.query();
+while (gr.next()) {
+    gr.work_notes = 'Bulk action applied from list';
+    gr.update();
+}
+g_list.refresh();</code></pre>
+            </div>
+          </section>
+
+          <!-- 7. GLIDESYSTEM -->
+          <section id="glidesystem">
+            <h2>7. GlideSystem (gs) — Utilities <span class="section-chip">Server</span></h2>
+            <div class="api-grid">
+              <div class="api-card"><h4>User</h4><pre><code>gs.getUserID()
+gs.getUserName()
+gs.hasRole('admin')</code></pre></div>
+              <div class="api-card"><h4>Dates</h4><pre><code>gs.nowDateTime()
+gs.daysAgoStart(7)
+gs.beginningOfToday()</code></pre></div>
+              <div class="api-card"><h4>Logging</h4><pre><code>gs.info('msg {0}', arg)
+gs.warn('...')
+gs.error('...')</code></pre></div>
+            </div>
+          </section>
+
+          <!-- 8. G_FORM -->
+          <section id="gform">
+            <h2>8. g_form — Form Client API <span class="section-chip">Client</span></h2>
+            <div class="api-grid">
+              <div class="api-card">
+                <h4>Values</h4>
+                <pre><code>g_form.getValue('field')
+g_form.setValue('field', val)
+g_form.getDisplayValue('ref')</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>State</h4>
+                <pre><code>g_form.setVisible(f, bool)
+g_form.setMandatory(f, bool)
+g_form.setReadOnly(f, bool)</code></pre>
+              </div>
+              <div class="api-card">
+                <h4>Messages</h4>
+                <pre><code>g_form.showFieldMsg(f, msg, 'info')
+g_form.addInfoMessage(msg)
+g_form.clearMessages()</code></pre>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">Incident — onChange — Priority</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>function onChange(control, oldValue, newValue, isLoading) {
+    if (isLoading || newValue === '') return;
+    if (newValue == 1) {
+        g_form.setMandatory('description', true);
+        g_form.showFieldMsg('priority', 'P1 requires description', 'warning');
+    }
+}</code></pre>
+            </div>
+          </section>
+
+          <!-- 9. G_USER -->
+          <section id="guser">
+            <h2>9. g_user — Current User Context <span class="section-chip">Client</span></h2>
+            <p><code>g_user</code> provides read-only information about the currently logged-in user. Available on all client-side contexts.</p>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">g_user.properties</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>g_user.userName;           // username (string)
+g_user.userID;             // sys_id (string)
+g_user.firstName; g_user.lastName; g_user.fullName;
+g_user.title; g_user.email;
+g_user.hasRole('admin');                    // boolean
+g_user.hasRoleExactly('itil');              // exact role, not inherited
+g_user.hasRoles('itil', 'incident_manager'); // any of the roles
+g_user.getClientData('key');                // data from g_scratchpad or client data</code></pre>
+            </div>
+
+            <h3>Role-Based UI Logic</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">Incident — onLoad</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>function onLoad() {
+    if (g_user.hasRole('admin')) {
+        g_form.setVisible('admin_only_field', true);
+    } else {
+        g_form.setVisible('admin_only_field', false);
+    }
+}</code></pre>
+            </div>
+            <div class="warning"><strong>Security note:</strong> Client-side role checks are for UX only. A malicious user can bypass them. Always enforce authorization server-side (ACLs, Business Rules, or <code>gs.hasRole()</code>).</div>
+          </section>
+
+          <!-- 10. G_SCRATCHPAD -->
+          <section id="gscratchpad">
+            <h2>10. g_scratchpad — Server-to-Client Bridge <span class="section-chip">Display BR + Client</span></h2>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">IncidentDisplay.businessrule</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>(function executeRule(current, previous) {
+    g_scratchpad.isVip = current.caller_id.vip;
+    g_scratchpad.manager = current.caller_id.manager.getDisplayValue();
+})(current, previous);</code></pre>
+            </div>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">Incident — onLoad</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>function onLoad() {
+    if (g_scratchpad.isVip) g_form.addInfoMessage('VIP customer');
+}</code></pre>
+            </div>
+          </section>
+
+          <!-- 11. GLIDEAJAX -->
+          <section id="glideajax">
+            <h2>11. GlideAjax — Async Server Calls <span class="section-chip">Client + Server</span></h2>
+            <p><code>GlideAjax</code> lets client-side code call a server-side Script Include asynchronously. It requires <strong>two halves</strong>: a server-side responder (extends <code>AbstractAjaxProcessor</code>) and a client-side caller. Both are shown below.</p>
+
+            <h3>11.1 Server Side — Script Include (Responder)</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">MyAjaxUtils.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var MyAjaxUtils = Class.create();
+MyAjaxUtils.prototype = Object.extendsObject(AbstractAjaxProcessor, {
+
+    // Called via sysparm_name = 'getCallerInfo'
+    getCallerInfo: function() {
+        var id = this.getParameter('sysparm_caller_id');
+        if (!id) return JSON.stringify({ error: 'Missing caller_id' });
+
+        var gr = new GlideRecord('sys_user');
+        if (!gr.get(id)) return JSON.stringify({ error: 'User not found' });
+
+        return JSON.stringify({
+            name: gr.getDisplayValue('name'),
+            email: gr.getValue('email'),
+            vip: gr.getValue('vip') == 'true',
+            manager: gr.manager.getDisplayValue()
+        });
+    },
+
+    // Called via sysparm_name = 'getOpenIncidentCount'
+    getOpenIncidentCount: function() {
+        var callerId = this.getParameter('sysparm_caller_id');
+        var agg = new GlideAggregate('incident');
+        agg.addQuery('caller_id', callerId);
+        agg.addActiveQuery();
+        agg.addAggregate('COUNT');
+        agg.query();
+        var count = 0;
+        if (agg.next()) count = agg.getAggregate('COUNT');
+        return count.toString();
+    },
+
+    type: 'MyAjaxUtils'
+});</code></pre>
+            </div>
+
+            <h3>11.2 Client Side — Caller</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">Incident — onChange — Caller</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>function onChange(control, oldValue, newValue, isLoading) {
+    if (isLoading || !newValue) return;
+
+    // 1. Create the GlideAjax object with the Script Include name
+    var ga = new GlideAjax('MyAjaxUtils');
+
+    // 2. Specify which server method to call
+    ga.addParam('sysparm_name', 'getCallerInfo');
+
+    // 3. Pass parameters (prefixed with sysparm_)
+    ga.addParam('sysparm_caller_id', newValue);
+
+    // 4. Handle the async response
+    ga.getXMLAnswer(function(answer) {
+        var info = JSON.parse(answer);
+        if (info.error) {
+            g_form.showFieldMsg('caller_id', info.error, 'error');
+            return;
+        }
+        if (info.vip) {
+            g_form.addInfoMessage('VIP caller: ' + info.name);
+        }
+        g_form.setValue('comments', 'Manager: ' + info.manager);
+    });
+}</code></pre>
+            </div>
+
+            <h3>11.3 Client Side — Synchronous Variant (use sparingly)</h3>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">Incident — onLoad (sync)</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// getXMLWait() blocks the UI thread — avoid unless absolutely necessary
+var ga = new GlideAjax('MyAjaxUtils');
+ga.addParam('sysparm_name', 'getOpenIncidentCount');
+ga.addParam('sysparm_caller_id', g_form.getValue('caller_id'));
+ga.getXMLWait();                       // blocks until response
+var count = ga.getAnswer();            // read the result
+g_form.setValue('u_open_count', count);</code></pre>
+            </div>
+
+            <div class="warning">
+              <strong>Best practice:</strong> Prefer <code>getXMLAnswer(callback)</code> (async) over <code>getXMLWait()</code> (sync). Synchronous calls freeze the browser and degrade the user experience. If you only need data at form load, use <code>g_scratchpad</code> from a Display Business Rule instead — it avoids the round-trip entirely.
+            </div>
+
+            <h3>11.4 Response Methods Deep Dive: getXMLAnswer vs getXML vs getXMLWait</h3>
+            <p>GlideAjax has three primary ways to receive the server response. They differ in <strong>asynchronous vs synchronous</strong>, <strong>what the callback receives</strong> (string vs full XML), and <strong>blocking behavior</strong>.</p>
+
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Method</th><th>Async?</th><th>Callback receives</th><th>Best for</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>ga.getXMLAnswer(fn)</code></td>
+                    <td>✅ Async</td>
+                    <td><strong>String</strong> — exactly what your server method returned</td>
+                    <td>Most common use case. Simple values or JSON strings.</td>
+                  </tr>
+                  <tr>
+                    <td><code>ga.getXML(fn)</code></td>
+                    <td>✅ Async</td>
+                    <td><strong>XMLDocument / response object</strong> — full envelope</td>
+                    <td>When you need error codes, duration, or other response metadata.</td>
+                  </tr>
+                  <tr>
+                    <td><code>ga.getXMLWait()</code> + <code>ga.getAnswer()</code></td>
+                    <td>❌ Sync (blocks UI)</td>
+                    <td><code>getAnswer()</code> returns <strong>String</strong></td>
+                    <td>Only when you truly need synchronous behavior (rare).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>A. getXMLAnswer(callback) — Receives the raw return value as a STRING</h4>
+            <p>The callback parameter is always a <strong>string</strong>, even if your server method returned JSON or a number. You must parse it yourself.</p>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">getXMLAnswer — string handling</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var ga = new GlideAjax('MyAjaxUtils');
+ga.addParam('sysparm_name', 'getCallerInfo');
+ga.addParam('sysparm_caller_id', g_form.getValue('caller_id'));
+
+ga.getXMLAnswer(function(answer) {
+    // 'answer' is ALWAYS a string here
+    console.log(typeof answer);           // "string"
+
+    // If server returned JSON string:
+    var data = JSON.parse(answer);        // now an object
+    g_form.setValue('caller_name', data.name);
+
+    // If server returned a plain string or number-as-string:
+    var count = parseInt(answer, 10);
+});</code></pre>
+            </div>
+
+            <div class="notice">
+              <strong>Common mistake:</strong> Trying to treat the first parameter of <code>getXMLAnswer</code> as an object. It is always a string. Parse JSON explicitly.
+            </div>
+
+            <h4>B. getXML(callback) — Receives the full XML response envelope</h4>
+            <p>Use this when you need more than just the answer value — for example, checking for errors, reading response duration, or accessing custom attributes the platform adds.</p>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">getXML — full envelope</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var ga = new GlideAjax('MyAjaxUtils');
+ga.addParam('sysparm_name', 'getCallerInfo');
+ga.addParam('sysparm_caller_id', g_form.getValue('caller_id'));
+
+ga.getXML(function(response) {
+    // 'response' is the XMLHttpRequest-like object
+    var xml = response.responseXML;                    // XMLDocument
+    var root = xml.documentElement;
+
+    // The actual return value is in the "answer" attribute
+    var answerString = root.getAttribute('answer');    // still a string!
+
+    // You can also read other useful attributes
+    var error = root.getAttribute('error');            // may be null or "true"
+    var elapsed = root.getAttribute('elapsed_ms');
+
+    if (error) {
+        g_form.addErrorMessage('Server error: ' + answerString);
+        return;
+    }
+
+    var data = JSON.parse(answerString);
+    // use data...
+});</code></pre>
+            </div>
+
+            <h4>C. getXMLWait() + getAnswer() — Synchronous (blocks the browser)</h4>
+            <p><code>getXMLWait()</code> pauses JavaScript execution until the server responds. After it returns, call <code>getAnswer()</code> to retrieve the string value.</p>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">getXMLWait — synchronous</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var ga = new GlideAjax('MyAjaxUtils');
+ga.addParam('sysparm_name', 'getOpenIncidentCount');
+ga.addParam('sysparm_caller_id', g_form.getValue('caller_id'));
+
+ga.getXMLWait();                       // BLOCKS the UI thread until response arrives
+var answerStr = ga.getAnswer();        // string — same as getXMLAnswer would give
+var count = parseInt(answerStr, 10);
+g_form.setValue('u_open_count', count);</code></pre>
+            </div>
+
+            <h4>Decision Guide — Which Method Should You Use?</h4>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Scenario</th><th>Recommended Method</th><th>Reason</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Normal form interaction, most cases</td>
+                    <td><code>getXMLAnswer(callback)</code></td>
+                    <td>Non-blocking, simple, sufficient 95% of the time.</td>
+                  </tr>
+                  <tr>
+                    <td>Need to inspect error state or timing from the platform</td>
+                    <td><code>getXML(callback)</code></td>
+                    <td>Access to full response envelope attributes.</td>
+                  </tr>
+                  <tr>
+                    <td>Data required before any further code can run (very rare)</td>
+                    <td><code>getXMLWait()</code> + <code>getAnswer()</code></td>
+                    <td>Only acceptable when you have no other choice. Freezes the browser tab.</td>
+                  </tr>
+                  <tr>
+                    <td>Data needed at form load</td>
+                    <td><strong>Use g_scratchpad instead</strong></td>
+                    <td>No AJAX round-trip at all. Much faster and cleaner.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="danger">
+              <strong>Never use getXMLWait in onChange or onSubmit handlers</strong> that users interact with frequently. It will make the form feel frozen.
+            </div>
+          </section>
+
+          <!-- 12. ES6 -->
+          <section id="es6">
+            <h2>12. ES6+ in ServiceNow <span class="section-chip">Modern</span></h2>
+            <p>ServiceNow introduced ECMAScript 6+ support in the <strong>Tokyo release</strong> for Scoped Apps (improved in Utah+). It is <strong>not yet supported in Global scope</strong>. The table below summarizes compatibility based on community testing and official behavior.</p>
+
+            <h3>Supported ECMAScript Features (Scoped Apps)</h3>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Feature</th><th>Supported</th><th>Example / Notes</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Arrow Functions</td><td>✅ Yes</td><td><code>multiply = (a, b) => a * b;</code></td></tr>
+                  <tr><td>Block-Scoped Variables (let/const)</td><td>✅ Yes</td><td><code>let x = 1; const y = 2;</code></td></tr>
+                  <tr><td>Template Literals</td><td>✅ Yes (Scoped only)</td><td><code>`Hello ${name}`</code> — backticks may not save in some RTE contexts</td></tr>
+                  <tr><td>Destructuring Assignment</td><td>✅ Yes</td><td><code>const { name, age } = person;</code></td></tr>
+                  <tr><td>Spread Operator</td><td>✅ Yes</td><td><code>[...arr1, ...arr2]</code> — limited in some Portal widget server scripts</td></tr>
+                  <tr><td>Classes (class syntax)</td><td>✅ Yes</td><td><code>class Animal { constructor(n){this.name=n;} }</code></td></tr>
+                  <tr><td>Inheritance (extends)</td><td>✅ Yes</td><td><code>class Dog extends Animal { }</code></td></tr>
+                  <tr><td>Default Parameters</td><td>✅ Yes</td><td><code>function f(p = true){ return p; }</code></td></tr>
+                  <tr><td>Rest Parameters</td><td>✅ Yes</td><td><code>function(...args){}</code></td></tr>
+                  <tr><td>Object Literal Extensions</td><td>✅ Yes</td><td><code>{ name, age }</code> shorthand</td></tr>
+                  <tr><td>Enhanced Object Properties</td><td>✅ Yes</td><td>Computed keys + methods in literals</td></tr>
+                  <tr><td>Symbol Type</td><td>✅ Yes</td><td><code>const s = Symbol('x');</code></td></tr>
+                  <tr><td>Set / Map Data Structures</td><td>✅ Yes</td><td><code>new Set([1,2,3]); new Map()</code></td></tr>
+                  <tr><td>Optional Chaining (<code>?.</code>)</td><td>✅ Yes</td><td><code>person?.jobs?.location</code> — returns undefined instead of error</td></tr>
+                  <tr><td>Nullish Coalescing (<code>??</code>)</td><td>✅ Yes</td><td><code>name ?? 'Anonymous'</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>Not Supported (or Unreliable)</h3>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Promises</td><td>❌ No</td><td>Native <code>new Promise()</code> not supported in Rhino</td></tr>
+                  <tr><td>Async / Await</td><td>❌ No</td><td>Requires Promises; not available</td></tr>
+                  <tr><td>Modules (import/export)</td><td>❌ No</td><td>ES modules not supported in ServiceNow scripting</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="notice">
+              <strong>Important:</strong> ES6+ features are only available in <strong>Scoped Applications</strong> that have been configured for ES6+. Not all OOTB scoped apps are enabled — create a custom scoped app to guarantee support. Global scope remains on the older Rhino ES5 baseline.
+            </div>
+
+            <h3>Production-Grade ServiceNow Examples</h3>
+            <div class="api-grid es6-examples">
+
+              <!-- Example 1: GlideRecord + Modern Syntax -->
+              <div class="api-card">
+                <h4>1. GlideRecord + Destructuring + Template Literals</h4>
+                <div class="code-toolbar">
+                  <span class="context server">Server — Business Rule</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>// Scoped app (ES6 enabled). Extract fields cleanly, log with context.
+(function executeRule(current, previous /*null when async*/) {
+    'use strict';
+
+    const { number, short_description, priority, caller_id } = current;
+    const callerName = caller_id?.getDisplayValue() ?? 'Unknown';
+
+    if (priority == 1) {
+        gs.info(`P1 Incident ${number}: ${short_description} — Caller: ${callerName}`);
+        // Fire notification or create task via modern syntax
+    }
+})(current, previous);</code></pre>
+              </div>
+
+              <!-- Example 2: GlideAjax Client Caller -->
+              <div class="api-card">
+                <h4>2. GlideAjax + Arrow Functions + Optional Chaining</h4>
+                <div class="code-toolbar">
+                  <span class="context client">Client — Client Script</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>// Modern client-side caller (Catalog Client Script or Client Script)
+function onChange(control, oldValue, newValue, isLoading) {
+    if (isLoading || newValue === '') return;
+
+    const ga = new GlideAjax('IncidentPriorityHelper');
+    ga.addParam('sysparm_name', 'getPriorityInfo');
+    ga.addParam('sysparm_incident', newValue);
+
+    ga.getXMLAnswer((answer) => {
+        // answer is always a STRING — parse if JSON
+        try {
+            const data = JSON.parse(answer);
+            g_form.setValue('priority', data.priority ?? 4);
+            g_form.setValue('assignment_group', data.assignment_group ?? '');
+        } catch (e) {
+            console.warn('GlideAjax parse failed:', e);
+        }
+    });
+}</code></pre>
+              </div>
+
+              <!-- Example 3: Map/Set for Deduplication -->
+              <div class="api-card">
+                <h4>3. Map + Set — Deduplicate Callers from Incidents</h4>
+                <div class="code-toolbar">
+                  <span class="context server">Server — Script Include</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>var IncidentUtils = Class.create();
+IncidentUtils.prototype = {
+    getUniqueCallers: function(assignmentGroup) {
+        const callerSet = new Set();
+        const callerMap = new Map();
+
+        const gr = new GlideRecord('incident');
+        gr.addQuery('assignment_group', assignmentGroup);
+        gr.addQuery('active', true);
+        gr.query();
+
+        while (gr.next()) {
+            const callerId = gr.caller_id + '';
+            if (!callerSet.has(callerId)) {
+                callerSet.add(callerId);
+                callerMap.set(callerId, gr.caller_id.getDisplayValue());
+            }
+        }
+        return Array.from(callerMap.entries()); // [[sys_id, name], ...]
+    },
+    type: 'IncidentUtils'
+};</code></pre>
+              </div>
+
+              <!-- Example 4: Rest/Spread + Nullish for Dynamic Queries -->
+              <div class="api-card">
+                <h4>4. Rest Parameters + Nullish Coalescing — Dynamic Query Builder</h4>
+                <div class="code-toolbar">
+                  <span class="context server">Server — Script Include</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>var QueryBuilder = Class.create();
+QueryBuilder.prototype = {
+    buildEncodedQuery: function(...conditions) {
+        // conditions: [{field: 'priority', op: '=', val: 1}, ...]
+        return conditions
+            .filter(c => c.field && c.val != null)
+            .map(c => `${c.field}${c.op ?? '='}${c.val}`)
+            .join('^');
+    },
+    type: 'QueryBuilder'
+};
+
+// Usage in Business Rule:
+const qb = new QueryBuilder();
+const query = qb.buildEncodedQuery(
+    {field: 'active', val: true},
+    {field: 'priority', op: '>=', val: 2},
+    {field: 'assignment_group', val: current.assignment_group}
+);
+gr.addEncodedQuery(query);</code></pre>
+              </div>
+
+              <!-- Example 5: Nullish + Optional Chaining in Real BR -->
+              <div class="api-card">
+                <h4>5. Safe Property Access — Avoid NPE on Reference Fields</h4>
+                <div class="code-toolbar">
+                  <span class="context server">Server — Business Rule</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>// Defensive coding: reference fields may be null
+(function executeRule(current, previous) {
+    'use strict';
+
+    const manager = current.caller_id?.manager?.getDisplayValue() ?? 'No manager';
+    const dept = current.caller_id?.department?.name ?? 'Unassigned';
+
+    current.work_notes = `Manager: ${manager} | Dept: ${dept}`;
+
+    // Safe GlideDateTime arithmetic (ES6 template + modern date handling)
+    const opened = new GlideDateTime(current.opened_at);
+    const now = new GlideDateTime();
+    const ageHours = (now.getNumericValue() - opened.getNumericValue()) / (1000 * 60 * 60);
+
+    if (ageHours > 24 && current.priority == 1) {
+        gs.warn(`Stale P1: ${current.number} open for ${ageHours.toFixed(1)}h`);
+    }
+})(current, previous);</code></pre>
+              </div>
+
+            </div>
+            <div class="notice">
+              <strong>Scoped App Requirement:</strong> These examples require a custom Scoped Application with ES6+ enabled (Tokyo+). Global scope and many OOTB apps still use the Rhino ES5 engine — test thoroughly before adopting.
+            </div>
+          </section>
+
+          <!-- 13. BEST PRACTICES -->
+          <section id="best-practices">
+            <h2>13. Scripting Best Practices <span class="section-chip">Foundation</span></h2>
+            <div class="checklist">
+              <li><strong>Always add query conditions</strong> — Never query without filters on large instances</li>
+              <li><strong>Use setLimit()</strong> when you only need N records</li>
+              <li><strong>Prefer encoded queries</strong> for complex logic</li>
+              <li><strong>Validate all inputs</strong> — especially GlideAjax parameters</li>
+              <li><strong>Check roles</strong> before sensitive operations</li>
+              <li><strong>Document intent</strong> — especially complex queries</li>
+            </div>
+          </section>
+
+          <!-- 14. QUICKREF -->
+          <section id="quickref">
+            <h2>14. Quick Reference — Common Patterns</h2>
+            <p>Copy-paste starting points for the three operations you will write most often: <strong>find & update</strong>, <strong>get one by sys_id</strong>, and <strong>count without loading rows</strong>.</p>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">FindUpdate.pattern</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// Find matching records and update each one
+var gr = new GlideRecord('table');
+gr.addQuery('field', value);
+gr.query();
+while (gr.next()) { gr.field = newValue; gr.update(); }</code></pre>
+            </div>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">GetById.pattern</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// Fetch a single record by sys_id (get() is faster than query()+next())
+var gr = new GlideRecord('incident');
+if (gr.get('sys_id_value_here')) {
+    gs.info('Found: ' + gr.getValue('number'));
+} else {
+    gs.warn('No record with that sys_id');
+}
+
+// Or by a unique field
+var gr2 = new GlideRecord('incident');
+if (gr2.get('number', 'INC0010001')) {
+    gr2.state = 6;   // Resolved
+    gr2.update();
+}</code></pre>
+            </div>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">Count.pattern</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// Count matching records WITHOUT loading them (use GlideAggregate, not getRowCount on a loop)
+var ga = new GlideAggregate('incident');
+ga.addQuery('active', true);
+ga.addQuery('priority', 1);
+ga.addAggregate('COUNT');
+ga.query();
+var count = 0;
+if (ga.next()) {
+    count = parseInt(ga.getAggregate('COUNT'), 10);
+}
+gs.info('Open P1 incidents: ' + count);</code></pre>
+            </div>
+          </section>
+
+          <!-- 15. WHEN NOT TO SCRIPT -->
+          <section id="when-not-to-script">
+            <h2>15. When Not to Script — Configuration First <span class="section-chip">Architecture</span></h2>
+            <p>Before writing code, ask: <strong>Can this be done with configuration?</strong></p>
+            <div class="table-wrap decision-table">
+              <table class="table-map">
+                <thead><tr><th>Use Case</th><th>Preferred</th><th>Script Only If</th></tr></thead>
+                <tbody>
+                  <tr><td>Field calculation</td><td>Calculated field / UI Policy</td><td>Complex queries or external data</td></tr>
+                  <tr><td>State transitions</td><td>Flow Designer / Workflow</td><td>Complex branching</td></tr>
+                  <tr><td>Access control</td><td>ACLs</td><td>Dynamic context-dependent rules</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="warning"><strong>Rule of thumb:</strong> If a non-developer can configure it in the UI, prefer configuration.</div>
+          </section>
+
+          <!-- 16. TESTING -->
+          <section id="testing-debugging">
+            <h2>16. Testing & Debugging Workflow <span class="section-chip">Quality</span></h2>
+            <h3>ATF + Script Debugger + DevTools</h3>
+            <div class="checklist">
+              <li>Every Business Rule, Client Script, UI Action should have ATF tests</li>
+              <li>Use Script Debugger for server-side stepping (requires debugger role)</li>
+              <li>Browser DevTools for client: Console, Network (GlideAjax), Sources</li>
+              <li>Log with context: record number, user, operation, inputs</li>
+            </div>
+          </section>
+
+          <!-- 17. DEPLOYMENT -->
+          <section id="deployment">
+            <h2>17. Deployment & Change Control <span class="section-chip">DevOps</span></h2>
+            <div class="concept-grid">
+              <div class="concept">
+                <h4>Update Sets</h4>
+                <p>Dedicated Update Set per feature. Preview before commit. Never mix unrelated changes.</p>
+              </div>
+              <div class="concept">
+                <h4>Git-backed Apps</h4>
+                <p>Scoped apps linked to GitHub/GitLab. Branching, code review, CI. Prefer over Update Sets for teams.</p>
+              </div>
+              <div class="concept">
+                <h4>Promotion Path</h4>
+                <p>Dev → ATF + manual → Test (full regression) → Prod (change request)</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 18. ACL SECURITY -->
+          <section id="acl-security">
+            <h2>18. ACL-First Security Model <span class="section-chip">Security</span></h2>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">PortalWidget.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var gr = new GlideRecordSecure('incident');  // enforces ACLs
+gr.addQuery('active', true);
+gr.query();
+// Only returns records current user can read</code></pre>
+            </div>
+            <div class="warning"><strong>Important:</strong> <code>GlideRecord</code> bypasses ACLs by default. Use <code>GlideRecordSecure</code> when user-triggered.</div>
+          </section>
+
+          <!-- 19. ERROR HANDLING -->
+          <section id="error-handling">
+            <h2>19. Error Handling & Transaction Safety <span class="section-chip">Reliability</span></h2>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">RESTWrapper.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>try {
+    var gr = new GlideRecord('incident');
+    if (!gr.get(sysId)) throw new Error('Not found: ' + sysId);
+    gr.work_notes = 'Processed';
+    if (!gr.update()) throw new Error('Update failed');
+} catch (e) {
+    gs.error('Processing failed: {0} — {1}', sysId, e.message);
+}</code></pre>
+            </div>
+          </section>
+
+          <!-- 20. PERFORMANCE -->
+          <section id="performance-advanced">
+            <h2>20. Performance Beyond Query Filters <span class="section-chip">Scale</span></h2>
+            <div class="danger">
+              <h4>Never query inside loops (N+1)</h4>
+              <pre><code>// BAD: N+1 query inside loop — one GlideRecord per user
+var users = new GlideRecord('sys_user');
+users.addQuery('active', true);
+users.setLimit(50);
+users.query();
+while (users.next()) {
+    var inc = new GlideRecord('incident');           // ← new query every iteration
+    inc.addQuery('caller_id', users.sys_id);
+    inc.addQuery('active', true);
+    inc.query();
+    // ... process incidents for this user
+}
+
+// GOOD: Single query with IN list — collect IDs first, then one query
+var userIds = [];
+var users = new GlideRecord('sys_user');
+users.addQuery('active', true);
+users.setLimit(50);
+users.query();
+while (users.next()) {
+    userIds.push(users.sys_id + '');
+}
+
+var inc = new GlideRecord('incident');
+inc.addQuery('caller_id', 'IN', userIds.join(','));
+inc.addQuery('active', true);
+inc.query();
+while (inc.next()) {
+    // process — only one query executed
+    gs.info('Active incident: ' + inc.number);
+}</code></pre>
+            </div>
+          </section>
+
+          <!-- 21. INTEGRATION -->
+          <section id="modern-integration">
+            <h2>21. Modern Integration — RESTMessageV2, OAuth <span class="section-chip">Integration</span></h2>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">ExternalSync.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var rm = new sn_ws.RESTMessageV2('My REST Message', 'get_user');
+rm.setStringParameterNoEscape('user_id', userId);
+rm.setRequestHeader('Accept', 'application/json');
+var res = rm.execute();
+if (res.getStatusCode() == 200) {
+    var data = JSON.parse(res.getBody());
+}</code></pre>
+            </div>
+          </section>
+
+          <!-- 22. RELEASE SCOPE -->
+          <section id="release-scope">
+            <h2>22. Release & Scope Compatibility <span class="section-chip">Platform</span></h2>
+            <div class="checklist">
+              <li>Develop on the <strong>latest release</strong> (or a recent supported release) — Vancouver/Washington DC are old; stay current for security patches, new APIs, and ES6+ features</li>
+              <li>Cross-scope access requires explicit grants</li>
+              <li>Avoid global scope for new development</li>
+            </div>
+          </section>
+
+          <!-- 23. DECISION TABLE -->
+          <section id="decision-table">
+            <h2>23. Decision Table — Choosing the Right Artifact <span class="section-chip">Architecture</span></h2>
+            <div class="table-wrap">
+              <table class="table-map decision-table">
+                <thead>
+                  <tr><th>Scenario</th><th>UI Policy</th><th>Client Script</th><th>Business Rule</th><th>UI Action</th><th>Flow</th><th>Scheduled</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Show/hide or lock a field on a form</td><td>✓ preferred</td><td>✓ if logic is complex</td><td></td><td></td><td></td><td></td></tr>
+                  <tr><td>Set field defaults on form load</td><td>✓</td><td>✓ onLoad</td><td></td><td></td><td></td><td></td></tr>
+                  <tr><td>React to a field change</td><td>✓ reactive</td><td>✓ onChange</td><td></td><td></td><td></td><td></td></tr>
+                  <tr><td>Validate before insert/update</td><td></td><td>✓ onSubmit</td><td>✓ before</td><td></td><td></td><td></td></tr>
+                  <tr><td>React to a record change on the server</td><td></td><td></td><td>✓ after</td><td></td><td></td><td></td></tr>
+                  <tr><td>Button or link on a form/list</td><td></td><td></td><td></td><td>✓</td><td></td><td></td></tr>
+                  <tr><td>Multi-step orchestration</td><td></td><td></td><td></td><td></td><td>✓</td><td></td></tr>
+                  <tr><td>Daily data cleanup</td><td></td><td></td><td></td><td></td><td>✓</td><td>✓</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="warning">
+              <strong>UI Policy is client-side only.</strong> It runs in the browser, so it is the right tool for
+              show/hide, read-only, and mandatory <em>appearance</em> — but a user can bypass it. It cannot enforce
+              anything: never treat a UI Policy as validation or authorization. Server-side enforcement belongs to
+              Business Rules and ACLs. Prefer a UI Policy over an equivalent Client Script whenever the logic is a
+              plain "when field X has value Y, do Z to field W" — no code, no script clutter, and it travels with the
+              form.
+            </div>
+          </section>
+
+          <!-- 24. SECURITY CHECKLIST -->
+          <section id="security-checklist">
+            <h2>24. Security Checklist <span class="section-chip">Security</span></h2>
+            <div class="checklist">
+              <li>Validate all GlideAjax parameters (type, length, allowed values)</li>
+              <li>Gate sensitive operations with role checks</li>
+              <li>Use GlideRecordSecure when user-triggered</li>
+              <li>Store credentials in Credential Store, never hardcoded</li>
+              <li>No sys_ids exposed in client code or URLs</li>
+            </div>
+          </section>
+
+          <!-- 25. PROD READINESS -->
+          <section id="prod-readiness">
+            <h2>25. Production-Readiness Checklist <span class="section-chip">Release</span></h2>
+            <div class="checklist">
+              <li>ATF covers happy path + errors + edge cases</li>
+              <li>Actionable logs (what, where, why, what to do)</li>
+              <li>All external calls wrapped in try/catch</li>
+              <li>Script is idempotent</li>
+              <li>No queries in loops; setLimit used; indexed fields first</li>
+              <li>Peer code review completed</li>
+            </div>
+          </section>
+
+          <!-- 26. ANTI-PATTERNS -->
+          <section id="anti-patterns">
+            <h2>26. Anti-Patterns & Common Pitfalls <span class="section-chip">Warnings</span></h2>
+
+            <div class="comparison">
+              <div class="anti">
+                <h4>❌ Dot-walking in loops</h4>
+                <pre><code>while (gr.next()) {
+    var name = gr.caller_id.name; // N+1 risk
+}</code></pre>
+              </div>
+              <div class="good">
+                <h4>✅ Use getDisplayValue or preload</h4>
+                <pre><code>gr.addQuery('caller_id.name', 'CONTAINS', 'Smith');
+while (gr.next()) {
+    var name = gr.caller_id.getDisplayValue();
+}</code></pre>
+              </div>
+            </div>
+
+            <div class="comparison">
+              <div class="anti">
+                <h4>❌ current.update() in before BR</h4>
+                <pre><code>// before Business Rule
+current.priority = 1;
+current.update(); // triggers another BR round</code></pre>
+              </div>
+              <div class="good">
+                <h4>✅ Modify current directly</h4>
+                <pre><code>// before Business Rule
+current.priority = 1;
+// platform persists after BR completes</code></pre>
+              </div>
+            </div>
+
+            <div class="comparison">
+              <div class="anti">
+                <h4>❌ Hardcoded sys_ids</h4>
+                <pre><code>var gid = 'a1b2c3d4e5f6...'; // breaks on clone</code></pre>
+              </div>
+              <div class="good">
+                <h4>✅ System properties or stable identifiers</h4>
+                <pre><code>var gid = gs.getProperty('x_acme.default_group');</code></pre>
+              </div>
+            </div>
+          </section>
+
+          <!-- 27. MAINTAINABILITY -->
+          <section id="maintainability">
+            <h2>27. Maintainability & Code Quality <span class="section-chip">Long-term</span></h2>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Element</th><th>Convention</th><th>Example</th></tr></thead>
+                <tbody>
+                  <tr><td>GlideRecord vars</td><td>table + GR/Rec</td><td>incidentGR</td></tr>
+                  <tr><td>Script Includes</td><td>PascalCase</td><td>IncidentPriorityCalculator</td></tr>
+                  <tr><td>Business Rules</td><td>Table — When — Intent</td><td>Incident — before — Set SLA</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p><strong>Document intent, not mechanics.</strong> A Business Rule should fit on one screen. Extract repeated logic to Script Includes.</p>
+          </section>
+
+          <!-- 28. REFERENCES -->
+          <section id="references">
+            <h2>28. Official ServiceNow Documentation</h2>
+            <ul>
+              <li><a href="https://docs.servicenow.com/" target="_blank" rel="noopener noreferrer">ServiceNow Product Documentation — always defaults to the latest release</a></li>
+              <li><a href="https://docs.servicenow.com/bundle/latest/page/build/scripting/concept/c_Scripting.html" target="_blank" rel="noopener noreferrer">Scripting in ServiceNow (latest release)</a></li>
+              <li><a href="https://docs.servicenow.com/bundle/latest/page/build/scripting/reference/r_ServerAPIOverview.html" target="_blank" rel="noopener noreferrer">Server-side API Reference (latest)</a></li>
+              <li><a href="https://docs.servicenow.com/bundle/latest/page/build/scripting/reference/r_ClientAPIOverview.html" target="_blank" rel="noopener noreferrer">Client-side API Reference (latest)</a></li>
+              <li><a href="https://docs.servicenow.com/bundle/latest/page/build/scripting/reference/r_GlideRecordAPI.html" target="_blank" rel="noopener noreferrer">GlideRecord API (latest)</a></li>
+              <li><a href="https://www.servicenow.com/products/platform/release-notes.html" target="_blank" rel="noopener noreferrer">Now Platform Release Notes — current release & upgrade guidance</a></li>
+            </ul>
+            <p class="muted">ServiceNow ships two major releases per year and recommends staying on a supported release. Always develop and test against the release your instance is on (or the latest), not an outdated one — old releases miss security patches, new APIs, and ES6+ support.</p>
+          </section>
+
+        </article>
+      </main>
+    </div>
+
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+    <footer>
+      <nav class="footer-nav" aria-label="ServiceNow guides">
+        <a href="/servicenow/javascript/" class="current">JavaScript Reference</a>
+        <a href="/servicenow/AIFeaturesOct2026/">AI Features — Oct 2026</a>
+        <a href="/servicenow/CIS-CSM/">CIS-CSM Study Briefing</a>
+        <a href="/servicenow/CIS-VR/">CIS-VR Study Briefing</a>
+        <a href="/">findtorontoevents.ca</a>
+      </nav>
+      <p>Independent educational content. ServiceNow, ServiceNow University, and related product names are trademarks of ServiceNow. Always use official ServiceNow materials for current product behavior and development practices.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Copy to clipboard
+    function copyCode(btn) {
+      const pre = btn.closest('.code-card').querySelector('pre');
+      const text = pre.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 1200);
+      }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 1200);
+      });
+    }
+
+    // TOC search filter
+    const search = document.getElementById('toc-search');
+    if (search) {
+      search.addEventListener('input', () => {
+        const q = search.value.toLowerCase().trim();
+        document.querySelectorAll('nav.toc .group').forEach(group => {
+          let visible = 0;
+          group.querySelectorAll('li').forEach(li => {
+            const match = li.textContent.toLowerCase().includes(q);
+            li.style.display = match ? '' : 'none';
+            if (match) visible++;
+          });
+          group.style.display = (visible === 0 && q) ? 'none' : '';
+        });
+      });
+    }
+
+    // Active section highlighting
+    const links = document.querySelectorAll('nav.toc a');
+    const sections = Array.from(links).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+    function setActive() {
+      const scrollPos = window.scrollY + 120;
+      let current = sections[0];
+      for (const sec of sections) {
+        if (sec.offsetTop <= scrollPos) current = sec;
+      }
+      links.forEach(l => l.classList.remove('active'));
+      const activeLink = Array.from(links).find(l => l.getAttribute('href') === '#' + current.id);
+      if (activeLink) activeLink.classList.add('active');
+    }
+    window.addEventListener('scroll', setActive, { passive: true });
+    setActive();
+
+    // Reading progress bar — transform:scaleX (not width) so it never triggers layout.
+    // The bar is position:fixed, so it is out of flow and cannot contribute to scrollWidth.
+    const progressBar = document.getElementById('scroll-progress');
+    let progressPending = false;
+    function updateProgress() {
+      progressPending = false;
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - window.innerHeight;
+      const ratio = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      progressBar.style.transform = 'scaleX(' + ratio + ')';
+    }
+    if (progressBar && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.addEventListener('scroll', () => {
+        if (progressPending) return;
+        progressPending = true;
+        requestAnimationFrame(updateProgress);
+      }, { passive: true });
+      window.addEventListener('resize', updateProgress, { passive: true });
+      updateProgress();
+    } else if (progressBar) {
+      progressBar.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
