@@ -105,9 +105,10 @@ model_list:
   # Requested additions: currently quota-gated in direct checks; keep low rpm
   # so router can try them opportunistically without causing noisy churn.
   - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.5-pro, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.0-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.0-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  # Removed 2026-10-11: gemini-2.5-pro ("no longer available to new users" at
+  # inference time), gemini-2.0-flash and gemini-2.0-flash-lite (absent from the
+  # models list). The provider's model list still LISTS gemini-2.5-pro, so only
+  # the runtime 404 reveals it - see tools/litellm_call_blacklist.py.
   - {model_name: free-mode, litellm_params: {model: cohere/command-r7b-12-2024, api_key: os.environ/COHERE_API_KEY}}
 
   - {model_name: free-mode, litellm_params: {model: openai/gpt-4o-mini, api_key: os.environ/GITHUB_MODELS_KEY,  api_base: https://models.inference.ai.azure.com}}
@@ -220,9 +221,8 @@ model_list:
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemma-4-26b-a4b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemma-4-31b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.5-pro, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.0-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.0-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  # Removed 2026-10-11: gemini-2.5-pro / gemini-2.0-flash / gemini-2.0-flash-lite
+  # (retired at runtime - see the free-mode block note above).
   - {model_name: free-mode-large, litellm_params: {model: openrouter/inclusionai/ring-2.6-1t, api_key: os.environ/OPENROUTER_API_KEY}}
   - {model_name: free-mode-large, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
   - {model_name: free-mode-large, litellm_params: {model: fireworks_ai/accounts/fireworks/models/kimi-k2p5, api_key: os.environ/FIREWORKS_API_KEY}}
@@ -335,9 +335,8 @@ model_list:
   - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
   - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-pro, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.0-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.0-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  # Removed 2026-10-11: gemini-2.5-pro / gemini-2.0-flash / gemini-2.0-flash-lite
+  # (retired at runtime - see the free-mode block note above).
   - {model_name: hybrid-model-large, litellm_params: {model: openrouter/inclusionai/ring-2.6-1t, api_key: os.environ/OPENROUTER_API_KEY}}
   - {model_name: hybrid-model-large, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
   - {model_name: hybrid-model-large, litellm_params: {model: fireworks_ai/accounts/fireworks/models/kimi-k2p5, api_key: os.environ/FIREWORKS_API_KEY}}

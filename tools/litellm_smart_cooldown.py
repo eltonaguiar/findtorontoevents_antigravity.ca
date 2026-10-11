@@ -98,6 +98,27 @@ def _classify(exc: BaseException | None, api_base: str | None) -> tuple[str, int
     if "500" in msg or "502" in msg or "503" in msg or "504" in msg or "internal server" in msg:
         return "server_error", 60
 
+    # Model retired / not offered to this account (404 / 410).
+    # e.g. Gemini: "This model models/gemini-2.5-pro is no longer available to new
+    # users." This is PERMANENT for the deployment, not transient, so it must be
+    # classified -- otherwise it falls through to "other", is never blacklisted,
+    # and the dead model gets re-picked on every single request.
+    # NOTE: the provider's model-list endpoint still LISTS gemini-2.5-pro even
+    # though it refuses it at inference time, so the runtime error is the only
+    # reliable signal.
+    if (
+        "404" in msg
+        or "not_found" in msg
+        or "not found" in msg
+        or "no longer available" in msg
+        or "no longer supported" in msg
+        or "decommissioned" in msg
+        or "has been retired" in msg
+        or "unknown model" in msg
+        or "does not exist" in msg
+    ):
+        return "dead_model", 30 * 24 * 3600
+
     # Context-window / bad-request → don't cool, return 0 (let router handle context fallback)
     if "400" in msg or "context" in msg or "max_tokens" in msg or "input validation" in msg:
         return "bad_request", 0

@@ -91,6 +91,11 @@ def _env_int(name: str, default: int) -> int:
 
 STATE_PATH = Path(os.environ.get("LITELLM_BLACKLIST_STATE", "/tmp/litellm_blacklist_state.json"))
 BLACKLIST_CALLS = _env_int("LITELLM_BLACKLIST_CALLS", 30)
+# A retired model will not come back on its own, so park it far longer than a
+# transient rate-limit (while still letting it age out if the config is fixed).
+_CALLS_BY_CATEGORY = {
+    "dead_model": _env_int("LITELLM_BLACKLIST_CALLS_DEAD", 300),
+}
 ENABLED = os.environ.get("LITELLM_BLACKLIST_ENABLE", "1").lower() not in ("0", "false", "no", "off")
 
 # Only these failure categories mean "the provider itself is unhealthy".
@@ -98,6 +103,7 @@ ENABLED = os.environ.get("LITELLM_BLACKLIST_ENABLE", "1").lower() not in ("0", "
 BLACKLIST_CATEGORIES = {
     "daily_quota_cf",
     "monthly_quota_hf",
+    "dead_model",
     "dead_key",
     "rate_limit",
     "server_error",
@@ -305,7 +311,7 @@ def blacklist_keys(keys: List[str], category: str, error: str, calls: Optional[i
     """Blacklist `keys` for the next `calls` client requests. Returns until_seq."""
     if not ENABLED or not keys:
         return 0
-    n = BLACKLIST_CALLS if calls is None else calls
+    n = calls if calls is not None else _CALLS_BY_CATEGORY.get(category, BLACKLIST_CALLS)
     with _lock, _FileLock(STATE_PATH):
         st = _prune(_load())
         seq = int(st.get("call_seq", 0))
@@ -665,6 +671,36 @@ def _selftest() -> int:
         })
         if not is_blacklisted_deployment(dep2):
             failures.append("composite-key blacklist path failed")
+
+        # 7. a RETIRED MODEL (runtime 404) must blacklist, with the longer
+        #    dead-model window. Regression: free-mode used to keep picking
+        #    models/gemini-2.5-pro on every request because a 404 classified as
+        #    "other", which is not blacklistable.
+        dep3 = {
+            "model_name": "free-mode",
+            "litellm_params": {"model": "gemini/gemini-2.5-pro", "api_base": None},
+            "model_info": {"id": "dep-retired"},
+        }
+        record_failure({
+            "model": "free-mode",
+            "model_id": "dep-retired",
+            "litellm_params": {"model": "gemini/gemini-2.5-pro", "api_base": None},
+            "exception": Exception(
+                'Vertex_ai_betaException - {"error": {"code": 404, "message": '
+                '"This model models/gemini-2.5-pro is no longer available to new users."}}'
+            ),
+        })
+        if not is_blacklisted_deployment(dep3):
+            failures.append("retired model (404 'no longer available') must be blacklisted")
+        else:
+            entry = (_load().get("entries") or {}).get("id:dep-retired") or {}
+            if entry.get("category") != "dead_model":
+                failures.append(f"retired model category should be dead_model, got {entry.get('category')!r}")
+            if int(entry.get("remaining_calls", 0)) <= BLACKLIST_CALLS:
+                failures.append(
+                    f"dead_model should park longer than the default {BLACKLIST_CALLS} calls, "
+                    f"got {entry.get('remaining_calls')}"
+                )
     finally:
         STATE_PATH, ENABLED, BLACKLIST_CALLS = orig
 
@@ -673,7 +709,7 @@ def _selftest() -> int:
         for f in failures:
             print("  x", f)
         return 1
-    print("SELFTEST PASSED (6/6 checks)")
+    print("SELFTEST PASSED (7/7 checks)")
     return 0
 
 

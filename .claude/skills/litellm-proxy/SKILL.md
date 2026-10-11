@@ -132,6 +132,13 @@ next **30 client API calls** rather than being retried on a timer.
 Request-specific faults (400s, context-window overflow, content policy) deliberately do **not**
 blacklist a provider — only provider-health failures do.
 
+**Retired models are their own category.** A 404 / "no longer available" classifies as `dead_model`
+and parks for **300 calls** (vs 30 for a transient 429), since a retired model will not recover on
+its own. Gotcha: the provider's model-list endpoint can still *list* a model that it then refuses at
+inference time (this happened with `gemini-2.5-pro` — `GET /v1beta/models` says available, inference
+returns 404 "no longer available to new users"). So a config-time model check does **not** catch
+this; only the runtime error does. Tune with `LITELLM_BLACKLIST_CALLS_DEAD`.
+
 ```bash
 python3 tools/litellm_call_blacklist.py status    # who is parked, and for how many more calls
 python3 tools/litellm_call_blacklist.py clear     # un-park everyone
