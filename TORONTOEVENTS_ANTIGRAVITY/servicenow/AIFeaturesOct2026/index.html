@@ -402,27 +402,26 @@
     flex: 0 0 auto;
   }
   nav.rail .rail-label {
-    max-width: 0;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    opacity: 0;
-    transition: max-width .22s var(--ease), opacity .18s var(--ease);
-  }
-  nav.rail:hover .rail-label,
-  nav.rail:focus-within .rail-label {
     max-width: 17rem;
-    opacity: 1;
   }
-  nav.rail:hover,
-  nav.rail:focus-within { background: rgba(8,12,20,.95); }
   nav.rail a.active .rail-num { color: var(--brand-green); opacity: 1; }
-  @media (prefers-reduced-motion: reduce) {
-    nav.rail .rail-label { transition: none; }
+
+  /* The rail is expanded by default (labels always visible), so the content
+     column shifts right to clear it. main stays centred in the space that
+     remains rather than hugging the rail. */
+  @media (min-width: 1280px) {
+    body { padding-left: 372px; }
+    /* Pull the hero back to full-bleed while keeping its text aligned with
+       main's content, so the page doesn't get a hard vertical seam. */
+    header.hero { margin-left: -372px; padding-left: calc(1.5rem + 372px); }
   }
 
-  /* Below 1280px the rail would collide with the 1120px content column.
-     The in-page TOC (nav.toc) already covers navigation there. */
+  /* Below 1280px there is no room for a labelled rail beside the content
+     column. The in-page TOC (nav.toc) already covers navigation there. */
   @media (max-width: 1279px) {
     nav.rail { display: none; }
   }

@@ -212,8 +212,27 @@
     }
     nav.toc ol { margin: 0; padding-left: 4px; list-style: none; }
     nav.toc li { margin: 2px 0; }
+
+    /* NUMBERED CONTENTS — continuous 01..NN across every group.
+       The counter is reset on the nav, not on each <ol>, so numbering does not
+       restart at 01 in every group. Items hidden by the TOC filter are display:none
+       and are skipped by the counter, so a filtered list renumbers tightly. */
+    nav.toc { counter-reset: toc; }
+    nav.toc li a { counter-increment: toc; }
+    nav.toc li a::before {
+      content: counter(toc, decimal-leading-zero);
+      flex: 0 0 auto;
+      min-width: 1.5em;
+      font-size: 0.68rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+      opacity: 0.6;
+      transition: opacity .1s ease;
+    }
+    nav.toc li a.active::before { opacity: 1; }
     nav.toc a {
-      display: block; padding: 6px 10px; border-radius: 8px; color: var(--muted);
+      display: flex; align-items: baseline; gap: 6px; padding: 6px 10px; border-radius: 8px; color: var(--muted);
       font-size: 0.92rem; transition: all .1s ease;
     }
     nav.toc a:hover { color: var(--text); background: rgba(255,255,255,0.04); text-decoration: none; }
@@ -315,9 +334,17 @@
     .route-steps li { margin: 6px 0; }
     .route-steps li a { color: var(--accent); }
 
+    /* SUPPORT STATUS PILLS — used in the ES12 vs ES5 mode comparison */
+    .pill {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+    }
+    .pill.ok   { background: rgba(74,222,128,0.14); color: #86efac; }
+    .pill.warn { background: rgba(251,191,36,0.14); color: #fde68a; }
+    .pill.bad  { background: rgba(248,113,113,0.14); color: #fca5a5; }
+
     /* TABLES */
-    .table-wrap { overflow-x: auto; margin: 14px 0; }
-    table.table-map {
+    .table-wrap { overflow-x: auto; margin: 14px 0; }    table.table-map {
       width: 100%; border-collapse: collapse;
       background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
     }
