@@ -4,98 +4,111 @@
 **Pages:** https://findtorontoevents.ca/servicenow/CIS-CSM/ · https://findtorontoevents.ca/servicenow/CIS-VR/
 **Files:** [`findtorontoevents.ca/CIS-CSM/index.html`](../findtorontoevents.ca/CIS-CSM/index.html) · [`findtorontoevents.ca/CIS-VR/index.html`](../findtorontoevents.ca/CIS-VR/index.html)
 
-All numbers below are measured from the live pages with Playwright at 1440×900, not inferred from the markup.
+All numbers below are measured from the live pages with Playwright at 1440×900, not inferred from the markup. Re-measured at 08:2x after the pages changed mid-investigation (see *Concurrency* at the end).
 
 ---
 
 ## TL;DR
 
-| | CIS-CSM | CIS-VR | JS reference | AI Features |
-|---|---|---|---|---|
-| Animated elements | **0** | 3 *(all dead — see bug)* | 0 | 4 |
-| `position: fixed` bg layers | **0** | 5 | 0 | 7 |
-| Body background | **flat solid `#101820`** | 2 gradients | 2 gradients | 5 gradients |
-| Accent hue | `#51c7ba` | `#51c7ba` | `#62f5c7` | `#62f5c7` |
-| Base hue | `#101820` | `#101820` | `#080c14` | `#080c14` |
-| Font | Segoe UI | Segoe UI | Inter | system stack |
-| Horizontal overflow | 0px | 0px | 0px | 0px |
+Both pages now carry **the same defect**, and it is a single root cause:
 
-Two different problems, not one:
+> The five-layer ambient background stack is fully present in the markup, but the three `@keyframes` those layers animate on were never pasted in. The layers render completely static.
 
-1. **CIS-CSM is genuinely bare** — a flat solid background, zero layers, zero motion.
-2. **CIS-VR already has the background stack, but it is frozen.** It animates three layers whose `@keyframes` were never copied in.
+Measured live, both pages identical:
 
-Neither is a bug in the sense of "broken rendering" — both are `overflowPx: 0` with no page errors. They look plain because they were built as standalone one-off documents and never brought into the family that the other two pages now share.
+```
+[CIS-CSM]  keyframes defined : progress-grow
+           animated elements : 3
+           DEAD (no keyframes): bg-scene->scene-drift, bg-aurora->aurora-drift, bg-orbit->orbit-drift
+           transform changes : false (animating: false)
+           palette           : {"brand":"#51c7ba","accent":"#f0b36e","paper":"#101820"}
+           overflow px       : 0
+           sn-lnav/footerNav : 0 / 0
+           dev veil-slider present: true
+
+[CIS-VR]   keyframes defined : progress-grow
+           animated elements : 3
+           DEAD (no keyframes): bg-scene->scene-drift, bg-aurora->aurora-drift, bg-orbit->orbit-drift
+           transform changes : false (animating: false)
+           palette           : {"brand":"#51c7ba","accent":"#f0b36e","paper":"#101820"}
+           overflow px       : 0
+           sn-lnav/footerNav : 0 / 0
+           dev veil-slider present: true
+```
+
+Three contributing factors on top of that:
+
+1. **Off-family palette** — dull teal `#51c7ba`, orange `#f0b36e`, grey base `#101820`.
+2. **No shared chrome** — neither page links to any sibling guide.
+3. **A dev-only debug slider is shipped to production** on both pages (`#veil-slider-container`, `z-index: 1000`).
+
+The pages are not "broken" in the rendering sense — `overflowPx: 0`, zero page errors, `prefers-reduced-motion` already declared. They look plain because the animation layer is inert and the colour is off-family.
 
 ---
 
 ## Root cause
 
-### 1. Different palette family
+### 1. The background stack is present but frozen — on both pages
 
-The two rebuilt pages share one token set. The CIS pages use an entirely separate one:
+Both pages declare the same five layers and animate three of them:
+
+```
+.bg-scene  { animation: scene-drift  ... }   ← @keyframes scene-drift  NOT DEFINED
+.bg-aurora { animation: aurora-drift ... }   ← @keyframes aurora-drift NOT DEFINED
+.bg-orbit  { animation: orbit-drift  ... }   ← @keyframes orbit-drift  NOT DEFINED
+```
+
+Only `@keyframes progress-grow` (the scroll-progress bar) was copied across. The reader sees three static gradient blobs under a static blur — the *appearance* of the family's ambient background with none of the movement.
+
+This is a copy-paste failure, and it is worth stating plainly because it is cheap to fix: the layers were duplicated without their keyframes. The giveaway is that `prefers-reduced-motion` on both pages *correctly lists* `.bg-scene, .bg-aurora, .bg-orbit` as animated — the author clearly intended motion, then omitted the definitions.
+
+**A grep for `animation:` is not sufficient proof of animation.** Both pages pass that check while sitting completely still. The keyframes must exist by name, and `transform` must measurably change between two samples.
+
+### 2. Off-family palette
+
+The two rebuilt pages (JS reference, AI Features) share one token set. The CIS pages use a separate one:
 
 | Token role | Family (JS / AI) | CIS pages | Difference |
 |---|---|---|---|
-| Accent | `#62f5c7` bright teal-green | `#51c7ba` muted sea-green | noticeably duller, lower chroma |
+| Accent | `#62f5c7` bright teal-green | `#51c7ba` muted sea-green | duller, lower chroma |
 | Base | `#080c14` near-black navy | `#101820` grey-slate | ~12% lighter, flatter |
 | Panel | `#0f1626` | `#18232c` | lighter, less depth |
 | Secondary | `#7aa2ff` slate blue | `#f0b36e` **orange** | off-family entirely |
 
-The orange `--accent: #f0b36e` is the loudest tell. It appears in notice borders and focus rings, and it belongs to no other page in the family.
+The orange `--accent: #f0b36e` is the loudest tell — it appears in notice borders and focus rings and belongs to no other page in the family.
 
-The base colour matters most. `#101820` against `#080c14` reads as "grey office document" rather than "console", and a lighter base also means every gradient laid over it has less headroom — the same bloom alpha reads weaker on a lighter canvas.
+The base colour matters most. `#101820` against `#080c14` reads as "grey office document" rather than "console", and a lighter base gives every gradient laid over it less headroom — the same bloom alpha reads weaker on a lighter canvas. This compounds the frozen-animation bug: even the static blooms show up less than they would on the family's darker base.
 
-### 2. No background layers on CIS-CSM
-
-`body` declares `background: var(--paper)` and nothing else. Playwright reports **0 fixed elements and 0 animated elements** on the whole page. There is no grain, no veil, no gradient — it is a single flat colour behind every card.
-
-### 3. CIS-VR: the layers exist, the animations are dead
-
-This is the actual bug, and it is worth separating from the styling work because it is a straightforward copy-paste failure.
-
-CIS-VR declares three layers and animates them:
-
-```
-.bg-scene  { animation: scene-drift  46s ... }   ← @keyframes scene-drift  NOT DEFINED
-.bg-aurora { animation: aurora-drift 32s ... }   ← @keyframes aurora-drift NOT DEFINED
-.bg-orbit  { animation: orbit-drift  44s ... }   ← @keyframes orbit-drift  NOT DEFINED
-```
-
-Only `@keyframes progress-grow` was copied across. Measured:
-
-```
-t=0    : {"bg-scene":"none","bg-aurora":"none","bg-orbit":"none"}
-t=2.5s : {"bg-scene":"none","bg-aurora":"none","bg-orbit":"none"}
-actually animating: NONE — all dead
-```
-
-`transform` is `none` at both samples. So CIS-VR has the *appearance* of the family's background stack in the markup, but the reader sees three static gradient blobs. `prefers-reduced-motion` is declared, and it correctly lists the layers — which makes the missing keyframes look like an incomplete paste rather than an intentional choice.
-
-### 4. No shared chrome
+### 3. No shared chrome
 
 Across all four pages:
 
 | Component | JS ref | AI Features | CIS-CSM | CIS-VR |
 |---|---|---|---|---|
-| `sn-lnav` (learning header) | 0 | 0 | 0 | 0 |
-| `footer-nav` (sibling links) | 0 | 4 | 0 | 0 |
+| `sn-lnav` (learning header) | 0 | 0 | **0** | **0** |
+| Footer sibling links | 0 | 4 | **0** | **0** |
 | Left rail | 0 | 13 | 0 | 0 |
-| Scroll-progress bar | 0 | 2 | 0 | 2 |
+| Scroll-progress bar | 0 | 2 | 2 | 2 |
 | Skip link | ✓ | ✓ | ✓ | ✓ |
 | `:focus-visible` | ✓ | ✓ | ✓ | ✓ |
 
-The two CIS pages are the only ones with **no navigation to their siblings at all**. A reader landing on CIS-VR has no way to discover the JS reference or the AI guide — which is why the set does not read as a product family even before you look at colour.
+The two CIS pages are the only ones with **no navigation to their siblings at all**. A reader landing on CIS-VR has no way to discover the JS reference or the AI guide, which is why the set does not read as a product family even before colour is considered.
 
-### 5. Different type stack
+### 4. Different type stack
 
-CIS pages use `"Segoe UI", Arial, sans-serif`; the JS reference uses `Inter`. Segoe UI is a Windows-first stack that renders as Arial or system-default on macOS/Linux, so the two pages do not even share a typeface on most readers' machines.
+CIS pages use `"Segoe UI", Arial, sans-serif`; the JS reference uses `Inter`. Segoe UI is a Windows-first stack that falls back to Arial or the system default on macOS/Linux, so the pages do not even share a typeface on most readers' machines.
+
+### 5. A debug control is live in production
+
+Both pages ship `<div id="veil-slider-container" style="position:fixed; top:10px; right:10px; z-index:1000; ...">` — a transparency-tuning slider that is clearly a build-time aid for dialling in `.bg-veil`. It is fixed at `z-index: 1000`, above every content layer, and visible to every visitor on both pages.
+
+It also happens to be evidence for root cause #1: the author was tuning the veil opacity with a slider against layers that never move.
 
 ---
 
 ## Source-of-truth problems (fix these first)
 
-Found while investigating. These are deployment bugs, not styling ones, and any styling work done before fixing them will be lost.
+Deployment bugs, not styling ones. Any styling work done before fixing them will be lost.
 
 ### CIS-VR is not in git
 
@@ -114,15 +127,16 @@ findtorontoevents.ca/CIS-CSM/index.html          ← tracked
 | `--ink` | `#172b3a` dark-on-light | `#e6edf1` light-on-dark |
 | `--paper` | `#f4f6f5` off-white | `#101820` grey-slate |
 
-The live page exists only on the FTP server. If anyone deploys from the repo, **CIS-VR will regress to a small light-theme document**. Commit the live file as the canonical source before touching its styling.
+The live page exists only on the FTP server. If anyone deploys from the repo, **CIS-VR regresses to a small light-theme document**. Commit the live file as canonical before touching its styling.
 
 ### CIS-CSM local has drifted from live
 
-Local and live differ, and the local edit is uncommitted. Reconcile before styling, or the styling will land on whichever copy is not deployed.
+```
+$ md5sum findtorontoevents.ca/CIS-CSM/index.html   → 206315d1ce4c9be71d34525abface556
+$ curl -s .../CIS-CSM/index.html | md5sum          → f0896a812c376103fbe8d61cd597361d
+```
 
-### CIS-VR was mid-edit during this investigation
-
-Its live size moved 70,159 → 76,661 → **77,396 bytes** across successive checks during this investigation, and the file gained `bg-aurora` / `bg-orbit` / `bg-scene` / `bg-veil` in that window. Another session is actively working on this page *right now*. **Coordinate before editing**, or the two efforts will clobber each other — the same collision already happened on the JS reference page, where a hardcoded TOC numbering landed on top of a CSS counter and would have rendered `01  1. Overview`.
+Local and live differ, and the local edit is uncommitted. Reconcile before styling, or the styling lands on whichever copy is not deployed.
 
 ---
 
@@ -139,9 +153,70 @@ git add findtorontoevents.ca/CIS-VR/index.html
 git commit -m "chore(cis-vr): commit the deployed page as canonical source"
 ```
 
-Reconcile the CIS-CSM local/live drift the same way. Do not proceed until `git status` is clean for both paths and local md5 equals live md5.
+Reconcile the CIS-CSM drift the same way. Do not proceed until `git status` is clean for both paths and local md5 equals live md5.
 
-### Step 1 — Align the palette
+### Step 1 — Add the three missing `@keyframes` (both pages)
+
+This is the actual fix for "the pages look plain" — the layers are already there and already positioned correctly. Three definitions, applied to **both** files:
+
+```css
+@keyframes scene-drift {
+  from { transform: translate3d(-2%, 0, 0) scale(1); }
+  to   { transform: translate3d(2%, 1%, 0) scale(1.05); }
+}
+@keyframes aurora-drift {
+  from { transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1); }
+  to   { transform: translate3d(3%, 2%, 0) rotate(7deg) scale(1.06); }
+}
+@keyframes orbit-drift {
+  from { transform: translate3d(-1.5%, 0, 0) rotate(0deg); }
+  50%  { transform: translate3d(1%, 1.5%, 0) rotate(5deg); }
+  to   { transform: translate3d(0, -1%, 0) rotate(10deg); }
+}
+```
+
+Durations and easings are already declared on the layers (`46s ease-in-out alternate`, `32s ease-in-out alternate`, `44s linear infinite`) — only the keyframes are missing, so no other CSS needs to change.
+
+Both pages already have a `prefers-reduced-motion` block that correctly lists these three layers. Confirm it sets `animation: none`; do **not** add a second block.
+
+### Step 2 — Remove the debug slider (careful: it is load-bearing)
+
+Both pages ship a `z-index: 1000` opacity-tuning slider in production. Delete it — but **not before defining the variable it owns**, or the veil breaks.
+
+The veil reads the custom property with no fallback:
+
+```css
+.bg-veil {
+  background: rgba(0,0,0, var(--veil-opacity));   /* ← no fallback value */
+}
+```
+
+and `--veil-opacity` is set in exactly one place — the slider's handler:
+
+```js
+root.style.setProperty('--veil-opacity', val);     /* only definition */
+```
+
+It is **never declared in `:root`**. So deleting the slider alone leaves `var(--veil-opacity)` undefined, the `rgba()` becomes an invalid color, and **the veil silently disappears** — the blooms go to full strength with nothing darkening them, and body text over them loses contrast. A naive "delete the debug div" ships a legibility regression that no overflow check would catch.
+
+Correct order, both pages:
+
+```css
+/* 1. give the variable a home so the slider is no longer load-bearing */
+:root { --veil-opacity: 0.4; }   /* matches the slider's current value */
+
+/* 2. harden the rule against a missing value */
+.bg-veil { background: rgba(0,0,0, var(--veil-opacity, 0.4)); }
+```
+
+```js
+/* 3. only then remove the slider markup and its handler */
+/*    #veil-slider-container + const slider = ... + update() + listener */
+```
+
+`0.4` is the value both pages already serve (`value="0.4"` in the markup and the `<span>` label), so this preserves current appearance exactly. The `var(--veil-opacity, 0.4)` fallback is belt-and-braces — with the `:root` declaration in place it should never fire, but it means a future partial edit cannot silently blank the veil again.
+
+### Step 3 — Align the palette
 
 Keep the CIS pages' existing token *names* (`--ink`, `--brand`, `--paper`, `--card`) so the change is nine lines and touches no component rule — the same technique that worked on the AI Features page. Only the values change:
 
@@ -160,100 +235,7 @@ Keep the CIS pages' existing token *names* (`--ink`, `--brand`, `--paper`, `--ca
 }
 ```
 
-The base change from `#101820` to `#080c14` is the single highest-impact line. It is what makes the pages read as "console" rather than "document", and it gives the gradient layers below enough contrast to actually show.
-
-### Step 2 — Add the background stack
-
-This is the direct answer to "make it more beautified with a dynamic background". Five layers, all CSS-only, no canvas, no JS, no network requests:
-
-```html
-<div class="bg-scene"  aria-hidden="true"></div>
-<div class="bg-aurora" aria-hidden="true"></div>
-<div class="bg-orbit"  aria-hidden="true"></div>
-<div class="bg-grain"  aria-hidden="true"></div>
-<div class="bg-veil"   aria-hidden="true"></div>
-```
-
-```css
-.bg-scene, .bg-aurora, .bg-orbit, .bg-grain { position: fixed; inset: 0; pointer-events: none; }
-
-/* base wash — slow, barely perceptible */
-.bg-scene {
-  z-index: 0; inset: -12%;
-  background:
-    radial-gradient(46% 50% at 18% 12%, rgba(98,245,199,.10) 0%, transparent 68%),
-    radial-gradient(42% 46% at 84% 20%, rgba(122,162,255,.09) 0%, transparent 66%);
-  filter: blur(90px) saturate(.95);
-  animation: scene-drift 46s ease-in-out infinite alternate;
-}
-
-/* main blooms */
-.bg-aurora {
-  z-index: 0; inset: -25%;
-  background:
-    radial-gradient(42% 46% at 18% 22%, rgba(98,245,199,.16) 0%, transparent 66%),
-    radial-gradient(40% 44% at 82% 18%, rgba(122,162,255,.15) 0%, transparent 64%),
-    radial-gradient(46% 50% at 62% 78%, rgba(98,245,199,.07) 0%, transparent 68%);
-  filter: blur(82px) saturate(1.05) brightness(.8);
-  animation: aurora-drift 32s ease-in-out infinite alternate;
-}
-
-/* fine line texture, screen-blended */
-.bg-orbit {
-  z-index: 0; inset: -12%;
-  background:
-    repeating-linear-gradient(125deg,
-      rgba(255,255,255,0) 0 18px,
-      rgba(122,162,255,.025) 18px 19px,
-      rgba(255,255,255,0) 19px 44px);
-  mix-blend-mode: screen; opacity: .34;
-  animation: orbit-drift 44s linear infinite;
-}
-
-/* texture */
-.bg-grain {
-  z-index: 1; opacity: .03;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* darkening veil — sits ABOVE the blooms, BELOW content.
-   This is what keeps body text legible over the animation. */
-.bg-veil {
-  position: fixed; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(180deg, rgba(8,12,20,.34) 0%, rgba(8,12,20,.52) 55%, rgba(8,12,20,.70) 100%);
-}
-
-/* content clears the ambient layers */
-body > .page, body > header, body > main, body > footer { position: relative; z-index: 2; }
-```
-
-**Copy the `@keyframes` too.** This is precisely the failure CIS-VR already has — the layers were pasted without their animations:
-
-```css
-@keyframes scene-drift  { from { transform: translate3d(-2%,0,0) scale(1); } to { transform: translate3d(2%,1%,0) scale(1.05); } }
-@keyframes aurora-drift { from { transform: translate3d(-3%,-2%,0) rotate(0deg) scale(1); } to { transform: translate3d(3%,2%,0) rotate(7deg) scale(1.06); } }
-@keyframes orbit-drift  { from { transform: translate3d(-1.5%,0,0) rotate(0deg); } 50% { transform: translate3d(1%,1.5%,0) rotate(5deg); } to { transform: translate3d(0,-1%,0) rotate(10deg); } }
-
-@media (prefers-reduced-motion: reduce) {
-  .bg-scene, .bg-aurora, .bg-orbit { animation: none; }
-}
-```
-
-Add the reduced-motion rule in the same edit as the layers. Both CIS pages already have a `prefers-reduced-motion` block — extend it, do not add a second one.
-
-### Step 3 — Fix the frozen CIS-VR layers
-
-For CIS-VR specifically, this is a two-minute repair: copy the three missing `@keyframes` definitions in. Verify with the transform-sample check:
-
-```js
-// transform must differ between two samples 2.5s apart
-const t0 = await page.evaluate(() => getComputedStyle(document.querySelector('.bg-aurora')).transform);
-await page.waitForTimeout(2500);
-const t1 = await page.evaluate(() => getComputedStyle(document.querySelector('.bg-aurora')).transform);
-console.log('animating:', t0 !== t1);
-```
-
-A grep for `animation:` alone is **not** sufficient proof — CIS-VR currently passes that check while being completely static. The keyframes must exist by name.
+The base change from `#101820` to `#080c14` is the single highest-impact line here. It is what makes the page read as "console" rather than "document", and it gives the now-moving gradients enough contrast to actually show.
 
 ### Step 4 — Add shared chrome
 
@@ -271,7 +253,7 @@ Copy `nav.sn-lnav` and the footer sibling nav from the AI Features page, adding 
 </nav>
 ```
 
-Then add the same four links to the footer nav so every page in the family cross-links to every other page.
+Then add the same four links to the footer nav so every page cross-links to every other.
 
 ### Step 5 — Font stack
 
@@ -285,12 +267,13 @@ Add the Google Fonts link for Inter to match the JS reference, or accept the sys
 
 ## Verification
 
-Extend the two existing scripts rather than writing new ones — `tools/verify_servicenow_es6_overflow.mjs` (local) and `tools/verify_servicenow_es6_live.mjs` (live) already sweep 390/768/1024/1280/1440 and gate on the document-level invariant.
+Extend the two existing scripts rather than writing new ones — `tools/verify_servicenow_es6_overflow.mjs` (local) and `tools/verify_servicenow_es6_live.mjs` (live) already sweep 390/768/1024/1280/1440 and gate on the document-level overflow invariant.
 
-Add to both:
+Add these checks to both:
 
 ```js
 // 1. Overflow sweep (existing) — must stay 0 at every width
+
 // 2. Animated layers must ACTUALLY animate, not merely declare animation
 for (const cls of ['.bg-scene', '.bg-aurora', '.bg-orbit']) {
   const t0 = await page.evaluate(c => getComputedStyle(document.querySelector(c)).transform, cls);
@@ -299,7 +282,7 @@ for (const cls of ['.bg-scene', '.bg-aurora', '.bg-orbit']) {
   if (t0 === t1) fail(`${cls} is static — missing @keyframes`);
 }
 
-// 3. Every animation: name must resolve to a defined @keyframes
+// 3. Every animation name must resolve to a defined @keyframes
 const orphans = await page.evaluate(() => {
   const defined = new Set([...document.querySelectorAll('style')]
     .flatMap(s => [...s.textContent.matchAll(/@keyframes\s+([\w-]+)/g)].map(m => m[1])));
@@ -309,15 +292,26 @@ const orphans = await page.evaluate(() => {
 });
 // orphans must be empty
 
-// 4. Family components present
-//    sn-lnav, footer-nav, skip-link, focus-visible, prefers-reduced-motion
+// 4. No debug affordances in production
+//    document.getElementById('veil-slider-container') === null
 
-// 5. Palette matches family tokens (accent #62f5c7, base #080c14)
+// 5. Family components present: sn-lnav, footer sibling links,
+//    skip-link, focus-visible, prefers-reduced-motion
+
+// 6. Palette matches family tokens (accent #62f5c7, base #080c14)
 ```
 
-Check #3 is the one that would have caught the current CIS-VR bug. It is cheap and worth adding to all four pages.
+Check #3 is the one that catches the current bug, and it is worth adding to **all four** pages — the same missing-keyframes failure could land anywhere the background stack is duplicated. Check #2 is the runtime complement: it proves motion rather than inferring it from markup.
 
 Deploy with a targeted FTP `STOR` — `deploy_main_site()` in `tools/deploy_to_ftp.py` does **not** recurse into `findtorontoevents.ca/servicenow/` or `findtorontoevents.ca/CIS-*`, which is the underlying reason edits to these pages repeatedly fail to go live. After deploying, confirm md5 parity and re-run the live script.
+
+---
+
+## Concurrency note
+
+This document was re-measured because the pages changed underneath it. During the original investigation CIS-CSM reported 0 animated elements and a flat solid background; a parallel session then added the full five-layer stack to it — with the same missing `@keyframes`. CIS-VR's live size also moved 70,159 → 76,661 → 77,396 bytes across successive checks.
+
+The diagnosis got *simpler* as a result: it started as two different problems and is now one problem on two pages. But the pages are actively being edited. **Coordinate with that session before applying Steps 0–5**, or the two efforts will clobber each other — which already happened once this session, when a hardcoded TOC numbering scheme landed on top of a CSS counter on the JS reference page and would have rendered every row as `01  1. Overview`.
 
 ---
 
@@ -325,7 +319,7 @@ Deploy with a targeted FTP `STOR` — `deploy_main_site()` in `tools/deploy_to_f
 
 Investigation and this document only — no CSS was changed and nothing was deployed. Two reasons:
 
-1. **CIS-VR is untracked in git and its live copy is 3.9× the local file.** Styling it before the source of truth is fixed means the work would be lost on the next repo deploy.
-2. **Another session is actively editing CIS-VR right now** — its live size changed mid-investigation. Editing concurrently would clobber that work, which has already happened once this session on the JS reference page.
+1. **CIS-VR is untracked in git and its live copy is 3.9× the local file.** Styling it before the source of truth is fixed means the work is lost on the next repo deploy.
+2. **Another session is actively editing both pages.** Editing concurrently would clobber that work.
 
-Steps 0 and the coordination are prerequisites, not optional. Once CIS-VR is committed and the other session is clear, Steps 1–5 are roughly an hour of work with a verification script that catches the specific failure mode already present on the page.
+Steps 0 and the coordination are prerequisites, not optional. Once CIS-VR is committed and the other session is clear, the whole sequence is roughly an hour — and Step 1 alone (three `@keyframes` definitions) is the change that turns these pages from static to animated.
