@@ -43,6 +43,89 @@
     a { color: var(--accent-2); text-decoration: none; transition: color .15s ease; }
     a:hover { color: var(--accent); text-decoration: underline; }
 
+    /* ============================================================
+       ACCESSIBILITY — keyboard navigation is part of the design.
+       Visible focus on every interactive element, and a real skip
+       link so keyboard users can bypass the sidebar nav.
+       ============================================================ */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    summary:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 100;
+      background: var(--accent);
+      color: #04140d;
+      padding: 10px 16px;
+      border-radius: 0 0 8px 0;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .skip-link:focus {
+      left: 0;
+      text-decoration: none;
+    }
+
+    /* ============================================================
+       SHARED SERVICE NOW LEARNING HEADER
+       Names the page type and links the sibling guide, so the two
+       pages read as one family instead of two unrelated sites.
+       ============================================================ */
+    .sn-lnav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--panel-border);
+      background: rgba(8,12,20,0.72);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      font-size: 0.85rem;
+    }
+    .sn-lnav-brand {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+    .sn-lnav-brand-dot { color: var(--accent); margin: 0 2px; }
+    .sn-lnav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sn-lnav-links a {
+      color: var(--muted);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+    }
+    .sn-lnav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); text-decoration: none; }
+    .sn-lnav-links a[aria-current="page"] {
+      color: var(--accent);
+      background: rgba(98,245,199,0.10);
+    }
+    .kind-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(98,245,199,0.12);
+      border: 1px solid rgba(98,245,199,0.35);
+      color: var(--accent);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
     .page { max-width: 1280px; margin: 0 auto; padding: 0 24px 80px; }
 
     /* HERO */
@@ -201,6 +284,37 @@
     .success { background: rgba(74,222,128,0.08); color: #a7f3d0; border-color: rgba(74,222,128,0.25); }
     .danger { background: rgba(248,113,113,0.08); color: #fecaca; border-color: rgba(248,113,113,0.25); }
 
+    /* ============================================================
+       START-HERE BLOCK — orientation for first-time readers, so the
+       page doesn't open as an undifferentiated 28-section wall.
+       ============================================================ */
+    .start-here {
+      border: 1px solid rgba(98,245,199,0.22);
+      border-radius: var(--radius);
+      background: rgba(98,245,199,0.04);
+      padding: 20px 22px;
+      margin-bottom: 28px;
+    }
+    .start-here h2 { margin-top: 0; }
+    .muted { color: var(--muted); font-size: 0.92rem; }
+    .prereq-grid {
+      display: grid; gap: 14px; margin: 16px 0;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .prereq {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .prereq h3 { margin: 0 0 8px; font-size: 0.95rem; color: var(--accent-2); }
+    .prereq p, .route p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .route { margin-top: 18px; }
+    .route h3 { margin: 0 0 10px; font-size: 0.95rem; color: var(--accent-2); }
+    .route-steps { margin: 0; padding-left: 22px; }
+    .route-steps li { margin: 6px 0; }
+    .route-steps li a { color: var(--accent); }
+
     /* TABLES */
     .table-wrap { overflow-x: auto; margin: 14px 0; }
     table.table-map {
@@ -219,7 +333,7 @@
       background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 16px;
       min-width: 0; overflow: hidden;
     }
-    .concept h4, .api-card h4 { margin: 0 0 10px; color: var(--accent-2); font-size: 0.95rem; }
+    .concept h3, .api-card h3 { margin: 0 0 10px; color: var(--accent-2); font-size: 0.95rem; }
     .api-card ul { margin: 0; padding-left: 18px; font-size: 0.9rem; }
     .api-card li { margin: 4px 0; color: var(--muted); }
 
@@ -256,9 +370,9 @@
     }
     .anti { background: rgba(248,113,113,0.06); border-color: rgba(248,113,113,0.2); }
     .good { background: rgba(74,222,128,0.06); border-color: rgba(74,222,128,0.2); }
-    .anti h4, .good h4 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-    .anti h4 { color: #fca5a5; }
-    .good h4 { color: #86efac; }
+    .anti h3, .good h3 { margin: 0 0 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .anti h3 { color: #fca5a5; }
+    .good h3 { color: #86efac; }
     .anti pre, .good pre { margin: 10px 0; padding: 10px 12px; font-size: 0.82rem; overflow-x: auto; white-space: pre; }
     .danger pre, .warning pre, .notice pre, .flow pre, .success pre { overflow-x: auto; white-space: pre; }
 
@@ -327,14 +441,24 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="page">
+
+    <!-- SERVICE NOW LEARNING — shared header across the ServiceNow guide family -->
+    <nav class="sn-lnav" aria-label="ServiceNow learning guides">
+      <span class="sn-lnav-brand">ServiceNow<span class="sn-lnav-brand-dot">·</span>Learning</span>
+      <span class="sn-lnav-links">
+        <a href="/servicenow/javascript/index.html" aria-current="page">JavaScript Reference</a>
+        <a href="/servicenow/AIFeaturesOct2026/index.html">AI Features Guide</a>
+      </span>
+    </nav>
 
     <!-- HERO -->
     <header class="hero">
       <div class="hero-grid"></div>
       <div class="hero-glow"></div>
 
-      <p class="eyebrow">ServiceNow Platform · JavaScript Reference</p>
+      <p class="eyebrow"><span class="kind-chip">Reference</span> ServiceNow Platform · JavaScript</p>
       <h1>
         Build reliable ServiceNow automation<br>
         <span class="accent">with production-grade JavaScript</span>
@@ -363,9 +487,16 @@
       <!-- SIDEBAR TOC -->
       <nav class="toc" aria-label="Table of contents">
         <div class="toc-header">
-          <h3>Contents</h3>
+          <h2>Contents</h2>
         </div>
         <input type="text" id="toc-search" class="toc-search" placeholder="Filter sections…">
+
+        <div class="group">
+          <span class="group-title">Orientation</span>
+          <ol>
+            <li><a href="#start-here">Start here</a></li>
+          </ol>
+        </div>
 
         <div class="group">
           <span class="group-title">Core APIs</span>
@@ -401,6 +532,7 @@
           <span class="group-title">Engineering</span>
           <ol>
             <li><a href="#best-practices">Best Practices</a></li>
+            <li><a href="#quickref">Quick Reference</a></li>
             <li><a href="#when-not-to-script">When Not to Script</a></li>
             <li><a href="#testing-debugging">Testing & Debugging</a></li>
             <li><a href="#deployment">Deployment & Change</a></li>
@@ -429,28 +561,63 @@
       <main id="main-content">
         <article>
 
+          <!-- START HERE — what this page is, and the shortest route through it -->
+          <section id="start-here" class="start-here">
+            <h2>Start here <span class="section-chip">5 minutes</span></h2>
+
+            <p>This is a <strong>reference</strong> for people who already write some JavaScript and need to use it reliably on the ServiceNow platform. It is not a general JavaScript course &mdash; if you are new to the language itself, see the prerequisites below first.</p>
+
+            <div class="prereq-grid">
+              <div class="prereq">
+                <h3>Read this before anything else</h3>
+                <p>Syntax on the server is governed by the application's <strong>JavaScript mode</strong> (ES12 / ES5 Standards / Compatibility), not by scoped vs. global alone &mdash; check the mode before relying on ES6+ syntax. See <a href="#es6">section 12</a>.</p>
+              </div>
+              <div class="prereq">
+                <h3>If you are new to JavaScript</h3>
+                <p>Cover values and types, variables, conditions, loops, functions, arrays and objects, scope, and how to read a stack trace first. This page assumes those and focuses on the platform.</p>
+              </div>
+            </div>
+
+            <div class="route">
+              <h3>Shortest useful route</h3>
+              <ol class="route-steps">
+                <li><a href="#overview"><strong>Server vs. client</strong> &mdash; where your code runs, and what that changes</a></li>
+                <li><a href="#gliderecord"><strong>GlideRecord</strong> &mdash; the query API behind most automation</a></li>
+                <li><a href="#glidedatetime"><strong>GlideDateTime</strong> &mdash; the timezone trap that causes most date bugs</a></li>
+                <li><a href="#glideajax"><strong>GlideAjax</strong> &mdash; the correct client-to-server round trip</a></li>
+                <li><a href="#security-checklist"><strong>Security checklist</strong> &mdash; before any of it reaches production</a></li>
+              </ol>
+              <p class="muted">Everything else here is look-it-up material &mdash; use the Contents panel to jump straight to it.</p>
+            </div>
+          </section>
+
           <!-- 1. OVERVIEW -->
           <section id="overview">
             <h2>1. Overview & Execution Contexts <span class="section-chip">Foundation</span></h2>
-            <p>ServiceNow JavaScript runs in two primary contexts: <strong>server-side</strong> (Java 8 Rhino engine) and <strong>client-side</strong> (browser). Understanding where your code executes determines which APIs are available.</p>
+            <p>ServiceNow JavaScript runs in two primary contexts: <strong>server-side</strong> (the Rhino-based JavaScript engine bundled with the platform) and <strong>client-side</strong> (the user's browser). Understanding where your code executes determines which APIs are available &mdash; so keep the language level of each context separate from the APIs each exposes.</p>
 
             <div class="concept-grid">
               <div class="concept">
-                <h4>Server-Side (Rhino)</h4>
+                <h3>Server-Side (platform engine)</h3>
                 <ul>
                   <li>Business Rules, Script Includes, Scheduled Jobs, UI Actions (server), REST Resources</li>
                   <li>APIs: <code>GlideRecord</code>, <code>GlideSystem (gs)</code>, <code>GlideDateTime</code>, <code>GlideAggregate</code>, <code>GlideAjax</code> (server responder)</li>
+                  <li>Syntax is governed by the application's <strong>JavaScript mode</strong> (ES12 / ES5 Standards / Compatibility) &mdash; see <a href="#es6">section 12</a>, not by scope alone</li>
                   <li>Global scope by default; scoped apps require explicit cross-scope grants</li>
                 </ul>
               </div>
               <div class="concept">
-                <h4>Client-Side (Browser)</h4>
+                <h4>Client-Side (browser)</h4>
                 <ul>
                   <li>Client Scripts, UI Actions (client), UI Pages, Service Portal widgets</li>
                   <li>APIs: <code>g_form</code>, <code>g_user</code>, <code>g_list</code>, <code>g_scratchpad</code>, <code>GlideAjax</code> (client caller)</li>
-                  <li>Modern ES6+ supported in recent releases (const/let, arrow functions, template literals, destructuring)</li>
+                  <li>Syntax is whatever the user's browser supports &mdash; modern syntax such as <code>const</code>, arrow functions, template literals and destructuring works here for any realistic browser. This is a separate question from server-side syntax support</li>
                 </ul>
               </div>
+            </div>
+
+            <div class="notice">
+              <strong>Do not confuse these three things:</strong> (1) the browser's JavaScript level, (2) the server-side engine's language mode, and (3) which ServiceNow APIs are available in a given scope. A script can be valid modern JavaScript in the browser and still be rejected by the server engine, and an API can be available regardless of language level.
             </div>
 
             <h3>Execution Lifecycle</h3>
@@ -612,7 +779,7 @@ while (agg.next()) {
             <p><code>GlideDateTime</code> handles timezone-aware date/time operations. Always use this instead of native JavaScript <code>Date</code> for server-side work.</p>
             <div class="api-grid">
               <div class="api-card">
-                <h4>Construction</h4>
+                <h3>Construction</h3>
                 <pre><code>var gdt = new GlideDateTime();                    // now (UTC)
 var gdt2 = new GlideDateTime('2024-06-15 14:30:00'); // parse string
 var gdt3 = new GlideDateTime(gs.nowDateTime());      // from gs helper</code></pre>
@@ -685,7 +852,7 @@ var ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));</code></pre>
             <p><code>g_list</code> (or <code>GlideList2</code>) provides client-side control over list views. Available in list context (not forms).</p>
             <div class="api-grid">
               <div class="api-card">
-                <h4>Selection & Navigation</h4>
+                <h3>Selection & Navigation</h3>
                 <pre><code>g_list.getChecked();           // sys_ids of checked rows (comma sep)
 g_list.getSelectedRows();      // array of selected row elements
 g_list.getRowCount();          // visible row count
@@ -730,7 +897,7 @@ g_list.refresh();</code></pre>
           <section id="glidesystem">
             <h2>7. GlideSystem (gs) — Utilities <span class="section-chip">Server</span></h2>
             <div class="api-grid">
-              <div class="api-card"><h4>User</h4><pre><code>gs.getUserID()
+              <div class="api-card"><h3>User</h3><pre><code>gs.getUserID()
 gs.getUserName()
 gs.hasRole('admin')</code></pre></div>
               <div class="api-card"><h4>Dates</h4><pre><code>gs.nowDateTime()
@@ -740,6 +907,22 @@ gs.beginningOfToday()</code></pre></div>
 gs.warn('...')
 gs.error('...')</code></pre></div>
             </div>
+
+            <div class="notice">
+              <strong>Two different placeholder syntaxes &mdash; don't mix them up:</strong>
+              <p style="margin:8px 0 0">ServiceNow's <code>gs.*</code> logging methods do their <em>own</em> substitution. <code>gs.info('msg {0}', arg)</code> replaces <code>{0}</code> with the next argument &mdash; that is a ServiceNow API convention, not JavaScript.</p>
+              <p style="margin:8px 0 0">Template literals are plain JavaScript: <code>${...}</code> evaluates whatever is inside the braces as an expression. So <code>${0}</code> evaluates to the <strong>number 0</strong>, and <code>${1}</code> to the number 1 &mdash; they do <em>not</em> mean "first argument" and "second argument". Writing <code>gs.info(`msg ${0}`, arg)</code> logs "msg 0", silently ignoring <code>arg</code>.</p>
+              <p style="margin:8px 0 0">Either interpolate a real variable into a template literal, or use the positional form &mdash; never both at once:</p>
+              <pre style="margin:8px 0 0"><code>// Positional feeds — ServiceNow substitutes {0}, {1}
+gs.info('P{0}: {1}', priority, summary);
+
+// Template literal — the variable itself goes inside ${...}
+gs.info(`P${priority}: ${summary}`);
+
+// WRONG: ${0} is the literal number 0, not the first argument
+gs.info(`P${0}: ${1}`, priority, summary);   // logs "P0: 1"</code></pre>
+              <p style="margin:8px 0 0">Separately, the browser's <code>console.log</code> uses <code>%s</code> / <code>%d</code> / <code>%o</code> formatting with arguments &mdash; <code>console.log('q is %s x is %s', q, x)</code>. That works in client-side scripts, but it is browser behaviour, not a ServiceNow API, and it is a third convention again.</p>
+            </div>
           </section>
 
           <!-- 8. G_FORM -->
@@ -747,7 +930,7 @@ gs.error('...')</code></pre></div>
             <h2>8. g_form — Form Client API <span class="section-chip">Client</span></h2>
             <div class="api-grid">
               <div class="api-card">
-                <h4>Values</h4>
+                <h3>Values</h3>
                 <pre><code>g_form.getValue('field')
 g_form.setValue('field', val)
 g_form.getDisplayValue('ref')</code></pre>
@@ -1102,50 +1285,63 @@ g_form.setValue('u_open_count', count);</code></pre>
           <!-- 12. ES6 -->
           <section id="es6">
             <h2>12. ES6+ in ServiceNow <span class="section-chip">Modern</span></h2>
-            <p>ServiceNow introduced ECMAScript 6+ support in the <strong>Tokyo release</strong> for Scoped Apps (improved in Utah+). It is <strong>not yet supported in Global scope</strong>. The table below summarizes compatibility based on community testing and official behavior.</p>
+            <p>Modern JavaScript syntax on the ServiceNow server is controlled by the <strong>JavaScript mode</strong> configured for an application or an individual script &mdash; <em>not</em> simply by "scoped vs. global". Knowing which mode applies is the first thing to check before you rely on any modern syntax.</p>
 
-            <h3>Supported ECMAScript Features (Scoped Apps)</h3>
+            <h3>The three JavaScript modes</h3>
             <div class="table-wrap">
               <table class="table-map">
                 <thead>
-                  <tr><th>Feature</th><th>Supported</th><th>Example / Notes</th></tr>
+                  <tr><th>Mode</th><th>What it is</th><th>Language level</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>Arrow Functions</td><td>✅ Yes</td><td><code>multiply = (a, b) => a * b;</code></td></tr>
-                  <tr><td>Block-Scoped Variables (let/const)</td><td>✅ Yes</td><td><code>let x = 1; const y = 2;</code></td></tr>
-                  <tr><td>Template Literals</td><td>✅ Yes (Scoped only)</td><td><code>`Hello ${name}`</code> — backticks may not save in some RTE contexts</td></tr>
-                  <tr><td>Destructuring Assignment</td><td>✅ Yes</td><td><code>const { name, age } = person;</code></td></tr>
-                  <tr><td>Spread Operator</td><td>✅ Yes</td><td><code>[...arr1, ...arr2]</code> — limited in some Portal widget server scripts</td></tr>
-                  <tr><td>Classes (class syntax)</td><td>✅ Yes</td><td><code>class Animal { constructor(n){this.name=n;} }</code></td></tr>
-                  <tr><td>Inheritance (extends)</td><td>✅ Yes</td><td><code>class Dog extends Animal { }</code></td></tr>
-                  <tr><td>Default Parameters</td><td>✅ Yes</td><td><code>function f(p = true){ return p; }</code></td></tr>
-                  <tr><td>Rest Parameters</td><td>✅ Yes</td><td><code>function(...args){}</code></td></tr>
-                  <tr><td>Object Literal Extensions</td><td>✅ Yes</td><td><code>{ name, age }</code> shorthand</td></tr>
-                  <tr><td>Enhanced Object Properties</td><td>✅ Yes</td><td>Computed keys + methods in literals</td></tr>
-                  <tr><td>Symbol Type</td><td>✅ Yes</td><td><code>const s = Symbol('x');</code></td></tr>
-                  <tr><td>Set / Map Data Structures</td><td>✅ Yes</td><td><code>new Set([1,2,3]); new Map()</code></td></tr>
-                  <tr><td>Optional Chaining (<code>?.</code>)</td><td>✅ Yes</td><td><code>person?.jobs?.location</code> — returns undefined instead of error</td></tr>
-                  <tr><td>Nullish Coalescing (<code>??</code>)</td><td>✅ Yes</td><td><code>name ?? 'Anonymous'</code></td></tr>
+                  <tr>
+                    <td><strong>ECMAScript 2021 (ES12)</strong></td>
+                    <td>Default for new scoped applications. Also selectable per individual script.</td>
+                    <td>Modern syntax: <code>const</code>/<code>let</code>, arrow functions, template literals, destructuring, rest/spread, default parameters, <code>for...of</code>, classes, <code>Map</code>/<code>Set</code>, optional chaining <code>?.</code>, nullish coalescing <code>??</code>, and <code>async</code>/<code>await</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>ES5 Standards</strong></td>
+                    <td>Restricted legacy mode for pre-existing scripts.</td>
+                    <td>ES5 baseline. Most ES6+ syntax is <em>Not Supported</em>; several builtins (<code>Promise</code>, <code>Proxy</code>, typed arrays, <code>WeakMap</code>/<code>WeakSet</code>, generators) are <em>Disallowed</em>.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Compatibility</strong></td>
+                    <td>Preserves legacy behaviour of the old engine for older code.</td>
+                    <td>Legacy semantics. Keep legacy code working; do not target it for new development.</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
+            <p class="muted">How support is described officially: <strong>Supported</strong> = tested and validated&ensp;&middot;&ensp;<strong>Not Supported</strong> = not validated in that release&ensp;&middot;&ensp;<strong>Disallowed</strong> = conflicts with the platform programming model or poses a security/performance risk, and raises an error. Those are three different outcomes &mdash; "Disallowed" is not merely "unsupported", it will fail at runtime.</p>
 
-            <h3>Not Supported (or Unreliable)</h3>
+            <div class="notice">
+              <strong>Release history that matters:</strong> Beginning with the <strong>Tokyo</strong> release, new and existing scoped applications could run in ES12 mode. Beginning with <strong>Xanadu</strong>, newly created scripts default to ES12 mode <em>regardless</em> of the mode configured for the application, and ES12 mode became available for individual scripts including those in the global scope. So "scoped vs. global" is no longer the deciding factor &mdash; check the mode, then the release.
+            </div>
+
+            <h3>Feature reference (ES12 mode)</h3>
+            <p>Per-feature support varies by release, and the engine keeps changing. Use the official <a href="https://www.servicenow.com/docs/r/api-reference/scripts/javascript-engine-feature-support.html" target="_blank" rel="noopener">JavaScript engine feature support</a> matrix for the authoritative list. The practical pattern:</p>
             <div class="table-wrap">
               <table class="table-map">
                 <thead>
-                  <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+                  <tr><th>Feature</th><th>ES12 mode (default)</th><th>ES5 Standards mode</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>Promises</td><td>❌ No</td><td>Native <code>new Promise()</code> not supported in Rhino</td></tr>
-                  <tr><td>Async / Await</td><td>❌ No</td><td>Requires Promises; not available</td></tr>
-                  <tr><td>Modules (import/export)</td><td>❌ No</td><td>ES modules not supported in ServiceNow scripting</td></tr>
+                  <tr><td>Arrow functions, <code>let</code>/<code>const</code>, template literals</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td>Destructuring, rest/spread, default parameters, <code>for...of</code></td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td>Classes, <code>Map</code>/<code>Set</code>, optional chaining, nullish coalescing</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td><code>Promise</code>, <code>async</code>/<code>await</code></td><td class="pill ok">Supported</td><td class="pill bad">Disallowed</td></tr>
+                  <tr><td><code>Proxy</code>, typed arrays, <code>WeakMap</code>/<code>WeakSet</code>, generators</td><td class="pill warn">Check matrix</td><td class="pill bad">Disallowed</td></tr>
+                  <tr><td>ES modules (<code>import</code>/<code>export</code>)</td><td colspan="2">Available in scoped applications built with the ServiceNow SDK &mdash; see <a href="https://www.servicenow.com/docs/r/yokohama/application-development/servicenow-sdk/create-use-javascript-modules.html" target="_blank" rel="noopener">Create and use JavaScript modules</a>. Not a general-purpose feature of every script context.</td></tr>
                 </tbody>
               </table>
             </div>
 
             <div class="notice">
-              <strong>Important:</strong> ES6+ features are only available in <strong>Scoped Applications</strong> that have been configured for ES6+. Not all OOTB scoped apps are enabled — create a custom scoped app to guarantee support. Global scope remains on the older Rhino ES5 baseline.
+              <strong>What to actually check before using ES6+:</strong> not scope, but (1) your instance's release, (2) the JavaScript mode of the application you are writing in, and (3) whether an individual script has been set to ES12 mode. Legacy applications in Compatibility or ES5 Standards mode will reject modern syntax and some builtins outright. Read the app's mode from its design/runtime settings rather than assuming.
+            </div>
+
+            <div class="notice">
+              <strong>Sources &amp; currency:</strong> characterisations above are drawn from ServiceNow's official documentation &mdash; <a href="https://www.servicenow.com/docs/r/api-reference/scripts/c_JS_modes.html" target="_blank" rel="noopener">JavaScript modes</a>, <a href="https://www.servicenow.com/docs/r/api-reference/scripts/c_JS_engine_upgrade.html" target="_blank" rel="noopener">JavaScript engine</a>, and the <a href="https://www.servicenow.com/docs/r/api-reference/scripts/javascript-engine-feature-support.html" target="_blank" rel="noopener">feature support matrix</a>. Per-feature results shift between releases, so re-check the matrix against your own release rather than treating any single row as permanent. Last verified against docs: <strong>October 2026</strong>.
             </div>
 
             <h3>Production-Grade ServiceNow Examples</h3>
@@ -1400,7 +1596,7 @@ gs.info('Open P1 incidents: ' + count);</code></pre>
             <h2>17. Deployment & Change Control <span class="section-chip">DevOps</span></h2>
             <div class="concept-grid">
               <div class="concept">
-                <h4>Update Sets</h4>
+                <h3>Update Sets</h3>
                 <p>Dedicated Update Set per feature. Preview before commit. Never mix unrelated changes.</p>
               </div>
               <div class="concept">
@@ -1455,7 +1651,7 @@ gr.query();
           <section id="performance-advanced">
             <h2>20. Performance Beyond Query Filters <span class="section-chip">Scale</span></h2>
             <div class="danger">
-              <h4>Never query inside loops (N+1)</h4>
+              <h3>Never query inside loops (N+1)</h3>
               <pre><code>// BAD: N+1 query inside loop — one GlideRecord per user
 var users = new GlideRecord('sys_user');
 users.addQuery('active', true);
@@ -1580,7 +1776,7 @@ if (res.getStatusCode() == 200) {
 
             <div class="comparison">
               <div class="anti">
-                <h4>❌ Dot-walking in loops</h4>
+                <h3>❌ Dot-walking in loops</h3>
                 <pre><code>while (gr.next()) {
     var name = gr.caller_id.name; // N+1 risk
 }</code></pre>
@@ -1671,8 +1867,21 @@ current.priority = 1;
 
   <script>
     // Copy to clipboard
+    // Resolve the <pre> from the NEAREST card ancestor that owns one. Buttons appear in
+    // .code-card (most sections) and .api-card (ES6 examples) — hard-coding one container
+    // threw "Cannot read properties of null" and left 5 buttons dead.
+    function findPreFor(btn) {
+      for (let el = btn.parentElement; el; el = el.parentElement) {
+        if (el.tagName === 'PRE') return el;
+        const pre = el.querySelector(':scope > pre');
+        if (pre) return pre;
+      }
+      return null;
+    }
+
     function copyCode(btn) {
-      const pre = btn.closest('.code-card').querySelector('pre');
+      const pre = findPreFor(btn);
+      if (!pre) return;
       const text = pre.innerText;
       navigator.clipboard.writeText(text).then(() => {
         const orig = btn.textContent;
