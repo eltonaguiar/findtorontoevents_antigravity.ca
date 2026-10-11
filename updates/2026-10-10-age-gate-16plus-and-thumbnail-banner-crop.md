@@ -200,3 +200,83 @@ False-positive/negative audit against the live feed:
 | `tests/test_age_gate.py` | new — 25 tests |
 | `tools/debug_card_images.js` | new — Playwright image diagnostic |
 | `tools/verify_thumbnail_fix.js` | new — Playwright fix verifier |
+
+---
+
+## Appendix — Second-opinion review, tested point by point (2026-10-11)
+
+An external review of the live site proposed different fixes. Each concrete
+claim was tested against the data before anything was changed.
+
+**1. "Request a medium-sized image variant instead of full-resolution" —
+rejected with measurements.** TPL's `large` / `medium` / `thumbnail` variants
+are portrait-normalized: they squash the 4:1 banner into portrait boxes and
+remove the artwork entirely. Same image
+(`TPLIconBanners-ReadingPrograms&Storytimes.jpg`), column detail = mean stddev
+over left / centre / right thirds:
+
+| variant | size | aspect | bytes | detail L / C / R |
+|---|---|---|---|---|
+| full | 3925 × 979 | 4.01 | 304 KB | 7.5 / 6.7 / **41.4** |
+| large | 576 × 1024 | 0.56 | 39 KB | 7.0 / 5.5 / 3.6 |
+| medium | 150 × 300 | 0.50 | 8 KB | 7.1 / 5.8 / 4.2 |
+| thumbnail | 150 × 150 | 1.00 | 4 KB | 8.9 / 5.8 / 0.9 |
+
+The "medium variant" *is* the degraded mini version the operator complained
+about. `full` is the only faithful variant; the `?size=` query is ignored by
+the CDN anyway.
+
+**2. "Artwork is on the right" — assumption validated on a wider sample.**
+13 unique ultra-wide TPL banners (≥ 3:1, ≥ 640 px), artwork-side probe at
+2.0× box scale:
+
+```
+name                                            left  centre  right   side
+Indigenous Adult Art Workshop with Barb whyte   6.3    6.6    24.4   RIGHT
+Indigenous Adult Art Workshop with Susan Cardy   9.8    8.3    32.8   RIGHT
+Tech & Tools                                     5.9    4.2    27.9   RIGHT
+Teen Advisory Group                             10.7    7.2    34.6   RIGHT
+Lego Free Play                                   4.5    3.3    29.8   RIGHT
+... (9 more, all RIGHT)                          4.1–9.7  3.3–7.7  23.5–47.7
+```
+
+13/13 right, 0 left — the `object-position: right center` anchor holds.
+
+**3. "Use `object-fit: contain` instead of `cover`" — rejected.** The whole
+4:1 banner would render as a 284 × 71 px strip inside the 180 px box: artwork
+shrinks to ≈ 48 × 42 px and ~60 % of the box becomes empty letterbox. The
+review's own suggestion of a neutral `#f4f4f5` backing also clashes with the
+card's dark glass surface. Operator confirmed keeping the right-anchored
+`cover` crop after seeing both options quantified.
+
+**4. "Filter at ingestion, not in the browser" — already how it is built.**
+The gate runs in both feed writers on the merged set before `events.json` /
+`next/events.json` and `metadata.json` are written, so search, counts,
+pagination and the "22,151 events" total are all gated; no client-side filter
+was added.
+
+**5. "TPL is the source of the kid events" — confirmed, and already dropped.**
+Every example the review cited on the live page returns `DROPPED` from the
+committed gate (they were visible only because nothing had shipped yet):
+
+| event | dropped by |
+|---|---|
+| Glow in the Dark Spooky Charms (Ages 9–12, Drop in) | `Ages 9–12` numeric range |
+| Sphero Robotics for Kids | `Children` audience tag |
+| Kids Can Vote: Democracy-Themed Storytime | `Children` audience tag |
+| Lego Free Play / Lego Builders Club | `Kids` / `School Age Children (6-12)` tags |
+
+**6. "Don't drop Family / All Ages without explicit under-16 evidence" —
+deferred to the operator, strict mode kept.** Measured on the live feed:
+
+| bucket | count |
+|---|---|
+| dropped via `Family` tag only | 1 409 |
+| dropped via `All Ages` tag only | 263 |
+| conflicts kept by an adult tag (`All Ages` + `50+`, `Ages 18–55`) | 2 |
+
+Under strict mode these drop by policy (Toronto Zoo Earth Day, CNE, Word on
+the Street, knitting circles). Exempting them would return ≈ 1 672 events
+while EarlyON and all kid programs would still drop via their own audience
+tags — tracked as a one-flag change in `age_gate.py` if the operator wants it
+later.
