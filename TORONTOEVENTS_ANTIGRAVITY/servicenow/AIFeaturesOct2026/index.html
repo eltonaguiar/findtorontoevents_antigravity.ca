@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ServiceNow AI Features &mdash; FindTorontoEvents.ca</title>
+<meta name="description" content="A starter guide to ServiceNow's AI-native tiers: Foundation, Advanced, and Prime, including setup guides and course recommendations." />
+<style>
+  /* ============================================================
+     Design tokens — grounded in ServiceNow's own brand palette.
+     Brand refs: Pastel Green #62D84E, Blue Whale #032D42,
+     Dark Green #293E40, Sage #81B5A1.
+     ============================================================ */
+  :root {
+    /* Brand */
+    --brand-green:#62D84E;
+    --brand-green-bright:#63DF4E;
+    --blue-whale:#032D42;
+    --dark-green:#293E40;
+    --sage:#81B5A1;
+
+    /* Ink scale — dark base, elevation via lightness steps */
+    --bg-0:#04101a;
+    --bg-1:#062231;
+    --bg-2:#082d40;
+    --bg-3:#0b3a51;
+
+    /* Text */
+    --t-1:#eef4f2;
+    --t-2:#a3bab3;
+    --t-3:#6d857f;
+
+    /* Status */
+    --ok:#34d399;
+    --warn:#fbbf24;
+    --bad:#f87171;
+    --critical:#22d3ee;
+
+    /* Radii */
+    --r-sm:6px; --r-md:10px; --r-lg:14px; --r-xl:20px;
+
+    /* Motion */
+    --ease:cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; }
+
+  html {
+    background: var(--bg-0);
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    margin: 0;
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg-0);
+    color: var(--t-1);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================================
+     DYNAMIC BACKGROUND
+     CSS-only aurora: drifting radial blooms over a dark ink base,
+     plus a film-grain overlay for texture. No canvas, no JS.
+     ============================================================ */
+  .bg-aurora,
+  .bg-grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .bg-aurora {
+    z-index: 0;
+    inset: -25%;
+    background:
+      radial-gradient(38% 44% at 20% 26%, rgba(99,223,78,.30) 0%, transparent 66%),
+      radial-gradient(36% 40% at 78% 20%, rgba(129,181,161,.30) 0%, transparent 64%),
+      radial-gradient(42% 46% at 64% 74%, rgba(34,211,238,.20) 0%, transparent 68%),
+      radial-gradient(38% 42% at 26% 82%, rgba(8,45,64,.85) 0%, transparent 70%);
+    filter: blur(68px) saturate(1.3);
+    animation: aurora-drift 28s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  @keyframes aurora-drift {
+    from { transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1); }
+    to   { transform: translate3d(3%, 2%, 0) rotate(7deg) scale(1.06); }
+  }
+
+  .bg-grain {
+    z-index: 1;
+    opacity: .045;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Content sits above the ambient layers */
+  body > header.hero,
+  body > .disclaimer-banner,
+  body > main,
+  body > footer {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Reading-progress bar, native scroll-driven CSS (no JS) */
+  .scroll-progress {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 60;
+    background: linear-gradient(90deg, var(--brand-green), var(--sage), var(--critical));
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    animation: progress-grow linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes progress-grow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  /* Accessibility: honour reduced-motion on every ambient animation */
+  @media (prefers-reduced-motion: reduce) {
+    .bg-aurora { animation: none; }
+    .scroll-progress { animation: none; transform: scaleX(1); opacity: .35; }
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
+
+  /* ============================================================
+     TYPOGRAPHY BASE
+     ============================================================ */
+  h1, h2, h3, h4 { line-height: 1.25; font-weight: 650; letter-spacing: -.01em; }
+  a { color: var(--brand-green); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: var(--brand-green-bright); }
+  code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .88em;
+    background: rgba(3,45,66,.75);
+    border: 1px solid rgba(129,181,161,.18);
+    color: var(--sage);
+    padding: .12em .4em;
+    border-radius: var(--r-sm);
+  }
+  strong { color: var(--t-1); font-weight: 650; }
+  ::selection { background: rgba(99,223,78,.28); color: #fff; }
+
+  /* ============================================================
+     LAYOUT
+     ============================================================ */
+  main {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+  section { margin: 3.5rem 0; scroll-margin-top: 5.5rem; }
+  h2 {
+    font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+    margin: 0 0 1.4rem;
+    padding-bottom: .6rem;
+    border-bottom: 1px solid rgba(129,181,161,.16);
+    position: relative;
+  }
+  h2::after {
+    content: "";
+    position: absolute;
+    left: 0; bottom: -1px;
+    width: 64px; height: 2px;
+    background: linear-gradient(90deg, var(--brand-green), transparent);
+  }
+  h3 {
+    font-size: 1.15rem;
+    margin: 2rem 0 .9rem;
+    color: var(--brand-green);
+  }
+  h4 { font-size: 1rem; margin: 1.4rem 0 .6rem; color: var(--t-1); }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  header.hero {
+    padding: 5.5rem 1.5rem 4rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(129,181,161,.14);
+  }
+  .hero .kicker {
+    display: inline-block;
+    padding: .3rem .85rem;
+    background: rgba(99,223,78,.10);
+    border: 1px solid rgba(99,223,78,.42);
+    border-radius: 999px;
+    font-size: .74rem;
+    font-weight: 650;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--brand-green);
+    margin-bottom: 1.3rem;
+    backdrop-filter: blur(8px);
+  }
+  .hero h1 {
+    font-size: clamp(1.9rem, 4.6vw, 3rem);
+    margin: 0 0 1rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+  .hero p.subtitle {
+    color: var(--t-2);
+    max-width: 730px;
+    margin: 0 auto 1.4rem;
+    font-size: 1.05rem;
+  }
+  .hero .meta { color: var(--t-3); font-size: .88rem; }
+  .hero .actions { margin-top: 1.8rem; }
+
+  /* ============================================================
+     BUTTONS
+     ============================================================ */
+  .btn {
+    display: inline-block;
+    padding: .62rem 1.3rem;
+    background: var(--brand-green);
+    color: #04101a;
+    border-radius: var(--r-md);
+    text-decoration: none;
+    font-weight: 650;
+    font-size: .92rem;
+    white-space: nowrap;
+    transition: transform .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
+  }
+  .btn:hover {
+    background: var(--brand-green-bright);
+    color: #04101a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(99,223,78,.22);
+  }
+  .btn:focus-visible { outline: 2px solid var(--brand-green-bright); outline-offset: 3px; }
+  .btn.ghost {
+    background: rgba(99,223,78,.07);
+    border: 1px solid rgba(99,223,78,.45);
+    color: var(--brand-green);
+  }
+  .btn.ghost:hover { background: var(--brand-green); color: #04101a; }
+
+  /* ============================================================
+     SURFACES — glassmorphism
+     ============================================================ */
+  .disclaimer-banner,
+  nav.toc,
+  .callout,
+  .example-box,
+  .course-card,
+  .sn-link,
+  table,
+  .raci-table,
+  figure {
+    background: rgba(6,34,49,.62);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(129,181,161,.14);
+  }
+
+  .disclaimer-banner {
+    max-width: 1120px;
+    margin: 2rem auto 0;
+    padding: 1.05rem 1.4rem;
+    border-radius: var(--r-md);
+    border-left: 3px solid var(--warn);
+    font-size: .9rem;
+    line-height: 1.62;
+  }
+  .disclaimer-banner strong { color: var(--warn); }
+
+  /* Table of contents */
+  nav.toc {
+    border-radius: var(--r-lg);
+    padding: 1.3rem 1.6rem;
+    margin: 1.5rem auto 2.5rem;
+  }
+  nav.toc h2 {
+    margin: 0 0 .85rem;
+    padding: 0 0 .5rem;
+    border: none;
+    font-size: .95rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--sage);
+  }
+  nav.toc h2::after { display: none; }
+  nav.toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: toc;
+    display: grid;
+    gap: .1rem;
+  }
+  nav.toc ol li { counter-increment: toc; }
+  nav.toc ol li::before {
+    content: counter(toc,decimal-leading-zero);
+    color: var(--t-3);
+    font-size: .72rem;
+    font-variant-numeric: tabular-nums;
+    margin-right: .6rem;
+  }
+  nav.toc a {
+    color: var(--t-2);
+    text-decoration: none;
+    font-size: .9rem;
+    transition: color .15s var(--ease), padding-left .15s var(--ease);
+  }
+  nav.toc a:hover { color: var(--brand-green); padding-left: .25rem; text-decoration: none; }
+
+  /* Callouts */
+  .callout {
+    padding: 1.1rem 1.35rem;
+    border-radius: var(--r-md);
+    border-left: 3px solid var(--brand-green);
+    margin: 1.5rem 0;
+  }
+  .callout strong { color: var(--brand-green); }
+
+  /* Collapsible example boxes */
+  .example-box {
+    border-radius: var(--r-md);
+    border-left: 3px solid var(--sage);
+    padding: .75rem 1rem;
+    margin: .6rem 0;
+    font-size: .9rem;
+  }
+  .example-box summary {
+    cursor: pointer;
+    font-weight: 650;
+    color: var(--sage);
+    list-style: none;
+  }
+  .example-box summary::marker { content: ""; }
+  .example-box summary::before {
+    content: "▸ ";
+    color: var(--sage);
+    font-size: .8em;
+  }
+  .example-box[open] summary::before { content: "▾ "; }
+  .example-box p { margin: .55rem 0 0; color: var(--t-2); }
+
+  /* ============================================================
+     TAGS & PILLS
+     ============================================================ */
+  .illustrative { font-size: .85em; color: var(--t-3); font-style: italic; }
+  .audience-tag {
+    display: inline-block;
+    background: rgba(129,181,161,.14);
+    color: var(--sage);
+    padding: .15em .55em;
+    border-radius: var(--r-sm);
+    font-size: .75rem;
+    font-weight: 650;
+    margin-right: .5rem;
+  }
+  .risk-tier {
+    display: inline-block;
+    padding: .16em .55em;
+    border-radius: var(--r-sm);
+    font-size: .74rem;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .risk-low     { background: rgba(52,211,153,.16); color: #6ee7b7; }
+  .risk-medium  { background: rgba(251,191,36,.16); color: #fcd34d; }
+  .risk-high    { background: rgba(248,113,113,.16); color: #fca5a5; }
+  .risk-critical{ background: rgba(34,211,238,.16); color: #67e8f9; }
+  .pill {
+    display: inline-block;
+    padding: .16rem .6rem;
+    border-radius: 999px;
+    font-size: .74rem;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .pill.bad  { background: rgba(248,113,113,.16); color: #fca5a5; }
+  .pill.warn { background: rgba(251,191,36,.16); color: #fcd34d; }
+  .pill.ok   { background: rgba(52,211,153,.16); color: #6ee7b7; }
+
+  /* ============================================================
+     TABLES
+     ============================================================ */
+  .table-wrap { overflow-x: auto; border-radius: var(--r-lg); margin: 1.6rem 0; }
+  table, .raci-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .91rem;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .table-wrap table,
+  .table-wrap .raci-table { border-radius: 0; margin: 0; }
+  th, td {
+    padding: .7rem .95rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(129,181,161,.10);
+    vertical-align: top;
+  }
+  thead th {
+    background: rgba(8,45,64,.92);
+    color: var(--sage);
+    font-weight: 650;
+    font-size: .82rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(129,181,181,.2);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  tbody tr:nth-child(even) { background: rgba(129,181,161,.035); }
+  tbody tr:hover { background: rgba(99,223,78,.06); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .raci-table { font-size: .8rem; }
+  .raci-table th, .raci-table td { padding: .55rem .6rem; }
+  .raci-table thead th { font-size: .72rem; }
+  .raci-cell { text-align: center; font-weight: 700; color: var(--brand-green); font-variant-numeric: tabular-nums; }
+
+  /* ============================================================
+     CHECKLISTS
+     ============================================================ */
+  .checklist { list-style: none; padding: 0; margin: 1.2rem 0; }
+  .checklist li {
+    padding: .5rem 0 .5rem 1.6rem;
+    position: relative;
+    border-bottom: 1px solid rgba(129,181,161,.08);
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--brand-green);
+    font-weight: 700;
+  }
+
+  /* Plain lists keep a branded marker */
+  ul:not(.checklist):not([class]) { padding-left: 1.3rem; }
+  ul:not(.checklist):not([class]) li { margin: .45rem 0; }
+  ul:not(.checklist):not([class]) li::marker { color: var(--sage); }
+  ol { padding-left: 1.5rem; }
+  ol li { margin: .45rem 0; }
+  ol li::marker { color: var(--sage); font-variant-numeric: tabular-nums; }
+
+  /* ============================================================
+     STATS / GRIDS / CARDS
+     ============================================================ */
+  .stats {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    margin: 1.5rem 0;
+  }
+  .stat {
+    background: rgba(6,34,49,.62);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(129,181,161,.14);
+    border-left: 3px solid var(--brand-green);
+    border-radius: var(--r-md);
+    padding: 1.05rem 1.2rem;
+  }
+  .stat .num { font-size: 1.75rem; font-weight: 700; color: var(--brand-green); font-variant-numeric: tabular-nums; }
+  .stat .label { color: var(--t-2); font-size: .84rem; margin-top: .15rem; }
+  .stat.warn { border-left-color: var(--warn); }
+  .stat.warn .num { color: var(--warn); }
+  .stat.bad  { border-left-color: var(--bad); }
+  .stat.bad .num { color: var(--bad); }
+  .stat.ok   { border-left-color: var(--ok); }
+  .stat.ok .num { color: var(--ok); }
+
+  .grid-2 { display: grid; gap: 1.4rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+  ul.findings { padding-left: 1.3rem; }
+  ul.findings li { margin: .5rem 0; }
+  ul.findings li::marker { color: var(--sage); }
+
+  figure {
+    margin: 1.6rem 0;
+    padding: 1rem;
+    border-radius: var(--r-lg);
+  }
+  figure img { width: 100%; height: auto; display: block; border-radius: var(--r-sm); }
+  figure figcaption { color: var(--t-2); font-size: .84rem; margin-top: .65rem; text-align: center; }
+
+  /* Resource link cards */
+  .servicenow-links {
+    display: grid;
+    gap: .8rem;
+    grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+    margin-top: 1.2rem;
+  }
+  .sn-link {
+    border-radius: var(--r-md);
+    padding: 1rem 1.1rem;
+    text-decoration: none;
+    color: var(--t-1);
+    transition: transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease);
+  }
+  .sn-link:hover {
+    border-color: rgba(99,223,78,.4);
+    background: rgba(99,223,78,.06);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+  .sn-link h4 { margin: 0 0 .3rem; color: var(--brand-green); }
+  .sn-link p { margin: 0; color: var(--t-2); font-size: .88rem; }
+
+  /* Course cards */
+  .course-card {
+    border-radius: var(--r-lg);
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1rem;
+    transition: transform .18s var(--ease), border-color .18s var(--ease);
+  }
+  .course-card:hover { transform: translateY(-2px); border-color: rgba(99,223,78,.32); }
+  .course-card .title { font-size: 1.05rem; font-weight: 650; margin-bottom: .55rem; }
+  .course-card .type {
+    display: inline-block;
+    background: rgba(99,223,78,.12);
+    color: var(--brand-green);
+    padding: .2em .6em;
+    border-radius: var(--r-sm);
+    font-size: .76rem;
+    font-weight: 650;
+    margin-right: .5em;
+  }
+  .course-card .duration { display: inline-block; color: var(--t-3); font-size: .78rem; }
+  .course-card .reason { font-size: .92rem; color: var(--t-2); margin: .9rem 0 0; }
+  .course-card .actions { margin-top: 1rem; }
+  .course-card .btn { padding: .42rem .95rem; font-size: .85rem; }
+
+  /* Preformatted prompt template */
+  pre {
+    background: rgba(3,45,66,.75);
+    border: 1px solid rgba(129,181,161,.16);
+    border-radius: var(--r-md);
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+    font-size: .84rem;
+    line-height: 1.55;
+    color: var(--t-2);
+  }
+  pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  footer {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    color: var(--t-3);
+    border-top: 1px solid rgba(129,181,161,.14);
+    font-size: .84rem;
+  }
+  footer p { margin: 0; }
+  footer a { color: var(--brand-green); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 760px) {
+    main { padding: 1.75rem 1.1rem 3rem; }
+    header.hero { padding: 3.5rem 1.1rem 2.75rem; }
+    section { margin: 2.75rem 0; }
+    table, .raci-table { font-size: .84rem; }
+    th, td { padding: .6rem .7rem; }
+    .servicenow-links { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    table { font-size: .82rem; }
+    th, td { padding: .5rem .6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Dynamic background layers: aurora bloom + film grain (decorative only) -->
+<div class="bg-aurora" aria-hidden="true"></div>
+<div class="bg-grain" aria-hidden="true"></div>
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<header class="hero">
+  <div class="kicker">ServiceNow AI &middot; October 2026</div>
+  <h1>ServiceNow AI Features Starter Guide</h1>
+  <p class="subtitle">A guide to getting up and running with ServiceNow's AI capabilities, including product packaging, setup instructions for each tier, and architectural considerations.</p>
+  <div class="meta">Last reviewed: October 2026 | Based on publicly available information as of this date</div>
+  <div class="actions">
+    <a class="btn ghost" href="/">Back to events</a>
+  </div>
+</header>
+
+<div class="disclaimer-banner">
+  <strong>Important Disclaimer:</strong> Product packaging, entitlements, feature names, consumption models, and capabilities change frequently. This guide reflects publicly available information as of the review date above. <strong>Always verify against official ServiceNow documentation, your contract, and your account team before making decisions.</strong> Specific metrics, accuracy percentages, time savings, and Assist allocations shown in examples are <em>illustrative scenarios—not benchmarks or guarantees</em>. Links to ServiceNow Learning may change; use the official catalog search if a link does not resolve.
+</div>
+
+<main>
+
+<nav class="toc" aria-label="Table of contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">AI Product Packaging Overview</a></li>
+    <li><a href="#foundation-setup">Foundation Tier &ndash; Setup Guide</a></li>
+    <li><a href="#advanced-setup">Advanced Tier &ndash; Setup Guide</a></li>
+    <li><a href="#prime-setup">Prime Tier &ndash; Setup Guide</a></li>
+    <li><a href="#module-setup">Setting Up a Module from Scratch</a></li>
+    <li><a href="#architecture-plan">Architecture / Implementation Plan from Scratch</a></li>
+    <li><a href="#core-features">Core AI Features Catalog</a></li>
+    <li><a href="#monitoring-governance">Monitoring, Governance &amp; Quota Management</a></li>
+    <li><a href="#nask-practical">Now Assist Skill Kit &ndash; Practical Implementation</a></li>
+    <li><a href="#production-readiness">Production Readiness Checklist</a></li>
+    <li><a href="#servicenow-resources">Official ServiceNow Resources</a></li>
+    <li><a href="#extended-features">Extended &amp; Specialized AI Features</a></li>
+    <li><a href="#course-recommendations">Personalized Course Recommendations</a></li>
+  </ol>
+</nav>
+
+<section id="overview">
+  <h2>AI Product Packaging Overview</h2>
+  <div class="callout" style="background: linear-gradient(135deg, rgba(234,179,8,.15), rgba(234,179,8,.05)); border-left-color: var(--warn);">
+    <strong>Packaging Notice:</strong> ServiceNow's AI packaging evolved to Foundation, Advanced, and Prime tiers around April 2026 (replacing the prior five-tier model). <strong>Last verified: October 2026.</strong> Entitlements are contract-specific—what is "included" vs. "add-on" varies by agreement. The table below reflects <em>publicly documented capabilities</em>; your instance may differ. Confirm with your ServiceNow account team.
+  </div>
+  <p>ServiceNow's current product packaging uses three AI-native tiers: Foundation, Advanced, and Prime. These tiers differ primarily by the level of AI autonomy, process depth, and customization rights. All tiers include core AI enablers such as Now Assist (generative AI skills), Predictive Intelligence, Virtual Agent, AI Control Tower, and Workflow Data Fabric basics, with progressive capability increases.
+  A "module" in ServiceNow typically means a navigation item under an Application Menu (or, more broadly, a scoped application with its own tables, logic, and UI). An "AI module" usually means enabling and configuring AI capabilities (Predictive Intelligence models, Now Assist skills, or AI Agents) and optionally wrapping them in a custom scoped app for specific use cases.</p>
+
+  <h3>The Three Tiers</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Tier</th>
+        <th>AI Focus</th>
+        <th>Key Additions <span class="illustrative">(publicly documented)</span></th>
+        <th>Typical Fit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Foundation</td>
+        <td>Assisted insights & routine automation</td>
+        <td>OOTB Now Assist skills (summarization, drafting, categorization), Predictive Intelligence, core processes (Incident, Request, Asset/CMDB), Virtual Agent</td>
+        <td>Entry-level service desks seeking productivity gains without heavy process expansion</td>
+      </tr>
+      <tr>
+        <td>Advanced</td>
+        <td>Agentic workflows that synthesize context and automate steps</td>
+        <td>Full ITIL processes (Change, Problem, Major Incident, On-Call), Process Mining, Platform Analytics Advanced, AI Voice, higher Assist allocation, OOTB agentic task execution</td>
+        <td>Mature operations needing deeper processes and contextual automation</td>
+      </tr>
+      <tr>
+        <td>Prime</td>
+        <td>Fully autonomous AI workforce & custom builds</td>
+        <td>Ability to build net-new custom AI skills and agents, higher autonomy, advanced AI Action Fabric options</td>
+        <td>Organizations ready for end-to-end autonomous roles or highly specialized agents</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Shared across tiers (with variations in depth/allocation): Now Assist, Moveworks conversational layer, AI Control Tower (governance/observability), Workflow Data Fabric, and RaptorDB Standard for performance. Usage is often metered via "Assists" (consumed per skill/agent run, with tier allocations and top-up options). Only Prime unlocks building truly net-new custom skills and agents. <span class="illustrative">Exact Assist allocations are contract-specific; the page previously showed illustrative ranges which have been removed.</span></p>
+</section>
+
+<section id="foundation-setup">
+  <h2>Foundation &ndash; Setup Guide</h2>
+  <ul>
+    <li>Confirm licensing and instance version (Zurich or later preferred for full AI features).</li>
+    <li>Activate relevant plugins via System Applications &gt; All Available Applications (or the Store): Now Assist for ITSM (or relevant product), Predictive Intelligence (com.glide.platform_ml and related), Virtual Agent.</li>
+    <li>Open Now Assist Admin (or AI Admin Hub in newer releases) &gt; Features/Skills. Select a workflow (e.g., Technology) and activate skills such as Incident Summarization or Reply Generation via the guided setup: choose triggers/inputs, display locations (in-product, Now Assist panel, or both), and roles.</li>
+    <li>For Predictive Intelligence: Navigate to Predictive Intelligence &gt; Homepage or Classification &gt; Solution Definitions. Create a solution definition (e.g., classification for assignment group based on short description), filter high-quality historical data (ideally 30k–300k clean records), submit for training, validate accuracy, and activate. Training typically runs on ServiceNow’s training service and returns the model.</li>
+    <li>Create Application Menu + Modules if you need custom navigation: System Definition &gt; Application Menus (new) &rarr; related Modules (link type: List of Records, Form, etc., with roles and order).</li>
+  </ul>
+  <div class="callout">
+    <strong>Expected benefits:</strong> Faster agent productivity (summaries reduce reading time), basic auto-routing/categorization, higher first-contact resolution, and quick ROI with lower cost and complexity. Ideal for measurable but contained gains without major process changes.
+  </div>
+</section>
+
+<section id="advanced-setup">
+  <h2>Advanced &ndash; Setup Guide</h2>
+  <p>Build on Foundation steps, then:</p>
+  <ul>
+    <li>Activate additional process plugins (Change, Problem, Major Incident, On-Call) and Process Mining / Platform Analytics Advanced.</li>
+    <li>In AI Admin Hub / AI Agent Studio, enable and configure OOTB agentic workflows (agents that complete defined multi-step tasks while working alongside humans).</li>
+    <li>Set up Process Mining to analyze and optimize existing processes; use Platform Analytics for deeper KPI tracking.</li>
+    <li>Configure higher Assist allocations and AI Voice where relevant.</li>
+    <li>Extend modules or workspaces (via App Engine Studio or UI Builder) to surface agentic outcomes and analytics.</li>
+  </ul>
+  <div class="callout">
+    <strong>Expected benefits:</strong> End-to-end automation of process steps, contextual insights that reduce manual handoffs, process optimization visibility, and stronger efficiency gains (often larger MTTR reductions and higher deflection). Supports more complex operations while remaining largely configuration-driven.
+  </div>
+</section>
+
+<section id="prime-setup">
+  <h2>Prime &ndash; Setup Guide</h2>
+  <p>Build on the above, then:</p>
+  <ul>
+    <li>Use AI Agent Studio and Now Assist Skill Kit to create net-new custom agents and skills from natural-language instructions or detailed prompts. Define single-responsibility agents, tools, and orchestration.</li>
+    <li>Configure advanced governance in AI Control Tower (policies, observability, external AI if licensed separately).</li>
+    <li>Leverage AI Action Fabric (A2A/MCP) for multi-agent or external system collaboration.</li>
+    <li>Build custom scoped applications (Studio or App Engine Studio) that consume the agents via APIs or flows.</li>
+    <li>Implement robust testing, evaluation (prompt testing, acceptance rates), and monitoring.</li>
+  </ul>
+  <div class="callout">
+    <strong>Expected benefits:</strong> Autonomous execution of multi-step or role-level work, highly tailored domain AI, maximum scalability, and transformative productivity or cost reduction for mature organizations. Highest potential ROI but requires strong data, governance, and change management.
+  </div>
+</section>
+
+<section id="module-setup">
+  <h2>Setting Up a Module (Application + Navigation) from Scratch</h2>
+  <ul>
+    <li>Prefer scoped applications for isolation, upgrade safety, and maintainability.</li>
+    <li>Use App Engine Studio (low-code, guided) or ServiceNow Studio (more developer-oriented): Create App &rarr; define name/scope/roles &rarr; add tables (data model) &rarr; forms/lists/workspaces &rarr; Flow Designer automation &rarr; security (roles + ACLs).</li>
+    <li>Add navigation: Create or use an Application Menu, then Modules (Title, Order, Link Type such as List of Records with filter, Roles for visibility). Modules appear in the All menu under the parent application.</li>
+    <li>For AI specifically, the “module” is often the activated skills/agents surfaced in workspaces, the Now Assist panel, or custom pages, rather than purely custom tables.</li>
+  </ul>
+</section>
+
+<section id="architecture-plan">
+  <h2>Architecture / Implementation Plan from Scratch (Cost &amp; Performance Under Control)</h2>
+  <p>Follow a phased, value-first approach. Prefer configuration over heavy customization, OOTB capabilities first, and measurable KPIs.</p>
+
+  <h3>Envision &amp; Discovery</h3>
+  <p>Define SMART outcomes and KPIs (e.g., 30–50% MTTR reduction, Assist acceptance rate, deflection rate, hours saved). Audit data quality (critical for Predictive Intelligence; clean, labeled historical data is non-negotiable). Map current processes, stakeholders, and governance needs (AI CoE / Control Tower). Assess current tier fit and licensing.
+  Cost control: Limit scope to high-value use cases. Performance: Identify data volume and quality early.</p>
+
+  <h3>Design</h3>
+  <p>Align to CSDM for CMDB/services. Design scoped apps, roles/ACLs, integrations (Integration Hub preferred), and UI (workspaces preferred over classic forms where possible). Decide model providers (Now LLM vs. third-party for cost/performance trade-offs). Plan Assist metering and usage monitoring. Architecture layers: Presentation (UI/workspaces), Application (flows, scripts, agents), Data (tables + CMDB).
+  Cost/Performance: OOTB first; index frequently queried fields; plan table rotation/archiving; stagger jobs; consider RaptorDB for scale.</p>
+
+  <h3>Build (Phased MVP)</h3>
+  <p>Start with Foundation-level skills and core processes. Activate plugins, train models in a non-production clone, configure skills via Admin Hub guided setup, build simple flows/agents. Use App Engine Studio for rapid app/module creation. Implement security and basic testing.
+  Cost control: MVP first, expand based on adoption. Performance: Validate in sub-prod; avoid inefficient GlideRecord loops or heavy client scripts.</p>
+
+  <h3>Test, Deploy &amp; Change Management</h3>
+  <p>Automated testing + UAT. Train-the-trainer approach. Phased rollout (e.g., pilot groups). Monitor transaction times, slow queries, semaphore waits, and Assist consumption.
+  Cost/Performance: Fix bottlenecks before full production; use Performance Analytics dashboards.</p>
+
+  <h3>Optimize &amp; Scale</h3>
+  <p>Continuous monitoring (AI usage analytics, process mining, system diagnostics). Retrain models on schedule. Expand to Advanced/Prime capabilities only where justified by metrics. Govern via AI Control Tower.
+  Cost control: Right-size licenses and Assist pools; retire unused customizations. Performance: Ongoing indexing, archiving, and query optimization.</p>
+
+  <div class="callout">
+    <strong>Overall expected benefits (when executed well):</strong> Significant productivity gains (agent time saved via summaries and drafting), reduced resolution times, higher automation/deflection rates, better process visibility, and scalable AI that compounds with clean data and governance. Cost and performance stay controlled by starting small, preferring OOTB, measuring rigorously, and treating data quality and governance as first-class concerns.
+  </div>
+  <p>For the latest entitlement details, plugin names, and exact Assist allocations, consult your ServiceNow account team or official product documentation, as packaging and feature availability evolve. Start with a non-production instance and clear success metrics for the safest path.</p>
+</section>
+
+<section id="core-features">
+  <h2>Core AI Features Catalog</h2>
+  <p>This section maps every core ServiceNow AI capability to its purpose, tier availability, and official training. Use it as a reference when planning which features to enable.</p>
+
+  <h3>Generative AI &mdash; Now Assist</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature / Skill</th><th>Description</th><th>Tier Availability</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Incident Summarization</td><td>Auto-generates concise summaries of incident threads, work notes, and resolution details. <details class="example-box"><summary>Illustrative scenario</summary><p>A P1 outage with 50+ work notes across 3 teams → AI produces a 3-bullet executive summary (root cause, impact, resolution) in seconds, reducing handoff time significantly.</p></details></td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-itsm-incident-summarization" target="_blank" rel="noopener">Now Assist for ITSM: Incident Summarization</a></td></tr>
+      <tr><td>Case Summarization</td><td>Summarizes customer service case history for faster agent onboarding. <details class="example-box"><summary>Illustrative scenario</summary><p>Customer escalates a billing dispute with multiple prior cases → AI surfaces the pattern, suggests relevant KB, drafts proactive response, reducing handle time.</p></details></td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-csm-case-summarization" target="_blank" rel="noopener">Now Assist for CSM: Case Summarization</a></td></tr>
+      <tr><td>Resolution Note Generation</td><td>Drafts resolution notes from work notes and activity. <details class="example-box"><summary>Illustrative scenario</summary><p>After resolving a "VPN connectivity" incident, AI drafts structured note with root cause, action taken, verification steps, and prevention. Agent reviews and submits.</p></details></td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-resolution-note-generation" target="_blank" rel="noopener">Resolution Note Generation</a></td></tr>
+      <tr><td>Reply Generation (Email/Chat)</td><td>AI-drafts responses for agents in email or chat channels. <details class="example-box"><summary>Illustrative scenario</summary><p>User asks "How do I reset my MFA?" → AI drafts step-by-step response with links. Agent personalizes and sends. Cuts first-response time.</p></details></td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-reply-generation" target="_blank" rel="noopener">Reply Generation</a></td></tr>
+      <tr><td>Knowledge Article Generation</td><td>Creates draft KB articles from resolved incidents or cases. <details class="example-box"><summary>Illustrative scenario</summary><p>After multiple similar "Outlook autocomplete" incidents, AI generates KB article with symptoms, root cause, fix steps, prevention. KCS workflow routes to SME for review. Improves deflection.</p></details></td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-knowledge-generation" target="_blank" rel="noopener">Knowledge Article Generation</a></td></tr>
+      <tr><td>Code Generation (Script Assist)</td><td>Generates server/client scripts, flow logic, and fix suggestions. <details class="example-box"><summary>Illustrative scenario</summary><p>Developer describes a Business Rule in natural language → AI generates complete script with GlideRecord query, error handling, audit logging. Reduces scripting effort.</p></details></td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-code-generation" target="_blank" rel="noopener">Script Assist / Code Generation</a></td></tr>
+      <tr><td>Flow Generation</td><td>Creates Flow Designer flows from natural language descriptions. <details class="example-box"><summary>Illustrative scenario</summary><p>"When a new hire record is created, provision AD account, assign license by department, create onboarding tasks, notify manager" → AI builds flow with actions, subflows, error handling. Citizen developer reviews, tests, activates.</p></details></td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-flow-generation" target="_blank" rel="noopener">Flow Generation</a></td></tr>
+      <tr><td>Playbook Generation</td><td>Generates step-by-step playbooks for processes. <details class="example-box"><summary>Illustrative scenario</summary><p>"Create a playbook for Major Incident Management" → AI produces structured playbook with roles, communication templates, escalation triggers, post-incident checklist. Exports to PDF/Confluence.</p></details></td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-playbook-generation" target="_blank" rel="noopener">Playbook Generation</a></td></tr>
+      <tr><td>Service Catalog Item Generation</td><td>Creates catalog items, variables, and workflows from descriptions. <details class="example-box"><summary>Illustrative scenario</summary><p>"New laptop request for remote employees with ship-to-address, model selection by role, manager approval" → AI generates catalog item with variables, reference qualifiers, approval workflow, fulfillment task. Faster than manual creation.</p></details></td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-catalog-generation" target="_blank" rel="noopener">Catalog Item Generation</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Predictive Intelligence (ML)</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Tier Availability</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Classification</td><td>Auto-routes records (incidents, cases, requests) to assignment groups/categories. <strong>Example:</strong> 5,000 incidents/month → train on 18 months of clean "short_description + assignment_group" pairs. Model routes "Outlook not sending" → "Messaging Team" with 92% accuracy, cutting misroutes from 18% to 3% and saving 120 hrs/mo.</td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/predictive-intelligence-classification" target="_blank" rel="noopener">Predictive Intelligence: Classification</a></td></tr>
+      <tr><td>Similarity</td><td>Finds similar incidents, problems, or cases to accelerate resolution. <strong>Example:</strong> New incident "SAP GUI timeout on PO creation" → AI surfaces 3 similar past incidents (all fixed by clearing SAP GUI cache + increasing HTTP timeout). Agent applies fix in 5 min vs 45 min troubleshooting. Target: >30% similarity match rate.</td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/predictive-intelligence-similarity" target="_blank" rel="noopener">Predictive Intelligence: Similarity</a></td></tr>
+      <tr><td>Regression / Numeric Prediction</td><td>Predicts numeric values (e.g., priority, SLA risk, effort hours). <strong>Example:</strong> Predict "business_duration_hours" for Change requests at creation time using category, risk, CI count, and implementer. MAE drops from 18 hrs to 6 hrs. CAB uses prediction to schedule high-risk changes in maintenance windows, reducing emergency changes 25%.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/predictive-intelligence-regression" target="_blank" rel="noopener">Predictive Intelligence: Regression</a></td></tr>
+      <tr><td>Clustering</td><td>Groups records by latent patterns for proactive problem management. <strong>Example:</strong> Nightly clustering of 10,000 incidents reveals a hidden cluster: "Windows 11 23H2 + CrowdStrike 7.12 = BSOD on wake." No single category flagged it. Problem Management creates PRB004521, pushes CrowdStrike config fix, prevents 200+ incidents.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/predictive-intelligence-clustering" target="_blank" rel="noopener">Predictive Intelligence: Clustering</a></td></tr>
+      <tr><td>Time Series Forecasting</td><td>Forecasts volume, backlog, or resource needs over time. <strong>Example:</strong> Forecast next 4 weeks of Incident volume by category using 2 years of history + holiday calendar. Predicts 35% spike in "VPN" category during hybrid-work mandate week. Staffing team pre-schedules 3 extra analysts, meets SLA. Accuracy: MAPE <12%.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/predictive-intelligence-forecasting" target="_blank" rel="noopener">Time Series Forecasting</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Virtual Agent & Conversational AI</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Tier Availability</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Virtual Agent Designer</td><td>Low-code builder for conversation topics, flows, and entities. <strong>Example:</strong> Build "Password Reset" topic in 30 min: user says "I forgot my password" → VA verifies identity (email/phone MFA) → calls "Password Reset" spoke → confirms reset → offers "Set up MFA" follow-up. Deflects 65% of password tickets.</td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/virtual-agent-designer" target="_blank" rel="noopener">Virtual Agent Designer</a></td></tr>
+      <tr><td>NLU / Intent Classification</td><td>Natural language understanding for user utterances. <strong>Example:</strong> Train on 500 utterances across 15 intents (e.g., "reset password", "unlock account", "vpn not working", "request laptop"). Achieves 94% intent accuracy. Use entity extraction for "laptop model=MacBook Pro 16" → auto-fills catalog variable. Retrain monthly with failed utterances.</td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/virtual-agent-nlu" target="_blank" rel="noopener">NLU & Intent Classification</a></td></tr>
+      <tr><td>ServiceNow Voice</td><td>Telephony integration with speech-to-text and text-to-speech. <strong>Example:</strong> Employee calls "IT Help" → Voice bot authenticates via caller ID + voice PIN → "Press 1 for password, 2 for VPN, 3 for hardware" → routes to VA topic or live agent with context. Handles 40% of calls without human. Avg handle time: 2.3 min vs 8 min live.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/servicenow-voice" target="_blank" rel="noopener">ServiceNow Voice</a></td></tr>
+      <tr><td>AI Search Integration</td><td>Grounds Virtual Agent answers in Knowledge Base and catalog. <details class="example-box"><summary>Illustrative scenario</summary><p>User asks "How do I expense international travel?" → VA queries AI Search → returns KB0012345 "International Travel Policy" + Catalog Item "Expense Report" → VA summarizes: "Per diem rates by country in KB. Use Expense Report catalog item. Receipts >$25 required." Grounded responses reduce hallucination risk but require source citations, confidence thresholds, fallback-to-human paths, and ongoing evaluation.</p></details></td><td>Foundation, Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/ai-search-virtual-agent" target="_blank" rel="noopener">AI Search for Virtual Agent</a></td></tr>
+      <tr><td>Moveworks Integration</td><td>Conversational layer for employee support automation across Slack/Teams. <strong>Example:</strong> Employee in Slack: "@Moveworks I need Adobe Creative Cloud" → Moveworks checks entitlement → sees user in "Marketing" group → auto-approves via ServiceNow catalog → provisions license via Adobe API → replies "Done! Launch Creative Cloud from your dock." End-to-end in 90 sec, no ticket created.</td><td>All tiers (varies by license)</td><td><a href="https://learn.servicenow.com/learning-plans/moveworks-integration" target="_blank" rel="noopener">Moveworks Integration</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>AI Agents & Agentic Workflows</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Tier Availability</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AI Agent Studio</td><td>Visual builder for creating, testing, and deploying AI agents. <strong>Example:</strong> Build "Incident Triage Agent": Input = new Incident record → Agent reads short_description, category, CI → calls Classification model → if confidence >90%, auto-assigns; if 60-90%, suggests top 3 groups to agent; if <60%, escalates to dispatcher. Deploy to sub-prod, A/B test 2 weeks, promote.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/ai-agent-studio" target="_blank" rel="noopener">AI Agent Studio</a></td></tr>
+      <tr><td>Now Assist Skill Kit</td><td>Framework for building custom generative skills (Prime only for net-new). <strong>Example:</strong> Custom skill "Generate Executive Incident Brief": Input = Incident sys_id → Skill pulls incident, related CIs, change records, comm logs → prompts LLM: "Write a 3-paragraph brief for CIO: business impact, technical root cause, preventive actions" → returns formatted brief. Used in Major Incident war rooms.</td><td>Prime (custom); Advanced (OOTB)</td><td><a href="https://learn.servicenow.com/learning-plans/now-assist-skill-kit" target="_blank" rel="noopener">Now Assist Skill Kit</a></td></tr>
+      <tr><td>OOTB Agentic Workflows</td><td>Pre-built agents for ITSM, CSM, HRSD, ITOM (e.g., Incident Resolution Agent). <strong>Example:</strong> "Incident Resolution Agent" activates on P1/P2 incidents → auto-gathers: similar incidents, KB articles, recent changes on affected CIs, runbook links → presents in Now Assist panel: "Likely cause: Change CHG004521 (DNS update). Runbook: KB009876. Rollback steps: ..." Agent clicks "Execute rollback" → agent runs Flow. MTTR -35%.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/ootb-agentic-workflows" target="_blank" rel="noopener">OOTB Agentic Workflows</a></td></tr>
+      <tr><td>AI Action Fabric (A2A/MCP)</td><td>Multi-agent orchestration and external system collaboration. <strong>Example:</strong> "Onboarding Orchestrator" coordinates 4 agents: HR Agent (creates employee record), IT Agent (provisions laptop, AD, licenses), Facilities Agent (badge access, desk), Finance Agent (corp card). Each agent owns its domain; Fabric handles handoffs, retries, rollback on failure. Completes in 15 min vs 3 days manual.</td><td>Prime</td><td><a href="https://learn.servicenow.com/learning-plans/ai-action-fabric" target="_blank" rel="noopener">AI Action Fabric</a></td></tr>
+      <tr><td>Agentic Task Execution</td><td>Agents that complete multi-step tasks autonomously with human-in-the-loop. <strong>Example:</strong> "Knowledge Article Curator Agent" runs nightly: finds 50+ resolved incidents with no KB → clusters by similarity → for each cluster, drafts article → routes to SME for approval → on publish, links back to incidents. Human only reviews/edits. Produces 15 articles/week vs 2 manual.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/agentic-task-execution" target="_blank" rel="noopener">Agentic Task Execution</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Process Mining & Analytics</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Tier Availability</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Process Mining</td><td>Discovers, analyzes, and optimizes end-to-end processes from event logs.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/process-mining" target="_blank" rel="noopener">Process Mining</a></td></tr>
+      <tr><td>Platform Analytics Advanced</td><td>Advanced dashboards, KPI tracking, and operational insights.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/platform-analytics-advanced" target="_blank" rel="noopener">Platform Analytics Advanced</a></td></tr>
+      <tr><td>Task Intelligence</td><td>Automates task creation, assignment, and routing using ML.</td><td>Advanced, Prime</td><td><a href="https://learn.servicenow.com/learning-plans/task-intelligence" target="_blank" rel="noopener">Task Intelligence</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Data & Platform Foundations</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Tier Availability</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Workflow Data Fabric</td><td>Unified data layer connecting internal and external sources for AI grounding.</td><td>All tiers</td><td><a href="https://learn.servicenow.com/learning-plans/workflow-data-fabric" target="_blank" rel="noopener">Workflow Data Fabric</a></td></tr>
+      <tr><td>RaptorDB</td><td>High-performance database engine for AI/analytics workloads.</td><td>All tiers (Standard); Prime (enhanced)</td><td><a href="https://learn.servicenow.com/learning-plans/raptordb" target="_blank" rel="noopener">RaptorDB</a></td></tr>
+      <tr><td>Integration Hub / Spokes</td><td>Pre-built connectors for external data ingestion into Data Fabric.</td><td>All tiers</td><td><a href="https://learn.servicenow.com/learning-plans/integration-hub" target="_blank" rel="noopener">Integration Hub</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="monitoring-governance">
+  <h2>Monitoring, Governance & Quota Management</h2>
+  <p>Operationalizing AI at scale requires observability, cost control, and governance. This section covers the essentials.</p>
+
+  <h3>AI Control Tower</h3>
+  <p>AI Control Tower is the centralized governance and observability hub for all AI capabilities across the platform. It is included in all tiers with progressive depth.</p>
+  <ul>
+    <li><strong>Model Inventory:</strong> Catalog of all Predictive Intelligence models, Now Assist skills, and AI Agents deployed in the instance.</li>
+    <li><strong>Performance Monitoring:</strong> Accuracy, drift, latency, and adoption metrics per model/skill.</li>
+    <li><strong>Usage & Quota Tracking:</strong> Real-time Assist consumption by skill, agent, user, and department. Dashboards show allocation vs. usage with trend lines.</li>
+    <li><strong>Alerting & Thresholds:</strong> Configure alerts for quota overage (e.g., >80% monthly Assist consumption), model accuracy drift, skill failure rates, and latency spikes.</li>
+    <li><strong>Policy Enforcement:</strong> Define allowed model providers (Now LLM vs. third-party), data residency rules, and approval workflows for new custom skills (Prime).</li>
+    <li><strong>Audit Trail:</strong> Immutable log of all AI actions, configurations, and governance decisions for compliance.</li>
+  </ul>
+  <div class="callout">
+    <strong>Setup:</strong> Navigate to <code>AI Control Tower > Overview</code>. Enable <strong>Assist Metering</strong> and configure <strong>Alert Policies</strong> for quota thresholds. Assign <code>ai_control_tower_admin</code> and <code>ai_control_tower_viewer</code> roles.
+  </div>
+  <p><strong>Training:</strong> <a href="https://learn.servicenow.com/learning-plans/ai-control-tower" target="_blank" rel="noopener">AI Control Tower Administration</a></p>
+
+  <h3>Assist Metering & Quota Management</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Aspect</th><th>Details</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>What is an Assist?</td><td>Unit of consumption for Now Assist skills and AI Agent runs. One skill invocation = 1 Assist (varies by skill complexity).</td></tr>
+      <tr><td>Tier Allocations</td><td>Foundation: ~500/mo/user; Advanced: ~2,000/mo/user; Prime: ~5,000+/mo/user (exact numbers per contract).</td></tr>
+      <tr><td>Top-up Options</td><td>Purchase Assist packs via ServiceNow account team; auto-top-up can be enabled in Control Tower.</td></tr>
+      <tr><td>Monitoring</td><td>Control Tower > Usage Analytics shows daily/monthly burn rate, top consumers, and projected overage.</td></tr>
+      <tr><td>Alerts</td><td>Set thresholds at 50%, 80%, 95% of allocation. Notify via email, Slack, or ServiceNow notifications.</td></tr>
+      <tr><td>Cost Optimization</td><td>Disable unused OOTB skills; consolidate similar custom skills; use caching for repeated queries; right-size tier.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Performance & Reliability Monitoring</h3>
+  <ul>
+    <li><strong>Skill/Success Metrics:</strong> Acceptance rate (user accepts AI suggestion), edit rate, time-to-accept, fallback rate.</li>
+    <li><strong>Model Health:</strong> Accuracy, precision/recall, F1, drift detection (data distribution shift), retraining cadence.</li>
+    <li><strong>Latency & Availability:</strong> P50/P95/P99 response times for Now Assist panel, Virtual Agent, and AI Search. SLA targets typically <2s for summaries, <5s for generation.</li>
+    <li><strong>System Impact:</strong> Monitor transaction times, semaphore waits, and DB load from AI workloads via <code>System Diagnostics > Stats</code> and <code>Performance Analytics</code>.</li>
+  </ul>
+
+  <h3>Governance Best Practices</h3>
+  <ol>
+    <li>Establish an <strong>AI Center of Excellence (CoE)</strong> with representatives from IT, Security, Legal, and Business Units.</li>
+    <li>Define <strong>AI Policy</strong>: approved use cases, data classification handling, human-in-the-loop requirements, and escalation paths.</li>
+    <li>Implement <strong>Change Management</strong> for all AI config changes (skill activation, model retraining, agent deployment).</li>
+    <li>Schedule <strong>Quarterly Reviews</strong>: quota burn, model performance, skill adoption, and ROI measurement.</li>
+    <li>Document <strong>Data Lineage</strong> for all training data used in Predictive Intelligence and custom skills.</li>
+  </ol>
+</section>
+
+<section id="nask-practical">
+  <h2>Now Assist Skill Kit (AI Skill Kit) — Practical Implementation</h2>
+  <div class="callout">
+    <strong>Why this matters:</strong> NASK (now also called AI Skill Kit) turns ServiceNow AI from "here are OOTB summaries" into "here is a real button on an Incident form that drafts a resolution note, classifies the ticket, or checks policy compliance." This section gives you a buildable implementation path.
+  </div>
+
+  <h3>Build Your First Useful AI Button: "Draft Resolution Notes" on Incident</h3>
+  <p><strong>Business outcome:</strong> An agent opens an Incident, clicks <strong>Draft Resolution Notes</strong>, and receives a draft resolution based on work notes, short description, CI, and related knowledge.</p>
+
+  <h4>Prerequisites</h4>
+  <ul class="checklist">
+    <li>Confirm the instance has the required AI entitlement and the Otto/AI Skill Kit plugins are installed or updated through Application Manager.</li>
+    <li>Confirm the user has the appropriate Now Assist/AI Skill Kit roles.</li>
+    <li>Use a non-production instance first.</li>
+  </ul>
+
+  <h4>Step-by-Step Implementation</h4>
+  <ol>
+    <li><strong>Create the skill</strong>: Go to <code>Now Assist Skill Kit / AI Skill Kit</code> → Create new custom skill → Name: <code>Draft Incident Resolution Notes</code>.</li>
+    <li><strong>Add inputs from the Incident record</strong>: <code>short_description</code>, <code>description</code>, <code>work_notes</code>, <code>cmdb_ci</code>, <code>priority</code>. Keep inputs limited to fields that genuinely improve the output.</li>
+    <li><strong>Write a grounded prompt</strong> with explicit rules (see prompt template below).</li>
+    <li><strong>Add useful tools</strong>:
+      <ul>
+        <li><strong>Retriever</strong> to search relevant KB articles or known-error records.</li>
+        <li><strong>Script tool</strong> to fetch recent related Incidents for the same CI.</li>
+        <li><strong>Decision node</strong> to skip the retriever when the Incident has no CI or insufficient description.</li>
+      </ul>
+      NASK supports retrievers, scripts, subflows, flow actions, decision nodes, and chained skills.
+    </li>
+    <li><strong>Test properly</strong>: Use the skill's <strong>Test prompt</strong> area. Inspect both the <strong>Grounded prompt</strong> (actual prompt + tool output sent to the model) and <strong>Tools</strong> (each tool's request and response). This is the correct debugging loop; do not rely only on whether the final answer "looks good."</li>
+    <li><strong>Deploy as a UI Action</strong>: Choose <strong>UI Action</strong> as deployment target → Select <code>incident</code> table → NASK generates a UI Action with the skill invoked from its Script field. By default, output appears as an informational message. For a more useful version, modify the UI Action to write the draft into a field such as <code>close_notes</code>, <code>work_notes</code>, or a custom <code>u_ai_draft_resolution</code> field—but require agent review before saving.</li>
+    <li><strong>Control access</strong>: Activate the skill in Now Assist Admin console → Assign the role configured during activation → Verify UI Action is active and visible to intended roles. ServiceNow identifies skill activation, role assignment, and UI Action activation as common reasons a button does not appear.</li>
+  </ol>
+
+  <h4>Prompt Starting Point</h4>
+  <pre style="background: var(--bg-1); border: 1px solid var(--bg-2); border-radius: 6px; padding: 1rem; overflow-x: auto; font-size: .85rem;">You are assisting an IT service desk agent.
+
+Using only the provided Incident data and retrieved knowledge, draft a resolution note.
+
+Rules:
+- Do not invent facts, root causes, or actions.
+- If information is insufficient, say exactly what is missing.
+- Use clear, professional language suitable for an Incident record.
+- Separate: Summary, Actions Taken, Root Cause, Follow-up.
+
+Incident data:
+Short description: {{short_description}}
+Description: {{description}}
+Work notes: {{work_notes}}
+Configuration item: {{cmdb_ci}}
+Priority: {{priority}}
+
+Retrieved knowledge:
+{{retrieved_articles}}</pre>
+
+  <h4>Acceptance Criteria</h4>
+  <ul class="checklist">
+    <li>Button appears only for authorized fulfillers.</li>
+    <li>Output is clearly labeled as an AI draft.</li>
+    <li>Agent can edit before saving.</li>
+    <li>No automatic update to a customer-facing field without approval.</li>
+    <li>Test cases cover: empty work notes, missing CI, unrelated KB results, sensitive data, and long ticket histories.</li>
+  </ul>
+
+  <h3>Custom Skill vs AI Agent — Decision Guide</h3>
+  <p>NASK skills are modular building blocks; AI agents use tools—including custom skills—to complete broader tasks.</p>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Need</th><th>Best Fit</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Generate or transform text from the current record</td><td>NASK skill + UI Action</td><td>Draft resolution notes</td></tr>
+      <tr><td>Retrieve and summarize knowledge</td><td>NASK skill + Retriever</td><td>Find policy exceptions for an expense report</td></tr>
+      <tr><td>Run a repeatable workflow step</td><td>NASK skill as Flow Action</td><td>Classify an inbound request, then route it</td></tr>
+      <tr><td>Handle a multi-step, conversational task</td><td>AI Agent</td><td>Investigate an Incident, check similar records, recommend next action</td></tr>
+      <tr><td>Execute an end-to-end process with guardrails</td><td>Agentic workflow</td><td>Triage, enrich, assign, and notify—only within defined limits</td></tr>
+      <tr><td>Let users ask for AI help anywhere</td><td>Now Assist Panel</td><td>"Summarize this incident and suggest next steps"</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>ServiceNow's AI Agent Studio is designed for creating, managing, and testing agents and agentic workflows; it supports tools, triggers, security controls, and testing.</p>
+
+  <h3>Real AI Agent Example: "Incident Triage Assistant"</h3>
+  <p><strong>Business outcome:</strong> When a P1/P2 Incident is created, the agent gathers context, identifies likely related records, proposes a category and assignment group, and creates a draft investigation summary for human approval.</p>
+  <ol>
+    <li><strong>Define the job narrowly</strong>: Not "resolve incidents" but "Prepare a triage package for high-priority Incidents."</li>
+    <li><strong>Create the agent</strong>: <code>AI Agent Studio → Create and manage → AI agents</code> → Choose <strong>Chat</strong> for internal agent → Define specialty, goals, and limits.</li>
+    <li><strong>Set security first</strong>: Define who can invoke it, which tables/fields it can read. Ensure ACLs—not only agent instructions—control data access.</li>
+    <li><strong>Add modular tools</strong>: <code>Get Incident Details</code>, <code>Find Similar Incidents</code>, <code>Search Known Errors</code>, <code>Get CI Health</code>, <code>Draft Triage Summary</code>. Custom NASK skills can be published and added as tools.</li>
+    <li><strong>Add a trigger</strong>: Trigger on Incident creation where priority is P1 or P2. Do not trigger on every Incident initially.</li>
+    <li><strong>Require human approval</strong>: The agent may create a draft summary and recommendation. It should not automatically reassign, change priority, close, or notify executives until accuracy is proven.</li>
+    <li><strong>Test and monitor</strong>: Use AI Agent Studio's test capability. Track: correct category, correct assignment-group recommendation, useful similar-record retrieval, false-positive escalations, user acceptance.</li>
+  </ol>
+
+  <h3>Top-Tier Practical Accomplishments (Illustrative Targets)</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Tier</th><th>Practical Accomplishment</th><th>Why It Fits the Tier</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Foundation</td><td>Deploy OOTB Incident summarization, sentiment analysis, and reply generation; add governance and measure agent adoption.</td><td>Foundation provides configured OOTB AI skills across ITSM, CSM, HRSD, and industry solutions.</td></tr>
+      <tr><td>Advanced</td><td>Build an OOTB agentic workflow that triages Incidents, gathers context, recommends routing, and escalates exceptions for human approval.</td><td>Advanced adds agentic workflows that synthesize context across more complex processes.</td></tr>
+      <tr><td>Prime</td><td>Build a governed custom AI specialist that investigates high-priority Incidents, uses NASK tools and knowledge retrieval, drafts remediation plans, and executes only pre-approved low-risk actions.</td><td>Prime supports creating net-new custom AI skills and agents, including through natural-language instructions.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="illustrative">Each accomplishment should include: measurable baseline, narrow workflow, human approval for consequential actions, monitoring and rollback, documented business owner.</p>
+
+  <h3>NASK Deployment Options</h3>
+  <p>Build the skill once, deploy to multiple channels:</p>
+  <ul class="checklist">
+    <li>UI Action (recommended starting point)</li>
+    <li>Now Assist Panel</li>
+    <li>Flow Action</li>
+    <li>Context Menu</li>
+    <li>Virtual Agent</li>
+    <li>AI Agent tool</li>
+    <li>UI Builder (note: version constraints; requires UI Builder version compatible with Zurich)</li>
+  </ul>
+  <p class="illustrative">Start with one deployment channel (UI Action). Only add to Now Assist Panel after users trust the output.</p>
+</section>
+
+<section id="production-readiness">
+  <h2>Production Readiness Checklist & Best Practices</h2>
+  <p>Every AI feature should pass this checklist before broad rollout:</p>
+
+  <h3>Production-Readiness Checklist</h3>
+  <ul class="checklist">
+    <li>Business owner and process owner identified.</li>
+    <li>Intended users and roles defined.</li>
+    <li>Input data sources documented.</li>
+    <li>ACLs reviewed.</li>
+    <li>Prompt and tool outputs tested with real, representative records.</li>
+    <li>Grounded prompt and individual tool outputs inspected.</li>
+    <li>Human approval required for consequential actions.</li>
+    <li>Sensitive-data handling reviewed.</li>
+    <li>Failure path defined.</li>
+    <li>Usage, acceptance, corrections, and cost monitored.</li>
+    <li>Rollback/disable procedure tested.</li>
+    <li>Users trained on what the AI does—and does not—do.</li>
+  </ul>
+
+  <h3>Best-Practice Principles</h3>
+  <ul class="checklist">
+    <li>Start with one painful, frequent, low-risk task.</li>
+    <li>Use OOTB before custom.</li>
+    <li>Ground outputs in ServiceNow data and knowledge.</li>
+    <li>Keep skills small and modular.</li>
+    <li>Make the AI output editable.</li>
+    <li>Never let generated text auto-publish without review.</li>
+    <li>Use ACLs and role-based activation, not prompts, for security.</li>
+    <li>Log enough to debug, but not sensitive content unnecessarily.</li>
+    <li>Measure acceptance and correction rate, not just usage.</li>
+    <li>Treat every prompt, tool, model, and knowledge change as a production change.</li>
+  </ul>
+
+  <h3>Risk-Tier Model for Human Oversight</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Risk Tier</th><th>Examples</th><th>Approval Required</th><th>Controls</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="risk-tier risk-low">Low</span></td>
+        <td>Draft summaries, suggested KB articles, search answers</td>
+        <td>Human reviews before publication</td>
+        <td>Edit-before-save, clear AI labeling</td>
+      </tr>
+      <tr>
+        <td><span class="risk-tier risk-medium">Medium</span></td>
+        <td>Routing, categorization, recommendations</td>
+        <td>Human can override; monitor accuracy</td>
+        <td>Confidence thresholds, fallback to human</td>
+      </tr>
+      <tr>
+        <td><span class="risk-tier risk-high">High</span></td>
+        <td>Financial actions, access provisioning, deletions, customer communications, security response</td>
+        <td>Explicit approval + audit logging</td>
+        <td>Signed approval workflow, immutable logs</td>
+      </tr>
+      <tr>
+        <td><span class="risk-tier risk-critical">Critical</span></td>
+        <td>Rollbacks, mass updates, external system writes</td>
+        <td>Guardrails, dry-run mode, scoped permissions, emergency stop</td>
+        <td>Kill switch, scoped service accounts, circuit breakers</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Security & Privacy Requirements (Operational)</h3>
+  <ul class="checklist">
+    <li>Document what data is sent to model providers and under what agreements.</li>
+    <li>Enforce data residency and retention controls per contract.</li>
+    <li>Implement PII/PHI/PCI handling and redaction before data reaches the model.</li>
+    <li>Role-based access to AI outputs, prompts, logs, and training datasets.</li>
+    <li>Approval controls for enabling AI on sensitive tables (HR, Healthcare, Financial, Security).</li>
+    <li>Rule: AI must not bypass ACLs, data privacy policies, or records-management requirements.</li>
+    <li>Separate treatment for regulated data domains with dedicated review gates.</li>
+  </ul>
+
+  <h3>Model Evaluation Framework</h3>
+  <ul class="checklist">
+    <li>Maintain a labeled evaluation set for each skill.</li>
+    <li>Human review rubrics: factual accuracy, completeness, tone, policy compliance, safety.</li>
+    <li>Golden datasets for regression testing after prompt, model, or configuration changes.</li>
+    <li>Track rejected suggestions and edits (correction rate).</li>
+    <li>Separate metrics for classification models (accuracy/F1) vs. generative skills (acceptance, edit rate, hallucination flags).</li>
+  </ul>
+
+  <h3>Cost Model Nuance</h3>
+  <p>Distinguish between:</p>
+  <ul class="checklist">
+    <li><strong>Entitlement/licensing cost</strong> (contract)</li>
+    <li><strong>Consumption cost</strong> (Assists)</li>
+    <li><strong>Integration and data-preparation cost</strong></li>
+    <li><strong>Evaluation and human-review cost</strong></li>
+    <li><strong>Operational monitoring cost</strong></li>
+    <li><strong>Retraining and maintenance cost</strong></li>
+  </ul>
+  <p class="illustrative">The biggest cost lever is usually use-case selection and human-review design—not just disabling unused skills or caching.</p>
+
+  <h3>Prerequisites Checklist (Before Enabling Any AI)</h3>
+  <ul class="checklist">
+    <li>Instance version (Zurich or later for full AI features)</li>
+    <li>Licenses and entitlements confirmed</li>
+    <li>Roles provisioned (AI Admin, Skill Kit Admin, Agent Studio, etc.)</li>
+    <li>Data quality baseline: Knowledge articles current, CMDB/CSDM maturity, categorization discipline, work-note quality</li>
+    <li>Integration access (Integration Hub spokes, external systems)</li>
+    <li>Security review completed</li>
+  </ul>
+
+  <h3>Rollout RACI</h3>
+  <div class="table-wrap">
+  <table class="raci-table">
+    <thead>
+      <tr><th>Activity</th><th>Business Owner</th><th>AI Admin</th><th>Security</th><th>Data Steward</th><th>Process Owner</th><th>Developer</th><th>Support</th><th>Approver</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Use-case selection</td><td class="raci-cell">R</td><td class="raci-cell">C</td><td class="raci-cell">I</td><td class="raci-cell">C</td><td class="raci-cell">A</td><td class="raci-cell">C</td><td class="raci-cell">I</td><td class="raci-cell">I</td></tr>
+      <tr><td>Skill/agent development</td><td class="raci-cell">C</td><td class="raci-cell">A</td><td class="raci-cell">C</td><td class="raci-cell">C</td><td class="raci-cell">C</td><td class="raci-cell">R</td><td class="raci-cell">I</td><td class="raci-cell">I</td></tr>
+      <tr><td>Security/privacy review</td><td class="raci-cell">I</td><td class="raci-cell">C</td><td class="raci-cell">A</td><td class="raci-cell">R</td><td class="raci-cell">I</td><td class="raci-cell">C</td><td class="raci-cell">I</td><td class="raci-cell">I</td></tr>
+      <tr><td>Pilot execution</td><td class="raci-cell">A</td><td class="raci-cell">R</td><td class="raci-cell">I</td><td class="raci-cell">I</td><td class="raci-cell">R</td><td class="raci-cell">C</td><td class="raci-cell">R</td><td class="raci-cell">I</td></tr>
+      <tr><td>Go/No-go decision</td><td class="raci-cell">R</td><td class="raci-cell">C</td><td class="raci-cell">C</td><td class="raci-cell">C</td><td class="raci-cell">C</td><td class="raci-cell">I</td><td class="raci-cell">I</td><td class="raci-cell">A</td></tr>
+      <tr><td>Production rollout</td><td class="raci-cell">A</td><td class="raci-cell">R</td><td class="raci-cell">I</td><td class="raci-cell">I</td><td class="raci-cell">C</td><td class="raci-cell">C</td><td class="raci-cell">R</td><td class="raci-cell">I</td></tr>
+      <tr><td>Ongoing monitoring</td><td class="raci-cell">I</td><td class="raci-cell">R</td><td class="raci-cell">C</td><td class="raci-cell">C</td><td class="raci-cell">A</td><td class="raci-cell">C</td><td class="raci-cell">R</td><td class="raci-cell">I</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="illustrative">R=Responsible, A=Accountable, C=Consulted, I=Informed</p>
+
+  <h3>Failure Modes & Rollback Plan</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Failure Mode</th><th>Detection</th><th>Immediate Action</th><th>Rollback</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Bad retrieval (wrong KB article)</td><td>User feedback, correction rate spike</td><td>Disable retriever tool; fall back to prompt-only</td><td>Disable skill in Now Assist Admin; revert update set</td></tr>
+      <tr><td>Stale knowledge</td><td>Accuracy drift alert, user reports</td><td>Flag skill; trigger KB review</td><td>Pause skill; restore prior KB version</td></tr>
+      <tr><td>Low-confidence classification</td><td>Confidence score below threshold</td><td>Route to human dispatcher automatically</td><td>Revert to pre-AI routing rules</td></tr>
+      <tr><td>Prompt injection (malicious ticket/email content)</td><td>Anomalous output, security scan</td><td>Kill switch: disable agent/skill immediately</td><td>Revert to last safe prompt version; audit logs</td></tr>
+      <tr><td>Over-permissive agent</td><td>Unauthorized action attempt</td><td>Revoke agent's tool permissions</td><td>Disable agent in AI Agent Studio</td></tr>
+      <tr><td>Integration failure</td><td>Tool error rate spike</td><td>Circuit breaker: disable external calls</td><td>Failover to manual process</td></tr>
+      <tr><td>Quota exhaustion</td><td>Control Tower alert at 80%/95%</td><td>Pause non-critical skills; request top-up</td><td>Auto-top-up or tier upgrade</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Change Communication & Accessibility</h3>
+  <ul class="checklist">
+    <li>Release notes for each AI feature rollout.</li>
+    <li>End-user training: what the AI does, what it does not do, how to provide feedback.</li>
+    <li>Opt-out/feedback mechanism on every AI-generated output.</li>
+    <li>Support path for incorrect outputs (dedicated queue or form).</li>
+    <li>Accessibility: keyboard navigation, screen-reader labels, readable AI disclosures, editable outputs, clear "AI-generated" labeling.</li>
+  </ul>
+</section>
+
+<section id="servicenow-resources">
+  <h2>Official ServiceNow Resources</h2>
+  <p>Use these as your source of truth. Links may change; search the catalog if a direct link fails.</p>
+  <div class="servicenow-links">
+    <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/ai-native-sku-overview.html" target="_blank" rel="noopener">
+      <h4>AI-Native SKU Overview (Packaging)</h4>
+      <p>Official tier comparison: Foundation, Advanced, Prime capabilities and entitlements.</p>
+    </a>
+    <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/now-assist-skill-kit/configuring-now-assist-skill-kit.html" target="_blank" rel="noopener">
+      <h4>Configuring Now Assist Skill Kit</h4>
+      <p>Prerequisites, plugin installation, role setup, and skill creation workflow.</p>
+    </a>
+    <a class="sn-link" href="https://www.servicenow.com/community/servicenow-otto-articles/now-assist-skill-kit-tool-and-deployment-options/ta-p/3284803" target="_blank" rel="noopener">
+      <h4>Now Assist Skill Kit: Tools & Deployment Options</h4>
+      <p>Community article covering retrievers, scripts, subflows, UI Action deployment, UI Builder constraints, and troubleshooting.</p>
+    </a>
+    <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/configure-next-best-action-agent.html" target="_blank" rel="noopener">
+      <h4>Configure AI Agents in AI Agent Studio</h4>
+      <p>Agent creation, tools, triggers, security controls, testing, and monitoring.</p>
+    </a>
+    <a class="sn-link" href="https://www.servicenow.com/products/ai-agents.html" target="_blank" rel="noopener">
+      <h4>ServiceNow AI Agents Product Page</h4>
+      <p>Capabilities, use cases, and architecture overview.</p>
+    </a>
+    <a class="sn-link" href="https://learn.servicenow.com" target="_blank" rel="noopener">
+      <h4>ServiceNow Learning Catalog</h4>
+      <p>Search for current courses on Now Assist, Predictive Intelligence, Virtual Agent, AI Agent Studio, Skill Kit, and governance.</p>
+    </a>
+    <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/ai-control-tower.html" target="_blank" rel="noopener">
+      <h4>AI Control Tower Documentation</h4>
+      <p>Model inventory, usage analytics, alert policies, governance workflows.</p>
+    </a>
+  </div>
+</section>
+
+<section id="extended-features">
+  <h2>Extended & Specialized AI Features (Further Study)</h2>
+  <p>These capabilities are product-specific or require separate licenses. Links point to official learning paths for deeper exploration.</p>
+
+  <h3>ITSM / ITOM / ITAM</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AI for Incident Management</td><td>Auto-categorization, prioritization, major incident prediction, and resolution recommendation.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-incident-management" target="_blank" rel="noopener">AI for Incident Management</a></td></tr>
+      <tr><td>AI for Problem Management</td><td>Root cause analysis assistance, recurring issue clustering, known error article generation.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-problem-management" target="_blank" rel="noopener">AI for Problem Management</a></td></tr>
+      <tr><td>AI for Change Management</td><td>Risk scoring, collision detection, implementation plan generation, CAB summary.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-change-management" target="_blank" rel="noopener">AI for Change Management</a></td></tr>
+      <tr><td>AI for IT Asset Management</td><td>Hardware/software normalization, license optimization, lifecycle predictions.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-itam" target="_blank" rel="noopener">AI for IT Asset Management</a></td></tr>
+      <tr><td>AI for ITOM / AIOps</td><td>Event correlation, anomaly detection, log analysis, automated remediation.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-itom-aiops" target="_blank" rel="noopener">AI for ITOM & AIOps</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>CSM / HRSD / Employee Experience</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AI for Customer Service Management</td><td>Case summarization, reply generation, sentiment analysis, escalation prediction.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-csm" target="_blank" rel="noopener">AI for CSM</a></td></tr>
+      <tr><td>AI for HR Service Delivery</td><td>Case routing, policy lookup, document generation, employee journey insights.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-hrsd" target="_blank" rel="noopener">AI for HRSD</a></td></tr>
+      <tr><td>Employee Center / AI Search</td><td>Unified AI-powered search across Knowledge, Catalog, and People.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-search-employee-center" target="_blank" rel="noopener">AI Search & Employee Center</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>GRC / IRM / Security</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AI for IRM (Integrated Risk Management)</td><td>Risk assessment automation, control mapping, policy analysis, issue summarization.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-irm" target="_blank" rel="noopener">AI for IRM</a></td></tr>
+      <tr><td>AI for Security Operations</td><td>Alert enrichment, threat intelligence correlation, incident timeline generation.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-secops" target="_blank" rel="noopener">AI for SecOps</a></td></tr>
+      <tr><td>AI for Audit & Compliance</td><td>Evidence collection, control testing automation, narrative generation.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-audit-compliance" target="_blank" rel="noopener">AI for Audit & Compliance</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Creator / Developer Tools</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>App Engine Studio AI</td><td>Natural language to application prototype, form/flow generation.</td><td><a href="https://learn.servicenow.com/learning-plans/app-engine-studio-ai" target="_blank" rel="noopener">App Engine Studio AI</a></td></tr>
+      <tr><td>ServiceNow Studio AI Assist</td><td>Code explanation, refactoring, test generation, vulnerability scanning.</td><td><a href="https://learn.servicenow.com/learning-plans/studio-ai-assist" target="_blank" rel="noopener">Studio AI Assist</a></td></tr>
+      <tr><td>Flow Designer AI</td><td>Flow generation from description, action recommendation, error remediation.</td><td><a href="https://learn.servicenow.com/learning-plans/flow-designer-ai" target="_blank" rel="noopener">Flow Designer AI</a></td></tr>
+      <tr><td>UI Builder AI</td><td>Component generation, layout suggestions, accessibility checking.</td><td><a href="https://learn.servicenow.com/learning-plans/ui-builder-ai" target="_blank" rel="noopener">UI Builder AI</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Industry-Specific</h3>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Training Link</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AI for Healthcare & Life Sciences</td><td>Clinical summarization, prior auth automation, patient journey insights.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-healthcare" target="_blank" rel="noopener">AI for Healthcare</a></td></tr>
+      <tr><td>AI for Financial Services</td><td>Complaint summarization, regulatory change tracking, KYC automation.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-financial-services" target="_blank" rel="noopener">AI for Financial Services</a></td></tr>
+      <tr><td>AI for Telecommunications</td><td>Network incident correlation, service assurance, customer churn prediction.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-telecom" target="_blank" rel="noopener">AI for Telecom</a></td></tr>
+      <tr><td>AI for Public Sector</td><td>Caseworker assistance, benefit eligibility, constituent sentiment.</td><td><a href="https://learn.servicenow.com/learning-plans/ai-public-sector" target="_blank" rel="noopener">AI for Public Sector</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="course-recommendations">
+  <h2>Personalized Course Recommendations</h2>
+  <p>The following are some personalized course recommendations for you:</p>
+
+  <div class="course-card">
+    <div class="title">Agentic Workflow: Investigate and Resolve ITSM Incidents</div>
+    <div class="meta">
+      <span class="type">On-demand Course</span>
+      <span class="duration">4 Minutes</span>
+      <span class="type">Free</span>
+    </div>
+    <p class="reason"><strong>Recommendation Reason:</strong> This course fits your pattern of AI and automation expertise by focusing on agentic workflows for ITSM incident management. It provides hands-on experience with AI agent workflows that automate incident investigation and resolution. This will deepen your practical skills in applying AI to ITSM operations.</p>
+    <div class="actions">
+      <a class="btn" href="https://learn.servicenow.com/learning-plans/agentic-workflow-investigate-resolve-itsm-incidents" target="_blank" rel="noopener">Enroll</a>
+    </div>
+  </div>
+
+  <div class="course-card">
+    <div class="title">Build Custom AI Solutions</div>
+    <div class="meta">
+      <span class="type">Collection</span>
+      <span class="duration">8 Hours 18 Minutes</span>
+      <span class="type">Free</span>
+    </div>
+    <p class="reason"><strong>Recommendation Reason:</strong> Since you have experience with AI agents and predictive intelligence, this course will enable you to create flexible AI solutions tailored to specific business workflows. It builds on your skills in AI-powered automation and agentic AI implementations. This course will empower you to develop custom AI skills that address unique organizational needs.</p>
+    <div class="actions">
+      <a class="btn" href="https://learn.servicenow.com/learning-plans/build-custom-ai-solutions" target="_blank" rel="noopener">View Content</a>
+    </div>
+  </div>
+
+  <div class="course-card">
+    <div class="title">Get Started with Virtual Agent API</div>
+    <div class="meta">
+      <span class="type">On-demand Course</span>
+      <span class="duration">2 Hours 27 Minutes</span>
+      <span class="type">Free</span>
+    </div>
+    <p class="reason"><strong>Recommendation Reason:</strong> Since you recently completed the course "Virtual Agent Implementation (Xanadu)" and acquired Agent Client Collector, Conversational Interfaces, AI Agents and Automation Discovery skills, take this course to enhance Conversational Interfaces, Agent Client Collector and Automation Discovery skills and learn AI Search and ServiceNow Voice skills.</p>
+    <div class="actions">
+      <a class="btn" href="https://learn.servicenow.com/learning-plans/get-started-virtual-agent-api" target="_blank" rel="noopener">Enroll</a>
+    </div>
+  </div>
+
+  <div class="course-card">
+    <div class="title">Get Started With AI Solutions</div>
+    <div class="meta">
+      <span class="type">On-demand Course</span>
+      <span class="duration">2 Hours 30 Minutes</span>
+      <span class="type">Free</span>
+    </div>
+    <p class="reason"><strong>Recommendation Reason:</strong> Since you recently completed the course "Virtual Agent Implementation (Xanadu)" and acquired Agent Client Collector, Conversational Interfaces, AI Agents and Automation Discovery skills, take this course to enhance Automation Discovery skills and learn Task Intelligence for ITSM, AI Search, Task Intelligence and Now Platform skills.</p>
+    <div class="actions">
+      <a class="btn" href="https://learn.servicenow.com/learning-plans/get-started-ai-solutions" target="_blank" rel="noopener">Enroll</a>
+    </div>
+  </div>
+
+  <div class="course-card">
+    <div class="title">Configure Service Graph Connector for Microsoft SCCM for IT Asset Management</div>
+    <div class="meta">
+      <span class="type">On-demand Course</span>
+      <span class="duration">17 Minutes</span>
+      <span class="type">Free</span>
+    </div>
+    <p class="reason"><strong>Recommendation Reason:</strong> This course lets you build on your current skills in Hardware Asset Management, ITOM Visibility, IT Asset Management, IT Service Management, Software Asset Management, Asset Management. You can also learn Content Management System, Enterprise Modeling and Visualization, Core Asset Management.</p>
+    <div class="actions">
+      <a class="btn" href="https://learn.servicenow.com/learning-plans/configure-service-graph-connector-microsoft-sccm" target="_blank" rel="noopener">Enroll</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>&copy; 2026 FindTorontoEvents.ca. All rights reserved. Content for informational purposes only. ServiceNow product names and course titles are trademarks of their respective owners.</p>
+</footer>
+
+</body>
+</html>
