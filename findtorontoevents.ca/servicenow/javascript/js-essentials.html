@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Essentials – FindTorontoEvents</title>
+  <style>
+    :root {
+      --bg:#080c14; --panel:#0f1626; --panel-2:#121b2e;
+      --panel-border:rgba(255,255,255,0.08);
+      --text:#e6edf6; --muted:#8b98ac;
+      --accent:#62f5c7; --accent-2:#7aa2ff;
+      --warning:#fbbf24; --danger:#f87171; --success:#4ade80;
+      --code-bg:#0a0f1a; --radius:14px; --radius-sm:8px;
+      --sn-nav-h:58px;
+    }
+    *{box-sizing:border-box;}
+    html{scroll-behavior:smooth;scroll-padding-top:calc(var(--sn-nav-h) + 16px);background:#07080f;}
+    body{margin:0;padding:2rem;background:
+      radial-gradient(900px 500px at 15% -10%,rgba(98,245,199,.08),transparent 60%),
+      radial-gradient(900px 600px at 90% 0%,rgba(122,162,255,.08),transparent 60%),var(--bg);
+      color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      line-height:1.6;font-feature-settings:"tnum";}
+    h1,h2{color:var(--accent-2);} h3{color:var(--text);margin-bottom:.3rem;}
+    code{background:var(--code-bg);border:1px solid var(--panel-border);border-radius:5px;padding:1px 5px;font-size:.9em;}
+    pre{background:var(--code-bg);border:1px solid var(--panel-border);border-radius:var(--radius-sm);padding:14px 16px;overflow-x:auto;}
+    pre code{background:none;border:0;padding:0;font-size:.85rem;line-height:1.65;}
+    .nav{margin-bottom:1.5rem;} .nav a{color:var(--accent-2);text-decoration:none;} .nav a:hover{color:var(--accent);text-decoration:underline;}
+    body::before{content:'';position:fixed;inset:-40%;z-index:-2;background:
+      radial-gradient(38% 42% at 18% 22%,rgba(98,245,199,.16),transparent 70%),
+      radial-gradient(34% 38% at 82% 18%,rgba(122,162,255,.20),transparent 72%),
+      radial-gradient(42% 46% at 68% 84%,rgba(124,58,237,.16),transparent 70%),
+      radial-gradient(30% 34% at 30% 78%,rgba(251,191,36,.10),transparent 72%);
+      filter:blur(70px) saturate(150%);animation:dft 26s ease-in-out infinite alternate;}
+    body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");}
+    @keyframes dft{0%{transform:translate(0,0) scale(1)}50%{transform:translate(4%,-3%) scale(1.08)}100%{transform:translate(-4%,3%) scale(1.04)}}
+    @media (prefers-reduced-motion:reduce){body::before{animation:none;}}
+    .card{max-width:1040px;margin:0 auto;padding:2.2rem 2.5rem;background:rgba(15,22,38,.55);
+      border:1px solid var(--panel-border);border-radius:24px;backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,.55);}
+    .card h1{margin-top:0;} .lede{color:var(--muted);max-width:70ch;}
+    .sn-lnav{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px 24px;
+      border-bottom:1px solid var(--panel-border);background:rgba(8,12,20,.72);
+      backdrop-filter:blur(10px);position:sticky;top:0;z-index:50;font-size:.85rem;}
+    .sn-lnav-brand{font-weight:600;letter-spacing:.02em;color:var(--text);}
+    .sn-lnav-brand-dot{color:var(--accent);margin:0 2px;}
+    .sn-lnav-links{display:flex;gap:6px;flex-wrap:wrap;}
+    .sn-lnav-links a{color:var(--muted);padding:4px 10px;border-radius:999px;font-size:.8rem;}
+    .sn-lnav-links a:hover{color:var(--text);background:rgba(255,255,255,.05);text-decoration:none;}
+    .sn-lnav-links a[aria-current="page"]{color:var(--accent);background:rgba(98,245,199,.10);}
+    .toc{background:rgba(18,27,46,.6);border:1px solid var(--panel-border);border-radius:var(--radius);padding:14px 18px;margin:1.4rem 0;}
+    .toc ol{margin:.4rem 0 0;padding-left:22px;columns:2;column-gap:28px;font-size:.88rem;}
+    .toc a{color:var(--accent-2);text-decoration:none;} .toc a:hover{color:var(--accent);text-decoration:underline;}
+    .table-wrap{overflow-x:auto;margin:1rem 0;border:1px solid var(--panel-border);border-radius:var(--radius-sm);}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;}
+    th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--panel-border);vertical-align:top;}
+    th{background:rgba(255,255,255,.03);color:var(--accent);font-weight:650;white-space:nowrap;}
+    tr:last-child td{border-bottom:0;} td code{white-space:nowrap;}
+    .notice{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.22);border-radius:var(--radius-sm);padding:12px 16px;margin:1.1rem 0;font-size:.9rem;}
+    .danger{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.25);border-radius:var(--radius-sm);padding:12px 16px;margin:1.1rem 0;font-size:.9rem;}
+    .good{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.22);border-radius:var(--radius-sm);padding:12px 16px;margin:1.1rem 0;font-size:.9rem;}
+    .muted{color:var(--muted);} .footnote{margin-top:1.8rem;color:var(--muted);font-size:.8rem;}
+    .btn{display:inline-block;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;padding:7px 14px;
+      border-radius:var(--radius-sm);background:var(--accent);color:#04140d;border:none;text-decoration:none;}
+    .btn:hover{box-shadow:0 4px 12px rgba(98,245,199,.35);}
+    a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
+    @media (max-width:560px){body{padding:1rem}.card{padding:1.4rem 1.1rem}.toc ol{columns:1}}
+  </style>
+</head>
+<body>
+  <nav class="sn-lnav" aria-label="ServiceNow learning guides">
+    <span class="sn-lnav-brand">ServiceNow<span class="sn-lnav-brand-dot">·</span>Learning</span>
+    <span class="sn-lnav-links">
+      <a href="/servicenow/javascript/index.html">JavaScript Reference</a>
+      <a href="/servicenow/javascript/quiz.html">Quiz</a>
+      <a href="/servicenow/javascript/js-essentials.html" aria-current="page">Essentials</a>
+      <a href="/servicenow/javascript/js-interview.html">Interview JS</a>
+      <a href="/servicenow/AIFeaturesOct2026/index.html">AI Features Guide</a>
+      <a href="/servicenow/CIS-CSM/index.html">CIS&#8209;CSM Study Briefing</a>
+      <a href="/servicenow/CIS-VR/index.html">CIS&#8209;VR Study Briefing</a>
+    </span>
+  </nav>
+
+  <div class="card">
+    <div class="nav"><a href="quiz.html">&larr; Back to the Quiz</a></div>
+
+    <h1>JavaScript Essentials</h1>
+    <p class="lede">Every built-in this site's JavaScript actually uses, organised by data type. The rule here is simple and enforced: <strong>if a method is not written down in one of these tables, no example on this site is allowed to use it.</strong> Coverage is machine-checked, and every behavioural claim was executed in Node 22 rather than quoted.</p>
+    <p><a class="btn" href="js-interview.html">See the interview patterns &rarr;</a> <a class="btn" href="quiz.html" style="background:#7aa2ff;color:#041024">Practice in the quiz &rarr;</a></p>
+
+    <div class="toc">
+      <strong>Contents</strong>
+      <ol>
+        <li><a href="#strings">Strings</a></li>
+        <li><a href="#arrays">Arrays</a></li>
+        <li><a href="#objects">Objects</a></li>
+        <li><a href="#numbers">Numbers &amp; Math</a></li>
+        <li><a href="#functions">Functions &amp; scope</a></li>
+        <li><a href="#es6">ES6+ syntax</a></li>
+        <li><a href="#collections">Map, Set &amp; the weak ones</a></li>
+        <li><a href="#async">Promises &amp; async/await</a></li>
+        <li><a href="#patterns">Key logic patterns</a></li>
+        <li><a href="#gotchas">Gotchas that fail tests</a></li>
+      </ol>
+    </div>
+
+    <!-- ══════════════════ 1. STRINGS ══════════════════ -->
+    <h2 id="strings">1. Strings</h2>
+    <p class="muted">Strings are <strong>immutable</strong>. Every method below returns a <em>new</em> string; none of them change the original.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Need</th><th>Method</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Length</td><td><code>s.length</code></td><td>Counts UTF-16 <strong>code units</strong>, so <code>'😀'.length</code> is 2.</td></tr>
+          <tr><td>i-th character</td><td><code>s[i]</code></td><td>Out of range &rarr; <code>undefined</code>, never throws.</td></tr>
+          <tr><td>i-th, negative OK</td><td><code>s.at(i)</code></td><td>ES2022. <code>s.at(-1)</code> is the last char. Out of range &rarr; <code>undefined</code>.</td></tr>
+          <tr><td>Legacy index access</td><td><code>s.charAt(i)</code></td><td>Returns an <em>empty string</em> out of range, not <code>undefined</code>.</td></tr>
+          <tr><td>Code point</td><td><code>s.charCodeAt(i)</code> · <code>s.codePointAt(i)</code></td><td><code>codePointAt</code> is correct for astral characters.</td></tr>
+          <tr><td>Substring</td><td><code>s.slice(a, b)</code></td><td><strong>End exclusive.</strong> Non-mutating; negative indices count from the end.</td></tr>
+          <tr><td>Substring (legacy)</td><td><code>s.substring(a, b)</code></td><td>Swaps args if <code>a &gt; b</code>; clamps negatives to 0. Prefer <code>slice</code>.</td></tr>
+          <tr><td>Join strings</td><td><code>s.concat(t)</code></td><td>Identical to <code>s + t</code>, which is what people actually write.</td></tr>
+          <tr><td>Trim</td><td><code>s.trim()</code> · <code>trimStart()</code> · <code>trimEnd()</code></td><td>All return new strings.</td></tr>
+          <tr><td>Case</td><td><code>s.toUpperCase()</code> · <code>s.toLowerCase()</code></td><td>Locale-aware variants exist; rarely needed.</td></tr>
+          <tr><td>Contains</td><td><code>s.includes(t)</code></td><td>Boolean. <code>s.indexOf(t) !== -1</code> is the older form.</td></tr>
+          <tr><td>First / last index</td><td><code>s.indexOf(t)</code> · <code>s.lastIndexOf(t)</code></td><td><code>-1</code> when absent.</td></tr>
+          <tr><td>Affixes</td><td><code>s.startsWith(t)</code> · <code>s.endsWith(t)</code></td><td>Both boolean.</td></tr>
+          <tr><td>Regex search</td><td><code>s.search(re)</code></td><td>Index or <code>-1</code>. Ignores the <code>g</code> flag.</td></tr>
+          <tr><td>Regex matches</td><td><code>s.match(re)</code></td><td>With <code>g</code>: array of matches. Without: match object. <strong>No match &rarr; <code>null</code></strong>.</td></tr>
+          <tr><td>Regex iterator</td><td><code>s.matchAll(re)</code></td><td>Returns an iterator of match objects.</td></tr>
+          <tr><td>Replace</td><td><code>s.replace(a, b)</code></td><td>A <em>string</em> pattern replaces <strong>only the first</strong> occurrence.</td></tr>
+          <tr><td>Replace all</td><td><code>s.replaceAll(a, b)</code></td><td>ES2021. Also accepts a regex, which must have <code>g</code>.</td></tr>
+          <tr><td>Split</td><td><code>s.split(sep)</code></td><td><code>''</code> splits into code units (breaks emoji); <code>','</code> splits on a delimiter; regex allowed.</td></tr>
+          <tr><td>Repeat</td><td><code>s.repeat(n)</code></td><td><code>','.repeat(n-1)</code> is the join-separator trick.</td></tr>
+          <tr><td>Pad</td><td><code>s.padStart(n, p)</code> · <code>s.padEnd(n, p)</code></td><td>Non-mutating.</td></tr>
+          <tr><td>From code point</td><td><code>String.fromCodePoint(x)</code></td><td><code>String.fromCharCode</code> takes UTF-16 units, not full code points.</td></tr>
+          <tr><td>Iterate characters</td><td><code>for (const c of s)</code></td><td>Iterates by <strong>code point</strong>. Safer than <code>split('')</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="danger"><strong>The emoji trap.</strong> <code>'😀'.split('').length</code> is <strong>2</strong> (lone surrogates); <code>[...'😀'].length</code> is <strong>1</strong>. LeetCode statements differ on whether "characters" means code units or code points — read the statement, because the tests do.</div>
+
+    <!-- ══════════════════ 2. ARRAYS ══════════════════ -->
+    <h2 id="arrays">2. Arrays</h2>
+    <h3>Creation</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Form</th><th>Result</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>[]</code></td><td>empty array</td><td>The default.</td></tr>
+          <tr><td><code>new Array(n)</code></td><td>length n, <strong>empty</strong></td><td>Sparse — <code>map</code>/<code>reduce</code>/<code>forEach</code> skip the holes. Must <code>.fill()</code>.</td></tr>
+          <tr><td><code>new Array(a, b)</code></td><td><code>[a, b]</code></td><td>One argument means length; more means contents.</td></tr>
+          <tr><td><code>Array.of(x)</code></td><td><code>[x]</code></td><td>No length special-case.</td></tr>
+          <tr><td><code>Array.from(iterable)</code></td><td>new array</td><td>Works on strings, Sets, Maps, array-likes. <code>[...it]</code> is the usual shorthand.</td></tr>
+          <tr><td><code>Array.isArray(x)</code></td><td>boolean</td><td>The correct type check.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Read &amp; search</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Returns</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>arr[i]</code> · <code>arr.at(i)</code></td><td>element</td><td><code>at()</code> accepts negatives; both give <code>undefined</code> out of range.</td></tr>
+          <tr><td><code>arr.length</code></td><td>number</td><td><strong>Assignable</strong> — <code>arr.length = 0</code> truncates. That is the fastest clear.</td></tr>
+          <tr><td><code>arr.indexOf(x)</code> · <code>arr.lastIndexOf(x)</code></td><td>index / <code>-1</code></td><td>Strict equality, O(n).</td></tr>
+          <tr><td><code>arr.includes(x)</code></td><td>boolean</td><td>O(n). Use a <code>Set</code> when called repeatedly.</td></tr>
+          <tr><td><code>arr.find(fn)</code></td><td>element / <code>undefined</code></td><td>First match.</td></tr>
+          <tr><td><code>arr.findIndex(fn)</code></td><td>index / <code>-1</code></td><td>First match's index.</td></tr>
+          <tr><td><code>arr.flat(depth)</code></td><td>new array</td><td><code>Infinity</code> flattens fully.</td></tr>
+          <tr><td><code>arr.flatMap(fn)</code></td><td>new array</td><td><code>map</code> then flatten one level.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Test &amp; transform</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Returns</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>arr.map(fn)</code></td><td>new array</td><td>Same length. Never use for side effects — use <code>forEach</code>.</td></tr>
+          <tr><td><code>arr.filter(fn)</code></td><td>new array</td><td>Shorter than the input.</td></tr>
+          <tr><td><code>arr.reduce(fn, init)</code></td><td>single value</td><td>Always pass <code>init</code>; without it, an empty array throws.</td></tr>
+          <tr><td><code>arr.reduceRight(fn, init)</code></td><td>single value</td><td>Right-to-left.</td></tr>
+          <tr><td><code>arr.forEach(fn)</code></td><td><code>undefined</code></td><td>Side effects only. Cannot <code>break</code> — use <code>for...of</code>.</td></tr>
+          <tr><td><code>arr.every(fn)</code> · <code>arr.some(fn)</code></td><td>boolean</td><td>Short-circuiting.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Add, remove, splice</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Effect</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td><code>arr.push(x)</code> · <code>arr.unshift(x)</code></td><td>append / prepend</td><td>new length. Both mutate.</td></tr>
+          <tr><td><code>arr.pop()</code> · <code>arr.shift()</code></td><td>remove last / first</td><td>the removed element. <code>shift</code> is O(n).</td></tr>
+          <tr><td><code>arr.splice(start, delCount, ...items)</code></td><td>cut &amp;/or insert</td><td><strong>array of removed items</strong>. Mutates. O(n).</td></tr>
+          <tr><td><code>arr.slice(a, b)</code></td><td>copy a range</td><td>new array; original untouched.</td></tr>
+          <tr><td><code>arr.fill(v, a, b)</code></td><td>overwrite a range</td><td>the same array, mutated.</td></tr>
+          <tr><td><code>arr.concat(other)</code></td><td>join</td><td>new array.</td></tr>
+          <tr><td><code>arr.join(sep)</code></td><td>to string</td><td>The reverse of <code>split</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Order</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Mutates?</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>arr.reverse()</code></td><td><strong>yes</strong></td><td>Returns the same array.</td></tr>
+          <tr><td><code>arr.sort(fn)</code></td><td><strong>yes</strong></td><td>Default sort is <strong>lexicographic</strong>: <code>[10,9,1].sort()</code> &rarr; <code>[1,10,9]</code>.</td></tr>
+          <tr><td><code>arr.toSorted(fn)</code></td><td>no</td><td>ES2023 non-mutating sort.</td></tr>
+          <tr><td><code>arr.toReversed()</code></td><td>no</td><td>ES2023 non-mutating reverse.</td></tr>
+          <tr><td><code>arr.toSpliced(s, d, ...i)</code></td><td>no</td><td>ES2023 non-mutating splice.</td></tr>
+          <tr><td><code>arr.sort((a,b) =&gt; a - b)</code></td><td>yes</td><td><strong>Numeric ascending.</strong> <code>b - a</code> is descending.</td></tr>
+          <tr><td><code>arr.sort((a,b) =&gt; b[1] - a[1])</code></td><td>yes</td><td>Sort pairs by their second element — the frequency-sort trick.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="good"><strong>Stability is guaranteed</strong> (ES2019), so sorting by one key then another gives a stable composite order — sort by the secondary key <em>first</em>.</div>
+
+    <h3>Iterate</h3>
+    <pre><code>for (const x of arr) { /* value */ }
+for (const i of arr.keys()) { /* index */ }
+for (const [i, x] of arr.entries()) { /* index, value */ }
+for (const x in arr) { /* KEYS as strings — never use this on arrays */ }</code></pre>
+    <div class="danger"><strong><code>for...in</code> over an array is a bug.</strong> It yields string indices (<code>"0"</code>, <code>"1"</code>), skips holes, and picks up anything added to <code>Array.prototype</code>. Always <code>for...of</code>.</div>
+
+    <!-- ══════════════════ 3. OBJECTS ══════════════════ -->
+    <h2 id="objects">3. Objects</h2>
+    <h3>Create &amp; access</h3>
+    <pre><code>const o = { a: 1, b: 2 };              // literal
+const key = 'c';
+const p = { a: 1, [key]: 3, m() { return 1; } }; // computed key + shorthand method
+const a = o.a;                          // dot
+const b = o['a'];                       // bracket (needed for dynamic keys)
+const has = 'a' in o;                   // true — includes the prototype chain
+delete o.a;                             // removes the property
+const own = Object.hasOwn(o, 'a');      // ES2022 — own properties only</code></pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Returns</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>Object.keys(o)</code></td><td>array of keys</td><td>Own, <strong>enumerable</strong> only.</td></tr>
+          <tr><td><code>Object.values(o)</code></td><td>array of values</td><td>Same filtering.</td></tr>
+          <tr><td><code>Object.entries(o)</code></td><td><code>[[k, v], …]</code></td><td>Makes an object sortable — <code>Object.entries(o).sort()</code>.</td></tr>
+          <tr><td><code>Object.fromEntries(pairs)</code></td><td>object</td><td>The inverse. <code>Object.fromEntries(new Map(…))</code> works.</td></tr>
+          <tr><td><code>Object.assign({}, a, b)</code></td><td>new object</td><td>Shallow merge. <code>{...a, ...b}</code> is the modern form.</td></tr>
+          <tr><td><code>Object.freeze(o)</code></td><td>object</td><td>Shallow, silently ignores writes.</td></tr>
+          <tr><td><code>Object.seal(o)</code></td><td>object</td><td>Can edit existing, cannot add.</td></tr>
+          <tr><td><code>Object.create(null)</code></td><td>object</td><td><strong>No prototype.</strong> The fix for key-collision bugs.</td></tr>
+          <tr><td><code>Object.hasOwn(o, k)</code></td><td>boolean</td><td>ES2022. Replaces <code>o.hasOwnProperty(k)</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Iterate</h3>
+    <pre><code>for (const k of Object.keys(o)) { }
+for (const [k, v] of Object.entries(o)) { }
+for (const k in o) { /* own + inherited enumerable */ }</code></pre>
+
+    <h3>Destructuring</h3>
+    <pre><code>const { a, b = 2 } = o;              // default when undefined
+const { a: first } = o;               // rename a -&gt; first
+const { c: { nested } } = o;          // nested path (o.c.nested)
+const { d, ...rest } = o;             // rest - everything else
+const [x, y] = arr;                   // array destructuring
+const [, second] = arr;               // skip an element
+const [[h]] = nestedArr;              // nested array</code></pre>
+    <div class="notice"><strong>Defaults only fire on <code>undefined</code>, not on <code>null</code>.</strong> <code>const { a = 1 } = { a: null }</code> gives <code>a === null</code>. Use <code>??</code> if you also want <code>null</code> to fall back.</div>
+
+    <!-- ══════════════════ 4. NUMBERS ══════════════════ -->
+    <h2 id="numbers">4. Numbers &amp; Math</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Need</th><th>Method</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Parse an int</td><td><code>parseInt(s, 10)</code></td><td><strong>Always pass radix 10</strong> — <code>'08'</code> was once octal.</td></tr>
+          <tr><td>Parse a float</td><td><code>parseFloat(s)</code></td><td>Stops at the first invalid char.</td></tr>
+          <tr><td>Coerce to number</td><td><code>Number(s)</code></td><td><code>''</code> &rarr; 0, <code>'abc'</code> &rarr; <code>NaN</code>.</td></tr>
+          <tr><td>Integer check</td><td><code>Number.isInteger(x)</code></td><td>No coercion, unlike global <code>isInteger</code>.</td></tr>
+          <tr><td>Finite check</td><td><code>Number.isFinite(x)</code></td><td>Rejects <code>Infinity</code> and <code>NaN</code>.</td></tr>
+          <tr><td>NaN check</td><td><code>Number.isNaN(x)</code></td><td><code>x === NaN</code> is <em>always false</em> — use this.</td></tr>
+          <tr><td>Round for display</td><td><code>x.toFixed(2)</code></td><td>Returns a <strong>string</strong>.</td></tr>
+          <tr><td>Floor / ceil / round</td><td><code>Math.floor</code> · <code>Math.ceil</code> · <code>Math.round</code></td><td><code>Math.trunc</code> drops the fraction only (keeps negatives).</td></tr>
+          <tr><td>Abs / sign</td><td><code>Math.abs(x)</code> · <code>Math.sign(x)</code></td><td><code>sign</code> gives <code>-1</code>, <code>0</code>, <code>1</code>.</td></tr>
+          <tr><td>Max / min</td><td><code>Math.max(a, b)</code> · <code>Math.min(...arr)</code></td><td>Spread an array. <code>Math.max()</code> with no args is <code>-Infinity</code>.</td></tr>
+          <tr><td>Powers &amp; roots</td><td><code>Math.pow(b, e)</code> · <code>b ** e</code> · <code>Math.sqrt(x)</code></td><td><code>**</code> is ES2016.</td></tr>
+          <tr><td>Random</td><td><code>Math.random()</code></td><td><code>[0, 1)</code>. Not crypto-safe.</td></tr>
+          <tr><td>Integer-safe big numbers</td><td><code>BigInt</code> · <code>n * 10n</code></td><td>Never mix with <code>Number</code> — it throws.</td></tr>
+          <tr><td>Binary / hex string</td><td><code>x.toString(2)</code> · <code>x.toString(16)</code></td><td>RADIX on <code>toString</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="danger"><strong>Floating point.</strong> <code>0.1 + 0.2 === 0.3</code> is <strong>false</strong>. Compare with an epsilon: <code>Math.abs(a - b) &lt; 1e-9</code>. Also note <code>[] == false</code> is true and <code>null == undefined</code> is true — prefer <code>===</code> everywhere.</div>
+
+    <!-- ══════════════════ 5. FUNCTIONS ══════════════════ -->
+    <h2 id="functions">5. Functions &amp; scope</h2>
+    <pre><code>function hoisted(a, b = 1) { return a + b; }  // declaration + default param
+const f = function (x) { return x * 2; };       // expression
+const g = x => x * 2;                          // arrow, implicit return
+const h = (x, y) => ({ sum: x + y });          // object literal needs parens
+function variadic(...args) { return args.length; }  // rest
+function memo(fn) {                            // classic closure + Map
+  const cache = new Map();
+  return n => cache.has(n) ? cache.get(n)
+                           : (cache.set(n, fn(n)), cache.get(n));
+}</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Concept</th><th>What matters</th></tr></thead>
+        <tbody>
+          <tr><td>Hoisting</td><td>Function <em>declarations</em> hoist and can be called before the line. <code>let</code>/<code>const</code> do not — using them before the declaration throws a <code>ReferenceError</code> (temporal dead zone).</td></tr>
+          <tr><td><code>this</code></td><td>Arrow functions inherit <code>this</code> from the enclosing scope and have none of their own — which is why they are wrong as methods.</td></tr>
+          <tr><td>Borrowing</td><td><code>fn.call(thisArg, a)</code> &middot; <code>fn.apply(thisArg, [a])</code> &middot; <code>const b = fn.bind(thisArg)</code>.</td></tr>
+          <tr><td>Closure</td><td>A function remembers the scope it was created in. The basis of memoisation, counters and module privacy.</td></tr>
+          <tr><td>Recursion</td><td>Always define the base case first. Deep recursion can hit the call-stack limit (~10k frames) — convert to a loop for large <code>n</code>.</td></tr>
+          <tr><td>Higher-order</td><td>Functions returning functions: <code>curry</code>, <code>compose</code>, and every <code>map</code>/<code>filter</code>/<code>reduce</code> callback.</td></tr>
+          <tr><td>Generators</td><td><code>function* gen() { yield x; }</code> — lazily produces values; <code>for (const v of gen())</code>. Useful for huge or infinite sequences.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════ 6. ES6+ ══════════════════ -->
+    <h2 id="es6">6. ES6+ syntax essentials</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Feature</th><th>Since</th><th>Example &amp; the thing to remember</th></tr></thead>
+        <tbody>
+          <tr><td><code>let</code> / <code>const</code></td><td>ES2015</td><td>Block-scoped. <code>const</code> freezes the <em>binding</em>, not the contents — <code>const a = [1]; a.push(2)</code> is legal.</td></tr>
+          <tr><td>Template literals</td><td>ES2015</td><td>`` `P${x}: ${y}` `` — real interpolation. Remember <code>${0}</code> is the number 0, not "argument 0".</td></tr>
+          <tr><td>Destructuring</td><td>ES2015</td><td>Defaults fire on <code>undefined</code> only. <code>...</code> rest collects the remainder.</td></tr>
+          <tr><td>Spread / rest</td><td>ES2015</td><td><code>[...arr]</code> copies, <code>fn(...arr)</code> expands, <code>const [a, ...r] = arr</code> collects.</td></tr>
+          <tr><td>Shorthand &amp; computed keys</td><td>ES2015</td><td><code>{ k, [x + 1]: 2, m() {} }</code>.</td></tr>
+          <tr><td>Arrow functions</td><td>ES2015</td><td>No own <code>this</code>, no <code>arguments</code>, cannot be used with <code>new</code>.</td></tr>
+          <tr><td><code>for...of</code></td><td>ES2015</td><td>Values of any iterable (Array, String, Map, Set, generator). <code>for...in</code> is keys.</td></tr>
+          <tr><td>Classes</td><td>ES2015</td><td>Syntactic sugar over prototypes; <code>constructor</code>, methods, <code>static</code>, <code>get</code>/<code>set</code>, <code>extends</code>/<code>super</code>.</td></tr>
+          <tr><td>Modules</td><td>ES2015</td><td><code>export</code> / <code>export default</code> / <code>import</code>. Static, evaluated once.</td></tr>
+          <tr><td>Iterators</td><td>ES2015</td><td>Anything with <code>[Symbol.iterator]</code> works with <code>for...of</code> and spread.</td></tr>
+          <tr><td><code>Symbol</code></td><td>ES2015</td><td>Guaranteed-unique key — the only property key type that never collides by name.</td></tr>
+          <tr><td><code>**</code></td><td>ES2016</td><td>Exponentiation.</td></tr>
+          <tr><td><code>Object.entries</code>/<code>fromEntries</code></td><td>ES2017</td><td>Object &harr; array-of-pairs conversion.</td></tr>
+          <tr><td><code>async</code>/<code>await</code></td><td>ES2017</td><td>Syntactic sugar over Promises (section 8).</td></tr>
+          <tr><td>Optional chaining</td><td>ES2020</td><td><code>a?.b?.c</code> &rarr; <code>undefined</code> instead of throwing. Also <code>fn?.()</code>, <code>o?.[k]</code>.</td></tr>
+          <tr><td>Nullish coalescing</td><td>ES2020</td><td><code>a ?? b</code> falls back only on <code>null</code>/<code>undefined</code> — unlike <code>||</code>, which also treats <code>0</code>, <code>''</code> and <code>false</code> as falsy.</td></tr>
+          <tr><td><code>String.replaceAll</code></td><td>ES2021</td><td>See Strings.</td></tr>
+          <tr><td><code>String.prototype.at</code> / <code>Array.prototype.at</code></td><td>ES2022</td><td>Negative indexing.</td></tr>
+          <tr><td><code>Object.hasOwn</code></td><td>ES2022</td><td>Replaces <code>hasOwnProperty</code>.</td></tr>
+          <tr><td><code>at</code>-free non-mutating array methods</td><td>ES2023</td><td><code>toSorted</code>, <code>toReversed</code>, <code>toSpliced</code>, <code>with</code>.</td></tr>
+          <tr><td>Logical assignment</td><td>ES2021</td><td><code>a ||= b</code>, <code>a &amp;&amp;= b</code>, <code>a ??= b</code> — shorthand for the classic read-modify-write.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════ 7. COLLECTIONS ══════════════════ -->
+    <h2 id="collections">7. Map, Set &amp; the weak ones</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Structure</th><th>Reach for it when</th><th>Key API</th><th>Watch out for</th></tr></thead>
+        <tbody>
+          <tr><td><strong><code>Set</code></strong></td><td>Uniqueness, or an <strong>O(1) membership test</strong>.</td><td><code>add</code> · <code>has</code> · <code>delete</code> · <code>size</code></td><td>No indexing. <code>size</code>, not <code>length</code>.</td></tr>
+          <tr><td><strong><code>Map</code></strong></td><td>A lookup table with <strong>non-string keys</strong>, or when insertion order matters.</td><td><code>get</code> · <code>set</code> · <code>has</code> · <code>delete</code> · <code>size</code> · <code>keys()</code> · <code>values()</code> · <code>entries()</code></td><td><code>Object.keys(map)</code> is <code>[]</code>. Use <code>[...map.keys()]</code>.</td></tr>
+          <tr><td><strong><code>{}</code></strong></td><td>String keys, small scale, or you need <code>JSON.stringify</code>.</td><td><code>o[k]</code> · <code>Object.keys</code> · <code>in</code></td><td>Keys coerced to strings; inherits <code>Object.prototype</code>.</td></tr>
+          <tr><td><strong><code>WeakSet</code></strong> / <strong><code>WeakMap</code></strong></td><td>Keying bookkeeping on objects without preventing garbage collection.</td><td><code>has</code> / <code>get</code>, <code>set</code>, <code>delete</code></td><td><strong>Not iterable</strong> — no <code>size</code>, no <code>forEach</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>const set = new Set([3, 1, 3]);       // Set(2) {3, 1}
+const uniq = [...new Set(arr)];        // dedup, first-seen order
+const map = new Map([['a', 1]]);       // from pairs
+map.set('b', 2); map.get('a'); map.has('a'); map.size;
+for (const [k, v] of map) { }          // insertion order</code></pre>
+
+    <!-- ══════════════════ 8. ASYNC ══════════════════ -->
+    <h2 id="async">8. Promises &amp; async/await</h2>
+    <p class="muted">Barely needed for LeetCode, but part of the essentials.</p>
+    <pre><code>const p = new Promise((resolve, reject) => { ok ? resolve(v) : reject(e); });
+p.then(v => v * 2).catch(e => 0).finally(() => cleanup());
+
+async function f(n) {
+  try {
+    const a = await fetchThing(n);     // pauses f, not the runtime
+    return a;
+  } catch (e) {
+    return 0;                          // await rethrows, so try/catch works
+  }
+}
+const [a, b] = await Promise.all([x(), y()]);   // parallel, all-or-throw
+const r = await Promise.allSettled([x(), y()]); // parallel, never throws</code></pre>
+    <div class="notice"><strong>Await is sequential.</strong> Two <code>await</code>s back to back run one after the other — roughly twice as slow as starting both and awaiting both. Use <code>Promise.all</code> for parallel work.</div>
+
+    <!-- ══════════════════ 9. PATTERNS ══════════════════ -->
+    <h2 id="patterns">9. Key logic patterns</h2>
+    <p class="muted">Each snippet uses <strong>only</strong> methods documented above.</p>
+
+    <h3>Two pointers — sorted pair sum</h3>
+    <pre><code>function pairSum(nums, target) {
+  let l = 0, r = nums.length - 1;
+  while (l &lt; r) {
+    const sum = nums[l] + nums[r];
+    if (sum === target) return [l, r];
+    if (sum &lt; target) l++; else r--;
+  }
+  return [];
+}</code></pre>
+
+    <h3>Sliding window — longest substring without repeats</h3>
+    <pre><code>function longestUnique(s) {
+  const seen = new Set();
+  let l = 0, best = 0;
+  for (let r = 0; r &lt; s.length; r++) {
+    while (seen.has(s[r])) { seen.delete(s[l]); l++; }
+    seen.add(s[r]);
+    best = Math.max(best, r - l + 1);
+  }
+  return best;
+}</code></pre>
+    <p class="muted">This indexes by <strong>code unit</strong> (<code>s[r]</code>), matching how JavaScript and LeetCode's JS judge treat strings — so <code>longestUnique('😀😀ab')</code> returns 4, not the 3 you would get counting code points. Convert with <code>[...s]</code> first if the problem means characters.</p>
+
+    <h3>Frequency map — group anagrams</h3>
+    <pre><code>function groupAnagrams(words) {
+  const groups = new Map();
+  for (const w of words) {
+    const key = [...w].sort().join('');
+    groups.set(key, (groups.get(key) ?? []).concat(w));
+  }
+  return [...groups.values()];
+}</code></pre>
+
+    <h3>Binary search — first index at or after a target</h3>
+    <pre><code>function lowerBound(nums, target) {
+  let lo = 0, hi = nums.length;
+  while (lo &lt; hi) {
+    const mid = (lo + hi) &gt;&gt; 1;        // floor divide by 2, no overflow
+    if (nums[mid] &lt; target) lo = mid + 1; else hi = mid;
+  }
+  return lo;
+}</code></pre>
+
+    <h3>Stack — valid parentheses</h3>
+    <pre><code>function validParens(s) {
+  const pairs = { ')': '(', ']': '[', '}': '{' };
+  const stack = [];
+  for (const c of s) {
+    if (c === '(' || c === '[' || c === '{') { stack.push(c); continue; }
+    if (stack.pop() !== pairs[c]) return false;
+  }
+  return stack.length === 0;
+}</code></pre>
+
+    <h3>Prefix sum / Kadane — maximum subarray</h3>
+    <pre><code>function maxSubArray(nums) {
+  let best = nums[0], run = nums[0];
+  for (let i = 1; i &lt; nums.length; i++) {
+    run = Math.max(nums[i], run + nums[i]);
+    best = Math.max(best, run);
+  }
+  return best;
+}</code></pre>
+
+    <h3>Sort with a comparator — top K frequent</h3>
+    <pre><code>function topK(nums, k) {
+  const count = {};
+  for (const n of nums) count[n] = (count[n] || 0) + 1;
+  return Object.entries(count)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, k)
+    .map(([n]) => Number(n));
+}</code></pre>
+
+    <h3>BFS — shortest path in an unweighted grid</h3>
+    <pre><code>function bfs(start, neighbours) {
+  const queue = [start];
+  const seen = new Set([start]);
+  let steps = 0;
+  while (queue.length) {
+    const next = [];
+    for (const node of queue) {
+      for (const nb of neighbours(node)) {
+        if (seen.has(nb)) continue;
+        seen.add(nb); next.push(nb);
+      }
+    }
+    steps++;
+    queue.length = 0;
+    for (const n of next) queue.push(n);
+  }
+  return steps;
+}</code></pre>
+
+    <!-- ══════════════════ 10. GOTCHAS ══════════════════ -->
+    <h2 id="gotchas">10. Gotchas that fail tests</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Trap</th><th>Wrong</th><th>Right</th></tr></thead>
+        <tbody>
+          <tr><td>Default sort is lexicographic</td><td><code>[10,9,1].sort()</code> &rarr; <code>[1,10,9]</code></td><td><code>[...a].sort((x,y) => x - y)</code></td></tr>
+          <tr><td><code>sort</code> mutates</td><td><code>const s = a.sort()</code> changed <code>a</code></td><td><code>a.toSorted()</code> or <code>[...a].sort()</code></td></tr>
+          <tr><td>Missing frequency key</td><td><code>c[k] = c[k] + 1</code> &rarr; <code>NaN</code></td><td><code>c[k] = (c[k] || 0) + 1</code></td></tr>
+          <tr><td>Prototype collision</td><td><code>count['constructor']</code> is a function</td><td><code>Object.create(null)</code> or a <code>Map</code></td></tr>
+          <tr><td><code>Object.keys</code> on a Map</td><td><code>Object.keys(map)</code> &rarr; <code>[]</code></td><td><code>[...map.keys()]</code></td></tr>
+          <tr><td>Emoji length</td><td><code>'😀'.split('').length === 1</code></td><td><code>[...'😀'].length === 1</code></td></tr>
+          <tr><td><code>replace</code> with a string</td><td><code>'aaa'.replace('a','b')</code> &rarr; <code>'baa'</code></td><td><code>replaceAll</code> or <code>/a/g</code></td></tr>
+          <tr><td>NaN comparison</td><td><code>x === NaN</code> is always false</td><td><code>Number.isNaN(x)</code></td></tr>
+          <tr><td>Float equality</td><td><code>0.1 + 0.2 === 0.3</code></td><td><code>Math.abs(a - b) &lt; 1e-9</code></td></tr>
+          <tr><td>Sparse array</td><td><code>new Array(5).map(x => 1)</code> still has holes</td><td><code>new Array(5).fill(0)</code></td></tr>
+          <tr><td><code>for...in</code> on an array</td><td>string indices, skips holes</td><td><code>for...of</code></td></tr>
+          <tr><td>Spreading a huge array</td><td><code>Math.max(...1e6 items)</code> can throw</td><td>a running max in a loop</td></tr>
+          <tr><td><code>map.get</code> miss</td><td>assumes a value exists</td><td><code>map.get(k) ?? 0</code></td></tr>
+          <tr><td><code>await</code> in a loop</td><td>serialises network/IO calls</td><td><code>Promise.all</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="footnote">Every behavioural claim and every snippet on this page was executed under Node 22 before publication. The <a href="js-interview.html">interview patterns</a> page uses nothing that is not documented here. Practice any of it in the <a href="quiz.html">quiz</a>; the ServiceNow-specific APIs live in the <a href="index.html">JavaScript Reference</a>.</p>
+  </div>
+</body>
+</html>
