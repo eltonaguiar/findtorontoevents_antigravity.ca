@@ -4,7 +4,7 @@
  * When Apache serves /MOVIESHOWS/, DirectoryIndex prefers index.php over index.html.
  * This reads the original HTML and injects the upgrade toast script before </body>.
  */
-$htmlFile = __DIR__ . '/index.html';
+$htmlFile = dirname(__FILE__) . '/index.html';
 if (!file_exists($htmlFile)) {
     // Fallback: redirect to MS2 if original HTML is missing
     header('Location: ../MOVIESHOWS2/');
