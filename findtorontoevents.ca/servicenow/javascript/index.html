@@ -817,12 +817,30 @@
               <pre><code>var gr = new GlideRecord('incident');
 gr.addActiveQuery();
 gr.addQuery('priority', 1);
-gr.addQuery('sys_created_on', '>=', 'javascript:gs.daysAgoStart(7)');
+
+// Preferred: evaluate first, pass the resulting value
+var since = gs.daysAgoStart(7);          // "yyyy-MM-dd HH:mm:ss"
+gr.addQuery('sys_created_on', '>=', since);
+
 gr.query();
 while (gr.next()) {
     gs.info('Active P1: %s — %s', gr.number, gr.short_description);
 }</code></pre>
             </div>
+
+            <div class="notice"><strong>Evaluated dates vs. literal <code>javascript:</code> strings:</strong> <p style="margin:8px 0 0">Both work, and ServiceNow's own documentation uses the literal form. But <code>gr.addQuery('sys_created_on', '&gt;=', 'javascript:gs.daysAgoStart(7)')</code> defers evaluation to the database layer, which makes the value harder to read, log, breakpoint, or unit-test. Prefer computing the date first and passing the string &mdash; the result is identical, and you can inspect it.</p>
+              <pre style="margin:8px 0 0"><code>// Preferred for addQuery() — evaluate, then pass
+var start = gs.daysAgoStart(7);
+gr.addQuery('opened_at', '&gt;=', start);
+
+// Or with GlideDateTime for explicit control
+var gdt = new GlideDateTime();
+gdt.addDaysLocalTime(-7);
+gr.addQuery('opened_at', '&gt;=', gdt.getValue());
+
+// The javascript: form is still official and fine inside a filter string
+gr.addEncodedQuery('opened_at&gt;=javascript:gs.daysAgoStart(7)');</code></pre>
+              <p style="margin:8px 0 0">Rule of thumb: <strong>programmatic <code>addQuery()</code> → evaluated value</strong>; <strong>an encoded-query string copied from the condition builder → leave it as-is.</strong></p></div>
 
             <h3 id="gr-encoded">2.2 Encoded Queries</h3>
             <div class="code-card">
@@ -902,7 +920,8 @@ while (gr3.next()) gr3.deleteRecord();</code></pre>
 var gr = new GlideRecord('incident');
 gr.addQuery('active', '=', 'true');
 gr.addQuery('priority', 'IN', '1,2');
-gr.addQuery('sys_created_on', '&gt;=', 'javascript:gs.daysAgoStart(30)');
+var since = gs.daysAgoStart(30);              // evaluate first — clearer than
+gr.addQuery('sys_created_on', '&gt;=', since);   // the literal 'javascript:...' form
 gr.query();
 
 // B) One encoded-query string (portable — copy it straight from the filter bar)
@@ -1043,6 +1062,19 @@ gdt4.setValue('2024-06-15 09:30:00');  // internal format</code></pre>
             </div>
 
             <div class="notice"><strong>Which one do I use?</strong> For roughly 95% of scripting, pick one of two: <code>getValue()</code> for background logic, comparisons and database work (raw UTC internal value), or <code>getDisplayValue()</code> for anything a human reads (user's format <em>and</em> timezone). <code>getDisplayValueInternal()</code> is real but niche — it keeps the user's timezone while switching to the <em>system's</em> format (<code>yyyy-MM-dd HH:mm:ss</code>), which is what you want when bridging to another system that expects canonical formatting. Reach for it deliberately, not by habit.</div>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Goal</th><th>Preferred method</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Raw stored / UTC value — queries, storage, integrations</td><td><code>getValue()</code></td></tr>
+                  <tr><td>User-facing display — respects format <em>and</em> timezone</td><td><code>getDisplayValue()</code></td></tr>
+                  <tr><td>User timezone + fixed internal format</td><td><code>getDisplayValueInternal()</code> — niche, deliberate</td></tr>
+                  <tr><td>Setting a field from a display string</td><td><code>setDisplayValue()</code> / <code>setDisplayValueInternal()</code></td></tr>
+                </tbody>
+              </table>
+            </div>
 
             <h3>Common Patterns</h3>
             <div class="code-card">
@@ -1177,11 +1209,22 @@ g_form.clearMessages()</code></pre>
               </div>
               <pre><code>function onChange(control, oldValue, newValue, isLoading) {
     if (isLoading || newValue === '') return;
+
+    // Clear first so repeated fires don't stack the same message
+    g_form.hideFieldMsg('priority');
+
     if (newValue == 1) {
         g_form.setMandatory('description', true);
         g_form.showFieldMsg('priority', 'P1 requires description', 'warning');
     }
 }</code></pre>
+            </div>
+
+            <div class="notice">
+              <strong>Field messages: how to use them well</strong>
+              <p style="margin:8px 0 0"><code>showFieldMsg(field, message, type)</code> accepts <code>'info'</code>, <code>'error'</code> and <code>'warning'</code> &mdash; all three are documented. Use <code>'error'</code> for blocking validation, <code>'info'</code>/<code>'warning'</code> for non-blocking guidance.</p>
+              <p style="margin:8px 0 0"><strong>Always call <code>g_form.hideFieldMsg(field)</code> first</strong> (or <code>hideFieldMsg(field, true)</code> to also clear server-supplied messages) so messages don't accumulate each time an onChange fires. <code>g_form.clearMessages()</code> clears form-level messages instead.</p>
+              <p style="margin:8px 0 0"><strong>A field message never blocks submission by itself.</strong> It is display-only &mdash; if the condition must actually stop a save, enforce it in an <code>onSubmit</code> client script (return <code>false</code>) or make the field mandatory. For a whole-form notice, prefer <code>g_form.addInfoMessage()</code> / <code>addErrorMessage()</code>.</p>
             </div>
           </section>
 
@@ -1352,6 +1395,35 @@ g_form.setValue('u_open_count', count);</code></pre>
               <strong>Best practice:</strong> Prefer <code>getXMLAnswer(callback)</code> (async) over <code>getXMLWait()</code> (sync). Synchronous calls freeze the browser and degrade the user experience. If you only need data at form load, use <code>g_scratchpad</code> from a Display Business Rule instead — it avoids the round-trip entirely.
             </div>
 
+            <h3>11.3b Blocking on a validation before submit — the scratchpad re-submit pattern</h3>
+            <p><code>getXMLWait()</code> is also unavailable in scoped apps and Service Portal, so it is not a portable answer to "I need this value before the form saves". The common workaround is an <code>onSubmit</code> script that <strong>stops the first submit, validates asynchronously, then re-submits</strong> using a scratchpad flag so the check runs exactly once:</p>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context client">Client</span>
+                <span class="filename">Incident — onSubmit — Async validation</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>function onSubmit() {
+    // Already validated on this submit cycle? let it through.
+    if (g_scratchpad.isValidated) return true;
+
+    var ga = new GlideAjax('MyAjaxUtils');
+    ga.addParam('sysparm_name', 'validateCaller');
+    ga.addParam('sysparm_caller_id', g_form.getValue('caller_id'));
+    ga.getXMLAnswer(function(answer) {
+        if (answer === 'true') {
+            g_scratchpad.isValidated = true;      // set once, reuse
+            g_form.submit(g_form.getActionName()); // resume the save
+        } else {
+            g_form.showFieldMsg('caller_id', 'Caller failed validation', 'error');
+        }
+    });
+    return false;  // stop the FIRST submit so the async check can finish
+}</code></pre>
+            </div>
+            <div class="notice"><strong>Two lighter alternatives:</strong> <p style="margin:8px 0 0">If the condition can be evaluated when the field changes rather than at save time, run the GlideAjax call in an <strong>onChange</strong> script and stash the result on <code>g_scratchpad</code> (or a hidden field) for <code>onSubmit</code> to read &mdash; no round-trip inside the submit at all.</p>
+              <p style="margin:8px 0 0">And if the rule is pure client-side (mandatory field, format), an <code>onSubmit</code> returning <code>false</code> with a plain <code>g_form</code> check needs no AJAX whatsoever. Reserve the async path for rules that genuinely require a server lookup.</p></div>
+
             <h3>11.4 Response Methods Deep Dive: getXMLAnswer vs getXML vs getXMLWait</h3>
             <p>GlideAjax has three primary ways to receive the server response. They differ in <strong>asynchronous vs synchronous</strong>, <strong>what the callback receives</strong> (string vs full XML), and <strong>blocking behavior</strong>.</p>
 
@@ -1513,7 +1585,7 @@ g_form.setValue('u_open_count', count);</code></pre>
                 <tbody>
                   <tr>
                     <td><strong>ECMAScript 2021 (ES12)</strong></td>
-                    <td>Default for new scoped applications. Also selectable per individual script.</td>
+                    <td>Default for <strong>newly created scripts</strong> (Xanadu+), regardless of the application's configured mode. Scoped applications default to ES12; global applications default to ES5 with a per-script toggle. Also selectable per individual script.</td>
                     <td>Modern syntax: <code>const</code>/<code>let</code>, arrow functions, template literals, destructuring, rest/spread, default parameters, <code>for...of</code>, classes, <code>Map</code>/<code>Set</code>, optional chaining <code>?.</code>, nullish coalescing <code>??</code>, and <code>async</code>/<code>await</code>.</td>
                   </tr>
                   <tr>
@@ -1533,6 +1605,17 @@ g_form.setValue('u_open_count', count);</code></pre>
 
             <div class="notice">
               <strong>Release history that matters:</strong> Beginning with the <strong>Tokyo</strong> release, new and existing scoped applications could run in ES12 mode. Beginning with <strong>Xanadu</strong>, newly created scripts default to ES12 mode <em>regardless</em> of the mode configured for the application, and ES12 mode became available for individual scripts including those in the global scope. So "scoped vs. global" is no longer the deciding factor &mdash; check the mode, then the release.
+            </div>
+
+            <div class="notice">
+              <strong>Working with ES12 day to day:</strong>
+              <ul style="margin:8px 0 0; padding-left:20px">
+                <li><strong>ES12 is the default for new scripts &mdash; it is not mandatory.</strong> New scripts get ES12 mode regardless of the application's JavaScript mode setting, so modern syntax (<code>const</code>/<code>let</code>, arrow functions, template literals, destructuring, <code>??</code>) is safe there and reads better. Use it.</li>
+                <li><strong>Leave existing ES5 scripts on ES5</strong> unless you explicitly switch the mode <em>and</em> test. Flipping the mode on legacy code changes semantics, not just syntax.</li>
+                <li><strong>Scope alone still matters operationally even though it no longer decides the language level:</strong> global scripts stay on ES5 by default until you toggle them per script.</li>
+                <li><strong>Not every evaluation path runs the ES12 engine.</strong> Certain filter <code>javascript:</code> expressions, <code>display business rule</code> snippets and other embedded evaluation contexts may run under an older engine &mdash; test modern syntax there before relying on it.</li>
+                <li><strong>Per-script control:</strong> set the JavaScript mode on an individual script when only that one file should change &mdash; the cheapest way to adopt ES12 incrementally.</li>
+              </ul>
             </div>
 
             <h3>Feature reference (ES12 mode)</h3>

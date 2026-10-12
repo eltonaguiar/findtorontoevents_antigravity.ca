@@ -75,7 +75,27 @@ the system format — niche, deliberate, not a default.
   (369,089 bytes, sha256 `df797a13…`). Live browser re-run: same 53/53/0/0 result,
   invented-API scan empty, TOC jump lands on §3, copy button returns "Copied!".
 
-## 5. Files
+## 5. Best-practice refinements (second pass, same day)
+
+Correctness was settled in §1; a follow-up pass added the **preferred usage** for
+the six points that had been assessed, so the page teaches the good habit rather
+than merely a working one:
+
+| Area | What was added |
+|---|---|
+| §2.1 `addQuery()` dates | Examples now **evaluate first** (`var since = gs.daysAgoStart(7); addQuery(..., since)`) plus a notice contrasting the evaluated form, the `GlideDateTime` form, and the literal `javascript:` form — with the rule *programmatic `addQuery()` → evaluated value; encoded-query string copied from the filter bar → leave it alone* |
+| §3 QueryBuilder card | Same evaluated-date change in the `addQuery()` example |
+| §8 g_form | `hideFieldMsg('priority')` before every `showFieldMsg()` in the onChange example, plus a notice: `info`/`error`/`warning` are all valid, clear before showing so messages don't stack, **a field message never blocks submission by itself** (enforce in `onSubmit` / make it mandatory), `addInfoMessage()`/`addErrorMessage()` for form-level |
+| §11.3b (new) | The **scratchpad re-submit pattern** — `onSubmit` returns `false`, validates via async `getXMLAnswer`, sets `g_scratchpad.isValidated`, then `g_form.submit(g_form.getActionName())` — plus lighter alternatives (stash the result in `onChange`; plain client-side check needs no AJAX) |
+| §12 ES12 | Modes table now states scoped apps default ES12 / global defaults ES5 with a per-script toggle, new-scripts-ES12 is *default not mandatory*, plus a "Working with ES12 day to day" list: use modern syntax on new scripts, leave existing ES5 alone unless re-tested, scope no longer decides the language level but still controls the default, some evaluation paths (filter `javascript:` expressions etc.) run older engines |
+
+Also worth recording: `getDisplayValueInternal()` advice from the earlier pass was
+reframed as a **preference table** (`getValue()` → logic/queries, `getDisplayValue()`
+→ user-facing, `getDisplayValueInternal()` → niche: user TZ + system format,
+`setDisplayValue()`/`setDisplayValueInternal()` → setting from a display string),
+not as a correction, since the method itself is real.
+
+## 6. Files
 
 - `findtorontoevents.ca/servicenow/javascript/index.html` — the fix
 - `updates/2026-10-12-servicenow-js-hallucination-audit.md` — this doc
