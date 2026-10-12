@@ -95,6 +95,19 @@ reframed as a **preference table** (`getValue()` → logic/queries, `getDisplayV
 `setDisplayValue()`/`setDisplayValueInternal()` → setting from a display string),
 not as a correction, since the method itself is real.
 
+**Verification for this second pass** (§4's numbers describe the first pass; the
+figures here supersede them):
+
+- Tag balance across 29 tags → **0 mismatches**; no duplicate `id`s.
+- `node --check` on **83 `<pre><code>` blocks** (was 82; one block added in §11.3b —
+  no block was removed) → the same **3** non-parsing results, all intentional
+  (`{ ... }` placeholder, nav tree diagram, a `.map()` continuation fragment).
+- Browser, local *and* live: **53 sections / 53 TOC links / 0 broken anchors /
+  0 console errors**; invented-API scan empty.
+- Live file byte-identical to local: **376,554 bytes, sha256 `5be85db8…`**;
+  remote backup `index.html.bak-20261012-bestpractice` (the original pre-audit
+  `index.html.bak-20261012-audit` was left untouched).
+
 ## 6. Files
 
 - `findtorontoevents.ca/servicenow/javascript/index.html` — the fix
