@@ -1010,6 +1010,130 @@ while (ga.next()) {
               </div>
             </div>
             <p class="muted"><strong>API surface:</strong> <code>addAggregate(agg, name)</code> → <code>COUNT | SUM | AVG | MIN | MAX | STDDEV | GROUP_CONCAT | GROUP_CONCAT_DISTINCT</code>; read back with <code>getAggregate(agg, name)</code>. Group with <code>groupBy(field)</code> or <code>addGroupBy(field)</code> (repeatable). Order with <code>orderByAggregate(agg, name)</code>. <code>getAggregate('COUNT')</code> needs no field name (counts rows); the others take the field as the 2nd arg.</p>
+
+            <h3 id="agg-groupby-walkthrough">Grouping in depth: what each line does, and the result set</h3>
+            <p>The single-column example above produces one row per priority. Grouping by a <em>second</em> column changes the shape of the result entirely: you get one row per <strong>combination</strong> of the grouped fields, so the same priority can appear several times.</p>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">PriorityCategoryRollup.background</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var agg = new GlideAggregate('incident');
+agg.addAggregate('COUNT', 'priority');   // count non-null priority values
+agg.groupBy('priority');                 // grouping column 1
+agg.groupBy('category');                 // grouping column 2 (repeatable)
+agg.query();
+
+while (agg.next()) {
+    // agg.priority / agg.category are the GROUP KEY of the current row —
+    // this is how you pull each group's values out of the aggregate.
+    gs.info(
+        'Priority: '   + agg.priority +
+        ' | Category: ' + agg.category +
+        ' | Count: '    + agg.getAggregate('COUNT', 'priority')
+    );
+}</code></pre>
+            </div>
+
+            <h4>Line by line — effect on the result set</h4>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Line</th><th>What it does</th><th>Effect on the result set</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>new GlideAggregate('incident')</code></td><td>Creates an aggregate query on <code>incident</code>.</td><td>Nothing filtered yet — every incident is eligible.</td></tr>
+                  <tr><td><code>addAggregate('COUNT', 'priority')</code></td><td>Declares one computed column: the count of <strong>non-null</strong> <code>priority</code> values (the docs' definition of <code>COUNT</code>).</td><td>Adds a count column to each result row. The <code>name</code> arg is optional for <code>COUNT</code>.</td></tr>
+                  <tr><td><code>groupBy('priority')</code></td><td>First grouping column.</td><td>Collapses to <strong>one row per distinct priority</strong> — up to 5.</td></tr>
+                  <tr><td><code>groupBy('category')</code></td><td>Second grouping column; call <code>groupBy()</code> repeatedly to add more.</td><td>Splits each priority row further, into <strong>one row per priority&nbsp;+&nbsp;category pair</strong>.</td></tr>
+                  <tr><td><code>agg.query()</code></td><td>Runs the <code>GROUP BY</code> on the database.</td><td>Returns a cursor over the grouped pairs. No incident records are loaded into the script.</td></tr>
+                  <tr><td><code>while (agg.next())</code></td><td>Advances to the next <strong>group</strong>, not the next record.</td><td>One iteration per priority/category combination.</td></tr>
+                  <tr><td><code>agg.priority</code> / <code>agg.category</code></td><td>Reads the <strong>group key</strong> values for the current group.</td><td>The values that defined this row — how you pull a group's values out of the loop.</td></tr>
+                  <tr><td><code>getAggregate('COUNT', 'priority')</code></td><td>Reads the computed count <em>for the current group</em>.</td><td>Must match the earlier <code>addAggregate()</code> — same aggregate <em>and</em> same field.</td></tr>
+                  <tr><td><code>gs.info(...)</code></td><td>Logs one line.</td><td>10 log lines — one per result row below.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>What the result set looks like</h4>
+            <p class="muted">Assume the incident table produces these groups:</p>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Priority</th><th>Category</th><th>Count</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>1</td><td>Hardware</td><td>8</td></tr>
+                  <tr><td>1</td><td>Software</td><td>4</td></tr>
+                  <tr><td>2</td><td>Hardware</td><td>22</td></tr>
+                  <tr><td>2</td><td>Software</td><td>15</td></tr>
+                  <tr><td>2</td><td>Inquiry</td><td>8</td></tr>
+                  <tr><td>3</td><td>Hardware</td><td>41</td></tr>
+                  <tr><td>3</td><td>Software</td><td>33</td></tr>
+                  <tr><td>3</td><td>Network</td><td>13</td></tr>
+                  <tr><td>4</td><td>Software</td><td>19</td></tr>
+                  <tr><td>5</td><td>Inquiry</td><td>6</td></tr>
+                  <tr><td colspan="2"><strong>Total rows counted</strong></td><td><strong>169</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p><strong>Priorities 1, 2 and 3 each appear more than once</strong> because those priorities have incidents in different categories. That is the whole difference a second <code>groupBy()</code> makes — with only <code>groupBy('priority')</code> you would get five rows (one per priority) with the Category column collapsed into the count.</p>
+
+            <h4>How <code>agg</code> behaves on each iteration</h4>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Iteration</th><th><code>agg.priority</code></th><th><code>agg.category</code></th><th><code>getAggregate('COUNT','priority')</code></th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>1</td><td>1</td><td>Hardware</td><td>8</td></tr>
+                  <tr><td>2</td><td>1</td><td>Software</td><td>4</td></tr>
+                  <tr><td>3</td><td>2</td><td>Hardware</td><td>22</td></tr>
+                  <tr><td>4</td><td>2</td><td>Software</td><td>15</td></tr>
+                  <tr><td>5</td><td>2</td><td>Inquiry</td><td>8</td></tr>
+                  <tr><td>6</td><td>3</td><td>Hardware</td><td>41</td></tr>
+                  <tr><td>7</td><td>3</td><td>Software</td><td>33</td></tr>
+                  <tr><td>8</td><td>3</td><td>Network</td><td>13</td></tr>
+                  <tr><td>9</td><td>4</td><td>Software</td><td>19</td></tr>
+                  <tr><td>10</td><td>5</td><td>Inquiry</td><td>6</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Pulling the group's values out properly</h4>
+            <p>Inside the loop the grouped fields behave like any other element on the record: <code>agg.priority</code> gives the internal value, and you need the display helpers for labels. Groups whose value is empty still appear as their own row — the official <code>GlideAggregate</code> example output includes a group with a blank <code>category</code> and a count of 4 — so test for empty rather than assuming a group is missing.</p>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">PriorityCategoryRollup — labelled output</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>while (agg.next()) {
+    var priority = agg.getValue('priority');                    // raw: '2'
+    var priorityLabel = agg.getDisplayValue('priority');        // label: '2 - High'
+    var category = agg.category.toString();                     // group key value
+    var categoryLabel = agg.getDisplayValue('category');        // 'Hardware'
+    var count = parseInt(agg.getAggregate('COUNT', 'priority'), 10);
+
+    if (category === '') {
+        gs.info('P{0} — (no category): {1}', priority, count);
+        continue;
+    }
+    gs.info('P{0} / {1} => {2}', priority, categoryLabel, count);
+}</code></pre>
+            </div>
+
+            <div class="notice">
+              <strong>Quick notes on multi-column grouping:</strong>
+              <ul style="margin:8px 0 0; padding-left:20px">
+                <li><strong>Each <code>next()</code> is one unique combination</strong> of the grouped fields — never one record. To turn groups into per-record work you need a separate query.</li>
+                <li><strong>Add more <code>groupBy()</code> calls</strong> — e.g. also group by <code>state</code> or <code>assignment_group</code> — and the result set expands accordingly (each new column multiplies the possible row count).</li>
+                <li><strong>Order is not guaranteed.</strong> Add <code>agg.orderBy('priority')</code> for a stable order by a group key, or <code>agg.orderByAggregate('COUNT', 'priority')</code> to sort by the computed count.</li>
+                <li><strong>The read must match the declaration.</strong> <code>getAggregate('COUNT', 'priority')</code> only returns a value because <code>addAggregate('COUNT', 'priority')</code> was called with the same field.</li>
+                <li><strong><code>COUNT</code> with a field counts non-null values of that field</strong>, not raw rows. Because <code>priority</code> is populated on every incident the two agree here — use <code>addAggregate('COUNT')</code> with no field when you simply want a row count.</li>
+              </ul>
+            </div>
           </section>
 
           <!-- 5. GLIDEDATETIME -->
