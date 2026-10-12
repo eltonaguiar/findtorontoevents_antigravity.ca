@@ -124,10 +124,37 @@ def test_both_database_hosts_run_even_when_one_fails(monkeypatch, capsys):
         return {"added": 0, "skipped": 20, "fetched": 20, "total_records": 100}
 
     monkeypatch.setattr(refresh, "refresh_host", run)
+    monkeypatch.setattr(refresh, "refresh_ratings", lambda base, key: 10)
     assert refresh.main([]) == 1
     assert calls == ["https://findtorontoevents.ca", "https://torontoevent.net"]
     captured = capsys.readouterr()
     assert "secret-value" not in captured.out + captured.err
+
+
+def test_rating_refresh_checks_persisted_score_and_confidence(monkeypatch):
+    replies = iter([
+        {"success": True, "errors": 0, "refreshed": 1, "ratings": [{
+            "id": 7833, "rating": 8.6, "vote_count": 14, "provisional": True, "checked_at": "now",
+        }]},
+        {"success": True, "movies": [{
+            "id": "7833", "imdb_rating": "8.6", "rating_vote_count": 14,
+            "rating_provisional": True, "rating_checked_at": "now",
+        }]},
+    ])
+    monkeypatch.setattr(refresh, "request_json", lambda url, timeout: next(replies))
+    assert refresh.refresh_ratings("https://example.test", "secret") == 1
+
+
+def test_rating_refresh_rejects_stale_feed(monkeypatch):
+    replies = iter([
+        {"success": True, "errors": 0, "refreshed": 1, "ratings": [{
+            "id": 7833, "rating": 8.6, "vote_count": 14, "provisional": True, "checked_at": "now",
+        }]},
+        {"success": True, "movies": [{"id": "7833", "imdb_rating": "10.0"}]},
+    ])
+    monkeypatch.setattr(refresh, "request_json", lambda url, timeout: next(replies))
+    with pytest.raises(refresh.RefreshError, match="metadata"):
+        refresh.refresh_ratings("https://example.test", "secret")
 
 
 def test_only_one_daily_movie_database_schedule_remains():

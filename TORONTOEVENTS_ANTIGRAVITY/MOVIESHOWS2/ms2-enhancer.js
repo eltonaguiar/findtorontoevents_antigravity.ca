@@ -1024,7 +1024,12 @@
         const card = document.createElement('div');
         card.className = 'top-card';
         const thumb = m.poster || m.thumbnail || (m.trailer_id ? 'https://img.youtube.com/vi/' + m.trailer_id + '/mqdefault.jpg' : '');
-        const ratingBadge = m.rating ? '<div class="top-badge-rating">' + Number(m.rating).toFixed(1) + '</div>' : '';
+        const ratingBadge = m.rating ? '<div class="top-badge-rating">' +
+            (m.rating_source || 'Rating') + ' ' + Number(m.rating).toFixed(1) +
+            (Number.isInteger(m.rating_vote_count) && m.rating_vote_count >= 0
+                ? ' (' + m.rating_vote_count + (m.rating_vote_count === 1 ? ' vote' : ' votes') +
+                    (m.rating_provisional === true ? '; provisional' : '') + ')'
+                : '') + '</div>' : '';
         const grossBadge = m.weekend_gross ? '<div class="top-badge-gross">' + m.weekend_gross + '</div>' : '';
         card.innerHTML =
             '<img src="' + thumb + '" alt="' + (m.title||'').replace(/"/g,'&quot;') + '" loading="lazy" onerror="this.style.background=\'#222\'">' +
@@ -1101,7 +1106,7 @@
                 var d2 = await r2.json();
                 if (d2.success && d2.movies && d2.movies.length) {
                     buildTopRow(d2.movies.map(function(m) {
-                        return { title: m.title, trailer_id: m.trailer_id, poster: m.thumbnail, rating: m.imdb_rating ? parseFloat(m.imdb_rating) : null, source: 'Top Rated' };
+                        return { title: m.title, trailer_id: m.trailer_id, poster: m.thumbnail, rating: m.imdb_rating ? parseFloat(m.imdb_rating) : null, rating_source: m.rating_source, rating_vote_count: m.rating_vote_count, rating_provisional: m.rating_provisional, source: 'Top Rated' };
                     }), 'Top Rated', '\uD83C\uDFC6', 'DATABASE', container);
                 }
                 var r3 = await fetch(API_BASE + 'movies.php?action=top_by_genre&limit=20');
@@ -1110,7 +1115,7 @@
                     for (var ci = 0; ci < d3.categories.length; ci++) {
                         var cat = d3.categories[ci];
                         buildTopRow(cat.movies.map(function(m) {
-                            return { title: m.title, trailer_id: m.trailer_id, poster: m.thumbnail, rating: m.imdb_rating ? parseFloat(m.imdb_rating) : null, source: cat.genre };
+                            return { title: m.title, trailer_id: m.trailer_id, poster: m.thumbnail, rating: m.imdb_rating ? parseFloat(m.imdb_rating) : null, rating_source: m.rating_source, rating_vote_count: m.rating_vote_count, rating_provisional: m.rating_provisional, source: cat.genre };
                         }), 'Top ' + cat.genre, null, null, container);
                     }
                 }

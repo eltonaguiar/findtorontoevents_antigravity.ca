@@ -74,6 +74,45 @@ test('database mapping preserves the real rating distribution', () => {
     assert.equal(ratingBadge(transform({ imdb_rating: null })), 'TBD');
 });
 
+test('low-vote TMDB scores show vote counts and provisional status without clamping', () => {
+    const movie = transform({ imdb_rating: '10.0', rating_vote_count: 5, rating_provisional: true });
+    assert.equal(ratingBadge(movie), 'TMDB 10.0 (5 votes; provisional)');
+    assert.equal(ratingBadge(transform({
+        imdb_rating: '8.2', rating_vote_count: 50, rating_provisional: false
+    })), 'TMDB 8.2 (50 votes)');
+    assert.equal(ratingBadge(transform({
+        imdb_rating: '10.0', rating_vote_count: 1, rating_provisional: true
+    })), 'TMDB 10.0 (1 vote; provisional)');
+});
+
+test('V3 uses the same source, count and confidence labels', () => {
+    const source = fs.readFileSync(path.join(root, 'TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/index.html'), 'utf8');
+    const scripts = [...source.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+    let formatter;
+    for (const script of scripts) {
+        const tree = acorn.parse(script, { ecmaVersion: 'latest' });
+        const node = findNode(tree, n => n.type === 'FunctionDeclaration' && n.id.name === 'formatMovieRating');
+        if (node) formatter = vm.runInNewContext(`(${script.slice(node.start, node.end)})`);
+    }
+    assert.equal(formatter({
+        imdb_rating: '10.0', tmdb_id: 320909, rating_vote_count: 5, rating_provisional: true,
+    }), 'TMDB 10.0 (5 votes; provisional)');
+    assert.equal(formatter({ imdb_rating: '8.2', rating_source: 'TMDB', rating_vote_count: 50 }), 'TMDB 8.2 (50 votes)');
+    assert.equal(formatter({ imdb_rating: null }), '');
+});
+
+test('V2 top-rated fallback also labels provisional database ratings', () => {
+    const source = fs.readFileSync(path.join(ms2, 'ms2-enhancer.js'), 'utf8');
+    const tree = acorn.parse(source, { ecmaVersion: 'latest' });
+    const render = findNode(tree, n => n.type === 'FunctionDeclaration' && n.id.name === 'buildTopCard');
+    const badge = findNode(render, n => n.type === 'VariableDeclarator' && n.id.name === 'ratingBadge');
+    const html = vm.runInNewContext(source.slice(badge.init.start, badge.init.end), {
+        m: {rating: 10, rating_source: 'TMDB', rating_vote_count: 5, rating_provisional: true}
+    });
+    assert.ok(html.includes('TMDB 10.0 (5 votes; provisional)'));
+    assert.ok(source.includes('rating_vote_count: m.rating_vote_count'));
+});
+
 test('both get-movies APIs document the legacy field source and ten-point scale', () => {
     for (const app of ['MOVIESHOWS2', 'MOVIESHOWS3']) {
         const source = fs.readFileSync(path.join(root, 'TORONTOEVENTS_ANTIGRAVITY', app, 'api/get-movies.php'), 'utf8');

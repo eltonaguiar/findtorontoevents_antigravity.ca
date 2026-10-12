@@ -79,11 +79,46 @@ def refresh_host(base, key, kind, pages, mode):
         raise RefreshError("Refresh persisted log is missing or does not match this run")
     return {"total_records": final_count, "added": added, "skipped": skipped, "fetched": fetched}
 
+def refresh_ratings(base, key):
+    query = urllib.parse.urlencode({"key": key, "mode": "ratings"})
+    result = successful_object(request_json(
+        base + "/MOVIESHOWS3/fetch_new_content.php?" + query, 600,
+    ), "Existing-title rating refresh")
+    if count(result, "errors") != 0:
+        raise RefreshError("Rating refresh reported errors")
+    ratings = result.get("ratings")
+    if not isinstance(ratings, list) or count(result, "refreshed") != len(ratings):
+        raise RefreshError("Rating refresh counts are inconsistent")
+    if not ratings:
+        return 0
+    feed = successful_object(request_json(
+        base + "/MOVIESHOWS3/api/get-movies.php", 45,
+    ), "Rating verification feed")
+    movies = feed.get("movies")
+    if not isinstance(movies, list):
+        raise RefreshError("Rating verification feed is invalid")
+    by_id = {int(movie["id"]): movie for movie in movies}
+    verified = 0
+    for rating in ratings:
+        movie = by_id.get(rating["id"])
+        if movie is None:
+            continue  # Titles without playable trailers are intentionally absent from the feed.
+        if (float(movie.get("imdb_rating") or 0) != float(rating["rating"])
+                or movie.get("rating_vote_count") != rating["vote_count"]
+                or movie.get("rating_provisional") != rating["provisional"]
+                or movie.get("rating_checked_at") != rating["checked_at"]):
+            raise RefreshError("Persisted rating metadata does not match refresh results")
+        verified += 1
+    if verified == 0:
+        raise RefreshError("No refreshed ratings could be verified in the production feed")
+    return verified
+
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--type", choices=("both", "movie", "tv"), default="both")
     parser.add_argument("--pages", type=int, choices=range(1, 11), default=3)
+    parser.add_argument("--ratings-only", action="store_true", help="Refresh the tracked rating cohort without importing titles")
     parser.add_argument("--mode", choices=(
         "trending", "upcoming", "popular", "top_rated", "now_playing", "on_the_air",
     ), default="trending")
@@ -96,7 +131,8 @@ def main(argv=None):
     for base in HOSTS:
         print(f"Refreshing {base}: type={args.type}, pages={args.pages}, mode={args.mode}", flush=True)
         try:
-            result = refresh_host(base, key, args.type, args.pages, args.mode)
+            result = {} if args.ratings_only else refresh_host(base, key, args.type, args.pages, args.mode)
+            result["ratings_verified"] = refresh_ratings(base, key)
         except RefreshError as error:
             print(f"ERROR: {base}: {error}", file=sys.stderr, flush=True)
             failed = True

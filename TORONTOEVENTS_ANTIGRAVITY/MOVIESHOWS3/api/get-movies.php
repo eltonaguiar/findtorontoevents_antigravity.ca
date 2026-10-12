@@ -11,6 +11,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
+header('Cache-Control: no-store');
 
 // Handle OPTIONS preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -28,6 +29,7 @@ if (!file_exists($dbConfigPath)) {
 }
 
 require_once $dbConfigPath;
+require_once dirname(__FILE__) . '/tmdb-ratings.php';
 
 try {
     if (!function_exists('getDbConnection')) {
@@ -80,6 +82,7 @@ try {
     ");
 
     $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $movies = attachTmdbRatingDetails($pdo, $movies);
 
     // Fetch streaming providers (if table exists)
     $providers = array();

@@ -36,7 +36,7 @@ $mode = isset($_GET['mode']) ? $_GET['mode'] : 'trending';
 if ($pages < 1) $pages = 1;
 if ($pages > 10) $pages = 10;
 
-$validModes = array('trending', 'upcoming', 'popular', 'top_rated', 'now_playing', 'on_the_air');
+$validModes = array('trending', 'upcoming', 'popular', 'top_rated', 'now_playing', 'on_the_air', 'ratings');
 if (!in_array($mode, $validModes)) {
     $mode = 'trending';
 }
@@ -72,6 +72,18 @@ if ($pdo === null) {
 
 // ---- TMDB API key ----
 $TMDB_API_KEY = getMoviesTmdbApiKey();
+
+if ($mode === 'ratings') {
+    require_once dirname(__FILE__) . '/api/tmdb-ratings.php';
+    try {
+        echo json_encode(refreshTmdbRatings($pdo, $TMDB_API_KEY));
+    } catch (Exception $error) {
+        error_log('MovieShows rating refresh failed: ' . $error->getMessage());
+        header('HTTP/1.1 503 Service Unavailable');
+        echo json_encode(array('success' => false, 'error' => 'Rating refresh failed; check server logs'));
+    }
+    exit;
+}
 
 // ---- Determine which types to fetch ----
 if ($TMDB_API_KEY === null) {
