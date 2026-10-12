@@ -108,6 +108,25 @@ figures here supersede them):
   remote backup `index.html.bak-20261012-bestpractice` (the original pre-audit
   `index.html.bak-20261012-audit` was left untouched).
 
+### Third pass — external re-verification against current docs
+
+An independent check against current official ServiceNow documentation
+(Zurich/Yokohama-era API pages) re-confirmed all six points with **no
+corrections required**. Two details it surfaced that the page did not yet state
+were added:
+
+- **§3 `GlideQueryCondition`** — now records that the official reference says it
+  is *returned by* `addQuery()` and *has no constructor* (you never `new` one),
+  and that its chaining methods are `addOrCondition()` **and** `addCondition()`;
+  the alternatives (`addEncodedQuery()`, `GlideQuery`) are named explicitly.
+- **§2.1 date literals** — now cites `javascript:gs.monthsAgoStart(3)` alongside
+  `daysAgoStart(7)`, since that is the form ServiceNow's own GlideAggregate
+  samples use verbatim.
+
+Re-verified after the change: 0 tag mismatches, 83 blocks with the same 3
+intentional `node --check` failures, 53/53/0/0 in the browser locally and live,
+live byte-identical to local (**377,056 bytes, sha256 `46a81331…`**).
+
 ## 6. Files
 
 - `findtorontoevents.ca/servicenow/javascript/index.html` — the fix

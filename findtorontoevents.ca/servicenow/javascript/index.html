@@ -828,7 +828,7 @@ while (gr.next()) {
 }</code></pre>
             </div>
 
-            <div class="notice"><strong>Evaluated dates vs. literal <code>javascript:</code> strings:</strong> <p style="margin:8px 0 0">Both work, and ServiceNow's own documentation uses the literal form. But <code>gr.addQuery('sys_created_on', '&gt;=', 'javascript:gs.daysAgoStart(7)')</code> defers evaluation to the database layer, which makes the value harder to read, log, breakpoint, or unit-test. Prefer computing the date first and passing the string &mdash; the result is identical, and you can inspect it.</p>
+            <div class="notice"><strong>Evaluated dates vs. literal <code>javascript:</code> strings:</strong> <p style="margin:8px 0 0">Both work, and ServiceNow's own documentation uses the literal form. But <code>gr.addQuery('sys_created_on', '&gt;=', 'javascript:gs.daysAgoStart(7)')</code> — or the equivalent <code>javascript:gs.monthsAgoStart(3)</code> used in ServiceNow's own GlideAggregate samples — defers evaluation to the database layer, which makes the value harder to read, log, breakpoint, or unit-test. Prefer computing the date first and passing the string &mdash; the result is identical, and you can inspect it.</p>
               <pre style="margin:8px 0 0"><code>// Preferred for addQuery() — evaluate, then pass
 var start = gs.daysAgoStart(7);
 gr.addQuery('opened_at', '&gt;=', start);
@@ -839,6 +839,7 @@ gdt.addDaysLocalTime(-7);
 gr.addQuery('opened_at', '&gt;=', gdt.getValue());
 
 // The javascript: form is still official and fine inside a filter string
+// (ServiceNow's own GlideAggregate samples use it verbatim)
 gr.addEncodedQuery('opened_at&gt;=javascript:gs.daysAgoStart(7)');</code></pre>
               <p style="margin:8px 0 0">Rule of thumb: <strong>programmatic <code>addQuery()</code> → evaluated value</strong>; <strong>an encoded-query string copied from the condition builder → leave it as-is.</strong></p></div>
 
@@ -950,7 +951,7 @@ var captured = gr.getEncodedQuery();</code></pre>
     .query();</code></pre>
             </div>
 
-            <div class="warning"><strong>Related but different:</strong> <code>GlideQueryCondition</code> is a real class, but it is not a query-string builder — it is the condition object <code>addQuery()</code> hands back so you can chain <code>addOrCondition()</code>. See <a href="#appendix-joins">Appendix S</a> for the full encoded-query cookbook.</div>
+            <div class="warning"><strong>Related but different:</strong> <code>GlideQueryCondition</code> is a real class — the official reference notes it is <em>returned by</em> <code>addQuery()</code> (and similar methods) and <em>has no constructor</em>, so you never <code>new</code> one up. It exists to let you chain <code>addOrCondition()</code> / <code>addCondition()</code> for OR logic. It is <strong>not</strong> a general query-string builder: for complex or UI-built filters use <code>addEncodedQuery()</code>, and for modern fluent composition use <code>GlideQuery</code> above. See <a href="#appendix-joins">Appendix S</a> for the full encoded-query cookbook.</div>
           </section>
 
           <!-- 4. GLIDEAGGREGATE -->
