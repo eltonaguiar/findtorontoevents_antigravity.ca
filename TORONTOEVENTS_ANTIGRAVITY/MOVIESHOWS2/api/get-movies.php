@@ -6,6 +6,7 @@ error_reporting(0);
 ini_set('display_errors', '0');
 
 header('Content-Type: application/json');
+header('Cache-Control: no-store');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -16,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once 'db-config.php';
+require_once dirname(__FILE__) . '/../../MOVIESHOWS3/api/tmdb-ratings.php';
 
 $pdo = getDbConnection();
 
@@ -49,6 +51,7 @@ try {
     ");
 
     $movies = $stmt->fetchAll();
+    $movies = attachTmdbRatingDetails($pdo, $movies);
 
     echo json_encode(array(
         'success' => true,
