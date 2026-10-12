@@ -1134,6 +1134,58 @@ while (agg.next()) {
                 <li><strong><code>COUNT</code> with a field counts non-null values of that field</strong>, not raw rows. Because <code>priority</code> is populated on every incident the two agree here — use <code>addAggregate('COUNT')</code> with no field when you simply want a row count.</li>
               </ul>
             </div>
+
+            <h3 id="agg-single-row">One overall value: filter, don't group</h3>
+            <p>Grouping is only needed when you want the aggregate <em>per combination</em>. For a single overall figure — the average (or sum) of a field across one slice of the table — filter first and add the aggregates, with <strong>no <code>groupBy()</code> at all</strong>.</p>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">P1Churn.background</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var agg = new GlideAggregate('incident');
+agg.addQuery('priority', '1');            // P1 only — filter first
+agg.addAggregate('AVG', 'sys_mod_count'); // average over that slice
+agg.addAggregate('SUM', 'sys_mod_count'); // optional: also get the total
+agg.setGroup(false);                      // force a single result row
+agg.query();
+
+if (agg.next()) {
+    var avg = parseFloat(agg.getAggregate('AVG', 'sys_mod_count'));
+    var sum = parseFloat(agg.getAggregate('SUM', 'sys_mod_count'));
+    gs.info('P1 avg sys_mod_count: ' + avg);
+    gs.info('P1 sum sys_mod_count: ' + sum);
+}</code></pre>
+            </div>
+
+            <div class="notice">
+              <strong>What <code>setGroup(false)</code> is for:</strong>
+              <p style="margin:8px 0 0">It is a real, documented GlideAggregate method — the API reference lists <code>setGroup(Boolean b)</code> (and its companion <code>setOrder(Boolean b)</code>), and the Scoped API mirrors both. It <em>turns grouping off</em>, collapsing the result to one row.</p>
+              <p style="margin:8px 0 0">With no <code>groupBy()</code> call, GlideAggregate already returns a single row, so here it is belt-and-braces — useful insurance on tables where an implicit group sneaks in, and the idiomatic thing to write when you combine aggregates with <code>addHaving()</code>. If you <em>do</em> want per-group rows, leave it out and call <code>groupBy()</code> as usual.</p>
+              <p style="margin:8px 0 0"><strong><code>getAggregate()</code> returns a <em>string</em>.</strong> Wrap it in <code>parseFloat()</code> / <code>parseInt()</code> before doing arithmetic, or the "math" becomes string concatenation. And note <code>priority</code> is stored as <code>'1'</code> &mdash; <code>1 - Critical</code> is only its display label.</p>
+            </div>
+
+            <h4>The same thing, still grouped</h4>
+            <p>Filter to P1 incidents, but get the average <em>per category</em> — identical pattern to the walkthrough above, just a different aggregate function and a filter:</p>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">P1ChurnByCategory.background</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>var agg = new GlideAggregate('incident');
+agg.addQuery('priority', '1');
+agg.addAggregate('AVG', 'sys_mod_count');
+agg.groupBy('category');   // one row per category, P1s only
+agg.query();
+
+while (agg.next()) {
+    gs.info(
+        'Category: ' + agg.getDisplayValue('category') +
+        ' | avg sys_mod_count: ' + agg.getAggregate('AVG', 'sys_mod_count')
+    );
+}</code></pre>
+            </div>
           </section>
 
           <!-- 5. GLIDEDATETIME -->

@@ -330,7 +330,31 @@ window.SN_QUIZ = {
       ph: "e.g. agg.orderByAggregate('COUNT', 'priority')",
       accept: ["agg.orderByAggregate('COUNT', 'priority')", "agg.orderByAggregate('COUNT','priority')", "orderByAggregate('COUNT', 'priority')"],
       answer: "agg.orderByAggregate('COUNT', 'priority')",
-      hint: 'orderByAggregate(agg, name) — and setDesc() does not exist, use orderByDesc().'
+      hint: 'orderByAggregate(agg, name) - and setDesc() does not exist, use orderByDesc().'
+    },
+    {
+      id: 'ga-08', cat: 'glideaggregate', sub: 'basic',
+      q: 'You want <em>one overall</em> average across a filtered slice, not a row per group. Which documented method collapses the result to a single row?',
+      ph: 'e.g. agg.setGroup(false)',
+      accept: ['agg.setGroup(false)', 'agg.setGroup(0)', 'setGroup(false)'],
+      answer: 'agg.setGroup(false)',
+      hint: 'With no groupBy() you already get one row; this is the explicit insurance, and the idiomatic write alongside addHaving().'
+    },
+    {
+      id: 'ga-09', cat: 'glideaggregate', sub: 'basic',
+      q: '<code>getAggregate()</code> hands back a <em>string</em>. What do you wrap it in before doing arithmetic on it?',
+      ph: "e.g. parseFloat(agg.getAggregate('AVG', 'sys_mod_count'))",
+      accept: ["parseFloat(agg.getAggregate('AVG', 'sys_mod_count'))", 'parseFloat(...)', 'parseFloat()'],
+      answer: "parseFloat(agg.getAggregate('AVG', 'sys_mod_count'))",
+      hint: 'Otherwise adding two of them concatenates the strings instead of summing.'
+    },
+    {
+      id: 'ga-10', cat: 'glideaggregate', sub: 'group',
+      q: 'Name the documented companion to <code>setGroup()</code> that turns result <em>sorting</em> off.',
+      ph: 'e.g. agg.setOrder(false)',
+      accept: ['agg.setOrder(false)', 'setOrder(false)', 'agg.setOrder(0)'],
+      answer: 'agg.setOrder(false)',
+      hint: 'Same shape as setGroup - one boolean, off by default.'
     },
 
     /* ── GlideDateTime ──────────────────────────────────────────────────── */
