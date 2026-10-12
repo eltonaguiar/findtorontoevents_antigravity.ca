@@ -106,6 +106,7 @@
 | 🔗 | Recommended Gear & Links | Products we trust & stand behind | /affiliates/ | #fbbf24 |
 | 🆕 | Latest Updates | New features & improvements | /updates/ | #34d399 |
 | 📰 | News Aggregator | Toronto & world news from 20+ sources | /news/ | #f87171 |
+| 💻 | Tech Finds | Verified upcoming tech, release dates & CAD pricing | /techfinds/ | #e879f9 |
 | 🎁 | Deals & Freebies | 78 birthday freebies & Canadian deals | /deals/ | #fbbf24 |
 
 #### Apps & Tools

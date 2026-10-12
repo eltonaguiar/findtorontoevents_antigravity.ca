@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Finds — Verified Upcoming Tech | FindTorontoEvents</title>
+<meta name="description" content="Verified upcoming tech products — trackers, AR/VR glasses, audio and AI hardware. Non-Apple first (Beats by exception). Release dates, USD &amp; CAD pricing, sources cited.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06070d;
+  --bg2:#0b0d17;
+  --card:rgba(255,255,255,.045);
+  --card-border:rgba(255,255,255,.09);
+  --text:#eef1f8;
+  --muted:#9aa3b8;
+  --accent:#ff4d5e;
+  --accent2:#fbbf24;
+  --trackers:#38bdf8;
+  --xr:#a78bfa;
+  --audio:#fb7185;
+  --ai:#fbbf24;
+  --out:#34d399;
+  --soon:#60a5fa;
+  --rumor:#fbbf24;
+  --radius:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* ── Aurora background ── */
+.aurora{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.aurora span{position:absolute;border-radius:50%;filter:blur(120px);opacity:.35;animation:drift 22s ease-in-out infinite alternate}
+.aurora span:nth-child(1){width:560px;height:560px;background:#ff2d55;top:-160px;left:-120px}
+.aurora span:nth-child(2){width:480px;height:480px;background:#7c3aed;top:220px;right:-160px;animation-delay:-7s}
+.aurora span:nth-child(3){width:420px;height:420px;background:#0ea5e9;bottom:-140px;left:30%;animation-delay:-14s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.15)}}
+.grain{position:fixed;inset:0;z-index:-1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none}
+
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+/* ── Hero ── */
+header.hero{padding:72px 0 40px;text-align:center;position:relative}
+.verified-pill{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:999px;
+  background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.35);color:#6ee7b7;
+  font-size:.82rem;font-weight:600;letter-spacing:.02em;margin-bottom:22px;
+}
+.verified-pill .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 12px #34d399;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+h1{
+  font-family:'Space Grotesk',sans-serif;font-size:clamp(2.6rem,6vw,4.6rem);
+  font-weight:700;letter-spacing:-.03em;line-height:1.05;
+  background:linear-gradient(120deg,#fff 20%,#ff9aa5 55%,#fbbf24 90%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p.sub{max-width:680px;margin:18px auto 0;color:var(--muted);font-size:1.06rem}
+.fx-note{
+  display:inline-block;margin-top:18px;padding:8px 16px;border-radius:12px;
+  background:rgba(255,255,255,.05);border:1px solid var(--card-border);
+  color:var(--muted);font-size:.8rem;
+}
+.fx-note b{color:var(--text)}
+.hero-tags{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:26px}
+.hero-tags span{
+  padding:6px 14px;border-radius:999px;font-size:.78rem;font-weight:600;color:var(--muted);
+  background:rgba(255,255,255,.04);border:1px solid var(--card-border);
+}
+
+/* ── Featured ── */
+.featured{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:44px 0 10px}
+.feature{
+  position:relative;border-radius:26px;overflow:hidden;border:1px solid var(--card-border);
+  background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  transition:transform .35s ease,box-shadow .35s ease;
+}
+.feature:hover{transform:translateY(-5px);box-shadow:0 24px 60px rgba(0,0,0,.55)}
+.feature .imgbox{position:relative;aspect-ratio:16/8.4;overflow:hidden}
+.feature img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.feature:hover img{transform:scale(1.05)}
+.feature .imgbox::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(6,7,13,.95),rgba(6,7,13,.05) 55%)}
+.feature .fbody{padding:22px 26px 26px}
+.kicker{
+  position:absolute;top:16px;left:16px;z-index:2;display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  background:linear-gradient(90deg,var(--accent),#ff8a5c);color:#fff;box-shadow:0 6px 20px rgba(255,77,94,.4);
+}
+.feature h2{font-family:'Space Grotesk',sans-serif;font-size:1.7rem;letter-spacing:-.02em;margin-bottom:6px}
+.feature .meta{color:var(--muted);font-size:.9rem;margin-bottom:14px}
+.price-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.price-usd{font-family:'Space Grotesk',sans-serif;font-size:1.65rem;font-weight:700;color:#fff}
+.price-cad{font-size:1rem;font-weight:600;color:var(--accent2)}
+.feat-bullets{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+.feat-bullets li{position:relative;padding-left:22px;font-size:.92rem;color:#cdd4e4}
+.feat-bullets li::before{content:'✦';position:absolute;left:0;color:var(--accent);font-size:.8rem;top:2px}
+
+/* ── Filter bar ── */
+.filterbar{
+  position:sticky;top:0;z-index:50;margin:46px 0 8px;padding:14px 0;
+  background:rgba(6,7,13,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+}
+.chip{
+  padding:9px 20px;border-radius:999px;font-size:.86rem;font-weight:600;cursor:pointer;
+  background:rgba(255,255,255,.05);border:1px solid var(--card-border);color:var(--muted);
+  transition:all .25s ease;user-select:none;
+}
+.chip:hover{color:#fff;border-color:rgba(255,255,255,.25)}
+.chip.active{background:linear-gradient(90deg,var(--accent),#ff7a4d);color:#fff;border-color:transparent;box-shadow:0 6px 22px rgba(255,77,94,.35)}
+.section-head{margin:40px 0 20px}
+.section-head h2{font-family:'Space Grotesk',sans-serif;font-size:1.9rem;letter-spacing:-.02em;display:flex;align-items:center;gap:12px}
+.section-head .swatch{width:12px;height:28px;border-radius:6px}
+.section-head p{color:var(--muted);font-size:.95rem;margin-top:4px}
+
+/* ── Product grid ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px;padding-bottom:20px}
+.card{
+  background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  overflow:hidden;display:flex;flex-direction:column;position:relative;
+  backdrop-filter:blur(10px);transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease;
+  opacity:0;transform:translateY(24px);
+}
+.card.visible{opacity:1;transform:translateY(0)}
+.card:hover{transform:translateY(-6px);border-color:rgba(255,255,255,.22);box-shadow:0 22px 55px rgba(0,0,0,.5)}
+.card.hidden{display:none}
+.card .imgbox{aspect-ratio:16/9.4;overflow:hidden;position:relative;background:#101322}
+.card .imgbox img{width:100%;height:100%;object-fit:cover;transition:transform .55s ease}
+.card:hover .imgbox img{transform:scale(1.06)}
+.badge{
+  position:absolute;top:12px;right:12px;z-index:2;padding:5px 12px;border-radius:999px;
+  font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#06070d;
+}
+.badge.out{background:var(--out)}
+.badge.soon{background:var(--soon)}
+.badge.rumor{background:var(--rumor)}
+.cbody{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1}
+.brandline{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.catdot{width:9px;height:9px;border-radius:50%;flex:none}
+.cat-trackers{background:var(--trackers)}.cat-xr{background:var(--xr)}.cat-audio{background:var(--audio)}.cat-ai{background:var(--ai)}
+.brandname{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-family:'Space Grotesk',sans-serif;font-size:1.22rem;letter-spacing:-.01em;margin-bottom:4px}
+.release{font-size:.82rem;color:var(--muted);margin-bottom:12px}
+.release b{color:#cdd4e4;font-weight:600}
+.card .price-row{margin-bottom:12px}
+.card .price-usd{font-size:1.3rem}
+.card .price-cad{font-size:.92rem}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pill{padding:4px 10px;border-radius:8px;font-size:.72rem;font-weight:600;background:rgba(255,255,255,.06);color:#cdd4e4;border:1px solid rgba(255,255,255,.07)}
+details.cmp{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:12px}
+details.cmp summary{
+  cursor:pointer;font-size:.82rem;font-weight:700;color:var(--accent2);list-style:none;
+  display:flex;align-items:center;gap:8px;user-select:none;
+}
+details.cmp summary::-webkit-details-marker{display:none}
+details.cmp summary::before{content:'▸';transition:transform .25s ease;display:inline-block}
+details.cmp[open] summary::before{transform:rotate(90deg)}
+table.cmptable{width:100%;border-collapse:collapse;margin-top:12px;font-size:.76rem}
+table.cmptable th,table.cmptable td{padding:8px 7px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);vertical-align:top}
+table.cmptable th{color:var(--muted);font-weight:700;font-size:.68rem;letter-spacing:.05em;text-transform:uppercase}
+table.cmptable td:first-child{color:var(--muted);font-weight:600}
+table.cmptable .new{color:#6ee7b7;font-weight:700}
+table.cmptable .gone{color:#f87171}
+.sources{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:5px}
+.sources .slabel{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sources a{color:#93c5fd;text-decoration:none;font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sources a:hover{text-decoration:underline}
+.sources a::before{content:'↗ ';opacity:.6}
+
+/* ── Footer ── */
+footer{margin:60px 0 40px;padding:34px;border-radius:24px;background:rgba(255,255,255,.03);border:1px solid var(--card-border)}
+footer h3{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;margin-bottom:10px}
+footer p{color:var(--muted);font-size:.86rem;margin-bottom:8px}
+footer p b{color:#cdd4e4}
+footer .flinks{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
+footer .flinks a{color:#93c5fd;text-decoration:none;font-size:.85rem;font-weight:600}
+footer .flinks a:hover{text-decoration:underline}
+.backlink{display:inline-block;margin-bottom:26px;color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:600}
+.backlink:hover{color:#fff}
+
+@media(max-width:860px){.featured{grid-template-columns:1fr}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="aurora"><span></span><span></span><span></span></div>
+<div class="grain"></div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="verified-pill"><span class="dot"></span> All items source-verified · Last updated October 12, 2026</div>
+    <h1>Tech Finds</h1>
+    <p class="sub">Verified upcoming and just-launched tech worth knowing about — trackers, AR/VR glasses, audio and AI hardware. <b>Non-Apple first</b>, with Beats included by exception. Every claim is cross-checked against at least two independent sources.</p>
+    <div class="fx-note">💱 Prices shown in <b>USD</b> and estimated <b>CAD</b> · converted at <b>1 USD ≈ 1.426 CAD</b> (XE mid-market, Oct 11 2026) · Canadian MSRP may differ</div>
+    <div class="hero-tags">
+      <span>🎯 20 verified finds</span><span>🆚 Gen-over-gen comparisons</span><span>📰 Sources cited on every card</span><span>🇨🇦 CAD estimates included</span>
+    </div>
+  </header>
+
+  <!-- ═══════════ FEATURED ═══════════ -->
+  <section class="featured">
+    <article class="feature">
+      <div class="imgbox">
+        <span class="kicker">★ Headline Find</span>
+        <img src="images/metavrglasses.webp" alt="Meta VR Glasses — lightweight glasses with tethered compute puck" loading="lazy">
+      </div>
+      <div class="fbody">
+        <h2>Meta VR Glasses</h2>
+        <p class="meta">Meta · Announced Sep 23, 2026 (Meta Connect) · <b style="color:#fbbf24">Coming Spring 2027</b></p>
+        <div class="price-row"><span class="price-usd">$1,299.99 USD</span><span class="price-cad">≈ C$1,854 est.</span></div>
+        <ul class="feat-bullets">
+          <li>~100&nbsp;g glasses tethered to a ~300&nbsp;g compute puck (Snapdragon Reality Elite, 12&nbsp;GB RAM)</li>
+          <li>Dual micro-OLED ≈5K per eye, 120&nbsp;Hz, Dolby Vision, ~70° FoV, 37 pixels-per-degree</li>
+          <li>Controls: eyes, hands &amp; voice — controllers sold separately; plays the Quest catalog</li>
+          <li>Focus: personal 3D cinema, immersive sports (ESPN/NBA/MLB), multi-screen workspace</li>
+        </ul>
+        <details class="cmp">
+          <summary>vs previous generations</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Meta VR Glasses (2027)</th><th>Quest 3 (2023)</th><th>Quest 3S (2024)</th></tr>
+            <tr><td>Form factor</td><td class="new">Glasses + puck, ~100 g on face</td><td>All-in-one headset, ~515 g</td><td>All-in-one headset, ~514 g</td></tr>
+            <tr><td>Display</td><td class="new">Micro-OLED ≈5K/eye, 120 Hz</td><td>LCD, 2064×2208/eye</td><td>LCD, 1832×1920/eye</td></tr>
+            <tr><td>Price at launch</td><td>$1,299.99</td><td>$499</td><td>$299</td></tr>
+            <tr><td>Battery</td><td>~3 h (puck)</td><td>~2.2 h</td><td>~2.5 h</td></tr>
+            <tr><td>Primary use</td><td class="new">Cinema, sports, workspace</td><td>VR gaming</td><td>Budget VR gaming</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.meta.com/blog/meta-vr-glasses-announcement-meta-connect/" target="_blank" rel="noopener">Meta official blog — “Introducing Meta VR Glasses” (Sep 23, 2026)</a>
+          <a href="https://roadtovr.com/meta-vr-glasses-unveiled-price-release-date/" target="_blank" rel="noopener">Road to VR — Phoenix arrives as Meta VR Glasses (Sep 23, 2026)</a>
+          <a href="https://www.cnet.com/" target="_blank" rel="noopener">CNET / vr.org — $1,299.99, Spring 2027 confirmation</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="imgbox">
+        <span class="kicker">★ Headline Find</span>
+        <img src="images/smarttag3.jpg" alt="Samsung Galaxy SmartTag3 item tracker" loading="lazy">
+      </div>
+      <div class="fbody">
+        <h2>Samsung Galaxy SmartTag3</h2>
+        <p class="meta">Samsung · Announced Sep 30, 2026 · On sale in Korea Oct 7 · <b style="color:#fbbf24">US: early November 2026</b></p>
+        <div class="price-row"><span class="price-usd">$29.99 USD <span style="font-size:.7em;color:var(--muted)">(4-pack $99.99)</span></span><span class="price-cad">≈ C$43 est.</span></div>
+        <ul class="feat-bullets">
+          <li><b>First Galaxy SmartTag with iOS support</b> — works with Galaxy phones <i>and</i> iPhones</li>
+          <li>Bluetooth 6.0 Channel Sounding + UWB — Compass View range up to ~60 m on 2026 Galaxy flagships</li>
+          <li>Up to 550 days battery (790 in Power Saving), user-replaceable CR2032, IP67</li>
+          <li>~35% smaller by volume &amp; 33% lighter than SmartTag2; place notifications + NFC lost mode</li>
+        </ul>
+        <details class="cmp">
+          <summary>vs previous generations</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>SmartTag3 (2026)</th><th>SmartTag2 (2023)</th><th>SmartTag (2021)</th></tr>
+            <tr><td>iOS compatibility</td><td class="new">✔ Yes (first in lineup)</td><td class="gone">✘ No</td><td class="gone">✘ No</td></tr>
+            <tr><td>Battery (max)</td><td class="new">790 days (power save)</td><td>Up to ~500 days</td><td>Up to ~300 days</td></tr>
+            <tr><td>Battery type</td><td>CR2032 (replaceable)</td><td>CR2032 (replaceable)</td><td>CR2032</td></tr>
+            <tr><td>Bluetooth</td><td class="new">6.0 w/ Channel Sounding</td><td>5.3</td><td>5.2</td></tr>
+            <tr><td>Size</td><td class="new">~35% smaller vs SmartTag2</td><td>38.1 × 38.1 × 7.4 mm</td><td>Bulkier, keyring built-in</td></tr>
+            <tr><td>Water resistance</td><td>IP67</td><td>IP67</td><td>Not rated</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://news.samsung.com/us/samsung-galaxy-smarttag3-makes-easier-keep-track-matters" target="_blank" rel="noopener">Samsung Newsroom US — official pricing &amp; availability (Sep 30, 2026)</a>
+          <a href="https://www.phonearena.com/news/the-galaxy-smarttag-3-is-here-offering-an-alternative-to-the-airtag-for-iphone-users_id183654" target="_blank" rel="noopener">PhoneArena — SmartTag3 price, release date &amp; design</a>
+          <a href="https://www.howtogeek.com/samsung-smarttag-3-item-tracker-price-release-date/" target="_blank" rel="noopener">How-To Geek — iOS support &amp; spec details (Sep 30, 2026)</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ═══════════ FILTER BAR ═══════════ -->
+  <nav class="filterbar" id="filterbar">
+    <button class="chip active" data-filter="all">All finds</button>
+    <button class="chip" data-filter="trackers">🎯 Trackers &amp; Tags</button>
+    <button class="chip" data-filter="xr">🕶 AR / VR &amp; Glasses</button>
+    <button class="chip" data-filter="audio">🎧 Audio</button>
+    <button class="chip" data-filter="ai">🤖 AI Hardware</button>
+    <button class="chip" data-filter="soon">⏳ Coming soon</button>
+    <button class="chip" data-filter="rumor">🔥 Rumors</button>
+  </nav>
+
+  <!-- ═══════════ TRACKERS ═══════════ -->
+  <div class="section-head" data-section="trackers">
+    <h2><span class="swatch" style="background:var(--trackers)"></span> Trackers &amp; Tags</h2>
+    <p>The AirTag-fight is officially global — and for the first time, cross-platform.</p>
+  </div>
+  <section class="grid">
+
+    <article class="card" data-cat="trackers">
+      <div class="imgbox"><span class="badge soon">Coming soon</span><img src="images/pixeltag.png" alt="Google Pixel Tag tracker" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-trackers"></span><span class="brandname">Google</span></div>
+        <h3>Google Pixel Tag</h3>
+        <p class="release">Announced Aug 12, 2026 · <b>Ships November 11, 2026</b></p>
+        <div class="price-row"><span class="price-usd">$29 USD</span><span class="price-cad">≈ C$41 est. · 4-pack $99 / ≈C$143</span></div>
+        <div class="pills"><span class="pill">Find Hub network</span><span class="pill">UWB</span><span class="pill">BT 6.0 Channel Sounding</span><span class="pill">IP67</span></div>
+        <details class="cmp">
+          <summary>vs previous gen / closest rivals</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Pixel Tag (2026)</th><th>AirTag 2 (2025)</th><th>Galaxy SmartTag3 (2026)</th></tr>
+            <tr><td>Network</td><td class="new">Google Find Hub</td><td>Apple Find My</td><td>Galaxy Find</td></tr>
+            <tr><td>OS support</td><td>Android (all)</td><td class="gone">Apple only</td><td>Galaxy + iOS</td></tr>
+            <tr><td>UWB + Channel Sounding</td><td class="new">✔ Both</td><td>✔ UWB</td><td>✔ Both</td></tr>
+            <tr><td>Price</td><td>$29</td><td>$29</td><td>$29.99</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://blog.google/products-and-platforms/devices/pixel/google-pixel-tag/" target="_blank" rel="noopener">Google Official Blog — Pixel Tag (Aug 12, 2026)</a>
+          <a href="https://9to5google.com/2026/08/12/google-pixel-tag-hands-on/" target="_blank" rel="noopener">9to5Google — Pixel Tag hands-on</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="trackers">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/mototag2.png" alt="Motorola Moto Tag 2 tracker" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-trackers"></span><span class="brandname">Motorola</span></div>
+        <h3>Motorola Moto Tag 2</h3>
+        <p class="release">Unveiled CES Jan 2026 · <b>US launch June 30, 2026</b></p>
+        <div class="price-row"><span class="price-usd">$29.99 USD</span><span class="price-cad">≈ C$43 est. · often $19.99 on sale</span></div>
+        <div class="pills"><span class="pill">Google Find Hub</span><span class="pill">UWB</span><span class="pill">Bluetooth 6.0</span><span class="pill">IP68</span><span class="pill">~500-day battery</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Moto Tag 2 (2026)</th><th>Moto Tag (2024)</th></tr>
+            <tr><td>UWB precision finding</td><td class="new">✔ Yes</td><td class="gone">✘ No (BT only)</td></tr>
+            <tr><td>Bluetooth</td><td class="new">6.0 + Channel Sounding</td><td>5.3</td></tr>
+            <tr><td>Battery life</td><td>~500 days</td><td>~300 days</td></tr>
+            <tr><td>Water resistance</td><td>IP68</td><td>IP67</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://9to5google.com/2026/06/30/moto-tag-2-launches-in-the-us-with-find-hub-uwb-support-20-for-a-limited-time/" target="_blank" rel="noopener">9to5Google — Moto Tag 2 US launch (Jun 30, 2026)</a>
+          <a href="https://www.pocket-lint.com/motorola-unveils-moto-tag-2-tracker-ces-2026/" target="_blank" rel="noopener">Pocket-lint — CES 2026 unveil &amp; specs</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ═══════════ AR / VR ═══════════ -->
+  <div class="section-head" data-section="xr">
+    <h2><span class="swatch" style="background:var(--xr)"></span> AR / VR &amp; Smart Glasses</h2>
+    <p>2026–27's biggest battleground: glasses-form-factor computing.</p>
+  </div>
+  <section class="grid">
+
+    <article class="card" data-cat="xr">
+      <div class="imgbox"><span class="badge rumor">Leaked · Nov 2026</span><img src="images/samglasses.jpg" alt="Samsung Intelligent Eyewear AI glasses with Gemini" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-xr"></span><span class="brandname">Samsung × Google</span></div>
+        <h3>Galaxy Intelligent Eyewear</h3>
+        <p class="release">Confirmed for fall 2026 (Google I/O) · <b>Leaked launch: November 2026</b></p>
+        <div class="price-row"><span class="price-usd">$349–499 USD est.</span><span class="price-cad">≈ C$498–712 est.</span></div>
+        <div class="pills"><span class="pill">Gemini AI</span><span class="pill">Camera + speakers</span><span class="pill">No display</span><span class="pill">Android XR</span><span class="pill">Gentle Monster / Warby Parker frames</span></div>
+        <details class="cmp">
+          <summary>vs previous generation / closest rival</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Galaxy Eyewear (2026)</th><th>Ray-Ban Meta Gen 2 (2024)</th></tr>
+            <tr><td>AI assistant</td><td class="new">Gemini (deeper Android XR integration)</td><td>Meta AI (Llama)</td></tr>
+            <tr><td>Ecosystem</td><td class="new">Galaxy phone pairing + Samsung services</td><td>Meta / Facebook services</td></tr>
+            <tr><td>Display</td><td>None (audio + camera)</td><td>None (audio + camera)</td></tr>
+            <tr><td>Frame partners</td><td>Gentle Monster, Warby Parker</td><td>Ray-Ban, Oakley</td></tr>
+            <tr><td>Est. price</td><td>$349–499 (leaked)</td><td>$299–379</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://blog.google/products-and-platforms/platforms/android/android-xr-io-2026/" target="_blank" rel="noopener">Google Official Blog — Android XR + Gentle Monster/Warby Parker (May 19, 2026)</a>
+          <a href="https://mixed-news.com/en/samsung-intelligent-eyewear-november-launch-no-display-no-price/" target="_blank" rel="noopener">Mixed News — November launch, no display, no price yet (Oct 2, 2026)</a>
+          <a href="https://www.gsmarena.com/samsung_to_collaborate_with_gentle_monster_and_warby_parker_for_ai_glasses-news-70007.php" target="_blank" rel="noopener">GSMArena — Samsung collaboration confirmation</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="xr">
+      <div class="imgbox"><span class="badge soon">Pre-order · Fall 2026</span><img src="images/xrealaura.webp" alt="XREAL Aura Android XR glasses" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-xr"></span><span class="brandname">XREAL</span></div>
+        <h3>XREAL Aura</h3>
+        <p class="release">Preorders open · <b>Shipping fall 2026</b> (US, Canada, Japan, Korea first)</p>
+        <div class="price-row"><span class="price-usd">From $1,279 USD</span><span class="price-cad">≈ C$1,824 est. · 512GB $1,499 / ≈C$2,138</span></div>
+        <div class="pills"><span class="pill">Android XR</span><span class="pill">Optical see-through</span><span class="pill">~70° FoV micro-OLED</span><span class="pill">Snapdragon Reality Elite puck</span><span class="pill">&lt;95 g</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Aura (2026)</th><th>XREAL One Pro (2025)</th><th>Air 2 Ultra (2024)</th></tr>
+            <tr><td>Platform</td><td class="new">Android XR (standalone apps)</td><td>XREAL OS (tethered)</td><td>Tethered display only</td></tr>
+            <tr><td>Compute</td><td class="new">Own Snapdragon puck</td><td>Phone required</td><td>Phone required</td></tr>
+            <tr><td>See-through</td><td class="new">Optical (true AR)</td><td>✘ (video see-through)</td><td>✘</td></tr>
+            <tr><td>Price</td><td>from $1,279</td><td>~$599</td><td>$699</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.prnewswire.com/news-releases/xreal-aura-starts-at-1-279--bringing-wired-xr-glasses-with-android-xr-to-customers-this-year-302900445.html" target="_blank" rel="noopener">PR Newswire — official pricing from $1,279 (Oct 7, 2026)</a>
+          <a href="https://www.cnet.com/tech/computing/xreal-aura-google-next-android-xr-device-price-release-date/" target="_blank" rel="noopener">CNET — Aura configs &amp; release details</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="xr">
+      <div class="imgbox"><span class="badge soon">Shipping fall 2026</span><img src="images/snapspecs.png" alt="Snap Specs standalone AR glasses" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-xr"></span><span class="brandname">Snap Inc.</span></div>
+        <h3>Snap Specs</h3>
+        <p class="release">Launched Sep 16, 2026 · <b>Shipping fall 2026</b></p>
+        <div class="price-row"><span class="price-usd">$2,195 USD</span><span class="price-cad">≈ C$3,130 est.</span></div>
+        <div class="pills"><span class="pill">Standalone true AR</span><span class="pill">Dual Snapdragon</span><span class="pill">Auto-tint lenses</span><span class="pill">No phone needed</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Specs (2026)</th><th>Spectacles 5 (2024)</th><th>Spectacles 4 (2021)</th></tr>
+            <tr><td>Availability</td><td class="new">Consumer purchase, $2,195</td><td class="gone">Developers only (lease)</td><td class="gone">Developers only (lease)</td></tr>
+            <tr><td>Standalone</td><td>✔</td><td>✔</td><td>✔ (tethered compute)</td></tr>
+            <tr><td>Battery / all-day</td><td class="new">Improved for daily wear</td><td>~45 min</td><td>~30 min</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.uploadvr.com/snap-specs-design-revealed-preorders-open-price/" target="_blank" rel="noopener">UploadVR — preorders open, $2,195 (Jun 16, 2026)</a>
+          <a href="https://www.wareable.com/wearable-tech/snap-specs-ar-glasses-2026-announcement-price-features-opinion" target="_blank" rel="noopener">Wareable — Specs launch coverage (Sep 28, 2026)</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ═══════════ AUDIO ═══════════ -->
+  <div class="section-head" data-section="audio">
+    <h2><span class="swatch" style="background:var(--audio)"></span> Audio</h2>
+    <p>Over-ears, clip-ons, repairables — and yes, Beats (the Apple exception). Headliners in Featured above.</p>
+  </div>
+  <section class="grid">
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/beats360.jpg" alt="Beats 360 customizable over-ear headphones" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Beats (Apple-owned — exception)</span></div>
+        <h3>Beats 360</h3>
+        <p class="release">Ordered Sep 22 · <b>On shelves Sep 24, 2026</b></p>
+        <div class="price-row"><span class="price-usd">$349.99 USD</span><span class="price-cad">≈ C$499 est.</span></div>
+        <div class="pills"><span class="pill">Swappable cushions</span><span class="pill">IPX4</span><span class="pill">1.75× better ANC vs Studio Pro</span><span class="pill">32 h battery</span><span class="pill">Spatial Audio</span></div>
+        <details class="cmp">
+          <summary>vs previous generations</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Beats 360 (2026)</th><th>Studio Pro (2023)</th><th>Studio3 (2019)</th></tr>
+            <tr><td>Customizable cushions</td><td class="new">✔ Swap &amp; buy kits ($50, intro $9.99)</td><td class="gone">✘</td><td class="gone">✘</td></tr>
+            <tr><td>ANC</td><td class="new">1.75× combined improvement</td><td>Standard</td><td>Older Pure Adaptive</td></tr>
+            <tr><td>Battery</td><td>Up to 32 h</td><td>Up to 40 h</td><td>Up to 22 h</td></tr>
+            <tr><td>Sweat resistance</td><td class="new">IPX4</td><td>None</td><td>None</td></tr>
+            <tr><td>Bluetooth</td><td>5.3</td><td>5.3</td><td>5.0</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.beatsbydre.com/company/press/beats-360" target="_blank" rel="noopener">Beats official press release (Sep 22, 2026)</a>
+          <a href="https://www.businesswire.com/news/home/20260922033697/en/Introducing-Beats-360-The-First-Customizable-Over-Ear-Headphone-from-Beats" target="_blank" rel="noopener">BusinessWire — full announcement</a>
+          <a href="https://mashable.com/tech/beats-360-announced-price-release-date" target="_blank" rel="noopener">Mashable — price &amp; release details</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/nothinghp1pro.webp" alt="Nothing Headphone (1) Pro over-ear headphones" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Nothing</span></div>
+        <h3>Nothing Headphone (1) Pro</h3>
+        <p class="release"><b>Released September 29, 2026</b></p>
+        <div class="price-row"><span class="price-usd">$399 USD</span><span class="price-cad">≈ C$569 est.</span></div>
+        <div class="pills"><span class="pill">Triple driver + xMEMS tweeter</span><span class="pill">46 dB ANC (10 mics)</span><span class="pill">Flat EQ hardware switch</span><span class="pill">USB-C lossless 24/192</span><span class="pill">~68 h battery</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Headphone (1) Pro (2026)</th><th>Headphone (1) (2025)</th></tr>
+            <tr><td>Drivers</td><td class="new">Triple (dynamic + mid + xMEMS tweeter)</td><td>Dual driver</td></tr>
+            <tr><td>ANC</td><td class="new">Up to 46 dB, 10 mics</td><td>~32 dB</td></tr>
+            <tr><td>Battery (ANC off)</td><td class="new">Up to ~68 h</td><td>~35 h</td></tr>
+            <tr><td>Wired lossless</td><td>USB-C 24-bit/192 kHz</td><td>USB-C lossless</td></tr>
+            <tr><td>Price</td><td>$399</td><td>$299 at launch</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://us.nothing.tech/products/headphone-1-pro" target="_blank" rel="noopener">Nothing official store — specs &amp; pricing</a>
+          <a href="https://www.droid-life.com/2026/09/29/nothing-headphone-1-pro/" target="_blank" rel="noopener">Droid Life — available today at $399 (Sep 29, 2026)</a>
+          <a href="https://mashable.com/tech/nothing-headphone-1-pro-price-announcement" target="_blank" rel="noopener">Mashable — launch coverage</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge soon">Korea Oct 27 · global later</span><img src="images/galaxybudson.jpg" alt="Samsung Galaxy Buds On clip-on open-ear earbuds" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Samsung</span></div>
+        <h3>Galaxy Buds On</h3>
+        <p class="release">Announced Oct 1, 2026 · <b>Korea: October 27, 2026</b> · global rollout after</p>
+        <div class="price-row"><span class="price-usd">≈ $220 USD</span><span class="price-cad">≈ C$314 est. (₩299,000)</span></div>
+        <div class="pills"><span class="pill">Samsung's first clip-on</span><span class="pill">Snapdragon S7 Gen 1</span><span class="pill">9.5 h playback</span><span class="pill">TwinBoost bass</span><span class="pill">IP54</span><span class="pill">Gemini Live</span></div>
+        <details class="cmp">
+          <summary>vs previous generation / closest rivals</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Galaxy Buds On (2026)</th><th>Galaxy Buds FE (2023)</th><th>Buds3 Pro (2024)</th></tr>
+            <tr><td>Design</td><td class="new">Clip-on open-ear</td><td>In-ear canal</td><td>In-ear canal</td></tr>
+            <tr><td>Awareness</td><td class="new">Open-ear, ears uncovered</td><td>ANC sealed fit</td><td>ANC sealed fit</td></tr>
+            <tr><td>Battery</td><td>Up to 9.5 h</td><td>~6 h</td><td>~6 h (ANC on)</td></tr>
+            <tr><td>AI</td><td class="new">Galaxy AI / Gemini Live, head gestures</td><td>Basic</td><td>Galaxy AI</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://9to5google.com/2026/10/01/samsung-galaxy-buds-on-open-ear-launch/" target="_blank" rel="noopener">9to5Google — official launch, Oct 27 Korea (Oct 1, 2026)</a>
+          <a href="https://hypebeast.com/2026/10/samsung-unveils-galaxy-buds-on-clip-style-open-ear-buds" target="_blank" rel="noopener">Hypebeast — ₩299,000 pricing &amp; specs</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge soon">US ~Nov 2, 2026</span><img src="images/fairbuds2.jpg" alt="Fairphone Fairbuds 2 modular repairable earbuds" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Fairphone</span></div>
+        <h3>Fairphone Fairbuds 2</h3>
+        <p class="release">EU launch October 14, 2026 (€119) · <b>US: ~November 2, 2026</b></p>
+        <div class="price-row"><span class="price-usd">$119 USD</span><span class="price-cad">≈ C$170 est.</span></div>
+        <div class="pills"><span class="pill">7 replaceable parts</span><span class="pill">LDAC added</span><span class="pill">Replaceable batteries</span><span class="pill">Modular design</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Fairbuds 2 (2026)</th><th>Fairbuds (2024)</th></tr>
+            <tr><td>Codec</td><td class="new">LDAC (hi-res)</td><td>SBC / AAC only</td></tr>
+            <tr><td>Modular parts</td><td>7 replaceable components</td><td>Buds + case batteries replaceable</td></tr>
+            <tr><td>Design</td><td class="new">Fresh redesigned build</td><td>Original modular shell</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.androidauthority.com/fairbuds-2-launch-date-3716894/" target="_blank" rel="noopener">Android Authority — Oct 14 launch &amp; price (Sep 29, 2026)</a>
+          <a href="https://www.digitaltrends.com/home-theater/fairphone-confirms-its-next-gen-repairable-earbuds-will-arrive-in-october-for-119/" target="_blank" rel="noopener">Digital Trends — $119 confirmation</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/technicsa1000.jpg" alt="Technics EAH-A1000 flagship wireless headphones" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Technics (Panasonic)</span></div>
+        <h3>Technics EAH-A1000</h3>
+        <p class="release">Announced Sep 29, 2026 · <b>Available now</b> (Japan from ~Nov 19)</p>
+        <div class="price-row"><span class="price-usd">$449.99 USD</span><span class="price-cad">≈ C$642 est.</span></div>
+        <div class="pills"><span class="pill">40mm Magnetic Fluid Driver</span><span class="pill">Carbon-fiber diaphragm</span><span class="pill">LDAC + USB lossless</span><span class="pill">Dolby Atmos + head tracking</span><span class="pill">3-device multipoint</span><span class="pill">~45 h</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>EAH-A1000 (2026)</th><th>EAH-A800 (2022)</th></tr>
+            <tr><td>Driver</td><td class="new">40mm Magnetic Fluid (from flagship IEMs)</td><td>40mm biocellulose</td></tr>
+            <tr><td>USB audio</td><td class="new">Lossless USB + LDAC</td><td>LDAC</td></tr>
+            <tr><td>Spatial</td><td class="new">Dolby Atmos w/ head tracking</td><td>Basic</td></tr>
+            <tr><td>Multipoint</td><td class="new">Up to 3 devices</td><td>2 devices</td></tr>
+            <tr><td>Price</td><td>$449.99</td><td>$399 at launch</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://us.technics.com/blogs/news/technics-introduces-eah-a1000-flagship-wireless-headphones-a-new-standard-in-premium-listening" target="_blank" rel="noopener">Technics official announcement (Sep 29, 2026)</a>
+          <a href="https://www.forbes.com/sites/marksparrow/2026/09/29/technics-reveals-its-new-flagship-over-ear-wireless-headphones/" target="_blank" rel="noopener">Forbes — pricing &amp; full specs</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/neurableone.jpg" alt="Neurable One EEG brain-sensing headphones" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Neurable</span></div>
+        <h3>Neurable One</h3>
+        <p class="release">Launched October 1, 2026 · <b>Shipping now (US)</b></p>
+        <div class="price-row"><span class="price-usd">$499 USD</span><span class="price-cad">≈ C$712 est.</span></div>
+        <div class="pills"><span class="pill">12 EEG sensors in earpads</span><span class="pill">Focus &amp; fatigue tracking</span><span class="pill">40mm beryllium drivers</span><span class="pill">ANC</span><span class="pill">22 h (12 h w/ EEG)</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Neurable One (2026)</th><th>MW75 w/ Neurable (2024)</th></tr>
+            <tr><td>EEG sensors</td><td class="new">12 dry sensors, passive all-day</td><td>EEG via collab with Master &amp; Dynamic</td></tr>
+            <tr><td>Focus</td><td class="new">Consumer wellness (Brain Battery, focus nudges)</td><td>Early-stage integration</td></tr>
+            <tr><td>Tracking</td><td class="new">Focus, cognitive load, sleepiness, Alpha Peak</td><td>Basic focus scores</td></tr>
+            <tr><td>Price</td><td>$499</td><td>~$599 (MW75 collab)</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.neurable.com/blog-posts/neurable-one-is-here-the-headphones-ive-wanted-to-build-for-10-years" target="_blank" rel="noopener">Neurable official launch post (Oct 1, 2026)</a>
+          <a href="https://www.wired.com/story/exclusive-neurable-one-brain-scanning-headphones-want-to-fix-your-focus/" target="_blank" rel="noopener">WIRED — exclusive launch coverage</a>
+          <a href="https://hothardware.com/news/neurable-launches-499-ai-headphones-that-read-brain-waves" target="_blank" rel="noopener">HotHardware — $499, 12 EEG sensors</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/boseultraopen2.jpg" alt="Bose Ultra Open Earbuds 2nd generation" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Bose</span></div>
+        <h3>Ultra Open Earbuds (2nd Gen)</h3>
+        <p class="release">Announced Sep 17 · <b>On sale October 1–2, 2026</b></p>
+        <div class="price-row"><span class="price-usd">$299 USD</span><span class="price-cad">≈ C$426 est.</span></div>
+        <div class="pills"><span class="pill">Cuff-style open-ear</span><span class="pill">~9 h battery</span><span class="pill">Cinema Mode</span><span class="pill">Wireless charging case</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Ultra Open 2 (2026)</th><th>Ultra Open (2024)</th></tr>
+            <tr><td>Sound</td><td class="new">Deeper, louder output</td><td>Open-ear standard</td></tr>
+            <tr><td>Battery</td><td class="new">Up to ~9 h (+ case)</td><td>Up to 7.5 h</td></tr>
+            <tr><td>Charging</td><td class="new">Wireless charging case</td><td>USB-C case</td></tr>
+            <tr><td>Extras</td><td class="new">Cinema Mode</td><td>Immersive Audio</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.bose.com/pressroom/bose-sport-open-earbuds-and-bose-ultra-open-earbuds-2nd-gen" target="_blank" rel="noopener">Bose official pressroom (Sep 17, 2026)</a>
+          <a href="https://www.soundguys.com/bose-ultra-open-earbuds-2nd-gen-review-164060/" target="_blank" rel="noopener">SoundGuys — review &amp; specs (Oct 2026)</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/bosesportopen.jpg" alt="Bose Sport Open Earbuds for workouts" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Bose</span></div>
+        <h3>Bose Sport Open Earbuds</h3>
+        <p class="release">Announced Sep 17, 2026 · <b>On sale October 1, 2026</b></p>
+        <div class="price-row"><span class="price-usd">$199 USD</span><span class="price-cad">≈ C$284 est.</span></div>
+        <div class="pills"><span class="pill">Workout-focused open-ear</span><span class="pill">IP54</span><span class="pill">7 h + 22 h case</span><span class="pill">Secure fit</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Sport Open (2026)</th><th>Sport Open Earbuds (2022)</th></tr>
+            <tr><td>Battery</td><td class="new">7 h + 22 h in case</td><td>5.5 h (no case charging)</td></tr>
+            <tr><td>Charging</td><td class="new">Charging case + wireless charge</td><td>Proprietary cradle</td></tr>
+            <tr><td>Water resistance</td><td>IP54</td><td>IPX4</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.bose.com/pressroom/bose-sport-open-earbuds-and-bose-ultra-open-earbuds-2nd-gen" target="_blank" rel="noopener">Bose official pressroom (Sep 17, 2026)</a>
+          <a href="https://www.forbes.com/sites/marksparrow/2026/09/17/bose-launches-new-sport-open-and-ultra-open-wireless-earbuds/" target="_blank" rel="noopener">Forbes — launch &amp; pricing</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/sonywf1000xm6.jpg" alt="Sony WF-1000XM6 wireless earbuds" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Sony</span></div>
+        <h3>Sony WF-1000XM6</h3>
+        <p class="release">Launched February 12, 2026 · <b>Available now</b></p>
+        <div class="price-row"><span class="price-usd">$329.99 USD</span><span class="price-cad">≈ C$471 est.</span></div>
+        <div class="pills"><span class="pill">Class-leading ANC</span><span class="pill">New ergonomic design</span><span class="pill">Co-tuned with mastering engineers</span></div>
+        <details class="cmp">
+          <summary>vs previous generations</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>WF-1000XM6 (2026)</th><th>WF-1000XM5 (2023)</th><th>WF-1000XM4 (2021)</th></tr>
+            <tr><td>Noise cancelling</td><td class="new">Best-in-class (upgraded)</td><td>Excellent (QN2e)</td><td>Great (QN2v)</td></tr>
+            <tr><td>Design</td><td class="new">Revised ergonomic fit</td><td>25% smaller vs XM4</td><td>Larger</td></tr>
+            <tr><td>Launch price</td><td>$329.99</td><td>$299.99</td><td>$279.99</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.sony.eu/presscentre/sony-launches-wf-1000xm6-truly-wireless-earbuds-the-best-noise-cancelling-with-premium-sound" target="_blank" rel="noopener">Sony official press centre (Feb 12, 2026)</a>
+          <a href="https://www.soundguys.com/sony-wf-1000xm6-120084/" target="_blank" rel="noopener">SoundGuys — launch &amp; price coverage</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/sonycollexion.jpg" alt="Sony 1000X THE COLLEXION anniversary headphones" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Sony</span></div>
+        <h3>Sony 1000X THE COLLEXION</h3>
+        <p class="release">Launched May 20, 2026 (10th anniversary) · <b>Available now</b></p>
+        <div class="price-row"><span class="price-usd">$649.99 USD</span><span class="price-cad">C$849.99 (official CA MSRP)</span></div>
+        <div class="pills"><span class="pill">30mm carbon drivers</span><span class="pill">DSEE Ultimate AI upscaling</span><span class="pill">360 Upmix</span><span class="pill">QN3 + 12 mics</span><span class="pill">Luxury build</span></div>
+        <details class="cmp">
+          <summary>vs previous generations</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>1000X COLLEXION (2026)</th><th>WH-1000XM6 (2025)</th><th>WH-1000XM5 (2022)</th></tr>
+            <tr><td>Positioning</td><td class="new">Luxury anniversary flagship</td><td>Reference ANC</td><td>Reference ANC</td></tr>
+            <tr><td>Drivers</td><td class="new">30mm unidirectional carbon</td><td>30mm</td><td>30mm</td></tr>
+            <tr><td>Spatial</td><td class="new">360 Upmix modes</td><td>360 Reality Audio</td><td>360 Reality Audio</td></tr>
+            <tr><td>Battery</td><td>~24 h</td><td>~30 h</td><td>~30 h</td></tr>
+            <tr><td>Price</td><td>$649.99 / C$849.99</td><td>$449.99</td><td>$349.99</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://electronics.sony.com/audio/headphones/headband/p/wh1000xx-b" target="_blank" rel="noopener">Sony official store — MSRP $649.99 / C$849.99</a>
+          <a href="https://www.gadgets360.com/audio/news/sony-1000x-the-collexion-price-launch-availability-features-specifications-11521098" target="_blank" rel="noopener">Gadgets360 — confirms official Canadian pricing</a>
+          <a href="https://mashable.com/article/sony-1000x-the-collexion-headphones-price-release" target="_blank" rel="noopener">Mashable — anniversary launch coverage</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio">
+      <div class="imgbox"><span class="badge out">Out now</span><img src="images/zonevibe.jpg" alt="Logitech Zone Vibe Pro repairable headphones" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Logitech</span></div>
+        <h3>Logitech Zone Vibe Pro</h3>
+        <p class="release">Launched globally September 30, 2026 · <b>Available now</b></p>
+        <div class="price-row"><span class="price-usd">$259.99 USD</span><span class="price-cad">≈ C$371 est.</span></div>
+        <div class="pills"><span class="pill">Repairable design</span><span class="pill">Replaceable battery</span><span class="pill">Adaptive ANC</span><span class="pill">AI mic (93% noise removal)</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Zone Vibe Pro (2026)</th><th>Zone Vibe (2022)</th></tr>
+            <tr><td>Noise cancelling</td><td class="new">Adaptive ANC</td><td class="gone">Passive only</td></tr>
+            <tr><td>Repairability</td><td class="new">Replaceable battery + parts</td><td>Not user-serviceable</td></tr>
+            <tr><td>Mics</td><td class="new">AI voice isolation (93% removed)</td><td>Beamforming, basic</td></tr>
+            <tr><td>Use case</td><td>Work + music, no boom mic</td><td>Work, boom mic</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://news.logitech.com/press-releases/news-details/2026/New-Zone-Vibe-Pro-Logitechs-All-Day-Headset-That-Shifts-Between-Work-and-Life/default.aspx" target="_blank" rel="noopener">Logitech official press release (Sep 30, 2026)</a>
+          <a href="https://www.pcworld.com/article/3248998/logitechs-new-260-work-leisure-headset-is-also-repairable.html" target="_blank" rel="noopener">PCWorld — repairability angle (Oct 1, 2026)</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-cat="audio rumor">
+      <div class="imgbox"><span class="badge rumor">Rumor · 2027</span><img src="images/galaxystudio.jpg" alt="Samsung Galaxy Studio rumored over-ear headphones" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-audio"></span><span class="brandname">Samsung — unconfirmed</span></div>
+        <h3>Samsung Galaxy Studio <span style="font-size:.7em;color:var(--rumor)">(rumored)</span></h3>
+        <p class="release">Trademark + Wearable app leaks · <b>Likely 2027</b></p>
+        <div class="price-row"><span class="price-usd">≈ $190–220 USD est.</span><span class="price-cad">≈ C$271–314 est.</span></div>
+        <div class="pills"><span class="pill">First Galaxy over-ear in ~11 years</span><span class="pill">Codename "Galaxy H1"</span><span class="pill">ANC + ambient</span><span class="pill">AI integration</span></div>
+        <details class="cmp">
+          <summary>vs closest rivals (no prior gen — Samsung's last over-ears date to ~2013)</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>Galaxy Studio (rumor)</th><th>Sony WH-1000XM6 (2025)</th><th>Bose QC Ultra (2023)</th></tr>
+            <tr><td>Status</td><td class="new">Trademark filed, app leak</td><td>Released</td><td>Released</td></tr>
+            <tr><td>Ecosystem</td><td class="new">Galaxy AI / Gemini deep integration</td><td>Sony Headphones Connect</td><td>Bose app</td></tr>
+            <tr><td>Est. price</td><td>≈$190–220</td><td>$449.99</td><td>$429</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://www.androidcentral.com/accessories/headphones/samsung-could-soon-challenge-sony-and-bose-for-over-ear-headphones-with-its-galaxy-studio" target="_blank" rel="noopener">Android Central — Galaxy Studio development (Oct 2026)</a>
+          <a href="https://www.sammobile.com/news/samsung-wireless-headphones-development-rival-airpods-max/" target="_blank" rel="noopener">SamMobile — 2027 target, feature expectations</a>
+          <a href="https://sammyguru.com/samsung-headphones-galaxy-studio-name/" target="_blank" rel="noopener">Sammy Guru — trademark filing for "Galaxy Studio"</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ═══════════ AI HARDWARE ═══════════ -->
+  <div class="section-head" data-section="ai">
+    <h2><span class="swatch" style="background:var(--ai)"></span> AI Hardware</h2>
+    <p>Desktop-class AI compute is officially consumer-purchasable.</p>
+  </div>
+  <section class="grid">
+
+    <article class="card" data-cat="ai">
+      <div class="imgbox"><span class="badge soon">Shipping Oct 16, 2026</span><img src="images/rtxspark.jpg" alt="Nvidia RTX Spark N1X AI PC" loading="lazy"></div>
+      <div class="cbody">
+        <div class="brandline"><span class="catdot cat-ai"></span><span class="brandname">NVIDIA</span></div>
+        <h3>NVIDIA RTX Spark (N1X)</h3>
+        <p class="release">Pre-orders opened Oct 7, 2026 · <b>First devices ship October 16, 2026</b></p>
+        <div class="price-row"><span class="price-usd">From $2,599 USD</span><span class="price-cad">≈ C$3,706 est.</span></div>
+        <div class="pills"><span class="pill">N1X superchip</span><span class="pill">6,144 CUDA cores</span><span class="pill">Up to 128GB LPDDR5X unified</span><span class="pill">On-device AI (Copilot+ PCs)</span></div>
+        <details class="cmp">
+          <summary>vs previous generation</summary>
+          <table class="cmptable">
+            <tr><th>Feature</th><th>RTX Spark (2026)</th><th>DGX Spark (announced 2025)</th></tr>
+            <tr><td>Form</td><td class="new">Consumer laptops &amp; mini-PCs (OEM)</td><td>Developer/desktop DGX box (GB10)</td></tr>
+            <tr><td>Memory</td><td>24–128 GB LPDDR5X unified</td><td>128 GB unified</td></tr>
+            <tr><td>OS</td><td class="new">Windows (Copilot+ PC)</td><td>DGX OS / Linux</td></tr>
+            <tr><td>Starting price</td><td>$2,599 (laptops)</td><td>$3,999</td></tr>
+          </table>
+        </details>
+        <div class="sources">
+          <span class="slabel">Sources (cross-checked)</span>
+          <a href="https://nvidianews.nvidia.com/news/nvidia-microsoft-windows-pcs-agents-rtx-spark" target="_blank" rel="noopener">NVIDIA official newsroom — RTX Spark w/ Microsoft</a>
+          <a href="https://www.tomshardware.com/laptops/pre-orders-are-live-on-nvidia-rtx-spark-devices-secure-the-surface-laptop-ultra-or-other-rtx-spark-laptop-starting-at-usd2-599-pricing-and-availability-revealed-on-several-models" target="_blank" rel="noopener">Tom's Hardware — pre-orders live, $2,599, Oct 16 ship (Oct 7, 2026)</a>
+          <a href="https://videocardz.com/newz/nvidia-rtx-spark-laptops-launch-october-16-prices-start-at-2599" target="_blank" rel="noopener">VideoCardz — configs &amp; pricing</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer>
+    <h3>How we verify</h3>
+    <p>Every product on this page was confirmed against <b>at least two independent sources</b> — official press releases/newsrooms first, then corroborating coverage from established outlets. Items that are not yet officially priced carry an <b>"est."</b> label and a 🔥 <b>Rumor</b> badge.</p>
+    <p><b>CAD pricing:</b> Estimates use 1 USD ≈ 1.426 CAD (XE mid-market, October 11, 2026). Where brands publish an official Canadian MSRP (e.g., Sony 1000X THE COLLEXION at C$849.99), it is shown instead. Actual Canadian pricing may include regional adjustments and does not include tax.</p>
+    <p><b>Editorial stance:</b> Non-Apple devices first — Beats included by exception (Apple-owned, but a distinct product line our readers track). No affiliate links; nothing on this page is sponsored.</p>
+    <p style="margin-top:14px">Last verified: <b>October 12, 2026</b> · Maintained by the FindTorontoEvents team.</p>
+    <div class="flinks">
+      <a href="/">← Back to findtorontoevents.ca</a>
+      <a href="/news/">News Aggregator</a>
+      <a href="/updates/">Latest Updates</a>
+      <a href="/deals/">Deals &amp; Freebies</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// ── Filters ──
+const chips = document.querySelectorAll('.chip');
+const cards = document.querySelectorAll('.card');
+const sections = document.querySelectorAll('.section-head');
+chips.forEach(chip => chip.addEventListener('click', () => {
+  chips.forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  const f = chip.dataset.filter;
+  cards.forEach(card => {
+    const cats = card.dataset.cat.split(' ');
+    const show = f === 'all' || cats.includes(f);
+    card.classList.toggle('hidden', !show);
+    if (show) card.classList.add('visible');
+  });
+  // Hide section headers with no visible cards
+  sections.forEach(sec => {
+    const grid = sec.nextElementSibling;
+    const anyVisible = grid && grid.querySelector && grid.querySelector('.card:not(.hidden)');
+    sec.style.display = anyVisible ? '' : 'none';
+  });
+}));
+
+// ── Reveal on scroll ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+}, { threshold: 0.08 });
+cards.forEach(c => io.observe(c));
+</script>
+</body>
+</html>
