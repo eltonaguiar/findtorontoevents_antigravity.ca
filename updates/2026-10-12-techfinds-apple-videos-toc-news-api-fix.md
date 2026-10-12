@@ -47,3 +47,12 @@ Appendix D/S/T/V (Advanced Glide & JS APIs, Joins & Encoded Queries,
 Reusable Code, API Deep-Dive) moved up after section 28 into a new
 "JS & Query Deep-Dives" TOC group; hashchange scrollspy re-sync added.
 See 2026-10-12-servicenow-js-toc-mobile-fix.md for the earlier TOC fix.
+
+## 4. Embed test (same day)
+
+Embedded the official Meta VR Glasses announcement video (yt id xyD_bmMy5nQ)
+in the headline feature card via a responsive 16:9 `.embed-wrap` iframe using
+youtube-nocookie.com. Deployed and validated live with Playwright: the
+YouTube frame attaches, `#movie_player` renders (no "embedding disabled"
+error), box 515x290. Embeds are NOT blocked on this host — other cards can be
+embedded on request; the per-card "▶ Watch videos" links remain as fallback.
