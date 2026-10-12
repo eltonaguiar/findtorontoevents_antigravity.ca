@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T09:15:36.125196+00:00",
+  "generated_at": "2026-10-12T10:51:20.091779+00:00",
   "data_source": "hyro_backtest.fetch_candles (Binance mirrors + KuCoin)",
   "lookback_days": 45,
   "fear_greed": 69,
@@ -19,17 +19,17 @@
   "symbols": {
     "BTCUSDT": {
       "regime": "TRENDING",
-      "hurst": 0.6472,
-      "active_votes": 2,
+      "hurst": 0.5693,
+      "active_votes": 4,
       "total_votes": 18,
-      "buy_votes": 4,
-      "sell_votes": 1,
+      "buy_votes": 1,
+      "sell_votes": 3,
       "consensus_met": true,
       "vote_detail": [
         {
           "strategy": "corr_hma_trend",
           "direction": "SELL",
-          "confidence": 0.522
+          "confidence": 0.517
         },
         {
           "strategy": "overnight_seasonality_btc",
@@ -88,8 +88,8 @@
         },
         {
           "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
+          "direction": "SELL",
+          "confidence": 0.715
         },
         {
           "strategy": "proven_triple_ema_prop",
@@ -113,28 +113,30 @@
         },
         {
           "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
+          "direction": "SELL",
+          "confidence": 0.508
         }
       ],
       "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.5,
-        "avg_confidence": 0.72,
+        "direction": "SELL",
+        "consensus_pct": 0.75,
+        "avg_confidence": 0.58,
         "strategies_agreed": [
-          "proven_triple_ema_prop"
+          "corr_hma_trend",
+          "proven_keltner_squeeze_prop",
+          "ema_aggressive_prop"
         ]
       },
       "trade_setup": {
         "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 83580.0,
-        "take_profit": 84582.95999999999,
-        "stop_loss": 83078.52,
+        "direction": "SELL",
+        "entry_price": 83551.29,
+        "take_profit": 82548.67451999999,
+        "stop_loss": 84052.59774,
         "trailing_stop": null,
         "rr_ratio": 2.0,
         "max_hold_bars": 8,
-        "atr": 367.01928571,
+        "atr": 385.665,
         "sl_floor_applied": true
       },
       "risk_gate": {
@@ -143,16 +145,16 @@
         "reason": "",
         "health": "safe"
       },
-      "current_price": 83580.0,
-      "atr_pct": 0.4391,
-      "atr_abs": 367.01928571,
+      "current_price": 83551.29,
+      "atr_pct": 0.4616,
+      "atr_abs": 385.665,
       "hyro_account_usdt": 5000,
       "hyro_max_risk_usdt_per_trade": 150.0,
       "bars": 1080
     },
     "ETHUSDT": {
       "regime": "TRENDING",
-      "hurst": 0.6843,
+      "hurst": 0.6514,
       "active_votes": 4,
       "total_votes": 18,
       "buy_votes": 3,
@@ -162,142 +164,7 @@
         {
           "strategy": "corr_hma_trend",
           "direction": "SELL",
-          "confidence": 0.523
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "BUY",
-          "confidence": 0.511
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "BUY",
-          "confidence": 0.65
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "BUY",
-          "confidence": 0.509
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.75,
-        "avg_confidence": 0.5567,
-        "strategies_agreed": [
-          "ema_momentum_prop",
-          "proven_propfirm_cons_prop",
-          "ema_aggressive_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 2555.5,
-        "take_profit": 2592.2028571428573,
-        "stop_loss": 2537.1485714285714,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 15.29285714,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 2555.5,
-      "atr_pct": 0.5984,
-      "atr_abs": 15.29285714,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "SOLUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.7049,
-      "active_votes": 2,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 1,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.538
+          "confidence": 0.519
         },
         {
           "strategy": "overnight_seasonality_btc",
@@ -348,675 +215,6 @@
           "strategy": "ema_momentum_prop",
           "direction": "ABSTAIN",
           "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.72
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.5,
-        "avg_confidence": 0.72,
-        "strategies_agreed": [
-          "proven_triple_ema_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 111.82,
-        "take_profit": 113.8342857142857,
-        "stop_loss": 110.81285714285714,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.83928571,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 111.82,
-      "atr_pct": 0.7506,
-      "atr_abs": 0.83928571,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "AVAXUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.8487,
-      "active_votes": 6,
-      "total_votes": 18,
-      "buy_votes": 4,
-      "sell_votes": 2,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.5
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "BUY",
-          "confidence": 0.522
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "SELL",
-          "confidence": 0.676
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "BUY",
-          "confidence": 0.533
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "BUY",
-          "confidence": 0.678
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "BUY",
-          "confidence": 0.518
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.6667,
-        "avg_confidence": 0.5628,
-        "strategies_agreed": [
-          "ema_momentum_prop",
-          "proven_stochrsi_prop",
-          "proven_propfirm_cons_prop",
-          "ema_aggressive_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 11.034,
-        "take_profit": 11.293714285714286,
-        "stop_loss": 10.904142857142858,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.10821429,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 11.034,
-      "atr_pct": 0.9807,
-      "atr_abs": 0.10821429,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "XRPUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.6755,
-      "active_votes": 2,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 1,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.515
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.72
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.5,
-        "avg_confidence": 0.72,
-        "strategies_agreed": [
-          "proven_triple_ema_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 1.4079,
-        "take_profit": 1.4294485714285716,
-        "stop_loss": 1.397125714285714,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.00897857,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 1.4079,
-      "atr_pct": 0.6377,
-      "atr_abs": 0.00897857,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "BNBUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.8442,
-      "active_votes": 3,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 2,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.513
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "SELL",
-          "confidence": 0.708
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.72
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "SELL",
-        "consensus_pct": 0.6667,
-        "avg_confidence": 0.6105,
-        "strategies_agreed": [
-          "corr_hma_trend",
-          "proven_keltner_squeeze_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "SELL",
-        "entry_price": 751.71,
-        "take_profit": 742.68948,
-        "stop_loss": 756.22026,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 3.22142857,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 751.71,
-      "atr_pct": 0.4285,
-      "atr_abs": 3.22142857,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "DOGEUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.6613,
-      "active_votes": 2,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 1,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.526
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.715
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.5,
-        "avg_confidence": 0.715,
-        "strategies_agreed": [
-          "proven_triple_ema_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 0.08727,
-        "take_profit": 0.08873571428571429,
-        "stop_loss": 0.08653714285714285,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.00061071,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 0.08727,
-      "atr_pct": 0.6998,
-      "atr_abs": 0.00061071,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "LINKUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.7508,
-      "active_votes": 2,
-      "total_votes": 18,
-      "buy_votes": 6,
-      "sell_votes": 0,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.532
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "BUY",
-          "confidence": 0.515
         },
         {
           "strategy": "fear_greed_contrarian",
@@ -1030,6 +228,141 @@
         },
         {
           "strategy": "proven_triple_ema_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "BUY",
+          "confidence": 0.635
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "BUY",
+          "confidence": 0.504
+        }
+      ],
+      "ensemble": {
+        "direction": "BUY",
+        "consensus_pct": 0.75,
+        "avg_confidence": 0.6263,
+        "strategies_agreed": [
+          "proven_keltner_squeeze_prop",
+          "proven_propfirm_cons_prop",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "BUY",
+        "entry_price": 2557.64,
+        "take_profit": 2595.8171428571427,
+        "stop_loss": 2538.5514285714285,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 15.90714286,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 2557.64,
+      "atr_pct": 0.6219,
+      "atr_abs": 15.90714286,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "SOLUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.6603,
+      "active_votes": 3,
+      "total_votes": 18,
+      "buy_votes": 1,
+      "sell_votes": 2,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.529
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
           "direction": "BUY",
           "confidence": 0.72
         },
@@ -1045,24 +378,156 @@
         },
         {
           "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "SELL",
+          "confidence": 0.505
+        }
+      ],
+      "ensemble": {
+        "direction": "SELL",
+        "consensus_pct": 0.6667,
+        "avg_confidence": 0.517,
+        "strategies_agreed": [
+          "corr_hma_trend",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "SELL",
+        "entry_price": 111.83,
+        "take_profit": 109.7385714285714,
+        "stop_loss": 112.8757142857143,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.87142857,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 111.83,
+      "atr_pct": 0.7792,
+      "atr_abs": 0.87142857,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "AVAXUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.859,
+      "active_votes": 5,
+      "total_votes": 18,
+      "buy_votes": 4,
+      "sell_votes": 1,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
           "direction": "BUY",
-          "confidence": 0.63
+          "confidence": 0.518
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "BUY",
+          "confidence": 0.527
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "SELL",
+          "confidence": 0.713
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "BUY",
+          "confidence": 0.686
         },
         {
           "strategy": "ema_aggressive_prop",
           "direction": "BUY",
-          "confidence": 0.512
+          "confidence": 0.522
         }
       ],
       "ensemble": {
         "direction": "BUY",
-        "consensus_pct": 1.0,
-        "avg_confidence": 0.6032,
+        "consensus_pct": 0.8,
+        "avg_confidence": 0.5633,
         "strategies_agreed": [
           "corr_hma_trend",
           "ema_momentum_prop",
-          "proven_keltner_squeeze_prop",
-          "proven_triple_ema_prop",
           "proven_propfirm_cons_prop",
           "ema_aggressive_prop"
         ]
@@ -1070,975 +535,575 @@
       "trade_setup": {
         "mode": "SCALP",
         "direction": "BUY",
-        "entry_price": 13.348,
-        "take_profit": 13.610285714285714,
-        "stop_loss": 13.216857142857144,
+        "entry_price": 11.102,
+        "take_profit": 11.376285714285714,
+        "stop_loss": 10.964857142857143,
         "trailing_stop": null,
         "rr_ratio": 2.0,
         "max_hold_bars": 8,
-        "atr": 0.10928571,
+        "atr": 0.11428571,
         "sl_floor_applied": true
       },
       "risk_gate": {
         "approved": true,
-        "position_size": 0.0225,
+        "position_size": 0.03,
         "reason": "",
-        "health": "caution"
+        "health": "safe"
       },
-      "current_price": 13.348,
-      "atr_pct": 0.8187,
-      "atr_abs": 0.10928571,
+      "current_price": 11.102,
+      "atr_pct": 1.0294,
+      "atr_abs": 0.11428571,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "XRPUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.6663,
+      "active_votes": 3,
+      "total_votes": 18,
+      "buy_votes": 1,
+      "sell_votes": 2,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.516
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "BUY",
+          "confidence": 0.72
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "SELL",
+          "confidence": 0.507
+        }
+      ],
+      "ensemble": {
+        "direction": "SELL",
+        "consensus_pct": 0.6667,
+        "avg_confidence": 0.5115,
+        "strategies_agreed": [
+          "corr_hma_trend",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "SELL",
+        "entry_price": 1.4061,
+        "take_profit": 1.3836942857142853,
+        "stop_loss": 1.4173028571428572,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.00933571,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 1.4061,
+      "atr_pct": 0.6639,
+      "atr_abs": 0.00933571,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "BNBUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.8126,
+      "active_votes": 4,
+      "total_votes": 18,
+      "buy_votes": 1,
+      "sell_votes": 3,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.512
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "SELL",
+          "confidence": 0.726
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "BUY",
+          "confidence": 0.72
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "SELL",
+          "confidence": 0.506
+        }
+      ],
+      "ensemble": {
+        "direction": "SELL",
+        "consensus_pct": 0.75,
+        "avg_confidence": 0.5813,
+        "strategies_agreed": [
+          "corr_hma_trend",
+          "proven_keltner_squeeze_prop",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "SELL",
+        "entry_price": 751.2,
+        "take_profit": 742.1856,
+        "stop_loss": 755.7072000000001,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 3.43714286,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 751.2,
+      "atr_pct": 0.4576,
+      "atr_abs": 3.43714286,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "DOGEUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.644,
+      "active_votes": 4,
+      "total_votes": 18,
+      "buy_votes": 3,
+      "sell_votes": 1,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.515
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "BUY",
+          "confidence": 0.72
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "BUY",
+          "confidence": 0.702
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "BUY",
+          "confidence": 0.504
+        }
+      ],
+      "ensemble": {
+        "direction": "BUY",
+        "consensus_pct": 0.75,
+        "avg_confidence": 0.642,
+        "strategies_agreed": [
+          "proven_keltner_squeeze_prop",
+          "proven_triple_ema_prop",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "BUY",
+        "entry_price": 0.08742,
+        "take_profit": 0.08902457142857143,
+        "stop_loss": 0.08661771428571428,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.00066857,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 0.08742,
+      "atr_pct": 0.7648,
+      "atr_abs": 0.00066857,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "LINKUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.7474,
+      "active_votes": 5,
+      "total_votes": 18,
+      "buy_votes": 4,
+      "sell_votes": 1,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.503
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "BUY",
+          "confidence": 0.72
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "BUY",
+          "confidence": 0.585
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "BUY",
+          "confidence": 0.607
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "BUY",
+          "confidence": 0.505
+        }
+      ],
+      "ensemble": {
+        "direction": "BUY",
+        "consensus_pct": 0.8,
+        "avg_confidence": 0.6042,
+        "strategies_agreed": [
+          "proven_keltner_squeeze_prop",
+          "proven_stochrsi_prop",
+          "proven_propfirm_cons_prop",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "BUY",
+        "entry_price": 13.429,
+        "take_profit": 13.704657142857142,
+        "stop_loss": 13.29117142857143,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.11485714,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 13.429,
+      "atr_pct": 0.8553,
+      "atr_abs": 0.11485714,
       "hyro_account_usdt": 5000,
       "hyro_max_risk_usdt_per_trade": 150.0,
       "bars": 1080
     },
     "ADAUSDT": {
       "regime": "TRENDING",
-      "hurst": 0.7707,
-      "active_votes": 2,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 1,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.526
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.72
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.5,
-        "avg_confidence": 0.72,
-        "strategies_agreed": [
-          "proven_triple_ema_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 0.2516,
-        "take_profit": 0.25739428571428574,
-        "stop_loss": 0.24870285714285711,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.00241429,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 0.2516,
-      "atr_pct": 0.9596,
-      "atr_abs": 0.00241429,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "DOTUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.6867,
+      "hurst": 0.8226,
       "active_votes": 3,
       "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 2,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.539
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "SELL",
-          "confidence": 0.706
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.72
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "SELL",
-        "consensus_pct": 0.6667,
-        "avg_confidence": 0.6225,
-        "strategies_agreed": [
-          "corr_hma_trend",
-          "proven_keltner_squeeze_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "SELL",
-        "entry_price": 1.254,
-        "take_profit": 1.2226285714285714,
-        "stop_loss": 1.2696857142857143,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.01307143,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 1.254,
-      "atr_pct": 1.0424,
-      "atr_abs": 0.01307143,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "NEARUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.8615,
-      "active_votes": 2,
-      "total_votes": 18,
-      "buy_votes": 1,
+      "buy_votes": 2,
       "sell_votes": 1,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.545
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "BUY",
-          "confidence": 0.624
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.5,
-        "avg_confidence": 0.624,
-        "strategies_agreed": [
-          "proven_propfirm_cons_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SWING",
-        "direction": "BUY",
-        "entry_price": 5.814,
-        "take_profit": 6.218847428571428,
-        "stop_loss": 5.668371428571429,
-        "trailing_stop": 5.99603571,
-        "rr_ratio": 2.78,
-        "max_hold_bars": 48,
-        "atr": 0.12135714,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.05,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 5.814,
-      "atr_pct": 2.0873,
-      "atr_abs": 0.12135714,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "SUIUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.7817,
-      "active_votes": 3,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 2,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.53
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "SELL",
-          "confidence": 0.702
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.72
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        }
-      ],
-      "ensemble": {
-        "direction": "SELL",
-        "consensus_pct": 0.6667,
-        "avg_confidence": 0.616,
-        "strategies_agreed": [
-          "corr_hma_trend",
-          "proven_keltner_squeeze_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "SELL",
-        "entry_price": 1.1203,
-        "take_profit": 1.088928571428572,
-        "stop_loss": 1.1359857142857142,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.01307143,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 1.1203,
-      "atr_pct": 1.1668,
-      "atr_abs": 0.01307143,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "ARBUSDT": {
-      "regime": "RANDOM",
-      "hurst": 0.5186,
-      "active_votes": 3,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 2,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "BUY",
-          "confidence": 0.3598
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "SELL",
-          "confidence": 0.534
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "SELL",
-          "confidence": 0.528
-        }
-      ],
-      "ensemble": {
-        "direction": "SELL",
-        "consensus_pct": 0.6667,
-        "avg_confidence": 0.531,
-        "strategies_agreed": [
-          "ema_momentum_prop",
-          "ema_aggressive_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "SELL",
-        "entry_price": 0.1948,
-        "take_profit": 0.18928000000000003,
-        "stop_loss": 0.19755999999999999,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.0023,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.0225,
-        "reason": "",
-        "health": "caution"
-      },
-      "current_price": 0.1948,
-      "atr_pct": 1.1807,
-      "atr_abs": 0.0023,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "APTUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.7317,
-      "active_votes": 5,
-      "total_votes": 18,
-      "buy_votes": 3,
-      "sell_votes": 2,
-      "consensus_met": true,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.525
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "BUY",
-          "confidence": 0.636
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.701
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "BUY",
-          "confidence": 0.71
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "SELL",
-          "confidence": 0.523
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 0.6,
-        "avg_confidence": 0.6823,
-        "strategies_agreed": [
-          "rsi2_bb_squeeze",
-          "proven_triple_ema_prop",
-          "proven_vwap_mr_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 0.8881,
-        "take_profit": 0.9159742857142857,
-        "stop_loss": 0.8741628571428571,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.01161429,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.03,
-        "reason": "",
-        "health": "safe"
-      },
-      "current_price": 0.8881,
-      "atr_pct": 1.3078,
-      "atr_abs": 0.01161429,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "PEPEUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.7717,
-      "active_votes": 1,
-      "total_votes": 18,
-      "buy_votes": 0,
-      "sell_votes": 1,
-      "consensus_met": false,
-      "vote_detail": [
-        {
-          "strategy": "corr_hma_trend",
-          "direction": "SELL",
-          "confidence": 0.551
-        },
-        {
-          "strategy": "overnight_seasonality_btc",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "pairs_spread_btceth",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "liquidity_sweep_reversal",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "consecutive_down_rsi",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi2_bb_squeeze",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "autocorr_reversion",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "volume_profile_deviation",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "rsi_momentum_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "atr_breakout_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "ema_momentum_prop",
-          "direction": "BUY",
-          "confidence": 0.528
-        },
-        {
-          "strategy": "fear_greed_contrarian",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_triple_ema_prop",
-          "direction": "BUY",
-          "confidence": 0.672
-        },
-        {
-          "strategy": "proven_vwap_mr_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_stochrsi_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
-        },
-        {
-          "strategy": "proven_propfirm_cons_prop",
-          "direction": "BUY",
-          "confidence": 0.61
-        },
-        {
-          "strategy": "ema_aggressive_prop",
-          "direction": "BUY",
-          "confidence": 0.523
-        }
-      ],
-      "ensemble": {
-        "direction": "BUY",
-        "consensus_pct": 1.0,
-        "avg_confidence": 0.5694,
-        "strategies_agreed": [
-          "corr_hma_trend",
-          "ema_momentum_prop",
-          "proven_triple_ema_prop",
-          "proven_propfirm_cons_prop",
-          "ema_aggressive_prop"
-        ]
-      },
-      "trade_setup": {
-        "mode": "SCALP",
-        "direction": "BUY",
-        "entry_price": 1.1305,
-        "take_profit": 1.1623342857142855,
-        "stop_loss": 1.1145828571428573,
-        "trailing_stop": null,
-        "rr_ratio": 2.0,
-        "max_hold_bars": 8,
-        "atr": 0.01326429,
-        "sl_floor_applied": true
-      },
-      "risk_gate": {
-        "approved": true,
-        "position_size": 0.0225,
-        "reason": "",
-        "health": "caution"
-      },
-      "current_price": 1.1305,
-      "atr_pct": 1.1733,
-      "atr_abs": 0.01326429,
-      "hyro_account_usdt": 5000,
-      "hyro_max_risk_usdt_per_trade": 150.0,
-      "bars": 1080
-    },
-    "ARBUSDT": {
-      "regime": "TRENDING",
-      "hurst": 0.5793,
-      "active_votes": 4,
-      "total_votes": 18,
-      "buy_votes": 1,
-      "sell_votes": 3,
       "consensus_met": true,
       "vote_detail": [
         {
@@ -2093,8 +1158,8 @@
         },
         {
           "strategy": "ema_momentum_prop",
-          "direction": "SELL",
-          "confidence": 0.519
+          "direction": "ABSTAIN",
+          "confidence": 0.0
         },
         {
           "strategy": "fear_greed_contrarian",
@@ -2103,18 +1168,18 @@
         },
         {
           "strategy": "proven_keltner_squeeze_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
+          "direction": "BUY",
+          "confidence": 0.716
         },
         {
           "strategy": "proven_triple_ema_prop",
-          "direction": "ABSTAIN",
-          "confidence": 0.0
+          "direction": "BUY",
+          "confidence": 0.717
         },
         {
           "strategy": "proven_vwap_mr_prop",
-          "direction": "BUY",
-          "confidence": 0.686
+          "direction": "ABSTAIN",
+          "confidence": 0.0
         },
         {
           "strategy": "proven_stochrsi_prop",
@@ -2128,58 +1193,194 @@
         },
         {
           "strategy": "ema_aggressive_prop",
-          "direction": "SELL",
-          "confidence": 0.515
+          "direction": "ABSTAIN",
+          "confidence": 0.0
         }
       ],
       "ensemble": {
-        "direction": "SELL",
-        "consensus_pct": 0.75,
-        "avg_confidence": 0.5133,
+        "direction": "BUY",
+        "consensus_pct": 0.6667,
+        "avg_confidence": 0.7165,
+        "strategies_agreed": [
+          "proven_keltner_squeeze_prop",
+          "proven_triple_ema_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "BUY",
+        "entry_price": 0.2527,
+        "take_profit": 0.2588371428571429,
+        "stop_loss": 0.24963142857142853,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.00255714,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 0.2527,
+      "atr_pct": 1.0119,
+      "atr_abs": 0.00255714,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "DOTUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.68,
+      "active_votes": 5,
+      "total_votes": 18,
+      "buy_votes": 5,
+      "sell_votes": 0,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "BUY",
+          "confidence": 0.519
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "BUY",
+          "confidence": 0.731
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "BUY",
+          "confidence": 0.642
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "BUY",
+          "confidence": 0.556
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "BUY",
+          "confidence": 0.505
+        }
+      ],
+      "ensemble": {
+        "direction": "BUY",
+        "consensus_pct": 1.0,
+        "avg_confidence": 0.5906,
         "strategies_agreed": [
           "corr_hma_trend",
-          "ema_momentum_prop",
+          "proven_keltner_squeeze_prop",
+          "proven_triple_ema_prop",
+          "proven_stochrsi_prop",
           "ema_aggressive_prop"
         ]
       },
       "trade_setup": {
         "mode": "SCALP",
-        "direction": "SELL",
-        "entry_price": 0.1947,
-        "take_profit": 0.1887857142857143,
-        "stop_loss": 0.19765714285714286,
+        "direction": "BUY",
+        "entry_price": 1.269,
+        "take_profit": 1.304657142857143,
+        "stop_loss": 1.2511714285714284,
         "trailing_stop": null,
         "rr_ratio": 2.0,
         "max_hold_bars": 8,
-        "atr": 0.00246429,
+        "atr": 0.01485714,
         "sl_floor_applied": true
       },
       "risk_gate": {
         "approved": true,
-        "position_size": 0.0225,
+        "position_size": 0.03,
         "reason": "",
-        "health": "caution"
+        "health": "safe"
       },
-      "current_price": 0.1947,
-      "atr_pct": 1.2657,
-      "atr_abs": 0.00246429,
+      "current_price": 1.269,
+      "atr_pct": 1.1708,
+      "atr_abs": 0.01485714,
       "hyro_account_usdt": 5000,
       "hyro_max_risk_usdt_per_trade": 150.0,
       "bars": 1080
     },
-    "APTUSDT": {
+    "NEARUSDT": {
       "regime": "TRENDING",
-      "hurst": 0.7774,
-      "active_votes": 2,
+      "hurst": 0.7892,
+      "active_votes": 3,
       "total_votes": 18,
-      "buy_votes": 0,
+      "buy_votes": 1,
       "sell_votes": 2,
       "consensus_met": true,
       "vote_detail": [
         {
           "strategy": "corr_hma_trend",
           "direction": "SELL",
-          "confidence": 0.502
+          "confidence": 0.542
         },
         {
           "strategy": "overnight_seasonality_btc",
@@ -2258,6 +1459,275 @@
         },
         {
           "strategy": "proven_propfirm_cons_prop",
+          "direction": "BUY",
+          "confidence": 0.633
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "SELL",
+          "confidence": 0.506
+        }
+      ],
+      "ensemble": {
+        "direction": "SELL",
+        "consensus_pct": 0.6667,
+        "avg_confidence": 0.524,
+        "strategies_agreed": [
+          "corr_hma_trend",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SWING",
+        "direction": "SELL",
+        "entry_price": 5.8,
+        "take_profit": 5.378710857142857,
+        "stop_loss": 5.951542857142857,
+        "trailing_stop": 5.61057143,
+        "rr_ratio": 2.78,
+        "max_hold_bars": 48,
+        "atr": 0.12628571,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.05,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 5.8,
+      "atr_pct": 2.1773,
+      "atr_abs": 0.12628571,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "SUIUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.7927,
+      "active_votes": 4,
+      "total_votes": 18,
+      "buy_votes": 1,
+      "sell_votes": 3,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.527
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "SELL",
+          "confidence": 0.71
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "BUY",
+          "confidence": 0.72
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "SELL",
+          "confidence": 0.508
+        }
+      ],
+      "ensemble": {
+        "direction": "SELL",
+        "consensus_pct": 0.75,
+        "avg_confidence": 0.5817,
+        "strategies_agreed": [
+          "corr_hma_trend",
+          "proven_keltner_squeeze_prop",
+          "ema_aggressive_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "SELL",
+        "entry_price": 1.1197,
+        "take_profit": 1.0874028571428571,
+        "stop_loss": 1.1358485714285713,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.01345714,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 1.1197,
+      "atr_pct": 1.2019,
+      "atr_abs": 0.01345714,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "ARBUSDT": {
+      "regime": "RANDOM",
+      "hurst": 0.5267,
+      "active_votes": 2,
+      "total_votes": 18,
+      "buy_votes": 2,
+      "sell_votes": 0,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "BUY",
+          "confidence": 0.3745
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "BUY",
+          "confidence": 0.61
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
           "direction": "ABSTAIN",
           "confidence": 0.0
         },
@@ -2268,19 +1738,289 @@
         }
       ],
       "ensemble": {
-        "direction": "SELL",
+        "direction": "BUY",
         "consensus_pct": 1.0,
-        "avg_confidence": 0.551,
+        "avg_confidence": 0.4922,
         "strategies_agreed": [
-          "corr_hma_trend"
+          "corr_hma_trend",
+          "proven_stochrsi_prop"
         ]
       },
       "trade_setup": {
         "mode": "SCALP",
-        "direction": "SELL",
+        "direction": "BUY",
+        "entry_price": 0.1956,
+        "take_profit": 0.20132571428571427,
+        "stop_loss": 0.19273714285714286,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.00238571,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 0.1956,
+      "atr_pct": 1.2197,
+      "atr_abs": 0.00238571,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "APTUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.6816,
+      "active_votes": 6,
+      "total_votes": 18,
+      "buy_votes": 4,
+      "sell_votes": 2,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.547
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "BUY",
+          "confidence": 0.5352
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "BUY",
+          "confidence": 0.6392
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "BUY",
+          "confidence": 0.631
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "BUY",
+          "confidence": 0.733
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "SELL",
+          "confidence": 0.535
+        }
+      ],
+      "ensemble": {
+        "direction": "BUY",
+        "consensus_pct": 0.6667,
+        "avg_confidence": 0.6346,
+        "strategies_agreed": [
+          "consecutive_down_rsi",
+          "rsi2_bb_squeeze",
+          "proven_triple_ema_prop",
+          "proven_vwap_mr_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "BUY",
+        "entry_price": 0.8805,
+        "take_profit": 0.9078428571428571,
+        "stop_loss": 0.8668285714285714,
+        "trailing_stop": null,
+        "rr_ratio": 2.0,
+        "max_hold_bars": 8,
+        "atr": 0.01139286,
+        "sl_floor_applied": true
+      },
+      "risk_gate": {
+        "approved": true,
+        "position_size": 0.03,
+        "reason": "",
+        "health": "safe"
+      },
+      "current_price": 0.8805,
+      "atr_pct": 1.2939,
+      "atr_abs": 0.01139286,
+      "hyro_account_usdt": 5000,
+      "hyro_max_risk_usdt_per_trade": 150.0,
+      "bars": 1080
+    },
+    "PEPEUSDT": {
+      "regime": "TRENDING",
+      "hurst": 0.7623,
+      "active_votes": 2,
+      "total_votes": 18,
+      "buy_votes": 1,
+      "sell_votes": 1,
+      "consensus_met": true,
+      "vote_detail": [
+        {
+          "strategy": "corr_hma_trend",
+          "direction": "SELL",
+          "confidence": 0.542
+        },
+        {
+          "strategy": "overnight_seasonality_btc",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "pairs_spread_btceth",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "liquidity_sweep_reversal",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "consecutive_down_rsi",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi2_bb_squeeze",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "autocorr_reversion",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "volume_profile_deviation",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "rsi_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "atr_breakout_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_momentum_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "fear_greed_contrarian",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_keltner_squeeze_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_triple_ema_prop",
+          "direction": "BUY",
+          "confidence": 0.687
+        },
+        {
+          "strategy": "proven_vwap_mr_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_stochrsi_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "proven_propfirm_cons_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        },
+        {
+          "strategy": "ema_aggressive_prop",
+          "direction": "ABSTAIN",
+          "confidence": 0.0
+        }
+      ],
+      "ensemble": {
+        "direction": "BUY",
+        "consensus_pct": 0.5,
+        "avg_confidence": 0.687,
+        "strategies_agreed": [
+          "proven_triple_ema_prop"
+        ]
+      },
+      "trade_setup": {
+        "mode": "SCALP",
+        "direction": "BUY",
         "entry_price": 4.23e-06,
-        "take_profit": 4.096285714285714e-06,
-        "stop_loss": 4.296857142857143e-06,
+        "take_profit": 4.367142857142857e-06,
+        "stop_loss": 4.161428571428572e-06,
         "trailing_stop": null,
         "rr_ratio": 2.0,
         "max_hold_bars": 8,
@@ -2294,7 +2034,7 @@
         "health": "safe"
       },
       "current_price": 4.23e-06,
-      "atr_pct": 1.3171,
+      "atr_pct": 1.3509,
       "atr_abs": 6e-08,
       "hyro_account_usdt": 5000,
       "hyro_max_risk_usdt_per_trade": 150.0,
