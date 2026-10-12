@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ServiceNow JavaScript Quiz – FindTorontoEvents</title>
+  <style>
+    :root {
+      --bg: #080c14;
+      --panel: #0f1626;
+      --panel-2: #121b2e;
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #e6edf6;
+      --muted: #8b98ac;
+      --accent: #62f5c7;
+      --accent-2: #7aa2ff;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --success: #4ade80;
+      --code-bg: #0a0f1a;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --sn-nav-h: 58px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--sn-nav-h) + 16px); background: #07080f; }
+    body {
+      margin: 0; padding: 2rem;
+      background:
+        radial-gradient(900px 500px at 15% -10%, rgba(98,245,199,0.08), transparent 60%),
+        radial-gradient(900px 600px at 90% 0%, rgba(122,162,255,0.08), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      font-feature-settings: "tnum";
+    }
+
+    h1, h2 { color: var(--accent-2); }
+    code {
+      background: var(--code-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-size: 0.9em;
+    }
+
+    .nav { margin-bottom: 1.5rem; }
+    .nav a { color: var(--accent-2); text-decoration: none; }
+    .nav a:hover { color: var(--accent); text-decoration: underline; }
+
+    /* ── Animated nebula layers (pure CSS, zero external assets) ── */
+    body::before {
+      content: ''; position: fixed; inset: -40%; z-index: -2;
+      background:
+        radial-gradient(38% 42% at 18% 22%, rgba(98, 245, 199, 0.16), transparent 70%),
+        radial-gradient(34% 38% at 82% 18%, rgba(122, 162, 255, 0.20), transparent 72%),
+        radial-gradient(42% 46% at 68% 84%, rgba(124, 58, 237, 0.16), transparent 70%),
+        radial-gradient(30% 34% at 30% 78%, rgba(251, 191, 36, 0.10), transparent 72%);
+      filter: blur(70px) saturate(150%);
+      animation: nebula-drift 26s ease-in-out infinite alternate;
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+    @keyframes nebula-drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(4%, -3%) scale(1.08); }
+      100% { transform: translate(-4%, 3%) scale(1.04); }
+    }
+    @media (prefers-reduced-motion: reduce) { body::before { animation: none; } }
+
+    /* ── Dark glass content card ── */
+    .quiz-card {
+      max-width: 900px; margin: 0 auto; padding: 2.2rem 2.5rem;
+      background: rgba(15, 22, 38, 0.55);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    }
+    .quiz-card h1 { margin-top: 0; }
+    .lede { color: var(--muted); max-width: 62ch; }
+
+    /* SERVICE NOW LEARNING HEADER — shared across all ServiceNow guide family */
+    .sn-lnav {
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--panel-border);
+      background: rgba(8,12,20,0.72);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 50;
+      font-size: 0.85rem;
+    }
+    .sn-lnav-brand { font-weight: 600; letter-spacing: 0.02em; color: var(--text); }
+    .sn-lnav-brand-dot { color: var(--accent); margin: 0 2px; }
+    .sn-lnav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sn-lnav-links a { color: var(--muted); padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; }
+    .sn-lnav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); text-decoration: none; }
+    .sn-lnav-links a[aria-current="page"] { color: var(--accent); background: rgba(98,245,199,0.10); }
+
+    /* ── Focus styling for accessibility ── */
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 2px;
+      border-radius: calc(var(--radius-sm) + 2px);
+    }
+
+    /* ── Category picker ── */
+    .picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 1.6rem; }
+    .cat-card {
+      background: rgba(18, 27, 46, 0.7);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      padding: 0 0 12px;
+      overflow: hidden;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .cat-card:hover { transform: translateY(-2px); border-color: var(--cat, var(--accent)); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+    .cat-open {
+      display: block; width: 100%; text-align: left; cursor: pointer; color: var(--text);
+      font: inherit; background: none; border: 0; padding: 16px 16px 8px;
+    }
+    .cat-head { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; }
+    .cat-name { font-weight: 650; font-size: 1.02rem; }
+    .cat-icon { font-size: 1.15rem; }
+    .cat-count { color: var(--muted); font-size: .78rem; white-space: nowrap; }
+    .cat-blurb { color: var(--muted); font-size: .84rem; margin: 6px 0 0; }
+    .subs { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 16px 0; }
+    .sub-chip {
+      font: inherit; font-size: .74rem; cursor: pointer;
+      color: var(--muted); background: rgba(255,255,255,.04);
+      border: 1px solid var(--panel-border); border-radius: 999px; padding: 3px 10px;
+    }
+    .sub-chip:hover { color: var(--text); border-color: var(--cat, var(--accent)); }
+    .sub-chip .n { opacity: .6; margin-left: 4px; }
+
+    .mixed-card {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      cursor: pointer; color: var(--text); font: inherit; text-align: left;
+      background: linear-gradient(100deg, rgba(98,245,199,.10), rgba(122,162,255,.10));
+      border: 1px solid rgba(98,245,199,.28); border-radius: var(--radius);
+      padding: 16px 18px;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .mixed-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.45); }
+    .mixed-card .cat-name { color: var(--accent); }
+
+    /* ── Quiz runner ── */
+    .runner-head {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      padding: 12px 16px; margin-bottom: 1.4rem;
+      background: rgba(18,27,46,.7); border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      position: sticky; top: calc(var(--sn-nav-h) + 8px); z-index: 20;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .score-pill { font-weight: 700; font-size: .95rem; white-space: nowrap; }
+    .score-pill .ok { color: var(--success); }
+    .score-pill .no { color: var(--danger); }
+    .score-pill .todo { color: var(--muted); }
+    .bar { flex: 1; min-width: 140px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s ease; }
+    .head-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer;
+      padding: 7px 14px; border-radius: var(--radius-sm);
+      background: var(--accent); color: #04140d; border: none;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(98,245,199,.35); }
+    .btn.ghost { background: rgba(255,255,255,.06); color: var(--text); border: 1px solid var(--panel-border); }
+    .btn.ghost:hover { box-shadow: 0 4px 12px rgba(0,0,0,.35); }
+
+    .q-item {
+      border: 1px solid var(--panel-border); border-left: 3px solid transparent;
+      border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px;
+      background: rgba(15,22,38,.5);
+      transition: border-color .2s ease;
+    }
+    .q-item.ok  { border-left-color: var(--success); }
+    .q-item.no  { border-left-color: var(--danger); }
+    .q-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+    .q-num { color: var(--muted); font-size: .78rem; font-weight: 700; }
+    .tag { font-size: .7rem; color: var(--muted); background: rgba(255,255,255,.05); border: 1px solid var(--panel-border); border-radius: 999px; padding: 2px 8px; }
+    .q-text { margin: 0 0 10px; }
+    .q-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .q-row input {
+      flex: 1; min-width: 240px; padding: .5rem .7rem; font-size: .95rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: var(--panel-2); border: 1px solid var(--panel-border);
+      color: var(--text); border-radius: var(--radius-sm);
+    }
+    .q-msg { margin-top: 9px; font-size: .9rem; }
+    .q-msg .correct { color: var(--success); font-weight: 700; }
+    .q-msg .incorrect { color: var(--danger); font-weight: 700; }
+    .q-msg .ans { display: block; margin-top: 5px; color: var(--muted); font-size: .84rem; }
+    .q-msg .ans code { color: var(--accent); }
+    .q-hint { margin-top: 8px; font-size: .84rem; color: var(--warning); }
+
+    .key-toggle { margin-top: 1.6rem; }
+    .key-list { margin-top: .8rem; display: grid; gap: 6px; }
+    .key-row { font-size: .85rem; color: var(--muted); }
+    .key-row code { color: var(--accent); }
+
+    .footnote { margin-top: 1.8rem; color: var(--muted); font-size: .8rem; }
+
+    /* Must come last: it has to win over .key-list { display:grid } etc. */
+    .hidden { display: none !important; }
+
+    @media (max-width: 560px) {
+      body { padding: 1rem; }
+      .quiz-card { padding: 1.4rem 1.1rem; }
+      .q-row input { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- SERVICE NOW LEARNING — shared header across the ServiceNow guide family -->
+  <nav class="sn-lnav" aria-label="ServiceNow learning guides">
+    <span class="sn-lnav-brand">ServiceNow<span class="sn-lnav-brand-dot">·</span>Learning</span>
+    <span class="sn-lnav-links">
+      <a href="/servicenow/javascript/index.html">JavaScript Reference</a>
+      <a href="/servicenow/javascript/quiz.html" aria-current="page">Quiz</a>
+      <a href="/servicenow/AIFeaturesOct2026/index.html">AI Features Guide</a>
+      <a href="/servicenow/CIS-CSM/index.html">CIS&#8209;CSM Study Briefing</a>
+      <a href="/servicenow/CIS-VR/index.html">CIS&#8209;VR Study Briefing</a>
+    </span>
+  </nav>
+
+  <div class="quiz-card">
+    <div class="nav"><a href="index.html">&larr; Back to Guide</a></div>
+
+    <!-- ── VIEW 1: category picker ── -->
+    <main id="view-picker">
+      <h1>ServiceNow JavaScript Quiz</h1>
+      <p class="lede">Pick a category, or mix them all. Every question is standalone and coding-specific &mdash; you write the actual API call, and it is matched loosely (whitespace, quote style and a trailing semicolon don't count against you).</p>
+
+      <div class="picker" id="picker"><!-- built by script --></div>
+
+      <p class="footnote">Questions live in <code>quiz-data.js</code> &mdash; adding more is a plain append, no HTML changes needed. Answers are matched against the official API references; see the corrections in the <a href="index.html">JavaScript Reference</a>.</p>
+    </main>
+
+    <!-- ── VIEW 2: quiz runner ── -->
+    <main id="view-runner" class="hidden">
+      <div class="runner-head">
+        <button class="btn ghost" id="back">&larr; Categories</button>
+        <div class="score-pill" id="score-pill"></div>
+        <div class="bar"><span id="bar-fill"></span></div>
+        <div class="head-btns">
+          <button class="btn ghost" id="reveal">Reveal answers</button>
+          <button class="btn ghost" id="reset">Reset</button>
+        </div>
+      </div>
+
+      <h1 id="runner-title"></h1>
+      <p class="lede" id="runner-sub"></p>
+      <div id="questions"></div>
+
+      <div class="key-toggle">
+        <button class="btn ghost" id="key-btn">Show answer key</button>
+        <div class="key-list hidden" id="key-list"></div>
+      </div>
+
+      <p class="footnote">Stuck? The <a href="index.html">JavaScript Reference</a> covers every API used here.</p>
+    </main>
+  </div>
+
+  <script src="quiz-data.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var DATA = window.SN_QUIZ;
+    if (!DATA || !DATA.questions) { document.body.insertAdjacentHTML('afterbegin', '<p style="color:#f87171;padding:1rem">quiz-data.js failed to load.</p>'); return; }
+
+    var $ = function (id) { return document.getElementById(id); };
+    var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+    /* ── answer normalisation ──────────────────────────────────────────────
+       Both the typed answer and every accepted form go through the same
+       normaliser, so whitespace, curly quotes and a trailing ';' are
+       irrelevant. A looser second pass also drops a leading `var x = `
+       assignment so `var c = gr.addQuery(...)` still matches.              */
+    function norm(s) {
+      return String(s)
+        .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'")
+        .replace(/[\u201C\u201D\u2033\u2036]/g, '"')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, '')
+        .replace(/;+$/g, '');
+    }
+    function normLoose(s) { return norm(s).replace(/^var[A-Za-z_$][\w$]*=/, ''); }
+
+    function isCorrect(typed, q) {
+      var t = norm(typed);
+      if (!t) return false;
+      for (var i = 0; i < q.accept.length; i++) { if (t === norm(q.accept[i])) return true; }
+      var tl = normLoose(typed);
+      for (var j = 0; j < q.accept.length; j++) { if (tl === normLoose(q.accept[j])) return true; }
+      return false;
+    }
+
+    /* ── state ─────────────────────────────────────────────────────────── */
+    var state = { cats: [], sub: null, list: [], results: {} };
+
+    var catById = {};
+    DATA.categories.forEach(function (c) { catById[c.id] = c; });
+    function countIn(catId, subId) {
+      return DATA.questions.filter(function (q) { return q.cat === catId && (!subId || q.sub === subId); }).length;
+    }
+
+    function shuffle(a) {
+      for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+      return a;
+    }
+
+    /* ── picker ────────────────────────────────────────────────────────── */
+    function buildPicker() {
+      var html = '<button class="mixed-card" data-mixed="1">' +
+        '<span><span class="cat-name">Mixed categories</span>' +
+        '<span class="cat-blurb" style="display:block;margin:2px 0 0">A random sample drawn from every category &mdash; the closest thing to a real exam.</span></span>' +
+        '<span class="cat-count">' + DATA.questions.length + ' questions &rarr;</span></button>';
+
+      DATA.categories.forEach(function (c) {
+        html += '<div class="cat-card" style="--cat:' + c.accent + '">' +
+          '<button class="cat-open" data-cat="' + c.id + '">' +
+          '<span class="cat-head"><span class="cat-name"><span class="cat-icon">' + c.icon + '</span> ' + esc(c.label) + '</span>' +
+          '<span class="cat-count">' + countIn(c.id) + ' q</span></span>' +
+          '<span class="cat-blurb">' + esc(c.blurb) + '</span>' +
+          '</button>' +
+          '<div class="subs">' +
+          c.subs.map(function (s) {
+            return '<button class="sub-chip" type="button" data-cat="' + c.id + '" data-sub="' + s.id + '">' +
+              esc(s.label) + '<span class="n">' + countIn(c.id, s.id) + '</span></button>';
+          }).join('') +
+          '</div></div>';
+      });
+
+      $('picker').innerHTML = html;
+
+      $('picker').addEventListener('click', function (e) {
+        var chip = e.target.closest('.sub-chip');
+        if (chip) { start([chip.dataset.cat], chip.dataset.sub); return; }
+        var mixed = e.target.closest('[data-mixed]');
+        if (mixed) { start(DATA.categories.map(function (c) { return c.id; }), null); return; }
+        var open = e.target.closest('.cat-open');
+        if (open) { start([open.dataset.cat], null); }
+      });
+    }
+
+    /* ── runner ────────────────────────────────────────────────────────── */
+    function start(catIds, subId) {
+      var pool = DATA.questions.filter(function (q) {
+        return catIds.indexOf(q.cat) !== -1 && (!subId || q.sub === subId);
+      });
+      state.cats = catIds;
+      state.sub = subId;
+      state.results = {};
+
+      if (catIds.length > 1) {
+        // Mixed mode: a spread of 10, keeping every category represented when possible.
+        var byCat = {};
+        pool.forEach(function (q) { (byCat[q.cat] = byCat[q.cat] || []).push(q); });
+        var picked = [];
+        Object.keys(byCat).forEach(function (k) { picked.push(shuffle(byCat[k].slice())[0]); });
+        var remaining = pool.filter(function (q) { return picked.indexOf(q) === -1; });
+        picked = picked.concat(shuffle(remaining).slice(0, Math.max(0, 10 - picked.length)));
+        state.list = shuffle(picked);
+      } else {
+        state.list = pool.slice();
+      }
+
+      var title = catIds.length > 1 ? 'Mixed categories' : catById[catIds[0]].label;
+      if (subId && catIds.length === 1) {
+        var s = catById[catIds[0]].subs.filter(function (x) { return x.id === subId; })[0];
+        if (s) title += ' — ' + s.label;
+      }
+      var distinctCats = {};
+      state.list.forEach(function (q) { distinctCats[q.cat] = 1; });
+      $('runner-title').textContent = title;
+      $('runner-sub').textContent = state.list.length + ' question' + (state.list.length === 1 ? '' : 's') +
+        (catIds.length > 1 ? ', sampled across ' + Object.keys(distinctCats).length + ' categories.' : '. Type the code exactly as you would write it.');
+
+      renderQuestions();
+      buildKey();
+      $('view-picker').classList.add('hidden');
+      $('view-runner').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function renderQuestions() {
+      var html = state.list.map(function (q, i) {
+        var cat = catById[q.cat];
+        var sub = cat.subs.filter(function (s) { return s.id === q.sub; })[0];
+        return '<div class="q-item" id="item-' + q.id + '">' +
+          '<div class="q-meta"><span class="q-num">Q' + (i + 1) + '</span>' +
+          '<span class="tag">' + cat.icon + ' ' + esc(cat.label) + '</span>' +
+          (sub ? '<span class="tag">' + esc(sub.label) + '</span>' : '') + '</div>' +
+          '<p class="q-text">' + q.q + '</p>' +
+          '<div class="q-row">' +
+          '<input type="text" id="in-' + q.id + '" placeholder="' + esc(q.ph) + '" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Your answer for question ' + (i + 1) + '">' +
+          '<button class="btn" data-check="' + q.id + '">Check</button>' +
+          '<button class="btn ghost" data-hint="' + q.id + '">Hint</button>' +
+          '</div>' +
+          '<div class="q-msg" id="msg-' + q.id + '"></div>' +
+          (q.hint ? '<div class="q-hint hidden" id="hint-' + q.id + '">' + esc(q.hint) + '</div>' : '') +
+          '</div>';
+      }).join('');
+      $('questions').innerHTML = html;
+      updateScore();
+    }
+
+    function check(id) {
+      var q = state.list.filter(function (x) { return x.id === id; })[0];
+      var typed = $('in-' + id).value;
+      var ok = isCorrect(typed, q);
+      state.results[id] = ok;
+      var item = $('item-' + id);
+      item.classList.toggle('ok', ok);
+      item.classList.toggle('no', !ok);
+      $('msg-' + id).innerHTML = ok
+        ? '<span class="correct">Correct.</span>'
+        : '<span class="incorrect">Not quite.</span><span class="ans">Answer: <code>' + esc(q.answer) + '</code></span>';
+      updateScore();
+    }
+
+    function updateScore() {
+      var ids = state.list.map(function (q) { return q.id; });
+      var done = ids.filter(function (i) { return state.results[i] !== undefined; }).length;
+      var right = ids.filter(function (i) { return state.results[i] === true; }).length;
+      var wrong = done - right;
+      $('score-pill').innerHTML = '<span class="ok">' + right + '</span> correct · ' +
+        '<span class="no">' + wrong + '</span> wrong · <span class="todo">' + (ids.length - done) + ' left</span>';
+      $('bar-fill').style.width = (ids.length ? (done / ids.length) * 100 : 0) + '%';
+    }
+
+    function buildKey() {
+      $('key-list').innerHTML = state.list.map(function (q, i) {
+        return '<div class="key-row">Q' + (i + 1) + ' &mdash; <code>' + esc(q.answer) + '</code></div>';
+      }).join('');
+      $('key-list').classList.add('hidden');
+      $('key-btn').textContent = 'Show answer key';
+    }
+
+    /* ── wiring ────────────────────────────────────────────────────────── */
+    $('questions').addEventListener('click', function (e) {
+      var c = e.target.closest('[data-check]');
+      if (c) { check(c.dataset.check); return; }
+      var h = e.target.closest('[data-hint]');
+      if (h) { $('hint-' + h.dataset.hint).classList.toggle('hidden'); }
+    });
+    $('questions').addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var inp = e.target;
+      if (!inp.tagName || inp.tagName !== 'INPUT') return;
+      e.preventDefault();
+      check(inp.id.replace(/^in-/, ''));
+    });
+    $('reveal').addEventListener('click', function () {
+      state.list.forEach(function (q) {
+        if (state.results[q.id] === undefined) {
+          state.results[q.id] = null; // counted as done but not scored
+          $('item-' + q.id).classList.remove('no');
+          $('msg-' + q.id).innerHTML = '<span class="ans">Answer: <code>' + esc(q.answer) + '</code></span>';
+        }
+      });
+      // recompute without counting revealed-as-correct
+      var ids = state.list.map(function (q) { return q.id; });
+      var right = ids.filter(function (i) { return state.results[i] === true; }).length;
+      var wrong = ids.filter(function (i) { return state.results[i] === false; }).length;
+      $('score-pill').innerHTML = '<span class="ok">' + right + '</span> correct · <span class="no">' + wrong + '</span> wrong · <span class="todo">0 left</span>';
+      $('bar-fill').style.width = '100%';
+    });
+    $('reset').addEventListener('click', function () { start(state.cats, state.sub); });
+    $('back').addEventListener('click', function () {
+      $('view-runner').classList.add('hidden');
+      $('view-picker').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    });
+    $('key-btn').addEventListener('click', function () {
+      var l = $('key-list');
+      l.classList.toggle('hidden');
+      $('key-btn').textContent = l.classList.contains('hidden') ? 'Show answer key' : 'Hide answer key';
+    });
+
+    buildPicker();
+  })();
+  </script>
+</body>
+</html>
