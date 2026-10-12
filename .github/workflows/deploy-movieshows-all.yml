@@ -25,6 +25,7 @@ jobs:
               print('Missing FTP credentials'); sys.exit(1)
 
           files = [
+              ('TORONTOEVENTS_ANTIGRAVITY/.movies-db-private/.htaccess', 'findtorontoevents.ca/.movies-db-private', '.htaccess'),
               # MOVIESHOWS (MS1  upgrade toast)
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/.htaccess',              'findtorontoevents.ca/MOVIESHOWS',      '.htaccess'),
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/index.php',              'findtorontoevents.ca/MOVIESHOWS',      'index.php'),
@@ -92,6 +93,7 @@ jobs:
               print('Missing FTP credentials'); sys.exit(1)
 
           files = [
+              ('TORONTOEVENTS_ANTIGRAVITY/.movies-db-private/.htaccess', 'tdotevent.ca/.movies-db-private', '.htaccess'),
               # MOVIESHOWS (MS1  upgrade toast)
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/.htaccess',              'tdotevent.ca/MOVIESHOWS',      '.htaccess'),
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/index.php',              'tdotevent.ca/MOVIESHOWS',      'index.php'),
@@ -159,6 +161,7 @@ jobs:
               print('Missing GoDaddy FTP credentials'); sys.exit(1)
 
           files = [
+              ('TORONTOEVENTS_ANTIGRAVITY/.movies-db-private/.htaccess', '.movies-db-private', '.htaccess'),
               # MOVIESHOWS (MS1  upgrade toast)
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/.htaccess',              'MOVIESHOWS',      '.htaccess'),
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/index.php',              'MOVIESHOWS',      'index.php'),
@@ -212,38 +215,17 @@ jobs:
       #  Verify all 6 endpoints 
       - name: Verify all sites respond
         run: |
-          echo " Checking all endpoints..."
-          FAIL=0
-          for URL in \
-            "https://findtorontoevents.ca/MOVIESHOWS2/" \
-            "https://findtorontoevents.ca/MOVIESHOWS3/" \
-            "https://tdotevent.ca/MOVIESHOWS2/" \
-            "https://tdotevent.ca/MOVIESHOWS3/" \
-            "https://torontoevent.net/MOVIESHOWS2/" \
-            "https://torontoevent.net/MOVIESHOWS3/"; do
-            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$URL" || echo "000")
-            if [ "$STATUS" = "200" ]; then
-              echo "   $URL  HTTP $STATUS"
-            else
-              echo "   $URL  HTTP $STATUS"
-              FAIL=1
+          for DOMAIN in findtorontoevents.ca tdotevent.ca torontoevent.net; do
+            STATUS=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 \
+              "https://${DOMAIN}/.movies-db-private/credentials.php")
+            if [ "$STATUS" != "403" ]; then
+              echo "::error::Private movies configuration is not HTTP-blocked on ${DOMAIN} (HTTP ${STATUS})"
+              exit 1
             fi
+            for VERSION in MOVIESHOWS2 MOVIESHOWS3; do
+              URL="https://${DOMAIN}/${VERSION}/api/get-movies.php"
+              curl --fail --silent --show-error --max-time 60 "$URL" |
+                python3 -c 'import json,sys; data=json.load(sys.stdin); assert data.get("success") is True and isinstance(data.get("movies"),list) and len(data["movies"]) > 0, "Movie API returned no data or a database error"; print("Verified", len(data["movies"]), "titles")'
+              echo "Verified ${URL}"
+            done
           done
-
-          echo ""
-          echo " Checking API endpoints..."
-          for URL in \
-            "https://findtorontoevents.ca/MOVIESHOWS2/api/movies.php?action=stats" \
-            "https://findtorontoevents.ca/MOVIESHOWS3/api/get-movies.php" \
-            "https://findtorontoevents.ca/MOVIESHOWS3/api/test-db.php" \
-            "https://torontoevent.net/MOVIESHOWS2/api/test-db.php"; do
-            BODY=$(curl -s --max-time 15 "$URL" 2>/dev/null | head -c 200)
-            echo "  $URL  $BODY"
-          done
-
-          if [ "$FAIL" -eq 1 ]; then
-            echo " Some endpoints returned non-200 status"
-          else
-            echo " All endpoints healthy"
-          fi
-
