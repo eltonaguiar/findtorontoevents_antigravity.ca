@@ -2441,7 +2441,7 @@
                 <div class="top-source-header">
                     <span class="top-source-icon">⭐</span>
                     <span class="top-source-title">Top Rated Fresh</span>
-                    <span class="top-source-subtitle">From our database · IMDB Rating</span>
+                    <span class="top-source-subtitle">From our database · TMDB Rating</span>
                 </div>
                 <div class="fresh-row" id="freshTop10Row"></div>
             </div>
@@ -2564,6 +2564,17 @@
             '10402': 'Music', '10749': 'Romance', '878': 'Science Fiction',
             '10770': 'TV Movie', '53': 'Thriller', '10752': 'War'
         };
+
+        function formatMovieRating(movie) {
+            const score = Number(movie.imdb_rating);
+            if (movie.imdb_rating == null || !Number.isFinite(score) || score <= 0) return '';
+            const source = movie.rating_source || (movie.tmdb_id ? 'TMDB' : 'Rating');
+            const votes = movie.rating_vote_count;
+            const confidence = Number.isInteger(votes) && votes >= 0
+                ? ` (${votes} ${votes === 1 ? 'vote' : 'votes'}${movie.rating_provisional === true ? '; provisional' : ''})`
+                : '';
+            return `${source} ${score.toFixed(1)}${confidence}`;
+        }
 
         function resolveGenre(g) {
             return TMDB_GENRE_MAP[g] || g;
@@ -3205,6 +3216,9 @@
                     _duration: m.movie.runtime ? Math.floor(m.movie.runtime / 60) + 'h ' + (m.movie.runtime % 60) + 'm' : '',
                     release_year: m.movie.release_year,
                     imdb_rating: m.movie.imdb_rating,
+                    rating_source: m.movie.rating_source,
+                    rating_vote_count: m.movie.rating_vote_count,
+                    rating_provisional: m.movie.rating_provisional,
                     _fromLocalDB: true
                 };
             });
@@ -3353,7 +3367,7 @@
                             <div class="freestyle-card-meta">
                                 ${badgeHtml}
                                 ${item.release_year ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">${item.release_year}</span>` : ''}
-                                ${item.imdb_rating ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">⭐ ${item.imdb_rating}</span>` : ''}
+                                ${item.imdb_rating ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">⭐ ${formatMovieRating(item)}</span>` : ''}
                                 ${item._duration ? `<span style="color:rgba(255,255,255,0.4); font-size:11px;">${item._duration}</span>` : ''}
                             </div>
                             ${item.genre ? `<div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:4px;">${escapeHtml(item.genre)}</div>` : ''}
@@ -3385,6 +3399,9 @@
                 description: item.description || '',
                 release_year: item.release_year,
                 imdb_rating: item.imdb_rating,
+                rating_source: item.rating_source,
+                rating_vote_count: item.rating_vote_count,
+                rating_provisional: item.rating_provisional,
                 trailer_id: item.trailer_id,
                 thumbnail: item.thumbnail,
                 _isFreestyle: true,
@@ -4033,7 +4050,7 @@
                 var badge = '';
                 if (badgeKey === 'gross' && item.gross) badge = '<div class="fresh-card-badge">💰 ' + item.gross + '</div>';
                 else if (badgeKey === 'tomatometer' && item.tomatometer) badge = '<div class="fresh-card-badge" style="background:' + (item.tomatometer >= 75 ? 'rgba(34,197,94,0.3);color:#4ade80' : 'rgba(245,158,11,0.3);color:#fbbf24') + '">🍅 ' + item.tomatometer + '%</div>';
-                else if (m.imdb_rating) badge = '<div class="fresh-card-badge">⭐ ' + m.imdb_rating + '</div>';
+                else if (m.imdb_rating) badge = '<div class="fresh-card-badge">⭐ ' + formatMovieRating(m) + '</div>';
                 if (m.type === 'tv' && !badge) badge = '<div class="fresh-card-badge">TV</div>';
                 var queuedClass = myQueue.find(function(q) { return String(q.id) === String(m.id); }) ? ' queued' : '';
                 var queuedText = queuedClass ? '✓' : '➕';
@@ -4103,7 +4120,7 @@
                     '<img src="' + thumb + '" alt="' + escapeHtml(m.title) + '" onerror="this.src=\'https://placehold.co/180x270/1a1a1a/666?text=No+Image\'">' +
                     '<div class="fresh-card-rank">' + (i + 1) + '</div>' +
                     '<div class="fresh-card-title">' + escapeHtml(m.title) + '</div>' +
-                    (m.imdb_rating ? '<div class="fresh-card-badge">⭐ ' + m.imdb_rating + '</div>' : '') +
+                    (m.imdb_rating ? '<div class="fresh-card-badge">⭐ ' + formatMovieRating(m) + '</div>' : '') +
                     '</div>';
             }).join('');
 
@@ -4266,7 +4283,7 @@
                                     ? `<span class="motivation-badge" style="font-size: 9px; padding: 2px 6px;">MOTIVATION</span> ${movie._isShort ? 'Short' : 'Video'}`
                                     : isComingSoon
                                         ? `<span class="coming-soon-badge" style="font-size: 9px; padding: 2px 6px;">COMING SOON</span> ${movie.type ? movie.type.toUpperCase() : ''}`
-                                        : `${movie.release_year || ''} ${movie.imdb_rating ? '\u2b50 ' + movie.imdb_rating : ''}`
+                                        : `${movie.release_year || ''} ${movie.imdb_rating ? '\u2b50 ' + formatMovieRating(movie) : ''}`
                                 }
                             </div>
                         </div>
@@ -4909,7 +4926,7 @@
                     '<div style="display:flex;gap:10px;align-items:center;">' +
                     '<img src="' + (nowPlaying.thumbnail || 'https://placehold.co/40x60/1a1a1a/666?text=No') + '" style="width:40px;height:60px;object-fit:cover;border-radius:6px;" onerror="this.src=\'https://placehold.co/40x60/1a1a1a/666?text=No\'">' +
                     '<div style="flex:1;"><div style="font-weight:700;font-size:13px;">' + escapeHtml(nowPlaying.title) + '</div>' +
-                    '<div style="font-size:11px;opacity:0.6;">' + (nowPlaying.release_year || '') + ' ' + (nowPlaying.imdb_rating ? '⭐ ' + nowPlaying.imdb_rating : '') + ' <span class="queue-now-playing-badge">NOW PLAYING</span></div></div>' +
+                    '<div style="font-size:11px;opacity:0.6;">' + (nowPlaying.release_year || '') + ' ' + (nowPlaying.imdb_rating ? '⭐ ' + formatMovieRating(nowPlaying) : '') + ' <span class="queue-now-playing-badge">NOW PLAYING</span></div></div>' +
                     '</div></div>';
             }
 
@@ -4934,7 +4951,7 @@
                         '<div class="queue-item-info" style="flex:1;">' +
                             '<div class="queue-item-title">' + escapeHtml(movie.title) + '</div>' +
                             '<div class="queue-item-meta">' +
-                                (movie.release_year || '') + ' ' + (movie.imdb_rating ? '⭐ ' + movie.imdb_rating : '') +
+                                (movie.release_year || '') + ' ' + (movie.imdb_rating ? '⭐ ' + formatMovieRating(movie) : '') +
                                 (isPlaying ? ' <span class="queue-now-playing-badge">NOW PLAYING</span>' : '') +
                             '</div>' +
                         '</div>' +
@@ -4959,7 +4976,7 @@
                         '<img src="' + (m.thumbnail || 'https://placehold.co/50x75/1a1a1a/666?text=No') + '" style="width:50px;height:75px;object-fit:cover;border-radius:6px;" onerror="this.src=\'https://placehold.co/50x75/1a1a1a/666?text=No\'">' +
                         '<div class="queue-item-info" style="flex:1;">' +
                             '<div class="queue-item-title" style="font-size:12px;">' + escapeHtml(m.title) + '</div>' +
-                            '<div class="queue-item-meta">' + (m.release_year || '') + ' ' + (m.imdb_rating ? '⭐ ' + m.imdb_rating : '') + '</div>' +
+                            '<div class="queue-item-meta">' + (m.release_year || '') + ' ' + (m.imdb_rating ? '⭐ ' + formatMovieRating(m) : '') + '</div>' +
                         '</div>' +
                         '<button class="queue-play-btn" onclick="event.stopPropagation(); playMovieFromBrowse(' + item.feedIndex + ')" style="font-size:10px;padding:4px 8px;">▶</button>' +
                         (inQueue ? '<span style="color:#4ade80;font-size:10px;padding:0 4px;">✓</span>' :
@@ -4992,7 +5009,7 @@
                     '<img src="' + (upNextMovie.thumbnail || 'https://placehold.co/60x90/1a1a1a/666?text=No+Image') + '" alt="' + escapeHtml(upNextMovie.title) + '" style="width: 50px; height: 75px; object-fit: cover; border-radius: 6px;" onerror="this.src=\'https://placehold.co/60x90/1a1a1a/666?text=No+Image\'">' +
                     '<div style="flex: 1;">' +
                         '<div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">' + escapeHtml(upNextMovie.title) + '</div>' +
-                        '<div style="font-size: 12px; opacity: 0.7;">' + (upNextMovie.release_year || '') + ' ' + (upNextMovie.imdb_rating ? '⭐ ' + upNextMovie.imdb_rating : '') +
+                        '<div style="font-size: 12px; opacity: 0.7;">' + (upNextMovie.release_year || '') + ' ' + (upNextMovie.imdb_rating ? '⭐ ' + formatMovieRating(upNextMovie) : '') +
                         ' <span style="font-size:9px;opacity:0.5;">' + (upNextSource === 'queue' ? 'FROM QUEUE' : 'FROM FEED') + '</span></div>' +
                     '</div>' +
                     '<button class="queue-play-btn" onclick="' + upNextAction + '">▶ Play</button>' +
@@ -5656,7 +5673,7 @@
                 if (movie.type) metaBadges += `<span class="meta-badge">${movie.type.toUpperCase()}</span>`;
             } else {
                 if (movie.release_year) metaBadges += `<span class="meta-badge">${movie.release_year}</span>`;
-                if (movie.imdb_rating) metaBadges += `<span class="meta-badge">\u2b50 ${movie.imdb_rating}</span>`;
+                if (movie.imdb_rating) metaBadges += `<span class="meta-badge">\u2b50 ${formatMovieRating(movie)}</span>`;
                 if (movie.type) metaBadges += `<span class="meta-badge">${movie.type.toUpperCase()}</span>`;
                 // Now Playing badge for current-year movies
                 if (movie.type === 'movie') {

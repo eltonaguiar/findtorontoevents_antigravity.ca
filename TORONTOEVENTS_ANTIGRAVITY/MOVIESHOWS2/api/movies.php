@@ -7,6 +7,7 @@ error_reporting(0);
 ini_set('display_errors', '0');
 
 header('Content-Type: application/json');
+header('Cache-Control: no-store');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -17,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once 'db-config.php';
+require_once dirname(__FILE__) . '/../../MOVIESHOWS3/api/tmdb-ratings.php';
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
@@ -80,6 +82,7 @@ try {
 
             $stmt = $pdo->query($sql);
             $results = $stmt->fetchAll();
+            $results = attachTmdbRatingDetails($pdo, $results);
 
             echo json_encode(array(
                 'success' => true,
@@ -109,6 +112,7 @@ try {
             LIMIT $limit");
             $stmt->execute(array($searchTerm));
             $results = $stmt->fetchAll();
+            $results = attachTmdbRatingDetails($pdo, $results);
 
             echo json_encode(array(
                 'success' => true,
@@ -139,6 +143,7 @@ try {
                 LIMIT " . $limit);
                 $stmt->execute(array('%' . $genre . '%'));
                 $movies = $stmt->fetchAll();
+                $movies = attachTmdbRatingDetails($pdo, $movies);
                 if (count($movies) >= 3) {
                     $result[] = array('genre' => $genre, 'movies' => $movies);
                 }
@@ -172,6 +177,7 @@ try {
             ORDER BY RAND()
             LIMIT $count");
             $results = $stmt->fetchAll();
+            $results = attachTmdbRatingDetails($pdo, $results);
 
             echo json_encode(array(
                 'success' => true,

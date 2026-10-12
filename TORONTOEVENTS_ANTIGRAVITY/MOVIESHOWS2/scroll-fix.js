@@ -4033,6 +4033,8 @@
             year: String(m.release_year || m.year || '2026'),
             rating: String(m.imdb_rating || m.rating || ''),
             ratingSource: 'TMDB',
+            ratingVoteCount: m.rating_vote_count == null ? null : Number(m.rating_vote_count),
+            ratingProvisional: m.rating_provisional === true,
             genres: m.genres || (m.genre ? m.genre.split(',').map(function(g){ return g.trim(); }).filter(Boolean) : []),
             source: m.source || 'In Theatres',
             trailerUrl: m.trailerUrl || (m.trailer_id ? 'https://www.youtube.com/watch?v=' + m.trailer_id : ''),
@@ -4283,7 +4285,10 @@
             `<span class="text-xs bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full text-gray-100 border border-white/10">${g}</span>`
         ).join("");
 
-        const rating = movie.rating ? `${movie.ratingSource || 'Rating'} ${movie.rating}` : "TBD";
+        const rating = movie.rating ? `${movie.ratingSource || 'Rating'} ${movie.rating}` +
+            (Number.isInteger(movie.ratingVoteCount) && movie.ratingVoteCount >= 0
+                ? ` (${movie.ratingVoteCount} ${movie.ratingVoteCount === 1 ? 'vote' : 'votes'}${movie.ratingProvisional ? '; provisional' : ''})`
+                : '') : "TBD";
         const year = movie.year || "2026";
 
         // If loadImmediately is true, set src directly; otherwise use lazy loading
