@@ -1,4 +1,4 @@
-# Sidecar Promotion Status — 2026-10-12T12:30:23.881766+00:00
+# Sidecar Promotion Status — 2026-10-12T19:57:16.189904+00:00
 
 **Summary:** 🟢 PROMOTED: 3 · 🚀 READY_TO_PROMOTE: 0 · 🟡 BELOW_GATE: 0 · 🔵 INCUBATING: 4
 
