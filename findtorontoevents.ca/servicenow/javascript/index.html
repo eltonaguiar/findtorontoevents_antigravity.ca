@@ -905,6 +905,174 @@ gr3.addQuery('sys_created_on', '<', 'javascript:gs.daysAgoEnd(365)');
 gr3.query();
 while (gr3.next()) gr3.deleteRecord();</code></pre>
             </div>
+
+            <h3 id="gr-guards">2.5 Defensive Guards — table, field, row, value</h3>
+            <p>Anything that does <strong>not</strong> come from a literal you control — a table name from a property, a field name built at runtime, a value posted by a form — can be wrong when the script runs. Guard it in a fixed order: <strong>table → field → row → value</strong>. The first two are dictionary (metadata) lookups: they never hit the database, so they are cheap enough to run on every call, and they are almost always better than wrapping the whole block in <code>try/catch</code>.</p>
+
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead>
+                  <tr><th>Guard</th><th>Check</th><th>When to use it</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Table exists</td><td><code>gr.isValid()</code></td><td>Every time the table name is a parameter, property or caller-supplied value. Returns true if the table exists in the dictionary.</td></tr>
+                  <tr><td>Field exists</td><td><code>gr.isValidField('f')</code></td><td>Before any <code>addQuery()</code>, <code>getValue()</code>, <code>setValue()</code> or dot-walk on a field you did not hard-code. Dictionary check only — no query is executed.</td></tr>
+                  <tr><td>Read permission</td><td><code>gr.canRead()</code>, <code>new GlideRecordSecure(...)</code></td><td>Before you surface the result to a user. Plain <code>GlideRecord</code> does <em>not</em> enforce ACLs server-side. See <a href="#acl-security">section 18</a>.</td></tr>
+                  <tr><td>Record found</td><td><code>if (gr.next())</code>, <code>if (gr.get(sysId))</code>, <code>gr.hasNext()</code></td><td>After every <code>query()</code> / <code>get()</code>. <code>get()</code> returns a boolean, so the found/not-found guard is the <code>if</code> itself.</td></tr>
+                  <tr><td>Current record valid</td><td><code>gr.isValidRecord()</code></td><td>Before acting on a record that may have been deleted underneath you — long flows, scheduled jobs, loops that also write.</td></tr>
+                  <tr><td>Value is empty</td><td><code>gs.nil(value)</code> or <code>gr.field.nil()</code></td><td>After <code>getValue()</code>, when "empty" and "unset" are different answers for your logic.</td></tr>
+                  <tr><td>Value read safely</td><td><code>gr.getValue('f')</code></td><td>Always, instead of <code>gr.f</code> — a GlideElement is an object and is <em>always</em> truthy. See <a href="#js-falsy">§12 — falsy values</a>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">CountMatches.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>function countMatches(tableName) {
+    var gr = new GlideRecord(tableName);
+
+    // 1. Table exists? — required whenever tableName is not a literal
+    if (!gr.isValid()) {
+        return tableName + ' table does not exist';
+    }
+
+    // 2. Required fields exist? — dictionary check, no DB hit
+    if (!gr.isValidField('priority') || !gr.isValidField('short_description')) {
+        return 'Required fields missing on ' + tableName;
+    }
+
+    // 3. Read permission — plain GlideRecord skips ACLs (see section 18)
+    if (!gr.canRead()) {
+        return 'Not permitted to read ' + tableName;
+    }
+
+    // 4. Safe query, always capped before you look at it
+    gr.addQuery('priority', 1);
+    gr.addQuery('short_description', 'CONTAINS', 'Wreck it Ralph');
+    gr.setLimit(1000);                  // safety cap
+    gr.query();
+
+    // 5. Row guard + explicit zero handling (count is capped — see below)
+    var count = gr.getRowCount();
+    if (count === 0) {
+        return 'Wreck it Ralph Count=0';
+    }
+    return 'Wreck it Ralph Count=' + count;
+}</code></pre>
+            </div>
+
+            <div class="warning"><strong><code>getRowCount()</code> after <code>setLimit()</code> is a capped number, not a true total.</strong> The API reference warns that the value returned by <code>getRowCount()</code> <em>may be incorrect</em> once <code>setLimit()</code> or <code>chooseWindow()</code> is in play, because <code>setLimit()</code> also stops the <code>COUNT(*)</code>. Above, 40,000 matches report <strong>1000</strong> — exactly what you want from a safety cap ("how many rows did we touch?"), and exactly wrong if you needed the real total. For a real number, count in the database with <a href="#glideaggregate">GlideAggregate</a> instead of materialising rows just to count them.</div>
+
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">AnyMatch.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>// "Does at least one match exist?" — don't count what you won't read
+var gr = new GlideRecord(tableName);
+if (!gr.isValid()) return false;                       // table guard
+if (!gr.isValidField('short_description')) return false; // field guard
+
+gr.addQuery('short_description', 'CONTAINS', 'Wreck it Ralph');
+gr.setLimit(1);          // one row, then stop
+gr.query();
+var found = gr.next();   // row guard — no COUNT(*), nothing extra fetched
+
+// Single record by key: get() returns a boolean, so the guard IS the if
+var inc = new GlideRecord('incident');
+if (inc.get('number', 'INC0010001')) {
+    inc.work_notes = 'Seen it';
+    inc.update();
+}</code></pre>
+            </div>
+
+            <h4>Value-level guards — when the field exists but the value may not</h4>
+            <div class="code-card">
+              <div class="code-toolbar">
+                <span class="context server">Server</span>
+                <span class="filename">ValueGuards.scriptinclude</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><code>gr.addQuery('short_description', 'CONTAINS', 'Wreck it Ralph');
+gr.query();
+
+if (gr.next()) {
+    var desc = gr.getValue('short_description');   // string, or null
+
+    if (gs.nil(desc)) {                            // field exists, value empty
+        gs.info('empty field');
+    } else if (desc.indexOf('Wreck it Ralph') &gt; -1) {
+        gs.info('match: ' + desc);
+    }
+}</code></pre>
+            </div>
+            <div class="notice"><strong>Why <code>isValidField()</code> still comes first:</strong> <code>getValue()</code> returns <code>null</code> both when the field is empty <em>and</em> when the field does not exist on the table. The dictionary check is what lets you tell those two cases apart — and it is the check that keeps <code>addQuery()</code> from being handed a column name that is not there.</div>
+
+            <div class="comparison">
+              <div class="anti">
+                <h3>❌ <code>try/catch</code> as a substitute for a guard</h3>
+                <pre><code>try {
+    var gr = new GlideRecord(tableName);
+    gr.addQuery('priority', 1);
+    gr.query();
+    while (gr.next()) { /* ... */ }
+} catch (e) {
+    gs.error('Query failed: ' + e);   // hides the real cause:
+    return 0;                         // wrong table / renamed field
+}</code></pre>
+              </div>
+              <div class="good">
+                <h3>✅ guard first, reserve <code>try/catch</code> for the unexpected</h3>
+                <pre><code>var gr = new GlideRecord(tableName);
+if (!gr.isValid()) return 0;                   // table missing or typo'd
+if (!gr.isValidField('priority')) return 0;    // field missing or renamed
+
+gr.addQuery('priority', 1);
+gr.setLimit(1000);
+gr.query();
+while (gr.next()) { /* ... */ }</code></pre>
+              </div>
+            </div>
+            <div class="notice"><strong>When <code>try/catch</code> <em>is</em> the right tool:</strong> JSON parsing, external REST calls, and anything you do not control — not "a field might be missing." Log with <code>gs.error()</code> and return a safe fallback; see <a href="#error-handling">section 19</a>.</div>
+
+            <div class="danger">
+              <h3>What these guards do NOT cover</h3>
+              <ul>
+                <li><strong>A typo inside an encoded-query string.</strong> <code>isValidField()</code> protects <code>addQuery()</code> because <em>you</em> asked first; <code>addEncodedQuery('priorty=1')</code> never asks. The invalid term is silently dropped and the query can return <strong>every row</strong> — for a bulk update or delete that is data loss. Set <code>glide.invalid_query.returns_no_rows=true</code> and test on sub-production first. See <a href="#gr-encoded">§2.2</a>.</li>
+                <li><strong>ACLs.</strong> A guard proves the table and field exist, not that the <em>running user</em> may read them — server-side <code>GlideRecord</code> skips ACLs entirely. Use <code>GlideRecordSecure</code> (or check <code>canRead()</code>) for anything user-triggered. See <a href="#acl-security">section 18</a>.</li>
+                <li><strong>Rows that disappear between <code>query()</code> and <code>update()</code>.</strong> Re-<code>get()</code> the record (or check <code>isValidRecord()</code>) before writing, and check the boolean that <code>update()</code> returns.</li>
+              </ul>
+            </div>
+
+            <div class="kcheck">
+              <h3>Knowledge check — Defensive guards</h3>
+              <p class="kcheck-intro">Answer before revealing.</p>
+              <details>
+                <summary>In what order do you guard a dynamic <code>tableName</code>, and which two guards are metadata-only?</summary>
+                <div class="kc-answer">Table → field → row → value. <strong><code>isValid()</code></strong> (table) and <strong><code>isValidField()</code></strong> (field) are dictionary lookups — no database round-trip — so both can run on every call.</div>
+              </details>
+              <details>
+                <summary>Why is <code>try/catch</code> the wrong tool for "the field might not exist"?</summary>
+                <div class="kc-answer">Because <code>isValidField()</code> answers that question directly and cheaply, while a <code>catch</code> block also swallows unrelated failures and hides the real cause. Reserve <code>try/catch</code> for JSON parsing, REST calls, and other genuinely unexpected errors.</div>
+              </details>
+              <details>
+                <summary>You call <code>setLimit(1000)</code> and then <code>getRowCount()</code>. What can go wrong?</summary>
+                <div class="kc-answer"><code>setLimit()</code> also stops the <code>COUNT(*)</code>, so the result is <strong>capped at 1000</strong>, not the true total — and the docs warn the value <em>may be incorrect</em> when <code>setLimit()</code>/<code>chooseWindow()</code> is used. Use GlideAggregate when you need a real count.</div>
+              </details>
+              <details>
+                <summary>What is the cheapest guard for "does at least one match exist?"</summary>
+                <div class="kc-answer"><code>setLimit(1); gr.query(); gr.next()</code> — a boolean row guard. No count, one row fetched. (<code>gr.get(sys_id)</code> is the equivalent when you already have the key.)</div>
+              </details>
+              <details>
+                <summary>Field exists and <code>getValue()</code> returns <code>null</code>. Can you tell an empty field from a missing one?</summary>
+                <div class="kc-answer">Not from <code>getValue()</code> alone — it returns <code>null</code> for both. Ask <code>isValidField('f')</code> first: <code>false</code> means the field is not on the table at all.</div>
+              </details>
+            </div>
           </section>
 
           <!-- 3. ENCODED QUERIES -->
