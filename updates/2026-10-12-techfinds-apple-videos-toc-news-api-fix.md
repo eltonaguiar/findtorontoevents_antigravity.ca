@@ -129,3 +129,50 @@ field) vs value aggregates (field as 2nd arg). Markup verified balanced
 > lines across 12 hunks), so it is intentionally NOT committed here — the
 > fix is live in the working tree and rides along with that session's
 > eventual commit.
+
+## 6. Creative Gadgets section (committed `ccc7a4d077`)
+
+Added a 4th same-day expansion to Tech Finds: a **Creative Gadgets**
+section for the unusual/quirky finds surfaced by the Popular Mechanics
+gadget roundup and the Yanko Design guide the user flagged. Each pick was
+cross-checked against **two independent sources** before adding, per the
+page's own "Sources (cross-checked)" policy.
+
+### Picks added
+
+| Product | Price | Sources |
+|---|---|---|
+| piBrick Pocket-CM5 | $240 assembled kit / ~$172 DIY parts | CNX Software (Jun 11, 2026) + Tindie listing |
+| Logitech MX Master 4 | $119.99 | Logitech official + The Verge (first haptic mouse) |
+| Xreal 1S | $449 | The Verge (CES hands-on) + Mashable |
+| OhSnap Wallet 2 | ~$76 retail / $61 Kickstarter | The Verge + GearDiary |
+
+### Verification
+
+- **Cross-source**: every price and headline spec confirmed from two
+  independent outlets before the card was written; images pulled via
+  the page's existing `og:image` fetch path and validated with `identify`
+  (all real JPEG/PNG, 370x217 uniform render box).
+- **Markup**: matched existing card markup exactly (`price-row`, `pills`,
+  `cmp` comparison table, `vidlink`, `sources`). Two self-inflicted bugs
+  found and fixed before deploy: a stray `class="review"` that should
+  have been `class="release"`, and a `<th>` closed with `</td>` in the
+  OhSnap comparison table.
+- **Live browser check** (Playwright, after FTP deploy): 36 cards,
+  11 TOC links (0 broken anchors), Creative filter → exactly 4 cards,
+  4 new product images load at full resolution, 0 console errors.
+- **Live == local**: md5 of served `index.html` matches the deployed
+  file (106,665 bytes); all 4 new images return HTTP 200.
+
+### Notes
+
+- The XREAL og:image is only 400x400 (smallest on the page) — renders at
+  the same uniform 370x217 box as every other card, slightly softer than
+  the rest but no visual defect. Flagged here in case a higher-res asset
+  is worth sourcing later.
+- A mid-session check appeared to show ~24 pre-existing images broken
+  (naturalWidth 0). Curl confirmed all returned HTTP 200 with valid
+  JPEG bytes; a stricter re-test that waited on each image's `complete`
+  flag showed all loading at full width. It was a measurement-timing
+  artifact, not a defect — same conclusion reached earlier this session,
+  re-confirmed here with a stricter method rather than assumed.
