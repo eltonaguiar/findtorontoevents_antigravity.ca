@@ -111,6 +111,18 @@ window.SN_QUIZ = {
         { id: 'util',    label: 'Utilities' },
         { id: 'logging', label: 'Logging & messaging' }
       ]
+    },
+    {
+      id: 'jsfundamentals',
+      label: 'JavaScript for Interviews',
+      icon: '\u{1F9E9}',
+      accent: '#f59e0b',
+      blurb: 'Plain JS building blocks for LeetCode-style problems: strings, Set/Map, and the frequency-count idiom.',
+      subs: [
+        { id: 'strings',  label: 'String methods' },
+        { id: 'types',    label: 'Set / Map / Object' },
+        { id: 'patterns', label: 'Counting idioms' }
+      ]
     }
   ],
 
@@ -651,6 +663,187 @@ window.SN_QUIZ = {
       accept: ['gs.generateGUID()'],
       answer: 'gs.generateGUID()',
       hint: 'GUID, not UUID.'
+    },
+    /* ── JavaScript for coding interviews: string methods ───────────────── */
+    {
+      id: 'js-01', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Get the <strong>last</strong> character of <code>s</code> without writing <code>s[s.length - 1]</code>. Which method accepts a negative index (ES2022)?',
+      ph: 'e.g. s.at(-1)',
+      accept: ['s.at(-1)', 'str.at(-1)', 's.at( -1 )'],
+      answer: 's.at(-1)',
+      hint: 'Same idea as Array.prototype.at().'
+    },
+    {
+      id: 'js-02', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Read the character at index 1 of <code>s</code> with plain bracket notation.',
+      ph: 'e.g. s[1]',
+      accept: ['s[1]', 'str[1]'],
+      answer: 's[1]',
+      hint: 'Bracket access and at() both return undefined when out of range — at() is really about negative indices.'
+    },
+    {
+      id: 'js-03', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Extract the substring from index 1 up to <em>but not including</em> index 3. Which method, and is the end exclusive?',
+      ph: 'e.g. s.slice(1, 3)',
+      accept: ['s.slice(1, 3)', 's.slice(1,3)', 'str.slice(1, 3)'],
+      answer: 's.slice(1, 3)',
+      hint: 'slice() is non-mutating and its end index is exclusive. substring() also works but mishandles negative indices.'
+    },
+    {
+      id: 'js-04', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Split the string <code>s</code> into an array of its characters.',
+      ph: "e.g. s.split('')",
+      accept: ["s.split('')", "str.split('')", "s.split(\"\")"],
+      answer: "s.split('')",
+      hint: 'An empty separator splits into individual code units — which is why it is wrong for emoji.'
+    },
+    {
+      id: 'js-05', cat: 'jsfundamentals', sub: 'strings',
+      q: 'A string contains emoji. <code>split(\'\')</code> breaks them into lone surrogates. What is the correct way to get an array of <em>characters</em>?',
+      ph: 'e.g. [...s]',
+      accept: ['[...s]', 'Array.from(s)', '[ ...s ]'],
+      answer: '[...s]',
+      hint: 'The spread operator iterates by code point, so astral characters stay whole.'
+    },
+    {
+      id: 'js-06', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Check whether string <code>s</code> contains string <code>t</code>, ignoring case.',
+      ph: 'e.g. s.toLowerCase().includes(t.toLowerCase())',
+      accept: ['s.toLowerCase().includes(t.toLowerCase())', 's.toLowerCase().indexOf(t.toLowerCase()) !== -1', 's.toLowerCase().includes(t.toLowerCase());'],
+      answer: 's.toLowerCase().includes(t.toLowerCase())',
+      hint: 'includes() returns a boolean; indexOf() returns -1 when absent.'
+    },
+    {
+      id: 'js-07', cat: 'jsfundamentals', sub: 'strings',
+      q: 'What does <code>\'aaa\'.replace(\'a\', \'b\')</code> return — and which method replaces <em>every</em> occurrence?',
+      ph: "e.g. 'aaa'.replaceAll('a', 'b')",
+      accept: ["'aaa'.replaceAll('a', 'b')", '"aaa".replaceAll("a", "b")', 'replaceAll()', 's.replaceAll(a, b)'],
+      answer: "'aaa'.replaceAll('a', 'b')",
+      hint: 'replace() without a /g regex stops after the first match, so it returns "baa".'
+    },
+    {
+      id: 'js-08', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Pad the string <code>s</code> on the left with zeros until it is 5 characters wide — the classic "format an id" trick.',
+      ph: "e.g. s.padStart(5, '0')",
+      accept: ["s.padStart(5, '0')", "str.padStart(5, '0')", "s.padStart(5,'0')"],
+      answer: "s.padStart(5, '0')",
+      hint: 'padStart(targetLength, padString) — and padEnd() for the right side.'
+    },
+    {
+      id: 'js-09', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Count how many times character <code>c</code> appears in <code>s</code> in one pass, using a regex with a global flag.',
+      ph: 'e.g. (s.match(/c/g) || []).length',
+      accept: ['(s.match(/c/g) || []).length', '(s.match(/c/g)||[]).length', 's.split(c).length - 1'],
+      answer: '(s.match(/c/g) || []).length',
+      hint: 'match(/g/) returns null when there is no match — hence the || [].'
+    },
+
+    /* ── JavaScript for coding interviews: Set / Map / Object ──────────── */
+    {
+      id: 'js-10', cat: 'jsfundamentals', sub: 'types',
+      q: 'Remove duplicates from an array and return a new array, preserving first-seen order. One expression.',
+      ph: 'e.g. [...new Set(arr)]',
+      accept: ['[...new Set(arr)]', 'Array.from(new Set(arr))', '[ ...new Set(arr) ]'],
+      answer: '[...new Set(arr)]',
+      hint: 'A Set holds unique values; spreading it back gives an array.'
+    },
+    {
+      id: 'js-11', cat: 'jsfundamentals', sub: 'types',
+      q: 'You need <strong>O(1) membership tests</strong> over a large list, called thousands of times. Which structure, and which method?',
+      ph: 'e.g. new Set(arr) / set.has(x)',
+      accept: ['set.has(x)', 'new Set(arr)', 'new Set(list)', 'set.has(val)'],
+      answer: 'set.has(x)',
+      hint: 'Array.includes() is O(n) per call, so a loop of them becomes O(n²).'
+    },
+    {
+      id: 'js-12', cat: 'jsfundamentals', sub: 'types',
+      q: 'How many entries does a <code>Map</code> hold — and what is the property name for it (a Map has no <code>length</code>)?',
+      ph: 'e.g. map.size',
+      accept: ['map.size', 'm.size', 'map.size;'],
+      answer: 'map.size',
+      hint: 'Same as Set — size, not length.'
+    },
+    {
+      id: 'js-13', cat: 'jsfundamentals', sub: 'types',
+      q: 'What does <code>map.get(\'missing\')</code> return for a key that was never set? (No exception.)',
+      ph: 'e.g. undefined',
+      accept: ['undefined', 'Undefined'],
+      answer: 'undefined',
+      hint: 'Which is exactly why the counting idiom needs a || 0 fallback.'
+    },
+    {
+      id: 'js-14', cat: 'jsfundamentals', sub: 'types',
+      q: 'Trap: <code>Object.keys(map)</code> returns an empty array, because Map entries are not own enumerable properties. What is the correct way to get a Map\'s keys as an array?',
+      ph: 'e.g. [...map.keys()]',
+      accept: ['[...map.keys()]', 'Array.from(map.keys())', 'map.keys()', '[ ...map.keys() ]'],
+      answer: '[...map.keys()]',
+      hint: 'map.keys() returns an iterator, not an array — spread or Array.from it.'
+    },
+    {
+      id: 'js-15', cat: 'jsfundamentals', sub: 'types',
+      q: 'Why prefer a <code>Map</code> over a plain object <code>{}</code> for a lookup table in an algorithm?',
+      ph: 'e.g. keys of any type + no prototype baggage',
+      accept: ['keys of any type + no prototype baggage', 'any-type keys, insertion order, no prototype', 'Map keys can be any type', 'no prototype pollution and O(1) lookups'],
+      answer: 'keys of any type + no prototype baggage',
+      hint: 'Object keys are coerced to strings, and obj[\'constructor\'] resolves to a real property.'
+    },
+    {
+      id: 'js-16', cat: 'jsfundamentals', sub: 'types',
+      q: 'Which loop iterates over an object\'s <strong>keys</strong> (including inherited ones) — <code>for...of</code> or <code>for...in</code>? And what does <code>for...of</code> iterate?',
+      ph: 'e.g. for...in iterates keys',
+      accept: ['for...in iterates keys', 'for...in over keys', 'for...in iterates keys, for...of iterates values'],
+      answer: 'for...in iterates keys',
+      hint: 'for...in also walks inherited *enumerable* props (Object.prototype built-ins are non-enumerable, so they stay hidden until something patches the prototype). Object.keys() or for...of avoid that.'
+    },
+
+    /* ── JavaScript for coding interviews: counting idioms ─────────────── */
+    {
+      id: 'js-17', cat: 'jsfundamentals', sub: 'patterns',
+      q: 'The single most common LeetCode building block: count the frequency of each character <code>c</code> in <code>s</code> using a plain object. Write the line inside the loop.',
+      ph: 'e.g. count[c] = (count[c] || 0) + 1',
+      accept: ['count[c] = (count[c] || 0) + 1', 'freq[c] = (freq[c] || 0) + 1', 'count[c]=(count[c]||0)+1'],
+      answer: 'count[c] = (count[c] || 0) + 1',
+      hint: 'The || 0 turns the first occurrence (undefined) into a number.'
+    },
+    {
+      id: 'js-18', cat: 'jsfundamentals', sub: 'patterns',
+      q: 'Why is the <code>|| 0</code> necessary in <code>count[c] = (count[c] || 0) + 1</code>? What happens without it?',
+      ph: 'e.g. undefined + 1 is NaN',
+      accept: ['undefined + 1 is NaN', 'undefined + 1 = NaN', 'it is NaN otherwise', 'NaN', 'missing keys are undefined'],
+      answer: 'undefined + 1 is NaN',
+      hint: 'Once one count goes NaN the whole bucket is poisoned.'
+    },
+    {
+      id: 'js-19', cat: 'jsfundamentals', sub: 'patterns',
+      q: 'Write the same frequency count using a <code>Map</code> instead of an object.',
+      ph: 'e.g. count.set(c, (count.get(c) ?? 0) + 1)',
+      accept: ['count.set(c, (count.get(c) ?? 0) + 1)', 'freq.set(c, (freq.get(c) ?? 0) + 1)', 'count.set(c, (count.get(c) || 0) + 1)'],
+      answer: 'count.set(c, (count.get(c) ?? 0) + 1)',
+      hint: 'get() returns undefined for a missing key; ?? is the nullish-coalescing fallback.'
+    },
+    {
+      id: 'js-20', cat: 'jsfundamentals', sub: 'patterns',
+      q: 'Name the pitfall of <code>count[\'constructor\']</code> on a plain <code>{}</code>, and the object-based fix that removes it.',
+      ph: 'e.g. Object.create(null)',
+      accept: ['Object.create(null)', 'Object.create(null) has no prototype', 'use a Map instead', 'Object.create(null) avoids prototype lookup'],
+      answer: 'Object.create(null)',
+      hint: 'A plain object inherits constructor/toString, so those keys read as functions instead of undefined.'
+    },
+    {
+      id: 'js-21', cat: 'jsfundamentals', sub: 'patterns',
+      q: 'Find the largest number in an array in one expression.',
+      ph: 'e.g. Math.max(...arr)',
+      accept: ['Math.max(...arr)', 'Math.max.apply(null, arr)', 'Math.max(...nums)'],
+      answer: 'Math.max(...arr)',
+      hint: 'Beautiful, but spreading a very large array can blow the call stack — use a loop there.'
+    },
+    {
+      id: 'js-22', cat: 'jsfundamentals', sub: 'patterns',
+      q: 'Create a length-26 array of zeros — the standard letter-frequency bucket.',
+      ph: 'e.g. new Array(26).fill(0)',
+      accept: ['new Array(26).fill(0)', 'Array(26).fill(0)', 'new Array(26).fill(0);'],
+      answer: 'new Array(26).fill(0)',
+      hint: 'new Array(n) alone is sparse, so map/reduce would skip holes — fill() makes it dense.'
     }
   ]
 };
