@@ -44,7 +44,7 @@ try {
         INNER JOIN trailers t ON t.movie_id = m.id AND t.is_active = TRUE
         WHERE t.youtube_id IS NOT NULL AND t.youtube_id != ''
         GROUP BY m.id
-        ORDER BY m.imdb_rating DESC, m.created_at DESC
+        ORDER BY m.created_at DESC, m.id DESC
         LIMIT 5000
     ");
 
@@ -53,6 +53,8 @@ try {
     echo json_encode(array(
         'success' => true,
         'count' => count($movies),
+        'rating_source' => 'TMDB',
+        'rating_scale' => 10,
         'movies' => $movies
     ));
 
