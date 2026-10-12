@@ -103,14 +103,26 @@ h1{
 /* ── Filter bar ── */
 .filterbar{
   position:sticky;top:0;z-index:50;margin:46px 0 8px;padding:14px 0;
-  background:rgba(6,7,13,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+  background:linear-gradient(180deg,rgba(6,7,13,.98),rgba(6,7,13,.96));
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 12px 32px rgba(0,0,0,.55);
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;
 }
 .chip{
   padding:9px 20px;border-radius:999px;font-size:.86rem;font-weight:600;cursor:pointer;
   background:rgba(255,255,255,.05);border:1px solid var(--card-border);color:var(--muted);
-  transition:all .25s ease;user-select:none;
+  transition:all .25s ease;user-select:none;white-space:nowrap;flex:0 0 auto;
+}
+/* Mobile: single-row swipeable chip strip — never wraps, never eats the screen */
+@media(max-width:700px){
+  .filterbar{
+    flex-wrap:nowrap;justify-content:flex-start;
+    overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding:12px 16px;margin-left:-20px;margin-right:-20px;
+  }
+  .filterbar::-webkit-scrollbar{display:none}
+  .chip{font-size:.8rem;padding:8px 16px}
 }
 .chip:hover{color:#fff;border-color:rgba(255,255,255,.25)}
 .chip.active{background:linear-gradient(90deg,var(--accent),#ff7a4d);color:#fff;border-color:transparent;box-shadow:0 6px 22px rgba(255,77,94,.35)}
@@ -157,7 +169,9 @@ details.cmp{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-t
 details.cmp summary{
   cursor:pointer;font-size:.82rem;font-weight:700;color:var(--accent2);list-style:none;
   display:flex;align-items:center;gap:8px;user-select:none;
+  line-height:1.4;overflow-wrap:anywhere;
 }
+@media(max-width:520px){details.cmp summary{font-size:.78rem}}
 details.cmp summary::-webkit-details-marker{display:none}
 details.cmp summary::before{content:'▸';transition:transform .25s ease;display:inline-block}
 details.cmp[open] summary::before{transform:rotate(90deg)}

@@ -26,3 +26,20 @@ The site's "news" footprint (News Aggregator at `/news/`) has no product-tech co
 ## Deploy note
 
 Not deployed from this session — push `findtorontoevents.ca/techfinds/` to the FTP server (alongside the existing `updates/` folder) for the page to go live; nav links point to `/techfinds/`.
+
+## Hotfix (same day) — mobile filter bar
+
+User report: "menu is fried — cut-off and overlaps other text." Diagnosis via
+Playwright at 390×844: the sticky filter bar wrapped chips to 3 rows (203px tall,
+~24% of the viewport) and its 78%-opacity backdrop let card text show through
+while scrolling; a compare-summary also broke mid-word on narrow screens.
+
+Fix: chips are now a single-row horizontally-swipeable strip below 700px
+(flex-wrap:nowrap + overflow-x + hidden scrollbar), sticky bar background made
+effectively opaque (96–98% gradient + shadow), chips get white-space:nowrap /
+flex:none, and the compare summary wraps safely (overflow-wrap:anywhere,
+smaller font ≤520px). Desktop unchanged (single 65px row).
+
+Verified: local + live at 390×844 — bar 58px, single row, swipeable; filter
+clicks still work (Audio → 12 cards); desktop 1380px unchanged. Redeployed
+index.html to /techfinds/ over FTP.
