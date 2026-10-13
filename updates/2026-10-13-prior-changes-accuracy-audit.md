@@ -140,6 +140,36 @@ Verified after the edit: 71/71 static+Node checks, tag balance 0 (`div` 506/506,
 `li` 381/381, `h4` 57/57 …), and **16/16 Playwright checks** (zero page errors, the
 new notice renders with the `??`-vs-`||` rule, all anchors resolve).
 
+## Second challenge on the same claim — re-verified against primary sources
+
+The `{0}` positional form was challenged twice ("the {0} style parameter is NOT
+valid"), so it was re-opened rather than defended from the earlier answer. Evidence
+now includes an **executed example with real platform output**:
+
+```
+gs.warn('This is a message with {0}, {1}, {2}, {3}, {4} parameters', 'one', 'two', 'three', 'four', 'five');
+//*** Script: This is a message with one, two, three, four, five parameters
+```
+
+— from the GlideSystem API reference, for `warn`, whose signature is identical to
+`info`'s (`(String message, Object parm1 … parm5)`: five slots, zero-based → exactly
+`{0}`…`{4}`, which is the wording now on the page). Corroborated by ServiceNow's own
+GlideRecord example `gs.info('*** Total number of active incidents: {0}',
+incident.getRowCount())`, by a practitioner's `gs.info('{0}\n\n{1}', prefix, message)`,
+and by the community logging article's "the variable substitution order … is zero
+based … gs.log is unique in that it allows us to pass the source".
+
+**Conclusion: the page's `gs.info('P{0}: {1}', priority, summary)` line is correct and
+was left standing.** What *doesn't* substitute is now struck through on the page with
+`<s>`: `gs.log('P{0}: {1}', …)` (second argument is the source) and the template-literal
+`` gs.info(`P${0}: ${1}`, …) `` ( `${0}` is the number 0). The block also carries the
+executed `warn` example above as on-page proof, and the positional comment now says
+"up to {4}".
+
+Two of my own tool calls failed during this edit and are worth recording: `str_replace`
+rejected the block twice because I had transcribed `${1}` as `{1}` — the fix was to
+print the region with `repr()` and match the bytes instead of my memory.
+
 ## Deployment status (final)
 
 - **Deployed** over FTP after the fixes, then fetched back and md5-compared:

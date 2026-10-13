@@ -1527,15 +1527,22 @@ gs.error('...')</code></pre></div>
               <strong>Two different placeholder syntaxes &mdash; don't mix them up:</strong>
               <p style="margin:8px 0 0">ServiceNow's <code>gs.info()</code>, <code>gs.warn()</code>, <code>gs.error()</code> and <code>gs.debug()</code> do their <em>own</em> substitution &mdash; each is documented as <code>(String message, Object parm1, Object parm2, Object parm3, Object parm4, Object parm5)</code>, so <code>gs.info('msg {0}', arg)</code> replaces <code>{0}</code> with the next argument. That is a ServiceNow API convention, not JavaScript, and it stops at five parameters (<code>{0}</code>&hellip;<code>{4}</code>); beyond that, concatenate. <code>gs.log()</code> is the exception: its signature is <code>log(String message, String source)</code>, so there the second argument is the log <em>source</em> and a <code>{0}</code> in the message is written out literally.</p>
               <p style="margin:8px 0 0">Template literals are plain JavaScript: <code>${...}</code> evaluates whatever is inside the braces as an expression. So <code>${0}</code> evaluates to the <strong>number 0</strong>, and <code>${1}</code> to the number 1 &mdash; they do <em>not</em> mean "first argument" and "second argument". Writing <code>gs.info(`msg ${0}`, arg)</code> logs "msg 0", silently ignoring <code>arg</code>.</p>
-              <p style="margin:8px 0 0">Either interpolate a real variable into a template literal, or use the positional form &mdash; never both at once:</p>
-              <pre style="margin:8px 0 0"><code>// Positional feeds — ServiceNow substitutes {0}, {1}
+              <p style="margin:8px 0 0">Either interpolate a real variable into a template literal, or use the positional form &mdash; never both at once. The positional form is not folklore: five parameters are documented and the platform prints them back zero-based, so strike out the two forms that do <em>not</em> substitute:</p>
+              <pre style="margin:8px 0 0"><code>// Positional feeds — ServiceNow substitutes {0}, {1} … up to {4}
 gs.info('P{0}: {1}', priority, summary);
 
 // Template literal — the variable itself goes inside ${...}
 gs.info(`P${priority}: ${summary}`);
 
-// WRONG: ${0} is the literal number 0, not the first argument
-gs.info(`P${0}: ${1}`, priority, summary);   // logs "P0: 1"</code></pre>
+// WRONG — ${0} is the literal number 0, not the first argument: logs "P0: 1"
+<s>gs.info(`P${0}: ${1}`, priority, summary);</s>
+
+// WRONG — gs.log's second argument is the source, so {0} is never substituted
+<s>gs.log('P{0}: {1}', priority, summary);</s>   // logs "P{0}: {1}"
+
+// Proof from the GlideSystem reference — 5 parms, zero-based, real script output:
+gs.warn('This is a message with {0}, {1}, {2}, {3}, {4} parameters', 'one', 'two', 'three', 'four', 'five');
+// *** Script: This is a message with one, two, three, four, five parameters</code></pre>
               <p style="margin:8px 0 0">Separately, the browser's <code>console.log</code> uses <code>%s</code> / <code>%d</code> / <code>%o</code> formatting with arguments &mdash; <code>console.log('q is %s x is %s', q, x)</code>. That works in client-side scripts, but it is browser behaviour, not a ServiceNow API, and it is a third convention again.</p>
             </div>
           </section>
