@@ -96,6 +96,22 @@ ES12 syntax as explicit per-script opt-in. Linked the official
   `git apply --cached`), verified by asserting their markers are absent
   from the staged diff.
 
+## Changelog
+
+- 2026-10-13 (later, commit "Clarify quiz context, add getXML + first-character
+  questions, fix emoji question"): quiz fixes on the same JS training page —
+  `aj-03` question now states the onChange client-script context so its
+  `newValue` canonical answer is unambiguous; `aj-07` hint verified against
+  sources (the flag is exactly "Client callable"/`client_callable` — no
+  "ajax enabled" checkbox exists) and says so; new `aj-09` (full
+  `ga.getXML()` wiring incl. `response.responseXML.documentElement`
+  `getAttribute('answer')`, grading smoke-tested); new `js-23` (first
+  character of a string, `charAt(0)`/`[0]`/`at(0)` accepted); `js-05` emoji
+  question rewritten to explain the surrogate-pair mechanism, with the
+  operator's runnable `[...x]` example in the hint; `.q-hint` gained
+  `white-space: pre-wrap` for multi-line examples. Deployed byte-verified;
+  live `quiz-data.js` byte-identical to repo.
+
 ## Follow-ups
 
 - None outstanding. Operator-side later: credential rotation (see
