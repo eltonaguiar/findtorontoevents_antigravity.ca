@@ -936,6 +936,8 @@
       #multiday-toggle,
       #thumbnail-toggle,
       #near-me-toggle,
+      #filter-more-toggle,
+      #filter-minimize-toggle,
       #next-month-chip {
         min-height: 48px;
         min-width: 48px;
@@ -2906,6 +2908,35 @@
     gap: 10px;
     align-items: flex-end;
   }
+  .custom-filter-controls .filter-extras {
+    display: none;
+    flex-direction: column;
+    gap: inherit;
+    align-items: inherit;
+  }
+  .custom-filter-controls.extras-open .filter-extras { display: flex; }
+  .custom-filter-controls .filter-main-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .custom-filter-controls.minimized .near-me-panel,
+  .custom-filter-controls.minimized #near-me-toggle,
+  .custom-filter-controls.minimized #filter-more-toggle {
+    display: none;
+  }
+  .custom-filter-controls .filter-icon-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .custom-filter-controls #filter-more-toggle.has-active {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.5), 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
   /* The AI chat panel (z 100001) would cover the stack; step aside while it is open. */
   body:has(#fte-ai-panel.open) .custom-filter-controls {
     opacity: 0;
@@ -2913,6 +2944,12 @@
     pointer-events: none;
   }
   @media (max-width: 640px) {
+    /* Hidden tile info popovers (absolute w-80) poke past the right edge and
+       widened the mobile layout viewport (457px on a 390px phone), pushing
+       every bottom-anchored fixed button below the visible screen. */
+    html, body {
+      overflow-x: clip;
+    }
     .custom-filter-controls {
       left: 12px;
       right: auto;
@@ -2923,6 +2960,15 @@
     .custom-filter-controls .filter-toggle-btn {
       padding: 8px 14px;
       font-size: 12px;
+    }
+    .custom-filter-controls .filter-icon-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 16px;
+    }
+    .custom-filter-controls .filter-main-row {
+      flex-direction: row-reverse;
     }
     .custom-filter-controls .near-me-panel {
       min-width: 0;
@@ -3528,11 +3574,67 @@
     tbdBtn.id = 'tbd-toggle';
     tbdBtn.innerHTML = '🔲 Show TBD Events';
 
+    // Secondary filters live in a collapsible group (hidden by default);
+    // the whole stack can also be minimized to a single pill.
+    const extras = document.createElement('div');
+    extras.className = 'filter-extras';
+    extras.id = 'filter-extras';
+    extras.appendChild(multiDayBtn);
+    extras.appendChild(tbdBtn);
+    extras.appendChild(thumbnailBtn);
+
+    const moreBtn = document.createElement('button');
+    moreBtn.className = 'filter-toggle-btn filter-icon-btn';
+    moreBtn.id = 'filter-more-toggle';
+    moreBtn.setAttribute('aria-controls', 'filter-extras');
+
+    const minimizeBtn = document.createElement('button');
+    minimizeBtn.className = 'filter-toggle-btn filter-icon-btn';
+    minimizeBtn.id = 'filter-minimize-toggle';
+
+    const mainRow = document.createElement('div');
+    mainRow.className = 'filter-main-row';
+    mainRow.appendChild(minimizeBtn);
+    mainRow.appendChild(moreBtn);
+    mainRow.appendChild(nearMeBtn);
+
     container.appendChild(nearMePanel);
-    container.appendChild(nearMeBtn);
-    container.appendChild(multiDayBtn);
-    container.appendChild(tbdBtn);
-    container.appendChild(thumbnailBtn);
+    container.appendChild(extras);
+    container.appendChild(mainRow);
+
+    function readFlag(key) { try { return localStorage.getItem(key) === '1'; } catch (e) { return false; } }
+    function writeFlag(key, on) { try { localStorage.setItem(key, on ? '1' : '0'); } catch (e) {} }
+    let extrasOpen = readFlag('fte-filter-extras-open');
+    let minimized = readFlag('fte-filter-minimized');
+
+    function renderCollapseState() {
+      container.classList.toggle('extras-open', extrasOpen && !minimized);
+      container.classList.toggle('minimized', minimized);
+      const anyExtraActive = showMultiDayEvents || showTBDEvents;
+      moreBtn.classList.toggle('has-active', anyExtraActive && !extrasOpen);
+      moreBtn.textContent = extrasOpen ? '▾' : '⋯';
+      moreBtn.title = extrasOpen ? 'Hide extra filters' : 'More filters (multi-day, TBD, thumbnails)';
+      moreBtn.setAttribute('aria-label', moreBtn.title);
+      moreBtn.setAttribute('aria-expanded', extrasOpen ? 'true' : 'false');
+      minimizeBtn.textContent = minimized ? '🔎 Filters' : '–';
+      minimizeBtn.classList.toggle('filter-icon-btn', !minimized);
+      minimizeBtn.title = minimized ? 'Show filter buttons' : 'Minimize filter buttons';
+      minimizeBtn.setAttribute('aria-label', minimizeBtn.title);
+      minimizeBtn.setAttribute('aria-expanded', minimized ? 'false' : 'true');
+      if (minimized) nearMePanel.classList.remove('visible');
+    }
+    renderCollapseState();
+
+    moreBtn.addEventListener('click', function() {
+      extrasOpen = !extrasOpen;
+      writeFlag('fte-filter-extras-open', extrasOpen);
+      renderCollapseState();
+    });
+    minimizeBtn.addEventListener('click', function() {
+      minimized = !minimized;
+      writeFlag('fte-filter-minimized', minimized);
+      renderCollapseState();
+    });
 
     document.body.appendChild(container);
     
@@ -3545,6 +3647,7 @@
       showMultiDayEvents = !showMultiDayEvents;
       multiDayBtn.classList.toggle('active', showMultiDayEvents);
       multiDayBtn.innerHTML = showMultiDayEvents ? '📅 Hide Multi-Day Events' : '📅 Show Multi-Day Events';
+      renderCollapseState();
       if (window._resetApplyFiltersGuard) window._resetApplyFiltersGuard();
       applyFilters();
     });
@@ -3553,6 +3656,7 @@
       showTBDEvents = !showTBDEvents;
       tbdBtn.classList.toggle('active', showTBDEvents);
       tbdBtn.innerHTML = showTBDEvents ? '✅ Showing TBD Events' : '🔲 Show TBD Events';
+      renderCollapseState();
       if (window._resetApplyFiltersGuard) window._resetApplyFiltersGuard();
       applyFilters();
     });
