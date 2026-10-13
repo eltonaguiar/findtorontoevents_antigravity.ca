@@ -225,6 +225,12 @@ Left alone as universally known: API, JSON, REST, HTML, DOM-adjacent terms, SQL,
 CIS-CSM / CIS-VR are course codes, not abbreviations. CAB and ITIL were already
 spelled out adjacent to the acronym.
 
+**Round 4 re-audit added two more:** `ServiceNow SDK (Software Development Kit)`
+(its only occurrence on the page was bare) and `LPs (Leadership Principles)` in the
+story-mapping table header — the paragraph above it spelled the phrase out, but the
+column itself didn't. `OOB`, `CI`, `DEV→UAT→PROD`, and `BRs` were re-checked raw and
+are glossed at first use of each meaning (CI/CD vs Configuration Item both covered).
+
 ### 4. A regression I introduced, caught by the checks
 
 The `js-essentials` module note initially contained a literal `<script
@@ -237,9 +243,9 @@ This is the row-count check doing its job, not a weakened assertion.
 ## Deployment status (final)
 
 - **Deployed** over FTP after each round, then fetched back and md5-compared:
-  `index.html` **408162**, `js-interview.html` **20085**, `js-essentials.html` **43055**
+  `index.html` **408213**, `js-interview.html` **20085**, `js-essentials.html` **43055**
   — all three live == local == HEAD. Server-side `SIZE` is asserted on every upload.
-  (`index.html` went 406378 → 406996 → 407796 → 408155 → 408162 and
+  (`index.html` went 406378 → 406996 → 407796 → 408155 → 408162 → 408213 and
   `js-essentials.html` 42907 → 43055 across rounds 1–4; `js-interview.html` has been
   20085 since round 1.) Fetch with a
   browser UA; the site's WAF 412s the default `urllib`/curl UA.
@@ -306,4 +312,5 @@ where `white-space: pre` governs. After the fix the token wraps (width 297, righ
 syntax **104 blocks / 0 hard errors** (+ `quiz-data.js` parses) · static **71/71** ·
 headless Playwright **19/19** · scroll **10/10** (`file://`) and **10/10** (live) ·
 overflow **6/6** (live) · live content **23/23** · FTP `SIZE` local == remote
-**408162**.
+**408213** · the three gloss needles (`NPE (NullPointerException)…`, `SDK (Software
+Development Kit)`, `LPs (Leadership Principles)`) all present in the **live** bytes.
