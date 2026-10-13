@@ -375,6 +375,23 @@ const map = new Map([['a', 1]]);       // from pairs
 map.set('b', 2); map.get('a'); map.has('a'); map.size;
 for (const [k, v] of map) { }          // insertion order</code></pre>
 
+    <h3>Set &amp; Map gotchas</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Gotcha</th><th>Why it bites</th><th>Correct approach</th></tr></thead>
+        <tbody>
+          <tr><td><code>.size</code>, not <code>.length</code></td><td>Not arrays — <code>set.length</code> is <code>undefined</code>.</td><td><code>set.size</code> · <code>map.size</code></td></tr>
+          <tr><td><code>new Map({a: 1})</code> throws</td><td>The constructor wants an <em>iterable of pairs</em>, not a plain object.</td><td><code>new Map(Object.entries(obj))</code></td></tr>
+          <tr><td>Comparison is <strong>SameValueZero</strong>, not <code>===</code></td><td><code>NaN</code> counts as equal to itself (<code>new Set([NaN]).size === 1</code>), but two <code>{}</code> literals are different keys.</td><td>Object keys must be the <strong>same reference</strong>; use primitives unless you mean identity.</td></tr>
+          <tr><td>No index access</td><td><code>set[0]</code> / <code>map[0]</code> are <code>undefined</code> — nothing is keyed by position.</td><td><code>for...of</code>, or spread: <code>[...set]</code> / <code>Array.from(map.keys())</code></td></tr>
+          <tr><td>Insertion order, not sorted order</td><td><code>[...new Set([3,1,2,10])]</code> is <code>[3,1,2,10]</code>, not <code>[1,2,3,10]</code>.</td><td>If you need sorted, convert to an array and <code>.sort((a,b) =&gt; a - b)</code>.</td></tr>
+          <tr><td>Mutating while iterating</td><td><code>delete</code> during <code>for...of</code> is safe (skips no survivors), but <code>add</code>/<code>set</code> during iteration visits the new items too — easy infinite loop.</td><td>Collect keys to delete/add first, or build a new collection.</td></tr>
+          <tr><td><code>WeakSet</code>/<code>WeakMap</code> keys must be objects</td><td><code>wm.set('a', 1)</code> throws; no <code>size</code>, no iteration.</td><td>Use for private/cached data keyed on objects so GC can reclaim.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="notice"><strong>Map vs plain object for lookup tables.</strong> A <code>Map</code> has guaranteed insertion order, an O(1) <code>.size</code>, no <code>Object.prototype</code> keys to collide with (<code>count['constructor']</code>), and accepts non-string keys. A plain object wins when you need <code>JSON.stringify</code>.</div>
+
     <!-- ══════════════════ 8. ASYNC ══════════════════ -->
     <h2 id="async">8. Promises &amp; async/await</h2>
     <p class="muted">Barely needed for LeetCode, but part of the essentials.</p>
@@ -511,6 +528,9 @@ const r = await Promise.allSettled([x(), y()]); // parallel, never throws</code>
           <tr><td><code>for...in</code> on an array</td><td>string indices, skips holes</td><td><code>for...of</code></td></tr>
           <tr><td>Spreading a huge array</td><td><code>Math.max(...1e6 items)</code> can throw</td><td>a running max in a loop</td></tr>
           <tr><td><code>map.get</code> miss</td><td>assumes a value exists</td><td><code>map.get(k) ?? 0</code></td></tr>
+          <tr><td><code>new Map(obj)</code></td><td>throws <code>TypeError: object is not iterable</code></td><td><code>new Map(Object.entries(obj))</code></td></tr>
+          <tr><td><code>.length</code> on a Set/Map</td><td><code>undefined</code> — it is not an array</td><td><code>.size</code></td></tr>
+          <tr><td>Object keys in a Set/Map</td><td>two <code>{}</code> literals are different keys</td><td>same reference, or a primitive key</td></tr>
           <tr><td><code>await</code> in a loop</td><td>serialises network/IO calls</td><td><code>Promise.all</code></td></tr>
         </tbody>
       </table>

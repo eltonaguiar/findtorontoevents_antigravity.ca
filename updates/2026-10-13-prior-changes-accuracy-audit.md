@@ -146,12 +146,18 @@ new notice renders with the `??`-vs-`||` rule, all anchors resolve).
   `index.html` **406378**, `js-interview.html` **20085**, `js-essentials.html` **42907**
   (untouched by this audit) — all three live == local. Fetch with a browser UA; the
   site's WAF 412s the default `urllib`/curl UA.
-- **Committed** as `f146acbed4` on a clean branch `fix/js-reference-accuracy-audit`:
-  `index.html`, `js-interview.html`, this doc and
-  `updates/2026-10-12-js-essentials-set-map-gotchas.md` (the doc for the earlier
-  cross-links/markers riding along in those files). Local branch, **not pushed**.
-- `js-essentials.html` remains **uncommitted** — it is the previous session's change
-  and was deliberately left out of a commit that only carries this audit's work.
+- **Pushed** to `origin/fix/js-reference-accuracy-audit` (upstream set, remote SHA ==
+  local). Contents: `f146acbed4` (the three fixes + this doc), `60e5667c1a` (this
+  doc's final status), plus the pre-existing `c1707553a7` guards section the branch was
+  cut from — all authored in Codebuff sessions; the repo's conflict-marker gate exits 0.
+- **`js-essentials.html` committed on operator go-ahead** so the branch matches
+  production byte-for-byte: 20 lines — the §7 "Set & Map gotchas" table, its
+  Map-vs-object notice, and the 3 §10 rows. That is the content documented in
+  `updates/2026-10-12-js-essentials-set-map-gotchas.md` and covered by the 71-check
+  suite (§7 = 7 rows, §10 = 17 rows, every behavioural claim executed in Node), and
+  it is byte-identical to what the live site has been serving all along.
+- **Pushed commit == live** for all three pages: md5 of `git show HEAD:<file>` compared
+  against the fetched live bytes.
 
 ## Harness note (exit status)
 
