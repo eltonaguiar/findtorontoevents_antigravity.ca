@@ -454,11 +454,11 @@ window.SN_QUIZ = {
     },
     {
       id: 'aj-03', cat: 'glideajax', sub: 'client',
-      q: 'Pass the caller\'s sys_id to the server method as a parameter named <code>sysparm_caller_id</code>.',
+      q: 'Client-script context: you are writing an <code>onChange</code> client script on the <code>caller_id</code> field and fire GlideAjax from inside its handler. Pass the field\'s new value (the caller\'s sys_id) as a parameter named <code>sysparm_caller_id</code>.',
       ph: "e.g. ga.addParam('sysparm_caller_id', newValue)",
       accept: ["ga.addParam('sysparm_caller_id', newValue)", "ga.addParam('sysparm_caller_id',g_form.getValue('caller_id'))", "ga.addParam('sysparm_caller_id', g_form.getValue('caller_id'))"],
       answer: "ga.addParam('sysparm_caller_id', newValue)",
-      hint: 'Every custom parameter must start with sysparm_.'
+      hint: 'Every custom parameter must start with sysparm_. In an onChange handler the 4th-argument newValue already holds the new sys_id (reference fields pass the sys_id, not the display value) — that is why the canonical answer uses it. In any other client context (onLoad, onSubmit, UI Action) there is no newValue, so use g_form.getValue(\'caller_id\') instead — both forms are accepted here.'
     },
     {
       id: 'aj-04', cat: 'glideajax', sub: 'client',
@@ -488,9 +488,9 @@ window.SN_QUIZ = {
       id: 'aj-07', cat: 'glideajax', sub: 'server',
       q: 'Which Script Include flag must be enabled before a client script can call it with GlideAjax?',
       ph: 'e.g. Client callable',
-      accept: ['Client callable', 'client callable', 'Client Callable', 'clientCallable'],
+      accept: ['Client callable', 'client callable', 'Client Callable', 'clientCallable', 'client_callable'],
       answer: 'Client callable',
-      hint: 'It is a checkbox on the Script Include record, not a line of code.'
+      hint: 'It is the "Client callable" checkbox (field client_callable, under the Client section of the Script Include form) — not a line of code. Often misremembered as an "ajax enabled" box; no such flag exists. Without it, GlideAjax cannot see the Script Include at all.'
     },
     {
       id: 'aj-08', cat: 'glideajax', sub: 'client',
@@ -499,6 +499,23 @@ window.SN_QUIZ = {
       accept: ['ga.getAnswer()'],
       answer: 'ga.getAnswer()',
       hint: 'The synchronous counterpart of the async callback.'
+    },
+    {
+      id: 'aj-09', cat: 'glideajax', sub: 'client',
+      q: 'Wire the full-response method: fire <code>ga.getXML()</code> with a callback, then read the <code>answer</code> attribute out of <code>response.responseXML.documentElement</code>. Give the complete wiring (setup lines such as <code>new GlideAjax(\'...\')</code> are optional).',
+      ph: "e.g. ga.getXML(answerFunction); function answerFunction(response) { var answer = response.responseXML.documentElement.getAttribute('answer'); }",
+      accept: [
+        "ga.getXML(answerFunction); function answerFunction(response) { var answer = response.responseXML.documentElement.getAttribute('answer'); }",
+        "ga.getXML(answerFunction); function answerFunction(response) { var answer = response.responseXML.documentElement.getAttribute(\"answer\"); }",
+        "ga.getXML(cb); function cb(response) { var answer = response.responseXML.documentElement.getAttribute('answer'); }",
+        "ga.getXML(cb); function cb(response) { var answer = response.responseXML.documentElement.getAttribute(\"answer\"); }",
+        "ga.getXML(function(response) { var answer = response.responseXML.documentElement.getAttribute('answer'); });",
+        "ga.getXML(function(response) { var answer = response.responseXML.documentElement.getAttribute(\"answer\"); });",
+        "var ga = new GlideAjax('YourScriptInclude'); ga.addParam('sysparm_name', 'yourFunction'); ga.getXML(answerFunction); function answerFunction(response) { var answer = response.responseXML.documentElement.getAttribute(\"answer\"); }",
+        "var ga = new GlideAjax('YourScriptInclude'); ga.addParam('sysparm_name', 'yourFunction'); ga.getXML(answerFunction); function answerFunction(response) { var answer = response.responseXML.documentElement.getAttribute('answer'); }"
+      ],
+      answer: "ga.getXML(answerFunction); function answerFunction(response) { var answer = response.responseXML.documentElement.getAttribute('answer'); }",
+      hint: 'getXML hands the callback the FULL XML response, not a string — the answer sits on documentElement as an attribute, so you read it with getAttribute(\'answer\'). (getXMLAnswer, covered earlier, hands you the plain string directly.)'
     },
 
     /* ── g_form & client scripts ────────────────────────────────────────── */
@@ -699,11 +716,11 @@ window.SN_QUIZ = {
     },
     {
       id: 'js-05', cat: 'jsfundamentals', sub: 'strings',
-      q: 'A string contains emoji. <code>split(\'\')</code> breaks them into lone surrogates. What is the correct way to get an array of <em>characters</em>?',
+      q: 'Why the last question\'s warning: an emoji like \uD83D\uDE00 is stored as <strong>two</strong> UTF-16 code units (a surrogate pair), so <code>split(\'\')</code> returns two broken \"lone surrogate\" halves instead of one character. Which ES6 way iterates a string by <em>code point</em>, keeping each emoji whole as a single array element?',
       ph: 'e.g. [...s]',
       accept: ['[...s]', 'Array.from(s)', '[ ...s ]'],
       answer: '[...s]',
-      hint: 'The spread operator iterates by code point, so astral characters stay whole.'
+      hint: 'The spread operator (and Array.from) walk the string by code point, so the surrogate pair reassembles into one element. split(\'\') walks it by code unit — that is the whole difference.\n\nRunnable (plain ASCII):\n\nx = "abcdeefghijklmno";\nz = [...x];\nconsole.log(z);\n// → [ \'a\', \'b\', \'c\', \'d\', \'e\', \'e\', \'f\', \'g\',\n//     \'h\', \'i\', \'j\', \'k\', \'l\', \'m\', \'n\', \'o\' ]\n\nAnd the emoji case the question is about:\n\n\'\uD83D\uDE00\'.split(\'\')   // → [ \'\uD83D\', \'\uDE00\' ]  ← two lone surrogates (broken)\n[...\'\uD83D\uDE00\']        // → [ \'\uD83D\uDE00\' ]        ← one whole character'
     },
     {
       id: 'js-06', cat: 'jsfundamentals', sub: 'strings',
@@ -739,6 +756,14 @@ window.SN_QUIZ = {
     },
 
     /* ── JavaScript for coding interviews: Set / Map / Object ──────────── */
+    {
+      id: 'js-23', cat: 'jsfundamentals', sub: 'strings',
+      q: 'Interview basic: how do you get the <strong>first</strong> character of a string <code>s</code>?',
+      ph: 'e.g. s.charAt(0)',
+      accept: ['s.charAt(0)', 'str.charAt(0)', 'charAt(0)', 's[0]', 'str[0]', 's.at(0)'],
+      answer: 's.charAt(0)',
+      hint: 'All three are common: s[0], s.charAt(0), s.at(0). They differ at the edges — charAt(0) on an empty string returns \'\' while bracket access and at() return undefined.'
+    },
     {
       id: 'js-10', cat: 'jsfundamentals', sub: 'types',
       q: 'Remove duplicates from an array and return a new array, preserving first-seen order. One expression.',
