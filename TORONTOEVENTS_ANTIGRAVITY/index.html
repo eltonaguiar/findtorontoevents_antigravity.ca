@@ -2051,7 +2051,6 @@
     </footer>
   </div>
   <script async="" id="_R_" src="/next/_next/static/chunks/628f1cf8c6948755.js"></script>
-  <script src="/add-promos.js" async></script>
   <script src="/adsense-integration.js" async></script>
   <script>(self.__next_f = self.__next_f || []).push([0])</script>
   <script>self.__next_f.push([1, "1:\"$Sreact.fragment\"\n2:I[11093,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"SettingsProvider\"]\n3:I[49830,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n4:I[40625,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n5:I[8517,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n6:I[39756,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"default\"]\n7:I[37457,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"default\"]\n8:I[6329,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n9:I[47257,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"ClientPageRoot\"]\na:I[52683,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\",\"/next/_next/static/chunks/f1a9dd578dc871d3.js\",\"/next/_next/static/chunks/afe53b3593ec888c.js\",\"/next/_next/static/chunks/1bbf7aa8dcc742fe.js\"],\"default\"]\nd:I[97367,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"OutletBoundary\"]\ne:\"$Sreact.suspense\"\n10:I[97367,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"ViewportBoundary\"]\n12:I[97367,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"MetadataBoundary\"]\n14:I[68027,[],\"default\"]\n:HL[\"/next/_next/static/chunks/cd9d6741b3ff3a25.css\",\"style\"]\n:HL[\"/next/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n"])</script>
@@ -2894,15 +2893,41 @@
 <!-- Multi-Day Filter and Near Me Feature -->
 <style id="event-filter-styles">
   /* Filter Controls Container */
+  /* The right-most column (right 24-108px, bottom 24-192px) belongs to the
+     settings FAB, AI button and bell injected by ai-assistant.js, so the
+     filter stack sits to its left instead of underneath it. */
   .custom-filter-controls {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: 120px;
     z-index: 300;
     display: flex;
     flex-direction: column;
     gap: 10px;
     align-items: flex-end;
+  }
+  /* The AI chat panel (z 100001) would cover the stack; step aside while it is open. */
+  body:has(#fte-ai-panel.open) .custom-filter-controls {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  @media (max-width: 640px) {
+    .custom-filter-controls {
+      left: 12px;
+      right: auto;
+      bottom: 16px;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .custom-filter-controls .filter-toggle-btn {
+      padding: 8px 14px;
+      font-size: 12px;
+    }
+    .custom-filter-controls .near-me-panel {
+      min-width: 0;
+      width: calc(100vw - 132px);
+    }
   }
   
   /* Filter Toggle Button */
@@ -5110,9 +5135,14 @@
     function _hydWitness() {
       var raw = window.__RAW_EVENTS__;
       if (!Array.isArray(raw) || raw.length === 0) return false;
+      // Event cards render their title as <h3> (they used <h2> earlier); matching
+      // only h2 meant the witness never fired and every visitor waited for the
+      // 5 s fallback before menu tiles + filter buttons appeared.
       var card = document.querySelector(
         '[class*="glass-panel"]:not(.animate-pulse) h2, ' +
-        '[class*="event-card"] h2, [class*="EventCard"] h2'
+        '[class*="glass-panel"]:not(.animate-pulse) h3, ' +
+        '[class*="event-card"] h2, [class*="event-card"] h3, ' +
+        '[class*="EventCard"] h2, [class*="EventCard"] h3'
       );
       return !!(card && (card.textContent || '').trim().length > 0);
     }
@@ -6225,7 +6255,7 @@
 </script>
 
 <!-- AI Assistant: context-aware chat + voice assistant (free, no API keys) -->
-<script src="/ai-assistant.js"></script>
+<script src="/ai-assistant.js" defer></script>
 
 <!-- Theme Switcher: 151 visual themes from blog pages -->
 <script src="/theme-registry.js"></script>
