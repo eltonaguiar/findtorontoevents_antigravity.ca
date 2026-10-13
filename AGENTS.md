@@ -461,6 +461,8 @@ Before sending any response, you MUST check for these patterns:
 | `.github/workflows/cross-db-audit.yml` | Daily cross-DB consistency audit |
 | `.github/workflows/audit-dashboard.yml` | The workflow file itself |
 | .github/workflows/pick-funnel-nightly.yml | Downstream consumer: fetches dashboard_data.json from live site → build_nav_surface_matrix.py (added 2026-05-27) |
+| `TORONTOEVENTS_ANTIGRAVITY/integrations/index.html` | Public integrations/tech-portfolio page (findtorontoevents.ca/integrations/) documenting CI/CD, every integration (protocol/direction/frequency/idempotency), page→integration map, asset-class coverage, refresh buttons. Update it in the same PR when an integration is added or changed. (added 2026-10-13) |
+| `.github/workflows/deploy-fte-integrations.yml` | Push-to-main (own path) + manual dispatch — validates the integrations page (conflict markers + credential-literal guard) then FTP-uploads it to `findtorontoevents.ca/integrations/`. Shares the `fte-ftp-deploy` concurrency group with the other core-site FTP deploys. (added 2026-10-13) |
 
 > **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the hourly cron.
 

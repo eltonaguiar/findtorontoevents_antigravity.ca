@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Integrations &amp; Automation Portfolio — findtorontoevents.ca</title>
+<meta name="description" content="Public technical portfolio: every data integration powering findtorontoevents.ca — direction, protocol, frequency, duplicate-prevention (idempotency), CI/CD via GitHub Actions, and the pages each integration serves." />
+<link rel="canonical" href="https://findtorontoevents.ca/integrations/" />
+<style>
+  :root {
+    --bg: #0b1020; --bg2: #0f172a; --card: #131c31; --border: #23304d;
+    --text: #e2e8f0; --dim: #94a3b8; --cyan: #22d3ee; --amber: #f59e0b;
+    --green: #22c55e; --red: #f87171; --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: rgba(34,211,238,.10); color: var(--cyan); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 24px 18px 80px; }
+  header.hero { padding: 34px 18px 10px; text-align: center; }
+  header.hero h1 { margin: 0 0 6px; font-size: clamp(22px, 3.4vw, 34px); }
+  header.hero p.sub { color: var(--dim); max-width: 820px; margin: 0 auto; font-size: 14px; }
+  .verified { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--green); border: 1px solid rgba(34,197,94,.4); background: rgba(34,197,94,.08); border-radius: 999px; padding: 2px 12px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 26px 0 8px; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+  .stat b { display: block; font-size: 26px; color: var(--cyan); }
+  .stat span { color: var(--dim); font-size: 12.5px; }
+  nav.toc { position: sticky; top: 0; z-index: 50; background: rgba(11,16,32,.94); backdrop-filter: blur(6px); border-bottom: 1px solid var(--border); padding: 10px 14px; margin: 22px -18px 26px; display: flex; gap: 16px; overflow-x: auto; font-size: 13px; white-space: nowrap; }
+  nav.toc a { color: var(--dim); }
+  nav.toc a:hover { color: var(--cyan); text-decoration: none; }
+  section { margin: 40px 0; }
+  h2 { font-size: 21px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 14px; }
+  h2 .n { color: var(--cyan); margin-right: 8px; }
+  h3 { font-size: 16px; margin: 22px 0 8px; color: var(--amber); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 12px 0; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 880px; }
+  th, td { padding: 9px 11px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg2); color: var(--dim); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: 11px; position: sticky; top: 0; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(34,211,238,.04); }
+  .tag { display: inline-block; font-size: 11px; border-radius: 999px; padding: 1px 9px; border: 1px solid; white-space: nowrap; }
+  .t-in  { color: var(--green); border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.08); }
+  .t-out { color: var(--amber); border-color: rgba(245,158,11,.45); background: rgba(245,158,11,.08); }
+  .t-bi  { color: var(--purple); border-color: rgba(167,139,250,.45); background: rgba(167,139,250,.08); }
+  .t-proto { color: var(--cyan); border-color: rgba(34,211,238,.4); background: rgba(34,211,238,.07); }
+  ul.tight { margin: 8px 0; padding-left: 20px; }
+  ul.tight li { margin: 5px 0; }
+  .callout { border-left: 3px solid var(--cyan); background: rgba(34,211,238,.06); border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 14px 0; font-size: 14px; }
+  .callout.warn { border-left-color: var(--amber); background: rgba(245,158,11,.06); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; }
+  footer { margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12.5px; }
+  @media (max-width: 640px) { .wrap { padding: 16px 10px 60px; } nav.toc { margin-left: -10px; margin-right: -10px; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>⚙️ Integrations &amp; Automation Portfolio</h1>
+  <p class="sub">Every external system that feeds — or is fed by — the findtorontoevents.ca platform: events, movies &amp; TV, market data across all asset classes, prediction markets, sports odds, hosting, and agent infrastructure. Each entry lists protocol, direction, frequency, the pages it serves, and the idempotency key that prevents duplicate data.</p>
+  <span class="verified">● Verified against source — October 13, 2026</span>
+</header>
+
+<div class="wrap">
+
+  <div class="stats">
+    <div class="stat"><b>371</b><span>GitHub Actions workflows<br>(306 on a schedule)</span></div>
+    <div class="stat"><b>9</b><span>MySQL databases<br>(events, stocks, crypto, sports…)</span></div>
+    <div class="stat"><b>30+</b><span>External data sources<br>merged into /audit</span></div>
+    <div class="stat"><b>30+</b><span>Event scrapers<br>(Eventbrite, Ticketmaster, Meetup…)</span></div>
+    <div class="stat"><b>0</b><span>Credentials exposed<br>(all secrets in Actions/env)</span></div>
+  </div>
+
+  <nav class="toc">
+    <a href="#cicd">CI/CD</a>
+    <a href="#inbound">Inbound data</a>
+    <a href="#outbound">Outbound</a>
+    <a href="#pages">Page → integration map</a>
+    <a href="#assetclasses">Asset classes</a>
+    <a href="#idempotency">Idempotency</a>
+    <a href="#refresh">Refresh buttons</a>
+    <a href="#security">Secrets &amp; security</a>
+    <a href="#reliability">Reliability</a>
+  </nav>
+
+  <!-- ============================ CI/CD ============================ -->
+  <section id="cicd">
+    <h2><span class="n">1.</span>CI/CD backbone — GitHub Actions</h2>
+    <p>The entire automation layer runs on GitHub Actions self-hosted/unified runners. Nothing depends on host crons (the shared hosting provider doesn't support them), so <em>every</em> scheduled job is a workflow in <code>.github/workflows/</code>.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-top:0">Trigger mix &amp; cadence</h3>
+        <ul class="tight">
+          <li><b>Every 15 min</b> — sports odds anchors, pick funnels</li>
+          <li><b>Every 30–60 min</b> — dashboard pipeline, DB freshness guardian</li>
+          <li><b>Every 2–6 h</b> — scanners, top-movies refresh, UEPS picks</li>
+          <li><b>Daily</b> — event scrape (12:00 UTC), TMDB fetches (06:00 &amp; 07:00 UTC), backups, COT/insider landings</li>
+          <li><b>Weekly / market-hours aligned</b> — validation, retraining, weekday-only equity jobs</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Pipeline safety guardrails</h3>
+        <ul class="tight">
+          <li><b>Concurrency groups</b> (<code>fte-ftp-deploy</code>, <code>dashboard-publish</code>) serialize FTP writes — two runs can never clobber each other's upload.</li>
+          <li><b><code>[skip ci]</code></b> on every generated-data commit → no deploy loops.</li>
+          <li><b>Conflict-marker + large-file + safe-push guards</b> (<code>assert_no_conflict_markers.sh</code>, <code>safe_push.sh</code>, <code>branch-large-file-dup-guard.yml</code>).</li>
+          <li><b>Push trigger deliberately removed</b> from the dashboard pipeline (2026-05-19) — hourly cron + manual dispatch only, preventing cancel-cascade waste.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Deployment model</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Surface</th><th>Publish mechanism</th><th>Trigger</th></tr></thead>
+        <tbody>
+          <tr><td>Site root <code>/</code> (events grid)</td><td>TLS FTP upload of <code>index.html</code>, <code>events.json</code>, <code>next/events.json</code></td><td>On <em>Scrape events</em> completion + push</td></tr>
+          <tr><td><code>/audit</code> dashboard</td><td>FTP upload of generated <code>index.html</code> + <code>data/*.json</code></td><td>Hourly cron (<code>:10</code> UTC), ~30–35 min runtime</td></tr>
+          <tr><td><code>/fc</code> (FavCreators)</td><td>FTP upload of pre-built Vite bundle</td><td>On change + dispatch</td></tr>
+          <tr><td><code>/MOVIESHOWS2</code>, <code>/MOVIESHOWS3</code></td><td>PHP scripts deployed via <code>tools/deploy_movieshows*.py</code>, then triggered over HTTPS</td><td>Daily 06:00 / 07:00 UTC</td></tr>
+          <tr><td><code>/integrations</code> (this page)</td><td>FTP upload of <code>integrations/index.html</code></td><td>On push to this page + dispatch</td></tr>
+          <tr><td>GitHub Pages mirrors (<code>/alpha</code>, <code>/monitor</code>, <code>/battleground</code>…)</td><td>Git push → Pages</td><td>Per-workflow</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ INBOUND ============================ -->
+  <section id="inbound">
+    <h2><span class="n">2.</span>Inbound integrations (external systems → our databases)</h2>
+    <p>Direction <span class="tag t-in">INBOUND</span> means external data lands in one of our MySQL databases or published JSON feeds. All are <b>read-only</b>: we never authenticate to these sources with write authority, and we never post data back.</p>
+
+    <h3>2.1 Toronto events &amp; entertainment listings</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Source</th><th>Protocol</th><th>Dir.</th><th>Frequency</th><th>Lands in</th><th>Idempotency</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Eventbrite</b></td>
+            <td><span class="tag t-proto">REST / HTML</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Daily 12:00 UTC (<code>scrape-events.yml</code>)</td>
+            <td><code>ejaguiar1_events.events_log</code> → <code>events.json</code></td>
+            <td>Deterministic <b>MD5 event key</b> as table PRIMARY KEY (upsert)</td>
+          </tr>
+          <tr>
+            <td><b>Ticketmaster, Meetup, BlogTO, Now Toronto, City of Toronto, Harbourfront, Fatsoma, TPL, venue &amp; dating scrapers</b> (30+ sources in <code>tools/scrapers/</code>)</td>
+            <td><span class="tag t-proto">HTML scrape</span> (scrapling/BS4)</td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Same daily batch (<code>unified_scraper</code>)</td>
+            <td>Same <code>events_log</code></td>
+            <td>Normalized-title dedup pre-merge + MD5 key upsert</td>
+          </tr>
+          <tr>
+            <td><b>TMDB</b> — The Movie Database (trending / popular / top-rated / on-the-air + YouTube trailer keys + poster CDN)</td>
+            <td><span class="tag t-proto">REST</span> <code>api.themoviedb.org/3</code></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Daily 06:00 UTC → MOVIESHOWS2, 07:00 UTC → MOVIESHOWS3, plus 06:00 kimi fetch; Top-100 every 6 h</td>
+            <td><code>ejaguiar1_tvmoviestrailers</code> (movies, trailers, thumbnails)</td>
+            <td><b><code>tmdb_id</code> UNIQUE</b> + <code>imdb_id</code> secondary + <code>youtube_key</code> UNIQUE</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>2.2 Market data — all asset classes</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Source</th><th>Protocol</th><th>Dir.</th><th>Frequency</th><th>Lands in / serves</th><th>Idempotency</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Yahoo Finance</b> (yfinance, keyless)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Hourly / daily OHLCV refresh jobs</td>
+            <td><code>ejaguiar1_stocks.daily_prices</code> → equity, ETF, bond panels on <code>/audit</code></td>
+            <td><code>UNIQUE (ticker, trade_date)</code> + <code>ON DUPLICATE KEY UPDATE</code></td>
+          </tr>
+          <tr>
+            <td><b>Alpha Vantage</b> (keyed REST, failover tier)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>On-demand fallback when yfinance is empty</td>
+            <td>Same <code>daily_prices</code></td>
+            <td>Same natural key — identical upsert path</td>
+          </tr>
+          <tr>
+            <td><b>Binance public API</b> (klines, tickers, funding rates)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>15 min – 1 h (scanners, OHLCV backfills), live 120 s in browser</td>
+            <td>Crypto OHLCV/funding tables → crypto class on <code>/audit</code></td>
+            <td><code>UNIQUE (symbol, timestamp)</code> upsert</td>
+          </tr>
+          <tr>
+            <td><b>Bybit, CoinGecko, CryptoCompare, KuCoin</b></td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Client-side failover chain in the <code>/audit</code> live-price engine</td>
+            <td>Live prices for active picks (browser only)</td>
+            <td>Read-only quote fan-out; no writes</td>
+          </tr>
+          <tr>
+            <td><b>CoinGlass</b> (funding, open interest, long/short)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Daily landing into local dataset</td>
+            <td>Crypto derivative panels on <code>/audit</code></td>
+            <td>Upsert keyed on (symbol, interval, timestamp)</td>
+          </tr>
+          <tr>
+            <td><b>CFTC Commitments of Traders</b> (Socrata SODA)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Weekly (prior-Tuesday data date)</td>
+            <td><code>cftc_cot_weekly</code> → commodity positioning signal</td>
+            <td>Idempotent upsert on <code>(symbol, report_date)</code> — keyed on report date, <em>not</em> fetch date (documented timing-leakage guard)</td>
+          </tr>
+          <tr>
+            <td><b>SEC EDGAR</b> (Form 4 insider filings)</td>
+            <td><span class="tag t-proto">REST / XML</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Daily incremental</td>
+            <td>Insider-trade table → equity alt-data on <code>/audit</code></td>
+            <td>Idempotent upsert per filing</td>
+          </tr>
+          <tr>
+            <td><b>Polymarket + Kalshi</b> (prediction markets)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Hourly / daily scans</td>
+            <td>Prediction-market consensus signals on <code>/audit</code></td>
+            <td>Dedup by immutable market id</td>
+          </tr>
+          <tr>
+            <td><b>Pinnacle moneyline anchor + NHL goalie feed</b> (sportsbook snapshots)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>Every 15 min (Pinnacle), daily 17:00 UTC (goalies)</td>
+            <td>Timestamped JSON snapshots → sports value analyzer (Shin devig fallback)</td>
+            <td>One immutable file per UTC timestamp — append-only, never overwritten</td>
+          </tr>
+          <tr>
+            <td><b>Alternative.me Fear &amp; Greed</b></td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><span class="tag t-in">IN</span></td>
+            <td>On demand (browser)</td>
+            <td>Regime banner on <code>/audit</code></td>
+            <td>Read-only quote</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ OUTBOUND ============================ -->
+  <section id="outbound">
+    <h2><span class="n">3.</span>Outbound integrations (our systems → external)</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Target</th><th>Protocol</th><th>What flows out</th><th>Frequency</th><th>Duplicate protection</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Production hosting</b> (50webs / GoDaddy FTP)</td>
+            <td><span class="tag t-proto">FTPS</span></td>
+            <td>Site root, <code>/audit</code>, <code>/fc</code>, MOVIESHOWS PHP, JSON feeds</td>
+            <td>Event-driven + hourly</td>
+            <td>Concurrency groups serialize uploads; per-file upload verification</td>
+          </tr>
+          <tr>
+            <td><b>GitHub</b> (data artifacts, dashboards)</td>
+            <td><span class="tag t-proto">Git / REST</span></td>
+            <td>Generated <code>data/*.json</code>, picks, run reports</td>
+            <td>Every pipeline run</td>
+            <td><code>[skip ci]</code> on data commits; push-retry loop with sanitized output</td>
+          </tr>
+          <tr>
+            <td><b>GitHub Actions API</b></td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td><code>workflow_dispatch</code> triggered by the dashboard's own refresh buttons</td>
+            <td>User-initiated</td>
+            <td>Runs queue (no cancel-in-progress) on shared concurrency groups</td>
+          </tr>
+          <tr>
+            <td><b>Discord webhooks</b></td>
+            <td><span class="tag t-proto">REST webhook</span></td>
+            <td>Consensus picks, system health, alerts</td>
+            <td>Continuous</td>
+            <td><code>INSERT IGNORE</code> into <code>at_discord_notifications</code> — a pick is announced at most once</td>
+          </tr>
+          <tr>
+            <td><b>Email (SMTP)</b></td>
+            <td><span class="tag t-proto">SMTP</span></td>
+            <td>Database backup reports</td>
+            <td>Daily</td>
+            <td>One message per run id</td>
+          </tr>
+          <tr>
+            <td><b>TradingView paper trading</b></td>
+            <td><span class="tag t-proto">Browser automation (CDP)</span></td>
+            <td>Paper orders with TP/SL for monitored picks</td>
+            <td>Session-driven</td>
+            <td>Position audit before send — no duplicate positions for the same pick</td>
+          </tr>
+          <tr>
+            <td><b>Cross-PC agent gateway</b> (fleet bus)</td>
+            <td><span class="tag t-proto">WebSocket + HTTP</span></td>
+            <td>Agent envelopes, session summaries</td>
+            <td>On demand</td>
+            <td>ACK + retry with durable JSONL log; store-and-forward replay</td>
+          </tr>
+          <tr>
+            <td><b>LLM providers</b> (NVIDIA NIM, Groq, Cerebras, Together, Fireworks, GitHub Models, Gemini, Cloudflare Workers AI, DeepInfra, Nous, Mistral…)</td>
+            <td><span class="tag t-proto">REST</span></td>
+            <td>Research prompts for strategy triangulation &amp; scoring experiments</td>
+            <td>On demand</td>
+            <td>Key pool with rotation on 429/401; requests are stateless</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">We deliberately run <b>no write-back integrations</b> to third-party marketplaces or listing sites: scrapers are strictly read-only, and outbound traffic is limited to our own hosting, notification channels, and stateless research APIs.</div>
+  </section>
+
+  <!-- ============================ PAGE MAP ============================ -->
+  <section id="pages">
+    <h2><span class="n">4.</span>Page → integration map</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Page</th><th>What it shows</th><th>Integrations it consumes</th><th>Data freshness</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b><code>/</code></b> (homepage)</td>
+            <td>Toronto event grid (categories, date chips, multi-day, near-me)</td>
+            <td>30+ event scrapers (Eventbrite, Ticketmaster, Meetup, BlogTO, City of Toronto, venues…) → <code>events.json</code> / <code>next/events.json</code></td>
+            <td>Daily 12:00 UTC + deploy on completion</td>
+          </tr>
+          <tr>
+            <td><b><code>/vr/events/</code></b></td>
+            <td>VR events explorer</td>
+            <td>Same events feed</td>
+            <td>Same batch</td>
+          </tr>
+          <tr>
+            <td><b><code>/MOVIESHOWS/</code></b> (Now Showing)</td>
+            <td>TikTok-style trailer scroll with Toronto Cineplex &amp; Imagine Cinemas showtimes, IMDb &amp; Rotten Tomatoes ratings</td>
+            <td>TMDB + cinema showtime sources</td>
+            <td>Daily</td>
+          </tr>
+          <tr>
+            <td><b><code>/MOVIESHOWS2/</code></b> (Film Vault)</td>
+            <td>4,000+ curated titles, genre filters, playlist export/import</td>
+            <td>TMDB bulk fetch (trending/discover, posters, trailers)</td>
+            <td>Daily 06:00 UTC; top-100 every 6 h</td>
+          </tr>
+          <tr>
+            <td><b><code>/MOVIESHOWS3/</code></b> (Binge Mode)</td>
+            <td>Accounts, likes, watchlist queue, auto-scroll trailer player</td>
+            <td>TMDB fetch (key-gated PHP endpoint) + <code>ejaguiar1_tvmoviestrailers</code> user tables</td>
+            <td>Daily 07:00 UTC + on-demand admin fetch</td>
+          </tr>
+          <tr>
+            <td><b><code>/audit</code></b></td>
+            <td>Quant dashboard: picks, edge audit, money-ready gates, live PnL</td>
+            <td>30+ sources — Binance/Bybit/CoinGecko/CryptoCompare, yfinance, Alpha Vantage, CFTC COT, SEC EDGAR, Polymarket, Kalshi, CoinGlass, Pinnacle odds, Fear &amp; Greed</td>
+            <td>Pipeline hourly at :10 UTC; live prices 120 s</td>
+          </tr>
+          <tr>
+            <td><b><code>/fc/</code></b> (FavCreators)</td>
+            <td>Creator tracking app + Taste Profile + Accountability</td>
+            <td><code>ejaguiar1_favcreators</code> (pre-built Vite SPA + PHP API)</td>
+            <td>On demand</td>
+          </tr>
+          <tr>
+            <td><b>live-monitor (sports)</b></td>
+            <td>Sports value analyzer overlays</td>
+            <td>Odds API feed + Pinnacle moneyline snapshots + NHL goalie feed</td>
+            <td>15 min / daily</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="assetclasses">Asset-class data coverage</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Asset class</th><th>Primary feeds</th><th>Landing zone</th></tr></thead>
+        <tbody>
+          <tr><td><b>Crypto</b></td><td>Binance (klines/funding), Bybit, CoinGecko, CryptoCompare, KuCoin, CoinGlass (OI/funding)</td><td>Crypto OHLCV/funding tables + <code>/audit</code> JSON</td></tr>
+          <tr><td><b>Equity</b></td><td>Yahoo Finance (yfinance), Alpha Vantage, SEC EDGAR Form 4</td><td><code>ejaguiar1_stocks.daily_prices</code> + insider table</td></tr>
+          <tr><td><b>ETF</b></td><td>Yahoo Finance (same natural-key upsert path)</td><td><code>ejaguiar1_stocks</code></td></tr>
+          <tr><td><b>Forex</b></td><td>Yahoo Finance FX pairs (scanned by Alpha Engine; currently zero-allocated by the forex quality filter)</td><td><code>ejaguiar1_stocks</code></td></tr>
+          <tr><td><b>Commodity</b></td><td>CFTC COT positioning (Socrata) + futures prices via Yahoo</td><td><code>cftc_cot_weekly</code> + <code>daily_prices</code></td></tr>
+          <tr><td><b>Bond</b></td><td>Rates ETFs (TLT/IEF…) via Yahoo Finance</td><td><code>ejaguiar1_stocks</code></td></tr>
+          <tr><td><b>Sports</b></td><td>Odds API, Pinnacle anchor, NHL goalie feed</td><td><code>ejaguiar1_sportsbet</code> + timestamped snapshots</td></tr>
+          <tr><td><b>Prediction markets</b></td><td>Polymarket, Kalshi</td><td>Consensus signal JSON on <code>/audit</code></td></tr>
+          <tr><td><b>Events (Toronto)</b></td><td>30+ scrapers incl. Eventbrite</td><td><code>ejaguiar1_events.events_log</code></td></tr>
+          <tr><td><b>Entertainment</b></td><td>TMDB (movies/TV/trailers/posters)</td><td><code>ejaguiar1_tvmoviestrailers</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ IDEMPOTENCY ============================ -->
+  <section id="idempotency">
+    <h2><span class="n">5.</span>Duplicate prevention &amp; idempotency</h2>
+    <p>Every integration is designed so that <b>running it twice produces the same state as running it once</b>. Re-runs, retries, overlapping crons and manual refreshes are all assumed to happen — and are safe.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-top:0">A. Natural-key upsert (SQL level)</h3>
+        <p style="margin-top:0">Every time-series table carries a <code>UNIQUE</code> constraint on its natural key and writes with <code>INSERT … ON DUPLICATE KEY UPDATE</code>. Re-fetching the same day's bar overwrites it in place — it never duplicates.</p>
+        <ul class="tight">
+          <li><code>daily_prices</code> → <code>UNIQUE (ticker, trade_date)</code></li>
+          <li><code>cftc_cot_weekly</code> → <code>(symbol, report_date)</code></li>
+          <li>Crypto OHLCV → <code>(symbol, timestamp)</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">B. External-id as primary key</h3>
+        <p style="margin-top:0">When an external system has a stable immutable id, we adopt it as the row key, so the same entity can only ever exist once:</p>
+        <ul class="tight">
+          <li><code>events_log.event_id</code> — PRIMARY KEY</li>
+          <li><code>movies.tmdb_id</code> — UNIQUE (with <code>imdb_id</code> as secondary check)</li>
+          <li><code>trailers.youtube_key</code> — UNIQUE</li>
+          <li>Prediction markets — deduped by market id</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">C. Content-hash idempotency keys</h3>
+        <p style="margin-top:0">When no external id exists, we hash a normalized projection of the record. The hash <em>is</em> the primary key:</p>
+        <ul class="tight">
+          <li>Events: deterministic <b>MD5 key</b> over normalized title/date/venue → re-scraping the same event updates the row instead of inserting a twin.</li>
+          <li>Picks: <code>pick_hash VARCHAR(64) UNIQUE</code> — the same pick emitted by two systems on the same day lands once.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">D. Pre-merge fuzzy dedup</h3>
+        <p style="margin-top:0">The event pipeline additionally normalizes titles (case, punctuation, whitespace) and runs a fuzzy duplicate check <em>before</em> merging sources — so "Pride Parade 2026" from Eventbrite and Ticketmaster collapses into one event, whichever source lands first.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">E. Append-only snapshots</h3>
+        <p style="margin-top:0">Odds anchors write one immutable file per UTC timestamp (<code>data/pinnacle_snapshots/&lt;UTC&gt;.json</code>). Nothing is overwritten, so freshness checks can trust file age — and no two runs can collide on the same artifact.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">F. Workflow-level serialization</h3>
+        <p style="margin-top:0">GitHub Actions <b>concurrency groups</b> (<code>fte-ftp-deploy</code>, <code>dashboard-publish</code>) queue runs instead of cancelling them, so two overlapping pipelines can never publish interleaved state. Run ledgers (<code>event_pulls</code>, <code>at_aggregation_runs</code> via <code>INSERT IGNORE</code>) record found/added/updated counts per run for auditability.</p>
+      </div>
+    </div>
+
+    <h3>Deep dive — how a movie or TV show can never be added twice</h3>
+    <div class="callout">
+      <p style="margin-top:0"><b>1. The natural key is TMDB's own immutable id.</b> The <code>movies</code> table declares <code>tmdb_id INT UNIQUE</code>. The same id can physically never exist on two rows, no matter which path inserted it.</p>
+      <p><b>2. Every ingest path checks before inserting.</b> Before an INSERT, the fetch code does <code>SELECT id, title FROM movies WHERE tmdb_id = ?</code> and, secondarily, by <code>imdb_id</code> (so a title that changed its TMDB entry still resolves to the existing row). If found, it <em>reuses</em> the existing <code>movie_id</code> and only adds missing trailers/thumbnails.</p>
+      <p style="margin-bottom:0"><b>3. Trailers are deduped too.</b> <code>trailers.youtube_key</code> is UNIQUE — if TMDB returns the same YouTube trailer for the trending call, the bulk call, <em>and</em> a manual admin fetch, the row is written once.</p>
+    </div>
+    <p>The three scheduled TMDB ingestions (MOVIESHOWS2 daily 06:00 UTC, MOVIESHOWS3 daily 07:00 UTC, plus the 6-hourly Top-100 refresh) and the manual admin fetch buttons all converge on that same natural key — which is why the libraries can be re-seeded from scratch without producing duplicates. User-generated rows are equally guarded: watchlists and likes carry <code>UNIQUE (user_id, tmdb_id)</code> composite keys.</p>
+    <p>The events pipeline follows the same philosophy with a content hash (no global event id exists across Eventbrite/Ticketmaster/Meetup), and the price tables with a composite natural key — same design principle, adapted to what each source makes available.</p>
+  </section>
+
+  <!-- ============================ REFRESH BUTTONS ============================ -->
+  <section id="refresh">
+    <h2><span class="n">6.</span>User-triggered refresh controls</h2>
+    <p>Interactive buttons let anyone pull fresh data from the underlying databases/pipelines. All of them are <b>idempotent by construction</b> — hammering the button a hundred times is equivalent to pressing it once.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Control</th><th>Page</th><th>What it does</th><th>Backend path</th><th>Cost control</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>↻ Reload Page</b></td>
+            <td><code>/audit</code></td>
+            <td>Cache-busted reload that picks up the latest generated JSON</td>
+            <td>Static files regenerated by the hourly pipeline — read-only fetch, no compute</td>
+            <td>Free; purely a client reload</td>
+          </tr>
+          <tr>
+            <td><b>⚡ Refresh Picks</b></td>
+            <td><code>/audit</code></td>
+            <td>Runs the momentum scalp scanner + tracked-picks generator (Binance top-gainer scan → strategy evaluation)</td>
+            <td>GitHub API <code>workflow_dispatch</code> → <code>momentum-scanner.yml</code></td>
+            <td>~2–3 min run; queued, never duplicated, token-gated</td>
+          </tr>
+          <tr>
+            <td><b>Full Refresh</b></td>
+            <td><code>/audit</code></td>
+            <td>Regenerates <em>all</em> dashboard data from 30+ sources</td>
+            <td>GitHub API <code>workflow_dispatch</code> → <code>audit-dashboard.yml</code></td>
+            <td>~3–5 min; shared concurrency group queues it behind the scheduled run; graceful no-token fallback (page just reloads)</td>
+          </tr>
+          <tr>
+            <td><b>Refresh Regime</b> (banner)</td>
+            <td><code>/audit</code></td>
+            <td>Re-fetches regime flip detector + HMM regime + Fear &amp; Greed and recalculates in place</td>
+            <td>Client-side fetches of published JSON + public REST</td>
+            <td>Free; no server compute</td>
+          </tr>
+          <tr>
+            <td><b>Admin fetch buttons</b> (fetch year, add single title, batch search)</td>
+            <td><code>/MOVIESHOWS2/</code>, <code>/MOVIESHOWS3/</code> admin</td>
+            <td>On-demand TMDB pull for a specific year/title</td>
+            <td>Key-gated PHP endpoints (<code>SYNC_KEY</code> required; unauthorized requests rejected before any DB write)</td>
+            <td>Same <code>tmdb_id</code> upsert — re-fetching an existing title is a no-op</td>
+          </tr>
+          <tr>
+            <td><b>Live price auto-refresh</b></td>
+            <td><code>/audit</code></td>
+            <td>120-second countdown ticker updating active-pick PnL</td>
+            <td>Browser → Binance (multi-host failover) → Bybit → CoinGecko → CryptoCompare → TwelveData</td>
+            <td>Client-only; hosts fail over automatically on outage</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">Backend-triggering buttons (Refresh Picks / Full Refresh) go through the GitHub API with a scoped token and land in the same concurrency group as the cron runs — a click can queue a run, but can never cause two conflicting writes at once. Read-only buttons never touch a database at all.</div>
+  </section>
+
+  <!-- ============================ SECURITY ============================ -->
+  <section id="security">
+    <h2><span class="n">7.</span>Secrets &amp; security posture</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-top:0">How credentials are handled</h3>
+        <ul class="tight">
+          <li><b>GitHub Actions secrets</b> hold FTP credentials, the TMDB sync gate, PATs and provider API keys. Workflow logs are sanitized so tokens never appear in output.</li>
+          <li><b>Server environment variables</b> hold DB and provider credentials for PHP endpoints — code reads <code>getenv()</code>, never literals.</li>
+          <li><b>Client-side keys are public-tier by design</b> (read-only market data: Binance public endpoints, TwelveData demo tier). They carry no account authority and cannot place orders or read private data.</li>
+          <li><b>Inbound HTTP endpoints are key-gated</b> — unauthenticated refresh requests are rejected before any DB write.</li>
+          <li><b>This page publishes no secrets</b> — only service names, protocol types, env-var <em>names</em> and cadences.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Hardening status</h3>
+        <ul class="tight">
+          <li>✅ Least-privilege PATs; workflow <code>permissions:</code> blocks scoped per workflow (e.g. <code>contents: write</code> only where data commits are needed).</li>
+          <li>✅ No <code>pull_request_target</code> code execution on fork PRs.</li>
+          <li>✅ TLS in transit for all REST calls; FTPS for hosting deploys.</li>
+          <li>⚠️ <b>Open remediation items:</b> a small number of legacy files still compare against a literal value instead of an environment variable. These are tracked for migration to env-only comparison and rotation; the specific files are deliberately not enumerated on this public page.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ RELIABILITY ============================ -->
+  <section id="reliability">
+    <h2><span class="n">8.</span>Freshness &amp; reliability monitoring</h2>
+    <ul class="tight">
+      <li><b>DB freshness guardian</b> (<code>db-freshness-guardian.yml</code>, hourly) — fails the build if live picks, resolver output or backtest tables go stale.</li>
+      <li><b>Asset-class freshness watchdog</b> — flags any asset class whose last data point falls outside its expected cadence.</li>
+      <li><b>Actions failure guardian</b> — surfaces workflows with no subsequent successful run, so a silently-broken integration can't stay hidden.</li>
+      <li><b>Cross-DB consistency audit</b> (daily) — strategy keys must agree across the 9 databases.</li>
+      <li><b>Backup verification</b> — periodic restore-check of database backups, reported by email.</li>
+      <li><b>Per-run ledgers</b> — <code>event_pulls</code> and aggregation-run tables record found/added/updated counts per run, making every integration's behavior auditable after the fact.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p><b>Maintenance:</b> when you add or change an integration, update this page in the same PR (<code>TORONTOEVENTS_ANTIGRAVITY/integrations/index.html</code>) and add the new pipeline dependency to the path registry in <code>AGENTS.md</code>. Facts on this page are verified against the workflow definitions and database schemas in the repository.</p>
+    <p>findtorontoevents.ca · Integrations &amp; Automation Portfolio · Last verified October 13, 2026</p>
+  </footer>
+
+</div>
+</body>
+</html>
