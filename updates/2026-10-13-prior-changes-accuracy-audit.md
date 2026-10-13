@@ -237,10 +237,11 @@ This is the row-count check doing its job, not a weakened assertion.
 ## Deployment status (final)
 
 - **Deployed** over FTP after each round, then fetched back and md5-compared:
-  `index.html` **407796**, `js-interview.html` **20085**, `js-essentials.html` **43055**
+  `index.html` **408162**, `js-interview.html` **20085**, `js-essentials.html` **43055**
   — all three live == local == HEAD. Server-side `SIZE` is asserted on every upload.
-  (`index.html` went 406378 → 406996 → 407796 and `js-essentials.html` 42907 → 43055
-  across rounds 1–3; `js-interview.html` has been 20085 since round 1.) Fetch with a
+  (`index.html` went 406378 → 406996 → 407796 → 408155 → 408162 and
+  `js-essentials.html` 42907 → 43055 across rounds 1–4; `js-interview.html` has been
+  20085 since round 1.) Fetch with a
   browser UA; the site's WAF 412s the default `urllib`/curl UA.
 - **Pushed** to `origin/fix/js-reference-accuracy-audit` (upstream set, remote SHA ==
   local). Contents: `f146acbed4` (the three fixes + this doc), `60e5667c1a` (this
@@ -263,3 +264,46 @@ copying the three pages to a temp root, deleting one ES6 star, rewording the `gs
 exception and deleting one §10 row makes the static checker exit 1 with **67/71 and
 the 4 expected FAILs**, and the Playwright checker exit 1 with **14/16 and 2 expected
 FAILs**. Against the real project both exit **0** (71/71, 16/16).
+
+## Round 4 — mobile horizontal overflow (390 px), plus three tool bugs of mine
+
+**Symptom:** at a 390 px phone viewport the page measured `scrollWidth 396` — 6 px of
+horizontal scroll — the same class of clipping problem as Round 2's scrollbars, in the
+other axis.
+
+**Not caused by the Round-3 glosses:** `HEAD~1` (pre-gloss) and the working tree both
+measured the identical 396/390, so the overflow pre-dated that work.
+
+**Offender (one):** a diagnostic that ignores children inside scrollable containers
+found exactly one element — an inline `<code>` holding
+`glide.invalid_query.returns_no_rows=true`, a 41-char unbreakable token wider than the
+viewport. Root cause: the stylesheet had **no base `code` rule at all**, so no wrap
+applied. Added `code { overflow-wrap: anywhere; }` — no effect inside `pre` blocks,
+where `white-space: pre` governs. After the fix the token wraps (width 297, right edge
+340 ≤ 390) and the page is exactly viewport-width.
+
+**Verified:** the overflow checker passes **6/6** at 390/414/768 px against `file://`
+*and* the live URL, with zero uncontained offenders.
+
+### Three of my own tool bugs found while verifying this (the page was fine)
+
+1. **Static checker masked `<pre>`/`<code>` but not raw-text `<style>`/`<script>`.** A
+   `<pre>` mentioned inside a CSS comment swallowed real markup and produced false
+   `<div>` −3 / `<section>` −1 balance failures. Fixed by stripping the `<style>`
+   and `<script>` blocks *before* `<pre>`/`<code>` — order matters, since the stray
+   `<pre>` inside
+   the stylesheet would otherwise consume the rest of the CSS. Result: 71/71.
+2. **The syntax extractor hit the same trap:** the CSS comment's literal `<pre>`
+   created a phantom 105th block that failed to parse. Fixed twice over — the comment
+   now says "a pre block" (no angle brackets), and the extractor blanks `<style>`
+   contents before matching, length-preserving so reported line numbers stay correct.
+3. **The syntax reporter crashed** (`FAIL undefined … h.code.trim()`) because
+   `classify()` pushed the hard-error object into `buckets.hard` *and* the caller
+   pushed the loc string too. Fixed the double-push and guarded the report loop.
+
+### Final state after Round 4 — every gate exit 0
+
+syntax **104 blocks / 0 hard errors** (+ `quiz-data.js` parses) · static **71/71** ·
+headless Playwright **19/19** · scroll **10/10** (`file://`) and **10/10** (live) ·
+overflow **6/6** (live) · live content **23/23** · FTP `SIZE` local == remote
+**408162**.
