@@ -80,6 +80,7 @@
     <a href="#assetclasses">Asset classes</a>
     <a href="#idempotency">Idempotency</a>
     <a href="#refresh">Refresh buttons</a>
+    <a href="#snow">ServiceNow playbook</a>
     <a href="#security">Secrets &amp; security</a>
     <a href="#reliability">Reliability</a>
   </nav>
@@ -535,6 +536,73 @@
       </table>
     </div>
     <div class="callout">Backend-triggering buttons (Refresh Picks / Full Refresh) go through the GitHub API with a scoped token and land in the same concurrency group as the cron runs — a click can queue a run, but can never cause two conflicting writes at once. Read-only buttons never touch a database at all.</div>
+  </section>
+
+  <!-- ============================ SERVICENOW ============================ -->
+  <section id="snow">
+    <h2><span class="n">9.</span>ServiceNow integration playbook</h2>
+    <p>The platform patterns below follow ServiceNow's published guidance (official product docs, cloning/upgrade KB articles and community playbooks). They apply to any ServiceNow estate we integrate with — including this platform's own tooling pages under <code>/servicenow/</code>.</p>
+
+    <h3>9.1 Anatomy of any integration — the checklist every connector must answer</h3>
+    <div class="grid2">
+      <div class="card"><h3 style="margin-top:0">Identity &amp; ownership</h3><ul class="tight"><li>Named owner + technical contact per integration</li><li>Source of truth declared <em>per field</em> (not just per system)</li><li>Environment map: dev → test → prod, and how config travels (update sets / source control)</li></ul></div>
+      <div class="card"><h3 style="margin-top:0">Protocol &amp; auth</h3><ul class="tight"><li>Transport: REST / SOAP / SQL / file / event bus — prefer REST+JSON</li><li>Auth: OAuth 2.0 client credentials first; mutual TLS or key vault second; no shared passwords</li><li>Credentials stored in the credential store / secrets manager, never in scripts</li></ul></div>
+      <div class="card"><h3 style="margin-top:0">Data contract &amp; idempotency</h3><ul class="tight"><li>Stable external key per record (sys_id mapping table or natural key)</li><li>Upsert semantics — reruns must not duplicate (same principle as this site's own pipelines)</li><li>Field mapping + transform versioned with the integration, not in a wiki</li></ul></div>
+      <div class="card"><h3 style="margin-top:0">Reliability &amp; observability</h3><ul class="tight"><li>Cadence and allowed window (see freezes below); retry/backoff policy</li><li>Error queue with replay (integration hub execution log / ECC queue / MID logs)</li><li>Freshness alerting — a dead integration must page someone, not fail silently</li><li>Audit trail of sends/receives and a documented rollback path</li></ul></div>
+    </div>
+
+    <h3>9.2 Go-to integration methods on the Now Platform</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Method</th><th>What it is</th><th>Use when</th><th>Watch-outs</th></tr></thead>
+        <tbody>
+          <tr><td><b>IntegrationHub spoke / Flow Designer</b></td><td>Low-code actions &amp; sub-flows (Jira Spoke, Slack, etc.) triggered by flows/events</td><td>Event-driven, record-level automation both directions</td><td>Requires IntegrationHub subscription; transaction consumption scales fast — keep heavy loops out of flows</td></tr>
+          <tr><td><b>REST/SOAP via scripted calls or EIB</b></td><td>Native REST messages / Enterprise Interface Builder for custom APIs</td><td>No spoke exists; you own the API contract</td><td>You own pagination, throttling, replay; MID Server needed for on-prem targets</td></tr>
+          <tr><td><b>Service Graph Connectors + MID Server</b></td><td>Purpose-built CMDB ingestion (SCCM, CrowdStrike, Intune…) using Robust Transform Engine + IRE</td><td>CMDB / discovery-class data from enterprise systems</td><td>Don't hand-roll REST into <code>cmdb_ci_*</code> — you'd bypass IRE and create duplicates</td></tr>
+          <tr><td><b>Import Sets + Transform Maps</b></td><td>Bulk load any table with coalesce-based matching</td><td>One-off or scheduled bulk data loads</td><td>Coalesce is your idempotency key — design it first</td></tr>
+          <tr><td><b>Update sets / source control</b></td><td>Configuration transport between instances (not data)</td><td>Moving customizations dev → test → prod</td><td>Never develop directly in prod; clones overwrite sub-prod config</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>9.3 Worked examples</h3>
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-top:0">Jira ↔ ServiceNow</h3>
+        <p style="margin-top:0"><b>Recommended: the Jira Spoke (IntegrationHub) + Flow Designer</b> — manage issues, users, stories, sprints and webhooks from flows, in either direction. Use OAuth, declare the source-of-truth per field (e.g. Jira owns sprint state, ServiceNow owns incident state), and reconcile status codes through a lookup — never dual-write the same field from both sides. No IntegrationHub subscription? Fall back to a scripted REST integration (you own retries) or a Store connector. At high volumes, prefer scheduled batch flows over per-record triggers to control transaction consumption.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">SCCM ↔ ServiceNow (CMDB)</h3>
+        <p style="margin-top:0"><b>Recommended: the Service Graph Connector for Microsoft SCCM through a MID Server</b> — per official docs it maps and inserts SCCM data using the <b>Robust Transform Engine (RTE) and the Identification &amp; Reconciliation Engine (IRE)</b>. Raw REST straight into <code>cmdb_ci_computer</code> is the classic anti-pattern: it skips identification rules and floods the CMDB with duplicate CIs.</p>
+      </div>
+    </div>
+
+    <h3>9.4 CMDB integrations &amp; the IRE engine</h3>
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-top:0">How IRE runs (and how to make it run)</h3>
+        <p style="margin-top:0">IRE fires <b>automatically</b> whenever a payload arrives through an IRE-aware pipeline: Service Graph Connectors, Discovery, IntegrationHub CMDB actions, or a direct call to the <b>Identification &amp; Reconciliation API</b> from a script/flow. Identification matches the CI (rules + coalesce attributes), reconciliation decides which data source may write each attribute (authoritative source ranking). To exercise it deliberately: run <b>identification simulation</b> on a sample payload before enabling a connector, replay runs from <b>Configuration → Identification Logs</b>, and raise logging with the <code>glide.cmdb.logger.source.identification_engine</code> property when debugging.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">How to <em>stop</em> IRE (rare — know the levers)</h3>
+        <p style="margin-top:0">There is no supported platform-wide on/off switch; opting out means <b>not routing data through IRE-aware pipelines</b>. <b>Programmatic:</b> write with plain <code>GlideRecord</code> (ORM writes to CI tables bypass IRE entirely), or land data via a transform map with coalesce fields into a staging table that does <em>not</em> extend <code>cmdb</code>, then promote it later. <b>Non-programmatic:</b> keep the payload off the CMDB class hierarchy (a non-CI table inherits no identification rules), and use the IRE properties as behavioral kill-switches — <code>glide.class.upgrade.enabled</code> / <code>glide.class.downgrade.enabled</code> / <code>glide.class.switch.enabled</code> (block reclassification, IRE raises a task instead), <code>glide.identification_engine.skip_duplicates</code> (error instead of auto-merge), <code>glide.required.attribute.enabled</code>. Bypassing IRE trades duplicate-safety for speed — never do it on the production CMDB.</p>
+      </div>
+    </div>
+
+    <h3>9.5 Instance-to-instance, cloning, upgrades &amp; change freezes</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Topic</th><th>Playbook guidance</th></tr></thead>
+        <tbody>
+          <tr><td><b>Instance-to-instance</b></td><td>Configuration travels via <b>update sets</b> (dev → test → prod) or source control; <b>data</b> travels only via cloning — never copy prod data into dev by hand. Sub-prods track the same family release as prod.</td></tr>
+          <tr><td><b>Clone protocol</b></td><td>Use the <b>Clone Admin Console</b> to refresh sub-prods <em>from</em> prod. Before cloning, define <b>data preservers</b> (users, credentials, MID registration, integration endpoints, SMTP) or those configs are lost; after cloning, re-point integration endpoints, re-register MID Servers, and run post-clone checks. Clones overwrite sub-prod — commit or export in-progress config first.</td></tr>
+          <tr><td><b>Clone frequency</b></td><td>No universal official number; the accepted cadence is <b>on-demand for dev</b> (fresh data whenever needed) and <b>at least monthly for test/UAT</b>, always <b>after each family upgrade</b> and <b>before a major test cycle</b>. The guiding rule: test on data that resembles production.</td></tr>
+          <tr><td><b>Family upgrade frequency</b></td><td>ServiceNow ships <b>two family releases per year</b> (recent line: Xanadu → Yokohama → Zenith). Sub-prod instances are upgraded <b>before</b> prod, giving a regression window — use it to re-test every integration and custom script, and to re-run CMDB/IRE validation after upgrades.</td></tr>
+          <tr><td><b>Change freezes</b></td><td>Freeze non-emergency changes on each instance from roughly <b>one week before its upgrade until post-upgrade validation passes</b>; the prod freeze spans the upgrade weekend. During a freeze: no update-set pushes, no integration deployments, no connector rule changes — emergency fixes only, with rollback tested.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">Sources: ServiceNow product documentation (IntegrationHub/Jira Spoke, Service Graph Connector for Microsoft SCCM, Identification &amp; Reconciliation properties), the ServiceNow support cloning KB, and established community upgrade playbooks. Specific numbers like the monthly test refresh are prevailing practice, not a ServiceNow-mandated SLA — confirm against your own instance schedule.</div>
   </section>
 
   <!-- ============================ SECURITY ============================ -->
