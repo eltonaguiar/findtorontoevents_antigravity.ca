@@ -569,6 +569,7 @@
         <a href="/servicenow/CIS-CSM/index.html">CIS‑CSM Study Briefing</a>
         <a href="/servicenow/CIS-VR/index.html">CIS‑VR Study Briefing</a>
         <a href="/servicenow/javascript/quiz.html">JavaScript Quiz</a>
+        <a href="/servicenow/javascript/js-essentials.html">Essentials</a>
         <a href="/servicenow/javascript/js-interview.html">Interview JS</a>
       </span>
     </nav>
@@ -729,7 +730,7 @@
               </div>
               <div class="prereq">
                 <h3>If you are new to JavaScript</h3>
-                <p>Cover values and types, variables, conditions, loops, functions, arrays and objects, scope, and how to read a stack trace first. This page assumes those and focuses on the platform.</p>
+                <p>Cover values and types, variables, conditions, loops, functions, arrays and objects, scope, and how to read a stack trace first. This page assumes those and focuses on the platform &mdash; start with the <a href="js-essentials.html">JavaScript Essentials</a> reference (every built-in by data type, plus the Set/Map gotchas), then come back here.</p>
               </div>
             </div>
 
@@ -1304,6 +1305,22 @@ while (agg.next()) {
               </ul>
             </div>
 
+            <div class="notice">
+              <strong>Is <code>var category = ga.getValue('category') || 'None';</code> needed? Yes &mdash; but only for the <em>empty group</em>, and only if you really are grouping by that field.</strong>
+              <ul style="margin:8px 0 0; padding-left:20px">
+                <li><strong>An empty key is its own group, not a missing row.</strong> Groups whose value is blank come back with <code>getValue('category') === ''</code>. The official <code>GlideAggregate</code> example output quoted above shows it &mdash; a <code>CATEGORY:</code> line with nothing after it and <code>COUNT: 4</code> &mdash; and background-script runs print the same thing (<code>… incidents with a category of </code>, <code>Classification =[]</code>). Without the guard the label prints empty.</li>
+                <li><strong>Use <code>||</code>, not <code>??</code>.</strong> <code>getValue()</code> returns a <em>string</em>, and the missing value is the <strong>empty string</strong>. <code>'' ?? 'None'</code> evaluates to <code>''</code> &mdash; <code>??</code> only substitutes for <code>null</code>/<code>undefined</code>, so it does not guard this case at all. <code>'' || 'None'</code> gives <code>'None'</code>.</li>
+                <li><strong>It is safe on a text field.</strong> <code>''</code> is the only falsy string, so a real group value of <code>'0'</code> survives <code>||</code> untouched. Do the guard <em>before</em> any numeric conversion, though: <code>parseInt(ga.getValue('rank'), 10) || 'unknown'</code> would turn a genuine <code>0</code> into <code>'unknown'</code>.</li>
+                <li><strong>Blank on <em>every</em> row means a missing <code>groupBy()</code>, not a missing value.</strong> A field you never grouped by reads back empty for all rows (that is the classic &ldquo;why is my classification always blank?&rdquo; aggregate bug). The <code>||</code> guard then masks the structural mistake instead of surfacing it &mdash; if every iteration prints <code>None</code>, check the <code>groupBy()</code> calls first.</li>
+                <li><strong>Or drop the group instead of labelling it.</strong> <code>ga.addQuery('category', '!=', '')</code> excludes blank keys, so no empty group row is produced and the guard becomes unnecessary. The trade-off: those records leave the rollup entirely rather than being counted under <code>None</code>.</li>
+              </ul>
+              <p style="margin:8px 0 0">Equivalent forms &mdash; pick one:</p>
+              <pre style="margin:8px 0 0"><code>var category = ga.getValue('category') || 'None';        // compact: catches ''
+var category = ga.getValue('category');
+if (category === '') category = 'None';                   // explicit: same result
+if (category) gs.info('P{0} / {1}', priority, category);  // or branch, as the loop above does</code></pre>
+            </div>
+
             <h3 id="agg-single-row">One overall value: filter, don't group</h3>
             <p>Grouping is only needed when you want the aggregate <em>per combination</em>. For a single overall figure — the average (or sum) of a field across one slice of the table — filter first and add the aggregates, with <strong>no <code>groupBy()</code> at all</strong>.</p>
             <div class="code-card">
@@ -1508,7 +1525,7 @@ gs.error('...')</code></pre></div>
 
             <div class="notice">
               <strong>Two different placeholder syntaxes &mdash; don't mix them up:</strong>
-              <p style="margin:8px 0 0">ServiceNow's <code>gs.*</code> logging methods do their <em>own</em> substitution. <code>gs.info('msg {0}', arg)</code> replaces <code>{0}</code> with the next argument &mdash; that is a ServiceNow API convention, not JavaScript.</p>
+              <p style="margin:8px 0 0">ServiceNow's <code>gs.info()</code>, <code>gs.warn()</code>, <code>gs.error()</code> and <code>gs.debug()</code> do their <em>own</em> substitution &mdash; each is documented as <code>(String message, Object parm1, Object parm2, Object parm3, Object parm4, Object parm5)</code>, so <code>gs.info('msg {0}', arg)</code> replaces <code>{0}</code> with the next argument. That is a ServiceNow API convention, not JavaScript, and it stops at five parameters (<code>{0}</code>&hellip;<code>{4}</code>); beyond that, concatenate. <code>gs.log()</code> is the exception: its signature is <code>log(String message, String source)</code>, so there the second argument is the log <em>source</em> and a <code>{0}</code> in the message is written out literally.</p>
               <p style="margin:8px 0 0">Template literals are plain JavaScript: <code>${...}</code> evaluates whatever is inside the braces as an expression. So <code>${0}</code> evaluates to the <strong>number 0</strong>, and <code>${1}</code> to the number 1 &mdash; they do <em>not</em> mean "first argument" and "second argument". Writing <code>gs.info(`msg ${0}`, arg)</code> logs "msg 0", silently ignoring <code>arg</code>.</p>
               <p style="margin:8px 0 0">Either interpolate a real variable into a template literal, or use the positional form &mdash; never both at once:</p>
               <pre style="margin:8px 0 0"><code>// Positional feeds — ServiceNow substitutes {0}, {1}
@@ -1921,6 +1938,7 @@ g_form.setValue('u_open_count', count);</code></pre>
           <section id="es6">
             <h2>12. ES6+ in ServiceNow <span class="section-chip">Modern</span></h2>
             <p>Modern JavaScript syntax on the ServiceNow server is controlled by the <strong>JavaScript mode</strong> configured for an application or an individual script &mdash; <em>not</em> simply by "scoped vs. global". Knowing which mode applies is the first thing to check before you rely on any modern syntax.</p>
+            <p class="muted">For the language itself &mdash; arrays, destructuring, spread, Map/Set and their gotchas &mdash; see the <a href="js-essentials.html">JavaScript Essentials</a> companion reference; this section covers only what the ServiceNow platform adds on top (mode gating and the platform-specific traps).</p>
 
             <h3>The three JavaScript modes</h3>
             <div class="table-wrap">

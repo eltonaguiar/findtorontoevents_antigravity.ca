@@ -35,6 +35,13 @@
     .nav a { color: var(--accent-2); text-decoration: none; }
     .nav a:hover { color: var(--accent); text-decoration: underline; }
 
+    /* ES6+ version marker — purple star, deliberately distinct from the page's
+       green accent, blue accent-2, amber warning and red danger colours. */
+    .es6-star { color:#c084fc; font-weight:700; font-size:.8em; vertical-align:super;
+      cursor:help; margin-left:1px; text-shadow:0 0 8px rgba(192,132,252,.55); }
+    .es6-legend { background:rgba(192,132,252,.07); border-color:rgba(192,132,252,.35); }
+    .es6-legend .es6-star { vertical-align:baseline; font-size:1em; }
+
     body::before { content:''; position: fixed; inset: -40%; z-index: -2;
       background:
         radial-gradient(38% 42% at 18% 22%, rgba(98,245,199,0.16), transparent 70%),
@@ -108,23 +115,28 @@
     <p class="lede">The plain-JS building blocks behind most LeetCode medium problems — the string methods you actually reach for, when to pick <code>Set</code> / <code>Map</code> / a plain object, and the frequency-count idiom. Every claim on this page was executed in Node before it was written down.</p>
     <p><a class="btn" href="quiz.html">Practice these in the quiz &rarr;</a></p>
 
+    <div class="notice es6-legend">
+      <span class="es6-star" title="ES2015 or newer">✳</span>
+      <strong>Version marker.</strong> The purple star marks a feature that requires <strong>ES2015 (ES6) or newer</strong> — hover it for the exact version. Every starred feature runs in modern browsers and in Node. <strong>On the ServiceNow server the deciding factor is the script's JavaScript mode, not the feature:</strong> <a href="index.html#es6">ES12 mode</a> (ECMAScript 2021, the default for new scripts) covers the starred <em>syntax</em>, while <strong>ES5 Standards and Compatibility modes reject ES6+ outright</strong> — and <code>at()</code> is ES2022, newer than ES12, so check the platform's <a href="index.html#es6">feature-support matrix</a> for individual built-ins before copying a snippet into a server script. Code samples additionally assume <code>const</code>/<code>let</code>, <code>for...of</code>, arrows and spread (ES2015) and <code>??</code> (ES2020). Unstarred rows are plain ES5.
+    </div>
+
     <h2 id="strings">1. String building blocks</h2>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Need</th><th>Use</th><th>Gotcha</th></tr></thead>
         <tbody>
-          <tr><td>Last character</td><td><code>s.at(-1)</code></td><td>Accepts negative indices (ES2022). Out of range it returns <code>undefined</code> — exactly like <code>s[s.length]</code>.</td></tr>
+          <tr><td>Last character</td><td><code>s.at(-1)</code><span class="es6-star" title="ES2022">✳</span></td><td>Accepts negative indices (ES2022). Out of range it returns <code>undefined</code> — exactly like <code>s[s.length]</code>.</td></tr>
           <tr><td>i-th character</td><td><code>s[i]</code></td><td>Returns <code>undefined</code> out of range, never throws. That is usually what you want in a loop guard.</td></tr>
           <tr><td>Length</td><td><code>s.length</code></td><td>Counts UTF-16 <em>code units</em>, so an emoji is 2.</td></tr>
           <tr><td>Substring</td><td><code>s.slice(a, b)</code></td><td><strong>End is exclusive</strong>; non-mutating; handles negatives. <code>substring()</code> is the older twin that swaps args and clamps negatives to 0.</td></tr>
-          <tr><td>To character array</td><td><code>[...s]</code></td><td>Iterates by <strong>code point</strong>. <code>s.split('')</code> iterates code units and <em>breaks</em> emoji into lone surrogates.</td></tr>
-          <tr><td>Contains</td><td><code>s.includes(t)</code></td><td>Boolean. <code>indexOf(t) !== -1</code> is the older form.</td></tr>
-          <tr><td>Starts / ends with</td><td><code>s.startsWith(t)</code>, <code>s.endsWith(t)</code></td><td>Both boolean.</td></tr>
-          <tr><td>Replace all</td><td><code>s.replaceAll(a, b)</code></td><td><code>replace(a, b)</code> with a <em>string</em> stops after the first match — <code>'aaa'.replace('a','b')</code> is <code>'baa'</code>.</td></tr>
-          <tr><td>Pad an id</td><td><code>s.padStart(5, '0')</code></td><td><code>padEnd()</code> for the right. Non-mutating.</td></tr>
-          <tr><td>Repeat</td><td><code>s.repeat(n)</code></td><td>Useful for separators: <code>','-'.repeat(n-1)</code>.</td></tr>
+          <tr><td>To character array</td><td><code>[...s]</code><span class="es6-star" title="spread — ES2015">✳</span></td><td>Iterates by <strong>code point</strong>. <code>s.split('')</code> iterates code units and <em>breaks</em> emoji into lone surrogates.</td></tr>
+          <tr><td>Contains</td><td><code>s.includes(t)</code><span class="es6-star" title="ES2015">✳</span></td><td>Boolean. <code>indexOf(t) !== -1</code> is the older form.</td></tr>
+          <tr><td>Starts / ends with</td><td><code>s.startsWith(t)</code>, <code>s.endsWith(t)</code><span class="es6-star" title="both ES2015">✳</span></td><td>Both boolean.</td></tr>
+          <tr><td>Replace all</td><td><code>s.replaceAll(a, b)</code><span class="es6-star" title="ES2021">✳</span></td><td><code>replace(a, b)</code> with a <em>string</em> stops after the first match — <code>'aaa'.replace('a','b')</code> is <code>'baa'</code>.</td></tr>
+          <tr><td>Pad an id</td><td><code>s.padStart(5, '0')</code><span class="es6-star" title="ES2017">✳</span></td><td><code>padEnd()</code> for the right. Non-mutating.</td></tr>
+          <tr><td>Repeat</td><td><code>s.repeat(n)</code><span class="es6-star" title="ES2015">✳</span></td><td>Useful for separators: <code>','-'.repeat(n-1)</code>.</td></tr>
           <tr><td>Count matches</td><td><code>(s.match(/c/g) || []).length</code></td><td><code>match(/g/)</code> returns <code>null</code> when there is no match — hence the <code>|| []</code>.</td></tr>
-          <tr><td>Code point</td><td><code>s.codePointAt(i)</code></td><td>Use with <code>for (const ch of s)</code> so you iterate characters, not code units.</td></tr>
+          <tr><td>Code point</td><td><code>s.codePointAt(i)</code><span class="es6-star" title="ES2016">✳</span></td><td>Use with <code>for (const ch of s)</code> so you iterate characters, not code units.</td></tr>
         </tbody>
       </table>
     </div>
@@ -139,13 +151,13 @@
         <thead><tr><th>Structure</th><th>Reach for it when</th><th>Key API</th><th>Watch out for</th></tr></thead>
         <tbody>
           <tr>
-            <td><strong><code>Set</code></strong></td>
+            <td><strong><code>Set</code></strong><span class="es6-star" title="ES2015">✳</span></td>
             <td>You need <strong>uniqueness</strong> or an <strong>O(1) membership test</strong>. Dedup, "have I seen this?", two-sum complement lookup.</td>
             <td><code>add</code> · <code>has</code> · <code>delete</code> · <code>size</code></td>
             <td>No indexing, no ordering guarantees beyond insertion order. <code>size</code>, not <code>length</code>.</td>
           </tr>
           <tr>
-            <td><strong><code>Map</code></strong></td>
+            <td><strong><code>Map</code></strong><span class="es6-star" title="ES2015">✳</span></td>
             <td>You want a <strong>lookup table with non-string keys</strong>, or you care about insertion order. Frequency counts, graph adjacency, memoisation keyed on a tuple.</td>
             <td><code>get</code> · <code>set</code> · <code>has</code> · <code>size</code> · <code>keys()</code></td>
             <td><code>Object.keys(map)</code> is <code>[]</code> — entries are not own properties. Use <code>[...map.keys()]</code>.</td>
@@ -194,12 +206,12 @@ for (const c of s) {
       <table>
         <thead><tr><th>Related idiom</th><th>Code</th><th>Use it for</th></tr></thead>
         <tbody>
-          <tr><td>Alphabet bucket array</td><td><code>new Array(26).fill(0)</code></td><td>Lowercase-letter problems. <code>fill(0)</code> makes it dense — <code>new Array(26)</code> alone is sparse and <code>map</code>/<code>reduce</code> skip the holes.</td></tr>
+          <tr><td>Alphabet bucket array</td><td><code>new Array(26).fill(0)</code><span class="es6-star" title="Array.fill — ES2015">✳</span></td><td>Lowercase-letter problems. <code>fill(0)</code> makes it dense — <code>new Array(26)</code> alone is sparse and <code>map</code>/<code>reduce</code> skip the holes.</td></tr>
           <tr><td>Index into the bucket</td><td><code>c.charCodeAt(0) - 97</code></td><td><code>'a'</code> &rarr; 0, <code>'b'</code> &rarr; 1 … Use <code>- 65</code> for uppercase.</td></tr>
-          <tr><td>Max in one line</td><td><code>Math.max(...arr)</code></td><td>Neat, but spreading a very large array can blow the call stack — use a running <code>max</code> variable there.</td></tr>
-          <tr><td>Two-sum lookup</td><td><code>seen.has(target - x)</code></td><td>Turns an O(n&sup2;) double loop into one O(n) pass with a <code>Set</code>.</td></tr>
-          <tr><td>Dedup preserving order</td><td><code>[...new Set(arr)]</code></td><td>Set keeps first-seen order.</td></tr>
-          <tr><td>Sort by frequency</td><td><code>[...countMap].sort((a,b) =&gt; b[1] - a[1])</code></td><td>Spreading a <code>Map</code> yields <code>[[k, v], …]</code>, which sorts cleanly.</td></tr>
+          <tr><td>Max in one line</td><td><code>Math.max(...arr)</code><span class="es6-star" title="spread — ES2015">✳</span></td><td>Neat, but spreading a very large array can blow the call stack — use a running <code>max</code> variable there.</td></tr>
+          <tr><td>Two-sum lookup</td><td><code>seen.has(target - x)</code><span class="es6-star" title="Set — ES2015">✳</span></td><td>Turns an O(n&sup2;) double loop into one O(n) pass with a <code>Set</code>.</td></tr>
+          <tr><td>Dedup preserving order</td><td><code>[...new Set(arr)]</code><span class="es6-star" title="spread + Set — ES2015">✳</span></td><td>Set keeps first-seen order.</td></tr>
+          <tr><td>Sort by frequency</td><td><code>[...countMap].sort((a,b) =&gt; b[1] - a[1])</code><span class="es6-star" title="spread + arrow — ES2015">✳</span></td><td>Spreading a <code>Map</code> yields <code>[[k, v], …]</code>, which sorts cleanly.</td></tr>
         </tbody>
       </table>
     </div>
@@ -209,13 +221,13 @@ for (const c of s) {
       <table>
         <thead><tr><th>Pattern</th><th>Typical problems</th><th>Building blocks</th></tr></thead>
         <tbody>
-          <tr><td>Frequency map</td><td>Valid Anagram, Top K Frequent Elements, Group Anagrams</td><td>object/Map count + <code>(x || 0) + 1</code></td></tr>
-          <tr><td>Set membership</td><td>Longest Consecutive Sequence, Contains Duplicate, Two Sum</td><td><code>new Set(arr)</code>, <code>set.has()</code></td></tr>
+          <tr><td>Frequency map</td><td>Valid Anagram, Top K Frequent Elements, Group Anagrams</td><td>object/Map<span class="es6-star" title="Map — ES2015">✳</span> count + <code>(x || 0) + 1</code></td></tr>
+          <tr><td>Set membership</td><td>Longest Consecutive Sequence, Contains Duplicate, Two Sum</td><td><code>new Set(arr)</code>, <code>set.has()</code><span class="es6-star" title="Set — ES2015">✳</span></td></tr>
           <tr><td>Two pointers</td><td>Two Sum II, Container With Most Water, Trapping Rain Water</td><td><code>s[i]</code> / <code>arr[l]</code>, sorted input, <code>while (l &lt; r)</code></td></tr>
-          <tr><td>Sliding window</td><td>Longest Substring Without Repeating, Minimum Window Substring</td><td><code>Set</code> or count map + <code>l</code>/<code>r</code> indices, <code>s.slice(l, r)</code></td></tr>
-          <tr><td>Stack</td><td>Valid Parentheses, Daily Temperatures</td><td>Array <code>push</code>/<code>pop</code>, <code>arr.at(-1)</code></td></tr>
-          <tr><td>Prefix sum</td><td>Subarray Sum Equals K, Product of Array Except Self</td><td>running total, <code>new Array(n).fill(0)</code></td></tr>
-          <tr><td>Memoisation</td><td>Climbing Stairs, House Robber, word break</td><td><code>Map</code>/<code>{}</code> cache, or a DP array</td></tr>
+          <tr><td>Sliding window</td><td>Longest Substring Without Repeating, Minimum Window Substring</td><td><code>Set</code><span class="es6-star" title="ES2015">✳</span> or count map + <code>l</code>/<code>r</code> indices, <code>s.slice(l, r)</code></td></tr>
+          <tr><td>Stack</td><td>Valid Parentheses, Daily Temperatures</td><td>Array <code>push</code>/<code>pop</code>, <code>arr.at(-1)</code><span class="es6-star" title="ES2022">✳</span></td></tr>
+          <tr><td>Prefix sum</td><td>Subarray Sum Equals K, Product of Array Except Self</td><td>running total, <code>new Array(n).fill(0)</code><span class="es6-star" title="Array.fill — ES2015">✳</span></td></tr>
+          <tr><td>Memoisation</td><td>Climbing Stairs, House Robber, word break</td><td><code>Map</code><span class="es6-star" title="ES2015">✳</span>/<code>{}</code> cache, or a DP array</td></tr>
         </tbody>
       </table>
     </div>
