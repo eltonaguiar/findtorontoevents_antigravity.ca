@@ -140,10 +140,24 @@ Verified after the edit: 71/71 static+Node checks, tag balance 0 (`div` 506/506,
 `li` 381/381, `h4` 57/57 …), and **16/16 Playwright checks** (zero page errors, the
 new notice renders with the `??`-vs-`||` rule, all anchors resolve).
 
-## Deployment status
+## Deployment status (final)
 
-- `js-essentials.html` — **unmoved** (no edits in this audit), still byte-matches live.
-- `index.html` (403481 local vs 402961 live) and `js-interview.html` (20085 vs 19504)
-  are **fixed locally but not uploaded** — FTP publish awaits an explicit go-ahead, as
-  does the git commit (the tree still carries other sessions' uncommitted work, so the
-  commit must be a clean branch containing only these files).
+- **Deployed** over FTP after the fixes, then fetched back and md5-compared:
+  `index.html` **406378**, `js-interview.html` **20085**, `js-essentials.html` **42907**
+  (untouched by this audit) — all three live == local. Fetch with a browser UA; the
+  site's WAF 412s the default `urllib`/curl UA.
+- **Committed** as `f146acbed4` on a clean branch `fix/js-reference-accuracy-audit`:
+  `index.html`, `js-interview.html`, this doc and
+  `updates/2026-10-12-js-essentials-set-map-gotchas.md` (the doc for the earlier
+  cross-links/markers riding along in those files). Local branch, **not pushed**.
+- `js-essentials.html` remains **uncommitted** — it is the previous session's change
+  and was deliberately left out of a commit that only carries this audit's work.
+
+## Harness note (exit status)
+
+Both checkers now return a **non-zero exit code on failure** (`process.exitCode`),
+so piping their output can no longer hide a red result. Proven by negative control:
+copying the three pages to a temp root, deleting one ES6 star, rewording the `gs.log`
+exception and deleting one §10 row makes the static checker exit 1 with **67/71 and
+the 4 expected FAILs**, and the Playwright checker exit 1 with **14/16 and 2 expected
+FAILs**. Against the real project both exit **0** (71/71, 16/16).
