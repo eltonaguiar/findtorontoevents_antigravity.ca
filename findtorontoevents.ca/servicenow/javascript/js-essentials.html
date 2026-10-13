@@ -406,6 +406,8 @@ async function f(n) {
     return 0;                          // await rethrows, so try/catch works
   }
 }
+// These two use top level `await` — ES2022 modules only (Node .mjs,
+// &lt;script type="module"&gt;). In a classic script that is a SyntaxError.
 const [a, b] = await Promise.all([x(), y()]);   // parallel, all-or-throw
 const r = await Promise.allSettled([x(), y()]); // parallel, never throws</code></pre>
     <div class="notice"><strong>Await is sequential.</strong> Two <code>await</code>s back to back run one after the other — roughly twice as slow as starting both and awaiting both. Use <code>Promise.all</code> for parallel work.</div>

@@ -406,7 +406,7 @@
 
     /* API-CARD CODE BLOCKS — prevent overflow, match code-card behavior */
     .api-card pre {
-      margin: 8px 0 0; padding: 12px 14px; overflow-x: auto; overflow-y: hidden;
+      margin: 8px 0 0; padding: 12px 14px; overflow-x: auto; overflow-y: auto;
       background: var(--code-bg); border-radius: var(--radius-sm);
       font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.82rem; line-height: 1.5; color: #d1d9e6;
@@ -783,7 +783,7 @@
                 <span class="lifecycle-arrow">→</span>
                 <span class="lifecycle-step client">onLoad Client Script</span>
                 <span class="lifecycle-arrow">→</span>
-                <span class="lifecycle-step server">Display BR → g_scratchpad</span>
+                <span class="lifecycle-step server">Display BR (Business Rule) → g_scratchpad</span>
                 <span class="lifecycle-arrow">→</span>
                 <span class="lifecycle-step client">User changes Priority</span>
                 <span class="lifecycle-arrow">→</span>
@@ -974,7 +974,9 @@ while (gr3.next()) gr3.deleteRecord();</code></pre>
                 <span class="filename">AnyMatch.scriptinclude</span>
                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
               </div>
-              <pre><code>// "Does at least one match exist?" — don't count what you won't read
+              <pre><code>// Function body — paste inside a Script Include method. A top-level
+// `return` outside a function is a SyntaxError, so the copy starts here:
+// "Does at least one match exist?" — don't count what you won't read
 var gr = new GlideRecord(tableName);
 if (!gr.isValid()) return false;                       // table guard
 if (!gr.isValidField('short_description')) return false; // field guard
@@ -2129,7 +2131,7 @@ gr.addEncodedQuery(query);</code></pre>
 
               <!-- Example 5: Nullish + Optional Chaining in Real BR -->
               <div class="api-card">
-                <h4>5. Safe Property Access — Avoid NPE on Reference Fields</h4>
+                <h4>5. Safe Property Access — Avoid NPE (NullPointerException) on Reference Fields</h4>
                 <div class="code-toolbar">
                   <span class="context server">Server — Business Rule</span>
                   <button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -2462,7 +2464,7 @@ if (gr2.next()) { gs.info(gr2.number); }</code></pre>
             <ul class="source-list">
               <li><strong>Client scripts can't query the database</strong> (a raw client GlideRecord is unsupported in scoped apps). Use <strong>GlideAjax</strong> to a client-callable Script Include.</li>
               <li><strong>GlideAjax answers arrive as strings.</strong> <code>getXMLAnswer</code> hands the callback a string — <code>parseInt</code>/<code>JSON.parse</code> before use. And <code>getXMLWait()</code> (synchronous) is discouraged and unavailable to scoped apps.</li>
-              <li><strong>There is no <code>window</code> / DOM on the server.</strong> Code written for the browser (<code>document</code>, <code>alert</code>, <code>localStorage</code>) fails server-side; use <code>gs.info()</code>, <code>gs.addInfoMessage()</code>.</li>
+              <li><strong>There is no <code>window</code> / DOM (Document Object Model) on the server.</strong> Code written for the browser (<code>document</code>, <code>alert</code>, <code>localStorage</code>) fails server-side; use <code>gs.info()</code>, <code>gs.addInfoMessage()</code>.</li>
               <li><strong>Server and client are different globals.</strong> <code>g_form</code> exists only on the client; <code>gs</code> and <code>GlideRecord</code> only on the server. Mixing them is the #1 "why is it undefined?" cause.</li>
               <li><strong><code>current.update()</code> inside a <em>before</em> business rule</strong> forces an extra, recursive write. Set fields on <code>current</code> and let the platform save.</li>
               <li><strong>Queries in a loop (N+1)</strong> — and <code>getRowCount()</code> issues a real COUNT(*). Use <strong>GlideAggregate</strong> to count, and pre-resolve instead of querying per row.</li>
@@ -2610,7 +2612,7 @@ gs.info('Open P1 incidents: ' + count);</code></pre>
           <!-- 16. TESTING -->
           <section id="testing-debugging">
             <h2>16. Testing & Debugging Workflow <span class="section-chip">Quality</span></h2>
-            <h3>ATF + Script Debugger + DevTools</h3>
+            <h3>ATF (Automated Test Framework) + Script Debugger + DevTools</h3>
             <div class="checklist">
               <li>Every Business Rule, Client Script, UI Action should have ATF tests</li>
               <li>Use Script Debugger for server-side stepping (requires debugger role)</li>
@@ -2629,7 +2631,7 @@ gs.info('Open P1 incidents: ' + count);</code></pre>
               </div>
               <div class="concept">
                 <h4>Git-backed Apps</h4>
-                <p>Scoped apps linked to GitHub/GitLab. Branching, code review, CI. Prefer over Update Sets for teams.</p>
+                <p>Scoped apps linked to GitHub/GitLab. Branching, code review, CI (continuous integration). Prefer over Update Sets for teams.</p>
               </div>
               <div class="concept">
                 <h4>Promotion Path</h4>
@@ -2854,7 +2856,7 @@ current.priority = 1;
                 <tbody>
                   <tr><td>GlideRecord vars</td><td>table + GR/Rec</td><td>incidentGR</td></tr>
                   <tr><td>Script Includes</td><td>PascalCase</td><td>IncidentPriorityCalculator</td></tr>
-                  <tr><td>Business Rules</td><td>Table — When — Intent</td><td>Incident — before — Set SLA</td></tr>
+                  <tr><td>Business Rules</td><td>Table — When — Intent</td><td>Incident — before — Set SLA (service-level agreement)</td></tr>
                 </tbody>
               </table>
             </div>
@@ -3429,7 +3431,7 @@ while (ga.next()) {
     gs.info(ga.getDisplayValue('category') + ' => ' + ga.getAggregate('COUNT'));
 }</code></pre>
             </div>
-            <p class="muted"><strong>Gotchas from the docs:</strong> on <strong>currency/price fields the aggregate uses the reference-currency value</strong> — convert to the session currency before display. On-premise instances require the DB server time zone to be GMT/UTC. And <code>groupBy()</code> may be called many times to set multiple group fields.</p>
+            <p class="muted"><strong>Gotchas from the docs:</strong> on <strong>currency/price fields the aggregate uses the reference-currency value</strong> — convert to the session currency before display. On-premise instances require the DB server time zone to be GMT (Greenwich Mean Time) / UTC. And <code>groupBy()</code> may be called many times to set multiple group fields.</p>
 
             <h3>g_form (GlideForm) — the client API, and when the docs say <em>don't</em></h3>
             <p>The docs repeatedly steer you away from scripting the form when a UI Policy will do. Precise notes:</p>
@@ -3520,7 +3522,7 @@ while (ga.next()) {
 
 <section id="appendix-admin">
             <h2>Appendix A — Administration &amp; Configuration <span class="section-chip">CSA Core</span></h2>
-            <p>Platform administration is the substrate everything else runs on. This is the breadcrumb map a CSA is expected to navigate without hunting.</p>
+            <p>Platform administration is the substrate everything else runs on. This is the breadcrumb map a CSA (Certified System Administrator) is expected to navigate without hunting.</p>
 
             <h3>Users, groups &amp; roles</h3>
             <div class="table-wrap">
@@ -3678,7 +3680,9 @@ while (ga.next()) {
             <h3>Scripted import (modern pattern)</h3>
             <div class="code-card">
               <div class="code-toolbar"><span class="context server">Server — Script Include / Scheduled Job</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-              <pre><code>// Load a data source into an import-set staging table — all without
+              <pre><code>// Function body — runs inside a Script Include method, or a Scheduled Job's
+// execute(). A top-level `return` outside a function is a SyntaxError.
+// Load a data source into an import-set staging table — all without
 // touching the (deprecated) loadData() helper. Signature:
 //   getImportSetGr(dataSource)   -> sys_import_set record
 //   loadImportSetTable(importSetGr, dataSource)
@@ -3700,7 +3704,7 @@ if (!loaded) {
 gs.info('Import set staged: ' + importSetGr.getValue('number'));</code></pre>
             </div>
 
-            <h3>CMDB &amp; CSDM basics</h3>
+            <h3>CMDB (Configuration Management Database) &amp; CSDM (Common Service Data Model) basics</h3>
             <div class="table-wrap">
               <table class="table-map">
                 <thead><tr><th>Concept</th><th>Table / API</th><th>Note</th></tr></thead>
@@ -3714,7 +3718,7 @@ gs.info('Import set staged: ' + importSetGr.getValue('number'));</code></pre>
             </div>
             <div class="notice"><strong>Gotcha:</strong> importing CIs <em>around</em> the IRE engine (writing straight to <code>cmdb_ci_*</code>) creates duplicates and orphan relationships that are painful to unwind. Route CMDB loads through Identification &amp; Reconciliation.</div>
 
-            <h3>Relational reporting (the JDBC side)</h3>
+            <h3>Relational reporting (the JDBC — Java Database Connectivity — side)</h3>
             <p>Many ServiceNow reporting needs come down to SQL-like aggregation. On-platform you reach for <strong>GlideAggregate</strong> (see Appendix D) or a <strong>Report / Performance Analytics</strong> data source. Off-platform, "reports from data residing in relational databases" usually means a read-only JDBC data source or a REST call into ServiceNow's <strong>Table API</strong> (<code>/api/now/table/&lt;table&gt;</code>) with <code>sysparm_query</code> encoded queries and <code>sysparm_fields</code> projected columns — that is the bridge between a traditional RDBMS mindset and the platform.</p>
                       <div class="kcheck">
               <h3>Knowledge check — Data Services</h3>
@@ -3895,7 +3899,7 @@ if (resp.haveError()) {
 
           <section id="appendix-update-sets">
             <h2>Appendix E — Update Sets: DEV → UAT → PROD <span class="section-chip">Release Path</span></h2>
-            <p>Update sets are how configuration moves between instances. The discipline matters more than the mechanism: one logical change, one update set, one promotion path.</p>
+            <p>Update sets are how configuration moves between instances. The discipline matters more than the mechanism: one logical change, one update set, one promotion path — <strong>DEV</strong> (development) → <strong>UAT</strong> (user acceptance testing) → <strong>PROD</strong> (production).</p>
 
             <h3>The standard promotion path</h3>
             <div class="lifecycle">
@@ -4193,7 +4197,7 @@ if (resp.haveError()) {
               <table class="table-map">
                 <thead><tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr></thead>
                 <tbody>
-                  <tr><td>Portfolio dashboard slow</td><td>Roll-up recomputed on load</td><td>Pre-aggregate via scheduled job / PA indicators; cache the summary</td></tr>
+                  <tr><td>Portfolio dashboard slow</td><td>Roll-up recomputed on load</td><td>Pre-aggregate via scheduled job / PA (Performance Analytics) indicators; cache the summary</td></tr>
                   <tr><td>Project form slow</td><td>Business rules firing per task</td><td>Guard rules with <code>changes()</code>; batch roll-ups</td></tr>
                   <tr><td>Time card submission slow</td><td>Validation over many rows synchronously</td><td>Move heavy validation to async</td></tr>
                   <tr><td>Financials wrong</td><td>Out-of-band edits / broken parent link</td><td>Reconcile via a scheduled integrity report</td></tr>
@@ -4415,7 +4419,7 @@ if (cost &lt; threshold) {
             <ul class="source-list">
               <li><strong>Plain-language release notes.</strong> Lead with the user impact ("the demand form now auto-fills your department"), not the config ("added a UI policy").</li>
               <li><strong>Before/after screenshots.</strong> Non-technical users navigate by sight; a 10-second GIF beats a paragraph.</li>
-              <li><strong>Job aids / quick reference cards.</strong> One page per changed process, kept next to the KB article.</li>
+              <li><strong>Job aids / quick reference cards.</strong> One page per changed process, kept next to the KB (Knowledge Base) article.</li>
               <li><strong>In-app messaging.</strong> Use <em>announcements</em> or a form banner for time-sensitive changes so users don't miss the email.</li>
               <li><strong>Metrics.</strong> Watch adoption (form opens, task completions) and be ready to re-train if it stalls.</li>
             </ul>
@@ -4543,7 +4547,7 @@ if (cost &lt; threshold) {
               </table>
             </div>
 
-            <div class="notice"><strong>Which to pick on a platform team:</strong> you can run <em>both at once</em> — Scrum for roadmap feature delivery (planned epics sliced into sprints) and a Kanban lane for unplanned BAU/ops (incidents, requests, "the instance broke"). Mixing them deliberately beats forcing everything through one.</div>
+            <div class="notice"><strong>Which to pick on a platform team:</strong> you can run <em>both at once</em> — Scrum for roadmap feature delivery (planned epics sliced into sprints) and a Kanban lane for unplanned BAU (business-as-usual) / ops (incidents, requests, "the instance broke"). Mixing them deliberately beats forcing everything through one.</div>
 
             <h3>ServiceNow tooling (breadcrumbs)</h3>
             <ul class="source-list">
@@ -4646,7 +4650,7 @@ if (cost &lt; threshold) {
                 <tbody>
                   <tr><td>Editing out-of-box records directly</td><td>Extend: use dictionary overrides, UI policies, scoped apps — leave base records untouched</td></tr>
                   <tr><td>Custom logic in base <code>sys_*</code> business rules</td><td>Put logic in a scoped app / script include you own</td></tr>
-                  <tr><td>Modifying OOB client scripts</td><td>Add a new client script with a higher <code>order</code>, gated by table condition</td></tr>
+                  <tr><td>Modifying OOB (out-of-the-box) client scripts</td><td>Add a new client script with a higher <code>order</code>, gated by table condition</td></tr>
                   <tr><td>Global scope for everything</td><td>Scoped applications; explicit cross-scope API declarations</td></tr>
                   <tr><td>Hard-coded sys_ids / instance URLs</td><td>Resolve by name/query; use relative instance references</td></tr>
                   <tr><td>Copy-paste between scripts</td><td>One Script Include, called from many places</td></tr>

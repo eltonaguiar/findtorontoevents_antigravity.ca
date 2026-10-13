@@ -170,14 +170,78 @@ Two of my own tool calls failed during this edit and are worth recording: `str_r
 rejected the block twice because I had transcribed `${1}` as `{1}` — the fix was to
 print the region with `repr()` and match the bytes instead of my memory.
 
+## Round 3 — syntax pass, scrollbars, abbreviation glosses
+
+Three requests: *double-check syntax*, *some sections are cut off — add scrollbars*,
+and *the NPE section should spell the abbreviation out, and audit the rest*.
+
+### 1. Syntax — every code block compiled, 0 hard errors
+
+104 JavaScript blocks across the three pages, classified rather than pass/fail'd:
+
+| class | count | meaning |
+|---|---|---|
+| parses as a script | 98 | copy-paste safe |
+| parses as a module only | 1 | `js-essentials.html:398`, top-level `await` (ES2022 ESM) |
+| function-body fragment | 4 | top-level `return` — legal only inside a method |
+| pseudocode | 1 | `index.html:1416`, `{ ... }` placeholders |
+| **hard syntax error** | **0** | |
+
+`quiz-data.js` also passes `node --check`. The two blocks labelled as *files*
+(`AnyMatch.scriptinclude`, the Script Include / Scheduled Job import card) got a
+leading comment saying they are a function body, because `return` outside a function
+is a SyntaxError if someone pastes the card as a whole script. The async block in
+`js-essentials` now says its last two lines are top-level `await` (module context).
+
+### 2. Scrollbars — the real clipping bug
+
+`.api-card pre` had `max-height: 320px` **and `overflow-y: hidden`**: content taller
+than 320 px was cut off with no way to scroll, which is exactly what was reported —
+the `IncidentUtils` example lost ~137 px (about eight lines, including the
+`callerMap.set(callerId, …)` line) and only the Copy button revealed it. Changed to
+`overflow-y: auto`. The other `overflow: hidden` rules on the page (`header.hero`,
+`.code-card`, `.kcheck details`) and the `nav.toc { max-height:40vh; overflow-y:auto }`
+were checked and are not clipping code.
+
+Verified with a dedicated Playwright check, run against `file://` **and against the
+live URL**: no `pre` on any of the three pages is taller than its box without a
+scrollable `overflow-y`, and the reported `callerMap.set(callerId` line is reachable
+— it sits inside the block's viewport once scrolled to (`scrollTop` 6 of max 137).
+**10/10 both times.**
+
+### 3. Abbreviations — bracketed glosses at first use
+
+User flagged `NPE`; a prose-only audit (code blocks stripped) then found the rest.
+15 glosses added to `index.html`:
+
+`NPE (NullPointerException)`, `Display BR (Business Rule)`, `OOB (out-of-the-box)`,
+`BAU (business-as-usual)`, `KB (Knowledge Base)`, `JDBC (Java Database
+Connectivity)`, `GMT (Greenwich Mean Time)`, `SLA (service-level agreement)`,
+`CI (continuous integration)`, `CSA (Certified System Administrator)`, `PA
+(Performance Analytics)`, `DEV (development) → UAT (user acceptance testing) → PROD
+(production)`, `DOM (Document Object Model)`, `CMDB (Configuration Management
+Database) & CSDM (Common Service Data Model)`, `ATF (Automated Test Framework)`.
+Left alone as universally known: API, JSON, REST, HTML, DOM-adjacent terms, SQL, DB.
+CIS-CSM / CIS-VR are course codes, not abbreviations. CAB and ITIL were already
+spelled out adjacent to the acronym.
+
+### 4. A regression I introduced, caught by the checks
+
+The `js-essentials` module note initially contained a literal `<script
+type="module">` inside a `<code>` block. HTML does **not** treat `<pre>` as raw text,
+so that started a real `<script>` element and swallowed the rest of the page — the
+row-count assertion failed (`§10 table has 17 rows, got=7`). Reverted to
+`&lt;script type="module"&gt;`, which renders and copies back as the intended text.
+This is the row-count check doing its job, not a weakened assertion.
+
 ## Deployment status (final)
 
-- **Deployed** over FTP after the fixes, then fetched back and md5-compared:
-  `index.html` **406996**, `js-interview.html` **20085**, `js-essentials.html` **42907**
-  — all three live == local == HEAD. (`index.html` was 406378 for the first publish;
-  it grew to 406996 when the strikethrough + executed-proof block landed in
-  `009fab532f`.) Fetch with a browser UA; the site's WAF 412s the default
-  `urllib`/curl UA.
+- **Deployed** over FTP after each round, then fetched back and md5-compared:
+  `index.html` **407796**, `js-interview.html` **20085**, `js-essentials.html` **43055**
+  — all three live == local == HEAD. Server-side `SIZE` is asserted on every upload.
+  (`index.html` went 406378 → 406996 → 407796 and `js-essentials.html` 42907 → 43055
+  across rounds 1–3; `js-interview.html` has been 20085 since round 1.) Fetch with a
+  browser UA; the site's WAF 412s the default `urllib`/curl UA.
 - **Pushed** to `origin/fix/js-reference-accuracy-audit` (upstream set, remote SHA ==
   local). Contents: `f146acbed4` (the three fixes + this doc), `60e5667c1a` (this
   doc's final status), plus the pre-existing `c1707553a7` guards section the branch was
