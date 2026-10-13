@@ -288,7 +288,7 @@
             <td><span class="tag t-proto">REST webhook</span></td>
             <td>Consensus picks, system health, alerts</td>
             <td>Continuous</td>
-            <td><code>INSERT IGNORE</code> into <code>at_discord_notifications</code> — a pick is announced at most once</td>
+            <td>Per-pick send flag + immutable event ledger — see elaboration below. A <em>symbol</em> is expected to be announced many times; what is deduplicated is the <em>same pick</em> being posted twice</td>
           </tr>
           <tr>
             <td><b>Email (SMTP)</b></td>
@@ -322,6 +322,27 @@
       </table>
     </div>
     <div class="callout">We deliberately run <b>no write-back integrations</b> to third-party marketplaces or listing sites: scrapers are strictly read-only, and outbound traffic is limited to our own hosting, notification channels, and stateless research APIs.</div>
+
+    <h3>How Discord alert deduplication actually works</h3>
+    <p>A recurring symbol in the alerts channel is <b>expected behavior</b> — every new trading setup on the same symbol is a new pick and gets a new alert. Dedup operates on the <em>pick</em>, not the symbol, in three layers, and a separate <b>cooldown gate throttles short-term re-alerts</b> (layer 4):</p>
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-top:0">1. Duplicate-emission skip (upstream)</h3>
+        <p style="margin-top:0">The consensus aggregator re-runs every few minutes. Before recording a pick it checks <code>at_consensus_picks</code> and <b>skips</b> only when an <code>OPEN</code> pick already exists with the same symbol + direction and an entry price within <b>0.5%</b>, emitted in the last <b>24 h</b>. A re-fire at a different price — or after the previous pick closed — is a genuinely new pick and flows through.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">2. At-most-once delivery (the actual send gate)</h3>
+        <p style="margin-top:0">Each pick row in <code>consensus_tracked</code> carries a <code>discord_sent</code> flag. Senders select <b>only</b> <code>discord_sent = 0</code> rows, and after a successful post the row is stamped with the flag, Discord message id and timestamp via a race-safe <code>WHERE discord_sent = 0</code> update. A crashed-run retry or an overlapping pipeline can therefore never double-post <b>the same pick</b> — but the next pick on that symbol posts normally.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">3. Immutable notification ledger (audit trail)</h3>
+        <p style="margin-top:0">Every actual post — <code>PICK_POSTED</code>, <code>TP_HIT</code>, <code>SL_HIT</code>, <code>REVERSAL</code>, <code>POSITION_UPDATE</code> — is appended to <code>at_discord_notifications</code> with the full payload JSON. Its <code>UNIQUE (symbol, direction, event_type, created_at)</code> index (written with <code>INSERT IGNORE</code>) only collapses writes landing in the <b>same second</b>, e.g. a double-log inside one run. History is never deduplicated away: the same symbol accumulates rows over time as it is re-picked and as its TP/SL events resolve.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">4. Short-term cooldown — 30 min per symbol+direction</h3>
+        <p style="margin-top:0">Yes — the FreshPicks quality gate that every Discord sender runs through enforces <b>G1 dedup/throttle</b>: once a pick on <code>symbol + direction</code> is sent, that exact combination <b>cannot re-send for 30 minutes</b>. The cooldown has one deliberate bypass: if the new setup's <em>levels</em> differ (entry, TP or SL changed), it is treated as a genuinely new setup and passes immediately — so only stale re-fires of identical levels are suppressed, not real new signals. Signals also <b>expire after 15 minutes</b> (G6), so a short-term pick must fire inside its window or is dropped. Cooldown state is persisted in a committed gate-state JSON (<code>data/freshpicks_gate_state.json</code>), so it survives across stateless CI runners, and every rejection is auditable in <code>at_discord_gate_log</code> as <code>G1_DEDUP</code>. A global rate cap (max picks per 60-min rolling window, G7) also exists but is <b>currently uncapped at 999 during a testing sprint — was 8</b>.</p>
+      </div>
+    </div>
   </section>
 
   <!-- ============================ PAGE MAP ============================ -->

@@ -88,6 +88,20 @@ remediation bullet was removed before the 2026-10-13 deploy).
   (`tools/refresh_cftc_cot.py`, `tools/refresh_insider_trades.py`), dashboard
   refresh buttons (`audit_dashboard/template.html`).
 
+## Changelog
+
+- 2026-10-13 (later): corrected the Discord outbound row — "announced at most
+  once" was misleading (a symbol recurs on every new setup). Replaced with the
+  real 3-layer design (`consensus_tracked.discord_sent` per-pick send flag,
+  24h/0.5% OPEN-pick skip, `at_discord_notifications` same-second ledger) plus
+  a new layer-4 card documenting the FreshPicks G1 short-term cooldown
+  (30-min per symbol+direction, levels-change bypass, 15-min signal expiry,
+  G7 rate cap currently uncapped at 999 during a testing sprint, state in
+  `data/freshpicks_gate_state.json`, rejections audited in
+  `at_discord_gate_log`). Verified against
+  `cross_aggregation/freshpicks_gate.py` + `audit_trail/mysql_client.py` +
+  `audit_trail/migrations/001_discord_audit_tables.sql`.
+
 ## Not done / follow-ups
 
 - **Live:** deployed manually over FTP on 2026-10-13 —
