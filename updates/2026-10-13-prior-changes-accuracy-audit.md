@@ -173,9 +173,11 @@ print the region with `repr()` and match the bytes instead of my memory.
 ## Deployment status (final)
 
 - **Deployed** over FTP after the fixes, then fetched back and md5-compared:
-  `index.html` **406378**, `js-interview.html` **20085**, `js-essentials.html` **42907**
-  (untouched by this audit) — all three live == local. Fetch with a browser UA; the
-  site's WAF 412s the default `urllib`/curl UA.
+  `index.html` **406996**, `js-interview.html` **20085**, `js-essentials.html` **42907**
+  — all three live == local == HEAD. (`index.html` was 406378 for the first publish;
+  it grew to 406996 when the strikethrough + executed-proof block landed in
+  `009fab532f`.) Fetch with a browser UA; the site's WAF 412s the default
+  `urllib`/curl UA.
 - **Pushed** to `origin/fix/js-reference-accuracy-audit` (upstream set, remote SHA ==
   local). Contents: `f146acbed4` (the three fixes + this doc), `60e5667c1a` (this
   doc's final status), plus the pre-existing `c1707553a7` guards section the branch was
