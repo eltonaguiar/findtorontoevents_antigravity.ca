@@ -3,8 +3,14 @@
  * Batch Add Movies to MOVIESHOWS database
  * Inserts movies + trailers + thumbnails with duplicate detection
  *
- * Usage: ?key=ms2_sync_2024_findto
+ * Usage: ?key=<SYNC_KEY>
  * Method: GET (movies are hardcoded in this batch script)
+ *
+ * Sync key: never stored in source. Resolution order:
+ *   1) MS2_SYNC_KEY environment variable
+ *   2) ../sync_key.local (single line; uploaded by tools/deploy_movieshows3.py
+ *      from the MS2_SYNC_KEY secret, gitignored)
+ * Fails closed — with neither configured, every request is rejected.
  *
  * PHP 5.2 compatible (no short array syntax, no ?? operator)
  */
@@ -15,12 +21,26 @@ header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
 // ---- Auth check ----
+// 2026-10-13: sync key removed from source. Expected key resolves from the
+// MS2_SYNC_KEY env var first, then ../sync_key.local (deployed from the
+// MS2_SYNC_KEY secret, never committed). Fails closed when neither is set.
+$expectedKey = getenv('MS2_SYNC_KEY');
+if ($expectedKey === false || $expectedKey === '') {
+    $syncKeyFile = dirname(dirname(__FILE__)) . '/sync_key.local';
+    if (is_readable($syncKeyFile)) {
+        $expectedKey = trim((string)file_get_contents($syncKeyFile));
+    } else {
+        $expectedKey = '';
+    }
+}
 $key = isset($_GET['key']) ? $_GET['key'] : '';
-if ($key !== 'ms2_sync_2024_findto') {
+if ($expectedKey === '' || $key === '' || $key !== $expectedKey) {
     http_response_code(403);
     echo json_encode(array(
         'success' => false,
-        'error' => 'Unauthorized. Provide ?key=...'
+        'error' => ($expectedKey === '')
+            ? 'Sync key not configured on server (set MS2_SYNC_KEY env or sync_key.local)'
+            : 'Unauthorized. Provide ?key=...'
     ));
     exit;
 }

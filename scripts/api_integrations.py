@@ -8,15 +8,21 @@ import pandas as pd
 import mysql.connector
 
 # DB config
+# 2026-10-13: default password literal removed from source. DB_PASS must be
+# provided via the environment; connect_db() fails fast when it is missing.
 DB_HOST = os.getenv('DB_HOST', 'mysql.50webs.com')
 DB_USER = os.getenv('DB_USER', 'ejaguiar1_stocks')
-DB_PASS = os.getenv('DB_PASS', 'stocks')
+DB_PASS = os.environ.get('DB_PASS', '')
 DB_NAME = os.getenv('DB_NAME', 'ejaguiar1_stocks')
 
 # Alpha Vantage key from env
 AV_KEY = os.getenv('ALPHA_VANTAGE_KEY')
 
 def connect_db():
+    if not DB_PASS:
+        raise RuntimeError(
+            'DB_PASS is not set in the environment (no default password is stored in source)'
+        )
     return mysql.connector.connect(
         host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME
     )

@@ -51,21 +51,22 @@ coverage, and — importantly — how duplicate integrations/records are prevent
 3. **AGENTS.md path registry** — new pipeline dependency rows added
    (the integrations page + its deploy workflow), per the registry rule.
 
-## Security note (found during research, NOT introduced by this change)
+## Security note (found during research — FIXED same day)
 
-Three committed files compare against a literal credential instead of an
-environment variable. Values are deliberately omitted here and from the public
-page; rotation + env-only migration is the recommended fix:
+Three committed files compared against a literal credential instead of an
+environment variable. Values are omitted everywhere, including this doc.
+All three were fixed on 2026-10-13 (see
+`updates/2026-10-13-movieshows-sync-key-hardening.md` for the fix details);
+credential rotation remains a separate operator task:
 
-- `TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/fetch_new_content.php` — hardcoded
-  sync-gate literal in the key comparison.
-- `TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/add-movies-batch.php` — same
-  literal.
-- `scripts/api_integrations.py` — default DB password literal in the
-  `os.getenv` fallback.
+- `TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/fetch_new_content.php` — now resolves
+  the sync key from `MS2_SYNC_KEY` env or `sync_key.local`, failing closed.
+- `TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/api/add-movies-batch.php` — same.
+- `scripts/api_integrations.py` — default password literal removed; fails fast
+  when `DB_PASS` is unset.
 
-The public page references these only as "a small number of legacy files" with
-no filenames or values.
+Per operator request, the public page carries no mention of this (the generic
+remediation bullet was removed before the 2026-10-13 deploy).
 
 ## Verification
 
@@ -89,6 +90,9 @@ no filenames or values.
 
 ## Not done / follow-ups
 
-- Page goes live when this lands on `main` (push trigger on its own path) or
-  via `workflow_dispatch` of `deploy-fte-integrations.yml`.
-- Rotation + env-migration of the three literal-credential files above.
+- **Live:** deployed manually over FTP on 2026-10-13 —
+  `https://findtorontoevents.ca/integrations/` (HTTP 200, verified in Chromium).
+  A `/integration/` (singular) redirect stub was added alongside it.
+- Operator follow-up: rotate the MOVIESHOWS sync key (update the
+  `MS2_SYNC_KEY` GitHub secret; the next scheduled deploy re-uploads the
+  sidecar) and the `DB_PASS` value where used.

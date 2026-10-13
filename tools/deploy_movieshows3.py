@@ -7,10 +7,13 @@ Uses environment variables:
   FTP_HOST - FTP hostname (default: ftps2.50webs.com)
   FTP_USER - FTP username
   FTP_PASS - FTP password
+  MS2_SYNC_KEY - optional; when set, uploaded as MOVIESHOWS3/sync_key.local
+                 (the sidecar the PHP auth gates read — never in git)
 
 Run from project root:
   python tools/deploy_movieshows3.py
 """
+import io
 import os
 import ftplib
 from pathlib import Path
@@ -54,6 +57,25 @@ FILES_TO_DEPLOY = [
 
 def _env(key, fallback=""):
     return os.environ.get(key, fallback).strip()
+
+
+def _upload_bytes(ftp, data, remote_path):
+    """Upload in-memory bytes to a remote path (used for the sync-key sidecar,
+    which exists only as an env var / GitHub secret — never on local disk)."""
+    remote_dir = "/".join(remote_path.split("/")[:-1])
+    remote_filename = remote_path.split("/")[-1]
+
+    ftp.cwd("/")
+    if remote_dir and not _ensure_dir(ftp, remote_dir):
+        return False
+
+    try:
+        ftp.storbinary(f"STOR {remote_filename}", io.BytesIO(data))
+        print(f"  Uploaded: {remote_path} ({len(data)} bytes, sync-key sidecar)")
+        return True
+    except Exception as e:
+        print(f"  ERROR uploading {remote_path}: {e}")
+        return False
 
 
 def _ensure_dir(ftp, remote_dir):
@@ -129,6 +151,20 @@ def main():
                     uploaded += 1
                 else:
                     failed += 1
+
+            # Sync-key sidecar for the PHP auth gates (fetch_new_content.php,
+            # api/add-movies-batch.php). Keeps the expected key out of source:
+            # the PHP resolves it from MS2_SYNC_KEY env or this file, failing
+            # closed when neither exists.
+            sync_key = _env("MS2_SYNC_KEY")
+            if sync_key:
+                if _upload_bytes(ftp, (sync_key + "\n").encode("utf-8"),
+                                 f"{REMOTE_BASE}/sync_key.local"):
+                    uploaded += 1
+                else:
+                    failed += 1
+            else:
+                print("  Note: MS2_SYNC_KEY not set - skipping sync_key.local upload")
 
             print(f"\nDone: {uploaded} uploaded, {failed} failed")
 

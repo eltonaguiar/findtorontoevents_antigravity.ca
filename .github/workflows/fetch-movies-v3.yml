@@ -46,6 +46,10 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
+          # 2026-10-13: the PHP auth gates no longer carry a literal key in
+          # source. The deploy tool uploads it as MOVIESHOWS3/sync_key.local
+          # (gitignored) so the server-side gate keeps working.
+          MS2_SYNC_KEY: ${{ secrets.MS2_SYNC_KEY }}
         run: |
           python tools/deploy_movieshows3.py
 
