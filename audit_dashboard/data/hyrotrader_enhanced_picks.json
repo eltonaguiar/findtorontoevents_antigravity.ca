@@ -74,98 +74,6 @@
   },
   "picks": [
     {
-      "id": "hyro-v2-xrp-bbsqueeze",
-      "rank": 4,
-      "asset_class": "CRYPTO",
-      "label": "XRP \u2014 BB Squeeze Breakout",
-      "symbol_hint": "XRPUSDT",
-      "direction": "BOTH",
-      "confidence_pct": 85,
-      "timeframe": "1H",
-      "strategy": "squeeze_breakout",
-      "backtest_grade": "A",
-      "backtest_stats": "+$947 PnL, PF 1.41, 40% WR, $279 max DD, 101 trades/6mo",
-      "thesis": "BB width at 40-bar low (squeeze) + volume breakout above upper/below lower BB + EMA50 trend confirmation. Captures explosive moves after low-vol compression.",
-      "entry_price": null,
-      "stop_loss": null,
-      "take_profit": null,
-      "status": "pending_entry",
-      "opened_at": null,
-      "closed_at": null,
-      "pnl_pct": null,
-      "sl_confirmed": false,
-      "stop_plan": "SL = 1.4\u00d7 ATR. Only fires when BB is in squeeze \u2014 avoids choppy conditions.",
-      "take_profit_plan": "TP = 2.2\u00d7 risk. Breakout targets are wider because squeeze precedes volatility expansion.",
-      "technical_indicators": {
-        "rsi": 41.23,
-        "macd": {
-          "macd": -0.0114,
-          "signal": -0.0123,
-          "histogram": 0.0009,
-          "direction": "bullish"
-        },
-        "bollinger": {
-          "upper": 1.43,
-          "middle": 1.38,
-          "lower": 1.34,
-          "pct_b": 0.274,
-          "squeeze": false
-        },
-        "atr_pct": 1.563,
-        "volume": {
-          "ratio": 1.18,
-          "expansion": false,
-          "direction": "neutral"
-        },
-        "trend": "strong_downtrend",
-        "sma_20": 1.38,
-        "sma_50": 1.4,
-        "current_price": 1.3621
-      },
-      "enhanced_scoring": {
-        "enhanced_score": 72,
-        "breakdown": {
-          "base": 85,
-          "ml_edge_blend": -13,
-          "ml_blend_weights": "85%/15%"
-        },
-        "validation": "high_conviction",
-        "notes": [],
-        "warnings": [
-          "ML cross-strategy match: using cci_divergence ranking for squeeze_breakout/XRPUSDT",
-          "ML optimizer: F \u2014 weak edge (1.1)"
-        ]
-      },
-      "backtest": {
-        "status": "completed",
-        "win_rate": 56.2,
-        "avg_pnl": 0.99,
-        "total_trades": 160,
-        "wins": 90,
-        "losses": 70,
-        "avg_bars_held": 15.8
-      },
-      "short_term_entry": {
-        "entry_quality": 71,
-        "actionable": true,
-        "horizon": "4-24h",
-        "reasons": [
-          "trend_aligned",
-          "atr_in_tradeable_band",
-          "backtest_wr_support"
-        ]
-      },
-      "ml_edge": {
-        "ml_score": 1.1,
-        "ml_grade": "F",
-        "ml_method": "ml",
-        "ml_boost_applied": true,
-        "ml_cross_strategy_match": true
-      },
-      "processed_at": "2026-10-14T12:37:40.121116+00:00",
-      "ml_rank": 1
-    },
-    {
       "id": "hyro-v2-sol-multiema",
       "rank": 5,
       "asset_class": "CRYPTO",
@@ -189,30 +97,30 @@
       "stop_plan": "SL = 1.4\u00d7 ATR. ADX filter + EMA alignment = high-probability entries.",
       "take_profit_plan": "TP = 2.2\u00d7 risk. Fewer trades (35/6mo) but highest quality.",
       "technical_indicators": {
-        "rsi": 38.19,
+        "rsi": 32.23,
         "macd": {
-          "macd": -1.3251,
-          "signal": -1.3283,
-          "histogram": 0.0032,
-          "direction": "bullish"
+          "macd": -1.5221,
+          "signal": -1.3677,
+          "histogram": -0.1544,
+          "direction": "bearish"
         },
         "bollinger": {
-          "upper": 113.13,
-          "middle": 108.77,
-          "lower": 104.4,
-          "pct_b": 0.195,
+          "upper": 113.45,
+          "middle": 108.64,
+          "lower": 103.84,
+          "pct_b": -0.022,
           "squeeze": false
         },
-        "atr_pct": 1.86,
+        "atr_pct": 2.051,
         "volume": {
-          "ratio": 0.48,
-          "expansion": false,
-          "direction": "neutral"
+          "ratio": 1.58,
+          "expansion": true,
+          "direction": "distribution"
         },
         "trend": "strong_downtrend",
-        "sma_20": 108.77,
-        "sma_50": 111.43,
-        "current_price": 106.1
+        "sma_20": 108.64,
+        "sma_50": 111.38,
+        "current_price": 103.63
       },
       "enhanced_scoring": {
         "enhanced_score": 72,
@@ -227,36 +135,134 @@
         "warnings": [
           "Price at lower Bollinger Band",
           "ML cross-strategy match: using cci_divergence ranking for ema_pullback_adx/SOLUSDT",
-          "ML optimizer: F \u2014 weak edge (0.1)"
+          "ML optimizer: F \u2014 weak edge (0.2)"
         ]
       },
       "backtest": {
         "status": "completed",
         "win_rate": 65.6,
-        "avg_pnl": 1.08,
+        "avg_pnl": 1.09,
         "total_trades": 160,
         "wins": 105,
         "losses": 55,
         "avg_bars_held": 14.8
       },
       "short_term_entry": {
-        "entry_quality": 71,
+        "entry_quality": 82,
         "actionable": true,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
+          "macd_support",
           "atr_in_tradeable_band",
+          "volume_confirmation",
           "backtest_wr_support"
         ]
       },
       "ml_edge": {
-        "ml_score": 0.1,
+        "ml_score": 0.2,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
         "ml_cross_strategy_match": true
       },
-      "processed_at": "2026-10-14T12:37:41.328021+00:00",
+      "processed_at": "2026-10-14T14:40:03.847317+00:00",
+      "ml_rank": 1
+    },
+    {
+      "id": "hyro-v2-xrp-bbsqueeze",
+      "rank": 4,
+      "asset_class": "CRYPTO",
+      "label": "XRP \u2014 BB Squeeze Breakout",
+      "symbol_hint": "XRPUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 85,
+      "timeframe": "1H",
+      "strategy": "squeeze_breakout",
+      "backtest_grade": "A",
+      "backtest_stats": "+$947 PnL, PF 1.41, 40% WR, $279 max DD, 101 trades/6mo",
+      "thesis": "BB width at 40-bar low (squeeze) + volume breakout above upper/below lower BB + EMA50 trend confirmation. Captures explosive moves after low-vol compression.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.4\u00d7 ATR. Only fires when BB is in squeeze \u2014 avoids choppy conditions.",
+      "take_profit_plan": "TP = 2.2\u00d7 risk. Breakout targets are wider because squeeze precedes volatility expansion.",
+      "technical_indicators": {
+        "rsi": 33.74,
+        "macd": {
+          "macd": -0.0139,
+          "signal": -0.0128,
+          "histogram": -0.0011,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 1.43,
+          "middle": 1.38,
+          "lower": 1.33,
+          "pct_b": -0.008,
+          "squeeze": false
+        },
+        "atr_pct": 1.743,
+        "volume": {
+          "ratio": 2.16,
+          "expansion": true,
+          "direction": "distribution"
+        },
+        "trend": "strong_downtrend",
+        "sma_20": 1.38,
+        "sma_50": 1.4,
+        "current_price": 1.3306
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 71,
+        "breakdown": {
+          "base": 85,
+          "bb_oversold": -3,
+          "ml_edge_blend": -11,
+          "ml_blend_weights": "85%/15%"
+        },
+        "validation": "moderate",
+        "notes": [],
+        "warnings": [
+          "Price at lower Bollinger Band",
+          "ML cross-strategy match: using cci_divergence ranking for squeeze_breakout/XRPUSDT",
+          "ML optimizer: F \u2014 weak edge (10.0)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 56.2,
+        "avg_pnl": 0.97,
+        "total_trades": 160,
+        "wins": 90,
+        "losses": 70,
+        "avg_bars_held": 15.8
+      },
+      "short_term_entry": {
+        "entry_quality": 82,
+        "actionable": true,
+        "horizon": "4-24h",
+        "reasons": [
+          "trend_aligned",
+          "macd_support",
+          "atr_in_tradeable_band",
+          "volume_confirmation",
+          "backtest_wr_support"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 10.0,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": true
+      },
+      "processed_at": "2026-10-14T14:40:02.803554+00:00",
       "ml_rank": 2
     },
     {
@@ -283,43 +289,44 @@
       "stop_plan": "SL = 1.5\u00d7 ATR below entry (long) or above entry (short). Must be live within 5 min.",
       "take_profit_plan": "TP = 2\u00d7 risk. Book profits at target \u2014 trailing DD punishes round-trips.",
       "technical_indicators": {
-        "rsi": 45.55,
+        "rsi": 38.4,
         "macd": {
-          "macd": 5.7107,
-          "signal": 1.0257,
-          "histogram": 4.685,
-          "direction": "bullish"
+          "macd": -73.3171,
+          "signal": -14.7799,
+          "histogram": -58.5372,
+          "direction": "bearish"
         },
         "bollinger": {
-          "upper": 84344.15,
-          "middle": 83352.35,
-          "lower": 82360.56,
-          "pct_b": 0.249,
+          "upper": 84480.87,
+          "middle": 83302.82,
+          "lower": 82124.78,
+          "pct_b": -0.111,
           "squeeze": false
         },
-        "atr_pct": 0.966,
+        "atr_pct": 1.056,
         "volume": {
-          "ratio": 0.58,
-          "expansion": false,
-          "direction": "neutral"
+          "ratio": 2.72,
+          "expansion": true,
+          "direction": "distribution"
         },
         "trend": "downtrend",
-        "sma_20": 83352.35,
-        "sma_50": 83294.23,
-        "current_price": 82854.06
+        "sma_20": 83302.82,
+        "sma_50": 83274.42,
+        "current_price": 81863.39
       },
       "enhanced_scoring": {
-        "enhanced_score": 67,
+        "enhanced_score": 66,
         "breakdown": {
           "base": 92,
-          "ml_edge_blend": -25,
+          "bb_oversold": -3,
+          "ml_edge_blend": -23,
           "ml_blend_weights": "70%/30%"
         },
         "validation": "moderate",
         "notes": [],
         "warnings": [
-          "Low volatility: 0.966% ATR - limited move potential",
-          "ML optimizer: F \u2014 weak edge (7.2)"
+          "Price at lower Bollinger Band",
+          "ML optimizer: F \u2014 weak edge (11.6)"
         ]
       },
       "backtest": {
@@ -332,22 +339,25 @@
         "avg_bars_held": 19.2
       },
       "short_term_entry": {
-        "entry_quality": 50,
+        "entry_quality": 66,
         "actionable": false,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
+          "macd_support",
+          "atr_in_tradeable_band",
+          "volume_confirmation",
           "backtest_wr_weak"
         ]
       },
       "ml_edge": {
-        "ml_score": 7.2,
+        "ml_score": 11.6,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
         "ml_cross_strategy_match": false
       },
-      "processed_at": "2026-10-14T12:37:36.419946+00:00",
+      "processed_at": "2026-10-14T14:39:58.889614+00:00",
       "ml_rank": 3
     },
     {
@@ -374,30 +384,30 @@
       "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
       "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
       "technical_indicators": {
-        "rsi": 42.51,
+        "rsi": 32.93,
         "macd": {
-          "macd": -9.7497,
-          "signal": -9.5729,
-          "histogram": -0.1768,
+          "macd": -15.1295,
+          "signal": -10.6489,
+          "histogram": -4.4807,
           "direction": "bearish"
         },
         "bollinger": {
-          "upper": 2568.89,
-          "middle": 2517.57,
-          "lower": 2466.25,
-          "pct_b": 0.187,
+          "upper": 2580.95,
+          "middle": 2514.2,
+          "lower": 2447.45,
+          "pct_b": -0.221,
           "squeeze": false
         },
-        "atr_pct": 1.334,
+        "atr_pct": 1.558,
         "volume": {
-          "ratio": 0.56,
-          "expansion": false,
-          "direction": "neutral"
+          "ratio": 2.86,
+          "expansion": true,
+          "direction": "distribution"
         },
         "trend": "strong_downtrend",
-        "sma_20": 2517.57,
-        "sma_50": 2533.95,
-        "current_price": 2485.44
+        "sma_20": 2514.2,
+        "sma_50": 2532.6,
+        "current_price": 2418.0
       },
       "enhanced_scoring": {
         "enhanced_score": 61,
@@ -411,129 +421,39 @@
         "notes": [],
         "warnings": [
           "Price at lower Bollinger Band",
-          "ML optimizer: F \u2014 weak edge (0.3)"
+          "ML optimizer: F \u2014 weak edge (0.5)"
         ]
       },
       "backtest": {
         "status": "completed",
         "win_rate": 55.6,
-        "avg_pnl": 0.76,
+        "avg_pnl": 0.77,
         "total_trades": 160,
         "wins": 89,
         "losses": 71,
         "avg_bars_held": 16.6
       },
       "short_term_entry": {
-        "entry_quality": 77,
+        "entry_quality": 82,
         "actionable": true,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
           "macd_support",
           "atr_in_tradeable_band",
+          "volume_confirmation",
           "backtest_wr_support"
         ]
       },
       "ml_edge": {
-        "ml_score": 0.3,
+        "ml_score": 0.5,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
         "ml_cross_strategy_match": false
       },
-      "processed_at": "2026-10-14T12:37:37.658135+00:00",
+      "processed_at": "2026-10-14T14:40:00.192441+00:00",
       "ml_rank": 4
-    },
-    {
-      "id": "hyro-v2-btc-adxvol",
-      "rank": 7,
-      "asset_class": "CRYPTO",
-      "label": "Bitcoin \u2014 ADX Vol Breakout",
-      "symbol_hint": "BTCUSDT",
-      "direction": "BOTH",
-      "confidence_pct": 82,
-      "timeframe": "1H",
-      "strategy": "adx_vol_breakout",
-      "backtest_grade": "B+",
-      "backtest_stats": "+$619 PnL, PF 1.46, 37% WR, $327 max DD, 57 trades/6mo",
-      "thesis": "BTC ADX vol breakout \u2014 same strategy as ETH but wider DD ($327). Still passes with $173 buffer. Use as secondary BTC setup when CCI is not signaling.",
-      "entry_price": null,
-      "stop_loss": null,
-      "take_profit": null,
-      "status": "pending_entry",
-      "opened_at": null,
-      "closed_at": null,
-      "pnl_pct": null,
-      "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR. Confirm ADX > 25 and volume surge before entry.",
-      "take_profit_plan": "TP = 2\u00d7 risk.",
-      "technical_indicators": {
-        "rsi": 45.4,
-        "macd": {
-          "macd": 4.286,
-          "signal": 0.7407,
-          "histogram": 3.5452,
-          "direction": "bullish"
-        },
-        "bollinger": {
-          "upper": 84345.17,
-          "middle": 83351.46,
-          "lower": 82357.75,
-          "pct_b": 0.241,
-          "squeeze": false
-        },
-        "atr_pct": 0.966,
-        "volume": {
-          "ratio": 0.58,
-          "expansion": false,
-          "direction": "neutral"
-        },
-        "trend": "downtrend",
-        "sma_20": 83351.46,
-        "sma_50": 83293.88,
-        "current_price": 82836.2
-      },
-      "enhanced_scoring": {
-        "enhanced_score": 60,
-        "breakdown": {
-          "base": 82,
-          "ml_edge_blend": -22,
-          "ml_blend_weights": "70%/30%"
-        },
-        "validation": "moderate",
-        "notes": [],
-        "warnings": [
-          "Low volatility: 0.966% ATR - limited move potential",
-          "ML optimizer: F \u2014 weak edge (7.2)"
-        ]
-      },
-      "backtest": {
-        "status": "completed",
-        "win_rate": 40.6,
-        "avg_pnl": 0.01,
-        "total_trades": 160,
-        "wins": 65,
-        "losses": 94,
-        "avg_bars_held": 19.2
-      },
-      "short_term_entry": {
-        "entry_quality": 50,
-        "actionable": false,
-        "horizon": "4-24h",
-        "reasons": [
-          "trend_aligned",
-          "backtest_wr_weak"
-        ]
-      },
-      "ml_edge": {
-        "ml_score": 7.2,
-        "ml_grade": "F",
-        "ml_method": "ml",
-        "ml_boost_applied": true,
-        "ml_cross_strategy_match": false
-      },
-      "processed_at": "2026-10-14T12:37:43.727682+00:00",
-      "ml_rank": 5
     },
     {
       "id": "hyro-v2-avax-cmf",
@@ -559,30 +479,30 @@
       "stop_plan": "SL = 1.5\u00d7 ATR. CMF direction confirms volume-price agreement.",
       "take_profit_plan": "TP = 2\u00d7 risk. 85 trades/6mo = ~3-4/week \u2014 good for 10-day minimum.",
       "technical_indicators": {
-        "rsi": 39.72,
+        "rsi": 33.54,
         "macd": {
-          "macd": -0.1239,
-          "signal": -0.0914,
-          "histogram": -0.0325,
+          "macd": -0.149,
+          "signal": -0.0964,
+          "histogram": -0.0525,
           "direction": "bearish"
         },
         "bollinger": {
-          "upper": 11.13,
-          "middle": 10.5,
-          "lower": 9.87,
-          "pct_b": 0.192,
+          "upper": 11.17,
+          "middle": 10.48,
+          "lower": 9.8,
+          "pct_b": -0.003,
           "squeeze": false
         },
-        "atr_pct": 1.963,
+        "atr_pct": 2.206,
         "volume": {
-          "ratio": 0.2,
+          "ratio": 0.84,
           "expansion": false,
           "direction": "neutral"
         },
         "trend": "strong_downtrend",
-        "sma_20": 10.5,
+        "sma_20": 10.48,
         "sma_50": 10.62,
-        "current_price": 10.114
+        "current_price": 9.8
       },
       "enhanced_scoring": {
         "enhanced_score": 59,
@@ -596,17 +516,17 @@
         "notes": [],
         "warnings": [
           "Price at lower Bollinger Band",
-          "ML optimizer: F \u2014 weak edge (0.1)"
+          "ML optimizer: F \u2014 weak edge (1.6)"
         ]
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 50.0,
-        "avg_pnl": 0.64,
+        "win_rate": 50.6,
+        "avg_pnl": 0.68,
         "total_trades": 160,
-        "wins": 80,
-        "losses": 79,
-        "avg_bars_held": 11.1
+        "wins": 81,
+        "losses": 78,
+        "avg_bars_held": 11.2
       },
       "short_term_entry": {
         "entry_quality": 69,
@@ -619,13 +539,108 @@
         ]
       },
       "ml_edge": {
-        "ml_score": 0.1,
+        "ml_score": 1.6,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
         "ml_cross_strategy_match": false
       },
-      "processed_at": "2026-10-14T12:37:38.877006+00:00",
+      "processed_at": "2026-10-14T14:40:01.512303+00:00",
+      "ml_rank": 5
+    },
+    {
+      "id": "hyro-v2-btc-adxvol",
+      "rank": 7,
+      "asset_class": "CRYPTO",
+      "label": "Bitcoin \u2014 ADX Vol Breakout",
+      "symbol_hint": "BTCUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 82,
+      "timeframe": "1H",
+      "strategy": "adx_vol_breakout",
+      "backtest_grade": "B+",
+      "backtest_stats": "+$619 PnL, PF 1.46, 37% WR, $327 max DD, 57 trades/6mo",
+      "thesis": "BTC ADX vol breakout \u2014 same strategy as ETH but wider DD ($327). Still passes with $173 buffer. Use as secondary BTC setup when CCI is not signaling.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.5\u00d7 ATR. Confirm ADX > 25 and volume surge before entry.",
+      "take_profit_plan": "TP = 2\u00d7 risk.",
+      "technical_indicators": {
+        "rsi": 38.4,
+        "macd": {
+          "macd": -73.3171,
+          "signal": -14.7799,
+          "histogram": -58.5372,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 84480.87,
+          "middle": 83302.82,
+          "lower": 82124.78,
+          "pct_b": -0.111,
+          "squeeze": false
+        },
+        "atr_pct": 1.056,
+        "volume": {
+          "ratio": 2.72,
+          "expansion": true,
+          "direction": "distribution"
+        },
+        "trend": "downtrend",
+        "sma_20": 83302.82,
+        "sma_50": 83274.42,
+        "current_price": 81863.39
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 59,
+        "breakdown": {
+          "base": 82,
+          "bb_oversold": -3,
+          "ml_edge_blend": -20,
+          "ml_blend_weights": "70%/30%"
+        },
+        "validation": "moderate",
+        "notes": [],
+        "warnings": [
+          "Price at lower Bollinger Band",
+          "ML optimizer: F \u2014 weak edge (11.6)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 40.6,
+        "avg_pnl": 0.01,
+        "total_trades": 160,
+        "wins": 65,
+        "losses": 94,
+        "avg_bars_held": 19.2
+      },
+      "short_term_entry": {
+        "entry_quality": 66,
+        "actionable": false,
+        "horizon": "4-24h",
+        "reasons": [
+          "trend_aligned",
+          "macd_support",
+          "atr_in_tradeable_band",
+          "volume_confirmation",
+          "backtest_wr_weak"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 11.6,
+        "ml_grade": "F",
+        "ml_method": "ml",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": false
+      },
+      "processed_at": "2026-10-14T14:40:06.103890+00:00",
       "ml_rank": 6
     },
     {
@@ -652,30 +667,30 @@
       "stop_plan": "SL = 1.5\u00d7 ATR. CCI crosses -100 upward = long; crosses +100 downward = short.",
       "take_profit_plan": "TP = 2\u00d7 risk.",
       "technical_indicators": {
-        "rsi": 37.9,
+        "rsi": 32.23,
         "macd": {
-          "macd": -1.3331,
-          "signal": -1.3299,
-          "histogram": -0.0032,
+          "macd": -1.5221,
+          "signal": -1.3677,
+          "histogram": -0.1544,
           "direction": "bearish"
         },
         "bollinger": {
-          "upper": 113.14,
-          "middle": 108.76,
-          "lower": 104.38,
-          "pct_b": 0.185,
+          "upper": 113.45,
+          "middle": 108.64,
+          "lower": 103.84,
+          "pct_b": -0.022,
           "squeeze": false
         },
-        "atr_pct": 1.861,
+        "atr_pct": 2.051,
         "volume": {
-          "ratio": 0.48,
-          "expansion": false,
-          "direction": "neutral"
+          "ratio": 1.58,
+          "expansion": true,
+          "direction": "distribution"
         },
         "trend": "strong_downtrend",
-        "sma_20": 108.76,
-        "sma_50": 111.42,
-        "current_price": 106.0
+        "sma_20": 108.64,
+        "sma_50": 111.38,
+        "current_price": 103.63
       },
       "enhanced_scoring": {
         "enhanced_score": 57,
@@ -689,7 +704,7 @@
         "notes": [],
         "warnings": [
           "Price at lower Bollinger Band",
-          "ML optimizer: F \u2014 weak edge (0.1)"
+          "ML optimizer: F \u2014 weak edge (0.2)"
         ]
       },
       "backtest": {
@@ -702,33 +717,34 @@
         "avg_bars_held": 14.8
       },
       "short_term_entry": {
-        "entry_quality": 77,
+        "entry_quality": 82,
         "actionable": true,
         "horizon": "4-24h",
         "reasons": [
           "trend_aligned",
           "macd_support",
           "atr_in_tradeable_band",
+          "volume_confirmation",
           "backtest_wr_support"
         ]
       },
       "ml_edge": {
-        "ml_score": 0.1,
+        "ml_score": 0.2,
         "ml_grade": "F",
         "ml_method": "ml",
         "ml_boost_applied": true,
         "ml_cross_strategy_match": false
       },
-      "processed_at": "2026-10-14T12:37:42.547726+00:00",
+      "processed_at": "2026-10-14T14:40:04.898483+00:00",
       "ml_rank": 7
     }
   ],
-  "enhanced_at": "2026-10-14T12:37:44.028273+00:00",
+  "enhanced_at": "2026-10-14T14:40:06.404316+00:00",
   "ml_integrated": true,
   "enhancement_summary": {
     "total_picks": 7,
-    "high_conviction": 1,
-    "moderate": 6,
+    "high_conviction": 0,
+    "moderate": 7,
     "low_confidence": 0,
     "actionable_short_term": 5,
     "ml_boosted": 7
