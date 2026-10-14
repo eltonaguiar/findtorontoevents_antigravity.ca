@@ -1,9 +1,9 @@
-### Momentum Scalp Scanner (2026-10-13 20:01 UTC)
+### Momentum Scalp Scanner (2026-10-14 08:01 UTC)
 
 **New symbols scanned:** 3 gainers + 3 bounce candidates
 **Picks generated:** 2
 
 | # | Symbol | Dir | Entry | TP | SL | R:R | Conf | Strategy | 24h% | Reason |
 |---|--------|-----|-------|----|----|-----|------|----------|------|--------|
-| 1 | ZECUSDT | LONG | 1218.66 | 1253.91 | 1192.22 | 1.33 | 80% | `genesis_momentum_blend` | -2.1% | Genesis score 6/10: ST=bull ADX=1 RSI=50 mom5=2.4% |
-| 2 | ZECUSDT | LONG | 1218.66 | 1253.91 | 1192.22 | 1.33 | 80% | `genesis_momentum_blend` | -2.1% | Genesis score 6/10: ST=bull ADX=1 RSI=50 mom5=2.4% |
+| 1 | ZECUSDT | LONG | 1248.18 | 1280.36 | 1224.05 | 1.33 | 55% | `ema_momentum_volume` | +1.5% | EMA stack aligned (9>1248.4565 > 21>1237.5985 > 50) vol=0.0x |
+| 2 | ZECUSDT | LONG | 1248.18 | 1280.36 | 1224.05 | 1.33 | 55% | `ema_momentum_volume` | +1.5% | EMA stack aligned (9>1248.4565 > 21>1237.5985 > 50) vol=0.0x |
