@@ -340,7 +340,7 @@ function memo(fn) {                            // classic closure + Map
           <tr><td><code>for...of</code></td><td>ES2015</td><td>Values of any iterable (Array, String, Map, Set, generator). <code>for...in</code> is keys.</td></tr>
           <tr><td>Classes</td><td>ES2015</td><td>Syntactic sugar over prototypes; <code>constructor</code>, methods, <code>static</code>, <code>get</code>/<code>set</code>, <code>extends</code>/<code>super</code>.</td></tr>
           <tr><td>Modules</td><td>ES2015</td><td><code>export</code> / <code>export default</code> / <code>import</code>. Static, evaluated once.</td></tr>
-          <tr><td>Iterators</td><td>ES2015</td><td>Anything with <code>[Symbol.iterator]</code> works with <code>for...of</code> and spread.</td></tr>
+          <tr><td>Iterators</td><td>ES2015</td><td>Anything with <code>[Symbol.iterator]</code> works with <code>for...of</code> and spread. <code>it.next()</code> returns <code>{ value, done }</code> — <code>done</code> flips to true when exhausted, and then <code>value</code> is <code>undefined</code>. <code>map.keys()</code> returns a <strong>fresh</strong> iterator on every call, so <code>map.keys().next().value</code> is always the first (oldest-inserted) key — <code>undefined</code> on an empty collection, and the O(1) way to evict the least-recent entry of an LRU.</td></tr>
           <tr><td><code>Symbol</code></td><td>ES2015</td><td>Guaranteed-unique key — the only property key type that never collides by name.</td></tr>
           <tr><td><code>**</code></td><td>ES2016</td><td>Exponentiation.</td></tr>
           <tr><td><code>Object.entries</code>/<code>fromEntries</code></td><td>ES2017</td><td>Object &harr; array-of-pairs conversion.</td></tr>

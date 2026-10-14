@@ -98,11 +98,42 @@ entities), syntax-checked individually, executed, then asserted — so the
    the left-child rule); fixed the helper, and the claim now has executable
    evidence.
 
+## Coverage gap this uncovered — and closed — in `js-essentials.html`
+
+The site runs a machine-checked rule from 2026-10-12: *a method used on the
+interview page must appear in a table cell of the essentials reference*. The
+new LRU snippet uses `map.keys().next().value`, and `next()` **was not
+documented** — the only occurrence of the word in `js-essentials.html` was a
+BFS variable (`const next = [];`). Under the rule, the interview page was
+briefly using an undocumented method.
+
+**Fix:** extended the *Iterators* row in section 6 (ES6+ syntax) of
+`js-essentials.html` to document `it.next()` → `{ value, done }`, that
+`done` flips true when exhausted (then `value` is `undefined`), that
+`map.keys()` returns a **fresh** iterator per call (so `.next().value` is
+always the first/oldest key), and that this is the O(1) least-recent-entry
+eviction used by the LRU example.
+
+**Verified, not asserted:**
+
+- The claims were **executed in Node 22** first: first key `a`; empty
+  collection → `value: undefined, done: true`; same idiom works on `Set`.
+- Coverage re-check: **27 method names used on the interview page, 0
+  undocumented** (with `next` now present as a call inside a `<td>`);
+  `delete`, `keys`, `fill`, `from`, etc. all resolve to existing table cells.
+- `js-essentials.html` structure after the edit: **0 raw `&`, 0 raw `<`, no
+  tag imbalance**, 13 tables / 149 rows.
+- Chromium check (`ESSENTIALS_UI_EXIT=0`, **8/8**): the Iterators row renders
+  exactly once and contains all three new claims, 13 tables, 149 rows, no
+  horizontal overflow, no literal markup in rendered text, **0 console
+  errors**.
+
 ## Files touched
 
 | File | Change |
 |---|---|
 | `findtorontoevents.ca/servicenow/javascript/js-interview.html` | section 5 added, 3 pattern rows, lede |
+| `findtorontoevents.ca/servicenow/javascript/js-essentials.html` | Iterators row now documents `it.next()` (closes the coverage gap above) |
 | `tests/js-interview-iconic.spec.ts` | new — browser verification of section 5 |
 | `playwright.config.ts` | +1 line: register the spec in `testMatch` |
 | `updates/2026-10-14-js-interview-iconic-problems.md` | this file |
