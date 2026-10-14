@@ -112,7 +112,7 @@
     <div class="nav"><a href="quiz.html">&larr; Back to the Quiz</a></div>
 
     <h1>JavaScript for Coding Interviews</h1>
-    <p class="lede">The plain-JS building blocks behind most LeetCode medium problems — the string methods you actually reach for, when to pick <code>Set</code> / <code>Map</code> / a plain object, and the frequency-count idiom. Every claim on this page was executed in Node before it was written down.</p>
+    <p class="lede">The plain-JS building blocks behind most LeetCode medium problems — the string methods you actually reach for, when to pick <code>Set</code> / <code>Map</code> / a plain object, the frequency-count idiom — and eleven <strong>iconic problems reduced to the one reusable concept each one drills</strong>. Every claim on this page was executed in Node before it was written down.</p>
     <p><a class="btn" href="quiz.html">Practice these in the quiz &rarr;</a></p>
 
     <div class="notice es6-legend">
@@ -228,9 +228,228 @@ for (const c of s) {
           <tr><td>Stack</td><td>Valid Parentheses, Daily Temperatures</td><td>Array <code>push</code>/<code>pop</code>, <code>arr.at(-1)</code><span class="es6-star" title="ES2022">✳</span></td></tr>
           <tr><td>Prefix sum</td><td>Subarray Sum Equals K, Product of Array Except Self</td><td>running total, <code>new Array(n).fill(0)</code><span class="es6-star" title="Array.fill — ES2015">✳</span></td></tr>
           <tr><td>Memoisation</td><td>Climbing Stairs, House Robber, word break</td><td><code>Map</code><span class="es6-star" title="ES2015">✳</span>/<code>{}</code> cache, or a DP array</td></tr>
+          <tr><td>Graph flood fill</td><td>Number of Islands, Max Area of Island, Rotting Oranges</td><td>nested grid loop + recursion, visited marked by mutating the cell</td></tr>
+          <tr><td>Cycle detection → valid order</td><td>Course Schedule, Course Schedule II, Alien Dictionary</td><td><code>Map</code><span class="es6-star" title="Map — ES2015">✳</span> adjacency + 0/1/2 colour array</td></tr>
+          <tr><td>Rolling DP vs DP table</td><td>Unique Paths, Coin Change, Min Cost Climbing Stairs</td><td>two running variables, or <code>new Array(n + 1).fill(Infinity)</code><span class="es6-star" title="Array.fill — ES2015">✳</span></td></tr>
         </tbody>
       </table>
     </div>
+
+    <h2 id="iconic">5. Iconic problems → the one reusable concept each drills</h2>
+    <p class="lede">Eleven problems that surface in almost every screen. Each is reduced to the <strong>concept</strong> it teaches — the part that transfers to the next problem. Nothing here is new syntax: every snippet is built from sections 1–4 and every one was executed in Node before publication.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Problem</th><th>Reusable concept</th><th>Builds on</th></tr></thead>
+        <tbody>
+          <tr><td>Two Sum</td><td><strong>Complement lookup</strong> — check before insert, one O(n) pass</td><td>§2 <code>Map</code>, §3</td></tr>
+          <tr><td>Best Time to Buy and Sell Stock</td><td><strong>Running aggregate</strong> — best-so-far carried left to right</td><td>§3 idioms</td></tr>
+          <tr><td>Longest Substring Without Repeating Characters</td><td><strong>Shrink-until-valid window</strong> (<code>while</code>, never <code>if</code>)</td><td>§2 <code>Set</code>, §4</td></tr>
+          <tr><td>3Sum</td><td><strong>Sort, fix one index, two-pointer the rest</strong> + skip duplicates</td><td>§4 two pointers</td></tr>
+          <tr><td>Invert Binary Tree</td><td><strong>Recursion template</strong> — guard, recurse, combine</td><td>§4 traversal</td></tr>
+          <tr><td>Validate Binary Search Tree</td><td><strong>Carry the invariant down</strong> — narrow <code>(min, max)</code> per call</td><td>same template</td></tr>
+          <tr><td>Number of Islands</td><td><strong>Flood fill</strong> — mutate the input as the visited set</td><td>grid DFS</td></tr>
+          <tr><td>Course Schedule</td><td><strong>3-colour DFS cycle detection</strong> (0/1/2 states)</td><td>§2 <code>Map</code> adjacency</td></tr>
+          <tr><td>LRU Cache</td><td><strong><code>Map</code> insertion order = recency order</strong>, O(1)</td><td>§2 <code>Map</code></td></tr>
+          <tr><td>House Robber</td><td><strong>Rolling variables</strong> — drop the DP array when the window is 2</td><td>§4 memoisation</td></tr>
+          <tr><td>Coin Change</td><td><strong>Bottom-up table</strong> with an “impossible” <code>Infinity</code> sentinel</td><td>§3 counting</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="iconic-arrays">5.1 Arrays &amp; strings — one forward pass and a lookup</h3>
+
+    <p><strong>Two Sum</strong> — <em>complement lookup.</em> The <code>Map</code> answers “did I already see <code>target - nums[i]</code>?”, collapsing the O(n²) double loop into one O(n) pass. <strong>Check before you insert</strong>, or an element pairs with itself.</p>
+    <pre><code>function twoSum(nums, target) {
+    const map = new Map();
+    for (let i = 0; i &lt; nums.length; i++) {
+        const complement = target - nums[i];
+        if (map.has(complement)) return [map.get(complement), i];
+        map.set(nums[i], i);
+    }
+    return [];
+}</code></pre>
+
+    <p><strong>Best Time to Buy and Sell Stock</strong> — <em>running aggregate.</em> Carry the best value seen <em>before</em> the current index (<code>minPrice</code>) and evaluate the candidate answer at every step. Any “best pair where <code>i &lt; j</code>” question collapses to this one loop.</p>
+    <pre><code>function maxProfit(prices) {
+    let minPrice = Infinity, maxProfit = 0;
+    for (const price of prices) {
+        minPrice = Math.min(minPrice, price);
+        maxProfit = Math.max(maxProfit, price - minPrice);
+    }
+    return maxProfit;
+}</code></pre>
+
+    <p><strong>Longest Substring Without Repeating Characters</strong> — <em>shrink-until-valid window.</em> Keep the invariant “<code>[left, right]</code> holds no repeats”: advance <code>right</code>, then shrink <code>left</code> with a <strong><code>while</code>, not an <code>if</code></strong>, until the window is valid again — one bad character can evict more than one occupant.</p>
+    <pre><code>function lengthOfLongestSubstring(s) {
+    const set = new Set();
+    let left = 0, max = 0;
+    for (let right = 0; right &lt; s.length; right++) {
+        while (set.has(s[right])) {
+            set.delete(s[left]);
+            left++;
+        }
+        set.add(s[right]);
+        max = Math.max(max, right - left + 1);
+    }
+    return max;
+}</code></pre>
+
+    <p><strong>3Sum</strong> — <em>sort, fix one index, two-pointer the rest.</em> Sorting turns “any triple summing to 0” into a monotone walk: sum too small → <code>left++</code>, too big → <code>right--</code>. Uniqueness needs duplicate-skipping at <strong>all three</strong> positions, not just the fixed one.</p>
+    <pre><code>function threeSum(nums) {
+    nums.sort((a, b) =&gt; a - b);
+    const res = [];
+    for (let i = 0; i &lt; nums.length - 2; i++) {
+        if (i &gt; 0 &amp;&amp; nums[i] === nums[i - 1]) continue;
+        let left = i + 1, right = nums.length - 1;
+        while (left &lt; right) {
+            const sum = nums[i] + nums[left] + nums[right];
+            if (sum === 0) {
+                res.push([nums[i], nums[left], nums[right]]);
+                while (left &lt; right &amp;&amp; nums[left] === nums[left + 1]) left++;
+                while (left &lt; right &amp;&amp; nums[right] === nums[right - 1]) right--;
+                left++;
+                right--;
+            } else if (sum &lt; 0) left++;
+            else right--;
+        }
+    }
+    return res;
+}</code></pre>
+
+    <div class="good"><strong>Transferable bits (arrays):</strong> the “have I seen <code>x</code>?” lookup is one idea wearing three costumes — Two Sum's <code>Map</code>, the window's <code>Set</code>, 3Sum's skip-past-duplicates line <code>while (l &lt; r &amp;&amp; nums[l] === nums[l + 1]) l++;</code> (copy-paste for 4Sum, 3Sum Closest, any unique-tuples ask). And when the answer is “best pair <code>i &lt; j</code>”, always try a running <code>Math.min</code>/<code>Math.max</code> before reaching for a heap.</div>
+
+    <h3 id="iconic-trees">5.2 Trees — the same four lines, every time</h3>
+
+    <p><strong>Invert Binary Tree</strong> — <em>the recursion template.</em> Guard on <code>null</code>, recurse both children, combine. The destructuring swap does the mirroring in one line<span class="es6-star" title="destructuring — ES2015">✳</span>, and the right subtree is evaluated before the left is touched.</p>
+    <pre><code>function invertTree(root) {
+    if (!root) return null;
+    [root.left, root.right] = [invertTree(root.right), invertTree(root.left)];
+    return root;
+}</code></pre>
+
+    <p><strong>Validate Binary Search Tree</strong> — <em>carry the invariant down.</em> Same skeleton, but each call threads a <code>(min, max)</code> range: the left child inherits an upper bound of <code>node.val</code>, the right child a lower bound. Comparing each node to its <em>immediate parent only</em> is the classic wrong answer.</p>
+    <pre><code>function isValidBST(root) {
+    function validate(node, min, max) {
+        if (!node) return true;
+        if (node.val &lt;= min || node.val &gt;= max) return false;
+        return validate(node.left, min, node.val) &amp;&amp; validate(node.right, node.val, max);
+    }
+    return validate(root, -Infinity, Infinity);
+}</code></pre>
+
+    <div class="good"><strong>Transferable bits (trees):</strong> guard on <code>null</code> → recurse left → recurse right → combine is the whole of max depth, diameter, level order and path sums. The Validate-BST upgrade — <em>thread state through the recursion instead of reading it from the parent</em> — is how you also solve symmetric tree, count-good-nodes and burn-the-tree problems.</div>
+
+    <h3 id="iconic-graphs">5.3 Graphs — mark visited, detect the back edge</h3>
+
+    <p><strong>Number of Islands</strong> — <em>flood fill.</em> Walk every cell; on an unvisited <code>'1'</code>, increment the count and DFS to sink the whole component so it can never be counted twice. The input grid <em>is</em> the visited set.</p>
+    <pre><code>function numIslands(grid) {
+    if (!grid.length) return 0;
+    const rows = grid.length, cols = grid[0].length;
+    let count = 0;
+
+    function dfs(r, c) {
+        if (r &lt; 0 || r &gt;= rows || c &lt; 0 || c &gt;= cols || grid[r][c] === '0') return;
+        grid[r][c] = '0';
+        dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);
+    }
+
+    for (let r = 0; r &lt; rows; r++) {
+        for (let c = 0; c &lt; cols; c++) {
+            if (grid[r][c] === '1') {
+                count++;
+                dfs(r, c);
+            }
+        }
+    }
+    return count;
+}</code></pre>
+
+    <p><strong>Course Schedule</strong> — <em>3-colour DFS cycle detection.</em> <code>0</code> unvisited, <code>1</code> visiting (on the current path), <code>2</code> finished. Hitting a <code>1</code> means a back edge — a dependency cycle — and no ordering exists.</p>
+    <pre><code>function canFinish(numCourses, prerequisites) {
+    const graph = Array.from({ length: numCourses }, () =&gt; []);
+    for (const [course, pre] of prerequisites) graph[pre].push(course);
+
+    const visited = new Array(numCourses).fill(0); // 0 = unvisited, 1 = visiting, 2 = visited
+
+    function hasCycle(node) {
+        if (visited[node] === 1) return true;
+        if (visited[node] === 2) return false;
+        visited[node] = 1;
+        for (const neighbor of graph[node]) {
+            if (hasCycle(neighbor)) return true;
+        }
+        visited[node] = 2;
+        return false;
+    }
+
+    for (let i = 0; i &lt; numCourses; i++) {
+        if (hasCycle(i)) return false;
+    }
+    return true;
+}</code></pre>
+
+    <div class="good"><strong>Transferable bits (graphs):</strong> “visited by mutation” (<code>grid[r][c] = '0'</code>) is the same idea as a <code>seen</code> <code>Set</code> — Rotting Oranges, Max Area of Island, Surrounded Regions. And the 0/1/2 colour array is the generic “does a valid order exist?” tool: push each node <em>after</em> its neighbours recurse and you get Course Schedule II's order; add recursion-depth tracking and you have the cycle to report in Alien Dictionary.</div>
+
+    <h3 id="iconic-design">5.4 Design — one O(1) trick instead of a linked list</h3>
+
+    <p><strong>LRU Cache</strong> — <em><code>Map</code> insertion order is recency order.</em> Reading a key and re-inserting it moves it to the most-recent end; evicting the least recent is deleting the first key from <code>map.keys()</code>. Both operations are O(1).</p>
+    <pre><code>class LRUCache {
+    constructor(capacity) {
+        this.capacity = capacity;
+        this.map = new Map();
+    }
+
+    get(key) {
+        if (!this.map.has(key)) return -1;
+        const value = this.map.get(key);
+        this.map.delete(key);
+        this.map.set(key, value); // move to end (most recent)
+        return value;
+    }
+
+    put(key, value) {
+        if (this.map.has(key)) this.map.delete(key);
+        this.map.set(key, value);
+        if (this.map.size &gt; this.capacity) {
+            const oldest = this.map.keys().next().value;
+            this.map.delete(oldest);
+        }
+    }
+}</code></pre>
+
+    <div class="good"><strong>Transferable bits (design):</strong> JS <code>Map</code> and <code>Set</code> iterate in insertion order<span class="es6-star" title="Map — ES2015">✳</span>, so delete+re-insert means “move to most recent” and <code>keys().next().value</code> means “oldest” — say that sentence in the interview, because in a language without ordered maps you would be handed a hash map <em>plus</em> a hand-rolled doubly linked list. The same property gives you a size-bounded cache in three lines.</div>
+
+    <h3 id="iconic-dp">5.5 Dynamic programming — ask what <code>dp[i]</code> depends on</h3>
+
+    <p><strong>House Robber</strong> — <em>rolling variables.</em> <code>dp[i]</code> depends only on the two cells before it, so the array is dead weight: <code>prev2</code> is <code>dp[i-2]</code>, <code>prev1</code> is <code>dp[i-1]</code>, both shift right each step.</p>
+    <pre><code>function rob(nums) {
+    let prev2 = 0, prev1 = 0;
+    for (const num of nums) {
+        const curr = Math.max(prev1, prev2 + num);
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}</code></pre>
+
+    <p><strong>Coin Change</strong> — <em>bottom-up table with an impossible sentinel.</em> <code>dp[i]</code> = fewest coins to reach amount <code>i</code>, seeded with <code>Infinity</code> except <code>dp[0] = 0</code>; each cell takes the min over “use one coin of this size”.</p>
+    <pre><code>function coinChange(coins, amount) {
+    const dp = new Array(amount + 1).fill(Infinity);
+    dp[0] = 0;
+    for (let i = 1; i &lt;= amount; i++) {
+        for (const coin of coins) {
+            if (i - coin &gt;= 0) {
+                dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+            }
+        }
+    }
+    return dp[amount] === Infinity ? -1 : dp[amount];
+}</code></pre>
+
+    <div class="good"><strong>Transferable bits (DP):</strong> ask <em>“what does <code>dp[i]</code> depend on?”</em> Two previous cells → two variables (House Robber, Climbing Stairs, Min Cost Climbing Stairs). A range of smaller answers → a table (Coin Change, Perfect Squares, Word Break). Initialise unreachable cells with <code>Infinity</code>, keep <code>dp[0]</code> as the empty-case identity (0 coins, 0 ways), and translate the sentinel into the problem's failure value (<code>-1</code>) <strong>once, after the loop</strong> — never inside it.</div>
+
+    <div class="notice"><strong>How to use section 5 in a real interview:</strong> name the concept out loud before you code — “frequency map”, “shrink-until-valid window”, “3-colour DFS”, “rolling variables”. It tells the interviewer where you are going, and — more importantly — it stops you re-deriving a known solution from scratch under pressure. The specific problem is just the concept in costume.</div>
 
     <p class="footnote">All behavioural claims here were executed in Node 22 rather than quoted from memory. <strong>Every method used on this page is documented in <a href="js-essentials.html">JavaScript Essentials</a></strong> — coverage is machine-checked, so no example uses an undocumented built-in. The ServiceNow-specific APIs live in the <a href="index.html">JavaScript Reference</a>; practice the same building blocks in the <a href="quiz.html">quiz</a> under <em>JavaScript for Interviews</em>.</p>
   </div>

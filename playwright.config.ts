@@ -112,6 +112,7 @@ export default defineConfig({
     /(?:^|\/)tests\/audit_page\.spec\.ts$/,
     /(?:^|\/)tests\/live_events_smoke\.spec\.ts$/,
     /(?:^|\/)tests\/playwright\/test_event_date_filters\.spec\.ts$/,
+    /(?:^|\/)tests\/js-interview-iconic\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,
