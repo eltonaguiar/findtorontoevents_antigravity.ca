@@ -1,0 +1,67 @@
+# DRAFT — operator review before activating (rename to .yml to enable).
+#
+# Phase-0 forward-collector for the opt-in CBOE IV/skew gate
+# (alpha_engine/options_iv_gate.py). Snapshots per-symbol options-implied features
+# (iv30, ATM IV, 25-delta skew, put/call OI & volume, GEX proxy) once per trading day
+# and commits the append-only JSONL so history accrues toward the >=40-day gate threshold.
+#
+# WHY DRAFT (not live yet):
+#   1. CBOE delayed-quotes reachability from GitHub Actions runner IPs is UNVERIFIED
+#      (works from the dev host; CBOE may rate-limit / geo-block cloud egress). The
+#      collector fails safe (no chain -> logs + exits 0), but verify a manual
+#      workflow_dispatch run returns real rows BEFORE relying on the cron.
+#   2. The gate itself (Phase 1) stays OFF regardless — this only ACCUMULATES data.
+#
+# Activation checklist:
+#   [ ] manual `workflow_dispatch` run shows real iv30/skew rows appended
+#   [ ] rename options-iv-collector.yml.draft -> options-iv-collector.yml
+#   [ ] confirm the committed JSONL grows by ~N rows/trading-day
+name: Options IV/skew collector (Phase 0, DRAFT)
+
+on:
+  workflow_dispatch:
+  # schedule:                       # uncomment on activation
+  #   - cron: "37 21 * * 1-5"       # 21:37 UTC weekdays (~after US close, off-peak minute)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: options-iv-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: python3 -m pip install --upgrade pip pymysql -q
+
+      - name: Collect CBOE IV/skew snapshots (read-only; CBOE keyless)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: |
+          python3 alpha_engine/options_iv_gate.py --collect --limit 60 \
+            || echo "[options-iv] non-fatal (CBOE unreachable from runner or no symbols)"
+          python3 alpha_engine/options_iv_gate.py --status
+
+      - name: Commit snapshot rows
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add alpha_engine/data/options_iv_snapshots.jsonl
+          git diff --cached --quiet || \
+            git commit -m "data(options-iv): daily IV/skew snapshot $(date -u +'%Y-%m-%d') [skip ci]"
+
+      - name: Push
+        continue-on-error: true
+        run: bash .github/scripts/safe_push.sh || echo "::warning::options-iv snapshot push failed; history stale on repo side until next run"
