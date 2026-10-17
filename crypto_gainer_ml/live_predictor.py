@@ -1030,7 +1030,8 @@ def generate_performance_page(scorecard: Dict, active_picks: List[Dict]) -> Dict
 # ─── Discord Notifications (isolated — uses Bot API, NOT shared webhook) ───
 
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "")
-DISCORD_ML_CHANNEL_ID = os.environ.get("DISCORD_ML_CHANNEL_ID", "1469431505439948920")
+# Default to the real #ml-picks channel id (1469431505439948920 is #notifications)
+DISCORD_ML_CHANNEL_ID = os.environ.get("DISCORD_ML_CHANNEL_ID", "1478588195120873472")
 DISCORD_API = "https://discord.com/api/v10"
 
 DASHBOARD_URL = "https://findtorontoevents.ca/updates/cursor-ml-gainer.html"

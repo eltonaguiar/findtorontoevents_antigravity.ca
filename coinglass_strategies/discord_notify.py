@@ -18,10 +18,12 @@ from utils.discord_heartbeat import send_no_picks_heartbeat
 
 logger = logging.getLogger(__name__)
 
-WEBHOOK_URL = os.environ.get(
-    "DISCORD_WEBHOOK_PAPERTRADE",
-    "https://discord.com/api/webhooks/1478588243459965008/9TZAjAtrgz5dTvWpV3TP7FO8Fo5JRDCz03PkPiTaSlef0EcIEdHEDUmz8Zi13sZrqgA3"
-)
+# SECURITY: never hardcode a Discord webhook here. This repo is public and
+# automated scanners report exposed webhooks, which Discord then deletes
+# permanently (that is exactly how webhook 1478588243459965008 died on
+# 2026-09-19). Set the GitHub secret DISCORD_WEBHOOK_PAPERTRADE, or export it
+# locally, and it is picked up automatically.
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_PAPERTRADE", "")
 USERNAME = "Coinglass DNA Bundle"
 
 COLOR_GREEN = 0x22C55E

@@ -1466,10 +1466,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-WEBHOOK_URL = os.environ.get(
-    "DISCORD_WEBHOOK_PAPERTRADE",
-    "https://discord.com/api/webhooks/1478588243459965008/9TZAjAtrgz5dTvWpV3TP7FO8Fo5JRDCz03PkPiTaSlef0EcIEdHEDUmz8Zi13sZrqgA3"
-)
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_PAPERTRADE", "")
 USERNAME = "Coinglass DNA Bundle"
 
 COLOR_GREEN = 0x22C55E
@@ -1884,7 +1881,7 @@ touch coinglass_strategies/data/.gitkeep
 **Step 2: Add the Discord webhook as a GitHub secret**
 
 ```bash
-gh secret set DISCORD_WEBHOOK_PAPERTRADE --body "https://discord.com/api/webhooks/1478588243459965008/9TZAjAtrgz5dTvWpV3TP7FO8Fo5JRDCz03PkPiTaSlef0EcIEdHEDUmz8Zi13sZrqgA3"
+gh secret set DISCORD_WEBHOOK_PAPERTRADE --body "<PASTE_NEW_WEBHOOK_URL>"  # never commit the real URL
 ```
 
 **Step 3: Verify secret was set**
