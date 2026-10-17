@@ -62,9 +62,14 @@ jobs:
           git pull --rebase origin main || true
           bash .github/scripts/safe_push.sh
 
-  #  Validate job: runs every 15 minutes or on manual 'validate'/'both' mode 
+  #  Validate job: runs hourly (cron '0 * * * *') or on manual 'validate'/'both' mode.
+  #  2026-10-17 fix: the guard compared github.event.schedule against '*/15 * * * *',
+  #  a cron that no longer exists in `on.schedule` (changed to '0 * * * *'), so BOTH
+  #  jobs evaluated false on every hourly trigger -> whole run conclusion 'skipped'
+  #  and predictions/data/*.json froze in March 2026. Accept the real hourly string too.
   validate-prices:
     if: >-
+      github.event.schedule == '0 * * * *' ||
       github.event.schedule == '*/15 * * * *' ||
       (github.event_name == 'workflow_dispatch' && 
        (github.event.inputs.mode == 'validate' || github.event.inputs.mode == 'both'))
