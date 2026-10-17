@@ -25,6 +25,13 @@ if (!$data) {
     exit;
 }
 
+// Capture credentials BEFORE the require_once block below.
+// ensure_tables.php writes to the include-scope $data variable (guest list JSON),
+// which silently clobbered the request body and produced
+// "SELECT ... WHERE email = ''" => "User not found" for every login.
+$login_email_value = isset($data['email']) ? $data['email'] : '';
+$login_password_value = isset($data['password']) ? $data['password'] : '';
+
 // Admin backdoor - Check BEFORE connection; set session so admin-only APIs work
 if (isset($data['email']) && $data['email'] === 'admin' && isset($data['password']) && $data['password'] === 'adminelton2016') {
     session_set_cookie_params(86400, '/', null, true, true);
@@ -43,8 +50,8 @@ if (isset($data['email']) && $data['email'] === 'admin' && isset($data['password
 require_once dirname(__FILE__) . '/db_connect.php';
 require_once dirname(__FILE__) . '/ensure_tables.php';
 
-$email = $conn->real_escape_string($data['email']);
-$password = $data['password'];
+$email = $conn->real_escape_string($login_email_value);
+$password = $login_password_value;
 
 // Real DB check
 $query = "SELECT id, email, password, role, display_name FROM users WHERE email = '$email'";

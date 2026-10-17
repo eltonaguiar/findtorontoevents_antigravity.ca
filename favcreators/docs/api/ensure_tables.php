@@ -114,13 +114,15 @@ $conn->query($sql_friendt_events);
 // Test user for Playwright: username bob, password bob
 $bob_check = $conn->query("SELECT id FROM users WHERE email = 'bob'");
 if (!$bob_check || $bob_check->num_rows === 0) {
-    $conn->query("INSERT INTO users (email, password, role, display_name) VALUES ('bob', 'bob', 'user', 'Bob')");
+    // created_at must be supplied: production users.created_at is NOT NULL with no default
+    // (strict SQL mode) and this insert was silently failing.
+    $conn->query("INSERT INTO users (email, password, role, display_name, created_at) VALUES ('bob', 'bob', 'user', 'Bob', NOW())");
 }
 
 // Test user for FriendTracker: John Doe, password password123
 $john_check = $conn->query("SELECT id FROM users WHERE email = 'johndoe'");
 if (!$john_check || $john_check->num_rows === 0) {
-    $conn->query("INSERT INTO users (email, password, role, display_name) VALUES ('johndoe', 'password123', 'user', 'John Doe')");
+    $conn->query("INSERT INTO users (email, password, role, display_name, created_at) VALUES ('johndoe', 'password123', 'user', 'John Doe', NOW())");
     $john_id = $conn->insert_id;
 } else {
     $john_row = $john_check->fetch_assoc();
@@ -132,7 +134,9 @@ if (isset($john_id) && $john_id) {
     // Check if Jane Doe friend already exists
     $jane_check = $conn->query("SELECT id FROM friendt_friends WHERE id = 'jd_20260302' AND user_id = $john_id");
     if (!$jane_check || $jane_check->num_rows === 0) {
-        $tags_json = $conn->real_escape_string(json_encode(["best friend", "college", "coffee buddy"]));
+        // PHP 5.2 compatible: short array syntax ([]) is a PARSE ERROR before 5.4 and
+        // kills every endpoint that requires this file (login.php, save_creators.php => HTTP 500).
+        $tags_json = $conn->real_escape_string(json_encode(array("best friend", "college", "coffee buddy")));
         $sql_jane = "INSERT INTO friendt_friends (
             id, user_id, name, nickname, birthday, how_met, notes,
             phone, email, instagram, tags, cadence_days
@@ -176,8 +180,8 @@ if (!$r || $r->num_rows === 0) {
     $need_seed = true;
 } else {
     $row = $r->fetch_assoc();
-    $data = json_decode($row['creators'], true);
-    if (!is_array($data) || count($data) === 0) $need_seed = true;
+    $guest_seed_data = json_decode($row['creators'], true);
+    if (!is_array($guest_seed_data) || count($guest_seed_data) === 0) $need_seed = true;
 }
 
 if ($need_seed) {
