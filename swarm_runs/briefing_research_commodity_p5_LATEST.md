@@ -1,6 +1,6 @@
 # COMMODITY research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the COMMODITY research run at run_2026-10-10T06-20-15Z.
+You are one of 3 AI engines voting on the COMMODITY research run at run_2026-10-17T06-17-33Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -12,7 +12,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: allocate 2% of portfolio equity to each GLD trade (fixed fractional)
   - universe: ['GLD']
   - regime: skip when 30d rolling volatility of GLD > 2.0%
-  - P3: PF=6.18 WR=53.3% MDD=18.5% Sharpe=0.96 n=15
+  - P3: PF=5.61 WR=53.3% MDD=18.5% Sharpe=0.94 n=15
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for GLD (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -22,7 +22,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: equal risk weight to each leg targeting 10% annualized portfolio volatility
   - universe: ['GLD', 'SLV', 'PPLT', 'PALL', 'CPER', 'DBA']
   - regime: skip month when 30d rolling volatility of SPY > 1.5%
-  - P3: PF=6.18 WR=53.3% MDD=18.5% Sharpe=0.96 n=15
+  - P3: PF=5.61 WR=53.3% MDD=18.5% Sharpe=0.94 n=15
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for GLD (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -42,7 +42,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: scale to target 8% annualized portfolio volatility
   - universe: ['CPER']
   - regime: skip when VIX (proxied by 30d SPY volatility) > 25
-  - P3: PF=2.73 WR=60.0% MDD=24.8% Sharpe=0.41 n=10
+  - P3: PF=2.63 WR=60.0% MDD=24.8% Sharpe=0.39 n=10
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for CPER (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -52,7 +52,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed 2% of portfolio equity per trade
   - universe: ['DBA']
   - regime: skip when 30d rolling volatility of DBA > 2.0% OR when 30d SPY volatility > 1.5%
-  - P3: PF=1.51 WR=38.6% MDD=19.0% Sharpe=0.36 n=44
+  - P3: PF=1.48 WR=36.4% MDD=19.0% Sharpe=0.34 n=44
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBA (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -82,7 +82,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed 100% of capital per signal
   - universe: ['DBA']
   - regime: skip when DBA 200-day volatility > 30% annualized (avoid extreme agricultural shocks)
-  - P3: PF=4.4 WR=72.2% MDD=12.4% Sharpe=0.76 n=18
+  - P3: PF=4.42 WR=66.7% MDD=12.4% Sharpe=0.77 n=18
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBA (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -92,7 +92,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: equal-weight long/short, each leg 50% of capital (net zero beta)
   - universe: ['GLD', 'SLV', 'PPLT', 'PALL', 'CPER', 'DBA']
   - regime: skip when average cross-sectional dispersion of 12-month returns across universe < 5% (low momentum dispersion regime)
-  - P3: PF=6.18 WR=53.3% MDD=18.5% Sharpe=0.96 n=15
+  - P3: PF=5.61 WR=53.3% MDD=18.5% Sharpe=0.94 n=15
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for GLD (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -102,7 +102,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed 100% of capital per signal
   - universe: ['GLD']
   - regime: skip when GLD 30-day correlation to SPY > 0.7 (high equity beta regime reduces commodity-specific edge)
-  - P3: PF=6.18 WR=53.3% MDD=18.5% Sharpe=0.96 n=15
+  - P3: PF=5.61 WR=53.3% MDD=18.5% Sharpe=0.94 n=15
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for GLD (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -124,7 +124,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "COMMODITY",
-  "run_id": "run_2026-10-10T06-20-15Z",
+  "run_id": "run_2026-10-17T06-17-33Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",

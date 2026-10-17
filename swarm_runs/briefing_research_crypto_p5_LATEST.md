@@ -1,6 +1,6 @@
 # CRYPTO research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the CRYPTO research run at run_2026-10-10T06-19-42Z.
+You are one of 3 AI engines voting on the CRYPTO research run at run_2026-10-17T06-17-07Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -12,7 +12,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Equal-weight dollar allocation across long legs and across short legs; gross exposure capped at 100% of capital (net exposure may be near zero).
   - universe: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD']
   - regime: Skip the month if 30-day realized volatility of BTC-USD exceeds 80% OR if the total crypto market cap (sum of the 5 tickers) falls more than 10% over the prior 30 days.
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -22,7 +22,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Allocate equal dollar weight to each active signal; scale each leg to target 12% annualized volatility using a rolling 30-day realized vol estimate.
   - universe: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD']
   - regime: Skip the month if BTC-USD 30-day realized volatility > 80% OR if the US VIX (proxy from external data) > 30.
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -32,7 +32,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Dynamic dollar exposure equal to scaling_factor of capital (0-100%); remainder held in cash.
   - universe: ['BTC-USD']
   - regime: Skip trading on any day where BTC-USD price drops >5% intraday or when 30-day realized vol > 80%.
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -42,7 +42,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: 100% of capital allocated to BTC-USD in bull regime, 0% in bear regime.
   - universe: ['BTC-USD']
   - regime: Skip trading days when BTC-USD 30-day realized volatility > 80% or when the 30-day market-cap drawdown of the five-asset basket exceeds 15%.
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -52,7 +52,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Dollar-neutral: each leg receives 50% of capital (long and short legs equal in dollar terms).
   - universe: ['BTC-USD', 'ETH-USD']
   - regime: Skip any month where BTC-USD 30-day realized volatility > 80% or where the combined market-cap of the five assets falls >10% over the prior 30 days.
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -62,7 +62,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: equal-weight long and short legs, each leg sized to 25% of portfolio; total gross exposure 100%
   - universe: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD']
   - regime: skip when average 30-day realized volatility across universe > 120% annualized (i.e., extreme panic) OR when BTC-USD 90-day return < -40% (deep bear regime)
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -72,7 +72,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: equal-weight long/short pairs, each leg 25% of portfolio; total gross 100%
   - universe: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD']
   - regime: skip when BTC-USD 30-day return < -20% (contango tends to collapse in crashes) OR when average funding rate spread across universe < 0.02% daily (no carry opportunity)
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -82,7 +82,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: target 40% annualized volatility: position = 0.40 / (30-day realized vol annualized). Cap position at 100% of portfolio, floor at 10%
   - universe: ['BTC-USD']
   - regime: skip entirely when BTC-USD 90-day return < -50% (structural bear) OR when 30-day realized vol > 150% (unmanageable vol)
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -92,7 +92,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: dollar-neutral: long ETH and short BTC with equal notional value, each leg sized to 50% of portfolio
   - universe: ['BTC-USD', 'ETH-USD']
   - regime: skip when 30-day correlation between BTC and ETH < 0.5 (cointegration likely broken) OR when BTC-USD 30-day return < -25% (systemic stress breaks pair relationships)
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -102,7 +102,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: equal-weight long/short, each leg 25% of portfolio; total gross 100%
   - universe: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD']
   - regime: skip when model confidence (average predicted probability across top/bottom picks) < 0.55 OR when BTC-USD 7-day return > 30% (euphoria distorts signals)
-  - P3: PF=76.64 WR=100.0% MDD=66.7% Sharpe=0.4 n=1
+  - P3: PF=74.0 WR=100.0% MDD=66.7% Sharpe=0.39 n=1
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: breakout (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -112,7 +112,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed 100% of portfolio into BTC-USD
   - universe: ['BTC-USD']
   - regime: none (deliberately naive to test if any calendar effect exists)
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -122,7 +122,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed 100% allocation to BTC-USD when signal is active, otherwise 0%
   - universe: ['BTC-USD']
   - regime: skip when 30-day realized volatility of BTC-USD > 80%
-  - P3: PF=2.15 WR=31.2% MDD=48.5% Sharpe=0.57 n=32
+  - P3: PF=2.13 WR=31.2% MDD=48.5% Sharpe=0.56 n=32
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -132,7 +132,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: scale position to target 10% annualized volatility based on 30-day realized vol
   - universe: ['ETH-USD']
   - regime: skip (reduce to 0% allocation) when 30-day realized volatility of ETH-USD > 100%
-  - P3: PF=1.65 WR=80.0% MDD=61.6% Sharpe=0.19 n=5
+  - P3: PF=1.57 WR=60.0% MDD=61.6% Sharpe=0.17 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for ETH-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -142,7 +142,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: equal dollar allocation to long and short legs for market-neutral exposure
   - universe: ['BTC-USD', 'ETH-USD']
   - regime: skip when 30-day correlation between BTC-USD and ETH-USD < 0.5
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -152,7 +152,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed 100% allocation to BTC-USD when in bull regime, otherwise 0%
   - universe: ['BTC-USD']
   - regime: skip (stay flat) when 30-day realized volatility of BTC-USD > 90%
-  - P3: PF=6.76 WR=80.0% MDD=39.4% Sharpe=0.48 n=5
+  - P3: PF=6.66 WR=80.0% MDD=39.4% Sharpe=0.47 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -162,7 +162,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: equal 50% allocation to each of the top 2 coins, rebalanced monthly
   - universe: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD']
   - regime: skip (go to cash) when average 30-day realized volatility of universe > 80%
-  - P3: PF=2.15 WR=31.2% MDD=48.5% Sharpe=0.57 n=32
+  - P3: PF=2.13 WR=31.2% MDD=48.5% Sharpe=0.56 n=32
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for BTC-USD (1826 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -184,7 +184,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "CRYPTO",
-  "run_id": "run_2026-10-10T06-19-42Z",
+  "run_id": "run_2026-10-17T06-17-07Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",

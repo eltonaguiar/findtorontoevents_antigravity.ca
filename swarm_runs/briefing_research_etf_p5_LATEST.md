@@ -1,6 +1,6 @@
 # ETF research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the ETF research run at run_2026-10-10T06-19-49Z.
+You are one of 3 AI engines voting on the ETF research run at run_2026-10-17T06-17-17Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -12,7 +12,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Allocate equal dollar amount to each long and short leg; target portfolio volatility of 8% annualized using a rolling 60-day volatility estimate of the long-short spread.
   - universe: ['XLK', 'XLF', 'XLE', 'XLV', 'XLI', 'XLY', 'XLP', 'XLU', 'XLB', 'XLRE', 'XLC']
   - regime: Skip the month if the 30-day realized volatility of SPY (proxy for market risk) exceeds 20% or if the 60-day SPY momentum is negative.
-  - P3: PF=86.17 WR=80.0% MDD=17.0% Sharpe=1.04 n=5
+  - P3: PF=28.61 WR=60.0% MDD=17.0% Sharpe=0.95 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for XLK (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -22,7 +22,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Risk-scale each trade to target 1% of portfolio equity per pair, using the 20-day rolling volatility of the spread to set position size.
   - universe: ['XLF', 'XLE']
   - regime: Skip trading on days when the VIX (proxy from ^VIX) exceeds 30 or when the 10-day average volume of either ETF falls below its 30-day median (liquidity filter).
-  - P3: PF=1.99 WR=58.3% MDD=19.7% Sharpe=0.43 n=12
+  - P3: PF=2.09 WR=66.7% MDD=19.7% Sharpe=0.45 n=12
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for XLF (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -32,7 +32,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Allocate equal capital to each long and short leg; apply a portfolio-level volatility target of 10% annualized using a 60-day rolling volatility of the long-short basket.
   - universe: ['XLK', 'XLF', 'XLE', 'XLV', 'XLI', 'XLY', 'XLP', 'XLU', 'XLB', 'XLRE', 'XLC']
   - regime: Skip the month if the 30-day realized volatility of the MSCI World Index (proxy via VTI) exceeds 18% or if the 60-day momentum of the S&P 500 is negative.
-  - P3: PF=86.17 WR=80.0% MDD=17.0% Sharpe=1.04 n=5
+  - P3: PF=28.61 WR=60.0% MDD=17.0% Sharpe=0.95 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for XLK (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -42,7 +42,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Equal dollar allocation per leg; scale to a target portfolio volatility of 9% annualized using a 30-day rolling volatility of the long-short spread.
   - universe: ['XLK', 'XLF', 'XLE', 'XLV', 'XLI', 'XLY', 'XLP', 'XLU', 'XLB', 'XLRE', 'XLC']
   - regime: Skip the month if the 20-day average VIX exceeds 28 or if the 30-day realized volatility of the Bloomberg US Aggregate Bond Index (proxy via BND) exceeds 10%.
-  - P3: PF=86.17 WR=80.0% MDD=17.0% Sharpe=1.04 n=5
+  - P3: PF=28.61 WR=60.0% MDD=17.0% Sharpe=0.95 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for XLK (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -52,7 +52,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Allocate up to 100% of capital to the single longest-positive-momentum ETF; if none, stay fully in cash.
   - universe: ['XLK', 'XLF', 'XLE', 'XLV', 'XLI', 'XLY', 'XLP', 'XLU', 'XLB', 'XLRE', 'XLC']
   - regime: Skip the month if the 30-day realized volatility of SPY exceeds 22% (high-vol regime) to avoid noisy signals.
-  - P3: PF=86.17 WR=80.0% MDD=17.0% Sharpe=1.04 n=5
+  - P3: PF=28.61 WR=60.0% MDD=17.0% Sharpe=0.95 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for XLK (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -74,7 +74,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "ETF",
-  "run_id": "run_2026-10-10T06-19-49Z",
+  "run_id": "run_2026-10-17T06-17-17Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",
