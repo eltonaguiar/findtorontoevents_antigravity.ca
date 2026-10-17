@@ -874,12 +874,49 @@ def _load_json_source(path, rel_path):
         return None
 
 
+def _heal_no_price_row(row):
+    """2026-10-17 mark-to-market honesty fix (heal-on-load).
+
+    Historical no-live-price TIME_EXIT rows were written with
+    exit_price == entry_price and pnl_pct == 0.0 — a fabricated "flat 0%"
+    indistinguishable from a real zero move (plus contradictory rows labelled
+    TP_HIT/SL_HIT at exactly the entry price). Convert them to pnl_pct=None so
+    no metric, funnel, or UI can read them as an actual result. The row stays
+    closed — we just stop claiming a PnL we never measured.
+    """
+    if not isinstance(row, dict) or row.get("pnl_pct") not in (0, 0.0):
+        return row
+    try:
+        xp = float(row.get("exit_price"))
+        ip = float(row.get("entry_price"))
+    except (TypeError, ValueError):
+        return row
+    if xp != ip:
+        return row
+    er = str(row.get("exit_reason", "") or "").upper()
+    if er in ("TIME_EXIT", "EXPIRED", "TIME", "TIMEOUT", "MAX_HOLD"):
+        note = "no-live-price"
+    elif er in ("TP_HIT", "SL_HIT", "TAKE_PROFIT", "STOP_LOSS"):
+        note = "contradictory-tp-sl-at-entry"
+    else:
+        return row
+    row = dict(row)
+    row["pnl_pct"] = None
+    row["exit_price"] = None
+    row["_note"] = note
+    row["_mtm"] = "unresolved"
+    return row
+
+
 def load_existing_resolved():
     """Load previously resolved picks to avoid duplicates."""
     if RESOLVED_FILE.exists():
         try:
             data = json.loads(RESOLVED_FILE.read_text(encoding="utf-8"))
-            return data if isinstance(data, list) else data.get("resolved", [])
+            rows = data if isinstance(data, list) else data.get("resolved", [])
+            if isinstance(rows, list):
+                return [_heal_no_price_row(r) for r in rows]
+            return []
         except Exception:
             return []
     return []
@@ -957,6 +994,7 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
     """
 
     written = 0
+    unverifiable = 0
     try:
         conn = pymysql.connect(
             host=host, port=port, user=user,
@@ -993,6 +1031,24 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
                         status = "EXPIRED"
                         resolution_method = "TIME_EXPIRED"
 
+                    # 2026-10-17 mark-to-market honesty fix: never write
+                    # fabricated zeros. Rows without a verified PnL (no live
+                    # price) or contradictory TP/SL labels whose exit equals
+                    # entry stay out of at_pick_outcomes instead of entering
+                    # as pnl=0 "flat" results.
+                    if pick.get("pnl_pct") is None:
+                        unverifiable += 1
+                        continue
+                    _xp = pick.get("exit_price")
+                    _ip = pick.get("entry_price")
+                    _er = str(pick.get("exit_reason", "") or "").upper()
+                    if _er in ("TP_HIT", "SL_HIT", "TAKE_PROFIT", "STOP_LOSS") and _xp is not None and _ip is not None:
+                        try:
+                            if abs(float(_xp) - float(_ip)) < 1e-12:
+                                unverifiable += 1
+                                continue
+                        except (TypeError, ValueError):
+                            pass
                     pnl_raw = float(pick.get("pnl_pct", pick.get("pnl", 0)) or 0)
                     pnl_pct = round(max(-100.0, min(100.0, pnl_raw)), 4)
 
@@ -1024,7 +1080,7 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
                 except Exception as e:
                     logging.warning(f"[mysql] failed to write pick {symbol}: {e}")
 
-        logging.info(f"[mysql] wrote/updated {written} outcomes to at_pick_outcomes")
+        logging.info(f"[mysql] wrote/updated {written} outcomes to at_pick_outcomes (skipped {unverifiable} unverifiable zero/None-pnl rows)")
     except Exception as e:
         logging.warning(f"[mysql] connection/upsert error: {e}")
 
@@ -1203,13 +1259,20 @@ def main():
                     hold_hours = round((now - pick_dt).total_seconds() / 3600, 1)
                     resolved = {
                         **pick,
-                        "exit_price": entry,
-                        "pnl_pct": 0.0,
+                        # 2026-10-17 mark-to-market honesty fix: with no live
+                        # price for the symbol the move is UNKNOWN. Writing
+                        # exit_price=entry / pnl=0 fabricated a "flat 0%"
+                        # result. None keeps the close (so the pick still stops
+                        # accumulating in active ledgers) but tells every
+                        # consumer the PnL was never measured.
+                        "exit_price": None,
+                        "pnl_pct": None,
                         "exit_reason": "TIME_EXIT",
                         "status": "CLOSED",
                         "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "hold_hours": hold_hours,
                         "_note": "no-live-price",
+                        "_mtm": "unresolved",
                         "_resolver_version": RESOLVER_VERSION,
                         "_resolver_source": RESOLVER_SOURCE_ID,
                     }
@@ -1218,7 +1281,7 @@ def main():
                     resolved_ids.add(pick_id)
                     stats[system_name]["expired"] += 1
                     log.info(
-                        "  TIME_EXIT (no-live-price) %s %s %s pnl=0.0%% (held %.0fh)",
+                        "  TIME_EXIT (no-live-price) %s %s %s pnl=UNRESOLVED (held %.0fh)",
                         system_name, pick["symbol"], pick["direction"], hold_hours,
                     )
                 continue
