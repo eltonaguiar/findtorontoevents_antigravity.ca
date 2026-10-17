@@ -74,6 +74,54 @@ price already refreshed by the pre-step — but any upstream that persists
 - 14-day slice: 1037 closed, 407 SL_HIT / 346 TP_HIT / 193 FORCE_CLOSED /
   87 TIME_EXIT — normal mix, WR ≈ 44.6%.
 
+## GitHub Actions health double-check (on request)
+
+- Stale failures (latest completed run failed, no later success): **0**
+- Chronic cancellations (≥4 cancels, 0 successes): **0**
+- Recurring failures (≥3 consecutive): **0**
+- Cancelled runs in the last 200: **0**
+- Runs stalled in_progress/queued >90min (last 500): **none**
+- Annotations/warnings on check-runs of the last 8 main commits: **0**
+- Job-level scan of the last 60 runs: the only non-success jobs were
+  `status=in_progress` with empty conclusion (mid-flight), not failures.
+
+No CI fixes are needed.
+
+## Per-asset-class pick quality (production payload)
+
+Closed (3500 rows in the recent window):
+
+| class | n | WR% | flat | zero% | mean% |
+|---|---|---|---|---|---|
+| CRYPTO | 2091 | 46.7 | 0 | 0.0 | +0.60 |
+| EQUITY | 688 | 48.2 | 10 | 1.5 | +0.46 |
+| ETF | 503 | 44.3 | 0 | 0.0 | +0.08 |
+| FOREX | 180 | 47.1 | 40 | **22.2** | +0.08 |
+| BOND | 28 | 33.3 | 0 | 3.6 | −0.23 |
+| COMMODITY | 9 | 50.0 | 1 | 11.1 | +0.59 |
+| FUTURES | 1 | 100 | 0 | 0.0 | +14.94 |
+
+- FOREX's 22% zero share is the fabricated TIME_EXIT cluster (today's
+  pre-fix batch + the March 11–13 batch) — healed by the resolver fix.
+- Every class still shows `thresholdPass: false` / `smartCount: 0`
+  (known floors state, unchanged).
+- `active_raw`: 3280/4098 picks (80%) auto-expire with
+  `expired_no_pnl` — CRYPTO 84%, FOREX 70%, EQUITY 50%. This is the
+  real stall-data finding: most picks' lifecycles end without a measured
+  PnL, which deflates every class's `forwardWR` and keeps score floors
+  unpassed. **Planned follow-up (not fixed here):** make the resolver
+  cover crypto/forex emitter rows so TIME/SL/TP resolution (with real
+  prices) replaces silent auto-expiry.
+- Cosmetic reason smells fixed: `combined_confidence_strategy.py` no
+  longer emits `WR=80.0%, 0 trades` — with `trade_count == 0` it now
+  says `(no trade history yet)` (verified: 0-trade → no WR string, 8-trade
+  → `WR=75.0%, 8 trades`; py_compile + module import pass).
+- Concurrent session note: commit `aefb74685e` (parallel agent, same
+  branch) widened yfinance lookups `period 1d→5d` for weekend prices in
+  `_fetch_equity_prices`; verified compatible — this session's
+  `_enrich_live_pnl` fetch-first fix (comment marker at line 1674,
+  `fetched = {}` at 1716) remains intact.
+
 ## Delivery status
 
 Fixes live on branch `fix/js-reference-accuracy-audit` (commits
