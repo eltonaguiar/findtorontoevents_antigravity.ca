@@ -374,11 +374,19 @@ def generate_combined_confidence_picks() -> list[dict]:
                 "trade_count": trade_count,
                 "sl_tightened": tier == "MEDIUM",
             },
+            # 2026-10-17: never advertise a win-rate computed from zero
+            # trades (was showing "WR=80.0%, 0 trades" on active picks
+            # like GC=F / GBPUSD=X). With no history, cite the missing
+            # history instead of a prior-derived percentage.
             "reason": (
                 f"Combined Confidence: CS={cs:.2f} ({tier}), "
-                f"TE={trader_edge:.2f} (WR={wr:.1%}, {trade_count} trades), "
-                f"MP={market_prob:.2f}; "
-                f"size={pos_mult:.1f}x"
+                + (
+                    f"TE={trader_edge:.2f} (WR={wr:.1%}, {trade_count} trades), "
+                    if trade_count > 0
+                    else f"TE={trader_edge:.2f} (no trade history yet), "
+                )
+                + f"MP={market_prob:.2f}; "
+                + f"size={pos_mult:.1f}x"
             ),
         }
         results.append(result)
