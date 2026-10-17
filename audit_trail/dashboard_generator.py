@@ -1541,7 +1541,7 @@ def _fetch_equity_prices(equity_symbols: set) -> dict:
         syms_list = list(remaining)
         try:
             # Batch download: one HTTP call for all symbols — much faster than per-symbol
-            data = yf.download(syms_list, period="1d", progress=False, threads=True)
+            data = yf.download(syms_list, period="5d", progress=False, threads=True)
             if data is not None and not data.empty:
                 close = data.get("Close", data)
                 if hasattr(close, "columns"):
@@ -1565,7 +1565,7 @@ def _fetch_equity_prices(equity_symbols: set) -> dict:
         for sym in still_missing:
             try:
                 ticker = yf.Ticker(sym)
-                hist = ticker.history(period="1d")
+                hist = ticker.history(period="5d")
                 if not hist.empty:
                     prices[sym] = float(hist["Close"].iloc[-1])
             except Exception:

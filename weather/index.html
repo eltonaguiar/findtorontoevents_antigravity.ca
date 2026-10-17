@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toronto Weather | findtorontoevents.ca</title>
+<meta name="description" content="Real-time weather with jacket advice, rain probability, sunset times and more. Localized to your area.">
+<link rel="canonical" href="https://findtorontoevents.ca/weather/">
+<style>
+:root{--bg:#0a0a1a;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.1);--t1:#f0f0f5;--t2:#9ca3af;--t3:#6b7280;--accent:#00d4ff;--accent2:#a855f7;--green:#22c55e;--red:#ef4444;--amber:#f59e0b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+#weather-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-fallback{position:fixed;inset:0;z-index:0;transition:background 2s,filter 2s}
+.bg-fallback.clear{background:linear-gradient(180deg,#1a6fc4 0%,#4aa8e8 40%,#87ceeb 100%)}
+.bg-fallback.clear.night{background:linear-gradient(180deg,#050818 0%,#0a1028 50%,#0e1838 100%)}
+.bg-fallback.clouds{background:linear-gradient(180deg,#4a6a8a 0%,#6a8aaa 40%,#8aa0b8 100%)}
+.bg-fallback.clouds.night{background:linear-gradient(180deg,#080c18 0%,#0e1424 50%,#141c30 100%)}
+.bg-fallback.rain{background:linear-gradient(180deg,#2a3a50 0%,#3a5068 40%,#4a6078 100%)}
+.bg-fallback.rain.night{background:linear-gradient(180deg,#060a14 0%,#0a1220 50%,#0e1828 100%)}
+.bg-fallback.snow{background:linear-gradient(180deg,#6a8ab0 0%,#8aaacc 40%,#a0c0dd 100%)}
+.bg-fallback.snow.night{background:linear-gradient(180deg,#0a1020 0%,#101830 50%,#182040 100%)}
+.bg-fallback.thunder{background:linear-gradient(180deg,#1a1a2e 0%,#2a2a44 40%,#3a3a55 100%)}
+.bg-fallback.thunder.night{background:linear-gradient(180deg,#060410 0%,#0c0818 50%,#120c22 100%)}
+.bg-fallback.fog{background:linear-gradient(180deg,#8a8a96 0%,#9a9aa4 40%,#aaaab4 100%)}
+.bg-fallback.fog.night{background:linear-gradient(180deg,#101014 0%,#16161c 50%,#1c1c24 100%)}
+.container{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 16px 80px}
+.back{position:fixed;bottom:20px;left:20px;z-index:100;padding:10px 20px;border-radius:24px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.1);color:var(--accent);text-decoration:none;font-weight:600;font-size:.9rem;backdrop-filter:blur(10px)}
+.header{text-align:center;padding:30px 0 16px}
+.header h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .sub{color:var(--t2);font-size:.95rem;margin-top:4px}
+.badge{display:inline-block;margin-top:8px;padding:6px 16px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:.85rem;color:var(--t2)}
+.updated{text-align:center;margin:8px 0 16px;font-size:.8rem;color:var(--t3);font-variant-numeric:tabular-nums}
+.updated b{color:var(--t2)}
+
+/* location form */
+.loc-form{display:flex;gap:8px;max-width:480px;margin:0 auto 20px;flex-wrap:wrap;justify-content:center}
+.loc-form input{flex:1;min-width:200px;padding:10px 16px;border-radius:24px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:var(--t1);font-size:.95rem;outline:none;transition:border .3s}
+.loc-form input:focus{border-color:var(--accent)}
+.loc-form button{padding:10px 22px;border-radius:24px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;transition:transform .2s}
+.loc-form button:hover{transform:scale(1.05)}
+.loc-btn{padding:10px 22px;border-radius:24px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:var(--t2);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .3s}
+.loc-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* loading */
+.loading{text-align:center;padding:80px 20px}
+.spinner{width:48px;height:48px;border:3px solid rgba(0,212,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:var(--t2)}
+
+/* jacket verdict - THE main card */
+.verdict{text-align:center;padding:36px 24px;border-radius:20px;margin-bottom:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);backdrop-filter:blur(12px);transition:all .6s}
+.verdict .emoji{font-size:5rem;line-height:1}
+.verdict .title{font-size:1.8rem;font-weight:900;margin-top:8px}
+.verdict .reason{font-size:1rem;color:var(--t2);margin-top:8px;line-height:1.5;max-width:560px;margin-left:auto;margin-right:auto}
+.verdict.yes{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08)}
+.verdict.yes .title{color:#f87171}
+.verdict.maybe{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
+.verdict.maybe .title{color:#fbbf24}
+.verdict.no{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08)}
+.verdict.no .title{color:#4ade80}
+
+/* grid cards */
+.grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--card-b);border-radius:16px;padding:20px;backdrop-filter:blur(8px);transition:border-color .3s}
+.card:hover{border-color:rgba(0,212,255,.3)}
+.card.span2{grid-column:1/-1}
+.lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px}
+.big{font-size:2.6rem;font-weight:800;line-height:1.1}
+.sub2{color:var(--t2);font-size:.88rem;margin-top:4px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.92rem}
+.row:last-child{border:none}
+.row .v{font-weight:700}
+
+/* rain prob bar */
+.rain-bar{width:100%;height:10px;border-radius:5px;background:rgba(255,255,255,.06);margin-top:10px;overflow:hidden}
+.rain-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#3b82f6,#00d4ff);transition:width 1s ease}
+
+/* forecast strip */
+.fc-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+@media(max-width:700px){.fc-strip{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:420px){.fc-strip{grid-template-columns:repeat(3,1fr)}}
+.fc-day{text-align:center;padding:12px 4px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);transition:all .25s}
+.fc-day:hover{background:rgba(0,212,255,.08);transform:translateY(-2px)}
+.fc-day .dn{font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase}
+.fc-day .de{font-size:1.5rem;margin:4px 0}
+.fc-day .dh{font-weight:700;font-size:.85rem}
+.fc-day .dl{color:var(--t3);font-size:.78rem}
+.fc-day .dp{font-size:.68rem;color:#60a5fa;margin-top:3px}
+
+/* hourly */
+.hourly{display:flex;gap:8px;overflow-x:auto;padding:6px 0;scrollbar-width:thin}
+.h-item{flex-shrink:0;text-align:center;padding:10px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);min-width:65px}
+.h-item .ht{font-size:.68rem;color:var(--t3);font-weight:600}
+.h-item .he{font-size:1.2rem;margin:4px 0}
+.h-item .hv{font-weight:700;font-size:.88rem}
+.h-item .hp{font-size:.65rem;color:#60a5fa}
+
+/* alerts */
+.alert{padding:12px 18px;border-radius:12px;margin-bottom:8px;border-left:4px solid}
+.alert.high{background:rgba(239,68,68,.12);border-color:#ef4444}
+.alert.med{background:rgba(245,158,11,.12);border-color:#f59e0b}
+.alert .at{font-weight:700;font-size:.92rem}
+.alert .ad{font-size:.82rem;color:var(--t2);margin-top:2px}
+
+/* audio btn */
+.audio-btn{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 22px;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:var(--t2);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s}
+.audio-btn:hover{background:rgba(0,212,255,.12);color:var(--accent);border-color:rgba(0,212,255,.3)}
+
+/* privacy note */
+.priv{font-size:.75rem;color:var(--t3);text-align:center;margin-top:4px}
+
+/* ===== NAV PANEL (left slide-in, like main page quick nav) ===== */
+.nav-toggle{position:fixed;top:14px;left:14px;z-index:300;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:var(--t1);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.nav-overlay{position:fixed;inset:0;z-index:390;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.nav-overlay.open{opacity:1;pointer-events:auto}
+.nav-panel{position:fixed;top:0;left:0;bottom:0;width:290px;max-width:85vw;z-index:400;background:rgba(12,12,28,.96);backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,.1);transform:translateX(-100%);transition:transform .28s ease;display:flex;flex-direction:column}
+.nav-panel.open{transform:translateX(0)}
+.nav-panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-panel-head h3{font-size:1rem;font-weight:800;color:var(--t1)}
+.nav-panel-head button{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer}
+.nav-panel-body{flex:1;overflow-y:auto;padding:12px}
+.nav-panel-body a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--t2);text-decoration:none;font-size:.9rem;transition:all .2s}
+.nav-panel-body a:hover{background:rgba(255,255,255,.06);color:var(--t1)}
+
+/* ===== SIDE PANEL (right, collapsible) ===== */
+.side-toggle{position:fixed;top:14px;right:14px;z-index:300;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:var(--t1);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.side-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.side-panel{position:fixed;top:0;right:0;bottom:0;width:320px;max-width:90vw;z-index:395;background:rgba(12,12,28,.96);backdrop-filter:blur(14px);border-left:1px solid rgba(255,255,255,.1);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column}
+.side-panel.open{transform:translateX(0)}
+.side-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.side-head h3{font-size:1rem;font-weight:800;color:var(--t1)}
+.side-head button{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer}
+.side-body{flex:1;overflow-y:auto;padding:14px}
+.side-section{margin-bottom:18px}
+.side-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.side-more{font-size:.72rem;color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0}
+.side-list{list-style:none;padding:0;margin:0}
+.side-list li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.85rem}
+.side-list li:last-child{border:none}
+.side-list a{color:var(--t1);text-decoration:none;display:block}
+.side-list a:hover{color:var(--accent)}
+.side-meta{font-size:.72rem;color:var(--t3);margin-top:2px}
+.side-loading{color:var(--t3);font-style:italic}
+.side-empty{color:var(--t3);font-style:italic;font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="bg-fallback" id="bg-fallback"></div>
+<canvas id="weather-canvas"></canvas>
+<a href="/" class="back">&larr; Events</a>
+
+<div class="container">
+  <div class="header">
+    <h1>&#127780;&#65039; Toronto Weather</h1>
+    <p class="sub">Do you need a jacket? Rain odds, sunset, and what to wear</p>
+    <div class="badge" id="season-badge">Loading...</div>
+  </div>
+
+  <div class="updated">Last updated: <b id="last-updated">--</b> &middot; auto-refreshes every 10 min</div>
+
+  <div class="loc-form">
+    <input type="text" id="postal-input" placeholder="Postal / ZIP code (e.g. M5V 3A8 or 10001)" autocomplete="postal-code">
+    <button onclick="lookupPostal()">Go</button>
+    <button class="loc-btn" onclick="detectLocation()">&#128205; My location</button>
+  </div>
+  <div class="priv">Location stays in your browser &mdash; we only use it to fetch weather.</div>
+  <div class="priv" style="margin-top:10px"><a href="https://www.reddit.com/r/LivestreamFail/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">📺 r/LivestreamFail</a></div>
+
+  <div id="area-label" class="updated" style="margin-top:6px">Area: <b>--</b></div>
+
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Fetching weather&hellip;</p>
+  </div>
+
+  <div id="content" style="display:none">
+    <div id="alerts"></div>
+
+    <!-- JACKETS VERDICT -->
+    <div class="verdict" id="verdict">
+      <div class="emoji" id="v-emoji">&#129509;</div>
+      <div class="title" id="v-title">Loading&hellip;</div>
+      <div class="reason" id="v-reason"></div>
+    </div>
+
+    <div class="grid">
+      <!-- current -->
+      <div class="card span2" style="text-align:center">
+        <div class="big" id="cur-temp">--&deg;</div>
+        <div class="sub2" id="cur-cond">&mdash;</div>
+        <div class="sub2" id="cur-feels" style="margin-top:6px;font-weight:700"></div>
+        <button class="audio-btn" id="audio-btn">&#128266; Listen</button>
+      </div>
+
+      <!-- rain prob -->
+      <div class="card">
+        <div class="lbl">&#128167; Rain probability (today)</div>
+        <div class="big" id="rain-prob">--%</div>
+        <div class="sub2" id="rain-desc">&mdash;</div>
+        <div class="rain-bar"><div class="rain-fill" id="rain-fill" style="width:0%"></div></div>
+      </div>
+
+      <!-- sun -->
+      <div class="card">
+        <div class="lbl">&#9728;&#65039; Sun</div>
+        <div class="row"><span>&#127749; Sunrise</span><span class="v" id="sunrise">--</span></div>
+        <div class="row"><span>&#127751; Sunset</span><span class="v" id="sunset">--</span></div>
+        <div class="row"><span>&#9728;&#65039; UV max</span><span class="v" id="uv">--</span></div>
+        <div class="row"><span>&#127777;&#65039; Daylight left</span><span class="v" id="daylight-left">--</span></div>
+      </div>
+
+      <!-- details -->
+      <div class="card">
+        <div class="lbl">&#128202; Details</div>
+        <div class="row"><span>&#128168; Wind</span><span class="v" id="wind">--</span></div>
+        <div class="row"><span>&#128168; Gusts</span><span class="v" id="gust">--</span></div>
+        <div class="row"><span>&#128167; Humidity</span><span class="v" id="humid">--</span></div>
+        <div class="row"><span>&#129516; Wind chill</span><span class="v" id="wchill">--</span></div>
+        <div class="row"><span>&#128293; Humidex</span><span class="v" id="humidex">--</span></div>
+        <div class="row"><span>&#127748; Time of day</span><span class="v" id="daynight">--</span></div>
+      </div>
+
+      <!-- sunny verdict -->
+      <div class="card">
+        <div class="lbl">&#127774; Will it be sunny?</div>
+        <div class="big" id="sunny-verdict" style="font-size:1.6rem">&mdash;</div>
+        <div class="sub2" id="cloud-cover">&mdash;</div>
+        <div class="row" style="margin-top:6px"><span>&#9729;&#65039; Cloud cover</span><span class="v" id="cloud-pct">--</span></div>
+        <div class="row"><span>&#127780;&#65039; Condition</span><span class="v" id="condition">&mdash;</span></div>
+      </div>
+
+      <!-- hourly -->
+      <div class="card span2">
+        <div class="lbl">&#128339; Next 24 Hours</div>
+        <div class="hourly" id="hourly"></div>
+      </div>
+
+      <!-- 7 day -->
+      <div class="card span2">
+        <div class="lbl">&#128197; 7-Day Forecast</div>
+        <div class="fc-strip" id="forecast"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV PANEL (left) -->
+<button id="nav-toggle" class="nav-toggle" aria-label="Open navigation">☰</button>
+<aside id="nav-panel" class="nav-panel" aria-hidden="true">
+  <div class="nav-panel-head"><h3>Quick Nav</h3><button id="nav-close" aria-label="Close">✕</button></div>
+  <nav class="nav-panel-body">
+    <a href="/">🏠 Home / Events</a>
+    <a href="/weather/">🌤️ Weather</a>
+    <a href="/news/">📰 News Aggregator</a>
+    <a href="/audit/">📊 Audit Dashboard</a>
+    <a href="/fc/#/guest">💎 Fav Creators</a>
+    <a href="/updates/">🆕 Latest Updates</a>
+    <a href="/techfinds/">💻 Tech Finds</a>
+    <a href="/deals/">🎁 Deals &amp; Freebies</a>
+    <a href="/MOVIESHOWS2/">🎬 Movies &amp; TV</a>
+    <a href="/investments/">📈 Investments</a>
+    <a href="/findstocks/">📊 Stocks</a>
+    <a href="/MENTALHEALTHRESOURCES/">🧠 Mental Health</a>
+  </nav>
+</aside>
+<div id="nav-overlay" class="nav-overlay"></div>
+
+<!-- SIDE PANEL (right) -->
+<button id="side-toggle" class="side-toggle" aria-label="Open side panel">◀</button>
+<aside id="side-panel" class="side-panel" aria-hidden="true">
+  <div class="side-head"><h3>📌 Nearby &amp; News</h3><button id="side-close" aria-label="Close">✕</button></div>
+  <div class="side-body">
+    <div class="side-section">
+      <div class="side-title">🗓️ Upcoming Events <a class="side-more" href="/">more →</a></div>
+      <ul id="side-events" class="side-list"><li class="side-loading">Loading events…</li></ul>
+    </div>
+    <div class="side-section">
+      <div class="side-title">📰 Latest News <a class="side-more" href="/news/">more →</a></div>
+      <ul id="side-news" class="side-list"><li class="side-loading">Loading news…</li></ul>
+    </div>
+  </div>
+</aside>
+
+<script>
+(function(){
+'use strict';
+
+var LAT=43.6532, LON=-79.3832, TZ='America/Toronto', AREA_LABEL='Toronto, ON, Canada';
+
+/* ===== WEATHER CODE MAP ===== */
+function wcode(c,day){
+  var m={0:['Clear sky','clear',day?'☀️':'🌙'],1:['Mostly clear','clear',day?'🌤️':'🌙'],2:['Partly cloudy','clouds','⛅'],3:['Overcast','clouds','☁️'],45:['Foggy','fog','🌫️'],48:['Icy fog','fog','🌫️'],51:['Light drizzle','rain','🌦️'],53:['Drizzle','rain','🌦️'],55:['Heavy drizzle','rain','🌧️'],61:['Light rain','rain','🌧️'],63:['Moderate rain','rain','🌧️'],65:['Heavy rain','rain','🌧️'],66:['Freezing rain','rain','🌧️'],67:['Freezing rain','rain','🌧️'],71:['Light snow','snow','🌨️'],73:['Snow','snow','🌨️'],75:['Heavy snow','snow','❄️'],77:['Snow grains','snow','🌨️'],80:['Showers','rain','🌦️'],81:['Showers','rain','🌧️'],82:['Heavy showers','rain','🌧️'],85:['Snow showers','snow','🌨️'],86:['Heavy snow showers','snow','❄️'],95:['Thunderstorm','thunder','⛈️'],96:['Storm w/ hail','thunder','⛈️'],99:['Severe storm','thunder','⛈️']};
+  var r=m[c]||['Unknown','clouds','🌥️'];
+  return {desc:r[0],cond:r[1],emoji:r[2]};
+}
+
+/* ===== CALCULATIONS ===== */
+function windChill(t,w){ if(t>10||w<4.8)return null; return 13.12+.6215*t-11.37*Math.pow(w,.16)+.3965*t*Math.pow(w,.16); }
+function humidex(t,h){ if(t<20||h<20)return null; var d=t-((100-h)/5); return Math.round(t+.5555*(6.11*Math.exp(5417.7530*((1/273.16)-(1/(273.16+d))))-10)); }
+function realFeel(t,w,h){
+  var wc=windChill(t,w), hx=humidex(t,h);
+  if(wc!==null&&wc<t) return {v:Math.round(wc),type:'cold'};
+  if(hx!==null&&hx>t) return {v:Math.round(hx),type:'hot'};
+  if(t<=10)return{v:Math.round(t),type:'cool'};
+  if(t<=25)return{v:Math.round(t),type:'warm'};
+  return {v:Math.round(t),type:'hot'};
+}
+
+/* ===== JACKET VERDICT ===== */
+function jacketVerdict(t, wc, cond, windKmh, isDay){
+  isDay = (isDay===true || isDay===1);
+  var feels = (wc!==null&&wc<t) ? wc : t;
+  var rain = (cond==='rain'||cond==='thunder');
+  var emoji, title, reason, cls;
+
+  if(feels <= -15){
+    emoji='🥶'; title='YES — Heavy winter coat'; cls='yes';
+    reason='Wind chill is '+Math.round(feels)+'°C. Frostbite risk. You need a heavy winter coat, thermal layers, hat, gloves, and scarf. Cover all exposed skin.';
+  } else if(feels <= 0){
+    emoji='🧥'; title='YES — Winter jacket needed'; cls='yes';
+    reason='It feels like '+Math.round(feels)+'°C. A warm winter jacket with layers is essential. Don\'t forget hat and gloves.';
+  } else if(feels <= 5){
+    emoji='🧤'; title='YES — Warm jacket'; cls='yes';
+    reason='Feels like '+Math.round(feels)+'°C. Bring a warm jacket. Gloves are a good idea, especially if it\'s windy.';
+  } else if(feels <= 10){
+    emoji='🧣'; title='Probably — Light jacket'; cls='maybe';
+    reason='Feels like '+Math.round(feels)+'°C. A light jacket or hoodie should do it. You might want a scarf if the wind picks up.';
+  } else if(feels <= 16){
+    emoji='👕'; title='Maybe — Layer up'; cls='maybe';
+    reason='Feels like '+Math.round(feels)+'°C. Comfortable with a light layer. A thin hoodie is enough — a jacket is optional.';
+  } else if(feels <= 24){
+    emoji=isDay?'☀️':'🌙'; title='NO jacket needed'; cls='no';
+    reason='Feels like '+Math.round(feels)+'°C. '+(isDay?'Perfect t-shirt weather. Enjoy it — no jacket required.':'Mild night — no jacket required, but a light layer is comfy.');
+    emoji='🌡️'; title='NO jacket — stay cool'; cls='no';
+    reason='Feels like '+Math.round(feels)+'°C. Skip the jacket, wear light clothing, stay hydrated, and use sunscreen.';
+  }
+
+  if(rain && feels > 10) reason += ' ☔ Also expect rain — bring an umbrella.';
+  else if(rain) reason += ' ☔ Rain is likely — a waterproof layer or umbrella helps.';
+  if(windKmh > 50) reason += ' 💨 Very windy — a windbreaker over your layer is smart.';
+
+  return {emoji:emoji,title:title,reason:reason,cls:cls};
+}
+
+/* ===== SKY CONDITION CHECK (day/night aware) ===== */
+function sunnyCheck(cloudPct, code, isDay){
+  isDay = (isDay===true || isDay===1);
+  // Night-time: "sunny" is meaningless; describe the night sky instead.
+  if(!isDay){
+    if(code===0) return {verdict:'🌙 Clear night',desc:'Crystal-clear skies — great stargazing.'};
+    if(code===1) return {verdict:'🌙 Mostly clear night',desc:'Just a few wisps of cloud.'};
+    if(cloudPct<30) return {verdict:'🌙 Clear-ish night',desc:'Only '+cloudPct+'% cloud cover — stars visible.'};
+    if(cloudPct<60) return {verdict:'⛅ Partly cloudy night',desc:cloudPct+'% cloud cover — some stars peek through.'};
+    if(cloudPct<85) return {verdict:'🌥️ Mostly cloudy night',desc:cloudPct+'% cloud cover — limited star visibility.'};
+    return {verdict:'☁️ Overcast night',desc:cloudPct+'% cloud cover — no stars tonight.'};
+  }
+  if(code===0) return {verdict:'☀️ Absolutely sunny!',desc:'Clear skies all day.'};
+  if(code===1) return {verdict:'🌤️ Mostly sunny',desc:'Just a few wisps of cloud.'};
+  if(cloudPct<30) return {verdict:'☀️ Sunny day ahead',desc:'Only '+cloudPct+'% cloud cover.'};
+  if(cloudPct<60) return {verdict:'⛅ Partly sunny',desc:cloudPct+'% cloud cover — expect sun and clouds.'};
+  if(cloudPct<85) return {verdict:'🌥️ Mostly cloudy',desc:'Only '+cloudPct+'% chance of breaks in the clouds.'};
+  return {verdict:'☁️ Overcast',desc:cloudPct+'% cloud cover — unlikely to see the sun.'};
+}
+
+/* ===== RAIN DESC ===== */
+function rainDesc(p){
+  if(p>=80)return 'Very likely to rain — bring an umbrella.';
+  if(p>=50)return 'Coin flip — probably worth carrying an umbrella.';
+  if(p>=30)return 'Possible rain — have an umbrella just in case.';
+  if(p>=10)return 'Unlikely, but not impossible.';
+  return 'Dry day expected — no umbrella needed.';
+}
+
+/* ===== DAYLIGHT LEFT (dynamic: day remaining or time to sunrise) ===== */
+function daylightLeft(sunsetIso, nowIso, sunriseIso, tomorrowSunriseIso){
+  if(!sunsetIso||!nowIso) return '--';
+  var s=new Date(sunsetIso+':00Z').getTime();
+  var n=new Date(nowIso+':00Z').getTime();
+  var diff=s-n;
+  if(diff>0){
+    var h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000);
+    return h+'h '+m+'m of daylight left';
+  }
+  // After sunset: show time until next sunrise
+  var nextSr = tomorrowSunriseIso || sunriseIso;
+  if(nextSr){
+    var sr=new Date(nextSr+':00Z').getTime();
+    if(sr<=n) sr += 24*3600000;
+    var diff2=sr-n;
+    if(diff2>0){
+      var h2=Math.floor(diff2/3600000), m2=Math.floor((diff2%3600000)/60000);
+      return '🌙 Night — sunrise in '+h2+'h '+m2+'m';
+    }
+  }
+  return 'Sun has set';
+}
+
+/* ===== SEASON ===== */
+function season(){
+  var now=new Date(new Date().toLocaleString('en-US',{timeZone:TZ}));
+  var m=now.getMonth(), s;
+  if(m>=2&&m<=4){s='🌸 Spring';} else if(m>=5&&m<=7){s='☀️ Summer';} else if(m>=8&&m<=10){s='🍂 Autumn';} else {s='❄️ Winter';}
+  document.getElementById('season-badge').textContent=s+' in '+(AREA_LABEL.split(',')[0]||'Toronto');
+}
+
+/* ===== CANVAS WEATHER ENGINE ===== */
+var canvas, ctx, W, H, animId=null;
+var particles=[], lightningTimer=0, lightningAlpha=0, cloudBlobs=[];
+var _wxCond='clouds', _wxIsDay=true;
+
+function resizeCanvas(){
+  canvas=document.getElementById('weather-canvas');
+  if(!canvas) return;
+  ctx=canvas.getContext('2d');
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+}
+
+function spawnParticle(type){
+  if(type==='rain'){
+    return {type:'rain',x:Math.random()*W,y:-10-Math.random()*H*.3,vx:(Math.random()-.3)*2,vy:10+Math.random()*10,len:15+Math.random()*25,alpha:.5+Math.random()*.5};
+  }
+  if(type==='snow'){
+    var s=2+Math.random()*4;
+    return {type:'snow',x:Math.random()*W,y:-10-Math.random()*H*.2,vx:(Math.random()-.5)*.5,vy:.8+Math.random()*2,size:s,sway:Math.random()*Math.PI*2,swaySpeed:.02+Math.random()*.03,alpha:.6+Math.random()*.4};
+  }
+  if(type==='star'){
+    return {type:'star',x:Math.random()*W,y:Math.random()*H*.65,size:1+Math.random()*2.5,twinkle:Math.random()*Math.PI*2,twinkleSpeed:.015+Math.random()*.05,alpha:.5+Math.random()*.5};
+  }
+  if(type==='sunray'){
+    return {type:'sunray',x:W*.6+Math.random()*W*.4,y:-20-Math.random()*H*.15,vx:-.5-Math.random()*1,vy:.3+Math.random()*.7,len:60+Math.random()*120,alpha:.04+Math.random()*.1};
+  }
+  if(type==='fog'){
+    return {type:'fog',x:-100-Math.random()*W*.5,y:Math.random()*H,vx:.3+Math.random()*.6,vy:(Math.random()-.5)*.15,size:100+Math.random()*250,alpha:.04+Math.random()*.08};
+  }
+  if(type==='cloud'){
+    return {type:'cloud',x:W+100+Math.random()*W*.3,y:Math.random()*H*.45,vx:-.2-Math.random()*.4,vy:0,w:200+Math.random()*400,h:50+Math.random()*100,alpha:.08+Math.random()*.12};
+  }
+  return null;
+}
+
+function initParticles(cond, isDay){
+  particles=[]; cloudBlobs=[];
+  _wxCond=cond; _wxIsDay=isDay;
+
+  // clouds always present unless clear day
+  if(cond!=='clear'||!isDay){
+    for(var i=0;i<12;i++) cloudBlobs.push(spawnParticle('cloud'));
+  }
+
+  if(cond==='rain'||cond==='thunder'){
+    var count=cond==='thunder'?250:200;
+    for(var i=0;i<count;i++){ var p=spawnParticle('rain'); p.y=Math.random()*H; particles.push(p); }
+  }
+  if(cond==='snow'){
+    for(var i=0;i<180;i++){ var p=spawnParticle('snow'); p.y=Math.random()*H; particles.push(p); }
+  }
+  if(cond==='fog'){
+    for(var i=0;i<20;i++) particles.push(spawnParticle('fog'));
+  }
+  // stars at night — ALWAYS, regardless of cloud cover (they peek through)
+  if(!isDay){
+    for(var i=0;i<150;i++) particles.push(spawnParticle('star'));
+  }
+  if(isDay&&cond==='clear'){
+    for(var i=0;i<35;i++) particles.push(spawnParticle('sunray'));
+  }
+  // extra clouds for overcast
+  if(cond==='clouds'||cond==='rain'||cond==='thunder'){
+    for(var i=0;i<8;i++) cloudBlobs.push(spawnParticle('cloud'));
+  }
+}
+
+function drawLightning(){
+  if(_wxCond!=='thunder') return;
+  if(lightningAlpha>0){
+    ctx.fillStyle='rgba(200,180,255,'+lightningAlpha+')';
+    ctx.fillRect(0,0,W,H);
+    // draw a jagged bolt
+    ctx.strokeStyle='rgba(220,210,255,'+(lightningAlpha*2)+')';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    var bx=W*.2+Math.random()*W*.6, by=0;
+    ctx.moveTo(bx,by);
+    while(by<H*.6){
+      by+=20+Math.random()*40;
+      bx+=(Math.random()-.5)*60;
+      ctx.lineTo(bx,by);
+    }
+    ctx.stroke();
+    ctx.lineWidth=1;
+  }
+  lightningTimer--;
+  if(lightningTimer<=0){
+    lightningTimer=200+Math.random()*600;
+    lightningAlpha=.6;
+  }
+  if(lightningAlpha>0) lightningAlpha-=.04;
+  if(lightningAlpha<0) lightningAlpha=0;
+}
+
+function drawDayNightGlow(){
+  if(_wxIsDay&&(_wxCond==='clear'||_wxCond==='clouds')){
+    // warm sun glow top-right
+    var g=ctx.createRadialGradient(W*.8,H*.1,0,W*.8,H*.1,W*.5);
+    g.addColorStop(0,'rgba(255,200,50,.10)');
+    g.addColorStop(.3,'rgba(255,180,40,.04)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,W,H);
+    // sun disc
+    ctx.fillStyle='rgba(255,230,120,.9)';
+    ctx.beginPath(); ctx.arc(W*.8,H*.1,30,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,220,80,.4)';
+    ctx.beginPath(); ctx.arc(W*.8,H*.1,50,0,Math.PI*2); ctx.fill();
+  }
+  if(!_wxIsDay){
+    // moon
+    var mx=W*.25, my=H*.12;
+    ctx.fillStyle='rgba(200,210,240,.95)';
+    ctx.beginPath(); ctx.arc(mx,my,22,0,Math.PI*2); ctx.fill();
+    // moon glow
+    var mg=ctx.createRadialGradient(mx,my,0,mx,my,80);
+    mg.addColorStop(0,'rgba(200,210,240,.25)');
+    mg.addColorStop(.5,'rgba(180,190,240,.06)');
+    mg.addColorStop(1,'transparent');
+    ctx.fillStyle=mg;
+    ctx.beginPath(); ctx.arc(mx,my,80,0,Math.PI*2); ctx.fill();
+    // dark moon crater shadow
+    ctx.fillStyle='rgba(160,170,200,.4)';
+    ctx.beginPath(); ctx.arc(mx+8,my-5,6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(mx-5,my+8,4,0,Math.PI*2); ctx.fill();
+    // vignette
+    var vg=ctx.createRadialGradient(W/2,H/2,H*.15,W/2,H/2,W*.75);
+    vg.addColorStop(0,'transparent');
+    vg.addColorStop(1,'rgba(0,0,15,.4)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+function animate(){
+  animId=requestAnimationFrame(animate);
+  ctx.clearRect(0,0,W,H);
+
+  // clouds (behind everything)
+  for(var i=0;i<cloudBlobs.length;i++){
+    var c=cloudBlobs[i];
+    c.x+=c.vx;
+    if(c.x+c.w<-50){ c.x=W+50; c.y=Math.random()*H*.45; }
+    var cg=ctx.createRadialGradient(c.x+c.w/2,c.y+c.h/2,0,c.x+c.w/2,c.y+c.h/2,c.w/2);
+    cg.addColorStop(0,'rgba(160,175,200,'+c.alpha+')');
+    cg.addColorStop(.6,'rgba(140,155,180,'+(c.alpha*.5)+')');
+    cg.addColorStop(1,'transparent');
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    ctx.ellipse(c.x+c.w/2,c.y+c.h/2,c.w/2,c.h/2,0,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // particles
+  for(var i=0;i<particles.length;i++){
+    var p=particles[i];
+    if(p.type==='rain'){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y>H){ particles[i]=spawnParticle('rain'); continue; }
+      ctx.strokeStyle='rgba(160,200,255,'+p.alpha+')';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+      ctx.lineTo(p.x-p.vx*2,p.y-p.len);
+      ctx.stroke();
+    }
+    else if(p.type==='snow'){
+      p.sway+=p.swaySpeed;
+      p.x+=p.vx+Math.sin(p.sway)*.8;
+      p.y+=p.vy;
+      if(p.y>H){ particles[i]=spawnParticle('snow'); continue; }
+      ctx.fillStyle='rgba(220,230,255,'+p.alpha+')';
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fill();
+    }
+    else if(p.type==='star'){
+      p.twinkle+=p.twinkleSpeed;
+      var tw=Math.sin(p.twinkle);
+      var a=p.alpha*(.4+.6*tw);
+      // glow
+      ctx.fillStyle='rgba(200,210,255,'+(a*.3)+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2); ctx.fill();
+      // core
+      ctx.fillStyle='rgba(240,245,255,'+a+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
+    }
+    else if(p.type==='sunray'){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y>H*.9||p.x<-50){ particles[i]=spawnParticle('sunray'); continue; }
+      var grad=ctx.createLinearGradient(p.x,p.y,p.x-p.len*.3,p.y+p.len);
+      grad.addColorStop(0,'rgba(255,220,100,'+p.alpha+')');
+      grad.addColorStop(1,'transparent');
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+      ctx.lineTo(p.x-p.len*.3,p.y+p.len);
+      ctx.stroke();
+    }
+    else if(p.type==='fog'){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x-p.size>W){ particles[i]=spawnParticle('fog'); continue; }
+      var fg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size);
+      fg.addColorStop(0,'rgba(160,160,170,'+p.alpha+')');
+      fg.addColorStop(1,'transparent');
+      ctx.fillStyle=fg;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  drawDayNightGlow();
+  drawLightning();
+}
+
+function stopCanvas(){
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+}
+
+function startWeatherCanvas(cond, isDay){
+  stopCanvas();
+  resizeCanvas();
+  if(!ctx) return;
+  initParticles(cond, isDay);
+  animate();
+}
+
+window.addEventListener('resize', function(){
+  if(ctx){ resizeCanvas(); initParticles(_wxCond,_wxIsDay); }
+});
+
+/* ===== WEATHER BACKGROUND ORCHESTRATOR ===== */
+var _currentCond='clouds', _currentIsDay=true;
+function applyCssFallback(){
+  var el=document.getElementById('bg-fallback');
+  el.className='bg-fallback '+_currentCond+(_currentIsDay?'':' night');
+}
+
+function setWeatherBackground(cond, isDay){
+  _currentCond=cond; _currentIsDay=isDay;
+  applyCssFallback();
+  startWeatherCanvas(cond, isDay);
+}
+
+/* ===== FORMAT HELPERS ===== */
+/* Open-Meteo with timezone=America/Toronto returns naive local ISO strings.
+   Parse them directly without re-applying timezone to avoid double-shift. */
+function fmtTime(iso){
+  if(!iso) return '--';
+  var m = iso.match(/T(\d{2}):(\d{2})/);
+  if(!m) return iso;
+  var h = parseInt(m[1],10), mi = m[2];
+  var ampm = h >= 12 ? 'p.m.' : 'a.m.';
+  var h12 = h % 12; if(h12 === 0) h12 = 12;
+  return h12 + ':' + mi + ' ' + ampm;
+}
+
+/* ===== RENDER ===== */
+function render(d){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('content').style.display='block';
+
+  var c=d.current, daily=d.daily, hourly=d.hourly;
+  var temp=Math.round(c.temperature_2m), wind=Math.round(c.wind_speed_10m), hum=c.relative_humidity_2m;
+  var info=wcode(c.weather_code, c.is_day);
+  var wc=windChill(c.temperature_2m, wind);
+  var hx=humidex(c.temperature_2m, hum);
+  var rf=realFeel(c.temperature_2m, wind, hum);
+  var cloudPct=c.cloud_cover;
+  var rainProb=daily.precipitation_probability_max?daily.precipitation_probability_max[0]:0;
+
+  /* last updated */
+  var lu = c.time || '';
+  var luM = lu.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if(luM){
+    var mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var h12=parseInt(luM[4],10)%12||12;
+    var ampm=parseInt(luM[4],10)>=12?'PM':'AM';
+    document.getElementById('last-updated').textContent = mons[parseInt(luM[2],10)-1]+' '+parseInt(luM[3],10)+', '+h12+':'+luM[5]+' '+ampm+' Toronto local';
+  } else {
+    document.getElementById('last-updated').textContent = lu || '--';
+  }
+
+  /* area */
+  document.getElementById('area-label').innerHTML='Area: <b>'+AREA_LABEL+'</b>';
+
+  /* verdict */
+  var isDay = (c.is_day===1);
+  var v=jacketVerdict(c.temperature_2m, wc, info.cond, wind, isDay);
+  var vc=document.getElementById('verdict');
+  vc.className='verdict '+v.cls;
+  document.getElementById('v-emoji').textContent=v.emoji;
+  document.getElementById('v-title').textContent=v.title;
+  document.getElementById('v-reason').textContent=v.reason;
+
+  /* current */
+  document.getElementById('cur-temp').textContent=temp+'°C';
+  document.getElementById('cur-cond').textContent=info.emoji+' '+info.desc;
+  document.getElementById('cur-feels').textContent='Feels like '+rf.v+'°C'+(rf.type&&rf.type!=='warm'&&rf.type!=='cool'?' ('+rf.type+')':'');
+
+  /* rain */
+  document.getElementById('rain-prob').textContent=rainProb+'%';
+  document.getElementById('rain-desc').textContent=rainDesc(rainProb);
+  document.getElementById('rain-fill').style.width=rainProb+'%';
+
+  /* sun */
+  if(daily.sunrise&&daily.sunset){
+    document.getElementById('sunrise').textContent=fmtTime(daily.sunrise[0]);
+    document.getElementById('sunset').textContent=fmtTime(daily.sunset[0]);
+    document.getElementById('daylight-left').textContent=daylightLeft(daily.sunset[0], c.time, daily.sunrise[0], (daily.sunrise&&daily.sunrise[1])?daily.sunrise[1]:null);
+  }
+  document.getElementById('uv').textContent=daily.uv_index_max?daily.uv_index_max[0].toFixed(1):'--';
+
+  /* details */
+  document.getElementById('wind').textContent=wind+' km/h';
+  document.getElementById('gust').textContent=Math.round(c.wind_gusts_10m)+' km/h';
+  document.getElementById('humid').textContent=hum+'%';
+  document.getElementById('wchill').textContent=wc!==null?Math.round(wc)+'°C':'N/A';
+  document.getElementById('humidex').textContent=hx!==null?hx:'N/A';
+  document.getElementById('daynight').textContent=isDay?'☀️ Daytime':'🌙 Nighttime';
+  /* sky condition (day/night aware) */
+  var sv=sunnyCheck(cloudPct, c.weather_code, isDay);
+  document.getElementById('sunny-verdict').textContent=sv.verdict;
+  document.getElementById('cloud-cover').textContent=sv.desc;
+  document.getElementById('cloud-pct').textContent=cloudPct+'%';
+  document.getElementById('condition').textContent=info.emoji+' '+info.desc;
+  // dynamic card labels to reflect time of day
+  var allLabels = document.querySelectorAll('.lbl');
+  for(var li=0; li<allLabels.length; li++){
+    var t=allLabels[li].textContent;
+    if(t.indexOf('Will it be sunny')!==-1){
+      allLabels[li].textContent = isDay ? '☀️ Will it be sunny?' : '🌙 Clear tonight?';
+    }
+    if(t.indexOf('Sun')!==-1 && t.indexOf('UV')===-1 && t.indexOf('Sunrise')===-1){
+      // the standalone "Sun" card label
+      if(t.trim()==='☀️ Sun' || t.trim()==='🌙 Sun'){
+        allLabels[li].textContent = isDay ? '☀️ Sun' : '🌙 Sun & Moon';
+      }
+    }
+  }
+  // UV: at night show that the value is the daytime max
+  var uvEl=document.getElementById('uv');
+  if(uvEl && uvEl.textContent!=='--' && !isDay){
+    uvEl.textContent = uvEl.textContent + ' (day max)';
+  }
+
+  /* hourly */
+  renderHourly(hourly);
+
+  /* forecast */
+  renderForecast(daily);
+
+  /* alerts */
+  renderAlerts(c, daily, wc, hx);
+
+  /* background */
+  setWeatherBackground(info.cond, c.is_day===1);
+
+  /* speech */
+  buildSpeech(temp, info, rf, v, rainProb, daily, isDay);
+}
+
+function renderHourly(h){
+  var el=document.getElementById('hourly'); el.innerHTML='';
+  if(!h||!h.time)return;
+  var now=new Date(), cH=parseInt(now.toLocaleTimeString('en-CA',{timeZone:TZ,hour:'numeric',hour12:false}),10);
+  var cD=now.toLocaleDateString('en-CA',{timeZone:TZ});
+  var start=0;
+  for(var i=0;i<h.time.length;i++){
+    var d=new Date(h.time[i]);
+    if(d.toLocaleDateString('en-CA',{timeZone:TZ})===cD && parseInt(d.toLocaleTimeString('en-CA',{timeZone:TZ,hour:'numeric',hour12:false}),10)>=cH){start=i;break;}
+  }
+  for(var j=start;j<Math.min(start+24,h.time.length);j++){
+    var hd=new Date(h.time[j]);
+    var hh=parseInt(hd.toLocaleTimeString('en-CA',{timeZone:TZ,hour:'numeric',hour12:false}),10);
+    var hi=wcode(h.weather_code[j], hh>=6&&hh<20);
+    var p=h.precipitation_probability?h.precipitation_probability[j]:null;
+    var hm=h.time[j].match(/T(\d{2}):(\d{2})/);
+    var hLabel=hm?(parseInt(hm[1],10)%12||12)+':'+hm[2]+(parseInt(hm[1],10)>=12?'p':'a'):'';
+    var div=document.createElement('div'); div.className='h-item';
+    div.innerHTML='<div class="ht">'+hLabel+'</div><div class="he">'+hi.emoji+'</div><div class="hv">'+Math.round(h.temperature_2m[j])+'°</div>'+(p!==null&&p>10?'<div class="hp">💧'+p+'%</div>':'');
+    el.appendChild(div);
+  }
+}
+
+function renderForecast(daily){
+  var el=document.getElementById('forecast'); el.innerHTML='';
+  if(!daily||!daily.time)return;
+  var dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for(var i=0;i<Math.min(7,daily.time.length);i++){
+    var d=new Date(daily.time[i]);
+    var fi=wcode(daily.weather_code[i],true);
+    var p=daily.precipitation_probability_max?daily.precipitation_probability_max[i]:0;
+    var div=document.createElement('div'); div.className='fc-day';
+    div.innerHTML='<div class="dn">'+(i===0?'Today':dn[d.getDay()])+'</div><div class="de">'+fi.emoji+'</div><div class="dh">'+Math.round(daily.temperature_2m_max[i])+'°</div><div class="dl">'+Math.round(daily.temperature_2m_min[i])+'°</div>'+(p>20?'<div class="dp">💧'+p+'%</div>':'');
+    el.appendChild(div);
+  }
+}
+
+function renderAlerts(c, daily, wc, hx){
+  var el=document.getElementById('alerts'); el.innerHTML='';
+  function add(cls,title,desc){
+    var d=document.createElement('div'); d.className='alert '+cls;
+    d.innerHTML='<div class="at">'+title+'</div><div class="ad">'+desc+'</div>';
+    el.appendChild(d);
+  }
+  if(wc!==null&&wc<=-30) add('high','🔴 EXTREME COLD','Wind chill '+Math.round(wc)+'°C — frostbite in minutes.');
+  else if(wc!==null&&wc<=-15) add('med','🟡 Cold Alert','Wind chill '+Math.round(wc)+'°C. Dress very warmly.');
+  if(hx!==null&&hx>=40) add('high','🔴 HEAT WARNING','Humidex '+hx+'. Dangerous heat.');
+  else if(hx!==null&&hx>=35) add('med','🟡 Heat Alert','Humidex '+hx+'. Stay hydrated.');
+  if(c.wind_gusts_10m>70) add('high','🔴 WIND WARNING','Gusts up to '+Math.round(c.wind_gusts_10m)+' km/h.');
+  if(daily.uv_index_max&&daily.uv_index_max[0]>=8) add('med','☀️ HIGH UV','UV index '+daily.uv_index_max[0].toFixed(1)+'. Wear sunscreen.');
+}
+
+/* ===== SPEECH ===== */
+function buildSpeech(temp, info, rf, verdict, rainProb, daily, isDay){
+  var txt='Weather for '+AREA_LABEL+'. '+temp+' degrees, '+info.desc+'. Feels like '+rf.v+' degrees. ';
+  txt+=verdict.title+'. '+verdict.reason+' ';
+  txt+='Rain probability today is '+rainProb+' percent. ';
+  if(daily.sunset) txt+=(isDay?'Sunset at ':'Sunset was at ')+fmtTime(daily.sunset[0])+'. ';
+  if(daily.sunrise) txt+=(isDay?'Sunrise was at ':'Sunrise at ')+fmtTime(daily.sunrise[0])+'. ';
+  window._weatherSpeech=txt;
+}
+var speaking=false;
+document.addEventListener('click',function(e){
+  if(e.target.id==='audio-btn'){
+    if(speaking){window.speechSynthesis.cancel();speaking=false;e.target.innerHTML='🔊 Listen';return;}
+    if(!window._weatherSpeech)return;
+    var u=new SpeechSynthesisUtterance(window._weatherSpeech);
+    u.lang='en-CA';u.rate=.95;
+    u.onstart=function(){speaking=true;document.getElementById('audio-btn').innerHTML='⏹️ Stop';};
+    u.onend=function(){speaking=false;document.getElementById('audio-btn').innerHTML='🔊 Listen';};
+    window.speechSynthesis.speak(u);
+  }
+});
+
+/* ===== FETCH ===== */
+async function loadWeather(lat,lon,label){
+  if(label){AREA_LABEL=label;}
+  document.getElementById('loading').style.display='block';
+  document.getElementById('content').style.display='none';
+  season();
+  try{
+    var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+      +'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,cloud_cover,is_day,pressure_msl'
+      +'&hourly=temperature_2m,weather_code,precipitation_probability'
+      +'&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,uv_index_max,sunrise,sunset'
+      +'&timezone='+TZ+'&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=7';
+    var r=await fetch(url);
+    if(!r.ok)throw new Error('API '+r.status);
+    var d=await r.json();
+    render(d);
+  }catch(err){
+    document.getElementById('loading').innerHTML='<p style="color:#f87171">Could not load weather. '+err.message+'</p>';
+  }
+}
+
+/* ===== POSTAL / ZIP LOOKUP ===== */
+window.lookupPostal=function(){
+  var v=document.getElementById('postal-input').value.trim();
+  if(!v)return;
+  // Canadian postal code: A1A 1A1
+  if(/^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$/.test(v)){
+    var pc=v.toUpperCase().replace(/\s+/g,'');
+    // Approximate geocode from FSA (first 3 chars) — use a small lookup table for common FSAs
+    var fsa=pc.substring(0,3);
+    var coords=fsaCoords(fsa);
+    if(coords){ loadWeather(coords[0],coords[1], 'Postal code '+v.toUpperCase()+', Canada'); return; }
+    // fallback: Toronto centre
+    loadWeather(43.6532,-79.3832,'Postal code '+v.toUpperCase()+' (approx Toronto)');
+    return;
+  }
+  // US ZIP: 5 digits
+  if(/^\d{5}(-\d{4})?$/.test(v)){
+    var zip=v.substring(0,5);
+    // Use Zippopotam.us (free, no key)
+    fetch('https://api.zippopotam.us/us/'+zip).then(function(r){if(!r.ok)throw new Error('zip');return r.json();}).then(function(j){
+      var lat=parseFloat(j.places[0]['latitude']), lon=parseFloat(j.places[0]['longitude']);
+      var city=j.places[0]['place name']+', '+j.places[0]['state abbreviation'];
+      loadWeather(lat,lon,city+' '+zip);
+    }).catch(function(){
+      // fallback to geocoding
+      loadWeather(43.6532,-79.3832,'ZIP '+v);
+    });
+    return;
+  }
+  // Anything else: try Open-Meteo geocoding API
+  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(v)+'&count=1&language=en&format=json')
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j.results&&j.results.length){
+        var g=j.results[0];
+        loadWeather(g.latitude,g.longitude, g.name+', '+(g.admin1||'')+(g.country?', '+g.country:''));
+      } else {
+        alert('Could not find that location. Try a postal code (M5V 3A8) or ZIP (10001).');
+      }
+    }).catch(function(){alert('Lookup failed. Try a postal code or ZIP.');});
+};
+
+function fsaCoords(fsa){
+  // Approximate lat/lon for common Toronto/Canadian FSAs
+  var map={
+    'M5V':[43.6426,-79.3871],'M5G':[43.6510,-79.3830],'M5B':[43.6596,-79.3860],
+    'M5T':[43.6488,-79.3970],'M5S':[43.6627,-79.3956],'M5R':[43.6677,-79.4100],
+    'M5P':[43.6769,-79.4150],'M5N':[43.6868,-79.4177],'M5M':[43.7044,-79.4268],
+    'M5L':[43.6532,-79.3780],'M5K':[43.6473,-79.3867],'M5J':[43.6414,-79.3790],
+    'M5H':[43.6508,-79.3760],'M5C':[43.6568,-79.3810],'M4Y':[43.6708,-79.3860],
+    'M4X':[43.6677,-79.3640],'M4W':[43.6690,-79.3720],'M4V':[43.6708,-79.4050],
+    'M4T':[43.6820,-79.4000],'M4S':[43.6945,-79.3930],'M4R':[43.7050,-79.3980],
+    'M4P':[43.7160,-79.3930],'M4N':[43.7260,-79.4050],'M4M':[43.6790,-79.3550],
+    'M4L':[43.6640,-79.3300],'M4K':[43.6760,-79.3350],'M4J':[43.6680,-79.3200],
+    'M4H':[43.7000,-79.3200],'M4G':[43.7110,-79.3600],'M4E':[43.6670,-79.3100],
+    'M4B':[43.6980,-79.3000],'M4A':[43.7250,-79.3150],'M3H':[43.7550,-79.4460],
+    'M3K':[43.7440,-79.4700],'M3J':[43.7540,-79.4860],'M3L':[43.7320,-79.4780],
+    'M3M':[43.7230,-79.4480],'M3N':[43.7090,-79.4460],
+    'M2J':[43.7760,-79.3350],'M2K':[43.7740,-79.3640],'M2H':[43.7980,-79.3380],
+    'M2G':[43.7950,-79.3150],'M2L':[43.7640,-79.3870],'M2M':[43.7710,-79.4100],
+    'M2N':[43.7870,-79.4170],'M2P':[43.7960,-79.4480],
+    'K1A':[45.4247,-75.6950],'K1G':[45.4030,-75.6470],'K1S':[45.3970,-75.6760],
+    'K1T':[45.3870,-75.6300],'K1V':[45.3860,-75.6150],'K1B':[45.4330,-75.6050],
+    'K2A':[45.4370,-75.7040],'K2B':[45.4360,-75.7300],'K2C':[45.4440,-75.7560],
+    'M1B':[43.8010,-79.2010],'M1C':[43.7840,-79.1720],'M1E':[43.7680,-79.2260],
+    'M1G':[43.7440,-79.2680],'M1H':[43.7280,-79.2960],'M1J':[43.7160,-79.3350],
+    'M1K':[43.7160,-79.3110],'M1L':[43.7240,-79.2860],'M1M':[43.7340,-79.2660],
+    'M1N':[43.7480,-79.2320],'M1P':[43.7620,-79.3200],'M1R':[43.7530,-79.3530],
+    'M1S':[43.7740,-79.3460],'M1T':[43.7830,-79.3130],'M1V':[43.8160,-79.2770],
+    'M1W':[43.7940,-79.3160],'M1X':[43.8310,-79.2450],
+    'L3R':[43.8180,-79.3660],'L3T':[43.8130,-79.3920],'L3S':[43.7960,-79.4090],
+    'L3P':[43.8260,-79.4180],'L3N':[43.8380,-79.4480],'L3M':[43.8470,-79.4630],
+    'L4H':[43.8490,-79.3300],'L4J':[43.8470,-79.2950],'L4K':[43.8730,-79.3140],
+    'L4L':[43.8940,-79.3370],'L4V':[43.9080,-79.3510],'L4W':[43.8920,-79.2760],
+    'L4X':[43.8730,-79.2540],'L4Y':[43.8590,-79.2280],'L4Z':[43.8430,-79.2740],
+    'V6B':[49.2827,-123.1207],'V6Z':[49.2680,-123.1450],'V5K':[49.2890,-123.0470],
+    'H2X':[45.5140,-73.5700],'H2Y':[45.4960,-73.5680],'H3A':[45.5060,-73.5740],
+    'H3B':[45.4950,-73.5630],'H3C':[45.4870,-73.5770],'H3G':[45.4890,-73.5850],
+    'T2P':[51.0450,-114.0700],'T2R':[51.0420,-114.0900],'T2S':[51.0370,-114.0800],
+    'T3A':[51.1330,-114.1420],'T3B':[51.1230,-114.1670],'T3C':[51.1080,-114.1300],
+    'S4P':[50.4470,-104.6180],'S4R':[50.4370,-104.6300],'S4S':[50.4250,-104.6000]
+  };
+  return map[fsa]||null;
+}
+
+/* ===== GEOLOCATION ===== */
+window.detectLocation=function(){
+  if(!navigator.geolocation){
+    alert('Geolocation not supported. Use a postal code instead.');
+    return;
+  }
+  document.getElementById('area-label').innerHTML='Area: <b>Detecting&hellip;</b>';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude, lon=pos.coords.longitude;
+    // Reverse geocode via Open-Meteo (free)
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m&timezone='+TZ)
+      .then(function(){ return fetch('https://geocoding-api.open-meteo.com/v1/search?name=&latitude='+lat+'&longitude='+lon+'&count=1'); })
+      .catch(function(){return null;});
+    // Use Nominatim for reverse geocode (free, respects usage policy)
+    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon+'&zoom=10', {headers:{'Accept':'application/json'}})
+      .then(function(r){return r.json();})
+      .then(function(j){
+        var a=j.address||{};
+        var label=[a.city||a.town||a.village||a.county, a.state||a.state_district, a.country].filter(Boolean).join(', ');
+        loadWeather(lat,lon,label||'Your location');
+      })
+      .catch(function(){ loadWeather(lat,lon,'Your location ('+lat.toFixed(2)+', '+lon.toFixed(2)+')'); });
+  }, function(err){
+    alert('Could not get your location ('+err.message+'). Enter a postal code or ZIP instead.');
+  }, {timeout:10000, enableHighAccuracy:false});
+};
+
+window.setWeatherBackground=setWeatherBackground;
+
+/* ===== PANEL TOGGLES ===== */
+function openNav(){document.getElementById('nav-panel').classList.add('open');document.getElementById('nav-overlay').classList.add('open');}
+function closeNav(){document.getElementById('nav-panel').classList.remove('open');document.getElementById('nav-overlay').classList.remove('open');}
+function openSide(){document.getElementById('side-panel').classList.add('open');}
+function closeSide(){document.getElementById('side-panel').classList.remove('open');}
+document.addEventListener('click',function(e){
+  if(e.target.id==='nav-toggle') openNav();
+  if(e.target.id==='nav-close'||e.target.id==='nav-overlay') closeNav();
+  if(e.target.id==='side-toggle') openSide();
+  if(e.target.id==='side-close') closeSide();
+});
+
+/* ===== SIDE PANEL DATA ===== */
+function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function loadSideEvents(){
+  var el=document.getElementById('side-events');
+  fetch('/events.json').then(function(r){return r.json();}).then(function(data){
+    var today=new Date(); today.setHours(0,0,0,0);
+    var upcoming=(data||[]).filter(function(e){if(!e||!e.date)return false;var d=new Date(e.date);return !isNaN(d)&&d>=today;});
+    upcoming.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+    upcoming=upcoming.slice(0,5);
+    if(!upcoming.length){el.innerHTML='<li class="side-empty">No upcoming events found.</li>';return;}
+    el.innerHTML=upcoming.map(function(e){
+      var d=new Date(e.date);
+      var ds=d.toLocaleDateString('en-CA',{month:'short',day:'numeric'});
+      var link=e.url||'/';
+      return '<li><a href="'+escapeHtml(link)+'" target="_blank" rel="noopener">'+escapeHtml(e.title||'Event')+'</a><div class="side-meta">'+ds+(e.location?' · '+escapeHtml(e.location):'')+'</div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">Events unavailable offline.</li>';});
+}
+
+function loadSideNews(){
+  var el=document.getElementById('side-news');
+  fetch('/fc/api/news_feed.php?action=get&per_page=5').then(function(r){return r.json();}).then(function(j){
+    var arts=(j&&j.articles)?j.articles:[];
+    arts=arts.slice(0,5);
+    if(!arts.length){el.innerHTML='<li class="side-empty">No news right now.</li>';return;}
+    el.innerHTML=arts.map(function(a){
+      return '<li><a href="'+escapeHtml(a.link||'/news/')+'" target="_blank" rel="noopener">'+escapeHtml(a.title||'Article')+'</a><div class="side-meta">'+escapeHtml(a.source_name||'')+(a.time_ago?' · '+escapeHtml(a.time_ago):'')+'</div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">News unavailable offline.</li>';});
+}
+
+/* ===== INIT ===== */
+season();
+loadWeather(LAT,LON,AREA_LABEL);
+setInterval(function(){ loadWeather(LAT,LON,AREA_LABEL); }, 600000);
+setTimeout(function(){ loadSideEvents(); loadSideNews(); }, 1500);
+
+})();
+</script>
+
+<!-- Vanta.js removed — canvas weather engine handles all backgrounds -->
+</body>
+</html>
