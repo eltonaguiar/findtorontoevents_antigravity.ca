@@ -1671,11 +1671,12 @@ def _enrich_live_pnl(picks: list) -> list:
             continue
         current_price = _float(p.get("current_price", 0))
         if current_price and current_price > 0:
+            # 2026-10-17 fix: a carried current_price is a FALLBACK only.
+            # Previously this `continue`d out of the symbol-queueing block,
+            # so picks born with current_price == entry_price never got a
+            # live quote fetched and stayed frozen at 0% PnL forever.
             source_prices[raw_sym] = current_price
             source_prices[sym] = current_price
-            continue
-        if raw_sym in source_prices or sym in source_prices:
-            continue
         asset_class = (
             str(p.get("asset_class") or p.get("category") or "").upper().strip()
         )
@@ -1710,14 +1711,14 @@ def _enrich_live_pnl(picks: list) -> list:
     if not crypto_symbols and not equity_symbols and not source_prices:
         return picks
 
-    prices = dict(source_prices)
+    # Fresh quotes go into `fetched` and take precedence; carried prices in
+    # source_prices are only consulted when no live quote could be fetched.
+    fetched = {}
     if crypto_symbols:
-        for sym, price in _fetch_prices_with_failover(crypto_symbols).items():
-            prices.setdefault(sym, price)
+        fetched.update(_fetch_prices_with_failover(crypto_symbols))
     if equity_symbols:
-        for sym, price in _fetch_equity_prices(equity_symbols).items():
-            prices.setdefault(sym, price)
-    if not prices:
+        fetched.update(_fetch_equity_prices(equity_symbols))
+    if not fetched and not source_prices:
         return picks
 
     # Enrich each pick with live PnL
@@ -1726,20 +1727,22 @@ def _enrich_live_pnl(picks: list) -> list:
         raw_symbol = str(p.get("symbol") or "").upper().strip()
         raw_sym = raw_symbol.replace("-", "").replace("_", "").replace("/", "")
         # Try direct lookup, then normalized USDT form, then _price_lookup_sym
-        price = prices.get(raw_symbol)
+        price = fetched.get(raw_symbol)
         if price is None:
-            price = prices.get(raw_sym)
+            price = fetched.get(raw_sym)
         if price is None and raw_sym.endswith("USD") and not raw_sym.endswith("USDT"):
-            price = prices.get(raw_sym + "T")
+            price = fetched.get(raw_sym + "T")
         if (
             price is None
             and raw_symbol.endswith("USD")
             and not raw_symbol.endswith("USDT")
         ):
-            price = prices.get(raw_symbol + "T")
+            price = fetched.get(raw_symbol + "T")
         if price is None and "_price_lookup_sym" in p:
-            price = prices.get(p["_price_lookup_sym"])
+            price = fetched.get(p["_price_lookup_sym"])
         if price is None:
+            # No live quote this pass (fetcher down or symbol unknown):
+            # keep the pick untouched instead of writing a fabricated 0%.
             continue
         entry = _float(p.get("entry_price", 0))
         if not entry or entry == 0:
