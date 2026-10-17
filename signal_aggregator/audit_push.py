@@ -74,7 +74,7 @@ def load_picks() -> list:
 
 def normalize(pick: dict) -> dict:
     """Normalize a master-pick dict to the audit trail schema."""
-    return {
+    out = {
         "symbol": pick.get("symbol", ""),
         "direction": pick.get("direction", "LONG"),
         "entry_price": pick.get("entry_price", 0),
@@ -84,6 +84,13 @@ def normalize(pick: dict) -> dict:
         "strategy": pick.get("strategy", ", ".join(pick.get("systems", ["signal_aggregator"]))),
         "timestamp": pick.get("timestamp", ""),
     }
+    # Keep the emitter's rationale so it survives into at_raw_picks.raw_payload
+    # and the /audit "Why now:" tooltip. See audit_trail/pick_reason.py.
+    try:
+        from audit_trail.pick_reason import with_pick_reason
+        return with_pick_reason(out, pick)
+    except Exception:  # fail-open: never break the audit push over a rationale
+        return out
 
 
 def push_to_audit(picks: list) -> dict:

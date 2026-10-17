@@ -23,7 +23,7 @@ def load_picks():
 
 
 def normalize(p):
-    return {
+    out = {
         "symbol": p.get("symbol", ""),
         "direction": p.get("signal", "BUY"),
         "entry_price": p.get("entryPrice", p.get("price", 0)),
@@ -33,6 +33,13 @@ def normalize(p):
         "strategy": p.get("algorithm", "kimi"),
         "timestamp": p.get("timestamp", ""),
     }
+    # Keep the emitter's rationale so it survives into at_raw_picks.raw_payload
+    # and the /audit "Why now:" tooltip. See audit_trail/pick_reason.py.
+    try:
+        from audit_trail.pick_reason import with_pick_reason
+        return with_pick_reason(out, p)
+    except Exception:  # fail-open: never break the audit push over a rationale
+        return out
 
 
 def main():

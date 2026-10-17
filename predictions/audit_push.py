@@ -101,7 +101,7 @@ def normalize(pred: dict) -> dict:
     platform = pred.get("platform", "social")
     strategy = f"{platform}/{predictor}"
 
-    return {
+    out = {
         "symbol": pred.get("symbol", ""),
         "direction": pred.get("direction", "LONG"),
         "entry_price": pred.get("entry_price", 0) or 0,
@@ -111,6 +111,13 @@ def normalize(pred: dict) -> dict:
         "strategy": strategy,
         "timestamp": pred.get("scraped_at", ""),
     }
+    # Keep the emitter's rationale so it survives into at_raw_picks.raw_payload
+    # and the /audit "Why now:" tooltip. See audit_trail/pick_reason.py.
+    try:
+        from audit_trail.pick_reason import with_pick_reason
+        return with_pick_reason(out, pred)
+    except Exception:  # fail-open: never break the audit push over a rationale
+        return out
 
 
 def push_to_audit(picks: list) -> dict:
