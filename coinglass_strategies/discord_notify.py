@@ -18,10 +18,12 @@ from utils.discord_heartbeat import send_no_picks_heartbeat
 
 logger = logging.getLogger(__name__)
 
-WEBHOOK_URL = os.environ.get(
-    "DISCORD_WEBHOOK_PAPERTRADE",
-    "https://discord.com/api/webhooks/1478588243459965008/9TZAjAtrgz5dTvWpV3TP7FO8Fo5JRDCz03PkPiTaSlef0EcIEdHEDUmz8Zi13sZrqgA3"
-)
+# SECURITY: never hardcode a Discord webhook here. This repo is public and
+# automated scanners report exposed webhooks, which Discord then deletes
+# permanently (that is exactly how webhook 1478588243459965008 died on
+# 2026-09-19). Set the GitHub secret DISCORD_WEBHOOK_PAPERTRADE, or export it
+# locally, and it is picked up automatically.
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_PAPERTRADE", "")
 USERNAME = "Coinglass DNA Bundle"
 
 COLOR_GREEN = 0x22C55E
@@ -29,6 +31,17 @@ COLOR_RED = 0xEF4444
 COLOR_BLUE = 0x3B82F6
 COLOR_GOLD = 0xFFD700
 COLOR_PURPLE = 0x8B5CF6
+
+
+class DiscordWebhookError(RuntimeError):
+    """A Discord webhook rejected a post permanently.
+
+    Raised for 4xx responses (e.g. HTTP 404 {"message": "Unknown Webhook",
+    code 10015} when Discord has deleted the webhook). Before this, such a
+    response was only logged as a warning, so a dead webhook silently dropped
+    every notification while the workflow stayed green (webhook
+    1478588243459965008 died exactly this way on 2026-09-19).
+    """
 
 
 def _post(embeds: list):
@@ -47,11 +60,25 @@ def _post(embeds: list):
                     retry = resp.json().get("retry_after", 5)
                     time.sleep(retry)
                     continue
+                # 4xx (other than 429) is permanent: an unknown/deleted webhook,
+                # a malformed payload, or lost channel permissions. Retrying
+                # cannot fix it, so fail loudly instead of swallowing it.
+                if 400 <= resp.status_code < 500:
+                    body = resp.text[:300]
+                    logger.error(
+                        "Discord webhook permanently rejected (%d): %s",
+                        resp.status_code, body,
+                    )
+                    raise DiscordWebhookError(
+                        f"Discord webhook returned {resp.status_code}: {body}"
+                    )
                 logger.warning("Discord post failed: %d", resp.status_code)
                 if attempt < 2:
                     time.sleep(2 * (attempt + 1))
                     continue
                 break
+            except DiscordWebhookError:
+                raise
             except Exception as exc:
                 if attempt == 2:
                     logger.error("Discord error after 3 attempts: %s", exc)

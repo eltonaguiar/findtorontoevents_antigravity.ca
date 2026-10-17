@@ -42,19 +42,20 @@ logger = logging.getLogger("FailoverNotifications")
 # Load from environment or config file
 # Uses existing Discord webhooks from the codebase:
 # - DISCORD_WEBHOOK_URL (main)
-# - DISCORD_WEBHOOK_PAPERTRADE (paper trading - has default fallback)
+# - DISCORD_WEBHOOK_PAPERTRADE (paper trading)
 # - DISCORD_WEBHOOK_DNA_MASTER (DNA master picks)
 # - DISCORD_WEBHOOK_SANDBOX (sandbox/testing)
 # - DISCORD_WEBHOOK_PORTFOLIO (portfolio updates)
 # - DISCORD_WEBHOOK_FRESHPICKS (fresh picks)
 CONFIG = {
     # Discord - Primary webhooks (using existing system webhooks)
-    "discord_webhook_url": os.getenv(
-        "DISCORD_WEBHOOK_URL",
-        os.getenv(
-            "DISCORD_WEBHOOK_PAPERTRADE",
-            "https://discord.com/api/webhooks/1478588243459965008/9TZAjAtrgz5dTvWpV3TP7FO8Fo5JRDCz03PkPiTaSlef0EcIEdHEDUmz8Zi13sZrqgA3"
-        )
+    # SECURITY: no hardcoded fallback. A committed webhook gets scraped from
+    # this public repo and deleted by Discord (see webhook 1478588243459965008,
+    # deleted 2026-09-19). Set DISCORD_WEBHOOK_URL / DISCORD_WEBHOOK_PAPERTRADE
+    # as a GitHub secret or env var instead.
+    "discord_webhook_url": (
+        os.getenv("DISCORD_WEBHOOK_URL")
+        or os.getenv("DISCORD_WEBHOOK_PAPERTRADE", "")
     ),
     "discord_webhook_alerts": os.getenv("DISCORD_WEBHOOK_URL", ""),
     "discord_webhook_portfolio": os.getenv("DISCORD_WEBHOOK_PORTFOLIO", ""),
@@ -263,6 +264,11 @@ class DiscordWebhookChannel(NotificationChannel):
             return NotificationResult(True, self.name)
             
         except Exception as e:
+            # Surface a dead/rejected webhook loudly. Previously a 404
+            # ({"message": "Unknown Webhook"}) was only recorded internally and
+            # then swallowed by the file fallback, so the cron stayed green
+            # while the channel dropped everything (2026-09-19 incident).
+            logger.error("Discord webhook (%s) send failed: %s", self.name, e)
             self.record_failure(str(e))
             return NotificationResult(False, self.name, error=str(e))
 
