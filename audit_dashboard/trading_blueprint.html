@@ -126,7 +126,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>PROVEN</td><td>50+ closed trades, WR ≥ 50%, PF ≥ 1.0, documented forward results.</td><td>0.8−1.0x</td></tr>
         <tr><td>PROBATION</td><td>Documented poor performance: broken risk mgmt, consistently losing, or system errors.</td><td>0.10−0.15x</td></tr>
         <tr><td>DEMOTED</td><td>Strategy works on some assets but fails on others (asset-specific demotion).</td><td>0.25x</td></tr>
-        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 14 of 60 systems are grade F.</td><td>0x (disabled)</td></tr>
+        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 13 of 59 systems are grade F.</td><td>0x (disabled)</td></tr>
       </tbody></table>
 
       <h3>Kill Criteria (Mercury AI Recommended)</h3>
@@ -138,7 +138,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <br>• <b>Max Drawdown &gt; 30%</b> on $100 position sizing — unacceptable risk
         <br>• <b>No trades generated</b> in 14+ days — dormant/broken system
         <br>• <b>3 consecutive losing months</b> — persistent underperformance
-        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 14/60 grade-F systems remain active, generating noise and diluting signal quality.
+        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 13/59 grade-F systems remain active, generating noise and diluting signal quality.
       </div>
     </div></div>
 <div id="s1">
@@ -165,7 +165,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
     </div></div>
 <div id="s2">
     <div class="section">
-      <h2>2. System-by-System Breakdown (60 crypto systems with data)</h2>
+      <h2>2. System-by-System Breakdown (59 crypto systems with data)</h2>
       <p class="dim">Grade: A = proven profitable (WR≥55, PF≥1.5, 20+ trades), B = positive edge, C = marginal, D = insufficient data, F = unprofitable</p>
       <div class="table-wrap">
       <table><thead><tr>
@@ -904,6 +904,19 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <th>BT WR</th><th>FWD WR</th><th>FWD Trades</th><th>FWD PF</th>
         <th>Conf</th><th>R:R</th><th>Avg PnL</th><th>Health</th>
       </tr></thead><tbody><tr>
+          <td><b>kalshi_mtf_consensus</b></td>
+          <td class="num">1</td>
+          <td class="num">SHORT:1</td>
+          <td class="num" style="font-size:11px">ETH</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
+          <td class="num" style="color:#ef4444">0.00</td>
+          <td class="num">0.85</td>
+          <td class="num">0.0</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">None:1</td>
+        </tr><tr>
           <td><b>inverse_luxalgo_confluence</b></td>
           <td class="num">2</td>
           <td class="num">SHORT:2</td>
@@ -1238,6 +1251,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">1</td>
               <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
               <td class="dim" style="font-size:11px">inverse_mutations</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">2434.64</td><td class="num">2371.33936</td><td class="num">2472.54457485</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.85</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">3</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>B) Top 20 by Score</h3>
@@ -1279,6 +1303,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">1</td>
               <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
               <td class="dim" style="font-size:11px">inverse_mutations</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">2434.64</td><td class="num">2371.33936</td><td class="num">2472.54457485</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.85</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">3</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>C) Top 20 Vetted Only (Forward WR ≥ 55%, Forward Trades ≥ 10)</h3>
@@ -1495,7 +1530,7 @@ score = 0.30 × norm_wr + 0.25 × norm_pf + 0.20 × confidence + 0.15 × (agreem
           <td><b>unknown</b></td>
           <td class="dim" style="font-size:11px">kimi_signal_tracking</td>
           <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
-          <td class="num" style="color:#22c55e">57.7%</td>
+          <td class="num" style="color:#22c55e">58.6%</td>
           <td class="num">123</td>
           <td class="num" style="color:#22c55e">+122.70%</td>
           <td class="num" style="color:#ef4444">-57.7%</td>
@@ -1559,7 +1594,7 @@ score = 0.30 × norm_wr + 0.25 × norm_pf + 0.20 × confidence + 0.15 × (agreem
           <td><b>unknown</b></td>
           <td class="dim" style="font-size:11px">kimi_riseoftheclaw, kimi_signal_tracking, signal_aggregator</td>
           <td class="num">0.0%</td><td class="num">0</td><td class="num">0.00</td>
-          <td class="num" style="color:#ef4444">49.8%</td>
+          <td class="num" style="color:#22c55e">50.2%</td>
           <td class="num">271</td>
           <td class="num" style="color:#22c55e">+71.26%</td>
           <td class="num" style="color:#ef4444">-49.8%</td>
@@ -1794,7 +1829,7 @@ Key changes:
       <p class="dim">Non-crypto picks from forex (7 strategies) and index futures (Connors RSI-2, TOM). These extend proven equity strategies to 24/5 markets.</p>
       
       <div class="card-grid">
-        <div class="card"><div class="card-label">Forex Picks</div><div class="card-val" style="color:var(--cyan)">8</div></div>
+        <div class="card"><div class="card-label">Forex Picks</div><div class="card-val" style="color:var(--cyan)">9</div></div>
         <div class="card"><div class="card-label">Futures Picks</div><div class="card-val" style="color:var(--yellow)">2</div></div>
         <div class="card"><div class="card-label">Total Active</div><div class="card-val">10</div></div>
         <div class="card"><div class="card-label">Unique Symbols</div><div class="card-val">9</div></div>
@@ -1812,7 +1847,7 @@ Key changes:
         <br>Turn-of-Month on ES=F/NQ=F: Lakonishok &amp; Smidt (1988) TOM effect applies equally to index futures.
         <br>Forex: 7 strategies including carry trade, mean reversion, JPY risk-off, DXY correlation, BB squeeze, session momentum, and DXY RSI fade.
       </div>
-      <h3>Active Picks (10 total)</h3>
+      <h3>Active Picks (11 total)</h3>
       <div class="table-wrap">
       <table><thead><tr>
         <th>Symbol</th><th>Class</th><th>Signal</th><th>Entry</th><th>TP</th><th>SL</th>
