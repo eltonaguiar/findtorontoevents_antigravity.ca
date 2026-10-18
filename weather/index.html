@@ -290,6 +290,8 @@ body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointe
 .card.collapsible .card-body{overflow:hidden;transition:max-height .3s ease,opacity .3s ease}
 .card.collapsible.collapsed .card-body{max-height:0;opacity:0;margin:0;padding:0}
 .collapse-toggle{float:right;cursor:pointer;font-size:.75rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2)}
+
+body.hide-extras .card.collapsible{display:none}
 </style>
 </head>
 <body>
@@ -306,6 +308,7 @@ body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointe
   </div>
 
   <div class="updated">Last updated: <b id="last-updated">--</b> &middot; times in Eastern Time (Toronto) &middot; auto-refreshes every 10 min</div>
+  <div style="margin-top:8px"><button id="extras-toggle" class="loc-btn" style="padding:6px 12px;font-size:.8rem">Hide optional sections</button></div>
 
   <div class="loc-form">
     <input type="text" id="postal-input" placeholder="Postal / ZIP code (e.g. M5V 3A8 or 10001)" autocomplete="postal-code">
@@ -1730,6 +1733,21 @@ window.addEventListener('load',function(){
     d.replaceWith(ifr);
   });
 });
+</script>
+
+
+<script>
+(function(){
+  var btn=document.getElementById('extras-toggle');
+  function apply(v){
+    document.body.classList.toggle('hide-extras', v);
+    if(btn) btn.textContent=v?'Show optional sections':'Hide optional sections';
+    try{localStorage.setItem('weather-hide-extras', v?'1':'0');}catch(e){}
+  }
+  var stored=false; try{ stored=localStorage.getItem('weather-hide-extras')==='1'; }catch(e){}
+  apply(stored);
+  if(btn) btn.addEventListener('click', function(){ apply(!document.body.classList.contains('hide-extras')); });
+})();
 </script>
 
 </body>
