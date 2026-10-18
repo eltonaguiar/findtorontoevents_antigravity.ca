@@ -207,6 +207,27 @@ body.theme-aurora::before{content:'';position:fixed;inset:0;z-index:1;pointer-ev
 @keyframes auroraShift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-4%,-3%) scale(1.05)}}
 body.theme-retro{--bg:#2b1d0e;--card:rgba(255,240,200,.07);--card-b:rgba(255,200,120,.18);--t1:#fde68a;--t2:#fbbf24;--t3:#d97706;--accent:#f59e0b;--accent2:#ef4444}
 body.theme-retro .card,body.theme-retro .verdict{border-radius:4px;font-family:'Courier New',monospace}
+
+/* 10 additional skins */
+body.theme-cyberpunk{--accent:#00fff0;--accent2:#ff00c8;--card:rgba(0,0,0,.6);--card-b:rgba(0,255,240,.35)}
+body.theme-cyberpunk .card,body.theme-cyberpunk .verdict{box-shadow:0 0 14px rgba(0,255,240,.3),0 0 28px rgba(255,0,200,.15);border-width:1px}
+body.theme-cyberpunk .theme-btn.active{box-shadow:0 0 10px rgba(0,255,240,.7)}
+body.theme-pastel{--bg:#fff5fa;--card:rgba(255,255,255,.55);--card-b:rgba(255,182,213,.35);--t1:#4a3f55;--t2:#7a6b85;--t3:#a89ab3;--accent:#ff8fab;--accent2:#a29bfe}
+body.theme-pastel .bg-fallback,body.theme-pastel #weather-canvas{filter:saturate(.7) brightness(1.15)}
+body.theme-mono{--bg:#111;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.12);--t1:#eee;--t2:#aaa;--t3:#666;--accent:#fff;--accent2:#999}
+body.theme-mono .card,body.theme-mono .verdict{border-radius:2px}
+body.theme-solar{--bg:#1a1200;--card:rgba(255,200,80,.07);--card-b:rgba(255,200,80,.2);--t1:#fef3c7;--t2:#fbbf24;--t3:#d97706;--accent:#fbbf24;--accent2:#f97316}
+body.theme-solar .bg-fallback,body.theme-solar #weather-canvas{filter:sepia(.25) saturate(1.2)}
+body.theme-arctic{--bg:#0a1628;--card:rgba(180,220,255,.07);--card-b:rgba(180,220,255,.2);--t1:#e0f2fe;--t2:#bae6fd;--t3:#7dd3fc;--accent:#7dd3fc;--accent2:#38bdf8}
+body.theme-arctic .card,body.theme-arctic .verdict{backdrop-filter:blur(14px);box-shadow:0 0 24px rgba(125,211,252,.15)}
+body.theme-volcanic{--bg:#1a0500;--card:rgba(255,80,40,.07);--card-b:rgba(255,80,40,.22);--t1:#fee2e2;--t2:#fca5a5;--t3:#ef4444;--accent:#ef4444;--accent2:#f97316}
+body.theme-volcanic .bg-fallback,body.theme-volcanic #weather-canvas{filter:saturate(1.4) contrast(1.1)}
+body.theme-emerald{--bg:#052018;--card:rgba(16,185,129,.07);--card-b:rgba(16,185,129,.22);--t1:#d1fae5;--t2:#6ee7b7;--t3:#10b981;--accent:#34d399;--accent2:#10b981}
+body.theme-rose{--bg:#20051a;--card:rgba(244,114,182,.07);--card-b:rgba(244,114,182,.22);--t1:#fce7f3;--t2:#f9a8d4;--t3:#ec4899;--accent:#f472b6;--accent2:#ec4899}
+body.theme-slate{--bg:#1e293b;--card:rgba(148,163,184,.07);--card-b:rgba(148,163,184,.2);--t1:#f1f5f9;--t2:#cbd5e1;--t3:#94a3b8;--accent:#94a3b8;--accent2:#64748b}
+body.theme-galaxy{--bg:#0b0520;--card:rgba(167,139,250,.07);--card-b:rgba(167,139,250,.22);--t1:#ede9fe;--t2:#c4b5fd;--t3:#a78bfa;--accent:#a78bfa;--accent2:#7c3aed}
+body.theme-galaxy::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(1px 1px at 10% 20%,#fff 50%,transparent),radial-gradient(1px 1px at 30% 60%,#fff 50%,transparent),radial-gradient(1px 1px at 70% 30%,#fff 50%,transparent),radial-gradient(1px 1px at 90% 80%,#fff 50%,transparent);opacity:.6;animation:twinkle 4s ease-in-out infinite alternate}
+@keyframes twinkle{0%{opacity:.3}100%{opacity:.8}}
 </style>
 </head>
 <body>
@@ -219,6 +240,7 @@ body.theme-retro .card,body.theme-retro .verdict{border-radius:4px;font-family:'
     <h1>&#127780;&#65039; Toronto Weather</h1>
     <p class="sub">Do you need a jacket? Rain odds, sunset, and what to wear</p>
     <div class="badge" id="season-badge">Loading...</div>
+    <div style="margin-top:8px"><a href="#skins" style="color:var(--accent);font-size:.85rem;text-decoration:none;border:1px solid rgba(255,255,255,.15);padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.05)">🎨 Jump to Skins</a></div>
   </div>
 
   <div class="updated">Last updated: <b id="last-updated">--</b> &middot; auto-refreshes every 10 min</div>
@@ -227,6 +249,36 @@ body.theme-retro .card,body.theme-retro .verdict{border-radius:4px;font-family:'
     <input type="text" id="postal-input" placeholder="Postal / ZIP code (e.g. M5V 3A8 or 10001)" autocomplete="postal-code">
     <button onclick="lookupPostal()">Go</button>
     <button class="loc-btn" onclick="detectLocation()">&#128205; My location</button>
+  </div>
+
+  <!-- LOOK & FEEL (skins) -->
+  <div class="card" id="skins" style="margin-top:16px">
+    <div class="lbl">🎨 Skins &amp; Themes — click any to change the look (weather stays live in Auto)</div>
+    <div class="theme-btns" style="margin-top:8px">
+      <button class="theme-btn" data-theme="auto">Auto (weather)</button>
+      <button class="theme-btn" data-theme="glass">Glass</button>
+      <button class="theme-btn" data-theme="neon">Neon</button>
+      <button class="theme-btn" data-theme="minimal">Minimal</button>
+      <button class="theme-btn" data-theme="aurora">Aurora</button>
+      <button class="theme-btn" data-theme="retro">Retro</button>
+      <button class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
+      <button class="theme-btn" data-theme="pastel">Pastel</button>
+      <button class="theme-btn" data-theme="mono">Mono</button>
+      <button class="theme-btn" data-theme="solar">Solar</button>
+      <button class="theme-btn" data-theme="arctic">Arctic</button>
+      <button class="theme-btn" data-theme="volcanic">Volcanic</button>
+      <button class="theme-btn" data-theme="emerald">Emerald</button>
+      <button class="theme-btn" data-theme="rose">Rose</button>
+      <button class="theme-btn" data-theme="slate">Slate</button>
+      <button class="theme-btn" data-theme="galaxy">Galaxy</button>
+      <button class="theme-btn" data-theme="dark">Dark</button>
+      <button class="theme-btn" data-theme="light">Light</button>
+      <button class="theme-btn" data-theme="midnight">Midnight</button>
+      <button class="theme-btn" data-theme="sunset">Sunset</button>
+      <button class="theme-btn" data-theme="forest">Forest</button>
+      <button class="theme-btn" data-theme="ocean">Ocean</button>
+    </div>
+    <div style="font-size:.72rem;color:var(--t3);margin-top:8px">Skins keep the live weather background (Auto). Solid themes replace it.</div>
   </div>
 
   <!-- EMBEDDED PLAYER -->
@@ -1324,7 +1376,7 @@ if(radioSel&&radioAudio){
 
 /* ===== THEMES ===== */
 function applyTheme(t){
-  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean','theme-glass','theme-neon','theme-minimal','theme-aurora','theme-retro');
+  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean','theme-glass','theme-neon','theme-minimal','theme-aurora','theme-retro','theme-cyberpunk','theme-pastel','theme-mono','theme-solar','theme-arctic','theme-volcanic','theme-emerald','theme-rose','theme-slate','theme-galaxy');
   if(t&&t!=='auto'&&t!=='dark') document.body.classList.add('theme-'+t);
   try{localStorage.setItem('weather-theme',t);}catch(e){}
   document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-theme')===t);});
