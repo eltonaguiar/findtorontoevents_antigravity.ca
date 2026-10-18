@@ -292,6 +292,11 @@ body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointe
 .collapse-toggle{float:right;cursor:pointer;font-size:.75rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2)}
 
 body.hide-extras .card.collapsible{display:none}
+
+.player-size-sm .player-frame{padding-top:35%}
+.player-size-md .player-frame{padding-top:56.25%}
+.player-size-lg .player-frame{padding-top:75%}
+.player-size-xl .player-frame{padding-top:100%}
 </style>
 </head>
 <body>
@@ -458,6 +463,13 @@ body.hide-extras .card.collapsible{display:none}
       <button class="loc-btn" id="vid-prev" style="padding:6px 12px">◀ Prev</button>
       <div id="vid-title" style="flex:1;font-size:.85rem;font-weight:700;color:var(--t1);text-align:center">Loading…</div>
       <button class="loc-btn" id="vid-next" style="padding:6px 12px">Next ▶</button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:.72rem;color:var(--t3)">Player size:</span>
+      <button class="theme-btn" data-psize="sm">Small</button>
+      <button class="theme-btn" data-psize="md">Medium</button>
+      <button class="theme-btn" data-psize="lg">Large</button>
+      <button class="theme-btn" data-psize="xl">X-Large</button>
     </div>
     <div class="player-note" id="vid-note"></div>
     <div id="player-songs" style="display:none;margin-top:8px">
@@ -1748,6 +1760,24 @@ window.addEventListener('load',function(){
   var stored=false; try{ stored=localStorage.getItem('weather-hide-extras')==='1'; }catch(e){}
   apply(stored);
   if(btn) btn.addEventListener('click', function(){ apply(!document.body.classList.contains('hide-extras')); });
+})();
+</script>
+
+
+<script>
+(function(){
+  function applyPSize(s){
+    document.body.classList.remove('player-size-sm','player-size-md','player-size-lg','player-size-xl');
+    document.body.classList.add('player-size-'+(s||'md'));
+    document.querySelectorAll('[data-psize]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-psize')===s);});
+    try{localStorage.setItem('weather-player-size',s);}catch(e){}
+  }
+  document.addEventListener('click',function(e){
+    if(e.target.getAttribute && e.target.getAttribute('data-psize')){
+      applyPSize(e.target.getAttribute('data-psize'));
+    }
+  });
+  try{applyPSize(localStorage.getItem('weather-player-size')||'md');}catch(e){applyPSize('md');}
 })();
 </script>
 
