@@ -228,6 +228,20 @@ body.theme-slate{--bg:#1e293b;--card:rgba(148,163,184,.07);--card-b:rgba(148,163
 body.theme-galaxy{--bg:#0b0520;--card:rgba(167,139,250,.07);--card-b:rgba(167,139,250,.22);--t1:#ede9fe;--t2:#c4b5fd;--t3:#a78bfa;--accent:#a78bfa;--accent2:#7c3aed}
 body.theme-galaxy::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(1px 1px at 10% 20%,#fff 50%,transparent),radial-gradient(1px 1px at 30% 60%,#fff 50%,transparent),radial-gradient(1px 1px at 70% 30%,#fff 50%,transparent),radial-gradient(1px 1px at 90% 80%,#fff 50%,transparent);opacity:.6;animation:twinkle 4s ease-in-out infinite alternate}
 @keyframes twinkle{0%{opacity:.3}100%{opacity:.8}}
+
+/* Extra color themes (palettes) */
+body.theme-candy{--bg:#2a0a2e;--card:rgba(255,182,213,.08);--card-b:rgba(255,182,213,.2);--t1:#fce7f3;--t2:#f9a8d4;--t3:#ec4899;--accent:#ff85c8;--accent2:#c084fc}
+body.theme-lava{--bg:#1a0000;--card:rgba(255,69,0,.08);--card-b:rgba(255,69,0,.22);--t1:#fee2e2;--t2:#fca5a5;--t3:#ef4444;--accent:#ff4500;--accent2:#ff8c00}
+body.theme-mint{--bg:#052018;--card:rgba(110,231,183,.07);--card-b:rgba(110,231,183,.2);--t1:#d1fae5;--t2:#6ee7b7;--t3:#10b981;--accent:#6ee7b7;--accent2:#34d399}
+body.theme-peach{--bg:#2a1208;--card:rgba(251,146,60,.08);--card-b:rgba(251,146,60,.22);--t1:#ffedd5;--t2:#fdba74;--t3:#fb923c;--accent:#fb923c;--accent2:#f472b6}
+body.theme-lavender{--bg:#1a1030;--card:rgba(196,181,253,.08);--card-b:rgba(196,181,253,.22);--t1:#ede9fe;--t2:#c4b5fd;--t3:#a78bfa;--accent:#c4b5fd;--accent2:#818cf8}
+body.theme-steel{--bg:#0f172a;--card:rgba(148,163,184,.08);--card-b:rgba(148,163,184,.2);--t1:#f1f5f9;--t2:#cbd5e1;--t3:#64748b;--accent:#94a3b8;--accent2:#475569}
+body.theme-gold{--bg:#1a1400;--card:rgba(250,204,21,.08);--card-b:rgba(250,204,21,.22);--t1:#fef9c3;--t2:#fde047;--t3:#eab308;--accent:#fde047;--accent2:#f59e0b}
+body.theme-jade{--bg:#052e24;--card:rgba(52,211,153,.08);--card-b:rgba(52,211,153,.22);--t1:#ccfbf1;--t2:#5eead4;--t3:#14b8a6;--accent:#2dd4bf;--accent2:#0d9488}
+body.theme-coral{--bg:#2a0a14;--card:rgba(251,113,133,.08);--card-b:rgba(251,113,133,.22);--t1:#ffe4e6;--t2:#fda4af;--t3:#fb7185;--accent:#fb7185;--accent2:#f43f5e}
+body.theme-indigo{--bg:#0a0a30;--card:rgba(129,140,248,.08);--card-b:rgba(129,140,248,.22);--t1:#e0e7ff;--t2:#a5b4fc;--t3:#6366f1;--accent:#818cf8;--accent2:#4f46e5}
+body.theme-teal{--bg:#052020;--card:rgba(45,212,191,.08);--card-b:rgba(45,212,191,.22);--t1:#ccfbf1;--t2:#99f6e4;--t3:#14b8a6;--accent:#2dd4bf;--accent2:#0891b2}
+body.theme-rosegold{--bg:#2a1220;--card:rgba(251,191,36,.07);--card-b:rgba(251,191,36,.2);--t1:#fef3c7;--t2:#fcd34d;--t3:#f59e0b;--accent:#fbbf24;--accent2:#ec4899}
 </style>
 </head>
 <body>
@@ -271,6 +285,18 @@ body.theme-galaxy::before{content:'';position:fixed;inset:0;z-index:1;pointer-ev
       <button class="theme-btn" data-theme="rose">Rose</button>
       <button class="theme-btn" data-theme="slate">Slate</button>
       <button class="theme-btn" data-theme="galaxy">Galaxy</button>
+      <button class="theme-btn" data-theme="candy">Candy</button>
+      <button class="theme-btn" data-theme="lava">Lava</button>
+      <button class="theme-btn" data-theme="mint">Mint</button>
+      <button class="theme-btn" data-theme="peach">Peach</button>
+      <button class="theme-btn" data-theme="lavender">Lavender</button>
+      <button class="theme-btn" data-theme="steel">Steel</button>
+      <button class="theme-btn" data-theme="gold">Gold</button>
+      <button class="theme-btn" data-theme="jade">Jade</button>
+      <button class="theme-btn" data-theme="coral">Coral</button>
+      <button class="theme-btn" data-theme="indigo">Indigo</button>
+      <button class="theme-btn" data-theme="teal">Teal</button>
+      <button class="theme-btn" data-theme="rosegold">Rose Gold</button>
       <button class="theme-btn" data-theme="dark">Dark</button>
       <button class="theme-btn" data-theme="light">Light</button>
       <button class="theme-btn" data-theme="midnight">Midnight</button>
@@ -1392,7 +1418,7 @@ if(radioSel&&radioAudio){
 
 /* ===== THEMES ===== */
 function applyTheme(t){
-  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean','theme-glass','theme-neon','theme-minimal','theme-aurora','theme-retro','theme-cyberpunk','theme-pastel','theme-mono','theme-solar','theme-arctic','theme-volcanic','theme-emerald','theme-rose','theme-slate','theme-galaxy');
+  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean','theme-glass','theme-neon','theme-minimal','theme-aurora','theme-retro','theme-cyberpunk','theme-pastel','theme-mono','theme-solar','theme-arctic','theme-volcanic','theme-emerald','theme-rose','theme-slate','theme-galaxy','theme-candy','theme-lava','theme-mint','theme-peach','theme-lavender','theme-steel','theme-gold','theme-jade','theme-coral','theme-indigo','theme-teal','theme-rosegold');
   if(t&&t!=='auto'&&t!=='dark') document.body.classList.add('theme-'+t);
   try{localStorage.setItem('weather-theme',t);}catch(e){}
   document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-theme')===t);});
