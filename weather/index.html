@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toronto Weather | findtorontoevents.ca</title>
+<meta name="description" content="Real-time weather with jacket advice, rain probability, sunset times and more. Localized to your area.">
+<link rel="canonical" href="https://findtorontoevents.ca/weather/">
+<style>
+:root{--bg:#0a0a1a;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.1);--t1:#f0f0f5;--t2:#9ca3af;--t3:#6b7280;--accent:#00d4ff;--accent2:#a855f7;--green:#22c55e;--red:#ef4444;--amber:#f59e0b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+#weather-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+#bg-container{position:fixed;inset:0;z-index:0;overflow:hidden}
+.bg-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease,filter 2s;background-size:cover;background-position:center}
+.bg-layer.active{opacity:1}
+.bg-overlay{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.5))}
+.bg-layer.clear{background:radial-gradient(ellipse at 70% 20%,#fff5cc 0%,transparent 35%),linear-gradient(180deg,#1a6fc4 0%,#4aa8e8 45%,#87ceeb 100%)}
+.bg-layer.clear.night{background:radial-gradient(ellipse at 30% 15%,rgba(200,210,240,.35) 0%,transparent 25%),linear-gradient(180deg,#050818 0%,#0a1028 50%,#0e1838 100%)}
+.bg-layer.clouds{background:linear-gradient(180deg,#4a6a8a 0%,#6a8aaa 50%,#8aa0b8 100%)}
+.bg-layer.clouds.night{background:linear-gradient(180deg,#080c18 0%,#0e1424 50%,#141c30 100%)}
+.bg-layer.rain{background:linear-gradient(180deg,#1f2a3a 0%,#2a3a50 40%,#3a4a60 100%)}
+.bg-layer.rain.night{background:linear-gradient(180deg,#060a14 0%,#0a1220 50%,#0e1828 100%)}
+.bg-layer.snow{background:linear-gradient(180deg,#6a8ab0 0%,#8aaacc 50%,#c0d8ee 100%)}
+.bg-layer.snow.night{background:linear-gradient(180deg,#0a1020 0%,#101830 50%,#182040 100%)}
+.bg-layer.thunder{background:radial-gradient(ellipse at 50% 10%,rgba(180,160,255,.25) 0%,transparent 40%),linear-gradient(180deg,#0a0a1e 0%,#1a1a2e 40%,#2a2a44 100%)}
+.bg-layer.thunder.night{background:linear-gradient(180deg,#060410 0%,#0c0818 50%,#120c22 100%)}
+.bg-layer.fog{background:linear-gradient(180deg,#7a7a86 0%,#9a9aa4 50%,#babac4 100%)}
+.bg-layer.fog.night{background:linear-gradient(180deg,#101014 0%,#16161c 50%,#1c1c24 100%)}
+.container{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 16px 80px}
+.back{position:fixed;bottom:20px;left:20px;z-index:100;padding:10px 20px;border-radius:24px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.1);color:var(--accent);text-decoration:none;font-weight:600;font-size:.9rem;backdrop-filter:blur(10px)}
+.header{text-align:center;padding:30px 0 16px}
+.header h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .sub{color:var(--t2);font-size:.95rem;margin-top:4px}
+.badge{display:inline-block;margin-top:8px;padding:6px 16px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:.85rem;color:var(--t2)}
+.updated{text-align:center;margin:8px 0 16px;font-size:.8rem;color:var(--t3);font-variant-numeric:tabular-nums}
+.updated b{color:var(--t2)}
+
+/* location form */
+.loc-form{display:flex;gap:8px;max-width:480px;margin:0 auto 20px;flex-wrap:wrap;justify-content:center}
+.loc-form input{flex:1;min-width:200px;padding:10px 16px;border-radius:24px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:var(--t1);font-size:.95rem;outline:none;transition:border .3s}
+.loc-form input:focus{border-color:var(--accent)}
+.loc-form button{padding:10px 22px;border-radius:24px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;transition:transform .2s}
+.loc-form button:hover{transform:scale(1.05)}
+.loc-btn{padding:10px 22px;border-radius:24px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:var(--t2);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .3s}
+.loc-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* loading */
+.loading{text-align:center;padding:80px 20px}
+.spinner{width:48px;height:48px;border:3px solid rgba(0,212,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:var(--t2)}
+
+/* jacket verdict - THE main card */
+.verdict{text-align:center;padding:36px 24px;border-radius:20px;margin-bottom:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);backdrop-filter:blur(12px);transition:all .6s}
+.verdict .emoji{font-size:5rem;line-height:1}
+.verdict .title{font-size:1.8rem;font-weight:900;margin-top:8px}
+.verdict .reason{font-size:1rem;color:var(--t2);margin-top:8px;line-height:1.5;max-width:560px;margin-left:auto;margin-right:auto}
+.verdict.yes{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08)}
+.verdict.yes .title{color:#f87171}
+.verdict.maybe{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
+.verdict.maybe .title{color:#fbbf24}
+.verdict.no{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08)}
+.verdict.no .title{color:#4ade80}
+
+/* grid cards */
+.grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+/* 2026-10-18: without an explicit min, the 1fr track's automatic minimum is
+   driven by .hourly's min-content (24 cells = 1786px), which defeats the
+   strip's overflow-x:auto and makes the whole document scroll ~1800px on
+   phones. min-width:0 lets the hourly strip scroll internally instead. */
+.grid>*{min-width:0}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--card-b);border-radius:16px;padding:20px;backdrop-filter:blur(8px);transition:border-color .3s}
+.card:hover{border-color:rgba(0,212,255,.3)}
+.card.span2{grid-column:1/-1}
+.lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px}
+.big{font-size:2.6rem;font-weight:800;line-height:1.1}
+.sub2{color:var(--t2);font-size:.88rem;margin-top:4px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.92rem}
+.row:last-child{border:none}
+.row .v{font-weight:700}
+
+/* rain prob bar */
+.rain-bar{width:100%;height:10px;border-radius:5px;background:rgba(255,255,255,.06);margin-top:10px;overflow:hidden}
+.rain-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#3b82f6,#00d4ff);transition:width 1s ease}
+
+/* forecast strip */
+.fc-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+@media(max-width:700px){.fc-strip{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:420px){.fc-strip{grid-template-columns:repeat(3,1fr)}}
+.fc-day{text-align:center;padding:12px 4px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);transition:all .25s}
+.fc-day:hover{background:rgba(0,212,255,.08);transform:translateY(-2px)}
+.fc-day .dn{font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase}
+.fc-day .de{font-size:1.5rem;margin:4px 0}
+.fc-day .dh{font-weight:700;font-size:.85rem}
+.fc-day .dl{color:var(--t3);font-size:.78rem}
+.fc-day .dp{font-size:.68rem;color:#60a5fa;margin-top:3px}
+
+/* hourly */
+.hourly{display:flex;gap:8px;overflow-x:auto;padding:6px 0;scrollbar-width:thin}
+.h-item{flex-shrink:0;text-align:center;padding:10px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);min-width:65px}
+.h-item .ht{font-size:.68rem;color:var(--t3);font-weight:600}
+.h-item .he{font-size:1.2rem;margin:4px 0}
+.h-item .hv{font-weight:700;font-size:.88rem}
+.h-item .hp{font-size:.65rem;color:#60a5fa}
+
+/* alerts */
+.alert{padding:12px 18px;border-radius:12px;margin-bottom:8px;border-left:4px solid}
+.alert.high{background:rgba(239,68,68,.12);border-color:#ef4444}
+.alert.med{background:rgba(245,158,11,.12);border-color:#f59e0b}
+.alert .at{font-weight:700;font-size:.92rem}
+.alert .ad{font-size:.82rem;color:var(--t2);margin-top:2px}
+
+/* audio btn */
+.audio-btn{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 22px;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:var(--t2);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s}
+.audio-btn:hover{background:rgba(0,212,255,.12);color:var(--accent);border-color:rgba(0,212,255,.3)}
+
+/* privacy note */
+.priv{font-size:.75rem;color:var(--t3);text-align:center;margin-top:4px}
+
+/* ===== NAV PANEL (left slide-in, like main page quick nav) ===== */
+.nav-toggle{position:fixed;top:14px;left:14px;z-index:300;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:var(--t1);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.nav-overlay{position:fixed;inset:0;z-index:390;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.nav-overlay.open{opacity:1;pointer-events:auto}
+.nav-panel{position:fixed;top:0;left:0;bottom:0;width:290px;max-width:85vw;z-index:400;background:rgba(12,12,28,.96);backdrop-filter:blur(14px);border-right:1px solid rgba(255,255,255,.1);transform:translateX(-100%);transition:transform .28s ease;display:flex;flex-direction:column}
+.nav-panel.open{transform:translateX(0)}
+.nav-panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-panel-head h3{font-size:1rem;font-weight:800;color:var(--t1)}
+.nav-panel-head button{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer}
+.nav-panel-body{flex:1;overflow-y:auto;padding:12px}
+.nav-panel-body a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--t2);text-decoration:none;font-size:.9rem;transition:all .2s}
+.nav-panel-body a:hover{background:rgba(255,255,255,.06);color:var(--t1)}
+
+/* ===== SIDE PANEL (right, collapsible) ===== */
+.side-toggle{position:fixed;top:14px;right:14px;z-index:300;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:var(--t1);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.side-toggle:hover{border-color:var(--accent);color:var(--accent)}
+/* 2026-10-18: emergency recovery button — high-contrast (solid white bg, black text)
+   so it stays readable on ANY theme (incl. Glass where text can blend into background) */
+.look-reset-fab{position:fixed;top:66px;right:14px;z-index:300;padding:8px 12px;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font-size:.75rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45);font-family:inherit}
+.look-reset-fab:hover,.look-reset-fab:focus{background:#ffe9e9;border-color:#b00020;color:#b00020}
+.side-panel{position:fixed;top:0;right:0;bottom:0;width:320px;max-width:90vw;z-index:395;background:rgba(12,12,28,.96);backdrop-filter:blur(14px);border-left:1px solid rgba(255,255,255,.1);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column}
+.side-panel.open{transform:translateX(0)}
+.side-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.side-head h3{font-size:1rem;font-weight:800;color:var(--t1)}
+.side-head button{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer}
+.side-body{flex:1;overflow-y:auto;padding:14px}
+.side-section{margin-bottom:18px}
+.side-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.side-more{font-size:.72rem;color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0}
+.side-list{list-style:none;padding:0;margin:0}
+.side-list li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.85rem}
+.side-list li:last-child{border:none}
+.side-list a{color:var(--t1);text-decoration:none;display:block}
+.side-list a:hover{color:var(--accent)}
+.side-meta{font-size:.72rem;color:var(--t3);margin-top:2px}
+.side-loading{color:var(--t3);font-style:italic}
+.side-empty{color:var(--t3);font-style:italic;font-size:.82rem}
+
+/* ===== ENTERTAINMENT SECTION ===== */
+.ent-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.ent-tab{padding:6px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+.ent-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.ent-content{margin-top:8px}
+.ent-list{list-style:none;padding:0;margin:0}
+.ent-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.ent-item:last-child{border:none}
+.ent-title{font-weight:700;font-size:.9rem;color:var(--t1)}
+.ent-meta{font-size:.72rem;color:var(--t3);margin-top:2px}
+.ent-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ent-links a{font-size:.7rem;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--t2);text-decoration:none;transition:all .2s}
+.ent-links a:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ===== EMBEDDED PLAYER ===== */
+.player-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.player-tab{padding:6px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+.player-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.player-frame{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.04);margin-top:8px}
+.player-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.player-radio{margin-top:8px}
+.player-radio select{width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:var(--t1);font-size:.9rem}
+.player-radio audio{width:100%;margin-top:8px}
+.player-note{font-size:.72rem;color:var(--t3);margin-top:6px}
+
+/* ===== THEMES ===== */
+.theme-switch{padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+.theme-switch h4{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px}
+.theme-btns{display:flex;flex-wrap:wrap;gap:6px}
+.theme-btn{padding:6px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s}
+.theme-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+body.theme-light{--bg:#f4f6fb;--card:rgba(0,0,0,.04);--card-b:rgba(0,0,0,.08);--t1:#1a1a2e;--t2:#4b5563;--t3:#9ca3af}
+body.theme-light .bg-fallback,body.theme-light #weather-canvas{display:none}
+body.theme-light{background:linear-gradient(180deg,#dbeafe 0%,#f4f6fb 100%)}
+body.theme-midnight{--bg:#02040f;--card:rgba(255,255,255,.04);--card-b:rgba(255,255,255,.08);--t1:#e0e7ff;--t2:#a5b4fc;--t3:#6366f1}
+body.theme-midnight .bg-fallback,body.theme-midnight #weather-canvas{display:none}
+body.theme-midnight{background:linear-gradient(180deg,#02040f 0%,#0a0f2e 100%)}
+body.theme-sunset{--bg:#1a0f1f;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.1);--t1:#fce7f3;--t2:#f9a8d4;--t3:#ec4899}
+body.theme-sunset .bg-fallback,body.theme-sunset #weather-canvas{display:none}
+body.theme-sunset{background:linear-gradient(180deg,#7c2d12 0%,#be185d 50%,#1a0f1f 100%)}
+body.theme-forest{--bg:#0a1f12;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.09);--t1:#dcfce7;--t2:#86efac;--t3:#22c55e}
+body.theme-forest .bg-fallback,body.theme-forest #weather-canvas{display:none}
+body.theme-forest{background:linear-gradient(180deg,#052e16 0%,#0a1f12 100%)}
+body.theme-ocean{--bg:#0a1a2e;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.1);--t1:#e0f2fe;--t2:#7dd3fc;--t3:#0ea5e9}
+body.theme-ocean .bg-fallback,body.theme-ocean #weather-canvas{display:none}
+body.theme-ocean{background:linear-gradient(180deg,#0c4a6e 0%,#0a1a2e 100%)}
+
+/* Weather-driven skins (keep live weather background) */
+body.theme-glass{--card:rgba(255,255,255,.10);--card-b:rgba(255,255,255,.18)}
+body.theme-glass .card,body.theme-glass .verdict{backdrop-filter:blur(18px);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+body.theme-neon{--accent:#39ff14;--accent2:#ff00ff;--card:rgba(0,0,0,.55);--card-b:rgba(57,255,20,.35)}
+body.theme-neon .card,body.theme-neon .verdict{box-shadow:0 0 18px rgba(57,255,20,.25),inset 0 0 12px rgba(255,0,255,.08);border-width:1px}
+body.theme-neon .theme-btn.active{box-shadow:0 0 12px rgba(57,255,20,.6)}
+body.theme-minimal{--card:rgba(255,255,255,.03);--card-b:rgba(255,255,255,.06)}
+body.theme-minimal .card,body.theme-minimal .verdict{backdrop-filter:none;box-shadow:none;border-radius:8px}
+body.theme-minimal .theme-btn{border-radius:6px}
+body.theme-aurora{--accent:#7df9ff;--accent2:#c084fc}
+body.theme-aurora::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 20% 30%,rgba(125,249,255,.18) 0%,transparent 55%),radial-gradient(ellipse at 80% 70%,rgba(192,132,252,.18) 0%,transparent 55%);animation:auroraShift 12s ease-in-out infinite alternate}
+@keyframes auroraShift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-4%,-3%) scale(1.05)}}
+body.theme-retro{--bg:#2b1d0e;--card:rgba(255,240,200,.07);--card-b:rgba(255,200,120,.18);--t1:#fde68a;--t2:#fbbf24;--t3:#d97706;--accent:#f59e0b;--accent2:#ef4444}
+body.theme-retro .card,body.theme-retro .verdict{border-radius:4px;font-family:'Courier New',monospace}
+
+/* 10 additional skins */
+body.theme-cyberpunk{--accent:#00fff0;--accent2:#ff00c8;--card:rgba(0,0,0,.6);--card-b:rgba(0,255,240,.35)}
+body.theme-cyberpunk .card,body.theme-cyberpunk .verdict{box-shadow:0 0 14px rgba(0,255,240,.3),0 0 28px rgba(255,0,200,.15);border-width:1px}
+body.theme-cyberpunk .theme-btn.active{box-shadow:0 0 10px rgba(0,255,240,.7)}
+body.theme-pastel{--bg:#fff5fa;--card:rgba(255,255,255,.55);--card-b:rgba(255,182,213,.35);--t1:#4a3f55;--t2:#7a6b85;--t3:#a89ab3;--accent:#ff8fab;--accent2:#a29bfe}
+body.theme-pastel .bg-fallback,body.theme-pastel #weather-canvas{filter:saturate(.7) brightness(1.15)}
+body.theme-mono{--bg:#111;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.12);--t1:#eee;--t2:#aaa;--t3:#666;--accent:#fff;--accent2:#999}
+body.theme-mono .card,body.theme-mono .verdict{border-radius:2px}
+body.theme-solar{--bg:#1a1200;--card:rgba(255,200,80,.07);--card-b:rgba(255,200,80,.2);--t1:#fef3c7;--t2:#fbbf24;--t3:#d97706;--accent:#fbbf24;--accent2:#f97316}
+body.theme-solar .bg-fallback,body.theme-solar #weather-canvas{filter:sepia(.25) saturate(1.2)}
+body.theme-arctic{--bg:#0a1628;--card:rgba(180,220,255,.07);--card-b:rgba(180,220,255,.2);--t1:#e0f2fe;--t2:#bae6fd;--t3:#7dd3fc;--accent:#7dd3fc;--accent2:#38bdf8}
+body.theme-arctic .card,body.theme-arctic .verdict{backdrop-filter:blur(14px);box-shadow:0 0 24px rgba(125,211,252,.15)}
+body.theme-volcanic{--bg:#1a0500;--card:rgba(255,80,40,.07);--card-b:rgba(255,80,40,.22);--t1:#fee2e2;--t2:#fca5a5;--t3:#ef4444;--accent:#ef4444;--accent2:#f97316}
+body.theme-volcanic .bg-fallback,body.theme-volcanic #weather-canvas{filter:saturate(1.4) contrast(1.1)}
+body.theme-emerald{--bg:#052018;--card:rgba(16,185,129,.07);--card-b:rgba(16,185,129,.22);--t1:#d1fae5;--t2:#6ee7b7;--t3:#10b981;--accent:#34d399;--accent2:#10b981}
+body.theme-rose{--bg:#20051a;--card:rgba(244,114,182,.07);--card-b:rgba(244,114,182,.22);--t1:#fce7f3;--t2:#f9a8d4;--t3:#ec4899;--accent:#f472b6;--accent2:#ec4899}
+body.theme-slate{--bg:#1e293b;--card:rgba(148,163,184,.07);--card-b:rgba(148,163,184,.2);--t1:#f1f5f9;--t2:#cbd5e1;--t3:#94a3b8;--accent:#94a3b8;--accent2:#64748b}
+body.theme-galaxy{--bg:#0b0520;--card:rgba(167,139,250,.07);--card-b:rgba(167,139,250,.22);--t1:#ede9fe;--t2:#c4b5fd;--t3:#a78bfa;--accent:#a78bfa;--accent2:#7c3aed}
+body.theme-galaxy::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(1px 1px at 10% 20%,#fff 50%,transparent),radial-gradient(1px 1px at 30% 60%,#fff 50%,transparent),radial-gradient(1px 1px at 70% 30%,#fff 50%,transparent),radial-gradient(1px 1px at 90% 80%,#fff 50%,transparent);opacity:.6;animation:twinkle 4s ease-in-out infinite alternate}
+
+/* Background layout variants */
+body.layout-split #bg-container{clip-path:inset(0 50% 0 0)}
+body.layout-split .bg-layer{background-size:cover;background-position:right center}
+body.layout-tiled .bg-layer{background-size:200px 200px;background-repeat:repeat;image-rendering:pixelated}
+body.layout-vignette #bg-container{mask:radial-gradient(ellipse at center,black 40%,transparent 100%);-webkit-mask:radial-gradient(ellipse at center,black 40%,transparent 100%)}
+body.layout-diagonal #bg-container{clip-path:polygon(0 0,100% 0,100% 70%,0 100%)}
+body.layout-centered .bg-layer{background-size:60% 60%;background-position:center;background-repeat:no-repeat}
+body.layout-full #bg-container{clip-path:none}
+@keyframes twinkle{0%{opacity:.3}100%{opacity:.8}}
+
+/* Extra color themes (palettes) */
+body.theme-candy{--bg:#2a0a2e;--card:rgba(255,182,213,.08);--card-b:rgba(255,182,213,.2);--t1:#fce7f3;--t2:#f9a8d4;--t3:#ec4899;--accent:#ff85c8;--accent2:#c084fc}
+body.theme-lava{--bg:#1a0000;--card:rgba(255,69,0,.08);--card-b:rgba(255,69,0,.22);--t1:#fee2e2;--t2:#fca5a5;--t3:#ef4444;--accent:#ff4500;--accent2:#ff8c00}
+body.theme-mint{--bg:#052018;--card:rgba(110,231,183,.07);--card-b:rgba(110,231,183,.2);--t1:#d1fae5;--t2:#6ee7b7;--t3:#10b981;--accent:#6ee7b7;--accent2:#34d399}
+body.theme-peach{--bg:#2a1208;--card:rgba(251,146,60,.08);--card-b:rgba(251,146,60,.22);--t1:#ffedd5;--t2:#fdba74;--t3:#fb923c;--accent:#fb923c;--accent2:#f472b6}
+body.theme-lavender{--bg:#1a1030;--card:rgba(196,181,253,.08);--card-b:rgba(196,181,253,.22);--t1:#ede9fe;--t2:#c4b5fd;--t3:#a78bfa;--accent:#c4b5fd;--accent2:#818cf8}
+body.theme-steel{--bg:#0f172a;--card:rgba(148,163,184,.08);--card-b:rgba(148,163,184,.2);--t1:#f1f5f9;--t2:#cbd5e1;--t3:#64748b;--accent:#94a3b8;--accent2:#475569}
+body.theme-gold{--bg:#1a1400;--card:rgba(250,204,21,.08);--card-b:rgba(250,204,21,.22);--t1:#fef9c3;--t2:#fde047;--t3:#eab308;--accent:#fde047;--accent2:#f59e0b}
+body.theme-jade{--bg:#052e24;--card:rgba(52,211,153,.08);--card-b:rgba(52,211,153,.22);--t1:#ccfbf1;--t2:#5eead4;--t3:#14b8a6;--accent:#2dd4bf;--accent2:#0d9488}
+body.theme-coral{--bg:#2a0a14;--card:rgba(251,113,133,.08);--card-b:rgba(251,113,133,.22);--t1:#ffe4e6;--t2:#fda4af;--t3:#fb7185;--accent:#fb7185;--accent2:#f43f5e}
+body.theme-indigo{--bg:#0a0a30;--card:rgba(129,140,248,.08);--card-b:rgba(129,140,248,.22);--t1:#e0e7ff;--t2:#a5b4fc;--t3:#6366f1;--accent:#818cf8;--accent2:#4f46e5}
+body.theme-teal{--bg:#052020;--card:rgba(45,212,191,.08);--card-b:rgba(45,212,191,.22);--t1:#ccfbf1;--t2:#99f6e4;--t3:#14b8a6;--accent:#2dd4bf;--accent2:#0891b2}
+body.theme-rosegold{--bg:#2a1220;--card:rgba(251,191,36,.07);--card-b:rgba(251,191,36,.2);--t1:#fef3c7;--t2:#fcd34d;--t3:#f59e0b;--accent:#fbbf24;--accent2:#ec4899}
+
+/* Animated background scenes (keep weather particles on top) */
+body.scene-aurora{background:linear-gradient(120deg,#0f0c29,#302b63,#24243e,#0f0c29);background-size:400% 400%;animation:sceneAurora 18s ease infinite}
+body.scene-aurora #bg-container{display:none}
+@keyframes sceneAurora{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+body.scene-waves{background:linear-gradient(180deg,#006994,#40e0d0,#006994);background-size:100% 300%;animation:sceneWaves 12s ease-in-out infinite}
+body.scene-waves #bg-container{display:none}
+@keyframes sceneWaves{0%{background-position:50% 0%}50%{background-position:50% 100%}100%{background-position:50% 0%}}
+body.scene-starfield{background:radial-gradient(ellipse at bottom,#1b2735 0%,#090a0f 100%)}
+body.scene-starfield #bg-container{display:none}
+body.scene-starfield::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(1px 1px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 40px 70px,#fff,transparent),radial-gradient(1px 1px at 50px 160px,#fff,transparent),radial-gradient(1px 1px at 90px 40px,#fff,transparent),radial-gradient(1px 1px at 130px 80px,#fff,transparent),radial-gradient(1.5px 1.5px at 160px 120px,#fff,transparent);background-size:200px 200px;animation:sceneStars 60s linear infinite;opacity:.6}
+@keyframes sceneStars{0%{background-position:0 0}100%{background-position:200px 200px}}
+body.scene-matrix{background:#000}
+body.scene-matrix #bg-container{display:none}
+body.scene-matrix::after{content:'█▓▒░';position:fixed;inset:0;z-index:0;pointer-events:none;color:#0f0;font-family:monospace;font-size:14px;line-height:14px;opacity:.08;animation:sceneMatrix 2s steps(10) infinite;white-space:pre;overflow:hidden}
+@keyframes sceneMatrix{0%{transform:translateY(0)}100%{transform:translateY(-100%)}}
+body.scene-sunset{background:linear-gradient(180deg,#ff512f,#dd2476,#ff512f);background-size:100% 200%;animation:sceneSunset 10s ease-in-out infinite}
+body.scene-sunset #bg-container{display:none}
+@keyframes sceneSunset{0%{background-position:50% 0%}50%{background-position:50% 100%}100%{background-position:50% 0%}}
+body.scene-neongrid{background:#050510}
+body.scene-neongrid #bg-container{display:none}
+body.scene-neongrid::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,255,255,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(255,0,255,.15) 1px,transparent 1px);background-size:40px 40px;animation:sceneGrid 8s linear infinite;transform:perspective(400px) rotateX(60deg);transform-origin:50% 100%}
+@keyframes sceneGrid{0%{background-position:0 0}100%{background-position:0 40px}}
+body.scene-fire{background:radial-gradient(ellipse at bottom,#ff4500 0%,#8b0000 40%,#000 100%)}
+body.scene-fire #bg-container{display:none}
+body.scene-fire::after{content:'';position:fixed;bottom:0;left:0;right:0;height:40%;z-index:0;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(255,69,0,.25));animation:sceneFire 1.5s ease-in-out infinite alternate}
+@keyframes sceneFire{0%{opacity:.6;transform:scaleY(1)}100%{opacity:1;transform:scaleY(1.05)}}
+body.scene-snowfall{background:linear-gradient(180deg,#0a1628,#1e3a5f)}
+body.scene-snowfall #bg-container{display:none}
+body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointer-events:none;color:#fff;font-size:18px;opacity:.15;animation:sceneSnow 6s linear infinite;white-space:pre;overflow:hidden}
+@keyframes sceneSnow{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+
+/* Collapsible sections */
+.card.collapsible .card-body{overflow:hidden;transition:max-height .3s ease,opacity .3s ease}
+.card.collapsible.collapsed .card-body{max-height:0;opacity:0;margin:0;padding:0}
+.collapse-toggle{float:right;cursor:pointer;font-size:.75rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2)}
+
+body.hide-extras .card.collapsible{display:none}
+
+.player-size-sm .player-frame{padding-top:35%}
+.player-size-md .player-frame{padding-top:56.25%}
+.player-size-lg .player-frame{padding-top:75%}
+.player-size-xl .player-frame{padding-top:100%}
+</style>
+</head>
+<body>
+<div id="bg-container"><div class="bg-layer active" id="bg-layer-1"></div><div class="bg-layer" id="bg-layer-2"></div><div class="bg-overlay"></div></div>
+<canvas id="weather-canvas"></canvas>
+<a href="/" class="back">&larr; Events</a>
+
+<div class="container">
+  <div class="header">
+    <h1>&#127780;&#65039; Toronto Weather</h1>
+    <p class="sub">Do you need a jacket? Rain odds, sunset, and what to wear</p>
+    <div class="badge" id="season-badge">Loading...</div>
+    <div style="margin-top:8px"><a href="#skins" style="color:var(--accent);font-size:.85rem;text-decoration:none;border:1px solid rgba(255,255,255,.15);padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.05)">🎨 Jump to Skins</a></div>
+  </div>
+
+  <div class="updated">Last updated: <b id="last-updated">--</b> &middot; times in Eastern Time (Toronto) &middot; auto-refreshes every 10 min</div>
+  <div style="margin-top:8px"><button id="extras-toggle" class="loc-btn" style="padding:6px 12px;font-size:.8rem">Hide optional sections</button></div>
+
+  <div class="loc-form">
+    <input type="text" id="postal-input" placeholder="Postal / ZIP code (e.g. M5V 3A8 or 10001)" autocomplete="postal-code">
+    <button onclick="lookupPostal()">Go</button>
+    <button class="loc-btn" onclick="detectLocation()">&#128205; My location</button>
+  </div>
+
+    </div>
+  </div>
+
+  <!-- LIVE CAMERAS -->
+  <div class="card collapsible" style="margin-top:16px">
+    <div class="lbl">📹 Live Toronto Cameras <button class="collapse-toggle" data-collapse="cams-body">Hide</button></div>
+    <div class="card-body" id="cams-body">
+    <div style="margin-top:8px;display:grid;grid-template-columns:1fr;gap:10px">
+      <div class="lazy-frame" data-src="https://www.youtube.com/embed/bbjwotvAvDM?autoplay=0&mute=1" style="width:100%;height:260px;border:0;border-radius:12px"></div>
+
+      <div style="font-size:.8rem;color:var(--t2);padding:8px">CN Tower East/West cams: <a href="https://share3.earthcam.net/tJ90CoLmq7TzrY396Yd88GfkimyXFNScXrEOdCSypnE!.tJ90CoLmq7TzrY396Yd88EBE9WWV4LNh9pQ1rv5B0Do!.tJ90CoLmq7TzrY396Yd88NxxCz9PmwhJDLJgkgiBR2s!/cn_tower/cn_tower_cam_-_east_view/live" target="_blank" rel="noopener" style="color:var(--accent)">East</a> · <a href="https://share3.earthcam.net/tJ90CoLmq7TzrY396Yd88GfkimyXFNScXrEOdCSypnE!.tJ90CoLmq7TzrY396Yd88EBE9WWV4LNh9pQ1rv5B0Do!.tJ90CoLmq7TzrY396Yd88MGEkOMrIFbd_7noZ9cXHeA!.tJ90CoLmq7TzrY396Yd88G41QaciuJNo1DCilzw4PWI!.tJ90CoLmq7TzrY396Yd88HNWVq1w-xKQPUAcVyBqiYo!/cn_tower/cn_tower_cam_-_west_view/live" target="_blank" rel="noopener" style="color:var(--accent)">West</a></div>
+    </div>
+    <div style="font-size:.72rem;color:var(--t3);margin-top:8px">Live streams from YouTube. If a stream is offline, try <a href="https://worldcams.tv/canada/toronto/city-views" target="_blank" rel="noopener" style="color:var(--accent)">WorldCams Toronto</a>.</div>
+  </div>
+
+    </div>
+  </div>
+
+  <!-- QUICK LINKS -->
+  <div class="card" style="margin-top:16px">
+    <div class="lbl">🔗 Popular Weather Sites (current location)</div>
+    <div id="wx-links" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px"></div>
+  </div>
+
+  <!-- LIVE WEATHER MAP -->
+  <div class="card collapsible" style="margin-top:16px">
+    <div class="lbl">🗺️ Live Weather Map (Toronto area) <button class="collapse-toggle" data-collapse="map-body">Hide</button></div>
+    <div class="card-body" id="map-body">
+    <div style="margin-top:8px">
+      <div class="lazy-frame" data-src="https://embed.windy.com/embed2.html?lat=43.6532&lon=-79.3832&zoom=7&level=surface&overlay=rain&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" style="width:100%;height:320px;border:0;border-radius:12px"></div>
+    </div>
+    <div style="font-size:.72rem;color:var(--t3);margin-top:8px">Powered by Windy. Use overlay menu inside the map to switch rain/wind/temp/clouds. For AI-driven forecasts see <a href="https://deepmind.google/science/weathernext/" target="_blank" rel="noopener" style="color:var(--accent)">Google WeatherNext</a>.</div>
+  </div>
+
+    </div>
+  </div>
+
+  <!-- LOOK & FEEL (skins) -->
+  <div class="card collapsible" id="skins" style="margin-top:16px">
+    <div class="lbl">🎨 Skins &amp; Themes — click any to change the look (weather stays live in Auto) <button class="collapse-toggle" data-collapse="skins-body">Hide</button></div>
+    <div class="card-body" id="skins-body">
+    <div style="margin-top:8px"><button class="theme-btn reset-look" style="border-color:rgba(225,29,72,.6);color:#f87171" title="Clear saved theme/filters and restore defaults">🔄 Reset look &amp; feel to default</button></div>
+    <div class="theme-btns" style="margin-top:8px">
+      <button class="theme-btn" data-theme="auto">Auto (weather)</button>
+      <button class="theme-btn" data-theme="glass">Glass</button>
+      <button class="theme-btn" data-theme="neon">Neon</button>
+      <button class="theme-btn" data-theme="minimal">Minimal</button>
+      <button class="theme-btn" data-theme="aurora">Aurora</button>
+      <button class="theme-btn" data-theme="retro">Retro</button>
+      <button class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
+      <button class="theme-btn" data-theme="pastel">Pastel</button>
+      <button class="theme-btn" data-theme="mono">Mono</button>
+      <button class="theme-btn" data-theme="solar">Solar</button>
+      <button class="theme-btn" data-theme="arctic">Arctic</button>
+      <button class="theme-btn" data-theme="volcanic">Volcanic</button>
+      <button class="theme-btn" data-theme="emerald">Emerald</button>
+      <button class="theme-btn" data-theme="rose">Rose</button>
+      <button class="theme-btn" data-theme="slate">Slate</button>
+      <button class="theme-btn" data-theme="galaxy">Galaxy</button>
+      <button class="theme-btn" data-theme="candy">Candy</button>
+      <button class="theme-btn" data-theme="lava">Lava</button>
+      <button class="theme-btn" data-theme="mint">Mint</button>
+      <button class="theme-btn" data-theme="peach">Peach</button>
+      <button class="theme-btn" data-theme="lavender">Lavender</button>
+      <button class="theme-btn" data-theme="steel">Steel</button>
+      <button class="theme-btn" data-theme="gold">Gold</button>
+      <button class="theme-btn" data-theme="jade">Jade</button>
+      <button class="theme-btn" data-theme="coral">Coral</button>
+      <button class="theme-btn" data-theme="indigo">Indigo</button>
+      <button class="theme-btn" data-theme="teal">Teal</button>
+      <button class="theme-btn" data-theme="rosegold">Rose Gold</button>
+      <button class="theme-btn" data-theme="dark">Dark</button>
+      <button class="theme-btn" data-theme="light">Light</button>
+      <button class="theme-btn" data-theme="midnight">Midnight</button>
+      <button class="theme-btn" data-theme="sunset">Sunset</button>
+      <button class="theme-btn" data-theme="forest">Forest</button>
+      <button class="theme-btn" data-theme="ocean">Ocean</button>
+    </div>
+    <div style="font-size:.72rem;color:var(--t3);margin-top:8px">Skins keep the live weather background (Auto). Solid themes replace it.</div>
+
+    <div class="lbl" style="margin-top:12px">🖼️ Background FX — filter the live weather canvas</div>
+    <div class="theme-btns" id="fx-btns" style="margin-top:8px">
+      <button class="theme-btn active" data-fx="none">None</button>
+      <button class="theme-btn" data-fx="hue">Hue Shift</button>
+      <button class="theme-btn" data-fx="gray">Grayscale</button>
+      <button class="theme-btn" data-fx="sepia">Sepia</button>
+      <button class="theme-btn" data-fx="contrast">High Contrast</button>
+      <button class="theme-btn" data-fx="blur">Soft Blur</button>
+      <button class="theme-btn" data-fx="neon">Neon Glow</button>
+      <button class="theme-btn" data-fx="watercolor">Watercolor</button>
+      <button class="theme-btn" data-fx="infrared">Infrared</button>
+      <button class="theme-btn" data-fx="nightvision">Night Vision</button>
+      <button class="theme-btn" data-fx="blueprint">Blueprint</button>
+      <button class="theme-btn" data-fx="invert">Invert</button>
+    </div>
+
+    <div class="lbl" style="margin-top:12px">🎬 Background Scenes (animated; weather particles stay on top)</div>
+    <div class="theme-btns" id="scene-btns" style="margin-top:8px">
+      <button class="theme-btn active" data-scene="none">Weather (default)</button>
+      <button class="theme-btn" data-scene="aurora">Aurora</button>
+      <button class="theme-btn" data-scene="waves">Ocean Waves</button>
+      <button class="theme-btn" data-scene="starfield">Starfield</button>
+      <button class="theme-btn" data-scene="matrix">Matrix</button>
+      <button class="theme-btn" data-scene="sunset">Sunset</button>
+      <button class="theme-btn" data-scene="neongrid">Neon Grid</button>
+      <button class="theme-btn" data-scene="fire">Fire</button>
+      <button class="theme-btn" data-scene="snowfall">Snowfall</button>
+    </div>
+
+    <div class="lbl" style="margin-top:12px">📐 Background Layout</div>
+    <div class="theme-btns" style="margin-top:8px">
+      <button class="theme-btn active" data-layout="full">Full</button>
+      <button class="theme-btn" data-layout="split">Split</button>
+      <button class="theme-btn" data-layout="tiled">Tiled</button>
+      <button class="theme-btn" data-layout="vignette">Vignette</button>
+      <button class="theme-btn" data-layout="diagonal">Diagonal</button>
+      <button class="theme-btn" data-layout="centered">Centered</button>
+    </div>
+    </div>
+  </div>
+
+  <!-- EMBEDDED PLAYER -->
+  <div class="card span2 collapsible" style="margin-top:16px">
+    <div class="lbl">▶️ Embedded Player — Music Videos / Trailers / Radio <button class="collapse-toggle" data-collapse="player-body">Hide</button></div>
+    <div class="card-body" id="player-body">
+    <div class="player-tabs" id="player-tabs">
+      <button class="player-tab active" data-cat="music">🎵 Music Videos</button>
+      <button class="player-tab" data-cat="trailers">🎬 Movie Trailers</button>
+      <button class="player-tab" data-cat="songs">🎧 Top Songs</button>
+      <button class="player-tab" data-cat="radio">📻 Live Radio</button>
+    </div>
+    <div class="ent-tabs" id="vid-subtabs" style="display:none">
+      <button class="ent-tab active" data-vtab="top">🔥 Top</button>
+      <button class="ent-tab" data-vtab="new">🆕 New Releases</button>
+      <button class="ent-tab" data-vtab="trend">📈 Trending</button>
+    </div>
+    <div id="player-video" class="player-frame" style="display:none">
+      <iframe id="yt-player" style="width:100%;border:0;border-radius:12px" allow="autoplay; encrypted-media; fullscreen"></iframe>
+    </div>
+    <div id="vid-controls" style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="loc-btn" id="vid-prev" style="padding:6px 12px">◀ Prev</button>
+      <div id="vid-title" style="flex:1;font-size:.85rem;font-weight:700;color:var(--t1);text-align:center">Loading…</div>
+      <button class="loc-btn" id="vid-next" style="padding:6px 12px">Next ▶</button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:.72rem;color:var(--t3)">Player size:</span>
+      <button class="theme-btn" data-psize="sm">Small</button>
+      <button class="theme-btn" data-psize="md">Medium</button>
+      <button class="theme-btn" data-psize="lg">Large</button>
+      <button class="theme-btn" data-psize="xl">X-Large</button>
+    </div>
+    <div class="player-note" id="vid-note"></div>
+    <div id="player-songs" style="display:none;margin-top:8px">
+      <div class="ent-tabs" id="song-tabs">
+        <button class="ent-tab active" data-sp="top">🔥 Top 50</button>
+        <button class="ent-tab" data-sp="new">🆕 New Releases</button>
+        <button class="ent-tab" data-sp="trend">📈 Trending</button>
+      </div>
+      <div class="player-frame">
+        <iframe id="spotify-player" src="https://open.spotify.com/embed/playlist/37i9dQZEVXbMDoHDwVN2tF?utm_source=generator"style="width:100%;border:0;border-radius:12px" allow="autoplay; encrypted-media; fullscreen"></iframe>
+  </div>
+      <div class="player-note" id="song-note">Spotify Top 50 Global.</div>
+    </div>
+    <div id="player-radio" class="player-radio" style="display:none">
+      <select id="radio-station">
+        <option value="https://ice1.somafm.com/groovesalad-128-mp3">SomaFM Groove Salad</option>
+        <option value="https://ice1.somafm.com/dronezone-128-mp3">SomaFM Drone Zone</option>
+        <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/CHUMFM.mp3">CHUM 104.5 (Toronto)</option>
+      </select>
+      <audio id="radio-audio" controls preload="none"></audio>
+    </div>
+    <div class="player-note">Videos via YouTube search playlists (dynamic). Radio streams play on demand.</div>
+  </div>
+
+  <div class="priv">Location stays in your browser &mdash; we only use it to fetch weather.</div>
+  <div class="priv" style="margin-top:10px"><a href="https://www.reddit.com/r/LivestreamFail/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">📺 r/LivestreamFail</a></div>
+
+  <div id="area-label" class="updated" style="margin-top:6px">Area: <b>--</b></div>
+
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Fetching weather&hellip;</p>
+  </div>
+
+  <div id="content" style="display:none">
+    <div id="alerts"></div>
+
+    <!-- JACKETS VERDICT -->
+    <div class="verdict" id="verdict">
+      <div class="emoji" id="v-emoji">&#129509;</div>
+      <div class="title" id="v-title">Loading&hellip;</div>
+      <div class="reason" id="v-reason"></div>
+    </div>
+
+    <div class="grid">
+      <!-- current -->
+      <div class="card span2" style="text-align:center">
+        <div class="big" id="cur-temp">--&deg;</div>
+        <div class="sub2" id="cur-cond">&mdash;</div>
+        <div class="sub2" id="cur-feels" style="margin-top:6px;font-weight:700"></div>
+        <button class="audio-btn" id="audio-btn">&#128266; Listen</button>
+      </div>
+
+      <!-- rain prob -->
+      <div class="card">
+        <div class="lbl">&#128167; Rain probability (today)</div>
+        <div class="big" id="rain-prob">--%</div>
+        <div class="sub2" id="rain-desc">&mdash;</div>
+        <div class="rain-bar"><div class="rain-fill" id="rain-fill" style="width:0%"></div></div>
+      </div>
+
+      <!-- sun -->
+      <div class="card">
+        <div class="lbl">&#9728;&#65039; Sun</div>
+        <div class="row"><span>&#127749; Sunrise</span><span class="v" id="sunrise">--</span></div>
+        <div class="row"><span>&#127751; Sunset</span><span class="v" id="sunset">--</span></div>
+        <div class="row"><span>&#9728;&#65039; UV max</span><span class="v" id="uv">--</span></div>
+        <div class="row"><span>&#127777;&#65039; Daylight left</span><span class="v" id="daylight-left">--</span></div>
+      </div>
+
+      <!-- details -->
+      <div class="card">
+        <div class="lbl">&#128202; Details</div>
+        <div class="row"><span>&#128168; Wind</span><span class="v" id="wind">--</span></div>
+        <div class="row"><span>&#128168; Gusts</span><span class="v" id="gust">--</span></div>
+        <div class="row"><span>&#128167; Humidity</span><span class="v" id="humid">--</span></div>
+        <div class="row"><span>&#129516; Wind chill</span><span class="v" id="wchill">--</span></div>
+        <div class="row"><span>&#128293; Humidex</span><span class="v" id="humidex">--</span></div>
+        <div class="row"><span>&#127748; Time of day</span><span class="v" id="daynight">--</span></div>
+      </div>
+
+      <!-- sunny verdict -->
+      <div class="card">
+        <div class="lbl">&#127774; Will it be sunny?</div>
+        <div class="big" id="sunny-verdict" style="font-size:1.6rem">&mdash;</div>
+        <div class="sub2" id="cloud-cover">&mdash;</div>
+        <div class="row" style="margin-top:6px"><span>&#9729;&#65039; Cloud cover</span><span class="v" id="cloud-pct">--</span></div>
+        <div class="row"><span>&#127780;&#65039; Condition</span><span class="v" id="condition">&mdash;</span></div>
+      </div>
+
+      <!-- hourly -->
+      <div class="card span2">
+        <div class="lbl">&#128339; Next 24 Hours</div>
+        <div class="hourly" id="hourly"></div>
+      </div>
+
+      <!-- 7 day -->
+      <div class="card span2">
+        <div class="lbl">&#128197; 7-Day Forecast</div>
+        <div class="fc-strip" id="forecast"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV PANEL (left) -->
+<button id="nav-toggle" class="nav-toggle" aria-label="Open navigation">☰</button>
+<aside id="nav-panel" class="nav-panel" aria-hidden="true">
+  <div class="nav-panel-head"><h3>Quick Nav</h3><button id="nav-close" aria-label="Close">✕</button></div>
+  <nav class="nav-panel-body">
+    <a href="/">🏠 Home / Events</a>
+    <a href="/weather/">🌤️ Weather</a>
+    <a href="/news/">📰 News Aggregator</a>
+    <a href="/audit/">📊 Audit Dashboard</a>
+    <a href="/fc/#/guest">💎 Fav Creators</a>
+    <a href="/updates/">🆕 Latest Updates</a>
+    <a href="/techfinds/">💻 Tech Finds</a>
+    <a href="/deals/">🎁 Deals &amp; Freebies</a>
+    <a href="/MOVIESHOWS2/">🎬 Movies &amp; TV</a>
+    <a href="/investments/">📈 Investments</a>
+    <a href="/findstocks/">📊 Stocks</a>
+    <a href="/MENTALHEALTHRESOURCES/">🧠 Mental Health</a>
+  </nav>
+  <div class="nav-panel-body" style="border-top:1px solid rgba(255,255,255,.08);padding-top:12px">
+    <div class="lbl" style="padding:0 12px 8px">🎬 Top Entertainment — Most Played</div>
+    <div class="ent-tabs" id="ent-tabs" style="padding:0 12px">
+      <button class="ent-tab active" data-cat="tv">📺 TV</button>
+      <button class="ent-tab" data-cat="movies">🎥 Movies</button>
+      <button class="ent-tab" data-cat="podcasts">🎙️ Pods</button>
+      <button class="ent-tab" data-cat="songs">🎵 Songs</button>
+    </div>
+    <div id="ent-content" class="ent-content" style="padding:0 12px"></div>
+  </div>
+
+  <div class="theme-switch">
+    <h4>🎨 Theme</h4>
+    <div class="theme-btns">
+      <button class="theme-btn active" data-theme="auto">Auto (weather)</button>
+      <button class="theme-btn" data-theme="dark">Dark</button>
+      <button class="theme-btn" data-theme="light">Light</button>
+      <button class="theme-btn" data-theme="midnight">Midnight</button>
+      <button class="theme-btn" data-theme="sunset">Sunset</button>
+      <button class="theme-btn" data-theme="forest">Forest</button>
+      <button class="theme-btn" data-theme="ocean">Ocean</button>
+      <button class="theme-btn" data-theme="glass">Glass</button>
+      <button class="theme-btn" data-theme="neon">Neon</button>
+      <button class="theme-btn" data-theme="minimal">Minimal</button>
+      <button class="theme-btn" data-theme="aurora">Aurora</button>
+      <button class="theme-btn" data-theme="retro">Retro</button>
+      <button class="theme-btn reset-look" style="border-color:rgba(225,29,72,.6);color:#f87171" title="Clear saved theme/filters and restore defaults">🔄 Reset</button>
+    </div>
+  </div>
+</aside>
+<div id="nav-overlay" class="nav-overlay"></div>  <!-- SIDE PANEL (right) -->
+  <button id="side-toggle" class="side-toggle" aria-label="Open side panel">◀</button>
+  <button id="look-reset" class="look-reset-fab" title="Reset theme, filters & effects to default (clears saved selection)" aria-label="Reset look and feel">↺ Reset look</button>
+<aside id="side-panel" class="side-panel" aria-hidden="true">
+  <div class="side-head"><h3>📌 Nearby &amp; News</h3><button id="side-close" aria-label="Close">✕</button></div>
+  <div class="side-body">
+    <div class="side-section">
+      <div class="side-title">🗓️ Upcoming Events <a class="side-more" href="/">more →</a></div>
+      <ul id="side-events" class="side-list"><li class="side-loading">Loading events…</li></ul>
+    </div>
+    <div class="side-section">
+      <div class="side-title">📰 Latest News <a class="side-more" href="/news/">more →</a></div>
+      <ul id="side-news" class="side-list"><li class="side-loading">Loading news…</li></ul>
+    </div>
+    <div class="side-section">
+      <div class="side-title">📚 Top Self-Dev Books <a class="side-more" href="https://www.goodreads.com/search?q=self-help" target="_blank" rel="noopener">Goodreads →</a></div>
+      <ul id="side-books" class="side-list"><li class="side-loading">Loading books…</li></ul>
+      <div style="font-size:.65rem;color:var(--t3);margin-top:4px">Goodreads top-rated self-development picks — rotates as you browse; covers via Open Library.</div>
+    </div>
+    <div class="side-section">
+      <div class="side-title">💻 Tech News <a class="side-more" href="/techfinds/">more →</a></div>
+      <ul id="side-tech" class="side-list"><li class="side-loading">Loading tech…</li></ul>
+    </div>
+  </div>
+</aside>
+
+<script>
+(function(){
+'use strict';
+
+var LAT=43.6532, LON=-79.3832, TZ='America/Toronto', AREA_LABEL='Toronto, ON, Canada';
+
+/* ===== WEATHER CODE MAP ===== */
+function wcode(c,day){
+  var m={0:['Clear sky','clear',day?'☀️':'🌙'],1:['Mostly clear','clear',day?'🌤️':'🌙'],2:['Partly cloudy','clouds','⛅'],3:['Overcast','clouds','☁️'],45:['Foggy','fog','🌫️'],48:['Icy fog','fog','🌫️'],51:['Light drizzle','rain','🌦️'],53:['Drizzle','rain','🌦️'],55:['Heavy drizzle','rain','🌧️'],61:['Light rain','rain','🌧️'],63:['Moderate rain','rain','🌧️'],65:['Heavy rain','rain','🌧️'],66:['Freezing rain','rain','🌧️'],67:['Freezing rain','rain','🌧️'],71:['Light snow','snow','🌨️'],73:['Snow','snow','🌨️'],75:['Heavy snow','snow','❄️'],77:['Snow grains','snow','🌨️'],80:['Showers','rain','🌦️'],81:['Showers','rain','🌧️'],82:['Heavy showers','rain','🌧️'],85:['Snow showers','snow','🌨️'],86:['Heavy snow showers','snow','❄️'],95:['Thunderstorm','thunder','⛈️'],96:['Storm w/ hail','thunder','⛈️'],99:['Severe storm','thunder','⛈️']};
+  var r=m[c]||['Unknown','clouds','🌥️'];
+  return {desc:r[0],cond:r[1],emoji:r[2]};
+}
+
+/* ===== CALCULATIONS ===== */
+function windChill(t,w){ if(t>10||w<4.8)return null; return 13.12+.6215*t-11.37*Math.pow(w,.16)+.3965*t*Math.pow(w,.16); }
+function humidex(t,h){ if(t<20||h<20)return null; var d=t-((100-h)/5); return Math.round(t+.5555*(6.11*Math.exp(5417.7530*((1/273.16)-(1/(273.16+d))))-10)); }
+function realFeel(t,w,h){
+  var wc=windChill(t,w), hx=humidex(t,h);
+  if(wc!==null&&wc<t) return {v:Math.round(wc),type:'cold'};
+  if(hx!==null&&hx>t) return {v:Math.round(hx),type:'hot'};
+  if(t<=10)return{v:Math.round(t),type:'cool'};
+  if(t<=25)return{v:Math.round(t),type:'warm'};
+  return {v:Math.round(t),type:'hot'};
+}
+
+/* ===== JACKET VERDICT ===== */
+function jacketVerdict(t, wc, cond, windKmh, isDay){
+  isDay = (isDay===true || isDay===1);
+  var feels = (wc!==null&&wc<t) ? wc : t;
+  var rain = (cond==='rain'||cond==='thunder');
+  var emoji, title, reason, cls;
+
+  if(feels <= -15){
+    emoji='🥶'; title='YES — Heavy winter coat'; cls='yes';
+    reason='Wind chill is '+Math.round(feels)+'°C. Frostbite risk. You need a heavy winter coat, thermal layers, hat, gloves, and scarf. Cover all exposed skin.';
+  } else if(feels <= 0){
+    emoji='🧥'; title='YES — Winter jacket needed'; cls='yes';
+    reason='It feels like '+Math.round(feels)+'°C. A warm winter jacket with layers is essential. Don\'t forget hat and gloves.';
+  } else if(feels <= 5){
+    emoji='🧤'; title='YES — Warm jacket'; cls='yes';
+    reason='Feels like '+Math.round(feels)+'°C. Bring a warm jacket. Gloves are a good idea, especially if it\'s windy.';
+  } else if(feels <= 10){
+    emoji='🧣'; title='Probably — Light jacket'; cls='maybe';
+    reason='Feels like '+Math.round(feels)+'°C. A light jacket or hoodie should do it. You might want a scarf if the wind picks up.';
+  } else if(feels <= 16){
+    emoji='👕'; title='Maybe — Layer up'; cls='maybe';
+    reason='Feels like '+Math.round(feels)+'°C. Comfortable with a light layer. A thin hoodie is enough — a jacket is optional.';
+  } else if(feels <= 24){
+    emoji=isDay?'☀️':'🌙'; title='NO jacket needed'; cls='no';
+    reason='Feels like '+Math.round(feels)+'°C. '+(isDay?'Perfect t-shirt weather. Enjoy it — no jacket required.':'Mild night — no jacket required, but a light layer is comfy.');
+    emoji='🌡️'; title='NO jacket — stay cool'; cls='no';
+    reason='Feels like '+Math.round(feels)+'°C. Skip the jacket, wear light clothing, stay hydrated, and use sunscreen.';
+  }
+
+  if(rain && feels > 10) reason += ' ☔ Also expect rain — bring an umbrella.';
+  else if(rain) reason += ' ☔ Rain is likely — a waterproof layer or umbrella helps.';
+  if(windKmh > 50) reason += ' 💨 Very windy — a windbreaker over your layer is smart.';
+
+  return {emoji:emoji,title:title,reason:reason,cls:cls};
+}
+
+/* ===== SKY CONDITION CHECK (day/night aware) ===== */
+function sunnyCheck(cloudPct, code, isDay){
+  isDay = (isDay===true || isDay===1);
+  // Night-time: "sunny" is meaningless; describe the night sky instead.
+  if(!isDay){
+    if(code===0) return {verdict:'🌙 Clear night',desc:'Crystal-clear skies — great stargazing.'};
+    if(code===1) return {verdict:'🌙 Mostly clear night',desc:'Just a few wisps of cloud.'};
+    if(cloudPct<30) return {verdict:'🌙 Clear-ish night',desc:'Only '+cloudPct+'% cloud cover — stars visible.'};
+    if(cloudPct<60) return {verdict:'⛅ Partly cloudy night',desc:cloudPct+'% cloud cover — some stars peek through.'};
+    if(cloudPct<85) return {verdict:'🌥️ Mostly cloudy night',desc:cloudPct+'% cloud cover — limited star visibility.'};
+    return {verdict:'☁️ Overcast night',desc:cloudPct+'% cloud cover — no stars tonight.'};
+  }
+  if(code===0) return {verdict:'☀️ Absolutely sunny!',desc:'Clear skies all day.'};
+  if(code===1) return {verdict:'🌤️ Mostly sunny',desc:'Just a few wisps of cloud.'};
+  if(cloudPct<30) return {verdict:'☀️ Sunny day ahead',desc:'Only '+cloudPct+'% cloud cover.'};
+  if(cloudPct<60) return {verdict:'⛅ Partly sunny',desc:cloudPct+'% cloud cover — expect sun and clouds.'};
+  if(cloudPct<85) return {verdict:'🌥️ Mostly cloudy',desc:'Only '+cloudPct+'% chance of breaks in the clouds.'};
+  return {verdict:'☁️ Overcast',desc:cloudPct+'% cloud cover — unlikely to see the sun.'};
+}
+
+/* ===== RAIN DESC ===== */
+function rainDesc(p){
+  if(p>=80)return 'Very likely to rain — bring an umbrella.';
+  if(p>=50)return 'Coin flip — probably worth carrying an umbrella.';
+  if(p>=30)return 'Possible rain — have an umbrella just in case.';
+  if(p>=10)return 'Unlikely, but not impossible.';
+  return 'Dry day expected — no umbrella needed.';
+}
+
+/* ===== DAYLIGHT LEFT (dynamic: day remaining or time to sunrise) ===== */
+function daylightLeft(sunsetIso, nowIso, sunriseIso, tomorrowSunriseIso){
+  if(!sunsetIso||!nowIso) return '--';
+  var s=new Date(sunsetIso+':00Z').getTime();
+  var n=new Date(nowIso+':00Z').getTime();
+  var diff=s-n;
+  if(diff>0){
+    var h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000);
+    return h+'h '+m+'m of daylight left';
+  }
+  // After sunset: show time until next sunrise
+  var nextSr = tomorrowSunriseIso || sunriseIso;
+  if(nextSr){
+    var sr=new Date(nextSr+':00Z').getTime();
+    if(sr<=n) sr += 24*3600000;
+    var diff2=sr-n;
+    if(diff2>0){
+      var h2=Math.floor(diff2/3600000), m2=Math.floor((diff2%3600000)/60000);
+      return '🌙 Night — sunrise in '+h2+'h '+m2+'m';
+    }
+  }
+  return 'Sun has set';
+}
+
+/* ===== SEASON ===== */
+function season(){
+  var now=new Date(new Date().toLocaleString('en-US',{timeZone:TZ}));
+  var m=now.getMonth(), s;
+  if(m>=2&&m<=4){s='🌸 Spring';} else if(m>=5&&m<=7){s='☀️ Summer';} else if(m>=8&&m<=10){s='🍂 Autumn';} else {s='❄️ Winter';}
+  document.getElementById('season-badge').textContent=s+' in '+(AREA_LABEL.split(',')[0]||'Toronto');
+}
+
+/* ===== CANVAS WEATHER ENGINE ===== */
+var canvas, ctx, W, H, animId=null;
+var particles=[], lightningTimer=0, lightningAlpha=0, cloudBlobs=[];
+var _wxCond='clouds', _wxIsDay=true;
+
+function resizeCanvas(){
+  canvas=document.getElementById('weather-canvas');
+  if(!canvas) return;
+  ctx=canvas.getContext('2d');
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+}
+
+function spawnParticle(type){
+  if(type==='rain'){
+    var wv=_windSpeed/15; return {type:'rain',x:Math.random()*W,y:-10-Math.random()*H*.3,vx:(Math.random()-.3)*2+wv,vy:10+Math.random()*10,len:15+Math.random()*25,alpha:.5+Math.random()*.5};
+  }
+  if(type==='snow'){
+    var s=2+Math.random()*4;
+    var wv=_windSpeed/25; return {type:'snow',x:Math.random()*W,y:-10-Math.random()*H*.2,vx:(Math.random()-.5)*.5+wv,vy:.8+Math.random()*2,size:s,sway:Math.random()*Math.PI*2,swaySpeed:.02+Math.random()*.03,alpha:.6+Math.random()*.4};
+  }
+  if(type==='star'){
+    return {type:'star',x:Math.random()*W,y:Math.random()*H*.65,size:1+Math.random()*2.5,twinkle:Math.random()*Math.PI*2,twinkleSpeed:.015+Math.random()*.05,alpha:.5+Math.random()*.5};
+  }
+  if(type==='sunray'){
+    return {type:'sunray',x:W*.6+Math.random()*W*.4,y:-20-Math.random()*H*.15,vx:-.5-Math.random()*1,vy:.3+Math.random()*.7,len:60+Math.random()*120,alpha:.04+Math.random()*.1};
+  }
+  if(type==='fog'){
+    return {type:'fog',x:-100-Math.random()*W*.5,y:Math.random()*H,vx:.3+Math.random()*.6,vy:(Math.random()-.5)*.15,size:100+Math.random()*250,alpha:.04+Math.random()*.08};
+  }
+  if(type==='cloud'){
+    return {type:'cloud',x:W+100+Math.random()*W*.3,y:Math.random()*H*.45,vx:-.2-Math.random()*.4,vy:0,w:200+Math.random()*400,h:50+Math.random()*100,alpha:.08+Math.random()*.12};
+  }
+  return null;
+}
+
+function initParticles(cond, isDay){
+  particles=[]; cloudBlobs=[];
+  _wxCond=cond; _wxIsDay=isDay;
+
+  // clouds always present unless clear day
+  if(cond!=='clear'||!isDay){
+    for(var i=0;i<12;i++) cloudBlobs.push(spawnParticle('cloud'));
+  }
+
+  if(cond==='rain'||cond==='thunder'){
+    var count=cond==='thunder'?250:200;
+    for(var i=0;i<count;i++){ var p=spawnParticle('rain'); p.y=Math.random()*H; particles.push(p); }
+  }
+  if(cond==='snow'){
+    for(var i=0;i<180;i++){ var p=spawnParticle('snow'); p.y=Math.random()*H; particles.push(p); }
+  }
+  if(cond==='fog'){
+    for(var i=0;i<20;i++) particles.push(spawnParticle('fog'));
+  }
+  // stars at night — ALWAYS, regardless of cloud cover (they peek through)
+  if(!isDay){
+    for(var i=0;i<150;i++) particles.push(spawnParticle('star'));
+  }
+  if(isDay&&cond==='clear'){
+    for(var i=0;i<35;i++) particles.push(spawnParticle('sunray'));
+  }
+  // extra clouds for overcast
+  if(cond==='clouds'||cond==='rain'||cond==='thunder'){
+    for(var i=0;i<8;i++) cloudBlobs.push(spawnParticle('cloud'));
+  }
+}
+
+function drawLightning(){
+  if(_wxCond!=='thunder') return;
+  if(lightningAlpha>0){
+    ctx.fillStyle='rgba(200,180,255,'+lightningAlpha+')';
+    ctx.fillRect(0,0,W,H);
+    // draw a jagged bolt
+    ctx.strokeStyle='rgba(220,210,255,'+(lightningAlpha*2)+')';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    var bx=W*.2+Math.random()*W*.6, by=0;
+    ctx.moveTo(bx,by);
+    while(by<H*.6){
+      by+=20+Math.random()*40;
+      bx+=(Math.random()-.5)*60;
+      ctx.lineTo(bx,by);
+    }
+    ctx.stroke();
+    ctx.lineWidth=1;
+  }
+  lightningTimer--;
+  if(lightningTimer<=0){
+    lightningTimer=200+Math.random()*600;
+    lightningAlpha=.6;
+  }
+  if(lightningAlpha>0) lightningAlpha-=.04;
+  if(lightningAlpha<0) lightningAlpha=0;
+}
+
+function drawDayNightGlow(){
+  if(_wxIsDay&&(_wxCond==='clear'||_wxCond==='clouds')){
+    var sx=0.15*W + _sunProgress*0.7*W;
+    var sy=0.85*H - Math.sin(_sunProgress*Math.PI)*0.75*H;
+    // warm sun glow
+    var g=ctx.createRadialGradient(sx,sy,0,sx,sy,W*.45);
+    g.addColorStop(0,'rgba(255,200,50,.18)');
+    g.addColorStop(.3,'rgba(255,180,40,.06)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,W,H);
+    // sun disc
+    ctx.fillStyle='rgba(255,230,120,.95)';
+    ctx.beginPath(); ctx.arc(sx,sy,28,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,220,80,.4)';
+    ctx.beginPath(); ctx.arc(sx,sy,46,0,Math.PI*2); ctx.fill();
+  }
+  if(!_wxIsDay){
+    // moon moves across sky
+    var mx=0.15*W + _moonProgress*0.7*W;
+    var my=0.85*H - Math.sin(_moonProgress*Math.PI)*0.75*H;
+    if(my<0.05*H) my=0.05*H;
+    ctx.fillStyle='rgba(200,210,240,.95)';
+    ctx.beginPath(); ctx.arc(mx,my,22,0,Math.PI*2); ctx.fill();
+    // moon glow
+    var mg=ctx.createRadialGradient(mx,my,0,mx,my,80);
+    mg.addColorStop(0,'rgba(200,210,240,.25)');
+    mg.addColorStop(.5,'rgba(180,190,240,.06)');
+    mg.addColorStop(1,'transparent');
+    ctx.fillStyle=mg;
+    ctx.beginPath(); ctx.arc(mx,my,80,0,Math.PI*2); ctx.fill();
+    // dark moon crater shadow
+    ctx.fillStyle='rgba(160,170,200,.4)';
+    ctx.beginPath(); ctx.arc(mx+8,my-5,6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(mx-5,my+8,4,0,Math.PI*2); ctx.fill();
+    // vignette
+    var vg=ctx.createRadialGradient(W/2,H/2,H*.15,W/2,H/2,W*.75);
+    vg.addColorStop(0,'transparent');
+    vg.addColorStop(1,'rgba(0,0,15,.4)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+function animate(){
+  animId=requestAnimationFrame(animate);
+  ctx.clearRect(0,0,W,H);
+
+  // clouds (behind everything)
+  for(var i=0;i<cloudBlobs.length;i++){
+    var c=cloudBlobs[i];
+    c.x+=c.vx;
+    if(c.x+c.w<-50){ c.x=W+50; c.y=Math.random()*H*.45; }
+    var cg=ctx.createRadialGradient(c.x+c.w/2,c.y+c.h/2,0,c.x+c.w/2,c.y+c.h/2,c.w/2);
+    cg.addColorStop(0,'rgba(160,175,200,'+c.alpha+')');
+    cg.addColorStop(.6,'rgba(140,155,180,'+(c.alpha*.5)+')');
+    cg.addColorStop(1,'transparent');
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    ctx.ellipse(c.x+c.w/2,c.y+c.h/2,c.w/2,c.h/2,0,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // particles
+  for(var i=0;i<particles.length;i++){
+    var p=particles[i];
+    if(p.type==='rain'){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y>H){ particles[i]=spawnParticle('rain'); continue; }
+      ctx.strokeStyle='rgba(160,200,255,'+p.alpha+')';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+      ctx.lineTo(p.x-p.vx*2,p.y-p.len);
+      ctx.stroke();
+    }
+    else if(p.type==='snow'){
+      p.sway+=p.swaySpeed;
+      p.x+=p.vx+Math.sin(p.sway)*.8;
+      p.y+=p.vy;
+      if(p.y>H){ particles[i]=spawnParticle('snow'); continue; }
+      ctx.fillStyle='rgba(220,230,255,'+p.alpha+')';
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fill();
+    }
+    else if(p.type==='star'){
+      p.twinkle+=p.twinkleSpeed;
+      var tw=Math.sin(p.twinkle);
+      var a=p.alpha*(.4+.6*tw);
+      // glow
+      ctx.fillStyle='rgba(200,210,255,'+(a*.3)+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2); ctx.fill();
+      // core
+      ctx.fillStyle='rgba(240,245,255,'+a+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
+    }
+    else if(p.type==='sunray'){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y>H*.9||p.x<-50){ particles[i]=spawnParticle('sunray'); continue; }
+      var grad=ctx.createLinearGradient(p.x,p.y,p.x-p.len*.3,p.y+p.len);
+      grad.addColorStop(0,'rgba(255,220,100,'+p.alpha+')');
+      grad.addColorStop(1,'transparent');
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+      ctx.lineTo(p.x-p.len*.3,p.y+p.len);
+      ctx.stroke();
+    }
+    else if(p.type==='fog'){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x-p.size>W){ particles[i]=spawnParticle('fog'); continue; }
+      var fg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size);
+      fg.addColorStop(0,'rgba(160,160,170,'+p.alpha+')');
+      fg.addColorStop(1,'transparent');
+      ctx.fillStyle=fg;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  drawDayNightGlow();
+  drawLightning();
+}
+
+function stopCanvas(){
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+}
+
+function startWeatherCanvas(cond, isDay){
+  stopCanvas();
+  resizeCanvas();
+  if(!ctx) return;
+  initParticles(cond, isDay);
+  animate();
+}
+
+window.addEventListener('resize', function(){
+  if(ctx){ resizeCanvas(); initParticles(_wxCond,_wxIsDay); }
+});
+
+/* ===== WEATHER BACKGROUND ORCHESTRATOR ===== */
+var _currentCond='clouds', _currentIsDay=true;
+var _lastLat=43.6532, _lastLon=-79.3832;
+var _windSpeed=10, _sunProgress=0.5, _moonProgress=0.5;
+var _bgActive=0;
+function applyCssFallback(){
+  var next=_bgActive^1;
+  var el=document.getElementById('bg-layer-'+(next+1));
+  if(!el) return;
+  el.className='bg-layer '+_currentCond+(_currentIsDay?'':' night')+' active';
+  var cur=document.getElementById('bg-layer-'+(_bgActive+1));
+  if(cur) cur.classList.remove('active');
+  _bgActive=next;
+}
+
+function updateWeatherLinks(){
+  var lat=_lastLat, lon=_lastLon;
+  var loc=encodeURIComponent(lat+','+lon);
+  var links=[
+    {name:'Weather.com', url:'https://weather.com/weather/today/l/'+lat+','+lon},
+    {name:'AccuWeather Today', url:'https://www.accuweather.com/en/ca/toronto/m5h/weather-forecast/55488'},
+    {name:'AccuWeather Hourly', url:'https://www.accuweather.com/en/ca/toronto/m5h/hourly-weather-forecast/55488'},
+    {name:'AccuWeather Minutecast', url:'https://www.accuweather.com/en/ca/toronto/m5h/minute-weather-forecast/55488'},
+    {name:'AccuWeather Warnings', url:'https://www.accuweather.com/en/ca/toronto/m5h/weather-warnings/55488'},
+    {name:'Windy', url:'https://www.windy.com/'+lat+'/'+lon},
+    {name:'Environment Canada', url:'https://weather.gc.ca/'},
+    {name:'Open-Meteo', url:'https://open-meteo.com/en/docs#latitude='+lat+'&longitude='+lon},
+  ];
+  var el=document.getElementById('wx-links');
+  if(!el) return;
+  el.innerHTML=links.map(function(l){return '<a href="'+l.url+'" target="_blank" rel="noopener" style="padding:6px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2);font-size:.8rem;text-decoration:none">'+l.name+'</a>';}).join('');
+}
+function setWeatherBackground(cond, isDay){
+  _currentCond=cond; _currentIsDay=isDay;
+  applyCssFallback();
+  startWeatherCanvas(cond, isDay);
+}
+
+/* ===== FORMAT HELPERS ===== */
+/* Open-Meteo with timezone=America/Toronto returns naive local ISO strings.
+   Parse them directly without re-applying timezone to avoid double-shift. */
+function fmtTime(iso){
+  if(!iso) return '--';
+  var m = iso.match(/T(\d{2}):(\d{2})/);
+  if(!m) return iso;
+  var h = parseInt(m[1],10), mi = m[2];
+  var ampm = h >= 12 ? 'p.m.' : 'a.m.';
+  var h12 = h % 12; if(h12 === 0) h12 = 12;
+  return h12 + ':' + mi + ' ' + ampm;
+}
+
+/* ===== RENDER ===== */
+function render(d){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('content').style.display='block';
+
+  var c=d.current, daily=d.daily, hourly=d.hourly;
+  var temp=Math.round(c.temperature_2m), wind=Math.round(c.wind_speed_10m), hum=c.relative_humidity_2m;
+  var info=wcode(c.weather_code, c.is_day);
+  var wc=windChill(c.temperature_2m, wind);
+  var hx=humidex(c.temperature_2m, hum);
+  var rf=realFeel(c.temperature_2m, wind, hum);
+  var cloudPct=c.cloud_cover;
+  var rainProb=daily.precipitation_probability_max?daily.precipitation_probability_max[0]:0;
+
+  /* last updated */
+  var lu = c.time || '';
+  var luM = lu.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if(luM){
+    var mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var h12=parseInt(luM[4],10)%12||12;
+    var ampm=parseInt(luM[4],10)>=12?'PM':'AM';
+    document.getElementById('last-updated').textContent = mons[parseInt(luM[2],10)-1]+' '+parseInt(luM[3],10)+', '+h12+':'+luM[5]+' '+ampm+' ET (Toronto)';
+  } else {
+    document.getElementById('last-updated').textContent = lu || '--';
+  }
+
+  /* area */
+  document.getElementById('area-label').innerHTML='Area: <b>'+AREA_LABEL+'</b>';
+
+  /* verdict */
+  var isDay = (c.is_day===1);
+  var v=jacketVerdict(c.temperature_2m, wc, info.cond, wind, isDay);
+  var vc=document.getElementById('verdict');
+  vc.className='verdict '+v.cls;
+  document.getElementById('v-emoji').textContent=v.emoji;
+  document.getElementById('v-title').textContent=v.title;
+  document.getElementById('v-reason').textContent=v.reason;
+
+  /* current */
+  document.getElementById('cur-temp').textContent=temp+'°C';
+  document.getElementById('cur-cond').textContent=info.emoji+' '+info.desc;
+  document.getElementById('cur-feels').textContent='Feels like '+rf.v+'°C'+(rf.type&&rf.type!=='warm'&&rf.type!=='cool'?' ('+rf.type+')':'');
+
+  /* rain */
+  document.getElementById('rain-prob').textContent=rainProb+'%';
+  document.getElementById('rain-desc').textContent=rainDesc(rainProb);
+  document.getElementById('rain-fill').style.width=rainProb+'%';
+
+  /* sun */
+  if(daily.sunrise&&daily.sunset){
+    document.getElementById('sunrise').textContent=fmtTime(daily.sunrise[0]);
+    document.getElementById('sunset').textContent=fmtTime(daily.sunset[0]);
+    document.getElementById('daylight-left').textContent=daylightLeft(daily.sunset[0], c.time, daily.sunrise[0], (daily.sunrise&&daily.sunrise[1])?daily.sunrise[1]:null);
+  }
+  document.getElementById('uv').textContent=daily.uv_index_max?daily.uv_index_max[0].toFixed(1):'--';
+
+  /* details */
+  document.getElementById('wind').textContent=wind+' km/h';
+  document.getElementById('gust').textContent=Math.round(c.wind_gusts_10m)+' km/h';
+  document.getElementById('humid').textContent=hum+'%';
+  document.getElementById('wchill').textContent=wc!==null?Math.round(wc)+'°C':'N/A';
+  document.getElementById('humidex').textContent=hx!==null?hx:'N/A';
+  document.getElementById('daynight').textContent=isDay?'☀️ Daytime':'🌙 Nighttime';
+  /* sky condition (day/night aware) */
+  var sv=sunnyCheck(cloudPct, c.weather_code, isDay);
+  document.getElementById('sunny-verdict').textContent=sv.verdict;
+  document.getElementById('cloud-cover').textContent=sv.desc;
+  document.getElementById('cloud-pct').textContent=cloudPct+'%';
+  document.getElementById('condition').textContent=info.emoji+' '+info.desc;
+  // dynamic card labels to reflect time of day
+  var allLabels = document.querySelectorAll('.lbl');
+  for(var li=0; li<allLabels.length; li++){
+    var t=allLabels[li].textContent;
+    if(t.indexOf('Will it be sunny')!==-1){
+      allLabels[li].textContent = isDay ? '☀️ Will it be sunny?' : '🌙 Clear tonight?';
+    }
+    if(t.indexOf('Sun')!==-1 && t.indexOf('UV')===-1 && t.indexOf('Sunrise')===-1){
+      // the standalone "Sun" card label
+      if(t.trim()==='☀️ Sun' || t.trim()==='🌙 Sun'){
+        allLabels[li].textContent = isDay ? '☀️ Sun' : '🌙 Sun & Moon';
+      }
+    }
+  }
+  // UV: at night show that the value is the daytime max
+  var uvEl=document.getElementById('uv');
+  if(uvEl && uvEl.textContent!=='--' && !isDay){
+    uvEl.textContent = uvEl.textContent + ' (day max)';
+  }
+
+  /* hourly */
+  renderHourly(hourly);
+
+  /* forecast */
+  renderForecast(daily);
+
+  /* alerts */
+  renderAlerts(c, daily, wc, hx);
+
+  /* quick links */
+  updateWeatherLinks();
+  /* background */
+  _windSpeed = wind;
+  if(c.is_day===1 && daily.sunrise && daily.sunset){
+    var sr=new Date(daily.sunrise[0]).getTime();
+    var ss=new Date(daily.sunset[0]).getTime();
+    var now=new Date(c.time).getTime();
+    _sunProgress=Math.max(0,Math.min(1,(now-sr)/(ss-sr)));
+  } else if(daily.sunrise && daily.sunset){
+    var ss2=new Date(daily.sunset[0]).getTime();
+    var sr2=new Date(daily.sunrise[0]).getTime();
+    // next sunrise next day
+    if(sr2<ss2) sr2 += 86400000;
+    var now2=new Date(c.time).getTime();
+    _moonProgress=Math.max(0,Math.min(1,(now2-ss2)/(sr2-ss2)));
+  }
+  setWeatherBackground(info.cond, c.is_day===1);
+
+  /* speech */
+  buildSpeech(temp, info, rf, v, rainProb, daily, isDay);
+}
+
+function renderHourly(h){
+  var el=document.getElementById('hourly'); el.innerHTML='';
+  if(!h||!h.time)return;
+  var now=new Date(), cH=parseInt(now.toLocaleTimeString('en-CA',{timeZone:TZ,hour:'numeric',hour12:false}),10);
+  var cD=now.toLocaleDateString('en-CA',{timeZone:TZ});
+  var start=0;
+  for(var i=0;i<h.time.length;i++){
+    var d=new Date(h.time[i]);
+    if(d.toLocaleDateString('en-CA',{timeZone:TZ})===cD && parseInt(d.toLocaleTimeString('en-CA',{timeZone:TZ,hour:'numeric',hour12:false}),10)>=cH){start=i;break;}
+  }
+  for(var j=start;j<Math.min(start+24,h.time.length);j++){
+    var hd=new Date(h.time[j]);
+    var hh=parseInt(hd.toLocaleTimeString('en-CA',{timeZone:TZ,hour:'numeric',hour12:false}),10);
+    var hi=wcode(h.weather_code[j], hh>=6&&hh<20);
+    var p=h.precipitation_probability?h.precipitation_probability[j]:null;
+    var hm=h.time[j].match(/T(\d{2}):(\d{2})/);
+    var hLabel=hm?(parseInt(hm[1],10)%12||12)+':'+hm[2]+(parseInt(hm[1],10)>=12?'p':'a'):'';
+    var div=document.createElement('div'); div.className='h-item';
+    div.innerHTML='<div class="ht">'+hLabel+'</div><div class="he">'+hi.emoji+'</div><div class="hv">'+Math.round(h.temperature_2m[j])+'°</div>'+(p!==null&&p>10?'<div class="hp">💧'+p+'%</div>':'');
+    el.appendChild(div);
+  }
+}
+
+function renderForecast(daily){
+  var el=document.getElementById('forecast'); el.innerHTML='';
+  if(!daily||!daily.time)return;
+  var dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for(var i=0;i<Math.min(7,daily.time.length);i++){
+    var d=new Date(daily.time[i]);
+    var fi=wcode(daily.weather_code[i],true);
+    var p=daily.precipitation_probability_max?daily.precipitation_probability_max[i]:0;
+    var div=document.createElement('div'); div.className='fc-day';
+    div.innerHTML='<div class="dn">'+(i===0?'Today':dn[d.getDay()])+'</div><div class="de">'+fi.emoji+'</div><div class="dh">'+Math.round(daily.temperature_2m_max[i])+'°</div><div class="dl">'+Math.round(daily.temperature_2m_min[i])+'°</div>'+(p>20?'<div class="dp">💧'+p+'%</div>':'');
+    el.appendChild(div);
+  }
+}
+
+function renderAlerts(c, daily, wc, hx){
+  var el=document.getElementById('alerts'); el.innerHTML='';
+  function add(cls,title,desc){
+    var d=document.createElement('div'); d.className='alert '+cls;
+    d.innerHTML='<div class="at">'+title+'</div><div class="ad">'+desc+'</div>';
+    el.appendChild(d);
+  }
+  if(wc!==null&&wc<=-30) add('high','🔴 EXTREME COLD','Wind chill '+Math.round(wc)+'°C — frostbite in minutes.');
+  else if(wc!==null&&wc<=-15) add('med','🟡 Cold Alert','Wind chill '+Math.round(wc)+'°C. Dress very warmly.');
+  if(hx!==null&&hx>=40) add('high','🔴 HEAT WARNING','Humidex '+hx+'. Dangerous heat.');
+  else if(hx!==null&&hx>=35) add('med','🟡 Heat Alert','Humidex '+hx+'. Stay hydrated.');
+  if(c.wind_gusts_10m>70) add('high','🔴 WIND WARNING','Gusts up to '+Math.round(c.wind_gusts_10m)+' km/h.');
+  if(daily.uv_index_max&&daily.uv_index_max[0]>=8) add('med','☀️ HIGH UV','UV index '+daily.uv_index_max[0].toFixed(1)+'. Wear sunscreen.');
+}
+
+/* ===== SPEECH ===== */
+function buildSpeech(temp, info, rf, verdict, rainProb, daily, isDay){
+  var txt='Weather for '+AREA_LABEL+'. '+temp+' degrees, '+info.desc+'. Feels like '+rf.v+' degrees. ';
+  txt+=verdict.title+'. '+verdict.reason+' ';
+  txt+='Rain probability today is '+rainProb+' percent. ';
+  if(daily.sunset) txt+=(isDay?'Sunset at ':'Sunset was at ')+fmtTime(daily.sunset[0])+'. ';
+  if(daily.sunrise) txt+=(isDay?'Sunrise was at ':'Sunrise at ')+fmtTime(daily.sunrise[0])+'. ';
+  window._weatherSpeech=txt;
+}
+var speaking=false;
+document.addEventListener('click',function(e){
+  if(e.target.id==='audio-btn'){
+    if(speaking){window.speechSynthesis.cancel();speaking=false;e.target.innerHTML='🔊 Listen';return;}
+    if(!window._weatherSpeech)return;
+    var u=new SpeechSynthesisUtterance(window._weatherSpeech);
+    u.lang='en-CA';u.rate=.95;
+    u.onstart=function(){speaking=true;document.getElementById('audio-btn').innerHTML='⏹️ Stop';};
+    u.onend=function(){speaking=false;document.getElementById('audio-btn').innerHTML='🔊 Listen';};
+    window.speechSynthesis.speak(u);
+  }
+});
+
+/* ===== FETCH ===== */
+async function loadWeather(lat,lon,label){
+  _lastLat=lat; _lastLon=lon;
+  if(label){AREA_LABEL=label;}
+  document.getElementById('loading').style.display='block';
+  document.getElementById('content').style.display='none';
+  season();
+  try{
+    var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+      +'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,cloud_cover,is_day,pressure_msl'
+      +'&hourly=temperature_2m,weather_code,precipitation_probability'
+      +'&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,uv_index_max,sunrise,sunset'
+      +'&timezone='+TZ+'&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=7';
+    var r=await fetch(url);
+    if(!r.ok)throw new Error('API '+r.status);
+    var d=await r.json();
+    render(d);
+  }catch(err){
+    document.getElementById('loading').innerHTML='<p style="color:#f87171">Could not load weather. '+err.message+'</p>';
+  }
+}
+
+/* ===== POSTAL / ZIP LOOKUP ===== */
+window.lookupPostal=function(){
+  var v=document.getElementById('postal-input').value.trim();
+  if(!v)return;
+  // Canadian postal code: A1A 1A1
+  if(/^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$/.test(v)){
+    var pc=v.toUpperCase().replace(/\s+/g,'');
+    // Approximate geocode from FSA (first 3 chars) — use a small lookup table for common FSAs
+    var fsa=pc.substring(0,3);
+    var coords=fsaCoords(fsa);
+    if(coords){ loadWeather(coords[0],coords[1], 'Postal code '+v.toUpperCase()+', Canada'); return; }
+    // fallback: Toronto centre
+    loadWeather(43.6532,-79.3832,'Postal code '+v.toUpperCase()+' (approx Toronto)');
+    return;
+  }
+  // US ZIP: 5 digits
+  if(/^\d{5}(-\d{4})?$/.test(v)){
+    var zip=v.substring(0,5);
+    // Use Zippopotam.us (free, no key)
+    fetch('https://api.zippopotam.us/us/'+zip).then(function(r){if(!r.ok)throw new Error('zip');return r.json();}).then(function(j){
+      var lat=parseFloat(j.places[0]['latitude']), lon=parseFloat(j.places[0]['longitude']);
+      var city=j.places[0]['place name']+', '+j.places[0]['state abbreviation'];
+      loadWeather(lat,lon,city+' '+zip);
+    }).catch(function(){
+      // fallback to geocoding
+      loadWeather(43.6532,-79.3832,'ZIP '+v);
+    });
+    return;
+  }
+  // Anything else: try Open-Meteo geocoding API
+  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(v)+'&count=1&language=en&format=json')
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j.results&&j.results.length){
+        var g=j.results[0];
+        loadWeather(g.latitude,g.longitude, g.name+', '+(g.admin1||'')+(g.country?', '+g.country:''));
+      } else {
+        alert('Could not find that location. Try a postal code (M5V 3A8) or ZIP (10001).');
+      }
+    }).catch(function(){alert('Lookup failed. Try a postal code or ZIP.');});
+};
+
+function fsaCoords(fsa){
+  // Approximate lat/lon for common Toronto/Canadian FSAs
+  var map={
+    'M5V':[43.6426,-79.3871],'M5G':[43.6510,-79.3830],'M5B':[43.6596,-79.3860],
+    'M5T':[43.6488,-79.3970],'M5S':[43.6627,-79.3956],'M5R':[43.6677,-79.4100],
+    'M5P':[43.6769,-79.4150],'M5N':[43.6868,-79.4177],'M5M':[43.7044,-79.4268],
+    'M5L':[43.6532,-79.3780],'M5K':[43.6473,-79.3867],'M5J':[43.6414,-79.3790],
+    'M5H':[43.6508,-79.3760],'M5C':[43.6568,-79.3810],'M4Y':[43.6708,-79.3860],
+    'M4X':[43.6677,-79.3640],'M4W':[43.6690,-79.3720],'M4V':[43.6708,-79.4050],
+    'M4T':[43.6820,-79.4000],'M4S':[43.6945,-79.3930],'M4R':[43.7050,-79.3980],
+    'M4P':[43.7160,-79.3930],'M4N':[43.7260,-79.4050],'M4M':[43.6790,-79.3550],
+    'M4L':[43.6640,-79.3300],'M4K':[43.6760,-79.3350],'M4J':[43.6680,-79.3200],
+    'M4H':[43.7000,-79.3200],'M4G':[43.7110,-79.3600],'M4E':[43.6670,-79.3100],
+    'M4B':[43.6980,-79.3000],'M4A':[43.7250,-79.3150],'M3H':[43.7550,-79.4460],
+    'M3K':[43.7440,-79.4700],'M3J':[43.7540,-79.4860],'M3L':[43.7320,-79.4780],
+    'M3M':[43.7230,-79.4480],'M3N':[43.7090,-79.4460],
+    'M2J':[43.7760,-79.3350],'M2K':[43.7740,-79.3640],'M2H':[43.7980,-79.3380],
+    'M2G':[43.7950,-79.3150],'M2L':[43.7640,-79.3870],'M2M':[43.7710,-79.4100],
+    'M2N':[43.7870,-79.4170],'M2P':[43.7960,-79.4480],
+    'K1A':[45.4247,-75.6950],'K1G':[45.4030,-75.6470],'K1S':[45.3970,-75.6760],
+    'K1T':[45.3870,-75.6300],'K1V':[45.3860,-75.6150],'K1B':[45.4330,-75.6050],
+    'K2A':[45.4370,-75.7040],'K2B':[45.4360,-75.7300],'K2C':[45.4440,-75.7560],
+    'M1B':[43.8010,-79.2010],'M1C':[43.7840,-79.1720],'M1E':[43.7680,-79.2260],
+    'M1G':[43.7440,-79.2680],'M1H':[43.7280,-79.2960],'M1J':[43.7160,-79.3350],
+    'M1K':[43.7160,-79.3110],'M1L':[43.7240,-79.2860],'M1M':[43.7340,-79.2660],
+    'M1N':[43.7480,-79.2320],'M1P':[43.7620,-79.3200],'M1R':[43.7530,-79.3530],
+    'M1S':[43.7740,-79.3460],'M1T':[43.7830,-79.3130],'M1V':[43.8160,-79.2770],
+    'M1W':[43.7940,-79.3160],'M1X':[43.8310,-79.2450],
+    'L3R':[43.8180,-79.3660],'L3T':[43.8130,-79.3920],'L3S':[43.7960,-79.4090],
+    'L3P':[43.8260,-79.4180],'L3N':[43.8380,-79.4480],'L3M':[43.8470,-79.4630],
+    'L4H':[43.8490,-79.3300],'L4J':[43.8470,-79.2950],'L4K':[43.8730,-79.3140],
+    'L4L':[43.8940,-79.3370],'L4V':[43.9080,-79.3510],'L4W':[43.8920,-79.2760],
+    'L4X':[43.8730,-79.2540],'L4Y':[43.8590,-79.2280],'L4Z':[43.8430,-79.2740],
+    'V6B':[49.2827,-123.1207],'V6Z':[49.2680,-123.1450],'V5K':[49.2890,-123.0470],
+    'H2X':[45.5140,-73.5700],'H2Y':[45.4960,-73.5680],'H3A':[45.5060,-73.5740],
+    'H3B':[45.4950,-73.5630],'H3C':[45.4870,-73.5770],'H3G':[45.4890,-73.5850],
+    'T2P':[51.0450,-114.0700],'T2R':[51.0420,-114.0900],'T2S':[51.0370,-114.0800],
+    'T3A':[51.1330,-114.1420],'T3B':[51.1230,-114.1670],'T3C':[51.1080,-114.1300],
+    'S4P':[50.4470,-104.6180],'S4R':[50.4370,-104.6300],'S4S':[50.4250,-104.6000]
+  };
+  return map[fsa]||null;
+}
+
+/* ===== GEOLOCATION ===== */
+window.detectLocation=function(){
+  if(!navigator.geolocation){
+    alert('Geolocation not supported. Use a postal code instead.');
+    return;
+  }
+  document.getElementById('area-label').innerHTML='Area: <b>Detecting&hellip;</b>';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude, lon=pos.coords.longitude;
+    // Reverse geocode via Open-Meteo (free)
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m&timezone='+TZ)
+      .then(function(){ return fetch('https://geocoding-api.open-meteo.com/v1/search?name=&latitude='+lat+'&longitude='+lon+'&count=1'); })
+      .catch(function(){return null;});
+    // Use Nominatim for reverse geocode (free, respects usage policy)
+    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon+'&zoom=10', {headers:{'Accept':'application/json'}})
+      .then(function(r){return r.json();})
+      .then(function(j){
+        var a=j.address||{};
+        var label=[a.city||a.town||a.village||a.county, a.state||a.state_district, a.country].filter(Boolean).join(', ');
+        loadWeather(lat,lon,label||'Your location');
+      })
+      .catch(function(){ loadWeather(lat,lon,'Your location ('+lat.toFixed(2)+', '+lon.toFixed(2)+')'); });
+  }, function(err){
+    alert('Could not get your location ('+err.message+'). Enter a postal code or ZIP instead.');
+  }, {timeout:10000, enableHighAccuracy:false});
+};
+
+window.setWeatherBackground=setWeatherBackground;
+
+/* ===== PANEL TOGGLES ===== */
+// 2026-10-18: keep aria-hidden in sync with the open class — the drawer used to
+// stay aria-hidden="true" while open, hiding Quick Nav, the entertainment tabs
+// and all 12 theme buttons from screen readers.
+function openNav(){var p=document.getElementById('nav-panel');p.classList.add('open');p.setAttribute('aria-hidden','false');document.getElementById('nav-overlay').classList.add('open');}
+function closeNav(){var p=document.getElementById('nav-panel');p.classList.remove('open');p.setAttribute('aria-hidden','true');document.getElementById('nav-overlay').classList.remove('open');}
+function openSide(){var p=document.getElementById('side-panel');p.classList.add('open');p.setAttribute('aria-hidden','false');}
+function closeSide(){var p=document.getElementById('side-panel');p.classList.remove('open');p.setAttribute('aria-hidden','true');}
+document.addEventListener('click',function(e){
+  if(e.target.id==='nav-toggle') openNav();
+  if(e.target.id==='nav-close'||e.target.id==='nav-overlay') closeNav();
+  if(e.target.id==='side-toggle') openSide();
+  if(e.target.id==='side-close') closeSide();
+});
+
+/* ===== SIDE PANEL DATA ===== */
+function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function loadSideEvents(){
+  var el=document.getElementById('side-events');
+  fetch('/events.json').then(function(r){return r.json();}).then(function(data){
+    var today=new Date(); today.setHours(0,0,0,0);
+    var upcoming=(data||[]).filter(function(e){if(!e||!e.date)return false;var d=new Date(e.date);return !isNaN(d)&&d>=today;});
+    upcoming.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+    upcoming=upcoming.slice(0,5);
+    if(!upcoming.length){el.innerHTML='<li class="side-empty">No upcoming events found.</li>';return;}
+    el.innerHTML=upcoming.map(function(e){
+      var d=new Date(e.date);
+      var ds=d.toLocaleDateString('en-CA',{month:'short',day:'numeric'});
+      var link=e.url||'/';
+      return '<li><a href="'+escapeHtml(link)+'" target="_blank" rel="noopener">'+escapeHtml(e.title||'Event')+'</a><div class="side-meta">'+ds+(e.location?' · '+escapeHtml(e.location):'')+'</div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">Events unavailable offline.</li>';});
+}
+
+function loadSideNews(){
+  var el=document.getElementById('side-news');
+  fetch('/fc/api/news_feed.php?action=get&per_page=5').then(function(r){return r.json();}).then(function(j){
+    var arts=(j&&j.articles)?j.articles:[];
+    arts=arts.slice(0,5);
+    if(!arts.length){el.innerHTML='<li class="side-empty">No news right now.</li>';return;}
+    el.innerHTML=arts.map(function(a){
+      return '<li><a href="'+escapeHtml(a.link||'/news/')+'" target="_blank" rel="noopener">'+escapeHtml(a.title||'Article')+'</a><div class="side-meta">'+escapeHtml(a.source_name||'')+(a.time_ago?' · '+escapeHtml(a.time_ago):'')+'</div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">News unavailable offline.</li>';});
+}
+
+/* ===== ENTERTAINMENT DATA ===== */
+var ENT_DATA = {
+  tv: [
+    {t:'Breaking Bad', m:'Crime drama'},
+    {t:'Game of Thrones', m:'Fantasy epic'},
+    {t:'Stranger Things', m:'Sci-fi horror'},
+    {t:'The Crown', m:'Historical drama'},
+    {t:'The Office (US)', m:'Comedy'},
+    {t:'Friends', m:'Sitcom'},
+    {t:'The Mandalorian', m:'Sci-fi'},
+    {t:'Squid Game', m:'Thriller'},
+    {t:'The Last of Us', m:'Post-apocalyptic'},
+    {t:'House of the Dragon', m:'Fantasy'}
+  ],
+  movies: [
+    {t:'The Shawshank Redemption', m:'Drama'},
+    {t:'The Godfather', m:'Crime'},
+    {t:'The Dark Knight', m:'Action'},
+    {t:'Pulp Fiction', m:'Crime'},
+    {t:'Forrest Gump', m:'Drama'},
+    {t:'Inception', m:'Sci-fi'},
+    {t:'The Matrix', m:'Sci-fi'},
+    {t:'Interstellar', m:'Sci-fi'},
+    {t:'Parasite', m:'Thriller'},
+    {t:'Oppenheimer', m:'Biography'}
+  ],
+  podcasts: [
+    {t:'The Joe Rogan Experience', m:'Talk'},
+    {t:'Huberman Lab', m:'Science'},
+    {t:'Lex Fridman Podcast', m:'Tech/AI'},
+    {t:'Call Her Daddy', m:'Lifestyle'},
+    {t:'SmartLess', m:'Comedy'},
+    {t:'The Daily', m:'News'},
+    {t:'Crime Junkie', m:'True crime'},
+    {t:'This American Life', m:'Storytelling'},
+    {t:'Stuff You Should Know', m:'Education'},
+    {t:'Armchair Expert', m:'Interview'}
+  ],
+  songs: [
+    {t:'Blinding Lights - The Weeknd', m:'Pop'},
+    {t:'Shape of You - Ed Sheeran', m:'Pop'},
+    {t:'Bohemian Rhapsody - Queen', m:'Rock'},
+    {t:'Hotel California - Eagles', m:'Rock'},
+    {t:'Billie Jean - Michael Jackson', m:'Pop'},
+    {t:'Smells Like Teen Spirit - Nirvana', m:'Grunge'},
+    {t:'Imagine - John Lennon', m:'Classic'},
+    {t:'Hey Jude - The Beatles', m:'Classic'},
+    {t:'Rolling in the Deep - Adele', m:'Soul'},
+    {t:'Uptown Funk - Bruno Mars', m:'Funk'}
+  ]
+};
+function entLinks(title){
+  var q=encodeURIComponent(title);
+  return '<div class="ent-links">'+
+    '<a href="https://www.youtube.com/results?search_query='+q+'" target="_blank" rel="noopener">YouTube</a>'+
+    '<a href="https://music.youtube.com/search?q='+q+'" target="_blank" rel="noopener">YT Music</a>'+
+    '<a href="https://open.spotify.com/search/'+q+'" target="_blank" rel="noopener">Spotify</a>'+
+    '<a href="https://music.apple.com/search?term='+q+'" target="_blank" rel="noopener">Apple Music</a>'+
+    '<a href="https://music.amazon.com/search/'+q+'" target="_blank" rel="noopener">Amazon Music</a>'+
+  '</div>';
+}
+function renderEnt(cat){
+  var el=document.getElementById('ent-content');
+  var items=ENT_DATA[cat]||[];
+  el.innerHTML='<ul class="ent-list">'+items.map(function(x,i){
+    return '<li class="ent-item"><div class="ent-title">'+(i+1)+'. '+escapeHtml(x.t)+'</div><div class="ent-meta">'+escapeHtml(x.m)+'</div>'+entLinks(x.t)+'</li>';
+  }).join('')+'</ul>';
+}
+document.addEventListener('click',function(e){
+  if(e.target.classList && e.target.classList.contains('ent-tab')){
+    document.querySelectorAll('.ent-tab').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    renderEnt(e.target.getAttribute('data-cat'));
+  }
+});
+renderEnt('tv');
+
+
+/* ===== EMBEDDED PLAYER ===== */
+var VIDEO_QUERIES={
+  music:{top:'top music videos 2026',new:'new music videos 2026',trend:'trending music videos'},
+  trailers:{top:'best movie trailers 2026',new:'new movie trailers 2026',trend:'trending movie trailers'}
+};
+var FALLBACK_VIDEOS={
+  music:{top:[{id:'4NRXx6U8ABQ',t:'Blinding Lights - The Weeknd'},{id:'JGwWNGJdvx8',t:'Shape of You - Ed Sheeran'},{id:'fJ9rUzIMcZQ',t:'Bohemian Rhapsody - Queen'},{id:'OPf0YbXqDm0',t:'Uptown Funk - Bruno Mars'},{id:'kJQP7kiw5Fk',t:'Despacito - Luis Fonsi'}],
+    new:[{id:'RgKAFK5djSk',t:'See You Again - Wiz Khalifa'},{id:'fRh_vgS2dFE',t:'Sorry - Justin Bieber'},{id:'09R8_2nJtjg',t:'Sugar - Maroon 5'},{id:'PT2_F-1esPk',t:'Closer - The Chainsmokers'}],
+    trend:[{id:'9bZkp7q19f0',t:'Gangnam Style - PSY'},{id:'4NRXx6U8ABQ',t:'Blinding Lights - The Weeknd'}]},
+  trailers:{top:[{id:'TcMBFSGVi1c',t:'Avengers: Endgame'},{id:'YoHD9XEInc0',t:'Inception'},{id:'EXeTwQWrcwY',t:'The Dark Knight'},{id:'zSWdZVtXT7E',t:'Interstellar'},{id:'zAGVQLHvwOY',t:'Joker'}],
+    new:[{id:'JfVOs4VSpmA',t:'Spider-Man: No Way Home'},{id:'qSqVVsqh8Qg',t:'Top Gun: Maverick'},{id:'mqqft2x_Aa4',t:'The Batman'}],
+    trend:[{id:'n9xhJrPXop4',t:'Dune'},{id:'uYPbbksJxIg',t:'Oppenheimer'}]}
+};
+var currentCat='music', currentTab='top', currentList=[], currentIdx=0;
+function vidIdFromUrl(u){var m=(u||'').match(/[?&]v=([^&]+)/);return m?m[1]:(u||'').split('/').pop();}
+function showVideo(){
+  if(!currentList.length){document.getElementById('vid-title').textContent='No videos';return;}
+  if(currentIdx<0) currentIdx=currentList.length-1;
+  if(currentIdx>=currentList.length) currentIdx=0;
+  var v=currentList[currentIdx];
+  var vf=document.getElementById('player-video'); if(vf) vf.style.display='block';
+  document.getElementById('yt-player').src='https://www.youtube.com/embed/'+v.id;
+  document.getElementById('vid-title').textContent=(currentIdx+1)+'/'+currentList.length+' — '+v.t;
+}
+function loadVideos(cat,tab){
+  currentList=[]; currentIdx=0;
+  document.getElementById('vid-title').textContent='Loading…';
+  var q=VIDEO_QUERIES[cat][tab];
+  var filter = cat==='music'?'music_videos':'videos';
+  fetch('https://api.piped.private.coffee/search?q='+encodeURIComponent(q)+'&filter='+filter).then(function(r){return r.json();}).then(function(j){
+    var items=(j.items||[]).slice(0,10).map(function(x){return {id:vidIdFromUrl(x.url),t:x.title};}).filter(function(x){return x.id;});
+    if(items.length){ currentList=items; } else { currentList=FALLBACK_VIDEOS[cat][tab]||[]; }
+    currentIdx=0; showVideo();
+  }).catch(function(){ currentList=FALLBACK_VIDEOS[cat][tab]||[]; currentIdx=0; showVideo(); });
+}
+function setPlayer(cat){
+  var vf=document.getElementById('player-video');
+  var rf=document.getElementById('player-radio');
+  var sf=document.getElementById('player-songs');
+  var sub=document.getElementById('vid-subtabs');
+  rf.style.display='none'; sf.style.display='none'; vf.style.display='block';
+  document.getElementById('vid-controls').style.display='flex';
+  document.getElementById('vid-note').style.display='block';
+  if(cat==='radio'){ vf.style.display='none'; rf.style.display='block'; document.getElementById('vid-controls').style.display='none'; document.getElementById('vid-note').style.display='none'; sub.style.display='none'; return; }
+  if(cat==='songs'){ vf.style.display='none'; rf.style.display='none'; sf.style.display='block'; document.getElementById('vid-controls').style.display='none'; document.getElementById('vid-note').style.display='none'; sub.style.display='none'; return; }
+  currentCat=cat; currentTab='top'; sub.style.display='flex';
+  document.querySelectorAll('#vid-subtabs .ent-tab').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-vtab')==='top');});
+  loadVideos(cat,'top');
+}
+document.querySelectorAll('#vid-subtabs .ent-tab').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('#vid-subtabs .ent-tab').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    currentTab=b.getAttribute('data-vtab');
+    loadVideos(currentCat,currentTab);
+  });
+});
+document.getElementById('vid-prev').addEventListener('click',function(){currentIdx--;showVideo();});
+document.getElementById('vid-next').addEventListener('click',function(){currentIdx++;showVideo();});
+
+document.getElementById('vid-next').addEventListener('click',function(){currentIdx++;showVideo();});
+document.addEventListener('click',function(e){
+  if(e.target.classList && e.target.classList.contains('player-tab')){
+    document.querySelectorAll('.player-tab').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    setPlayer(e.target.getAttribute('data-cat'));
+  }
+});
+var radioSel=document.getElementById('radio-station');
+var radioAudio=document.getElementById('radio-audio');
+if(radioSel&&radioAudio){
+  radioSel.addEventListener('change',function(){ radioAudio.src=radioSel.value; });
+  radioAudio.src=radioSel.value;
+}
+
+
+/* ===== THEMES ===== */
+function applyTheme(t){
+  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean','theme-glass','theme-neon','theme-minimal','theme-aurora','theme-retro','theme-cyberpunk','theme-pastel','theme-mono','theme-solar','theme-arctic','theme-volcanic','theme-emerald','theme-rose','theme-slate','theme-galaxy','theme-candy','theme-lava','theme-mint','theme-peach','theme-lavender','theme-steel','theme-gold','theme-jade','theme-coral','theme-indigo','theme-teal','theme-rosegold');
+  if(t&&t!=='auto'&&t!=='dark') document.body.classList.add('theme-'+t);
+  try{localStorage.setItem('weather-theme',t);}catch(e){}
+  document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-theme')===t);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.classList && e.target.classList.contains('theme-btn') && e.target.getAttribute('data-theme')){
+    applyTheme(e.target.getAttribute('data-theme'));
+  }
+});
+try{applyTheme(localStorage.getItem('weather-theme')||'auto');}catch(e){applyTheme('auto');}
+
+/* ===== BACKGROUND FX ===== */
+var FX_FILTERS={
+  none:'none',
+  hue:'hue-rotate(120deg) saturate(1.4)',
+  invert:'invert(1) hue-rotate(180deg)',
+  gray:'grayscale(1) contrast(1.1)',
+  sepia:'sepia(1) contrast(1.05)',
+  contrast:'contrast(1.6) saturate(1.3)',
+  blur:'blur(2px) brightness(1.1)',
+  neon:'saturate(2) contrast(1.4) brightness(1.15) hue-rotate(10deg)',
+  watercolor:'saturate(1.6) blur(1px) brightness(1.2) contrast(.9)',
+  blueprint:'invert(1) hue-rotate(200deg) saturate(1.2) contrast(1.1)',
+  infrared:'hue-rotate(180deg) saturate(2) contrast(1.2)',
+  nightvision:'hue-rotate(90deg) saturate(2) brightness(1.3) contrast(1.2)'
+};
+function applyFx(f){
+  var flt=FX_FILTERS[f]||'none';
+  var c=document.getElementById('weather-canvas');
+  if(c) c.style.filter=flt;
+  ['#bg-layer-1','#bg-layer-2'].forEach(function(sel){var n=document.querySelector(sel);if(n)n.style.filter=flt;});
+  try{localStorage.setItem('weather-fx',f);}catch(e){}
+  document.querySelectorAll('[data-fx]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-fx')===f);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-fx')){
+    applyFx(e.target.getAttribute('data-fx'));
+  }
+});
+try{applyFx(localStorage.getItem('weather-fx')||'none');}catch(e){applyFx('none');}
+
+/* ===== BACKGROUND SCENES ===== */
+function applyScene(sc){
+  document.body.classList.remove('scene-aurora','scene-waves','scene-starfield','scene-matrix','scene-sunset','scene-neongrid','scene-fire','scene-snowfall');
+  if(sc && sc!=='none') document.body.classList.add('scene-'+sc);
+  try{localStorage.setItem('weather-scene',sc);}catch(e){}
+  document.querySelectorAll('[data-scene]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-scene')===sc);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-scene')){
+    applyScene(e.target.getAttribute('data-scene'));
+  }
+});
+try{applyScene(localStorage.getItem('weather-scene')||'none');}catch(e){applyScene('none');}
+
+/* ===== BACKGROUND LAYOUT ===== */
+function applyLayout(l){
+  document.body.classList.remove('layout-full','layout-split','layout-tiled','layout-vignette','layout-diagonal','layout-centered');
+  document.body.classList.add('layout-'+(l||'full'));
+  try{localStorage.setItem('weather-layout',l);}catch(e){}
+  document.querySelectorAll('[data-layout]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-layout')===l);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-layout')){
+    applyLayout(e.target.getAttribute('data-layout'));
+  }
+});
+try{applyLayout(localStorage.getItem('weather-layout')||'full');}catch(e){applyLayout('full');}
+
+
+var SPOTIFY_PL={top:'37i9dQZEVXbMDoHDwVN2tF',new:'37i9dQZF1DX4JAvHpjipBk',trend:'37i9dQZF1DWUa8ZRTfalHk'};
+var SPOTIFY_NOTE={top:'Spotify Top 50 Global.',new:'Spotify New Music Friday (global).',trend:'Spotify Pop Rising (trending).'};
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-sp')){
+    document.querySelectorAll('#song-tabs .ent-tab').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    var k=e.target.getAttribute('data-sp');
+    document.getElementById('spotify-player').src='https://open.spotify.com/embed/playlist/'+SPOTIFY_PL[k]+'?utm_source=generator';
+    document.getElementById('song-note').textContent=SPOTIFY_NOTE[k];
+  }
+});
+
+
+/* Curated Goodreads top self-development books. Goodreads has no public API and
+   blocks scraping, so the ranking list is curated here; covers/links are then
+   resolved LIVE from Open Library each time the widget renders, and the 5 books
+   shown are re-rotated on every visit + every 15 minutes (see INIT below). */
+var GOODREADS_SELFDEV=[
+  {t:'Atomic Habits',a:'James Clear'},
+  {t:'The 7 Habits of Highly Effective People',a:'Stephen R. Covey'},
+  {t:'How to Win Friends and Influence People',a:'Dale Carnegie'},
+  {t:'Think and Grow Rich',a:'Napoleon Hill'},
+  {t:"Man's Search for Meaning",a:'Viktor E. Frankl'},
+  {t:'The Subtle Art of Not Giving a F*ck',a:'Mark Manson'},
+  {t:'Deep Work',a:'Cal Newport'},
+  {t:'Grit: The Power of Passion and Perseverance',a:'Angela Duckworth'},
+  {t:'Mindset: The New Psychology of Success',a:'Carol S. Dweck'},
+  {t:'The Four Agreements',a:'Don Miguel Ruiz'},
+  {t:"Can't Hurt Me",a:'David Goggins'},
+  {t:'The 5 AM Club',a:'Robin Sharma'},
+  {t:'Who Moved My Cheese?',a:'Spencer Johnson'},
+  {t:'Start with Why',a:'Simon Sinek'},
+  {t:'Extreme Ownership',a:'Jocko Willink'},
+  {t:'The Miracle Morning',a:'Hal Elrod'},
+  {t:'You Are a Badass',a:'Jen Sincero'},
+  {t:'Thinking, Fast and Slow',a:'Daniel Kahneman'},
+  {t:'The Richest Man in Babylon',a:'George S. Clason'},
+  {t:'Feel the Fear and Do It Anyway',a:'Susan Jeffers'},
+  {t:'Awaken the Giant Within',a:'Tony Robbins'},
+  {t:'The Power of Habit',a:'Charles Duhigg'},
+  {t:'The Monk Who Sold His Ferrari',a:'Robin Sharma'},
+  {t:'The Power of Your Subconscious Mind',a:'Joseph Murphy'}
+];
+function loadSideBooks(){
+  var el=document.getElementById('side-books');
+  if(!el) return;
+  // Rotate: Fisher-Yates shuffle, show 5 (different mix each call)
+  var pool=GOODREADS_SELFDEV.slice();
+  for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[j];pool[j]=tmp;}
+  var picks=pool.slice(0,5);
+  el.innerHTML='<li class="side-loading">Loading books…</li>';
+  Promise.all(picks.map(function(b){
+    var gr='https://www.goodreads.com/search?q='+encodeURIComponent(b.t+' '+b.a);
+    return fetch('https://openlibrary.org/search.json?q='+encodeURIComponent('title:"'+b.t+'" author:'+b.a)+'&limit=1')
+      .then(function(r){return r.json();})
+      .then(function(j){
+        var d=((j.docs||[])[0])||{};
+        return {t:b.t,a:b.a,
+          cover:d.cover_i?('https://covers.openlibrary.org/b/id/'+d.cover_i+'-S.jpg'):'',
+          link:d.key?('https://openlibrary.org'+d.key):gr};
+      })
+      .catch(function(){return {t:b.t,a:b.a,cover:'',link:gr};});
+  })).then(function(rows){
+    el.innerHTML=rows.map(function(b){
+      return '<li><a href="'+escapeHtml(b.link)+'" target="_blank" rel="noopener">'+(b.cover?'<img src="'+escapeHtml(b.cover)+'" alt="" style="width:32px;height:44px;object-fit:cover;border-radius:4px;float:left;margin-right:8px">':'')+escapeHtml(b.t)+'</a><div class="side-meta">'+escapeHtml(b.a)+'</div><div style="clear:both"></div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">Books unavailable.</li>';});
+}
+
+function loadSideTech(){
+  var el=document.getElementById('side-tech');
+  fetch('https://hacker-news.firebaseio.com/v0/topstories.json').then(function(r){return r.json();}).then(function(ids){
+    var top=(ids||[]).slice(0,6);
+    return Promise.all(top.map(function(id){return fetch('https://hacker-news.firebaseio.com/v0/item/'+id+'.json').then(function(r){return r.json();});}));
+  }).then(function(items){
+    if(!items.length){el.innerHTML='<li class="side-empty">No tech news right now.</li>';return;}
+    el.innerHTML=items.map(function(it){
+      return '<li><a href="'+escapeHtml(it.url||('https://news.ycombinator.com/item?id='+it.id))+'" target="_blank" rel="noopener">'+escapeHtml(it.title||'Story')+'</a><div class="side-meta">'+(it.score||0)+' pts · '+escapeHtml(it.by||'')+'</div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">Tech news unavailable.</li>';});
+}
+
+/* ===== INIT ===== */
+season();
+loadWeather(LAT,LON,AREA_LABEL);
+setPlayer('music');
+setInterval(function(){ loadWeather(LAT,LON,AREA_LABEL); }, 600000);
+setTimeout(function(){ loadSideEvents(); loadSideNews(); loadSideBooks(); loadSideTech(); }, 1500);
+setInterval(function(){ loadSideBooks(); }, 900000); // rotate self-dev books every 15 min
+
+})();
+</script>
+
+<!-- Vanta.js removed — canvas weather engine handles all backgrounds -->
+
+<script>
+/* ===== RESET LOOK & FEEL (recovery for a bad cached theme/fx/scene) =====
+   2026-10-18: users could pick e.g. the Glass theme (or an FX filter) that makes
+   text blend into the background, and since the choice is cached in localStorage
+   it persisted with no way back. This clears every appearance key and reloads,
+   restoring factory defaults. The button is deliberately high-contrast so it is
+   readable even when the rest of the page is not. */
+(function(){
+  var WEATHER_KEYS=['weather-theme','weather-fx','weather-scene','weather-layout','weather-hide-extras','weather-player-size'];
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    var isReset=t && ((t.id==='look-reset') || (t.classList && t.classList.contains('reset-look')));
+    if(!isReset) return;
+    WEATHER_KEYS.forEach(function(k){ try{localStorage.removeItem(k);}catch(err){} });
+    location.reload();
+  });
+})();
+</script>
+
+<script>
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t && t.classList && t.classList.contains('collapse-toggle')){
+    var id=t.getAttribute('data-collapse');
+    var body=document.getElementById(id);
+    var card=t.closest('.card');
+    if(body){
+      var collapsed=body.style.display==='none';
+      body.style.display=collapsed?'':'none';
+      if(card) card.classList.toggle('collapsed', !collapsed);
+      t.textContent=collapsed?'Hide':'Show';
+    }
+  }
+});
+</script>
+
+
+<script>
+window.addEventListener('load',function(){
+  document.querySelectorAll('.lazy-frame').forEach(function(d){
+    var ifr=document.createElement('iframe');
+    ifr.src=d.getAttribute('data-src');
+    ifr.style.cssText=d.style.cssText;
+    ifr.style.border='0';
+    ifr.loading='lazy';
+    ifr.allow='autoplay; encrypted-media; fullscreen';
+    // 2026-10-18: removed `ifr.allowFullscreen=true` — Chrome logs "Allow attribute
+    // will take precedence over 'allowfullscreen'" when both are set; the `allow`
+    // attribute already carries `fullscreen`, so the legacy property is redundant.
+    d.replaceWith(ifr);
+  });
+});
+</script>
+
+
+<script>
+(function(){
+  var btn=document.getElementById('extras-toggle');
+  function apply(v){
+    document.body.classList.toggle('hide-extras', v);
+    if(btn) btn.textContent=v?'Show optional sections':'Hide optional sections';
+    try{localStorage.setItem('weather-hide-extras', v?'1':'0');}catch(e){}
+  }
+  var stored=false; try{ stored=localStorage.getItem('weather-hide-extras')==='1'; }catch(e){}
+  apply(stored);
+  if(btn) btn.addEventListener('click', function(){ apply(!document.body.classList.contains('hide-extras')); });
+})();
+</script>
+
+
+<script>
+(function(){
+  function applyPSize(s){
+    document.body.classList.remove('player-size-sm','player-size-md','player-size-lg','player-size-xl');
+    document.body.classList.add('player-size-'+(s||'md'));
+    document.querySelectorAll('[data-psize]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-psize')===s);});
+    try{localStorage.setItem('weather-player-size',s);}catch(e){}
+  }
+  document.addEventListener('click',function(e){
+    if(e.target.getAttribute && e.target.getAttribute('data-psize')){
+      applyPSize(e.target.getAttribute('data-psize'));
+    }
+  });
+  try{applyPSize(localStorage.getItem('weather-player-size')||'md');}catch(e){applyPSize('md');}
+})();
+</script>
+
+</body>
+</html>
