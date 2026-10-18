@@ -28,3 +28,10 @@
 - Add a staleness tooltip + `generated_at` to every metric span so no page can silently show month-old numbers.
 - Promote the watcher to a CI job instead of `/tmp` so verification survives session restarts.
 - Consider splitting weather deploy into a GitHub Actions workflow to avoid manual FTP creds.
+
+## Deployment & live test results (2026-10-18T08:40Z)
+
+- Committed classifier fix (013024ad46) + cache + handoff doc.
+- Deployed weather-only to FTP: https://findtorontoevents.ca/weather/ → HTTP 200, last-modified 08:30Z, "Top Entertainment" present.
+- Remote full-page test (VERIFY_REMOTE=1): 2 failures — broken Quick Nav links to /findstocks/portfolio2/*.html (9 URLs, HTTP 404). Pre-existing missing pages, not caused by this session's changes. Recommend either restoring those pages or removing the Quick Nav entries.
+- Weather Playwright: 4/4 pass.

@@ -159,6 +159,39 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
 .ent-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .ent-links a{font-size:.7rem;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--t2);text-decoration:none;transition:all .2s}
 .ent-links a:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ===== EMBEDDED PLAYER ===== */
+.player-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.player-tab{padding:6px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+.player-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.player-frame{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000;margin-top:8px}
+.player-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.player-radio{margin-top:8px}
+.player-radio select{width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:var(--t1);font-size:.9rem}
+.player-radio audio{width:100%;margin-top:8px}
+.player-note{font-size:.72rem;color:var(--t3);margin-top:6px}
+
+/* ===== THEMES ===== */
+.theme-switch{padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+.theme-switch h4{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px}
+.theme-btns{display:flex;flex-wrap:wrap;gap:6px}
+.theme-btn{padding:6px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s}
+.theme-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+body.theme-light{--bg:#f4f6fb;--card:rgba(0,0,0,.04);--card-b:rgba(0,0,0,.08);--t1:#1a1a2e;--t2:#4b5563;--t3:#9ca3af}
+body.theme-light .bg-fallback,body.theme-light #weather-canvas{display:none}
+body.theme-light{background:linear-gradient(180deg,#dbeafe 0%,#f4f6fb 100%)}
+body.theme-midnight{--bg:#02040f;--card:rgba(255,255,255,.04);--card-b:rgba(255,255,255,.08);--t1:#e0e7ff;--t2:#a5b4fc;--t3:#6366f1}
+body.theme-midnight .bg-fallback,body.theme-midnight #weather-canvas{display:none}
+body.theme-midnight{background:linear-gradient(180deg,#02040f 0%,#0a0f2e 100%)}
+body.theme-sunset{--bg:#1a0f1f;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.1);--t1:#fce7f3;--t2:#f9a8d4;--t3:#ec4899}
+body.theme-sunset .bg-fallback,body.theme-sunset #weather-canvas{display:none}
+body.theme-sunset{background:linear-gradient(180deg,#7c2d12 0%,#be185d 50%,#1a0f1f 100%)}
+body.theme-forest{--bg:#0a1f12;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.09);--t1:#dcfce7;--t2:#86efac;--t3:#22c55e}
+body.theme-forest .bg-fallback,body.theme-forest #weather-canvas{display:none}
+body.theme-forest{background:linear-gradient(180deg,#052e16 0%,#0a1f12 100%)}
+body.theme-ocean{--bg:#0a1a2e;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.1);--t1:#e0f2fe;--t2:#7dd3fc;--t3:#0ea5e9}
+body.theme-ocean .bg-fallback,body.theme-ocean #weather-canvas{display:none}
+body.theme-ocean{background:linear-gradient(180deg,#0c4a6e 0%,#0a1a2e 100%)}
 </style>
 </head>
 <body>
@@ -180,16 +213,50 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
     <button onclick="lookupPostal()">Go</button>
     <button class="loc-btn" onclick="detectLocation()">&#128205; My location</button>
   </div>
-  <!-- ENTERTAINMENT SECTION -->
+
+  <!-- EMBEDDED PLAYER -->
   <div class="card span2" style="margin-top:16px">
-    <div class="lbl">🎬 Top Entertainment — Most Played</div>
-    <div class="ent-tabs" id="ent-tabs">
-      <button class="ent-tab active" data-cat="tv">📺 TV Series</button>
-      <button class="ent-tab" data-cat="movies">🎥 Movies</button>
-      <button class="ent-tab" data-cat="podcasts">🎙️ Podcasts</button>
-      <button class="ent-tab" data-cat="songs">🎵 Songs</button>
+    <div class="lbl">▶️ Embedded Player — Music Videos / Trailers / Radio</div>
+    <div class="player-tabs" id="player-tabs">
+      <button class="player-tab active" data-cat="music">🎵 Music Videos</button>
+      <button class="player-tab" data-cat="trailers">🎬 Movie Trailers</button>
+      <button class="player-tab" data-cat="songs">🎧 Top Songs</button>
+      <button class="player-tab" data-cat="radio">📻 Live Radio</button>
     </div>
-    <div id="ent-content" class="ent-content"></div>
+    <div class="ent-tabs" id="vid-subtabs" style="display:none">
+      <button class="ent-tab active" data-vtab="top">🔥 Top</button>
+      <button class="ent-tab" data-vtab="new">🆕 New Releases</button>
+      <button class="ent-tab" data-vtab="trend">📈 Trending</button>
+    </div>
+    <div id="player-video" class="player-frame">
+      <iframe id="yt-player" src="" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+    </div>
+    <div id="vid-controls" style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="loc-btn" id="vid-prev" style="padding:6px 12px">◀ Prev</button>
+      <div id="vid-title" style="flex:1;font-size:.85rem;font-weight:700;color:var(--t1);text-align:center">Loading…</div>
+      <button class="loc-btn" id="vid-next" style="padding:6px 12px">Next ▶</button>
+    </div>
+    <div class="player-note" id="vid-note"></div>
+    <div id="player-songs" style="display:none;margin-top:8px">
+      <div class="ent-tabs" id="song-tabs">
+        <button class="ent-tab active" data-sp="top">🔥 Top 50</button>
+        <button class="ent-tab" data-sp="new">🆕 New Releases</button>
+        <button class="ent-tab" data-sp="trend">📈 Trending</button>
+      </div>
+      <div class="player-frame" style="padding-top:60%">
+        <iframe id="spotify-player" src="https://open.spotify.com/embed/playlist/37i9dQZEVXbMDoHDwVN2tF?utm_source=generator" title="Songs" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      </div>
+      <div class="player-note" id="song-note">Spotify Top 50 Global.</div>
+    </div>
+    <div id="player-radio" class="player-radio" style="display:none">
+      <select id="radio-station">
+        <option value="https://ice1.somafm.com/groovesalad-128-mp3">SomaFM Groove Salad</option>
+        <option value="https://ice1.somafm.com/dronezone-128-mp3">SomaFM Drone Zone</option>
+        <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/CHUMFM.mp3">CHUM 104.5 (Toronto)</option>
+      </select>
+      <audio id="radio-audio" controls preload="none"></audio>
+    </div>
+    <div class="player-note">Videos via YouTube search playlists (dynamic). Radio streams play on demand.</div>
   </div>
 
   <div class="priv">Location stays in your browser &mdash; we only use it to fetch weather.</div>
@@ -291,6 +358,29 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
     <a href="/findstocks/">📊 Stocks</a>
     <a href="/MENTALHEALTHRESOURCES/">🧠 Mental Health</a>
   </nav>
+  <div class="nav-panel-body" style="border-top:1px solid rgba(255,255,255,.08);padding-top:12px">
+    <div class="lbl" style="padding:0 12px 8px">🎬 Top Entertainment — Most Played</div>
+    <div class="ent-tabs" id="ent-tabs" style="padding:0 12px">
+      <button class="ent-tab active" data-cat="tv">📺 TV</button>
+      <button class="ent-tab" data-cat="movies">🎥 Movies</button>
+      <button class="ent-tab" data-cat="podcasts">🎙️ Pods</button>
+      <button class="ent-tab" data-cat="songs">🎵 Songs</button>
+    </div>
+    <div id="ent-content" class="ent-content" style="padding:0 12px"></div>
+  </div>
+
+  <div class="theme-switch">
+    <h4>🎨 Theme</h4>
+    <div class="theme-btns">
+      <button class="theme-btn active" data-theme="auto">Auto (weather)</button>
+      <button class="theme-btn" data-theme="dark">Dark</button>
+      <button class="theme-btn" data-theme="light">Light</button>
+      <button class="theme-btn" data-theme="midnight">Midnight</button>
+      <button class="theme-btn" data-theme="sunset">Sunset</button>
+      <button class="theme-btn" data-theme="forest">Forest</button>
+      <button class="theme-btn" data-theme="ocean">Ocean</button>
+    </div>
+  </div>
 </aside>
 <div id="nav-overlay" class="nav-overlay"></div>
 
@@ -306,6 +396,14 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
     <div class="side-section">
       <div class="side-title">📰 Latest News <a class="side-more" href="/news/">more →</a></div>
       <ul id="side-news" class="side-list"><li class="side-loading">Loading news…</li></ul>
+    </div>
+    <div class="side-section">
+      <div class="side-title">📚 Self-Dev Books <a class="side-more" href="https://openlibrary.org/subjects/self-help" target="_blank" rel="noopener">more →</a></div>
+      <ul id="side-books" class="side-list"><li class="side-loading">Loading books…</li></ul>
+    </div>
+    <div class="side-section">
+      <div class="side-title">💻 Tech News <a class="side-more" href="/techfinds/">more →</a></div>
+      <ul id="side-tech" class="side-list"><li class="side-loading">Loading tech…</li></ul>
     </div>
   </div>
 </aside>
@@ -1128,11 +1226,144 @@ document.addEventListener('click',function(e){
 });
 renderEnt('tv');
 
+
+/* ===== EMBEDDED PLAYER ===== */
+var VIDEO_QUERIES={
+  music:{top:'top music videos 2026',new:'new music videos 2026',trend:'trending music videos'},
+  trailers:{top:'best movie trailers 2026',new:'new movie trailers 2026',trend:'trending movie trailers'}
+};
+var FALLBACK_VIDEOS={
+  music:{top:[{id:'4NRXx6U8ABQ',t:'Blinding Lights - The Weeknd'},{id:'JGwWNGJdvx8',t:'Shape of You - Ed Sheeran'},{id:'fJ9rUzIMcZQ',t:'Bohemian Rhapsody - Queen'},{id:'OPf0YbXqDm0',t:'Uptown Funk - Bruno Mars'},{id:'kJQP7kiw5Fk',t:'Despacito - Luis Fonsi'}],
+    new:[{id:'RgKAFK5djSk',t:'See You Again - Wiz Khalifa'},{id:'fRh_vgS2dFE',t:'Sorry - Justin Bieber'},{id:'09R8_2nJtjg',t:'Sugar - Maroon 5'},{id:'PT2_F-1esPk',t:'Closer - The Chainsmokers'}],
+    trend:[{id:'9bZkp7q19f0',t:'Gangnam Style - PSY'},{id:'4NRXx6U8ABQ',t:'Blinding Lights - The Weeknd'}]},
+  trailers:{top:[{id:'TcMBFSGVi1c',t:'Avengers: Endgame'},{id:'YoHD9XEInc0',t:'Inception'},{id:'EXeTwQWrcwY',t:'The Dark Knight'},{id:'zSWdZVtXT7E',t:'Interstellar'},{id:'zAGVQLHvwOY',t:'Joker'}],
+    new:[{id:'JfVOs4VSpmA',t:'Spider-Man: No Way Home'},{id:'qSqVVsqh8Qg',t:'Top Gun: Maverick'},{id:'mqqft2x_Aa4',t:'The Batman'}],
+    trend:[{id:'n9xhJrPXop4',t:'Dune'},{id:'uYPbbksJxIg',t:'Oppenheimer'}]}
+};
+var currentCat='music', currentTab='top', currentList=[], currentIdx=0;
+function vidIdFromUrl(u){var m=(u||'').match(/[?&]v=([^&]+)/);return m?m[1]:(u||'').split('/').pop();}
+function showVideo(){
+  if(!currentList.length){document.getElementById('vid-title').textContent='No videos';return;}
+  if(currentIdx<0) currentIdx=currentList.length-1;
+  if(currentIdx>=currentList.length) currentIdx=0;
+  var v=currentList[currentIdx];
+  document.getElementById('yt-player').src='https://www.youtube.com/embed/'+v.id;
+  document.getElementById('vid-title').textContent=(currentIdx+1)+'/'+currentList.length+' — '+v.t;
+}
+function loadVideos(cat,tab){
+  currentList=[]; currentIdx=0;
+  document.getElementById('vid-title').textContent='Loading…';
+  var q=VIDEO_QUERIES[cat][tab];
+  var filter = cat==='music'?'music_videos':'videos';
+  fetch('https://api.piped.private.coffee/search?q='+encodeURIComponent(q)+'&filter='+filter).then(function(r){return r.json();}).then(function(j){
+    var items=(j.items||[]).slice(0,10).map(function(x){return {id:vidIdFromUrl(x.url),t:x.title};}).filter(function(x){return x.id;});
+    if(items.length){ currentList=items; } else { currentList=FALLBACK_VIDEOS[cat][tab]||[]; }
+    currentIdx=0; showVideo();
+  }).catch(function(){ currentList=FALLBACK_VIDEOS[cat][tab]||[]; currentIdx=0; showVideo(); });
+}
+function setPlayer(cat){
+  var vf=document.getElementById('player-video');
+  var rf=document.getElementById('player-radio');
+  var sf=document.getElementById('player-songs');
+  var sub=document.getElementById('vid-subtabs');
+  rf.style.display='none'; sf.style.display='none'; vf.style.display='block';
+  document.getElementById('vid-controls').style.display='flex';
+  document.getElementById('vid-note').style.display='block';
+  if(cat==='radio'){ vf.style.display='none'; rf.style.display='block'; document.getElementById('vid-controls').style.display='none'; document.getElementById('vid-note').style.display='none'; sub.style.display='none'; return; }
+  if(cat==='songs'){ vf.style.display='none'; rf.style.display='none'; sf.style.display='block'; document.getElementById('vid-controls').style.display='none'; document.getElementById('vid-note').style.display='none'; sub.style.display='none'; return; }
+  currentCat=cat; currentTab='top'; sub.style.display='flex';
+  document.querySelectorAll('#vid-subtabs .ent-tab').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-vtab')==='top');});
+  loadVideos(cat,'top');
+}
+document.querySelectorAll('#vid-subtabs .ent-tab').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('#vid-subtabs .ent-tab').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    currentTab=b.getAttribute('data-vtab');
+    loadVideos(currentCat,currentTab);
+  });
+});
+document.getElementById('vid-prev').addEventListener('click',function(){currentIdx--;showVideo();});
+document.getElementById('vid-next').addEventListener('click',function(){currentIdx++;showVideo();});
+
+document.getElementById('vid-next').addEventListener('click',function(){currentIdx++;showVideo();});
+document.addEventListener('click',function(e){
+  if(e.target.classList && e.target.classList.contains('player-tab')){
+    document.querySelectorAll('.player-tab').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    setPlayer(e.target.getAttribute('data-cat'));
+  }
+});
+var radioSel=document.getElementById('radio-station');
+var radioAudio=document.getElementById('radio-audio');
+if(radioSel&&radioAudio){
+  radioSel.addEventListener('change',function(){ radioAudio.src=radioSel.value; });
+  radioAudio.src=radioSel.value;
+}
+
+
+/* ===== THEMES ===== */
+function applyTheme(t){
+  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean');
+  if(t&&t!=='auto'&&t!=='dark') document.body.classList.add('theme-'+t);
+  try{localStorage.setItem('weather-theme',t);}catch(e){}
+  document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-theme')===t);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.classList && e.target.classList.contains('theme-btn')){
+    applyTheme(e.target.getAttribute('data-theme'));
+  }
+});
+try{applyTheme(localStorage.getItem('weather-theme')||'auto');}catch(e){applyTheme('auto');}
+
+
+var SPOTIFY_PL={top:'37i9dQZEVXbMDoHDwVN2tF',new:'37i9dQZF1DX4JAvHpjipBk',trend:'37i9dQZF1DWUa8ZRTfalHk'};
+var SPOTIFY_NOTE={top:'Spotify Top 50 Global.',new:'Spotify New Music Friday (global).',trend:'Spotify Pop Rising (trending).'};
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-sp')){
+    document.querySelectorAll('#song-tabs .ent-tab').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    var k=e.target.getAttribute('data-sp');
+    document.getElementById('spotify-player').src='https://open.spotify.com/embed/playlist/'+SPOTIFY_PL[k]+'?utm_source=generator';
+    document.getElementById('song-note').textContent=SPOTIFY_NOTE[k];
+  }
+});
+
+
+function loadSideBooks(){
+  var el=document.getElementById('side-books');
+  fetch('https://openlibrary.org/search.json?q=subject:self+help&sort=new&limit=5').then(function(r){return r.json();}).then(function(j){
+    var docs=j.docs||[];
+    if(!docs.length){el.innerHTML='<li class="side-empty">No books right now.</li>';return;}
+    el.innerHTML=docs.map(function(b){
+      var title=b.title||'Book';
+      var author=(b.author_name&&b.author_name[0])||'';
+      var cover=b.cover_i?('https://covers.openlibrary.org/b/id/'+b.cover_i+'-S.jpg'):'';
+      var link='https://openlibrary.org'+(b.key||'');
+      return '<li><a href="'+escapeHtml(link)+'" target="_blank" rel="noopener">'+(cover?'<img src="'+escapeHtml(cover)+'" alt="" style="width:32px;height:44px;object-fit:cover;border-radius:4px;float:left;margin-right:8px">':'')+escapeHtml(title)+'</a><div class="side-meta">'+escapeHtml(author)+'</div><div style="clear:both"></div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">Books unavailable.</li>';});
+}
+
+function loadSideTech(){
+  var el=document.getElementById('side-tech');
+  fetch('https://hacker-news.firebaseio.com/v0/topstories.json').then(function(r){return r.json();}).then(function(ids){
+    var top=(ids||[]).slice(0,6);
+    return Promise.all(top.map(function(id){return fetch('https://hacker-news.firebaseio.com/v0/item/'+id+'.json').then(function(r){return r.json();});}));
+  }).then(function(items){
+    if(!items.length){el.innerHTML='<li class="side-empty">No tech news right now.</li>';return;}
+    el.innerHTML=items.map(function(it){
+      return '<li><a href="'+escapeHtml(it.url||('https://news.ycombinator.com/item?id='+it.id))+'" target="_blank" rel="noopener">'+escapeHtml(it.title||'Story')+'</a><div class="side-meta">'+(it.score||0)+' pts · '+escapeHtml(it.by||'')+'</div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">Tech news unavailable.</li>';});
+}
+
 /* ===== INIT ===== */
 season();
 loadWeather(LAT,LON,AREA_LABEL);
+setPlayer('music');
 setInterval(function(){ loadWeather(LAT,LON,AREA_LABEL); }, 600000);
-setTimeout(function(){ loadSideEvents(); loadSideNews(); }, 1500);
+setTimeout(function(){ loadSideEvents(); loadSideNews(); loadSideBooks(); loadSideTech(); }, 1500);
 
 })();
 </script>
