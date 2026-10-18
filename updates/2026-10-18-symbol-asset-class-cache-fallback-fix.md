@@ -199,6 +199,46 @@ Fri 22:00 UTC, FX Fri ~21:00 UTC). The zeros were therefore **two problems stack
 source (fixed) on top of genuinely-flat weekend marks (not a bug). The crypto zeros are real too —
 e.g. `ETHUSDT` moved −0.07% since entry, which rounds to 0.00%.
 
+### 4.4c AUDITED — stale OPEN rows + the "would-be entry" shortlist (2026-10-18 payload, gen 08:34Z)
+
+**Active-book freshness (`picks.active_raw`, n=4,097):**
+
+| age | rows |
+|---|---|
+| <24 h | 339 |
+| 1–3 d | 29 |
+| 3–7 d | 1 |
+| 7–30 d | 425 |
+| 30–90 d | 51 |
+| **>90 d** | **360** |
+
+- **411 rows are still `OPEN` after >30 days**, 360 after >90 days. Oldest: ~5,369 h (**~224 days**)
+  — `LTCUSDT/LINKUSDT/DOGEUSDT/AVAXUSDT/XRPUSDT/BNBUSDT/ADAUSDT/SOLUSDT`, all
+  `prop_firm_strategies` (`BB_SQUEEZE_v1`, `VWAP_ELITE_v1`, `KC_SCALP_v1`, …). These are stale
+  OPEN rows, not trades; they inflate every "active" denominator on `/audit`.
+- Only **1,205 of 4,097** rows carry a usable `entry_time`/`signal_time`/`timestamp` — 2,892
+  actives have **no timestamp at all**, so no consumer can age them.
+
+**"Entry-classifiable" shortlist** (fresh <72 h, `score ≥ 60`, confidence ≥ 0.60 or absent) —
+**9 picks**, i.e. the closest thing to an entry set the scans produce today:
+
+| score | conf | class | symbol | dir | age h | strategy | source |
+|---|---|---|---|---|---|---|---|
+| 66 | 0.73 | CRYPTO | ETCUSDT | SHORT | 5.5 | atr_percentile_gate_scanner | alpha_engine |
+| 64 | 0.70 | COMMODITY | GC=F | SHORT | 0.5 | combined_confidence | alpha_engine |
+| 64 | 0.70 | COMMODITY | SI=F | SHORT | 0.5 | combined_confidence | alpha_engine |
+| 62 | 0.85 | FOREX | EURGBP=X | LONG | 0.1 | non_crypto_consensus | non_crypto_consensus |
+| 62 | 0.85 | CRYPTO | TIAUSDT | LONG | 3.3 | tsmom_volscaled | tsmom_strategy |
+| 62 | 0.85 | EQUITY | ADBE | LONG | 3.7 | magic_formula×piotroski | ueps |
+| 61 | 0.80 | COMMODITY | GC=F | SHORT | 0.1 | non_crypto_consensus | non_crypto_consensus |
+| 61 | 0.80 | COMMODITY | SI=F | SHORT | 0.1 | non_crypto_consensus | non_crypto_consensus |
+| 61 | 0.82 | ETF | LABD | SHORT | 2.0 | leveraged_etf_decay | leveraged_etf_decay |
+
+**None of them is sizeable:** `asset_class_health.sizing_allowed` is `True` for **zero** classes in
+this payload (matches the standing 0/N money-ready verdict), and the COMMODITY rows are exactly the
+frozen class of §4.4/§4.4c — policy-excluded even though the signals exist. Treat the table as a
+paper/watch list, not an entry list. *NFA.*
+
 ### 4.5 Still open
 
 - **P2** — per-class real-money-grade pick quality (0/N classes money-ready; overall realised
