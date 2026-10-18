@@ -90,6 +90,10 @@ jobs:
         run: python3 tools/resolve_picks_now.py --apply || echo "[resolve] non-fatal"
 
       - name: Commit + push picks_now.json (plumbing — reliable on contended main, working-tree-safe)
+        # if: always() (2026-10-17): save_picks_to_db above has no non-fatal guard — if it
+        # exits non-zero the run died AFTER the fresh JSON was written+asserted, and this
+        # step would be skipped, leaving main stale while FTP ships fresh. Always push.
+        if: always()
         # WHY: the old rebase loop aborted on EVERY run — main is so contended that `git pull --rebase`
         # always conflicted on OTHER agents' data files; resolving only picks_now.json left the rebase
         # stuck -> abort -> nothing pushed. The committed picks_now.json sat 11 DAYS stale, and other
@@ -121,6 +125,7 @@ jobs:
           [ "$pushed" = 1 ] || echo "::warning::picks_now.json push failed after 5 retries (FTP still ships fresh; next run retries)"
 
       - name: FTP deploy picks-now assets to production
+        if: always()
         env:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
