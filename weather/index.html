@@ -279,6 +279,22 @@ body.theme-galaxy::before{content:'';position:fixed;inset:0;z-index:1;pointer-ev
       <button class="theme-btn" data-theme="ocean">Ocean</button>
     </div>
     <div style="font-size:.72rem;color:var(--t3);margin-top:8px">Skins keep the live weather background (Auto). Solid themes replace it.</div>
+
+    <div class="lbl" style="margin-top:12px">🖼️ Background FX — filter the live weather canvas</div>
+    <div class="theme-btns" id="fx-btns" style="margin-top:8px">
+      <button class="theme-btn active" data-fx="none">None</button>
+      <button class="theme-btn" data-fx="hue">Hue Shift</button>
+      <button class="theme-btn" data-fx="invert">Invert</button>
+      <button class="theme-btn" data-fx="gray">Grayscale</button>
+      <button class="theme-btn" data-fx="sepia">Sepia</button>
+      <button class="theme-btn" data-fx="contrast">High Contrast</button>
+      <button class="theme-btn" data-fx="blur">Soft Blur</button>
+      <button class="theme-btn" data-fx="neon">Neon Glow</button>
+      <button class="theme-btn" data-fx="watercolor">Watercolor</button>
+      <button class="theme-btn" data-fx="blueprint">Blueprint</button>
+      <button class="theme-btn" data-fx="infrared">Infrared</button>
+      <button class="theme-btn" data-fx="nightvision">Night Vision</button>
+    </div>
   </div>
 
   <!-- EMBEDDED PLAYER -->
@@ -1382,11 +1398,42 @@ function applyTheme(t){
   document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-theme')===t);});
 }
 document.addEventListener('click',function(e){
-  if(e.target.classList && e.target.classList.contains('theme-btn')){
+  if(e.target.classList && e.target.classList.contains('theme-btn') && e.target.getAttribute('data-theme')){
     applyTheme(e.target.getAttribute('data-theme'));
   }
 });
 try{applyTheme(localStorage.getItem('weather-theme')||'auto');}catch(e){applyTheme('auto');}
+
+/* ===== BACKGROUND FX ===== */
+var FX_FILTERS={
+  none:'none',
+  hue:'hue-rotate(120deg) saturate(1.4)',
+  invert:'invert(1) hue-rotate(180deg)',
+  gray:'grayscale(1) contrast(1.1)',
+  sepia:'sepia(1) contrast(1.05)',
+  contrast:'contrast(1.6) saturate(1.3)',
+  blur:'blur(2px) brightness(1.1)',
+  neon:'saturate(2) contrast(1.4) brightness(1.15) hue-rotate(10deg)',
+  watercolor:'saturate(1.6) blur(1px) brightness(1.2) contrast(.9)',
+  blueprint:'invert(1) hue-rotate(200deg) saturate(1.2) contrast(1.1)',
+  infrared:'hue-rotate(180deg) saturate(2) contrast(1.2)',
+  nightvision:'hue-rotate(90deg) saturate(2) brightness(1.3) contrast(1.2)'
+};
+function applyFx(f){
+  var flt=FX_FILTERS[f]||'none';
+  var c=document.getElementById('weather-canvas');
+  if(c) c.style.filter=flt;
+  var bg=document.querySelector('.bg-fallback');
+  if(bg) bg.style.filter=flt;
+  try{localStorage.setItem('weather-fx',f);}catch(e){}
+  document.querySelectorAll('[data-fx]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-fx')===f);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-fx')){
+    applyFx(e.target.getAttribute('data-fx'));
+  }
+});
+try{applyFx(localStorage.getItem('weather-fx')||'none');}catch(e){applyFx('none');}
 
 
 var SPOTIFY_PL={top:'37i9dQZEVXbMDoHDwVN2tF',new:'37i9dQZF1DX4JAvHpjipBk',trend:'37i9dQZF1DWUa8ZRTfalHk'};
