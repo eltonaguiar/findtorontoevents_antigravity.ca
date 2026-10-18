@@ -141,8 +141,7 @@
       const nVal = (p.live_n != null) ? htmlEscape(String(p.live_n)) : '—';
       const wrVal = (p.live_wr_pct != null) ? htmlEscape(String(p.live_wr_pct)) + '%' : '—';
       const pfVal = (p.live_pf_net != null) ? htmlEscape(String(p.live_pf_net))
-                    : (p.live_pf_gross != null ? htmlEscape(String(p.live_pf_gross)) : null)
-                    : null;
+                    : ((p.live_pf_gross != null) ? htmlEscape(String(p.live_pf_gross)) : null);
       const pfStr = pfVal != null ? 'PF ' + pfVal : 'PF —';
       const restrict = htmlEscape(p.restriction || 'unspecified');
       const sz = (p.suggested_size_pct_of_normal != null) ? Math.round(p.suggested_size_pct_of_normal * 100) + '%' : '—';
