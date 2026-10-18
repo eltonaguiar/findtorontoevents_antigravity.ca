@@ -145,6 +145,20 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
 .side-meta{font-size:.72rem;color:var(--t3);margin-top:2px}
 .side-loading{color:var(--t3);font-style:italic}
 .side-empty{color:var(--t3);font-style:italic;font-size:.82rem}
+
+/* ===== ENTERTAINMENT SECTION ===== */
+.ent-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.ent-tab{padding:6px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+.ent-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.ent-content{margin-top:8px}
+.ent-list{list-style:none;padding:0;margin:0}
+.ent-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.ent-item:last-child{border:none}
+.ent-title{font-weight:700;font-size:.9rem;color:var(--t1)}
+.ent-meta{font-size:.72rem;color:var(--t3);margin-top:2px}
+.ent-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ent-links a{font-size:.7rem;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--t2);text-decoration:none;transition:all .2s}
+.ent-links a:hover{color:var(--accent);border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -166,6 +180,18 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
     <button onclick="lookupPostal()">Go</button>
     <button class="loc-btn" onclick="detectLocation()">&#128205; My location</button>
   </div>
+  <!-- ENTERTAINMENT SECTION -->
+  <div class="card span2" style="margin-top:16px">
+    <div class="lbl">🎬 Top Entertainment — Most Played</div>
+    <div class="ent-tabs" id="ent-tabs">
+      <button class="ent-tab active" data-cat="tv">📺 TV Series</button>
+      <button class="ent-tab" data-cat="movies">🎥 Movies</button>
+      <button class="ent-tab" data-cat="podcasts">🎙️ Podcasts</button>
+      <button class="ent-tab" data-cat="songs">🎵 Songs</button>
+    </div>
+    <div id="ent-content" class="ent-content"></div>
+  </div>
+
   <div class="priv">Location stays in your browser &mdash; we only use it to fetch weather.</div>
   <div class="priv" style="margin-top:10px"><a href="https://www.reddit.com/r/LivestreamFail/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">📺 r/LivestreamFail</a></div>
 
@@ -1024,6 +1050,83 @@ function loadSideNews(){
     }).join('');
   }).catch(function(){el.innerHTML='<li class="side-empty">News unavailable offline.</li>';});
 }
+
+/* ===== ENTERTAINMENT DATA ===== */
+var ENT_DATA = {
+  tv: [
+    {t:'Breaking Bad', m:'Crime drama'},
+    {t:'Game of Thrones', m:'Fantasy epic'},
+    {t:'Stranger Things', m:'Sci-fi horror'},
+    {t:'The Crown', m:'Historical drama'},
+    {t:'The Office (US)', m:'Comedy'},
+    {t:'Friends', m:'Sitcom'},
+    {t:'The Mandalorian', m:'Sci-fi'},
+    {t:'Squid Game', m:'Thriller'},
+    {t:'The Last of Us', m:'Post-apocalyptic'},
+    {t:'House of the Dragon', m:'Fantasy'}
+  ],
+  movies: [
+    {t:'The Shawshank Redemption', m:'Drama'},
+    {t:'The Godfather', m:'Crime'},
+    {t:'The Dark Knight', m:'Action'},
+    {t:'Pulp Fiction', m:'Crime'},
+    {t:'Forrest Gump', m:'Drama'},
+    {t:'Inception', m:'Sci-fi'},
+    {t:'The Matrix', m:'Sci-fi'},
+    {t:'Interstellar', m:'Sci-fi'},
+    {t:'Parasite', m:'Thriller'},
+    {t:'Oppenheimer', m:'Biography'}
+  ],
+  podcasts: [
+    {t:'The Joe Rogan Experience', m:'Talk'},
+    {t:'Huberman Lab', m:'Science'},
+    {t:'Lex Fridman Podcast', m:'Tech/AI'},
+    {t:'Call Her Daddy', m:'Lifestyle'},
+    {t:'SmartLess', m:'Comedy'},
+    {t:'The Daily', m:'News'},
+    {t:'Crime Junkie', m:'True crime'},
+    {t:'This American Life', m:'Storytelling'},
+    {t:'Stuff You Should Know', m:'Education'},
+    {t:'Armchair Expert', m:'Interview'}
+  ],
+  songs: [
+    {t:'Blinding Lights - The Weeknd', m:'Pop'},
+    {t:'Shape of You - Ed Sheeran', m:'Pop'},
+    {t:'Bohemian Rhapsody - Queen', m:'Rock'},
+    {t:'Hotel California - Eagles', m:'Rock'},
+    {t:'Billie Jean - Michael Jackson', m:'Pop'},
+    {t:'Smells Like Teen Spirit - Nirvana', m:'Grunge'},
+    {t:'Imagine - John Lennon', m:'Classic'},
+    {t:'Hey Jude - The Beatles', m:'Classic'},
+    {t:'Rolling in the Deep - Adele', m:'Soul'},
+    {t:'Uptown Funk - Bruno Mars', m:'Funk'}
+  ]
+};
+function entLinks(title){
+  var q=encodeURIComponent(title);
+  return '<div class="ent-links">'+
+    '<a href="https://www.youtube.com/results?search_query='+q+'" target="_blank" rel="noopener">YouTube</a>'+
+    '<a href="https://music.youtube.com/search?q='+q+'" target="_blank" rel="noopener">YT Music</a>'+
+    '<a href="https://open.spotify.com/search/'+q+'" target="_blank" rel="noopener">Spotify</a>'+
+    '<a href="https://music.apple.com/search?term='+q+'" target="_blank" rel="noopener">Apple Music</a>'+
+    '<a href="https://music.amazon.com/search/'+q+'" target="_blank" rel="noopener">Amazon Music</a>'+
+  '</div>';
+}
+function renderEnt(cat){
+  var el=document.getElementById('ent-content');
+  var items=ENT_DATA[cat]||[];
+  el.innerHTML='<ul class="ent-list">'+items.map(function(x,i){
+    return '<li class="ent-item"><div class="ent-title">'+(i+1)+'. '+escapeHtml(x.t)+'</div><div class="ent-meta">'+escapeHtml(x.m)+'</div>'+entLinks(x.t)+'</li>';
+  }).join('')+'</ul>';
+}
+document.addEventListener('click',function(e){
+  if(e.target.classList && e.target.classList.contains('ent-tab')){
+    document.querySelectorAll('.ent-tab').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    renderEnt(e.target.getAttribute('data-cat'));
+  }
+});
+renderEnt('tv');
 
 /* ===== INIT ===== */
 season();
