@@ -152,7 +152,11 @@
       const ac = htmlEscape(p.asset_class || '?');
       const stage = htmlEscape(p.stage || 'OPPORTUNITY');
       const stageColor = stage === 'OPPORTUNITY' ? '#fbbf24' : (stage === 'OPEN' ? '#22c55e' : '#94a3b8');
-      const srcRows = (p.source_strategies || []).map(function (s) {
+      // 2026-10-18: payload can contain NULL entries inside source_strategies
+      // (verified live: ADAUSDT LONG has source_strategies[0] === null), and the
+      // un-guarded `s.name` below threw "Cannot read properties of null (reading
+      // 'name')" — killing the whole Operator Review panel. Skip falsy entries.
+      const srcRows = (p.source_strategies || []).filter(Boolean).map(function (s) {
         const sn = htmlEscape(s.name || s.cite || '?');
         const co = (s.cohort_n != null) ? 'cohort n=' + htmlEscape(String(s.cohort_n)) : '';
         const wr = (s.net_wr_pct != null) ? 'WR ' + htmlEscape(String(s.net_wr_pct)) + '%'
