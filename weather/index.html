@@ -11,19 +11,22 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
 #weather-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
-.bg-fallback{position:fixed;inset:0;z-index:0;transition:background 2s,filter 2s}
-.bg-fallback.clear{background:linear-gradient(180deg,#1a6fc4 0%,#4aa8e8 40%,#87ceeb 100%)}
-.bg-fallback.clear.night{background:linear-gradient(180deg,#050818 0%,#0a1028 50%,#0e1838 100%)}
-.bg-fallback.clouds{background:linear-gradient(180deg,#4a6a8a 0%,#6a8aaa 40%,#8aa0b8 100%)}
-.bg-fallback.clouds.night{background:linear-gradient(180deg,#080c18 0%,#0e1424 50%,#141c30 100%)}
-.bg-fallback.rain{background:linear-gradient(180deg,#2a3a50 0%,#3a5068 40%,#4a6078 100%)}
-.bg-fallback.rain.night{background:linear-gradient(180deg,#060a14 0%,#0a1220 50%,#0e1828 100%)}
-.bg-fallback.snow{background:linear-gradient(180deg,#6a8ab0 0%,#8aaacc 40%,#a0c0dd 100%)}
-.bg-fallback.snow.night{background:linear-gradient(180deg,#0a1020 0%,#101830 50%,#182040 100%)}
-.bg-fallback.thunder{background:linear-gradient(180deg,#1a1a2e 0%,#2a2a44 40%,#3a3a55 100%)}
-.bg-fallback.thunder.night{background:linear-gradient(180deg,#060410 0%,#0c0818 50%,#120c22 100%)}
-.bg-fallback.fog{background:linear-gradient(180deg,#8a8a96 0%,#9a9aa4 40%,#aaaab4 100%)}
-.bg-fallback.fog.night{background:linear-gradient(180deg,#101014 0%,#16161c 50%,#1c1c24 100%)}
+#bg-container{position:fixed;inset:0;z-index:0;overflow:hidden}
+.bg-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease,filter 2s;background-size:cover;background-position:center}
+.bg-layer.active{opacity:1}
+.bg-overlay{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.5))}
+.bg-layer.clear{background:linear-gradient(180deg,#1a6fc4 0%,#4aa8e8 40%,#87ceeb 100%)}
+.bg-layer.clear.night{background:linear-gradient(180deg,#050818 0%,#0a1028 50%,#0e1838 100%)}
+.bg-layer.clouds{background:linear-gradient(180deg,#4a6a8a 0%,#6a8aaa 40%,#8aa0b8 100%)}
+.bg-layer.clouds.night{background:linear-gradient(180deg,#080c18 0%,#0e1424 50%,#141c30 100%)}
+.bg-layer.rain{background:linear-gradient(180deg,#2a3a50 0%,#3a5068 40%,#4a6078 100%)}
+.bg-layer.rain.night{background:linear-gradient(180deg,#060a14 0%,#0a1220 50%,#0e1828 100%)}
+.bg-layer.snow{background:linear-gradient(180deg,#6a8ab0 0%,#8aaacc 40%,#a0c0dd 100%)}
+.bg-layer.snow.night{background:linear-gradient(180deg,#0a1020 0%,#101830 50%,#182040 100%)}
+.bg-layer.thunder{background:linear-gradient(180deg,#1a1a2e 0%,#2a2a44 40%,#3a3a55 100%)}
+.bg-layer.thunder.night{background:linear-gradient(180deg,#060410 0%,#0c0818 50%,#120c22 100%)}
+.bg-layer.fog{background:linear-gradient(180deg,#8a8a96 0%,#9a9aa4 40%,#aaaab4 100%)}
+.bg-layer.fog.night{background:linear-gradient(180deg,#101014 0%,#16161c 50%,#1c1c24 100%)}
 .container{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 16px 80px}
 .back{position:fixed;bottom:20px;left:20px;z-index:100;padding:10px 20px;border-radius:24px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.1);color:var(--accent);text-decoration:none;font-weight:600;font-size:.9rem;backdrop-filter:blur(10px)}
 .header{text-align:center;padding:30px 0 16px}
@@ -242,10 +245,41 @@ body.theme-coral{--bg:#2a0a14;--card:rgba(251,113,133,.08);--card-b:rgba(251,113
 body.theme-indigo{--bg:#0a0a30;--card:rgba(129,140,248,.08);--card-b:rgba(129,140,248,.22);--t1:#e0e7ff;--t2:#a5b4fc;--t3:#6366f1;--accent:#818cf8;--accent2:#4f46e5}
 body.theme-teal{--bg:#052020;--card:rgba(45,212,191,.08);--card-b:rgba(45,212,191,.22);--t1:#ccfbf1;--t2:#99f6e4;--t3:#14b8a6;--accent:#2dd4bf;--accent2:#0891b2}
 body.theme-rosegold{--bg:#2a1220;--card:rgba(251,191,36,.07);--card-b:rgba(251,191,36,.2);--t1:#fef3c7;--t2:#fcd34d;--t3:#f59e0b;--accent:#fbbf24;--accent2:#ec4899}
+
+/* Animated background scenes (keep weather particles on top) */
+body.scene-aurora{background:linear-gradient(120deg,#0f0c29,#302b63,#24243e,#0f0c29);background-size:400% 400%;animation:sceneAurora 18s ease infinite}
+body.scene-aurora #bg-container{display:none}
+@keyframes sceneAurora{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+body.scene-waves{background:linear-gradient(180deg,#006994,#40e0d0,#006994);background-size:100% 300%;animation:sceneWaves 12s ease-in-out infinite}
+body.scene-waves #bg-container{display:none}
+@keyframes sceneWaves{0%{background-position:50% 0%}50%{background-position:50% 100%}100%{background-position:50% 0%}}
+body.scene-starfield{background:radial-gradient(ellipse at bottom,#1b2735 0%,#090a0f 100%)}
+body.scene-starfield #bg-container{display:none}
+body.scene-starfield::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(1px 1px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 40px 70px,#fff,transparent),radial-gradient(1px 1px at 50px 160px,#fff,transparent),radial-gradient(1px 1px at 90px 40px,#fff,transparent),radial-gradient(1px 1px at 130px 80px,#fff,transparent),radial-gradient(1.5px 1.5px at 160px 120px,#fff,transparent);background-size:200px 200px;animation:sceneStars 60s linear infinite;opacity:.6}
+@keyframes sceneStars{0%{background-position:0 0}100%{background-position:200px 200px}}
+body.scene-matrix{background:#000}
+body.scene-matrix #bg-container{display:none}
+body.scene-matrix::after{content:'█▓▒░';position:fixed;inset:0;z-index:0;pointer-events:none;color:#0f0;font-family:monospace;font-size:14px;line-height:14px;opacity:.08;animation:sceneMatrix 2s steps(10) infinite;white-space:pre;overflow:hidden}
+@keyframes sceneMatrix{0%{transform:translateY(0)}100%{transform:translateY(-100%)}}
+body.scene-sunset{background:linear-gradient(180deg,#ff512f,#dd2476,#ff512f);background-size:100% 200%;animation:sceneSunset 10s ease-in-out infinite}
+body.scene-sunset #bg-container{display:none}
+@keyframes sceneSunset{0%{background-position:50% 0%}50%{background-position:50% 100%}100%{background-position:50% 0%}}
+body.scene-neongrid{background:#050510}
+body.scene-neongrid #bg-container{display:none}
+body.scene-neongrid::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,255,255,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(255,0,255,.15) 1px,transparent 1px);background-size:40px 40px;animation:sceneGrid 8s linear infinite;transform:perspective(400px) rotateX(60deg);transform-origin:50% 100%}
+@keyframes sceneGrid{0%{background-position:0 0}100%{background-position:0 40px}}
+body.scene-fire{background:radial-gradient(ellipse at bottom,#ff4500 0%,#8b0000 40%,#000 100%)}
+body.scene-fire #bg-container{display:none}
+body.scene-fire::after{content:'';position:fixed;bottom:0;left:0;right:0;height:40%;z-index:0;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(255,69,0,.25));animation:sceneFire 1.5s ease-in-out infinite alternate}
+@keyframes sceneFire{0%{opacity:.6;transform:scaleY(1)}100%{opacity:1;transform:scaleY(1.05)}}
+body.scene-snowfall{background:linear-gradient(180deg,#0a1628,#1e3a5f)}
+body.scene-snowfall #bg-container{display:none}
+body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointer-events:none;color:#fff;font-size:18px;opacity:.15;animation:sceneSnow 6s linear infinite;white-space:pre;overflow:hidden}
+@keyframes sceneSnow{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
 </style>
 </head>
 <body>
-<div class="bg-fallback" id="bg-fallback"></div>
+<div id="bg-container"><div class="bg-layer active" id="bg-layer-1"></div><div class="bg-layer" id="bg-layer-2"></div><div class="bg-overlay"></div></div>
 <canvas id="weather-canvas"></canvas>
 <a href="/" class="back">&larr; Events</a>
 
@@ -320,6 +354,19 @@ body.theme-rosegold{--bg:#2a1220;--card:rgba(251,191,36,.07);--card-b:rgba(251,1
       <button class="theme-btn" data-fx="blueprint">Blueprint</button>
       <button class="theme-btn" data-fx="infrared">Infrared</button>
       <button class="theme-btn" data-fx="nightvision">Night Vision</button>
+    </div>
+
+    <div class="lbl" style="margin-top:12px">🎬 Background Scenes (animated; weather particles stay on top)</div>
+    <div class="theme-btns" id="scene-btns" style="margin-top:8px">
+      <button class="theme-btn active" data-scene="none">Weather (default)</button>
+      <button class="theme-btn" data-scene="aurora">Aurora</button>
+      <button class="theme-btn" data-scene="waves">Ocean Waves</button>
+      <button class="theme-btn" data-scene="starfield">Starfield</button>
+      <button class="theme-btn" data-scene="matrix">Matrix</button>
+      <button class="theme-btn" data-scene="sunset">Sunset</button>
+      <button class="theme-btn" data-scene="neongrid">Neon Grid</button>
+      <button class="theme-btn" data-scene="fire">Fire</button>
+      <button class="theme-btn" data-scene="snowfall">Snowfall</button>
     </div>
   </div>
 
@@ -881,9 +928,15 @@ window.addEventListener('resize', function(){
 
 /* ===== WEATHER BACKGROUND ORCHESTRATOR ===== */
 var _currentCond='clouds', _currentIsDay=true;
+var _bgActive=0;
 function applyCssFallback(){
-  var el=document.getElementById('bg-fallback');
-  el.className='bg-fallback '+_currentCond+(_currentIsDay?'':' night');
+  var next=_bgActive^1;
+  var el=document.getElementById('bg-layer-'+(next+1));
+  if(!el) return;
+  el.className='bg-layer '+_currentCond+(_currentIsDay?'':' night')+' active';
+  var cur=document.getElementById('bg-layer-'+(_bgActive+1));
+  if(cur) cur.classList.remove('active');
+  _bgActive=next;
 }
 
 function setWeatherBackground(cond, isDay){
@@ -1449,8 +1502,7 @@ function applyFx(f){
   var flt=FX_FILTERS[f]||'none';
   var c=document.getElementById('weather-canvas');
   if(c) c.style.filter=flt;
-  var bg=document.querySelector('.bg-fallback');
-  if(bg) bg.style.filter=flt;
+  ['#bg-layer-1','#bg-layer-2'].forEach(function(sel){var n=document.querySelector(sel);if(n)n.style.filter=flt;});
   try{localStorage.setItem('weather-fx',f);}catch(e){}
   document.querySelectorAll('[data-fx]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-fx')===f);});
 }
@@ -1460,6 +1512,20 @@ document.addEventListener('click',function(e){
   }
 });
 try{applyFx(localStorage.getItem('weather-fx')||'none');}catch(e){applyFx('none');}
+
+/* ===== BACKGROUND SCENES ===== */
+function applyScene(sc){
+  document.body.classList.remove('scene-aurora','scene-waves','scene-starfield','scene-matrix','scene-sunset','scene-neongrid','scene-fire','scene-snowfall');
+  if(sc && sc!=='none') document.body.classList.add('scene-'+sc);
+  try{localStorage.setItem('weather-scene',sc);}catch(e){}
+  document.querySelectorAll('[data-scene]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-scene')===sc);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-scene')){
+    applyScene(e.target.getAttribute('data-scene'));
+  }
+});
+try{applyScene(localStorage.getItem('weather-scene')||'none');}catch(e){applyScene('none');}
 
 
 var SPOTIFY_PL={top:'37i9dQZEVXbMDoHDwVN2tF',new:'37i9dQZF1DX4JAvHpjipBk',trend:'37i9dQZF1DWUa8ZRTfalHk'};
