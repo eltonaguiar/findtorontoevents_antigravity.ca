@@ -192,6 +192,21 @@ body.theme-forest{background:linear-gradient(180deg,#052e16 0%,#0a1f12 100%)}
 body.theme-ocean{--bg:#0a1a2e;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.1);--t1:#e0f2fe;--t2:#7dd3fc;--t3:#0ea5e9}
 body.theme-ocean .bg-fallback,body.theme-ocean #weather-canvas{display:none}
 body.theme-ocean{background:linear-gradient(180deg,#0c4a6e 0%,#0a1a2e 100%)}
+
+/* Weather-driven skins (keep live weather background) */
+body.theme-glass{--card:rgba(255,255,255,.10);--card-b:rgba(255,255,255,.18)}
+body.theme-glass .card,body.theme-glass .verdict{backdrop-filter:blur(18px);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+body.theme-neon{--accent:#39ff14;--accent2:#ff00ff;--card:rgba(0,0,0,.55);--card-b:rgba(57,255,20,.35)}
+body.theme-neon .card,body.theme-neon .verdict{box-shadow:0 0 18px rgba(57,255,20,.25),inset 0 0 12px rgba(255,0,255,.08);border-width:1px}
+body.theme-neon .theme-btn.active{box-shadow:0 0 12px rgba(57,255,20,.6)}
+body.theme-minimal{--card:rgba(255,255,255,.03);--card-b:rgba(255,255,255,.06)}
+body.theme-minimal .card,body.theme-minimal .verdict{backdrop-filter:none;box-shadow:none;border-radius:8px}
+body.theme-minimal .theme-btn{border-radius:6px}
+body.theme-aurora{--accent:#7df9ff;--accent2:#c084fc}
+body.theme-aurora::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 20% 30%,rgba(125,249,255,.18) 0%,transparent 55%),radial-gradient(ellipse at 80% 70%,rgba(192,132,252,.18) 0%,transparent 55%);animation:auroraShift 12s ease-in-out infinite alternate}
+@keyframes auroraShift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-4%,-3%) scale(1.05)}}
+body.theme-retro{--bg:#2b1d0e;--card:rgba(255,240,200,.07);--card-b:rgba(255,200,120,.18);--t1:#fde68a;--t2:#fbbf24;--t3:#d97706;--accent:#f59e0b;--accent2:#ef4444}
+body.theme-retro .card,body.theme-retro .verdict{border-radius:4px;font-family:'Courier New',monospace}
 </style>
 </head>
 <body>
@@ -379,6 +394,11 @@ body.theme-ocean{background:linear-gradient(180deg,#0c4a6e 0%,#0a1a2e 100%)}
       <button class="theme-btn" data-theme="sunset">Sunset</button>
       <button class="theme-btn" data-theme="forest">Forest</button>
       <button class="theme-btn" data-theme="ocean">Ocean</button>
+      <button class="theme-btn" data-theme="glass">Glass</button>
+      <button class="theme-btn" data-theme="neon">Neon</button>
+      <button class="theme-btn" data-theme="minimal">Minimal</button>
+      <button class="theme-btn" data-theme="aurora">Aurora</button>
+      <button class="theme-btn" data-theme="retro">Retro</button>
     </div>
   </div>
 </aside>
@@ -1304,7 +1324,7 @@ if(radioSel&&radioAudio){
 
 /* ===== THEMES ===== */
 function applyTheme(t){
-  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean');
+  document.body.classList.remove('theme-light','theme-midnight','theme-sunset','theme-forest','theme-ocean','theme-glass','theme-neon','theme-minimal','theme-aurora','theme-retro');
   if(t&&t!=='auto'&&t!=='dark') document.body.classList.add('theme-'+t);
   try{localStorage.setItem('weather-theme',t);}catch(e){}
   document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-theme')===t);});
