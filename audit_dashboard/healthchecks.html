@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Health Checks | findtorontoevents.ca/audit</title>
+<meta name="description" content="Live freshness of every pipeline that populates the /audit dashboard — red when data is stale or missing.">
+<link rel="canonical" href="https://findtorontoevents.ca/audit/healthchecks.html">
+<style>
+  :root{--bg:#070b16;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.10);--t1:#eef1f8;--t2:#94a3b8;--t3:#64748b;
+        --green:#22c55e;--amber:#f59e0b;--red:#ef4444;--gray:#475569;--accent:#38bdf8}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(180deg,#070b16 0%,#0c1326 100%);color:var(--t1);min-height:100vh;padding:22px;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .back{font-size:.82rem;padding:8px 14px;border:1px solid var(--card-b);border-radius:10px;background:var(--card);color:var(--accent);text-decoration:none}
+  .back:hover{text-decoration:none;border-color:var(--accent)}
+  h1{font-size:1.5rem;margin:10px 0 4px}
+  .sub{color:var(--t2);font-size:.86rem;margin-bottom:14px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .chip{padding:8px 14px;border-radius:99px;font-size:.8rem;font-weight:700;border:1px solid var(--card-b);background:var(--card)}
+  .chip.g{color:var(--green)}.chip.a{color:var(--amber)}.chip.r{color:var(--red)}.chip.m{color:var(--gray)}
+  h2{font-size:1rem;font-weight:700;margin:22px 0 10px;color:var(--t1);letter-spacing:.01em}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--card-b);border-radius:12px;overflow:hidden}
+  th,td{padding:10px 12px;text-align:left;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.06)}
+  th{color:var(--t2);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+  tr:last-child td{border-bottom:none}
+  td.name{font-weight:600}
+  td.file{color:var(--t3);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
+  .dot.g{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.7)}
+  .dot.a{background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.7)}
+  .dot.r{background:var(--red);box-shadow:0 0 8px rgba(239,68,68,.7);animation:blink 1.2s infinite}
+  .dot.m{background:var(--gray)}
+  @keyframes blink{50%{opacity:.35}}
+  .st{font-weight:700}
+  .st.g{color:var(--green)}.st.a{color:var(--amber)}.st.r{color:var(--red)}.st.m{color:var(--gray)}
+  .age{font-variant-numeric:tabular-nums}
+  .legend{margin-top:22px;color:var(--t3);font-size:.74rem;line-height:1.6}
+  .footer{margin-top:28px;padding-top:12px;border-top:1px solid var(--card-b);color:var(--t3);font-size:.74rem}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--t3);border-top-color:transparent;border-radius:50%;
+        animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/audit/">← Dashboard</a>
+    <a class="back" href="/" >🏠 Toronto Events</a>
+  </div>
+  <h1>🩺 Pipeline Health Checks</h1>
+  <div class="sub">Every pipeline that populates the /audit dashboard, and when its data last landed.
+    <span id="checking"><span class="spin"></span>checking…</span>
+  </div>
+
+  <div class="chips" id="chips"></div>
+  <div id="groups"></div>
+
+  <div class="legend">
+    <b>Thresholds</b> — the audit pipeline runs on an hourly cron, so:
+    <span class="st g">● fresh</span> = updated within 2h ·
+    <span class="st a">● stale</span> = 2–6h old (amber warning) ·
+    <span class="st r">● DEAD</span> = older than 6h or missing (red) ·
+    <span class="st m">● unknown</span> = server did not report a timestamp.<br>
+    Age is measured from the file's HTTP <code>Last-Modified</code> on the live site — i.e. when the pipeline
+    actually finished writing it, not when the code changed.
+  </div>
+
+  <div class="footer">Auto-refreshes every 5 minutes. Generated client-side; no API keys.
+    Source of truth: <code>findtorontoevents.ca/audit/data/*.json</code>.</div>
+</div>
+
+<script>
+(function(){
+  // Curated registry: pipelines that populate the dashboard, grouped by concern.
+  var REGISTRY = [
+    { group: "Core payload", items: [
+      { name: "Dashboard master payload",  file: "dashboard_data.json" },
+      { name: "Money-Ready verdict",       file: "money_ready_verdict.json" },
+      { name: "Profit-factor registry",    file: "pf_registry.json" },
+      { name: "DB health probe",           file: "db_health.json" },
+      { name: "DB freshness guardian",     file: "db_freshness.json" }
+    ]},
+    { group: "Forward validation (live cohorts)", items: [
+      { name: "Entry-conditions forward (STA-09)", file: "entry_conditions_forward.json" },
+      { name: "Crypto RSI50/70 forward tracker",   file: "crypto_rsi5070_us_forward_status.json" },
+      { name: "Bootstrap forward stats",           file: "bootstrap_forward_stats.json" }
+    ]},
+    { group: "Picks & funnels", items: [
+      { name: "Pick funnel — today",         file: "pick_funnel_today.json" },
+      { name: "Pick funnel — 90 days",       file: "pick_funnel_90d.json" },
+      { name: "AI challenge summary",        file: "ai_challenge_summary.json" },
+      { name: "AI tournament leaderboard",   file: "ai_tournament_leaderboard.json" }
+    ]},
+    { group: "Quality & integrity audits", items: [
+      { name: "Anti-overfit audit",            file: "anti_overfit_audit.json" },
+      { name: "Edge decay heatmap",            file: "edge_decay_heatmap.json" },
+      { name: "Blacklist reconciliation",      file: "blacklist_reconciliation.json" }
+    ]},
+    { group: "Per-asset-class backtests", items: [
+      { name: "Bonds — Connors RSI²",            file: "bond_connors_rsi2_backtest.json" },
+      { name: "Commodities — carry momentum",    file: "commodity_carry_momo.json" },
+      { name: "Crypto — mega-mutation pilot",    file: "crypto_mega_mutation_paper_pilot.json" },
+      { name: "Equity — baby strategies",        file: "equity_baby_strategies_backtest.json" },
+      { name: "ETF — sector rotation",           file: "etf_sector_rotation_backtest.json" },
+      { name: "Forex — futures picks",            file: "forex_futures_picks.json" }
+    ]}
+  ];
+
+  var FRESH_H = 2, STALE_H = 6; // hours
+
+  function fmtAge(ms){
+    if(ms == null) return "—";
+    var m = Math.round(ms/60000);
+    if(m < 60) return m + " min ago";
+    var h = m/60;
+    if(h < 48) return h.toFixed(1) + " h ago";
+    return (h/24).toFixed(1) + " d ago";
+  }
+  function fmtBytes(n){
+    if(n == null) return "—";
+    if(n > 1048576) return (n/1048576).toFixed(1) + " MB";
+    if(n > 1024) return Math.round(n/1024) + " KB";
+    return n + " B";
+  }
+  function statusOf(ageMs){
+    if(ageMs == null) return "m";
+    var h = ageMs/3600000;
+    if(h <= FRESH_H) return "g";
+    if(h <= STALE_H) return "a";
+    return "r";
+  }
+  var LABEL = { g:"fresh", a:"STALE", r:"DEAD", m:"unknown" };
+
+  async function probe(file){
+    var url = "data/" + encodeURIComponent(file) + "?cb=" + Date.now();
+    try{
+      var res = await fetch(url, { method: "HEAD", cache: "no-store" });
+      if(!res.ok) return { state: "missing" };
+      var lm = res.headers.get("last-modified");
+      var size = res.headers.get("content-length");
+      var ageMs = lm ? (Date.now() - new Date(lm).getTime()) : null;
+      return { state: "ok", ageMs: (ageMs != null && ageMs >= 0) ? ageMs : null,
+               lm: lm, size: size ? parseInt(size, 10) : null };
+    }catch(e){
+      return { state: "error" };
+    }
+  }
+
+  async function run(){
+    var counts = { g:0, a:0, r:0, m:0 };
+    var groupsEl = document.getElementById("groups");
+    groupsEl.innerHTML = "";
+    var checking = document.getElementById("checking");
+    checking.innerHTML = '<span class="spin"></span>checking…';
+
+    for(var gi = 0; gi < REGISTRY.length; gi++){
+      var grp = REGISTRY[gi];
+      var results = await Promise.all(grp.items.map(function(it){ return probe(it.file); }));
+      var rows = "";
+      for(var i = 0; i < grp.items.length; i++){
+        var it = grp.items[i], r = results[i];
+        var st = r.state === "ok" ? statusOf(r.ageMs) : "r";
+        if(r.state === "error") st = "m";
+        counts[st]++;
+        var statusTxt = r.state === "missing" ? "MISSING (404)" : (r.state === "error" ? "unreachable" : LABEL[st]);
+        rows += '<tr>' +
+          '<td class="name"><span class="dot ' + st + '"></span>' + it.name + '</td>' +
+          '<td class="file">' + it.file + '</td>' +
+          '<td class="st ' + st + '">' + statusTxt + '</td>' +
+          '<td class="age">' + (r.state === "ok" ? fmtAge(r.ageMs) : "—") + '</td>' +
+          '<td>' + (r.state === "ok" ? (r.lm ? new Date(r.lm).toUTCString().replace(":00 GMT"," UTC") : "—") : "—") + '</td>' +
+          '<td>' + (r.state === "ok" ? fmtBytes(r.size) : "—") + '</td>' +
+          '</tr>';
+      }
+      var h = document.createElement("h2");
+      h.textContent = grp.group;
+      groupsEl.appendChild(h);
+      var t = document.createElement("table");
+      t.innerHTML = '<thead><tr><th>Pipeline</th><th>Data file</th><th>Status</th><th>Age</th><th>Last modified (UTC)</th><th>Size</th></tr></thead><tbody>' + rows + '</tbody>';
+      groupsEl.appendChild(t);
+    }
+
+    var chips = document.getElementById("chips");
+    chips.innerHTML =
+      '<span class="chip g">✅ ' + counts.g + ' fresh</span>' +
+      '<span class="chip a">⚠️ ' + counts.a + ' stale (2–6h)</span>' +
+      '<span class="chip r">🔴 ' + counts.r + ' dead/missing (&gt;6h)</span>' +
+      '<span class="chip m">❔ ' + counts.m + ' unreachable</span>';
+    checking.textContent = "checked " + new Date().toLocaleTimeString();
+  }
+
+  run();
+  setInterval(run, 5 * 60 * 1000);
+})();
+</script>
+</body>
+</html>

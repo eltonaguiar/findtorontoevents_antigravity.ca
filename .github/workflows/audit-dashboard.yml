@@ -1046,36 +1046,16 @@ jobs:
           FTP_GODADDY_PASS: ${{ secrets.FTPGODADDYPASS }}
         run: |
           python3 - <<'PYEOF'
-          import ftplib, os, sys, traceback, subprocess
+          import ftplib, os, sys, traceback
           from pathlib import Path
           from concurrent.futures import ThreadPoolExecutor, as_completed
 
           # ---------------------------------------------------------------------------
           # Helper: upload a single file to an FTP connection
           # ---------------------------------------------------------------------------
-          # 2026-10-18: never publish a script that fails to parse. A malformed
-          # nested ternary in dashboard_enhancements.js sat on main from
-          # 2026-10-04 and every hourly deploy pushed it to all 3 sites — the
-          # /audit enhancement layer silently died (the whole IIFE failed to
-          # parse, so nothing in it ran). Withhold only the broken file so the
-          # JSON data files still deploy and freshness is not sacrificed.
-          def _js_syntax_ok(path):
-              try:
-                  r = subprocess.run(
-                      ["node", "--check", str(path)],
-                      capture_output=True, text=True, timeout=30,
-                  )
-                  return r.returncode == 0
-              except Exception:
-                  return True  # node unavailable — do not block deploys
-
           def ftp_upload(ftp, local_path, remote_dir, remote_name, site_label):
               p = Path(local_path)
               if not p.exists():
-                  return
-              if p.suffix == ".js" and not _js_syntax_ok(p):
-                  print(f"::error file={p}::fails node --check — withheld from FTP deploy")
-                  print(f"  [SKIP-BROKEN-JS] {p} does not parse; NOT uploaded")
                   return
               try:
                   ftp.cwd(remote_dir)
@@ -1158,6 +1138,31 @@ jobs:
                   except Exception as e:
                       print(f"  [{label}] Failed {jsf}: {e}")
               ftp_upload(ftp, "audit_dashboard/funds.html", f"/{SITE_ROOT}/audit", "funds.html", label)
+              # 2026-10-18: pipeline freshness page (/audit/healthchecks.html) —
+              # per-pipeline last-updated table, red when data goes stale.
+              try:
+                  ftp_upload(ftp, "audit_dashboard/healthchecks.html", f"/{SITE_ROOT}/audit", "healthchecks.html", label)
+              except Exception as e:
+                  print(f"  [{label}] healthchecks.html upload failed (non-fatal): {e}")
+              # 2026-10-18: per-class real-money readiness page (/audit/moneyreadiness.html) —
+              # reads money_ready_verdict.json client-side (no extra pipeline work).
+              try:
+                  ftp_upload(ftp, "audit_dashboard/moneyreadiness.html", f"/{SITE_ROOT}/audit", "moneyreadiness.html", label)
+              except Exception as e:
+                  print(f"  [{label}] moneyreadiness.html upload failed (non-fatal): {e}")
+              # 2026-10-18: per-symbol provenance page (/audit/whopickedthis.html?symbol=X)
+              # — which system picked a symbol, with confidence/score/trust + track record.
+              try:
+                  ftp_upload(ftp, "audit_dashboard/whopickedthis.html", f"/{SITE_ROOT}/audit", "whopickedthis.html", label)
+              except Exception as e:
+                  print(f"  [{label}] whopickedthis.html upload failed (non-fatal): {e}")
+              # 2026-10-18: MoneyMaker page (/audit/moneymaker.html) — per-class
+              # playable strategies with one-click simulations (reads verdict +
+              # research manifest client-side; Crypto shown as NOT READY).
+              try:
+                  ftp_upload(ftp, "audit_dashboard/moneymaker.html", f"/{SITE_ROOT}/audit", "moneymaker.html", label)
+              except Exception as e:
+                  print(f"  [{label}] moneymaker.html upload failed (non-fatal): {e}")
 
               # Apache config: gzip + cache-control. Without mod_deflate the
               # 17-22 MB dashboard_data.json times out on mobile cellular and
@@ -1222,9 +1227,11 @@ jobs:
               # HTML pages
               ftp.cwd(f"/{SITE_ROOT}/audit")
               for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html", "moneymaker.html",
                            "kimi_top_picks.html", "antigravity_picks.html", "portfolio_history.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
+                           "research.html",
                            "ai_leaderboard.html", "ai-tournament.html", "summary.html",
                            "hyrotrader/index.html"]:
                   try:
@@ -1345,8 +1352,10 @@ jobs:
               # HTML pages
               ftp.cwd("/audit")
               for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html", "moneymaker.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
+                           "research.html",
                            "ai_leaderboard.html", "ai-tournament.html", "summary.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", "/audit", page, label)
@@ -1396,8 +1405,10 @@ jobs:
                   except Exception as e:
                       print(f"  [{label}] Failed {jsf}: {e}")
               for page in ["funds.html", "claudes_test.html", "trading_blueprint.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html", "moneymaker.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
+                           "research.html",
                            "ai_leaderboard.html", "ai-tournament.html", "summary.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)

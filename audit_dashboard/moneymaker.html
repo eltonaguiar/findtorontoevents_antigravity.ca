@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoneyMaker — strategies to play per asset class | findtorontoevents.ca/audit</title>
+<meta name="description" content="Stocks, ETF, Commodities, Forex: the strategies worth playing, each with a one-click simulation. Crypto: NOT READY.">
+<link rel="canonical" href="https://findtorontoevents.ca/audit/moneymaker.html">
+<style>
+  :root{--bg:#050810;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.10);--t1:#eef1f8;--t2:#94a3b8;--t3:#64748b;
+        --green:#22c55e;--amber:#f59e0b;--red:#ef4444;--accent:#38bdf8;--purple:#a855f7;--gold:#fbbf24}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(180deg,#050810 0%,#0a1120 100%);color:var(--t1);min-height:100vh;padding:22px;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .back{font-size:.82rem;padding:8px 14px;border:1px solid var(--card-b);border-radius:10px;background:var(--card);color:var(--accent);text-decoration:none}
+  .back:hover{text-decoration:none;border-color:var(--accent)}
+  h1{font-size:1.5rem;margin:10px 0 4px}
+  .sub{color:var(--t2);font-size:.86rem;margin-bottom:12px;line-height:1.5}
+  .disclaimer{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);border-radius:10px;
+              padding:10px 14px;font-size:.76rem;color:#fcd34d;line-height:1.55;margin-bottom:16px}
+  .status{color:var(--t3);font-size:.78rem;margin-bottom:14px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--t3);border-top-color:transparent;border-radius:50%;
+        animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .crypto-banner{background:linear-gradient(135deg,rgba(239,68,68,.14),rgba(239,68,68,.05));border:1px solid rgba(239,68,68,.5);
+                 border-radius:14px;padding:16px 18px;margin-bottom:20px}
+  .crypto-banner h2{color:var(--red);font-size:1.1rem;margin-bottom:6px}
+  .crypto-banner .why{color:var(--t2);font-size:.8rem;line-height:1.55}
+  .cls{background:var(--card);border:1px solid var(--card-b);border-radius:16px;padding:18px;margin-bottom:18px}
+  .cls-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .cls-head h2{font-size:1.12rem}
+  .badge{font-size:.68rem;font-weight:800;padding:4px 11px;border-radius:99px;letter-spacing:.03em}
+  .badge.play{background:rgba(34,197,94,.14);color:var(--green);border:1px solid rgba(34,197,94,.5)}
+  .badge.care{background:rgba(245,158,11,.14);color:var(--amber);border:1px solid rgba(245,158,11,.5)}
+  .metrics{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .m{background:rgba(255,255,255,.04);border:1px solid var(--card-b);border-radius:10px;padding:8px 13px;min-width:88px}
+  .m .k{font-size:.63rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+  .m .v{font-size:1rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}
+  table{width:100%;border-collapse:collapse;font-size:.79rem}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+  th{color:var(--t3);font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em}
+  td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem}
+  .flag{font-size:.6rem;color:var(--amber);border:1px solid rgba(245,158,11,.4);border-radius:6px;padding:1px 5px;margin-left:5px;white-space:nowrap}
+  .playbtn{background:linear-gradient(135deg,var(--green),#0ea5e9);border:none;color:#04121f;font-weight:800;
+           padding:6px 12px;border-radius:9px;cursor:pointer;font-size:.74rem;white-space:nowrap}
+  .playbtn:hover{filter:brightness(1.12)}
+  .simrow td{background:rgba(56,189,248,.05)}
+  .simbox{padding:10px 4px}
+  .simstats{display:flex;gap:14px;flex-wrap:wrap;font-size:.76rem;margin-bottom:8px}
+  .simstats b{font-variant-numeric:tabular-nums}
+  .curve{width:100%;height:90px;display:block}
+  .note{color:var(--t3);font-size:.73rem;line-height:1.55;margin-top:8px}
+  .riskrow{display:flex;align-items:center;gap:8px;font-size:.74rem;color:var(--t2);margin-bottom:8px;flex-wrap:wrap}
+  .riskrow input[type=range]{width:160px;accent-color:var(--accent)}
+  .footer{margin-top:26px;padding-top:12px;border-top:1px solid var(--card-b);color:var(--t3);font-size:.74rem;line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/audit/">← Dashboard</a>
+    <a class="back" href="/audit/moneyreadiness.html">💰 Readiness gates</a>
+    <a class="back" href="/audit/research.html">🧪 Research lab</a>
+  </div>
+  <h1>🎮 MoneyMaker — what to play, per asset class</h1>
+  <div class="sub">The strategies currently worth playing on <b>Stocks, ETF, Commodities and Forex</b> — each with a
+    one-click <b>▶ Play simulation</b>. Crypto is <b>NOT READY</b> (banner below). Everything here is backed by the
+    same proof the readiness gates use: profit factor, win rate, sample size, walk-forward folds. <span id="loading"><span class="spin"></span>loading…</span></div>
+
+  <div class="disclaimer">⚠️ <b>Simulation ≠ prediction.</b> The ▶ Play button replays each strategy's
+    <i>historical</i> per-trade / per-fold results under the risk you choose — it shows what the past would have done,
+    not what the future will. Not financial advice. Size small, respect the stop, and check
+    <a href="/audit/healthchecks.html">pipeline health</a> before trusting any number here.</div>
+
+  <div id="crypto-slot"></div>
+  <div id="classes"></div>
+
+  <div class="footer">
+    Sources: <code>data/money_ready_verdict.json</code> (per-class gates, top sleeves) +
+    <code>data/research_manifest.json</code> (per-strategy walk-forward folds). Both regenerate on the hourly /
+    weekly pipelines. A <span class="flag">single-source</span> or <span class="flag">small n</span> flag means
+    distrust until replicated — the simulator will happily show you the past either way.
+  </div>
+</div>
+
+<script>
+(function(){
+  var VERDICT = null, MANIFEST = null;
+  var CLASS_ORDER = [
+    { key: "EQUITY",    title: "📈 Stocks",    ready: true },
+    { key: "ETF",       title: "📁 ETFs",      ready: true },
+    { key: "COMMODITY", title: "🛢️ Commodities", ready: true },
+    { key: "FOREX",     title: "💱 Forex",     ready: true }
+  ];
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  function num(x,d){ return x==null?"—":(typeof x==="number"?x.toFixed(d==null?2:d):String(x)); }
+  function pct(x){ return x==null?"—":(x*100).toFixed(1)+"%"; }
+
+  // ---- deterministic RNG so a given strategy+seed always replays the same ----
+  function rng(seed){
+    var s = seed >>> 0;
+    return function(){ s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+  function seedOf(str){
+    var h = 2166136261;
+    for(var i=0;i<String(str).length;i++){ h ^= String(str).charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return h;
+  }
+
+  // ---- Monte-Carlo a sleeve from (n, wr, pf).
+  // Consistency: PF = (wr*avgWin)/((1-wr)*avgLoss) => avgWin = PF*(1-wr)/wr * avgLoss.
+  // (Sizing wins as simply PF*avgLoss ignores WR and inflates high-WR sleeves ~30x.)
+  function simTrades(name, n, wrPct, pf, riskPct){
+    var rnd = rng(seedOf(name));
+    var eq = [1000], peak = 1000, mdd = 0, wins = 0;
+    var wr = Math.min(0.999, Math.max(0.001, (wrPct||0)/100));
+    var winSize = (pf||0) * ((1-wr)/wr) * riskPct;
+    for(var t=0; t<(n||0); t++){
+      var r;
+      if(rnd() < wr) { r = winSize; wins++; }
+      else { r = -riskPct; }
+      var v = eq[eq.length-1] * (1 + r);
+      eq.push(v);
+      if(v > peak) peak = v;
+      var dd = (peak - v) / peak;
+      if(dd > mdd) mdd = dd;
+    }
+    return { eq: eq, final: eq[eq.length-1], mdd: mdd*100, wr: n ? wins/n*100 : 0 };
+  }
+
+  // ---- compound walk-forward folds: per-fold return = (pf-1) x risk x trades/fold ----
+  function simFolds(folds, riskPct){
+    var eq = [1000], peak = 1000, mdd = 0;
+    (folds||[]).forEach(function(f){
+      var trades = f.n || 1;
+      var r = ((f.pf||0) - 1) * riskPct * trades;
+      r = Math.max(-0.5, Math.min(1.5, r)); // clamp so one insane fold can't fake infinity
+      var v = eq[eq.length-1] * (1 + r);
+      eq.push(v);
+      if(v > peak) peak = v;
+      var dd = (peak - v) / peak;
+      if(dd > mdd) mdd = dd;
+    });
+    return { eq: eq, final: eq[eq.length-1], mdd: mdd*100 };
+  }
+
+  function curveSvg(eq){
+    var min = Math.min.apply(null, eq), max = Math.max.apply(null, eq);
+    var span = (max - min) || 1;
+    var w = 100, h = 90;
+    var pts = eq.map(function(v,i){
+      var x = (i / Math.max(1, eq.length-1)) * w;
+      var y = h - ((v - min) / span) * (h-8) - 4;
+      return x.toFixed(2) + "," + y.toFixed(2);
+    }).join(" ");
+    var col = eq[eq.length-1] >= 1000 ? "#22c55e" : "#ef4444";
+    var zeroY = (h - ((1000 - min) / span) * (h-8) - 4).toFixed(2);
+    return '<svg class="curve" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+      '<line x1="0" y1="' + zeroY + '" x2="' + w + '" y2="' + zeroY + '" stroke="rgba(255,255,255,.18)" stroke-dasharray="2,2" stroke-width=".6"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke="' + col + '" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>';
+  }
+
+  var RISK = 0.02; // 2% risk per trade default
+
+  function runSim(kind, data, simId){
+    var box = document.getElementById(simId);
+    var risk = RISK;
+    var r = kind === "folds" ? simFolds(data.folds, risk) : simTrades(data.name, data.n, data.wr, data.pf, risk);
+    var mult = (r.final/1000);
+    box.innerHTML =
+      '<div class="riskrow">Risk per trade: <b id="' + simId + '-rl">' + (risk*100).toFixed(1) + '%</b>' +
+      '<input type="range" min="0.5" max="5" step="0.5" value="' + (risk*100) + '" oninput="window.__mmRisk(this,\'' + simId + '\',\'' + kind + '\')"></div>' +
+      '<div class="simstats">' +
+        '<span>Final: <b class="' + (r.final>=1000?"good":"bad") + '">$' + r.final.toFixed(0) + '</b> (from $1000)</span>' +
+        '<span>Multiple: <b>' + mult.toFixed(2) + '×</b></span>' +
+        '<span>Max DD: <b class="warn">' + r.mdd.toFixed(1) + '%</b></span>' +
+        (r.wr ? '<span>Sim WR: <b>' + r.wr.toFixed(1) + '%</b></span>' : '') +
+      '</div>' + curveSvg(r.eq) +
+      '<div class="note">' + (kind === "folds"
+        ? 'Walk-forward replay: each bar-period compounds its OOS profit factor at the chosen risk (clamped ±50%/150% per fold so one odd fold cannot fake infinity).'
+        : 'Monte-Carlo replay of ' + data.n + ' historical trades, seeded for reproducibility. Win size is PF-consistent (avgWin = PF × (1−WR)/WR × avgLoss).') +
+      ((data.pf||0) > 5 ? ' <b class="warn">⚠ PF &gt; 5: verify against pf_registry before believing this — gate machinery treats such sleeves as suspicious.</b>' : '') +
+      ' Past ≠ future. Educational only.</div>';
+  }
+
+  window.__mmRisk = function(input, simId){
+    RISK = parseFloat(input.value)/100;
+    document.getElementById(simId + "-rl").textContent = (RISK*100).toFixed(1) + "%";
+    var entry = PLAYDATA[simId];
+    if(entry) runSim(entry.kind, entry.data, simId);
+  };
+
+  var PLAYDATA = {}; // simId -> { kind, data } (set at render time; no JSON in HTML attributes)
+  function playBtn(kind, data, simId){
+    PLAYDATA[simId] = { kind: kind, data: data };
+    return '<button class="playbtn" data-simid="' + simId + '">▶ Play</button>';
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if(t && t.classList && t.classList.contains("playbtn")){
+      var simId = t.getAttribute("data-simid");
+      var entry = PLAYDATA[simId];
+      if(entry) runSim(entry.kind, entry.data, simId);
+    }
+  });
+
+  function sleevesTable(cls, key){
+    var c = (VERDICT.classes || {})[cls] || {};
+    var s = c.top_sleeves || [];
+    if(!s.length) return '<div class="note">No published sleeve for this class yet — check the <a href="/audit/research.html">research lab</a> for candidates.</div>';
+    var id = 0;
+    var rows = s.slice(0,5).map(function(x){
+      var flags = "";
+      if(x.is_single_source) flags += '<span class="flag">single-source</span>';
+      if((x.n||0) < 30) flags += '<span class="flag">small n</span>';
+      if((x.pf||0) > 10) flags += '<span class="flag">suspicious PF</span>';
+      var simId = "sim_" + key + "_" + (id++);
+      return '<tr>' +
+        '<td><b>' + esc(x.strategy) + '</b>' + flags + '</td>' +
+        '<td class="num">' + (x.n==null?"—":x.n) + '</td>' +
+        '<td class="num">' + num(x.wr,1) + '%</td>' +
+        '<td class="num">' + num(x.pf,2) + '</td>' +
+        '<td style="text-align:right">' + playBtn("trades", { name: simId, n: x.n||0, wr: x.wr||0, pf: x.pf||0 }, simId) + '</td>' +
+        '</tr><tr class="simrow"><td colspan="5"><div class="simbox" id="' + simId + '"></div></td></tr>';
+    }).join("");
+    return '<table><thead><tr><th>Live strategy (sleeve)</th><th>n</th><th>WR</th><th>PF</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function researchTable(cls, key){
+    var best = ((MANIFEST.class_best || {})[cls.toLowerCase()] || (MANIFEST.top_strategies || []).filter(function(s){ return String(s.class||"").toLowerCase() === cls.toLowerCase(); })).slice(0,5);
+    best = best.filter(function(s){ return (s.folds || []).length >= 2; });
+    if(!best.length) return "";
+    var id = 0;
+    var rows = best.map(function(s){
+      var simId = "rsim_" + key + "_" + (id++);
+      return '<tr>' +
+        '<td class="mono"><b>' + esc(s.spec_id) + '</b></td>' +
+        '<td class="num">' + num(s.pf) + '</td>' +
+        '<td class="num">' + num(s.wr,1) + '%</td>' +
+        '<td class="num">' + num(s.sharpe) + '</td>' +
+        '<td class="num">' + num(s.mdd,1) + '%</td>' +
+        '<td class="num">' + s.n + '</td>' +
+        '<td style="text-align:right">' + playBtn("folds", { folds: s.folds, name: s.spec_id }, simId) + '</td>' +
+        '</tr><tr class="simrow"><td colspan="7"><div class="simbox" id="' + simId + '"></div></td></tr>';
+    }).join("");
+    return '<div class="note" style="margin-top:12px"><b>Research-backed candidates</b> (walk-forward replay):</div>' +
+      '<table><thead><tr><th>Strategy</th><th>PF</th><th>WR</th><th>Sharpe</th><th>MDD</th><th>n</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function classCard(meta){
+    var cls = meta.key;
+    var c = (VERDICT.classes || {})[cls] || {};
+    var watch = ((VERDICT.summary || {}).watch || []).indexOf(cls) >= 0;
+    var badge = watch ? '<span class="badge care">👀 WATCH — play small</span>' : '<span class="badge play">✅ PLAYABLE (with care)</span>';
+    return '<div class="cls">' +
+      '<div class="cls-head"><h2>' + meta.title + '</h2>' + badge + '</div>' +
+      '<div class="metrics">' +
+        '<div class="m"><div class="k">Class PF</div><div class="v ' + ((c.pf||0)>=1?"good":"bad") + '">' + num(c.pf,3) + '</div></div>' +
+        '<div class="m"><div class="k">Class WR</div><div class="v">' + pct(c.wr) + '</div></div>' +
+        '<div class="m"><div class="k">Resolved picks</div><div class="v">' + (c.n_resolved==null?"—":c.n_resolved) + '</div></div>' +
+        '<div class="m"><div class="k">Walk-forward OOS</div><div class="v ' + (c.wf_oos_ok?"good":"bad") + '">' + num(c.wf_oos_oos_pf,3) + '</div></div>' +
+        '<div class="m"><div class="k">Last pick</div><div class="v" style="font-size:.8rem">' + (c.recency_days_since_last==null?"—":num(c.recency_days_since_last,1)+"d ago") + '</div></div>' +
+      '</div>' +
+      sleevesTable(cls, cls) +
+      researchTable(cls, cls) +
+      '</div>';
+  }
+
+  function cryptoBanner(){
+    var c = (VERDICT.classes || {}).CRYPTO || {};
+    var fails = [];
+    if(c.pf_ok === false) fails.push("PF " + num(c.pf,3) + " < 1");
+    if(c.wr_ok === false) fails.push("WR " + pct(c.wr));
+    if(c.mdd_ok === false) fails.push("MDD over limit");
+    if(c.bootstrap_ci_ok === false) fails.push("expectancy CI ≤ 0");
+    return '<div class="crypto-banner"><h2>⛔ CRYPTO — NOT READY. Do not trade it with real money.</h2>' +
+      '<div class="why">Honest intrabar truth across ' + (c.n_resolved||0) + ' resolved picks: PF ' + num(c.pf,3) +
+      ', WR ' + pct(c.wr) + ', expectancy ' + num(c.expectancy,4) + '. Failing gates: ' + esc(fails.join(" · ") || "multiple") + '. ' +
+      'Any crypto strategy shown elsewhere on /audit is research/paper only until these gates pass. See ' +
+      '<a href="/audit/moneyreadiness.html">money readiness</a> for the full gate table.</div></div>';
+  }
+
+  Promise.all([
+    fetch("data/money_ready_verdict.json", { cache:"no-store" }).then(function(r){ return r.text(); }).then(function(t){
+      try { return JSON.parse(t); } catch(e){ return JSON.parse(t.replace(/:\s*NaN/g, ": null").replace(/:\s*-?Infinity/g, ": null")); }
+    }),
+    fetch("data/research_manifest.json", { cache:"no-store" }).then(function(r){ return r.json(); })
+  ]).then(function(both){
+    VERDICT = both[0]; MANIFEST = both[1];
+    document.getElementById("crypto-slot").innerHTML = cryptoBanner();
+    document.getElementById("classes").innerHTML = CLASS_ORDER.map(classCard).join("");
+    document.getElementById("loading").textContent =
+      "verdict " + ((VERDICT.generated_at||"").slice(0,16).replace("T"," ")) + " UTC · manifest " + ((MANIFEST.generated_at||"").slice(0,16).replace("T"," ")) + " UTC";
+  }).catch(function(e){
+    document.getElementById("loading").innerHTML = '<span class="bad">failed to load: ' + esc(e.message) + '</span>';
+  });
+})();
+</script>
+</body>
+</html>

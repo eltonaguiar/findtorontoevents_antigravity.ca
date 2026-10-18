@@ -252,13 +252,43 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
                 return
 
         # Root only: serve main site index.html (Toronto Events). Do not match /fc or /favcreators.
-        if (raw_path == "/" or raw_path == "" or raw_path == "/index.html") and not raw_path.startswith("/fc") and not raw_path.startswith("/favcreators"):
+        if (raw_path == "/" or raw_path == "" or raw_path == "/index.html") and not raw_path.startswith("/fc") and not raw_path.startswith("/favcreators") and not raw_path.startswith("/weather") and not raw_path.startswith("/jacket") and not raw_path.startswith("/doineedajacket"):
             index_html = (_WORKSPACE_ROOT / "index.html").resolve()
             if index_html.is_file() and str(index_html).startswith(str(_WORKSPACE_ROOT.resolve())):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.end_headers()
                 self.wfile.write(index_html.read_bytes())
+                return
+
+        # Weather page (local copy for testing)
+        if raw_path == "/weather" or raw_path == "/weather/":
+            weather_index = _WORKSPACE_ROOT / "weather" / "index.html"
+            if weather_index.is_file():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(weather_index.read_bytes())
+                return
+
+        # Jacket redirect page
+        if raw_path == "/jacket" or raw_path == "/jacket/":
+            jacket_index = _WORKSPACE_ROOT / "jacket" / "index.html"
+            if jacket_index.is_file():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(jacket_index.read_bytes())
+                return
+
+        # Do I Need a Jacket redirect page
+        if raw_path == "/doineedajacket" or raw_path == "/doineedajacket/":
+            jacket_index = _WORKSPACE_ROOT / "doineedajacket" / "index.html"
+            if jacket_index.is_file():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(jacket_index.read_bytes())
                 return
 
         # Audit dashboard: mirror the live /audit/ route from local audit_dashboard/.
@@ -338,6 +368,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
                         if local.is_file():
                             suf = sub[sub.rfind("."):].lower() if "." in sub else ""
                             ct = {
+                                ".html": "text/html; charset=utf-8",
                                 ".js": "application/javascript; charset=utf-8",
                                 ".css": "text/css; charset=utf-8",
                                 ".svg": "image/svg+xml",

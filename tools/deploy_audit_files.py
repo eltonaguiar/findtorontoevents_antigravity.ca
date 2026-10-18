@@ -23,12 +23,21 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 # (local_path_relative_to_repo, remote_path_on_50webs, optional_tag)
+# allowed: audit-surface-truth consumer - FTPS uploader, no semantic consumption.
+# See tests/test_no_audit_surface_truth_consumer.py for the contract gate.
+
 UPLOADS = [
     ("audit_dashboard/incidents.html",                       "/findtorontoevents.ca/audit/incidents.html",                        "incidents"),
     ("audit_dashboard/data/incidents_enhancements_feed.json","/findtorontoevents.ca/audit/data/incidents_enhancements_feed.json", "incidents"),
     ("audit_dashboard/strategy_audit_summary.html",          "/findtorontoevents.ca/audit/strategy_audit_summary.html",          "pick_funnel"),
     ("audit_dashboard/strategy_complete_summary.html",       "/findtorontoevents.ca/audit/strategy_complete_summary.html",       "pick_funnel"),
     ("audit_dashboard/pick_funnel.html",                     "/findtorontoevents.ca/audit/pick_funnel.html",                      "pick_funnel"),
+    ("audit_dashboard/healthchecks.html",                    "/findtorontoevents.ca/audit/healthchecks.html",                     "healthchecks"),
+    ("audit_dashboard/moneyreadiness.html",                  "/findtorontoevents.ca/audit/moneyreadiness.html",                   "healthchecks"),
+    ("audit_dashboard/whopickedthis.html",                   "/findtorontoevents.ca/audit/whopickedthis.html",                    "healthchecks"),
+    ("audit_dashboard/research.html",                        "/findtorontoevents.ca/audit/research.html",                         "healthchecks"),
+    ("audit_dashboard/data/research_manifest.json",           "/findtorontoevents.ca/audit/data/research_manifest.json",           "healthchecks"),
+    ("audit_dashboard/moneymaker.html",                      "/findtorontoevents.ca/audit/moneymaker.html",                      "healthchecks"),
     ("audit_dashboard/data/pick_funnel_today.json",          "/findtorontoevents.ca/audit/data/pick_funnel_today.json",           "pick_funnel"),
     ("audit_dashboard/data/pick_funnel_90d.json",            "/findtorontoevents.ca/audit/data/pick_funnel_90d.json",             "pick_funnel"),
     ("audit_dashboard/data/pick_funnel_rejected_universe.json", "/findtorontoevents.ca/audit/data/pick_funnel_rejected_universe.json", "pick_funnel"),
@@ -46,10 +55,6 @@ UPLOADS = [
     ("audit_dashboard/data/money_ready_verdict.json",        "/findtorontoevents.ca/audit/data/money_ready_verdict.json",         "audit_data"),
     ("audit_dashboard/data/audit_surface_truth.json",        "/findtorontoevents.ca/audit/data/audit_surface_truth.json",         "audit_data"),
     ("audit_dashboard/audit_surface_truth_banner.js",        "/findtorontoevents.ca/audit/audit_surface_truth_banner.js",         "audit_data"),
-    # Written by tools/strategy_kill_tribunal.py (strategy-tribunal.yml). The
-    # /audit template fetches ./data/strategy_tribunal_latest.json, so it must
-    # be deployed here or the tribunal panel 404s. (local-missing => SKIP.)
-    ("audit_dashboard/data/strategy_tribunal_latest.json",   "/findtorontoevents.ca/audit/data/strategy_tribunal_latest.json",    "audit_data"),
     ("audit_dashboard/dashboard_freshness.js",               "/findtorontoevents.ca/audit/dashboard_freshness.js",                "audit_js"),
     ("audit_dashboard/dashboard_enhancements.js",            "/findtorontoevents.ca/audit/dashboard_enhancements.js",            "audit_js"),
     ("audit_dashboard/validation_metrics.js",                "/findtorontoevents.ca/audit/validation_metrics.js",                "audit_js"),
@@ -81,6 +86,9 @@ UPLOADS = [
     ("audit_dashboard/portfolio_history.html",               "/findtorontoevents.ca/audit/portfolio_history.html",                "portfolio_history"),
     ("audit_dashboard/data/portfolio_classification.json",   "/findtorontoevents.ca/audit/data/portfolio_classification.json",    "portfolio_history"),
     ("updates/index.html",                                   "/findtorontoevents.ca/updates/index.html",                          "updates"),
+    # 2026-10-18: the /weather/ page ships by direct FTP (it is not in CI), so
+    # give it a deploy path here too — `--only weather` pushes the local file.
+    ("weather/index.html",                                    "/findtorontoevents.ca/weather/index.html",                          "weather"),
     ("updates/eagle-best-picks-guide-2026-06-02.html",         "/findtorontoevents.ca/updates/eagle-best-picks-guide-2026-06-02.html", "updates"),
     ("updates/eagle2-swarm-session-summary-2026-06-02.html",   "/findtorontoevents.ca/updates/eagle2-swarm-session-summary-2026-06-02.html", "updates"),
     ("updates/eagle2-swarm-consolidated-findings-2026-06-02.html", "/findtorontoevents.ca/updates/eagle2-swarm-consolidated-findings-2026-06-02.html", "updates"),
@@ -97,6 +105,62 @@ UPLOADS = [
     ("audit_dashboard/data/ma_strategy_leaderboard.json",    "/findtorontoevents.ca/audit/data/ma_strategy_leaderboard.json",     "ai_leaderboard"),
     ("audit_dashboard/data/ma_strategy_signals.json",        "/findtorontoevents.ca/audit/data/ma_strategy_signals.json",         "ai_leaderboard"),
 ]
+
+# 2026-10-18: every RECENTLY WRITTEN updates/*.md must reach production, not just the
+# hand-maintained subset above (last extended 2026-06-03).
+# BUG FIXED: updates/2026-10-18-legacy-status-backfill-...md was linked from the live
+# index.html but returned HTTP 404, because the nightly job only uploads UPLOADS entries
+# and nobody had run tools/deploy_to_ftp.py --updates-only. Expanding a 45-day window here
+# means a newly written doc deploys itself — no list to remember to edit.
+# Explicit UPLOADS entries are kept as-is (de-duplicated by source path).
+# See updates/2026-10-18-symbol-asset-class-cache-fallback-fix.md.
+_UPDATES_MD_WINDOW_DAYS = 45
+
+def _doc_timestamp(md: Path) -> float:
+    """Age-decide a doc WITHOUT trusting filesystem mtime.
+
+    2026-10-18: mtime is unusable here — every fresh clone / CI checkout stamps
+    all 800+ updates/*.md with checkout time, which turned a 45-day window into
+    a 753-file upload on the nightly job. Prefer the YYYY-MM-DD filename prefix
+    (the house convention), then the git commit date, then mtime.
+    """
+    import re as _re
+    import subprocess as _sp
+    import time as _time
+    m = _re.match(r"(\d{4})-(\d{2})-(\d{2})", md.name)
+    if m:
+        try:
+            return _time.mktime((int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                                 0, 0, 0, 0, 0, -1))
+        except (ValueError, OverflowError):
+            pass
+    try:
+        out = _sp.run(["git", "log", "-1", "--format=%ct", "--", str(md)],
+                      cwd=str(REPO), capture_output=True, text=True, timeout=10)
+        if out.returncode == 0 and out.stdout.strip():
+            return float(out.stdout.strip())
+    except Exception:
+        pass
+    try:
+        return md.stat().st_mtime
+    except OSError:
+        return 0.0
+
+def _recent_updates_md() -> list[tuple[str, str, str]]:
+    import time as _time
+    cutoff = _time.time() - _UPDATES_MD_WINDOW_DAYS * 86400
+    listed = {t[0] for t in UPLOADS}
+    entries: list[tuple[str, str, str]] = []
+    for md in sorted((REPO / "updates").glob("*.md")):
+        if _doc_timestamp(md) < cutoff:
+            continue
+        rel = f"updates/{md.name}"
+        if rel in listed:
+            continue
+        entries.append((rel, f"/findtorontoevents.ca/{rel}", "updates"))
+    return entries
+
+UPLOADS.extend(_recent_updates_md())
 
 
 def upload(ftps: FTP_TLS, local: Path, remote: str, dry_run: bool) -> tuple[bool, str]:
