@@ -117,13 +117,15 @@ jobs:
           done
           # Refresh index after all classes
           python -m tools.research.build_research_index
+          # Refresh the compact manifest that powers /audit/research.html
+          python -m tools.research.build_research_manifest
 
       - name: Commit + push results
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add research/ swarm_runs/research_*_p1_* swarm_runs/research_*_p2_* swarm_runs/research_*_p5_* swarm_runs/briefing_research_*.md audit_dashboard/research_index.html 2>/dev/null || true
+          git add research/ swarm_runs/research_*_p1_* swarm_runs/research_*_p2_* swarm_runs/research_*_p5_* swarm_runs/briefing_research_*.md audit_dashboard/research_index.html audit_dashboard/data/research_manifest.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no research changes to commit"
             exit 0
