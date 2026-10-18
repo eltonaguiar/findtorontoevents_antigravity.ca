@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Picked This? | findtorontoevents.ca/audit</title>
+<meta name="description" content="Deep-link any symbol to see every system that picked it — confidence, score, trust tier, agreement and track record.">
+<link rel="canonical" href="https://findtorontoevents.ca/audit/whopickedthis.html">
+<style>
+  :root{--bg:#060a14;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.10);--t1:#eef1f8;--t2:#94a3b8;--t3:#64748b;
+        --green:#22c55e;--amber:#f59e0b;--red:#ef4444;--accent:#38bdf8;--purple:#a855f7}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(180deg,#060a14 0%,#0b1224 100%);color:var(--t1);min-height:100vh;padding:22px;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .back{font-size:.82rem;padding:8px 14px;border:1px solid var(--card-b);border-radius:10px;background:var(--card);color:var(--accent);text-decoration:none}
+  .back:hover{text-decoration:none;border-color:var(--accent)}
+  h1{font-size:1.5rem;margin:10px 0 4px}
+  .sub{color:var(--t2);font-size:.86rem;margin-bottom:14px;line-height:1.5}
+  .searchbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .searchbar input{flex:1;min-width:220px;padding:11px 14px;border-radius:10px;border:1px solid var(--card-b);
+                   background:var(--card);color:var(--t1);font-size:.95rem;outline:none}
+  .searchbar input:focus{border-color:var(--accent)}
+  .searchbar button{padding:11px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--purple));
+                    color:#fff;font-weight:700;cursor:pointer;font-size:.9rem}
+  .status{color:var(--t3);font-size:.78rem;margin-bottom:14px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--t3);border-top-color:transparent;border-radius:50%;
+        animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .sym-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .sym{background:var(--card);border:1px solid var(--card-b);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .12s}
+  .sym:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .sym .s{font-weight:800;font-size:.9rem}
+  .sym .c{font-size:.7rem;color:var(--t2);margin-top:2px}
+  h2{font-size:1.2rem;margin:6px 0 10px}
+  .card{background:var(--card);border:1px solid var(--card-b);border-radius:14px;padding:16px;margin-bottom:14px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .chip{font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid var(--card-b);color:var(--t2)}
+  .chip.sys{border-color:rgba(168,85,247,.45);color:#c4b5fd}
+  .chip.dir-long{border-color:rgba(34,197,94,.5);color:var(--green)}
+  .chip.dir-short{border-color:rgba(239,68,68,.5);color:var(--red)}
+  .chip.open{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.5);color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:.8rem}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}
+  th{color:var(--t3);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em}
+  td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;color:var(--t2)}
+  .good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}
+  .metrics{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .m{background:rgba(255,255,255,.04);border:1px solid var(--card-b);border-radius:10px;padding:8px 14px;min-width:92px}
+  .m .k{font-size:.64rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+  .m .v{font-size:1.02rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .note{color:var(--t3);font-size:.74rem;line-height:1.55;margin-top:10px}
+  .footer{margin-top:26px;padding-top:12px;border-top:1px solid var(--card-b);color:var(--t3);font-size:.74rem;line-height:1.6}
+  .empty{color:var(--t2);font-size:.85rem;padding:18px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/audit/">← Dashboard</a>
+    <a class="back" href="/audit/moneyreadiness.html">💰 Money readiness</a>
+  </div>
+  <h1>🔍 Who picked this?</h1>
+  <div class="sub">Deep-link any symbol to see <b>every system that picked it</b> — with confidence, score, trust tier,
+    cross-system agreement, and the symbol's closed track record. Add <code>?symbol=BTCUSDT</code> to the URL to link straight to a symbol.</div>
+
+  <div class="searchbar">
+    <input id="q" type="text" placeholder="Symbol — e.g. BTCUSDT, ETHUSDT, NVDA…" autocomplete="off" spellcheck="false">
+    <button id="go">Search</button>
+  </div>
+  <div class="status" id="status"><span class="spin"></span>loading dashboard payload…</div>
+  <div id="view"></div>
+
+  <div class="footer">
+    Data: <code>/audit/data/dashboard_data.json</code> — <b>Open picks</b> are the gate-passed actives shown on the
+    dashboard; <b>Scanner universe</b> rows are the raw emitter output (mostly below the Smart-Picks gates — shown for
+    completeness, weight = emitter confidence/score at emit time). The symbol index is cached in your browser for
+    15 minutes. See also <a href="/audit/healthchecks.html" style="color:var(--accent)">pipeline health</a> and
+    <a href="/audit/moneyreadiness.html" style="color:var(--accent)">money readiness</a>.
+  </div>
+</div>
+
+<script>
+(function(){
+  var TTL = 15*60*1000, CACHE_KEY = "wpt_index_v1";
+  var INDEX = null; // { SYMBOL: { open:[rows], universe:[rows], closed:{n,w,l,pnl} } }
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  function pct1(x){ return x==null?"—":(x*100).toFixed(1)+"%"; }
+  function n2(x){ return x==null?"—":(typeof x==="number"?x.toFixed(2):String(x)); }
+  function setStatus(html){ document.getElementById("status").innerHTML = html; }
+
+  // Trim a pick down to the fields the page shows — keeps the localStorage index ~1MB.
+  function slim(p, kind){
+    return {
+      k: kind,
+      sys: p.source_system || p.system || "?",
+      sys2: p.system || "",
+      strat: p.strategy || "",
+      dir: p.direction || "",
+      conf: (p.confidence == null ? null : Math.round(p.confidence*1000)/1000),
+      score: p.score == null ? null : Math.round(p.score*10)/10,
+      grade: p.grade || "",
+      trust: p.trust_label ? (p.trust_label + (p.trust_score != null ? " " + p.trust_score : "")) : "",
+      status: p.status || "",
+      pnl: p.pnl_pct == null ? null : Math.round(p.pnl_pct*100)/100,
+      tp: p.take_profit == null ? null : Math.round(p.take_profit*100000)/100000,
+      sl: p.stop_loss == null ? null : Math.round(p.stop_loss*100000)/100000,
+      age: p.age_hours == null ? null : Math.round(p.age_hours*10)/10,
+      t: p.timestamp || p.entry_time || "",
+      agree: Array.isArray(p.agreeing_systems) ? p.agreeing_systems.map(function(x){ return (x && x.system ? x.system : "") + ":" + (x && x.strategy ? x.strategy : ""); }) : [],
+      srcs: Array.isArray(p.source_systems) ? p.source_systems : []
+    };
+  }
+
+  function buildIndex(d){
+    var idx = {};
+    function slot(sym){
+      sym = String(sym || "").toUpperCase();
+      if(!sym) return null;
+      if(!idx[sym]) idx[sym] = { open: [], universe: [], closed: { n:0, w:0, l:0, pnl: 0 } };
+      return idx[sym];
+    }
+    var pk = d.picks || {};
+    (Array.isArray(pk.active) ? pk.active : []).forEach(function(p){
+      var s = slot(p.symbol); if(s) s.open.push(slim(p, "open"));
+    });
+    (Array.isArray(pk.active_raw) ? pk.active_raw : []).forEach(function(p){
+      var s = slot(p.symbol);
+      if(!s) return;
+      // avoid duplicating rows already in the open list
+      if(s.open.some(function(o){ return o.strat === (p.strategy||"") && o.sys === (p.source_system||p.system||"") && o.dir === (p.direction||""); })) return;
+      s.universe.push(slim(p, "raw"));
+    });
+    (Array.isArray(pk.recent_closed) ? pk.recent_closed : []).forEach(function(p){
+      var s = slot(p.symbol); if(!s) return;
+      var c = s.closed; c.n++;
+      if((p.status||"").toUpperCase() === "WON" || (p.pnl_pct||0) > 0) c.w++; else c.l++;
+      c.pnl += (p.pnl_pct || 0);
+    });
+    // trim: cap universe rows per symbol to keep cache small
+    Object.keys(idx).forEach(function(k){
+      idx[k].universe = idx[k].universe.slice(0, 12);
+      idx[k].closed.pnl = Math.round(idx[k].closed.pnl*100)/100;
+    });
+    return idx;
+  }
+
+  function saveCache(){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), idx: INDEX })); }catch(e){ /* quota — fine */ }
+  }
+  function loadCache(){
+    try{
+      var raw = localStorage.getItem(CACHE_KEY); if(!raw) return null;
+      var j = JSON.parse(raw);
+      if(!j || !j.t || (Date.now() - j.t) > TTL) return null;
+      return j.idx;
+    }catch(e){ return null; }
+  }
+
+  function chipRow(items, cls){
+    if(!items || !items.length) return "";
+    return '<div class="chips">' + items.map(function(x){ return '<span class="chip ' + (cls||"") + '">' + esc(x) + '</span>'; }).join("") + '</div>';
+  }
+
+  function rowsTable(rows){
+    if(!rows.length) return '<div class="empty">none</div>';
+    var tr = rows.map(function(r){
+      var pnlCls = r.pnl == null ? "" : (r.pnl >= 0 ? "good" : "bad");
+      var stratCell = esc(r.strat) + (r.k === "raw" ? ' <span class="chip" style="font-size:.58rem">universe</span>' : "");
+      return '<tr>' +
+        '<td><b>' + esc(r.sys) + '</b>' + (r.sys2 && r.sys2 !== r.sys ? '<div class="mono">' + esc(r.sys2) + '</div>' : '') + '</td>' +
+        '<td class="mono">' + stratCell + '</td>' +
+        '<td><span class="chip ' + (r.dir === "LONG" ? "dir-long" : (r.dir === "SHORT" ? "dir-short" : "")) + '">' + esc(r.dir || "—") + '</span></td>' +
+        '<td class="num">' + (r.conf == null ? "—" : (r.conf*100).toFixed(0) + "%") + '</td>' +
+        '<td class="num">' + (r.score == null ? "—" : r.score) + '</td>' +
+        '<td>' + esc(r.grade || "—") + '</td>' +
+        '<td>' + esc(r.trust || "—") + '</td>' +
+        '<td>' + esc(r.status || "—") + '</td>' +
+        '<td class="num ' + pnlCls + '">' + (r.pnl == null ? "—" : (r.pnl >= 0 ? "+" : "") + r.pnl.toFixed(2) + "%") + '</td>' +
+        '<td class="num mono">' + (r.tp == null ? "—" : r.tp) + '<br>' + (r.sl == null ? "—" : r.sl) + '</td>' +
+        '</tr>';
+    }).join("");
+    return '<table><thead><tr><th>System</th><th>Strategy</th><th>Dir</th><th>Conf</th><th>Score</th><th>Grade</th><th>Trust</th><th>Status</th><th>PnL</th><th>TP / SL</th></tr></thead><tbody>' + tr + '</tbody></table>';
+  }
+
+  function renderSymbol(sym){
+    var s = INDEX[sym];
+    var view = document.getElementById("view");
+    if(!s || (!s.open.length && !s.universe.length && !s.closed.n)){
+      view.innerHTML = '<div class="card"><h2>' + esc(sym) + '</h2><div class="empty">No picks found for this symbol in the current payload (open, universe or closed).</div>' +
+        '<div class="note">The dashboard payload only carries recent history — older picks live in the <a href="/audit/" style="color:var(--accent)">main dashboard</a> drill-downs.</div></div>';
+      return;
+    }
+    var c = s.closed;
+    var wr = c.n ? (c.w / c.n * 100) : null;
+    var systems = {};
+    s.open.concat(s.universe).forEach(function(r){ systems[r.sys] = true; });
+    var agreements = {};
+    s.open.forEach(function(r){ (r.agree||[]).forEach(function(a){ agreements[a] = true; }); });
+
+    var html = '<h2>' + esc(sym) + ' <button class="back" style="font-size:.7rem;vertical-align:middle" onclick="history.back()">← back</button></h2>' +
+      '<div class="card">' +
+        '<div class="metrics">' +
+          '<div class="m"><div class="k">Open picks</div><div class="v">' + s.open.length + '</div></div>' +
+          '<div class="m"><div class="k">Universe rows</div><div class="v">' + s.universe.length + '</div></div>' +
+          '<div class="m"><div class="k">Closed n</div><div class="v">' + c.n + '</div></div>' +
+          '<div class="m"><div class="k">Closed WR</div><div class="v ' + (wr == null ? "" : (wr >= 50 ? "good" : "bad")) + '">' + (wr == null ? "—" : wr.toFixed(1) + "%") + '</div></div>' +
+          '<div class="m"><div class="k">Closed net PnL</div><div class="v ' + (c.pnl >= 0 ? "good" : "bad") + '">' + (c.pnl >= 0 ? "+" : "") + c.pnl.toFixed(2) + '%</div></div>' +
+        '</div>' +
+        chipRow(Object.keys(systems), "sys") +
+        (Object.keys(agreements).length ? '<div class="note"><b>Cross-system agreement on open picks:</b> ' + esc(Object.keys(agreements).join(" · ")) + '</div>' : '') +
+      '</div>';
+    if(s.open.length){
+      html += '<div class="card"><div class="section" style="font-size:.8rem;font-weight:700;color:var(--t2);margin-bottom:6px">🔓 OPEN PICKS (gate-passed)</div>' + rowsTable(s.open) + '</div>';
+    }
+    if(s.universe.length){
+      html += '<div class="card"><div class="section" style="font-size:.8rem;font-weight:700;color:var(--t2);margin-bottom:6px">🌊 SCANNER UNIVERSE (raw emitters, mostly below Smart-Picks gates)</div>' + rowsTable(s.universe) +
+              '<div class="note">Universe rows carry the emitter\'s confidence/score at emit time but did not pass the Smart Picks / High Conviction gates — do not treat them as recommendations.</div></div>';
+    }
+    view.innerHTML = html;
+  }
+
+  function renderHome(){
+    var syms = Object.keys(INDEX).sort();
+    var withPicks = syms.filter(function(k){ return INDEX[k].open.length || INDEX[k].universe.length; });
+    var html = '<div class="sym-grid">' + withPicks.map(function(k){
+      var s = INDEX[k];
+      return '<div class="sym" data-sym="' + esc(k) + '"><div class="s">' + esc(k) + '</div>' +
+             '<div class="c">' + s.open.length + ' open · ' + s.universe.length + ' raw · ' + s.closed.n + ' closed</div></div>';
+    }).join("") + '</div>';
+    if(!withPicks.length) html = '<div class="card"><div class="empty">No active picks in the current payload.</div></div>';
+    document.getElementById("view").innerHTML = html;
+    document.querySelectorAll(".sym").forEach(function(el){
+      el.addEventListener("click", function(){ show(el.getAttribute("data-sym")); });
+    });
+  }
+
+  function show(sym){
+    sym = String(sym||"").toUpperCase();
+    history.replaceState(null, "", "?symbol=" + encodeURIComponent(sym) + "#" + encodeURIComponent(sym));
+    document.getElementById("q").value = sym;
+    renderSymbol(sym);
+    window.scrollTo(0, 0);
+  }
+
+  function paramSymbol(){
+    var m = /symbol=([^&]+)/i.exec(location.search) || /#(.+)/.exec(location.hash);
+    return m ? decodeURIComponent(m[1]).toUpperCase() : "";
+  }
+
+  function boot(){
+    var cached = loadCache();
+    if(cached){
+      INDEX = cached;
+      setStatus("loaded from browser cache (15 min TTL) · " + new Date().toLocaleTimeString());
+      var sym = paramSymbol(); sym ? show(sym) : renderHome();
+      return;
+    }
+    fetch("data/dashboard_data.json", { cache: "no-store" })
+      .then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function(d){
+        INDEX = buildIndex(d);
+        saveCache();
+        setStatus("loaded " + Object.keys(INDEX).length + " symbols · payload generated " + (d.generated_at || "?") + " · " + new Date().toLocaleTimeString());
+        var sym = paramSymbol(); sym ? show(sym) : renderHome();
+      })
+      .catch(function(e){
+        setStatus('<span class="bad">failed to load dashboard payload: ' + esc(e.message) + '</span> — retry from the <a href="/audit/" style="color:var(--accent)">dashboard</a>.');
+      });
+  }
+
+  document.getElementById("go").addEventListener("click", function(){
+    var v = document.getElementById("q").value.trim().toUpperCase();
+    if(v){ if(INDEX) show(v); }
+  });
+  document.getElementById("q").addEventListener("keydown", function(e){
+    if(e.key === "Enter") document.getElementById("go").click();
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>

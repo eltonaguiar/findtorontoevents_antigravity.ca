@@ -33,6 +33,8 @@ UPLOADS = [
     ("audit_dashboard/strategy_complete_summary.html",       "/findtorontoevents.ca/audit/strategy_complete_summary.html",       "pick_funnel"),
     ("audit_dashboard/pick_funnel.html",                     "/findtorontoevents.ca/audit/pick_funnel.html",                      "pick_funnel"),
     ("audit_dashboard/healthchecks.html",                    "/findtorontoevents.ca/audit/healthchecks.html",                     "healthchecks"),
+    ("audit_dashboard/moneyreadiness.html",                  "/findtorontoevents.ca/audit/moneyreadiness.html",                   "healthchecks"),
+    ("audit_dashboard/whopickedthis.html",                   "/findtorontoevents.ca/audit/whopickedthis.html",                    "healthchecks"),
     ("audit_dashboard/data/pick_funnel_today.json",          "/findtorontoevents.ca/audit/data/pick_funnel_today.json",           "pick_funnel"),
     ("audit_dashboard/data/pick_funnel_90d.json",            "/findtorontoevents.ca/audit/data/pick_funnel_90d.json",             "pick_funnel"),
     ("audit_dashboard/data/pick_funnel_rejected_universe.json", "/findtorontoevents.ca/audit/data/pick_funnel_rejected_universe.json", "pick_funnel"),

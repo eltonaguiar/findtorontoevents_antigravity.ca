@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Readiness — per asset class | findtorontoevents.ca/audit</title>
+<meta name="description" content="Real-money readiness per asset class: best strategies with proof — walk-forward OOS, profit factor, win rate, bootstrap CI, DSR/PBO overfit gates.">
+<link rel="canonical" href="https://findtorontoevents.ca/audit/moneyreadiness.html">
+<style>
+  :root{--bg:#060a14;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.10);--t1:#eef1f8;--t2:#94a3b8;--t3:#64748b;
+        --green:#22c55e;--amber:#f59e0b;--red:#ef4444;--gray:#475569;--accent:#38bdf8}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(180deg,#060a14 0%,#0b1224 100%);color:var(--t1);min-height:100vh;padding:22px;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .back{font-size:.82rem;padding:8px 14px;border:1px solid var(--card-b);border-radius:10px;background:var(--card);color:var(--accent);text-decoration:none}
+  .back:hover{text-decoration:none;border-color:var(--accent)}
+  h1{font-size:1.5rem;margin:10px 0 4px}
+  .sub{color:var(--t2);font-size:.86rem;margin-bottom:14px;line-height:1.5}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .chip{padding:8px 14px;border-radius:99px;font-size:.8rem;font-weight:700;border:1px solid var(--card-b);background:var(--card)}
+  .chip.ready{color:var(--green);border-color:rgba(34,197,94,.5)}
+  .chip.watch{color:var(--amber);border-color:rgba(245,158,11,.5)}
+  .chip.not{color:var(--red);border-color:rgba(239,68,68,.5)}
+  .gen{color:var(--t3);font-size:.74rem;margin-bottom:20px}
+  .cls{background:var(--card);border:1px solid var(--card-b);border-radius:16px;padding:18px;margin-bottom:18px}
+  .cls-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .cls-head h2{font-size:1.15rem}
+  .verdict{font-size:.72rem;font-weight:800;padding:5px 12px;border-radius:99px;letter-spacing:.04em}
+  .verdict.ready{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.5)}
+  .verdict.watch{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.5)}
+  .verdict.not{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.5)}
+  .metrics{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .m{background:rgba(255,255,255,.04);border:1px solid var(--card-b);border-radius:10px;padding:8px 14px;min-width:96px}
+  .m .k{font-size:.66rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+  .m .v{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .m .v.good{color:var(--green)}.m .v.bad{color:var(--red)}.m .v.warn{color:var(--amber)}
+  .gates{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .gate{font-size:.68rem;font-weight:600;padding:4px 9px;border-radius:8px;border:1px solid var(--card-b);color:var(--t2)}
+  .gate.ok{border-color:rgba(34,197,94,.45);color:var(--green)}
+  .gate.no{border-color:rgba(239,68,68,.45);color:var(--red)}
+  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:.8rem}
+  th,td{padding:7px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+  th{color:var(--t3);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em}
+  td.num{font-variant-numeric:tabular-nums;text-align:right}
+  .flag{font-size:.64rem;color:var(--amber);border:1px solid rgba(245,158,11,.4);border-radius:6px;padding:1px 6px;margin-left:6px}
+  .section-label{font-size:.74rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 4px}
+  .note{color:var(--t3);font-size:.74rem;line-height:1.55;margin-top:8px}
+  .need{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px dashed var(--card-b);font-size:.78rem;color:var(--t2);line-height:1.55}
+  .footer{margin-top:26px;padding-top:12px;border-top:1px solid var(--card-b);color:var(--t3);font-size:.74rem;line-height:1.6}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--t3);border-top-color:transparent;border-radius:50%;
+        animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/audit/">← Dashboard</a>
+    <a class="back" href="/audit/healthchecks.html">🩺 Pipeline health</a>
+  </div>
+  <h1>💰 Money Readiness — per asset class</h1>
+  <div class="sub">Is each asset class ready for real money? Every class shows its <b>best strategies with proof</b>:
+    profit factor, win rate, sample size, walk-forward out-of-sample PF, bootstrap expectancy CI, and the
+    overfitting gates (DSR / PBO / SPA / MDD / CVaR). <span id="loading"><span class="spin"></span>loading verdict…</span></div>
+
+  <div class="chips" id="chips"></div>
+  <div class="gen" id="gen"></div>
+  <div id="classes"></div>
+
+  <div class="footer">
+    <b>How to read this</b> — verdict comes from <code>alpha_engine/money_ready_verdict.py</code> (the same gate
+    machinery the dashboard uses): a class is <span style="color:var(--green)">MONEY-READY</span> only if it passes
+    every gate (WR, PF, DSR, MDD/CVaR, bootstrap-CI expectancy, walk-forward OOS sanity, recency).
+    "Top sleeves" are the best-performing strategies inside the class — a sleeve flagged
+    <span class="flag">single-source</span> or with small n deserves distrust until replicated.
+    The PF/WR shown are <b>intrabar truth</b> (honest, per-signal) — the dashboard also shows the inflated
+    policy-clean variant for comparison.<br>
+    Data: <code>/audit/data/money_ready_verdict.json</code> (regenerated by the hourly pipeline — see
+    <a href="/audit/healthchecks.html">health checks</a>). Events picks have no verdict pipeline yet; that gap is
+    tracked in the 2026-10-18 picks-per-asset-class improvement plan.
+  </div>
+</div>
+
+<script>
+(function(){
+  var CLASS_META = [
+    { title: "🪙 Crypto", keys: ["CRYPTO"] },
+    { title: "📈 Stocks", keys: ["EQUITY", "PENNY_STOCK"] },
+    { title: "🛢️ Commodities", keys: ["COMMODITY", "FUTURES"] },
+    { title: "💱 Forex", keys: ["FOREX"] },
+    { title: "🎪 Events", keys: [] }
+  ];
+
+  function pct(x){ return x == null ? "—" : (x*100).toFixed(1) + "%"; }
+  function num(x, d){ return x == null ? "—" : (typeof x === "number" ? x.toFixed(d==null?3:d) : String(x)); }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+
+  function verdictOf(c, summary){
+    var name = c._key;
+    if((summary.money_ready||[]).indexOf(name) >= 0) return ["ready","MONEY READY"];
+    if((summary.watch||[]).indexOf(name) >= 0) return ["watch","WATCH"];
+    return ["not","NOT READY"];
+  }
+
+  function gatesHtml(c){
+    var g = [
+      ["WR gate", c.wr_ok], ["PF gate", c.pf_ok], ["DSR", c.dsr_ok],
+      ["PBO", c.pbo_ok], ["SPA", c.spa_ok], ["MDD", c.mdd_ok], ["CVaR", c.cvar_ok],
+      ["Bootstrap CI", c.bootstrap_ci_ok], ["Walk-forward", c.wf_oos_ok], ["Recency", c.recency_ok]
+    ];
+    return '<div class="gates">' + g.map(function(x){
+      var v = x[1];
+      var cls = v === true ? "ok" : (v === false ? "no" : "");
+      var mark = v === true ? "✅" : (v === false ? "❌" : "❔");
+      return '<span class="gate ' + cls + '">' + mark + ' ' + x[0] + '</span>';
+    }).join("") + '</div>';
+  }
+
+  function needHtml(c){
+    var need = [];
+    if(c.wr_ok === false) need.push("win rate too low");
+    if(c.pf_ok === false) need.push("profit factor below floor");
+    if(c.dsr_ok === false) need.push("deflated Sharpe fails");
+    if(c.mdd_ok === false) need.push("max drawdown over limit");
+    if(c.cvar_ok === false) need.push("CVaR tail risk over limit");
+    if(c.bootstrap_ci_ok === false) need.push("bootstrap expectancy CI includes ≤ 0");
+    if(c.recency_ok === false) need.push("no fresh picks (stale)");
+    if(c.n_ok === false) need.push("sample too small");
+    if(!need.length) return "";
+    return '<div class="need"><b>To become money-ready:</b> ' + esc(need.join(", ")) + '.</div>';
+  }
+
+  function sleevesHtml(c){
+    var s = c.top_sleeves || [];
+    if(!s.length) return '<div class="note">No profitable sleeve published for this class yet.</div>';
+    var rows = s.slice(0, 5).map(function(x){
+      var flags = "";
+      if(x.is_single_source) flags += '<span class="flag">single-source</span>';
+      if((x.n||0) < 30) flags += '<span class="flag">small n</span>';
+      if((x.pf||0) > 10) flags += '<span class="flag">suspicious PF</span>';
+      return '<tr><td>' + esc(x.strategy) + flags + '</td><td class="num">' + (x.n==null?"—":x.n) +
+        '</td><td class="num">' + num(x.wr,1) + '%</td><td class="num">' + num(x.pf,2) + '</td></tr>';
+    }).join("");
+    return '<table><thead><tr><th>Strategy</th><th style="text-align:right">n</th><th style="text-align:right">WR %</th><th style="text-align:right">PF</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function classCard(c, summary){
+    var v = verdictOf(c, summary);
+    var pfCls = c.pf == null ? "" : (c.pf >= 1.5 ? "good" : (c.pf >= 1 ? "warn" : "bad"));
+    var wrCls = c.wr == null ? "" : (c.wr >= 0.5 ? "good" : "warn");
+    var div = c.intrabar_daily_divergence || {};
+    return '<div class="cls">' +
+      '<div class="cls-head"><h2>' + esc(c._key) + '</h2><span class="verdict ' + v[0] + '">' + v[1] + '</span></div>' +
+      '<div class="metrics">' +
+        '<div class="m"><div class="k">Profit factor</div><div class="v ' + pfCls + '">' + num(c.pf,3) + '</div></div>' +
+        '<div class="m"><div class="k">Win rate</div><div class="v ' + wrCls + '">' + pct(c.wr) + '</div></div>' +
+        '<div class="m"><div class="k">Resolved picks</div><div class="v">' + (c.n_resolved==null?"—":c.n_resolved) + '</div></div>' +
+        '<div class="m"><div class="k">Walk-forward OOS PF</div><div class="v ' + (c.wf_oos_ok?"good":"bad") + '">' + num(c.wf_oos_oos_pf,3) + '</div></div>' +
+        '<div class="m"><div class="k">WF IS PF</div><div class="v">' + num(c.wf_oos_is_pf,3) + '</div></div>' +
+        '<div class="m"><div class="k">Bootstrap CI</div><div class="v ' + (c.bootstrap_ci_ok?"good":"bad") + '">' + num(c.bootstrap_ci_lower,3) + ' … ' + num(c.bootstrap_ci_upper,3) + '</div></div>' +
+      '</div>' +
+      gatesHtml(c) +
+      '<div class="section-label">Best strategies in class (proof)</div>' +
+      sleevesHtml(c) +
+      (div.pf_inflation_x != null ? '<div class="note">Instrumentation: daily-resolved PF would read ' + num(div.daily_pf,3) + ' vs intrabar-truth PF ' + num(div.honest_pf,3) + ' (inflation ×' + num(div.pf_inflation_x,2) + ') — sizing uses the honest number.</div>' : '') +
+      needHtml(c) +
+      '</div>';
+  }
+
+  function eventsCard(){
+    return '<div class="cls">' +
+      '<div class="cls-head"><h2>EVENTS</h2><span class="verdict not">NO VERDICT PIPELINE</span></div>' +
+      '<div class="note">Toronto-events picks are published on <a href="/" style="color:var(--accent)">findtorontoevents.ca</a> but have no money-ready verdict pipeline yet — no closed-outcome tracking, no PF/WR gates. This is the honest state: <b>treat events picks as editorial, not statistically proven.</b> Building an outcome resolver for events (did the event happen / did the pick win) is item #1 of the 2026-10-18 picks-per-asset-class improvement plan.</div>' +
+      '</div>';
+  }
+
+  fetch("data/money_ready_verdict.json", { cache: "no-store" })
+    .then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+    .then(function(t){
+      // The generator is Python json.dump, which emits bare NaN/Infinity —
+      // invalid JSON that browser JSON.parse rejects. Sanitize before parsing.
+      try { return JSON.parse(t); }
+      catch(e){ return JSON.parse(t.replace(/:\s*NaN/g, ": null").replace(/:\s*-?Infinity/g, ": null")); }
+    })
+    .then(function(j){
+      var summary = j.summary || {};
+      var classes = j.classes || {};
+      Object.keys(classes).forEach(function(k){ classes[k]._key = k; });
+      var mr = (summary.money_ready||[]).length, w = (summary.watch||[]).length;
+      var n = Object.keys(classes).length;
+      document.getElementById("chips").innerHTML =
+        '<span class="chip ready">✅ ' + mr + ' money-ready</span>' +
+        '<span class="chip watch">👀 ' + w + ' on watch</span>' +
+        '<span class="chip not">⛔ ' + (n - mr - w) + ' not ready</span>';
+      document.getElementById("gen").textContent =
+        "Verdict generated " + (j.generated_at || "—") + " · source: " + (j.source || "—");
+      var html = "";
+      CLASS_META.forEach(function(meta){
+        html += '<h2 style="font-size:1.05rem;margin:24px 0 10px">' + meta.title + '</h2>';
+        if(!meta.keys.length){ html += eventsCard(); return; }
+        meta.keys.forEach(function(k){
+          html += classes[k] ? classCard(classes[k], summary)
+                             : '<div class="cls"><div class="cls-head"><h2>' + k + '</h2><span class="verdict not">NO DATA</span></div></div>';
+        });
+      });
+      document.getElementById("classes").innerHTML = html;
+      document.getElementById("loading").textContent = "loaded";
+    })
+    .catch(function(e){
+      document.getElementById("loading").textContent = "failed to load verdict: " + e.message;
+    });
+})();
+</script>
+</body>
+</html>

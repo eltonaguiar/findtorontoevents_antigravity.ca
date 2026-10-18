@@ -1144,6 +1144,18 @@ jobs:
                   ftp_upload(ftp, "audit_dashboard/healthchecks.html", f"/{SITE_ROOT}/audit", "healthchecks.html", label)
               except Exception as e:
                   print(f"  [{label}] healthchecks.html upload failed (non-fatal): {e}")
+              # 2026-10-18: per-class real-money readiness page (/audit/moneyreadiness.html) —
+              # reads money_ready_verdict.json client-side (no extra pipeline work).
+              try:
+                  ftp_upload(ftp, "audit_dashboard/moneyreadiness.html", f"/{SITE_ROOT}/audit", "moneyreadiness.html", label)
+              except Exception as e:
+                  print(f"  [{label}] moneyreadiness.html upload failed (non-fatal): {e}")
+              # 2026-10-18: per-symbol provenance page (/audit/whopickedthis.html?symbol=X)
+              # — which system picked a symbol, with confidence/score/trust + track record.
+              try:
+                  ftp_upload(ftp, "audit_dashboard/whopickedthis.html", f"/{SITE_ROOT}/audit", "whopickedthis.html", label)
+              except Exception as e:
+                  print(f"  [{label}] whopickedthis.html upload failed (non-fatal): {e}")
 
               # Apache config: gzip + cache-control. Without mod_deflate the
               # 17-22 MB dashboard_data.json times out on mobile cellular and
@@ -1208,7 +1220,7 @@ jobs:
               # HTML pages
               ftp.cwd(f"/{SITE_ROOT}/audit")
               for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
-                           "healthchecks.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html",
                            "kimi_top_picks.html", "antigravity_picks.html", "portfolio_history.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
@@ -1332,7 +1344,7 @@ jobs:
               # HTML pages
               ftp.cwd("/audit")
               for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
-                           "healthchecks.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
                            "ai_leaderboard.html", "ai-tournament.html", "summary.html"]:
@@ -1384,7 +1396,7 @@ jobs:
                   except Exception as e:
                       print(f"  [{label}] Failed {jsf}: {e}")
               for page in ["funds.html", "claudes_test.html", "trading_blueprint.html",
-                           "healthchecks.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
                            "ai_leaderboard.html", "ai-tournament.html", "summary.html"]:
