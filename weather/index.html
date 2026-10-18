@@ -230,6 +230,15 @@ body.theme-rose{--bg:#20051a;--card:rgba(244,114,182,.07);--card-b:rgba(244,114,
 body.theme-slate{--bg:#1e293b;--card:rgba(148,163,184,.07);--card-b:rgba(148,163,184,.2);--t1:#f1f5f9;--t2:#cbd5e1;--t3:#94a3b8;--accent:#94a3b8;--accent2:#64748b}
 body.theme-galaxy{--bg:#0b0520;--card:rgba(167,139,250,.07);--card-b:rgba(167,139,250,.22);--t1:#ede9fe;--t2:#c4b5fd;--t3:#a78bfa;--accent:#a78bfa;--accent2:#7c3aed}
 body.theme-galaxy::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(1px 1px at 10% 20%,#fff 50%,transparent),radial-gradient(1px 1px at 30% 60%,#fff 50%,transparent),radial-gradient(1px 1px at 70% 30%,#fff 50%,transparent),radial-gradient(1px 1px at 90% 80%,#fff 50%,transparent);opacity:.6;animation:twinkle 4s ease-in-out infinite alternate}
+
+/* Background layout variants */
+body.layout-split #bg-container{clip-path:inset(0 50% 0 0)}
+body.layout-split .bg-layer{background-size:cover;background-position:right center}
+body.layout-tiled .bg-layer{background-size:200px 200px;background-repeat:repeat;image-rendering:pixelated}
+body.layout-vignette #bg-container{mask:radial-gradient(ellipse at center,black 40%,transparent 100%);-webkit-mask:radial-gradient(ellipse at center,black 40%,transparent 100%)}
+body.layout-diagonal #bg-container{clip-path:polygon(0 0,100% 0,100% 70%,0 100%)}
+body.layout-centered .bg-layer{background-size:60% 60%;background-position:center;background-repeat:no-repeat}
+body.layout-full #bg-container{clip-path:none}
 @keyframes twinkle{0%{opacity:.3}100%{opacity:.8}}
 
 /* Extra color themes (palettes) */
@@ -367,6 +376,16 @@ body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointe
       <button class="theme-btn" data-scene="neongrid">Neon Grid</button>
       <button class="theme-btn" data-scene="fire">Fire</button>
       <button class="theme-btn" data-scene="snowfall">Snowfall</button>
+    </div>
+
+    <div class="lbl" style="margin-top:12px">📐 Background Layout</div>
+    <div class="theme-btns" style="margin-top:8px">
+      <button class="theme-btn active" data-layout="full">Full</button>
+      <button class="theme-btn" data-layout="split">Split</button>
+      <button class="theme-btn" data-layout="tiled">Tiled</button>
+      <button class="theme-btn" data-layout="vignette">Vignette</button>
+      <button class="theme-btn" data-layout="diagonal">Diagonal</button>
+      <button class="theme-btn" data-layout="centered">Centered</button>
     </div>
   </div>
 
@@ -1545,6 +1564,20 @@ document.addEventListener('click',function(e){
   }
 });
 try{applyScene(localStorage.getItem('weather-scene')||'none');}catch(e){applyScene('none');}
+
+/* ===== BACKGROUND LAYOUT ===== */
+function applyLayout(l){
+  document.body.classList.remove('layout-full','layout-split','layout-tiled','layout-vignette','layout-diagonal','layout-centered');
+  document.body.classList.add('layout-'+(l||'full'));
+  try{localStorage.setItem('weather-layout',l);}catch(e){}
+  document.querySelectorAll('[data-layout]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-layout')===l);});
+}
+document.addEventListener('click',function(e){
+  if(e.target.getAttribute && e.target.getAttribute('data-layout')){
+    applyLayout(e.target.getAttribute('data-layout'));
+  }
+});
+try{applyLayout(localStorage.getItem('weather-layout')||'full');}catch(e){applyLayout('full');}
 
 
 var SPOTIFY_PL={top:'37i9dQZEVXbMDoHDwVN2tF',new:'37i9dQZF1DX4JAvHpjipBk',trend:'37i9dQZF1DWUa8ZRTfalHk'};
