@@ -166,6 +166,39 @@ quarantined, or wired to a different pipe:
 - **BOND — emitting, but thin and frozen.** 28 picks/30 d, `bond-agent.yml` + `etf-bond-scanner.yml`
   both green daily; BOND is in `BLOCKED_ASSET_CLASSES` and has n=0 in `asset_class_health`.
 
+### 4.4b FOUND & FIXED — why 13 active picks render a flat 0.00% PnL
+Follow-up audit of the live `/audit` Active-picks tab (headless Chromium, 2026-10-18 ~09:00 UTC)
+found **19 of 21 active picks showing `pnl_pct = 0.00`**, and the "⚡ LIVE" indicator reading
+*"Prices via Binance — 8/21 picks"*. Traced to the price supply chain:
+
+- The front end marks non-crypto actives from `audit/data/stock_prices.json` (server-side yfinance,
+  baked each `audit-dashboard.yml` run by `audit_trail/fetch_stock_prices.py`).
+- That script collected symbols from **`audit_trail/data/dashboard_payload.json`** — a legacy
+  2026-06-03-era file **nothing regenerates any more**. Proven by set comparison: the live
+  `stock_prices.json` symbol set was **identical (61/61) to the script's hardcoded `known` list**,
+  i.e. the payload branch contributed **zero** symbols.
+- Result: any active pick outside those 61 tickers had **no price source at all**. Missing today:
+  `TIP, VLUE, USO, VYM, XLB, VCSH, XLK, EFA, XLV` (ETF) and `NQ=F, GC=F, PA=F` (futures) — 12 of the
+  14 non-crypto actives. The front end deliberately refuses to trust `current_price == entry_price`
+  (correct), so those picks kept the generator's placeholder and rendered `0.00%`.
+
+**Fix (additive):** `_symbols_from_dashboard_data()` now also reads
+`audit_dashboard/data/dashboard_data.json` — the payload the *same workflow run* regenerates — for
+EQUITY/ETF/FUTURES/COMMODITY/BOND actives plus ≤14-day closed picks. Legacy payload + `known` list
+are kept as fallbacks; any read/shape failure returns an empty set (fail-open).
+
+**Verified** by running the patched script against today's payload: `dashboard_data.json
+contributed 122 priceable symbols` (was 0), **145/146 symbols priced**, and **all 14 previously
+missing symbols now present** (`TIP 105.54`, `VLUE 192.25`, `USO 161.76`, `VYM 160.25`, `XLB 50.92`,
+`VCSH 77.51`, `XLK 183.47`, `EFA 103.55`, `XLV 176.71`, `NQ=F 29391.5`, `GC=F 4181.1`,
+`PA=F 1118.6`; only `GREE` unpriceable, i.e. delisted).
+
+**Honest caveat:** even with prices, most of those picks legitimately print ≈0.00% *right now*
+because they entered at Friday's close and it is the weekend (equities closed Fri 20:00 UTC, CME
+Fri 22:00 UTC, FX Fri ~21:00 UTC). The zeros were therefore **two problems stacked**: no price
+source (fixed) on top of genuinely-flat weekend marks (not a bug). The crypto zeros are real too —
+e.g. `ETHUSDT` moved −0.07% since entry, which rounds to 0.00%.
+
 ### 4.5 Still open
 
 - **P2** — per-class real-money-grade pick quality (0/N classes money-ready; overall realised
