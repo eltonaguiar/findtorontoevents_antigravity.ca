@@ -1046,16 +1046,36 @@ jobs:
           FTP_GODADDY_PASS: ${{ secrets.FTPGODADDYPASS }}
         run: |
           python3 - <<'PYEOF'
-          import ftplib, os, sys, traceback
+          import ftplib, os, sys, traceback, subprocess
           from pathlib import Path
           from concurrent.futures import ThreadPoolExecutor, as_completed
 
           # ---------------------------------------------------------------------------
           # Helper: upload a single file to an FTP connection
           # ---------------------------------------------------------------------------
+          # 2026-10-18: never publish a script that fails to parse. A malformed
+          # nested ternary in dashboard_enhancements.js sat on main from
+          # 2026-10-04 and every hourly deploy pushed it to all 3 sites — the
+          # /audit enhancement layer silently died (the whole IIFE failed to
+          # parse, so nothing in it ran). Withhold only the broken file so the
+          # JSON data files still deploy and freshness is not sacrificed.
+          def _js_syntax_ok(path):
+              try:
+                  r = subprocess.run(
+                      ["node", "--check", str(path)],
+                      capture_output=True, text=True, timeout=30,
+                  )
+                  return r.returncode == 0
+              except Exception:
+                  return True  # node unavailable — do not block deploys
+
           def ftp_upload(ftp, local_path, remote_dir, remote_name, site_label):
               p = Path(local_path)
               if not p.exists():
+                  return
+              if p.suffix == ".js" and not _js_syntax_ok(p):
+                  print(f"::error file={p}::fails node --check — withheld from FTP deploy")
+                  print(f"  [SKIP-BROKEN-JS] {p} does not parse; NOT uploaded")
                   return
               try:
                   ftp.cwd(remote_dir)
