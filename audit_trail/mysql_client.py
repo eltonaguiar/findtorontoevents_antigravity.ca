@@ -564,8 +564,8 @@ def mysql_record_raw_pick(
         (id, aggregation_run_id, source_system, symbol, asset_class, direction,
          entry_price, take_profit, stop_loss, risk_reward, confidence, strategy,
          raw_payload, signal_timestamp, recorded_at, dedup_hash,
-         was_stale, was_banned, was_demoted, was_wr_suppressed, created_by)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'aggregator')
+         was_stale, was_banned, was_demoted, was_wr_suppressed, created_by, status)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'aggregator','OPEN')
     """
     # Canonicalize symbol (defensive): FOREX/FUTURES rows keep their =X/=F
     # yfinance suffix so new inserts don't re-create the EURUSD vs EURUSD=X split.

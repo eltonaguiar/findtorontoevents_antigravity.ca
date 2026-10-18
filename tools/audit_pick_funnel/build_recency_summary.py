@@ -84,7 +84,19 @@ def _classify_rows(rows, window_label: str, cutoff_dt, include_pick_rows: bool):
         dup_groups = sum(1 for k, v in seen.items() if v > 1)
 
         # Active = OPEN at "now" and inside window (signal_ts >= cutoff or no closed_at)
-        active = [r for r in bucket if (r.get("status") in ACTIVE_STATUSES) or (r.get("status") == "OPEN")]
+        # 2026-10-18: NULL status is a legitimate OPEN marker, not "missing data".
+        # record_raw_pick() omitted the status column for every row ever inserted,
+        # so 3,126 rows (all with closed_at IS NULL — verified 100%) were invisible
+        # here and every class reported n_active=0 while the dashboard showed live
+        # actives. alpha_engine/active_picks_sync.py has always queried
+        # (status IN ('OPEN','ACTIVE') OR status IS NULL); this now matches it.
+        # closed_at IS NOT NULL guards against a NULL-status row that was already
+        # closed by a writer that set the timestamp but not the status.
+        active = [
+            r for r in bucket
+            if (r.get("status") in ACTIVE_STATUSES)
+            or (r.get("status") is None and not r.get("closed_at"))
+        ]
         # Closed inside window
         closed = [r for r in bucket if r.get("status") in (DECISIVE_STATUSES | {"EXPIRED", "CLOSED"}) and r.get("closed_at") and r["closed_at"] >= cutoff_dt]
         decisive = [r for r in closed if r.get("status") in DECISIVE_STATUSES and r.get("pnl_pct") is not None]
