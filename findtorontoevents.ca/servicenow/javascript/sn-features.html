@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServiceNow JavaScript Features — Developer Console</title>
+<meta name="description" content="The ServiceNow platform's JavaScript feature surface: GlideRecord, GlideAggregate, GlideAjax, g_form, Client Scripts, Business Rules, Flow Designer, Scheduled Jobs, REST Messages, scoped apps — with patterns and pitfalls.">
+<link rel="canonical" href="https://findtorontoevents.ca/servicenow/javascript/sn-features.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#080c14; --panel:#0f1626; --panel-2:#121b2e;
+    --panel-border:rgba(255,255,255,0.08);
+    --text:#e6edf6; --muted:#8b98ac;
+    --accent:#62f5c7; --accent-2:#7aa2ff;
+    --warning:#fbbf24; --danger:#f87171; --success:#4ade80;
+    --code-bg:#0a0f1a; --radius:14px; --radius-sm:8px;
+    --sn-nav-h:58px;
+  }
+  html{scroll-behavior:smooth;scroll-padding-top:calc(var(--sn-nav-h) + 16px);background:#07080f;}
+  body{margin:0;padding:2rem;background:
+    radial-gradient(900px 600px at 90% 0%,rgba(122,162,255,.08),transparent 60%),var(--bg);
+    color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6;}
+  h1,h2{color:var(--accent-2);} h3{color:var(--text);margin-bottom:.3rem;}
+  h2{margin-top:2.2rem;border-bottom:1px solid var(--panel-border);padding-bottom:.35rem;}
+  code{background:var(--code-bg);border:1px solid var(--panel-border);border-radius:5px;padding:1px 5px;font-size:.9em;font-family:"JetBrains Mono",ui-monospace,monospace;}
+  pre{background:var(--code-bg);border:1px solid var(--panel-border);border-radius:var(--radius-sm);padding:14px 16px;overflow-x:auto;font-size:.85rem;line-height:1.55;}
+  pre code{background:none;border:none;padding:0;}
+  .nav{margin-bottom:1.5rem;} .nav a{color:var(--accent-2);text-decoration:none;} .nav a:hover{color:var(--accent);text-decoration:underline;}
+  .card{max-width:1040px;margin:0 auto;padding:2.2rem 2.5rem;background:rgba(15,22,38,.55);
+    border:1px solid var(--panel-border);border-radius:24px;backdrop-filter:blur(18px);}
+  @media (max-width:640px){.card{padding:1.4rem 1.1rem;}}
+  .card h1{margin-top:0;} .lede{color:var(--muted);max-width:70ch;}
+  .sn-lnav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    height:var(--sn-nav-h);padding:0 18px;margin:-2rem -2.2rem 1.6rem;
+    border-bottom:1px solid var(--panel-border);background:rgba(8,12,20,.72);backdrop-filter:blur(12px);}
+  .sn-lnav-brand{font-weight:600;letter-spacing:.02em;color:var(--text);text-decoration:none;}
+  .sn-lnav-brand b{color:var(--accent);}
+  .sn-lnav-links{display:flex;gap:6px;flex-wrap:wrap;}
+  .sn-lnav-links a{color:var(--muted);padding:4px 10px;border-radius:999px;font-size:.8rem;text-decoration:none;}
+  .sn-lnav-links a:hover{color:var(--text);background:rgba(255,255,255,.05);}
+  .sn-lnav-links a[aria-current="page"]{color:var(--accent);background:rgba(98,245,199,.10);}
+  .toc{background:rgba(18,27,46,.6);border:1px solid var(--panel-border);border-radius:var(--radius);padding:14px 18px;margin:1.4rem 0;}
+  .toc ol{margin:.4rem 0 0;padding-left:22px;columns:2;column-gap:28px;font-size:.88rem;}
+  .toc a{color:var(--accent-2);text-decoration:none;} .toc a:hover{color:var(--accent);text-decoration:underline;}
+  .table-wrap{overflow-x:auto;margin:1rem 0;border:1px solid var(--panel-border);border-radius:var(--radius-sm);}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;}
+  th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--panel-border);vertical-align:top;}
+  th{background:rgba(255,255,255,.03);color:var(--accent);font-weight:650;white-space:nowrap;}
+  tr:last-child td{border-bottom:0;}
+  .callout{border-left:3px solid var(--accent);background:rgba(98,245,199,.06);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:10px 14px;margin:1rem 0;font-size:.92rem;}
+  .callout.warn{border-left-color:var(--warning);background:rgba(251,191,36,.06);}
+  .callout.danger{border-left-color:var(--danger);background:rgba(248,113,113,.06);}
+  .muted{color:var(--muted);}
+  .pill{display:inline-block;font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:999px;margin-right:6px;vertical-align:middle;}
+  .pill.server{background:rgba(98,245,199,.12);color:var(--accent);}
+  .pill.browser{background:rgba(122,162,255,.12);color:var(--accent-2);}
+  .pill.either{background:rgba(251,191,36,.12);color:var(--warning);}
+</style>
+</head>
+<body>
+<div class="card">
+  <nav class="sn-lnav" aria-label="ServiceNow JavaScript guides">
+    <a class="sn-lnav-brand" href="/servicenow/javascript/index.html">SN <b>JS</b> Console</a>
+    <div class="sn-lnav-links">
+      <a href="/servicenow/javascript/index.html">JavaScript Reference</a>
+      <a href="/servicenow/javascript/sn-features.html" aria-current="page">SN Features</a>
+      <a href="/servicenow/javascript/js-essentials.html">Essentials</a>
+      <a href="/servicenow/javascript/js-interview.html">Interview JS</a>
+      <a href="/servicenow/javascript/quiz.html">Quiz</a>
+      <a href="/servicenow/AIFeaturesOct2026/index.html">AI Features Guide</a>
+    </div>
+  </nav>
+
+  <h1>ServiceNow JavaScript Features</h1>
+  <p class="lede">The language basics live in <a href="js-essentials.html">JavaScript Essentials</a>; this page is the
+    <b>platform side</b> — every JavaScript feature ServiceNow adds on top of ECMAScript, where each one runs
+    (server vs browser), the canonical pattern, and the trap that bites everyone once.</p>
+
+  <div class="toc">
+    <b>On this page</b>
+    <ol>
+      <li><a href="#gliderecord">GlideRecord queries</a></li>
+      <li><a href="#glideaggregate">GlideAggregate</a></li>
+      <li><a href="#glideajax">GlideAjax + Script Includes</a></li>
+      <li><a href="#gform">g_form / g_user / g_scratchpad</a></li>
+      <li><a href="#clientscripts">Client Scripts</a></li>
+      <li><a href="#uipolicies">UI Policies &amp; Actions</a></li>
+      <li><a href="#br">Business Rules</a></li>
+      <li><a href="#events">Script Actions &amp; Events</a></li>
+      <li><a href="#flows">Flow Designer</a></li>
+      <li><a href="#jobs">Scheduled Jobs</a></li>
+      <li><a href="#gs">GlideSystem &amp; GlideDateTime</a></li>
+      <li><a href="#rest">REST Messages &amp; APIs</a></li>
+      <li><a href="#scoped">Scoped Apps</a></li>
+      <li><a href="#perf">Performance playbook</a></li>
+      <li><a href="#testing">Testing &amp; debugging</a></li>
+      <li><a href="#quickref">Quick reference</a></li>
+    </ol>
+  </div>
+
+  <h2 id="gliderecord"><span class="pill server">server</span>1 · GlideRecord — the query workhorse</h2>
+  <p>Every server-side data operation bottoms out here. Query with the most selective condition first, iterate once,
+    and never fetch rows you won't use.</p>
+  <pre><code>var gr = new GlideRecord('incident');
+gr.addQuery('active', true);
+gr.addQuery('assignment_group', 'eng_group_sys_id');
+gr.orderByDesc('sys_created_on');
+gr.setLimit(50);                       // hard cap — always set one
+gr.query();
+while (gr.next()) {
+  gs.info(gr.getValue('number') + ' — ' + gr.getDisplayValue('state'));
+}</code></pre>
+  <div class="callout warn"><b>Trap:</b> <code>gr.getValue('x')</code> returns the <i>database</i> value;
+    <code>gr.getDisplayValue('x')</code> returns what the UI shows (labels, formatted dates). Mixing them up is the
+    classic "wrong data" bug. For references use <code>gr.getElement('x').getRefRecord()</code> when you need the
+    referenced row itself.</div>
+  <pre><code>// Writing — prefer update() over multiple setValue+update cycles
+gr.setValue('state', 3);
+gr.setValue('work_notes', 'Auto-closed by nightly job');
+gr.autoSysFields(false);              // don't touch sys_updated_on/by
+gr.update();
+
+// Bulk paths beat row loops
+gr.setValue('active', false);
+gr.updateMultiple();                  // one DB round-trip for the whole query result</code></pre>
+  <p>Encoded queries are the compact way to express conditions, and they round-trip through URLs and
+    <code>gs.generateURL()</code>:</p>
+  <pre><code>gr.addEncodedQuery('active=true^assignment_groupeng_group^sys_created_on>=2026-01-01 00:00:00');
+// From the UI: right-click a filter breadcrumb → Copy sys_id / encoded query</code></pre>
+
+  <h2 id="glideaggregate"><span class="pill server">server</span>2 · GlideAggregate — counts and sums in SQL</h2>
+  <p>Never <code>query()</code>+loop to count. GlideAggregate pushes <code>COUNT/SUM/AVG/MIN/MAX</code> into the
+    database and returns one row.</p>
+  <pre><code>var ga = new GlideAggregate('incident');
+ga.addAggregate('COUNT', 'priority');
+ga.addQuery('active', true);
+ga.groupBy('assignment_group');
+ga.query();
+while (ga.next()) {
+  gs.info(ga.getAggregate('COUNT', 'priority') + ' at priority ' +
+          ga.getValue('assignment_group'));
+}</code></pre>
+  <div class="callout"><b>Rule of thumb:</b> if your loop only exists to count or total, it should be a
+    GlideAggregate. A <code>getRowCount()</code> after <code>query()</code> still materialises the result set —
+    use <code>setLimit(0)</code>+aggregate instead on big tables.</div>
+
+  <h2 id="glideajax"><span class="pill browser">browser</span><span class="pill server">server</span>3 · GlideAjax — calling server code from the browser</h2>
+  <p>GlideAjax is the sanctioned bridge: a <b>Script Include</b> marked <i>Client callable</i> exposes a
+    <code>GlideScratchpad</code>-free, parameter-driven function to a Client Script.</p>
+  <pre><code>/* Script Include "HRUtil" — Client callable = true, extends AbstractAjaxProcessor */
+var HRUtil = Class.create();
+HRUtil.prototype = Object.extendsObject(AbstractAjaxProcessor, {
+  getOpenCount: function() {
+    var user = this.getParameter('sysparm_user');
+    var ga = new GlideAggregate('sc_req_item');
+    ga.addAggregate('COUNT');
+    ga.addQuery('requested_for', user);
+    ga.addQuery('active', true);
+    ga.query();
+    return ga.next() ? ga.getAggregate('COUNT') : '0';
+  },
+  type: 'HRUtil'
+});</code></pre>
+  <pre><code>// Client Script (onChange of requested_for)
+var ga = new GlideAjax('HRUtil');
+ga.addParam('sysparm_user', g_form.getValue('requested_for'));
+ga.getXML(function(resp) {
+  var n = resp.responseXML.querySelector('answer').textContent;
+  g_form.setValue('u_open_count', n);
+});</code></pre>
+  <div class="callout warn"><b>Traps:</b> the Script Include must be <i>Client callable</i> and visible to the
+    calling script's scope (cross-scope needs an <code>sys_api_accessor</code> entry). Return values are
+    <b>strings</b> — there is no object transport; use JSON strings for structured data.</div>
+
+  <h2 id="gform"><span class="pill browser">browser</span>4 · g_form, g_user, g_scratchpad</h2>
+  <div class="table-wrap"><table>
+    <tr><th>API</th><th>What it does</th><th>Typical calls</th></tr>
+    <tr><td><code>g_form</code></td><td>The form itself</td><td><code>getValue/setValue</code>, <code>getDisplayValue</code>, <code>setMandatory</code>, <code>setReadOnly</code>, <code>setVisible</code>, <code>addInfoMessage/addErrorMessage</code>, <code>getModified</code></td></tr>
+    <tr><td><code>g_user</code></td><td>Current user on the client</td><td><code>g_user.userID</code>, <code>g_user.hasRole('admin')</code>, <code>g_user.getUserName()</code></td></tr>
+    <tr><td><code>g_scratchpad</code></td><td>Server → browser bootstrap data</td><td>Populated by Business Rules with <code>gel.add("key", value)</code>; read as <code>g_scratchpad.key</code> — numbers/strings only, sent with the page, not refreshable</td></tr>
+    <tr><td><code>g_url</code> / <code>gel</code></td><td>URL + scratchpad helper</td><td><code>gel.add()</code> inside a Business Rule's <code>addMessage</code> flow</td></tr>
+  </table></div>
+  <div class="callout"><b>g_scratchpad vs GlideAjax:</b> scratchpad = cheap data the form needs <i>at load</i>.
+    GlideAjax = anything fetched <i>after</i> an interaction. Putting a query behind an onLoad GlideAjax call is
+    how forms get slow.</div>
+
+  <h2 id="clientscripts"><span class="pill browser">browser</span>5 · Client Scripts — four types, one job each</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Type</th><th>Fires</th><th>Use for</th></tr>
+    <tr><td><b>onLoad</b></td><td>Form loads</td><td>Initial tweaks: default visibility, scratchpad reads</td></tr>
+    <tr><td><b>onChange</b></td><td>A field changes</td><td>Dependent-field logic (always declare the field)</td></tr>
+    <tr><td><b>onSubmit</b></td><td>Before save</td><td>Validation; <code>action.setAbortAction(true)</code> to block</td></tr>
+    <tr><td><b>Cell Edit</b></td><td>List-cell edit</td><td>Quick list validations (rare)</td></tr>
+  </table></div>
+  <pre><code>function onChange(control, oldValue, newValue, isLoading) {
+  if (isLoading || newValue === '') return;
+  if (newValue === 'hardware') {
+    g_form.setMandatory('short_description', true);
+    g_form.addInfoMessage('Hardware requests need a model number.');
+  } else {
+    g_form.setMandatory('short_description', false);
+  }
+}</code></pre>
+  <div class="callout warn"><b>Rule:</b> if the logic protects <i>data</i> (must hold for API/import too), it belongs
+    in a Business Rule or UI Policy — a client script only guards the form it runs on.</div>
+
+  <h2 id="uipolicies"><span class="pill browser">browser</span>6 · UI Policies &amp; UI Actions — declarative first</h2>
+  <p>Before writing any Client Script, check whether a UI Policy already does it. UI Policies run on every form
+    type, survive table changes, and their <b>UI Policy Actions</b> set values / visibility / mandatory / readonly
+    without code. Script include "true" expressions cover the conditional part.</p>
+  <pre><code>// UI Policy: "Urgent needs a workaround"
+// Condition: priority is 1 - Critical
+// Actions:     work_around = mandatory, work_around = visible
+// No JavaScript written at all.</code></pre>
+
+  <h2 id="br"><span class="pill server">server</span>7 · Business Rules — server-side truth</h2>
+  <div class="table-wrap"><table>
+    <tr><th>When</th><th>Timing</th><th>Notes</th></tr>
+    <tr><td>async</td><td>after <code>update()</code> completes</td><td>Default; safe for notifications, logging, integrations</td></tr>
+    <tr><td>sync</td><td>inside the transaction</td><td>Can modify <code>current</code> and abort with <code>current.setAbortAction(true)</code>; affects every write path (UI, API, import)</td></tr>
+  </table></div>
+  <pre><code>(function executeRule(current, previous) {
+  if (current.state.changesTo(6)) {           // → Closed
+    gs.eventQueue('incident.closed', current, current.caller, '');
+  }
+  if (current.priority == 1 &amp;&amp; !current.work_around) {
+    current.setAbortAction(true);             // block the save (sync rules only)
+    gs.addErrorMessage('Critical incidents require a workaround.');
+  }
+})(current, previous);</code></pre>
+  <div class="callout danger"><b>Trap:</b> a <i>sync</i> Business Rule that calls <code>current.update()</code>
+    re-enters itself — always guard with <code>current.setWorkflow(false)</code> or a property check, or you get the
+    recursion that fills the logs until the transaction dies.</div>
+
+  <h2 id="events"><span class="pill server">server</span>8 · Script Actions &amp; Events — decoupled reactions</h2>
+  <pre><code>gs.eventQueue('my_app.approval.stuck', current, current.approver, current.number);</code></pre>
+  <p>An <b>Event</b> is a name plus optional args; a <b>Script Action</b> subscribes to it (optionally filtered by
+    condition) and runs server JS with <code>event</code>, <code>current</code>, <code>gs</code> in scope.
+    Notifications are Script Actions with an email payload. Events queued on tables that later roll back vanish with
+    the transaction — that's a feature, not a bug.</p>
+
+  <h2 id="flows"><span class="pill server">server</span>9 · Flow Designer — modern orchestration</h2>
+  <p>Flows replaced most Workflow Editor content. JavaScript enters through <b>Script steps</b> and
+    <b>Script Actions</b> (which can be reused across flows):</p>
+  <pre><code>// Script Action "Score incident" — inputs: priority, impact
+(function execute(inputs, outputs) {
+  var score = (inputs.priority * 10) + inputs.impact;
+  outputs.score = score;
+  outputs.is_urgent = score &gt;= 25;
+})(inputs, outputs);</code></pre>
+  <ul>
+    <li><b>Trigger</b> = record created/updated, schedule, or app event — no more polling jobs.</li>
+    <li><code>flow.runScriptAction()</code> lets Flow Designer reuse the same actions from other steps.</li>
+    <li>Ask for <b>sys_id</b> inputs, not records, when a flow might run across tables.</li>
+  </ul>
+
+  <h2 id="jobs"><span class="pill server">server</span>10 · Scheduled Jobs</h2>
+  <pre><code>// Definition runs on a cron-like schedule; the script body is plain server JS
+(function run() {
+  var gr = new GlideRecord('sysauto_script');   // "Scheduled Job" record
+  // ... nightly maintenance ...
+  gs.info('Nightly cleanup complete');
+})();</code></pre>
+  <p>For record-heavy work prefer a **Scheduled Job + Flow** hybrid: the job enqueues, the flow processes with
+    retries and steps you can see. Long loops in a job body hit the transaction time limit — page your work with
+    <code>gs.sleep()</code> sparingly or batch by <code>sys_updated_on</code> windows.</p>
+
+  <h2 id="gs"><span class="pill server">server</span>11 · GlideSystem &amp; GlideDateTime</h2>
+  <pre><code>gs.info('hello ' + gs.getUserName());            // scoped log
+gs.warn / gs.error                              // log levels
+gs.nil(current.getValue('u_foo'))               // null/empty check (not == '')
+gs.getProperty('myapp.limit', '50')             // sys_property with default
+gs.addInfoMessage('Saved for ' + current.caller.getDisplayName());
+
+var now = new GlideDateTime();
+now.addDaysUTC(-7);
+gs.info(now.getDate());                          // GlideDateTime math is UTC-based
+var diff = GlideDateTime.subtract(now, new GlideDateTime()).getNumericValue();</code></pre>
+  <div class="callout warn"><b>Timezone trap:</b> <code> GlideDateTime</code> is UTC; display/local conversions need
+    <code>GlideDateTime.setTZ()</code> or <code>gs.beginningOfNextDay()</code>-style helpers. Never hand-roll date
+    strings for queries — pass GlideDateTime objects into <code>addQuery</code>.</div>
+
+  <h2 id="rest"><span class="pill server">server</span>12 · REST Messages &amp; outbound/inbound APIs</h2>
+  <pre><code>var r = new sn_ws.RESTMessageV2('Weather API', 'get forecast');  // [REST Message][endpoint]
+r.setStringParameter('city', 'Toronto');
+r.setRequestHeader('Accept', 'application/json');
+r.setHttpTimeout(15000);
+var resp = r.execute();
+if (resp.getStatusCode() == 200) {
+  var body = JSON.parse(resp.getBody());
+}</code></pre>
+  <ul>
+    <li><b>Outbound:</b> REST Message records hold auth (basic/OAuth2), endpoints, and params — the credential
+      stays out of your script.</li>
+    <li><b>Inbound:</b> Scripted REST APIs (resources) expose ServiceNow as JSON endpoints — runs in a
+      <code>sn_ws.RESTAPIRequest</code>/<code>RESTAPIResponse</code> pair with real status codes.</li>
+    <li>SOAP still exists via <code>sn_ws.SOAPMessageV2</code> — same execute/parse shape.</li>
+  </ul>
+
+  <h2 id="scoped"><span class="pill server">server</span><span class="pill browser">browser</span>13 · Scoped Apps &amp; cross-scope</h2>
+  <ul>
+    <li>Everything you write lives in a <b>scope</b> (<code>x_company_myapp</code>). Same-scope code sees everything;
+      cross-scope access needs the app to publish APIs: Script Includes marked <i>Client callable</i> or
+      <i>Accessible from</i> settings, plus <b>application access</b> (tables, client scripts) granted per consuming app.</li>
+    <li><code>current.update()</code> on a foreign-scope table requires ACLs <i>and</i> scope permission — failures
+      surface as <code>GlideRecord.update() returns false</code>, silently, which is why every write's return value
+      should be checked in scoped code.</li>
+    <li><b>sys_api_accessor</b> records are the audit trail of who may call what; keep them minimal.</li>
+  </ul>
+
+  <h2 id="perf"><span class="pill server">server</span>14 · Performance playbook</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Instead of</th><th>Do</th><th>Why</th></tr>
+    <tr><td><code>while(gr.next()) gr.getValue(...)</code> to count</td><td>GlideAggregate COUNT</td><td>One aggregate row vs N rows over the wire</td></tr>
+    <tr><td>Row-by-row <code>update()</code> in a loop</td><td><code>updateMultiple()</code> / <code>setValue</code> then one update</td><td>Round-trips dominate runtime</td></tr>
+    <tr><td><code>getRefRecord()</code> inside a loop</td><td>Batch the referenced ids first, query once into a map</td><td>Classic N+1</td></tr>
+    <tr><td>Wide <code>addQuery</code> chains on huge tables</td><td><code>setLimit</code>, index-aware leading conditions, report in Background Scripts first</td><td>incidents/sys_audit scale brutally</td></tr>
+    <tr><td>Business Rule per condition</td><td>One rule, or a Flow</td><td>Each rule re-runs per transaction</td></tr>
+    <tr><td>GlideAjax in <code>onLoad</code></td><td><code>g_scratchpad</code> from a before Business Rule</td><td>Zero extra round-trip</td></tr>
+  </table></div>
+
+  <h2 id="testing"><span class="pill server">server</span>15 · Testing &amp; debugging</h2>
+  <ul>
+    <li><b>ATF (Automated Test Framework):</b> test suites run <code>sn_atf</code> assertions against real tables in
+      a snapshot — every Script Include you write should ship with an ATF test (<code>AssertMandatoryValue</code>,
+      <code>GlideRecord</code> helpers, UI Policy tests).</li>
+    <li><b>Background Scripts</b> for one-off server runs; always <code>setLimit</code> before <code>query()</code>.</li>
+    <li><b>Debug flags:</b> <code>gs.debug()</code> + the developer panel; Business Rule debug lists each rule's
+      runtime; Flow Designer has its own execution log per run.</li>
+    <li><b>Logs:</b> System Logs → <code>sys_log</code>; <code>gs.log(msg, 'myapp')</code> tags entries for filtering.</li>
+  </ul>
+
+  <h2 id="quickref">16 · Quick reference — where does it run?</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Feature</th><th>Runs in</th><th>One-liner</th></tr>
+    <tr><td>GlideRecord / GlideAggregate</td><td>server</td><td>Query &amp; write tables</td></tr>
+    <tr><td>GlideAjax + Script Include</td><td>browser → server</td><td>Async server call from a form</td></tr>
+    <tr><td>g_form / g_user / g_scratchpad</td><td>browser</td><td>Form, user, boot data</td></tr>
+    <tr><td>Client Scripts</td><td>browser</td><td>onChange/onSubmit/onLoad form logic</td></tr>
+    <tr><td>UI Policies / UI Actions</td><td>browser</td><td>Declarative field behaviour &amp; buttons</td></tr>
+    <tr><td>Business Rules</td><td>server</td><td>Data truth on every write path</td></tr>
+    <tr><td>Script Actions / Events</td><td>server</td><td>Decoupled reactions &amp; notifications</td></tr>
+    <tr><td>Flow Designer script steps</td><td>server</td><td>Orchestration with retries &amp; visibility</td></tr>
+    <tr><td>Scheduled Jobs</td><td>server</td><td>Cron-driven server scripts</td></tr>
+    <tr><td>RESTMessageV2 / Scripted REST</td><td>server</td><td>Outbound / inbound HTTP</td></tr>
+    <tr><td>GlideSystem / GlideDateTime</td><td>server</td><td>Logging, properties, UTC time math</td></tr>
+    <tr><td>ATF</td><td>server</td><td>Automated tests for all of the above</td></tr>
+  </table></div>
+
+  <p class="muted" style="margin-top:2rem">Language-side reference (arrays, closures, Map/Set, stack traces):
+    <a href="js-essentials.html">JavaScript Essentials</a> · Interview drills:
+    <a href="js-interview.html">Interview JS</a> · Practice: <a href="quiz.html">JavaScript Quiz</a> ·
+    Full platform guide: <a href="index.html">JavaScript Reference</a>.</p>
+</div>
+</body>
+</html>

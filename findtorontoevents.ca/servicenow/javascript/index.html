@@ -576,6 +576,7 @@
         <a href="/servicenow/javascript/quiz.html">JavaScript Quiz</a>
         <a href="/servicenow/javascript/js-essentials.html">Essentials</a>
         <a href="/servicenow/javascript/js-interview.html">Interview JS</a>
+        <a href="/servicenow/javascript/sn-features.html">SN Features</a>
       </span>
     </nav>
 
@@ -1964,7 +1965,7 @@ g_form.setValue('u_open_count', count);</code></pre>
                   <tr>
                     <td><strong>ECMAScript 2021 (ES12)</strong></td>
                     <td>Default for <strong>newly created scripts</strong> (Xanadu+), regardless of the application's configured mode. Scoped applications default to ES12; global applications default to ES5 with a per-script toggle. Also selectable per individual script.</td>
-                    <td>Modern syntax: <code>const</code>/<code>let</code>, arrow functions, template literals, destructuring, rest/spread, default parameters, <code>for...of</code>, classes, <code>Map</code>/<code>Set</code>, optional chaining <code>?.</code>, nullish coalescing <code>??</code>, and <code>async</code>/<code>await</code>.</td>
+                    <td>Modern syntax: <code>const</code>/<code>let</code>, arrow functions, template literals, destructuring, rest/spread, default parameters, <code>for...of</code>, classes with inheritance (<code>extends</code>/<code>super</code>), object-literal shorthand & computed keys, <code>Symbol</code>, <code>Map</code>/<code>Set</code>, optional chaining <code>?.</code>, nullish coalescing <code>??</code>, and <code>async</code>/<code>await</code>.</td>
                   </tr>
                   <tr>
                     <td><strong>ES5 Standards</strong></td>
@@ -2004,9 +2005,14 @@ g_form.setValue('u_open_count', count);</code></pre>
                   <tr><th>Feature</th><th>ES12 mode (default)</th><th>ES5 Standards mode</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>Arrow functions, <code>let</code>/<code>const</code>, template literals</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td>Arrow functions</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td>Block-scoped <code>let</code>/<code>const</code> (vs. function-scoped <code>var</code>)</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td>Template literals (backticks)</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
                   <tr><td>Destructuring, rest/spread, default parameters, <code>for...of</code></td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
-                  <tr><td>Classes, <code>Map</code>/<code>Set</code>, optional chaining, nullish coalescing</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td>Object-literal extensions & enhanced object properties — shorthand <code>{ name, age }</code>, method shorthand <code>greet() {}</code>, computed keys <code>[key]: v</code></td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td>Classes & inheritance — <code>class</code>, <code>extends</code>, <code>super()</code></td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td><code>Map</code>/<code>Set</code>, optional chaining <code>?.</code>, nullish coalescing <code>??</code></td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
+                  <tr><td><code>Symbol</code> type (unique primitive property keys)</td><td class="pill ok">Supported</td><td>Not Supported</td></tr>
                   <tr><td><code>Promise</code>, <code>async</code>/<code>await</code></td><td class="pill ok">Supported</td><td class="pill bad">Disallowed</td></tr>
                   <tr><td><code>Proxy</code>, typed arrays, <code>WeakMap</code>/<code>WeakSet</code>, generators</td><td class="pill warn">Check matrix</td><td class="pill bad">Disallowed</td></tr>
                   <tr><td>ES modules (<code>import</code>/<code>export</code>)</td><td colspan="2">Available in scoped applications built with the ServiceNow SDK (Software Development Kit) &mdash; see <a href="https://www.servicenow.com/docs/r/yokohama/application-development/servicenow-sdk/create-use-javascript-modules.html" target="_blank" rel="noopener">Create and use JavaScript modules</a>. Not a general-purpose feature of every script context.</td></tr>
@@ -2159,6 +2165,50 @@ gr.addEncodedQuery(query);</code></pre>
         gs.warn(`Stale P1: ${current.number} open for ${ageHours.toFixed(1)}h`);
     }
 })(current, previous);</code></pre>
+              </div>
+
+              <!-- Example 6: ES6 class + inheritance -->
+              <div class="api-card">
+                <h4>6. ES6 Classes & Inheritance — <code>class</code> + <code>extends</code>/<code>super()</code></h4>
+                <div class="code-toolbar">
+                  <span class="context server">Server — Script Include (ES12)</span>
+                  <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code>// ES6 class syntax runs in ES12 mode — inheritance is first-class now.
+// Use it for the object model *inside* your script (policies, strategies,
+// formatters), shared across a scoped application.
+class EscalationPolicy {
+    constructor(name, slaHours) {
+        this.name = name;
+        this.slaHours = slaHours;
+    }
+    label(hoursOpen) {
+        const over = hoursOpen - this.slaHours;
+        return over > 0
+            ? `${this.name}: breached by ${over.toFixed(1)}h`
+            : `${this.name}: within SLA`;
+    }
+}
+
+class PriorityEscalation extends EscalationPolicy {
+    constructor(slaHours) {
+        super('Priority', slaHours);   // super() runs before `this`
+    }
+    label(hoursOpen, priority) {
+        if (priority > 2) return 'no escalation';
+        return super.label(hoursOpen);
+    }
+}
+
+// Business Rule / Script Include usage (ES12 mode):
+const policy = new PriorityEscalation(4);
+gs.info(policy.label(ageHours, current.priority));
+
+// Caution: GlideAjax-callable Script Includes still use the legacy
+// Class.create() + Object.extendsObject(AbstractAjaxProcessor, ...) +
+// type: 'Name' pattern — keep that wiring until you have verified ES6
+// class inheritance against GlideAjax on your own instance. The `mode`
+// of the script decides which syntax compiles (see the table above).</code></pre>
               </div>
 
             </div>
@@ -2622,8 +2672,11 @@ gs.info('Open P1 incidents: ' + count);</code></pre>
             <h3>ATF (Automated Test Framework) + Script Debugger + DevTools</h3>
             <div class="checklist">
               <li>Every Business Rule, Client Script, UI Action should have ATF tests</li>
-              <li>Use Script Debugger for server-side stepping (requires debugger role)</li>
-              <li>Browser DevTools for client: Console, Network (GlideAjax), Sources</li>
+              <li>Use the Script Debugger (role <code>script_debugger</code>) for server-side stepping: breakpoints, call stack, variable inspection</li>
+              <li>Browser DevTools for client: Console, Network (GlideAjax), Sources (pause a running handler), Performance (what ate the main thread)</li>
+              <li>Prove what executed with Session Debug (business rules / SQL / security) — then turn it off with <em>Disable All</em></li>
+              <li>Performance is tested the same way every time: response-time clock → Transaction Log → Session Debug, then <strong>re-measure after the change</strong> (full playbook in Appendix F2)</li>
+              <li>Bound loops and queries (<code>setLimit()</code>, guard counters) <em>before</em> load-testing: a runaway script shows up as a cancelled transaction, not as a red flag in a unit test</li>
               <li>Log with context: record number, user, operation, inputs</li>
             </div>
           </section>
@@ -3569,7 +3622,7 @@ while (ga.next()) {
                 </tbody>
               </table>
             </div>
-            <div class="notice"><strong>Debugging ACLs:</strong> the <em>session debug</em> flag <code>glide.sys.log_security</code> (or right-click → Debug → <em>Session Debug → Security</em>) prints every ACL evaluated for your session, with pass/fail. This is the fastest way to answer "why can this user see that field?".</div>
+            <div class="notice"><strong>Debugging ACLs:</strong> All → System Diagnostics → <em>Session Debug</em> → <strong>Debug Security</strong> prints every ACL evaluated for your session with its outcome — granted / denied / not evaluated. This is the fastest way to answer "why can this user see that field?". The flags affect your session only; switch them off with <em>Disable All</em> when you are done (see <a href="#appendix-diagnosing">Appendix F2</a> for where the output is read).</div>
             <h4>ACL Types and Evaluation Details</h4>
             <p>Beyond table- and field-level ACLs, consider these nuances:</p>
             <ul>
@@ -4067,17 +4120,22 @@ if (resp.haveError()) {
               <table class="table-map">
                 <thead><tr><th>Tool</th><th>Breadcrumb</th><th>What it answers</th></tr></thead>
                 <tbody>
-                  <tr><td><strong>Transaction Log</strong></td><td>All → System Logs → <em>Transactions</em> (<code>syslog_transaction</code>)</td><td>Total response time per request, split into client / server / network / DB time</td></tr>
-                  <tr><td><strong>Stats</strong></td><td>Address bar: <code>&lt;instance&gt;/stats.do</code> (or <code>?stats=true</code>)</td><td>Per-page stats: server transactions, DB queries, cache hits, business-rule cost</td></tr>
-                  <tr><td><strong>Debug log</strong></td><td>All → System Diagnostics → <em>Debug Log</em></td><td>Server-side <code>gs.log/info/error</code> output for a session</td></tr>
-                  <tr><td><strong>Session debug</strong></td><td>Right-click banner → <em>Session Debug</em></td><td>Flags: business rules, ACLs, SQL, client scripts, "debug" of what actually ran</td></tr>
-                  <tr><td><strong>Slow query / index</strong></td><td>All → Performance → <em>Slow Queries</em> / <em>Query Index Recommendations</em></td><td>Which DB queries have no index or scan too many rows</td></tr>
+                  <tr><td><strong>Transaction Log</strong></td><td>All → System Logs → <em>Transactions</em> (<code>syslog_transaction</code>)</td><td>Per request: total response time, <strong>SQL time / count</strong>, <strong>business-rule time / count</strong>, network time, output size</td></tr>
+                  <tr><td><strong>Stats &amp; slow lists</strong></td><td>Type <code>stats.do</code> in the filter (System Diagnostics → <em>Stats</em>); the Stats Tools plugin adds <em>Slow Queries</em> / <em>Slow Scripts</em> / <em>Slow Transactions</em></td><td>Node-level stats (threads, memory, workers) plus which queries, scripts and transaction URLs are the slowest</td></tr>
+                  <tr><td><strong>Debug log</strong></td><td>Session Debug → <em>Debug Log</em> (also under System Diagnostics → <em>Debug Log</em>)</td><td>The collected <code>gs.log/info/error</code> and session-debug output for your session</td></tr>
+                  <tr><td><strong>Session debug</strong></td><td>All → System Diagnostics → <em>Session Debug</em> → pick a flag</td><td>What <em>actually</em> executed this session — business rules, ACLs, SQL, UI policies, quotas. The output lands at the bottom of the page you just loaded (Appendix F2)</td></tr>
+                  <tr><td><strong>Response-time clock</strong></td><td>End of most forms &amp; lists — the small clock icon (hover for the summary, click for the detail)</td><td><strong>Total / network / server / browser</strong> ms for the load you just made — the fastest "client or server?" answer there is</td></tr>
+                  <tr><td><strong>Client Transactions</strong></td><td>All → System Logs → <em>Client Transactions</em> (Client Transaction Timings plugin)</td><td>The same request split into client-script, UI-policy, business-rule, SQL, network and browser milliseconds</td></tr>
+                  <tr><td><strong>Active transactions</strong></td><td>System Diagnostics → <em>Active Transactions (All Nodes)</em></td><td>What is running right now; right-click a row → <em>Kill</em> to stop a runaway transaction</td></tr>
+                  <tr><td><strong>Cancellation log</strong></td><td>All → System Logs → System Log → <em>Transaction Cancellation Log</em></td><td>Why a transaction died — search the message for <code>maximum execution time exceeded</code></td></tr>
                   <tr><td><strong>Performance Analytics</strong></td><td>All → Performance Analytics</td><td>Trends over time (e.g. p95 form load) rather than a single slow request</td></tr>
                 </tbody>
               </table>
             </div>
 
-            <div class="notice"><strong>The clock icon / stats.do:</strong> the small clock/"⚡" indicator in the banner (and <code>stats.do</code>) shows the timing breakdown for <em>that</em> page load. Click it to open the transaction detail; the numbers tell you immediately whether the time is in <strong>client</strong> (script in the browser), <strong>server</strong> (business rules / script includes), <strong>network</strong> (bytes / round-trips), or <strong>DB</strong> (query time). That single split routes you to the right debugging tool — see Appendix F2.</div>
+            <div class="notice"><strong>The clock icon — clock no. 1, the response-time indicator:</strong> a small clock appears at the <em>end of many forms and lists</em>. Hover it for the summary, click it to open the detail: <strong>total</strong>, <strong>network</strong> (moving the data), <strong>server</strong> (computed as client response − browser − network) and <strong>browser</strong> (rendering + executing JavaScript) — all in milliseconds, for the transaction you just completed. It never appears for the first transaction of a session or for simple operations such as paging and re-sorting, and an admin can switch the whole feature off with the <code>glide.ui.response_time</code> property. With the <strong>Client Transaction Timings</strong> plugin the same numbers are written to <em>System Logs → Client Transactions</em>, per form and list, adding <strong>business-rule, SQL, client-script and UI-policy</strong> milliseconds — that is the list to filter when one specific form is slow.</div>
+
+            <div class="notice"><strong>The clock — clock no. 2, the long-running transaction timer:</strong> when a request takes too long, an alert banner shows a <strong>timer and a Cancel button</strong> after <code>glide.ui.transaction.long_response.time</code> seconds (cancellation itself is switched by <code>com.glide.request_manager.active</code>, on by default). If you let it finish, the timer reports how long it took; if you cancel it, the request lands in the Transaction Log with <code>CANCELLED</code> appended to its URL. The platform's <strong>transaction quotas</strong> kill genuinely runaway work on their own — see the scenario playbooks in <a href="#appendix-diagnosing">Appendix F2</a>.</div>
 
             <h3>Common platform-level wins</h3>
             <div class="table-wrap">
@@ -4094,12 +4152,44 @@ if (resp.haveError()) {
                 </tbody>
               </table>
             </div>
-                      <div class="kcheck">
+
+            <h3>Test and tune: client script vs server script</h3>
+            <p>The same four moves on both sides — <strong>baseline, narrow, tweak, re-measure</strong>. Only the tooling differs, because the code runs in different places (<a href="#overview">section 1</a>). Performance work is an experiment, not a rewrite: change one thing, then prove it with the same measurement you started with.</p>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Move</th><th>Client script (runs in the browser)</th><th>Server script (runs on the instance)</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>1. Baseline</strong> — measure before touching anything</td>
+                    <td>Load the page and read the response-time clock: the <strong>browser</strong> share is your number. Then DevTools → <strong>Performance</strong> (record a load, look for long main-thread tasks) and <strong>Network</strong> (how many GlideAjax round trips fired).</td>
+                    <td>Same clock: the <strong>server</strong> share is your number. Then All → System Logs → <em>Transactions</em> and read that URL's <strong>SQL time/count</strong> and <strong>business-rule time/count</strong>.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>2. Narrow</strong> — find the code that owns the time</td>
+                    <td>DevTools → <strong>Sources</strong> → pause and read the call stack; <code>console.time()</code> around suspicious blocks; All → System Logs → <em>Client Transactions</em> for the <em>client script time</em> and <em>UI policy time</em> columns; Session Debug → <em>Debug UI Policies</em> for the declarative rules.</td>
+                    <td>All → System Diagnostics → <em>Session Debug</em> → <em>Debug Business Rule (Details)</em> + <em>Debug SQL</em> + <em>Debug Security</em> (add <em>Debug Metric Statistics</em> for an aggregate view of slow scripts/queries/transactions), then reload and read the output at the bottom of the page. To step line-by-line, the <strong>Script Debugger</strong> (role <code>script_debugger</code>) sets breakpoints in business rules, script includes and UI actions.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>3. Tweak</strong> — one change at a time</td>
+                    <td>Trim <code>onLoad</code> work; move imperative logic into a UI Policy; defer or lazy-load widgets; batch GlideAjax calls instead of one per row; stop re-scanning the DOM on every keystroke.</td>
+                    <td>Bound the query (<code>setLimit()</code>, indexed fields first); kill N+1 loops; replace <code>getRowCount()</code> with <code>GlideAggregate</code>; add a <code>changes()</code>/condition guard so the rule only runs when something changed; move the heavy part off the request thread (Event Queue, Scheduled Job, async business rule).</td>
+                  </tr>
+                  <tr>
+                    <td><strong>4. Re-measure</strong> — prove it, then lock it in</td>
+                    <td>Same clock, same load: the browser share must drop. Then an ATF test so the behaviour you needed still happens.</td>
+                    <td>Same clock and Transaction Log: server/SQL milliseconds must drop. Then an ATF test plus a Performance Analytics indicator on p95 load, so it cannot silently regress.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="notice"><strong>The A/B trick — the cheapest experiment here:</strong> on a <em>sub-production</em> instance, deactivate the suspect client script (or business rule) and load the page again. If the clock barely moves, that script was never the problem: reactivate it and look elsewhere. This one test is what stops teams from rewriting code that was not broken.</div>
+
+            <div class="kcheck">
               <h3>Knowledge check — Platform Optimization &amp; Latency</h3>
               <p class="kcheck-intro">Answer before revealing. Click a question to see the answer.</p>
               <details>
                 <summary>A page is slow. What's the very first thing you look at, and why?</summary>
-                <div class="kc-answer">The <strong>timing split</strong> — clock / <code>stats.do</code> → Client / Server / Network / DB. It names the culprit layer in seconds, so you don't rewrite code that isn't the problem.</div>
+                <div class="kc-answer">The <strong>response-time clock</strong> at the end of the form or list — total / network / server / browser, in milliseconds. It names the culprit layer before you rewrite a single line of code that may not be the problem.</div>
               </details>
               <details>
                 <summary>The split shows <em>Server</em> high and <em>DB</em> low. Where do you look?</summary>
@@ -4117,36 +4207,154 @@ if (resp.haveError()) {
             <p>The concrete walkthrough the role expects: <em>a page is loading slowly — is it a business rule, a client script, a database query, or something else?</em></p>
 
             <ol class="source-list">
-              <li><strong>Reproduce with the clock / stats.</strong> Load the slow page; click the banner clock (or open <code>&lt;instance&gt;/stats.do</code>). Write down the four numbers: <strong>Client</strong>, <strong>Server</strong>, <strong>Network</strong>, <strong>DB</strong>. The largest one names the culprit layer:
+              <li><strong>Reproduce with the clock.</strong> Load the slow form or list and read the <strong>response-time clock</strong> at the end of it — <strong>total / network / server / browser</strong>, in milliseconds, for the load you just made. Write the four numbers down before you touch anything; the largest one names the culprit layer:
                 <ul>
-                  <li>Client big → client scripts / UI policies / form rendering.</li>
-                  <li>Server big, DB small → business rules / script includes / ACL evaluation.</li>
-                  <li>DB big → a query or a missing index.</li>
-                  <li>Network big → payload size / too many round-trips.</li>
+                  <li><strong>Browser big</strong> → client scripts / UI policies / heavy DOM rendering — confirm in DevTools → Performance and in the <em>Client Transactions</em> list.</li>
+                  <li><strong>Server big, SQL small</strong> → business rules / script includes / ACL evaluation — go to step 3.</li>
+                  <li><strong>Server big, SQL big</strong> → a query or a missing index — go to step 5.</li>
+                  <li><strong>Network big</strong> → payload size / too many round-trips — check output size and GlideAjax counts in the Transaction Log.</li>
                 </ul>
               </li>
               <li><strong>Open the transaction.</strong> All → System Logs → Transactions → find the request → open it. The detail lists each component's duration (this is how you separate a business rule from an ACL from a query).</li>
-              <li><strong>If server-heavy → session debug flags.</strong> Right-click banner → Session Debug → enable <em>Debug Business Rule</em>, <em>Debug Security (ACL)</em>, <em>Debug SQL</em>. Reload the page. Now the debug log shows <em>exactly</em> which business rule ran, which ACLs were evaluated, and every SQL statement.</li>
-              <li><strong>Read the debug log.</strong> Look for: a business rule running on the wrong operation (e.g. a <code>before query</code> rule firing on every form load), a rule doing a query per field, an ACL with a script that itself queries.</li>
-              <li><strong>If a query is the cost → Slow Queries.</strong> All → Performance → Slow Queries. Find the statement; if it scans the whole table, look at Query Index Recommendations and add the index (in DEV → update set → promote).</li>
-              <li><strong>If client-heavy → browser + client debug.</strong> Right-click → Session Debug → <em>Debug Client Scripts</em> (or open the browser console; the client script log is shown there). Look for a fat <code>onLoad</code> client script, a synchronous GlideAjax call, or a UI policy firing repeatedly.</li>
+              <li><strong>If server-heavy → turn session debug on.</strong> All → System Diagnostics → <em>Session Debug</em> → enable <em>Debug Business Rule (Details)</em>, <em>Debug Security</em> and <em>Debug SQL</em> (add <em>Debug Metric Statistics</em> for slow scripts, queries and transactions sorted by transaction). The flags apply to <strong>your session only</strong> and stay on until you choose <em>Disable All</em>. Reload the page: the output now names <em>exactly</em> which business rule ran, which ACLs were evaluated and every SQL statement.</li>
+              <li><strong>Read it where it lands.</strong> Session-debug output is written to the <strong>bottom of the page you just loaded</strong> and describes the <em>previous</em> transaction — so do a full page load first; re-rendering part of the page does not produce it. For a scrollable history use Session Debug → <em>Debug Log</em>, or the <strong>Script Debugger → Session Log</strong> tab (roles <code>script_debugger</code> / <code>log_debugger</code>; the <code>glide.debugger.log.ui</code> property chooses <em>Page</em> — output under forms and lists — or <em>Session</em> — the Session Log tab only). Look for: a rule on the wrong operation (a <code>before query</code> rule firing on every form load), a rule issuing a query per field, an ACL whose script itself queries.</li>
+              <li><strong>If SQL is the cost → Slow Queries.</strong> System Diagnostics → <em>Stats</em> → <em>Slow Queries</em> (Stats Tools plugin). Find the statement; if it scans the table, apply the index suggestions ServiceNow publishes for slow queries — in DEV → update set → promote. The sibling lists <em>Slow Scripts</em> and <em>Slow Transactions</em> name the repeat-offender script and transaction URL (e.g. <code>incident.do</code>).</li>
+              <li><strong>If browser-heavy → client-side tools.</strong> Client scripts run in your browser, so the browser is the authority: DevTools → <strong>Performance</strong> (which handler eats the main thread), <strong>Sources</strong> (pause and read the stack) and the console (client scripts log there). Back it with Session Debug → <em>Debug UI Policies</em> and the <em>Client Transactions</em> list (<em>client script time</em> / <em>UI policy time</em> columns). Look for a fat <code>onLoad</code> client script, a synchronous GlideAjax call, or a UI policy firing on every keystroke.</li>
               <li><strong>Fix the specific owner.</strong> Business rule → add a condition/`changes()` guard so it stops running unnecessarily. Query → index + setLimit. Client → move to a UI Policy or defer. Then re-measure the same four numbers to prove the delta.</li>
               <li><strong>Guard against regression.</strong> Add a Performance Analytics indicator (or a scheduled SLA probe) on the page's p95 load so the improvement is tracked, not a one-off.</li>
             </ol>
 
             <div class="notice"><strong>Why "business rule or client script" is the wrong first question:</strong> the timing split answers it in seconds. If <em>Server</em> time dominates and <em>Client</em> is small, it was never the client script. Measure before you rewrite code — that's the platform-level discipline the role is hiring for.</div>
 
+            <h3>Session debugging — what to switch on, and why</h3>
+            <p>Session debug is a set of flags under <strong>All → System Diagnostics → Session Debug</strong>. Each flag answers one question about the transaction you just made, by printing what the platform <em>actually</em> executed — names, order, arguments and pass/fail — instead of what you assume ran from reading the record.</p>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Flag</th><th>Question it answers</th><th>What you get</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Debug Business Rule (Details)</strong></td><td>Which business rules fired on this record, in what order, and what did they change?</td><td>One line per rule with its source application; the <em>(Details)</em> variant also shows the field changes</td></tr>
+                  <tr><td><strong>Debug Security</strong></td><td>Why could (or couldn't) this user read that field?</td><td>Every ACL evaluated for the transaction, with granted / denied / not-evaluated — the answer to "why can they see that?"</td></tr>
+                  <tr><td><strong>Debug SQL</strong></td><td>What did the database actually run?</td><td>The statements and their order — pair it with <em>Stats → Slow Queries</em> for cost</td></tr>
+                  <tr><td><strong>Debug UI Policies</strong></td><td>Which UI policies fired, in what order?</td><td>The client-side declarative rules and the order they applied in</td></tr>
+                  <tr><td><strong>Debug Metric Statistics</strong></td><td>What was slow in this transaction, overall?</td><td>An aggregate of slow transactions, scripts, queries, events and mutexes, sorted by transaction — the fastest "name the culprit" view</td></tr>
+                  <tr><td><strong>Debug Quotas</strong></td><td>Is the platform about to cancel this work?</td><td>Transaction-quota evaluation as it happens</td></tr>
+                  <tr><td><strong>Debug Log</strong></td><td>Show me everything logged</td><td>All log entries for the session</td></tr>
+                  <tr><td><strong>Enable All / Disable All</strong></td><td>Everything at once / stop the noise</td><td>Turn every flag on, and turn them all off again when you are done</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="notice"><strong>Why enable it at all:</strong> the clock tells you <em>how long</em> the load took and which layer ate the time; session debug tells you <em>which line</em> ate it — the exact business rule, ACL, SQL statement or UI policy, in execution order. That is the difference between "something on the incident table is slow" and "<code>INC: assign to group</code> fired six queries before the form rendered". The cost is real, though: it writes verbose output and slows the transactions it instruments, it affects <strong>your session only</strong>, so start in sub-production or a low-traffic window, impersonate the affected user when the issue is role-specific, and choose <em>Disable All</em> the moment you are finished.</div>
+
+            <h3>Which page do I check? — where the debug output lands</h3>
+            <p>The single most common confusion: enabling the flags is only half the workflow; you also have to know <strong>which page to look at afterwards</strong>. There are three places, and they do not show the same thing.</p>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Where you read it</th><th>What it shows</th><th>Notes</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>1. The bottom of the page you just loaded</strong></td>
+                    <td>The debug lines for the transaction you <em>just</em> ran, written inline under the form or list</td>
+                    <td>The default view. It always describes the <strong>previous</strong> transaction, so you must do a full page load first — an AJAX re-render produces nothing. Controlled by <code>glide.debugger.log.ui</code> = <em>Page</em>.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>2. Session Debug → Debug Log</strong></td>
+                    <td>The collected debug and <code>gs.log/info/error</code> output for your session, as a list you can scroll and filter</td>
+                    <td>The documented path: navigate to All → Session Debug → <em>Enable All</em>, reproduce, then open <em>Debug Log</em>. Use this when the bottom panel scrolled off or you want history.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>3. Script Debugger → Session Log tab</strong></td>
+                    <td>The last transactions and messages for your session, downloadable, including custom UIs such as Agent Workspace</td>
+                    <td>Roles: <code>script_debugger</code> (breakpoints, stepping) and <code>log_debugger</code> (read/download logs). Defaults: 100 transactions / 10,000 messages (<code>glide.debugger.log.transaction.count</code>, <code>glide.debugger.log_messages_limit</code>). <code>glide.debugger.log.ui</code> = <em>Session</em> moves output here exclusively.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>Worked example — the Incident form takes 12 seconds to open</h3>
+            <ol class="source-list">
+              <li><strong>Baseline the four numbers.</strong> Open an incident and read the response-time clock: total, network, server, browser. Say it reads 12,100 ms total with 900 ms in the browser, 400 ms on the network and ~10,800 ms on the server → this is <em>not</em> a client-script problem, so stop looking at client scripts.</li>
+              <li><strong>Split server into SQL vs scripts.</strong> All → System Logs → <em>Transactions</em> → find the <code>incident.do</code> request → open it. Read <strong>SQL time / count</strong> and <strong>business-rule time / count</strong>. SQL dominant → jump to step 4. Business-rule/ACL dominant → step 3.</li>
+              <li><strong>Turn session debug on.</strong> All → System Diagnostics → <em>Session Debug</em> → <em>Debug Business Rule (Details)</em>, <em>Debug Security</em>, <em>Debug SQL</em>. Only your session is affected, and only for the next transaction.</li>
+              <li><strong>Reproduce with a full page load.</strong> Reload the incident form (or open it again from the list) — the output lands at the <strong>bottom of that form</strong> and describes the load you just made. If the slowness is user-specific, impersonate that user first: their role set drives ACL cost.</li>
+              <li><strong>Read the output where it is most usable.</strong> On the form: which business rules ran and in what order, which ACLs were evaluated, every SQL statement. If it is too long for the panel, open Session Debug → <em>Debug Log</em> (or Script Debugger → <em>Session Log</em>) for the scrollable history.</li>
+              <li><strong>Cross-check against the aggregates.</strong> System Diagnostics → <em>Stats</em> → <em>Slow Transactions</em> filtered on <code>incident.do</code>, <em>Slow Queries</em> for a dot-walk or unindexed sort, <em>Slow Scripts</em> for a script that is slow everywhere.</li>
+              <li><strong>Check the known real-world causes for this form</strong> before writing anything: a reference field pointing at a huge table with no reference qualifier (a <code>cmdb_ci</code> picker over 1.5 M rows), a server script querying <code>sys_audit</code> for a previous field value, a <code>before query</code> business rule firing on every form load, or sorting an unindexed field.</li>
+              <li><strong>Fix the owner, then re-measure the same four numbers.</strong> One change at a time — reference qualifier added, query bounded, rule guarded with <code>changes()</code>. Then close session debug (<em>Disable All</em>) and reload to compare a clean measurement against the baseline.</li>
+              <li><strong>Lock it in.</strong> ATF test for the behaviour, and a Performance Analytics indicator on the incident form's p95 load so the regression alarm exists before it happens.</li>
+            </ol>
+
+            <h3>Scenario playbooks — runaway loop vs very long latency</h3>
+            <div class="table-wrap">
+              <table class="table-map">
+                <thead><tr><th>Scenario</th><th>What you see</th><th>Confirm it with</th><th>Fix it with</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Client script in an infinite loop</strong></td>
+                    <td>The browser tab freezes / goes "unresponsive"; no clock, no transaction row, because the request never finished. Server-side tools stay quiet — the loop is running on the user's machine.</td>
+                    <td>DevTools → <strong>Sources</strong> → Pause (⏸) and read the call stack to the offending handler; the console shows the last client script that logged. Reproduces only in that session/browser.</td>
+                    <td>Give the loop an exit (bounded <code>for</code>, guard counter, <code>break</code> on a sentinel); A/B it by deactivating the client script in sub-prod; re-measure with the clock. Platform quotas cannot help here — nothing runs server-side.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Server script in an infinite loop / runaway transaction</strong></td>
+                    <td>The form spins forever; the <strong>transaction-cancel timer and Cancel button</strong> appear in the alert banner; other users degrade. If nothing intervenes, the Quota Manager cancels the transaction and the user is notified.</td>
+                    <td>System Diagnostics → <em>Active Transactions (All Nodes)</em> → right-click → <em>Kill</em>. Then <em>System Logs → System Log → Transaction Cancellation Log</em> and search <code>maximum execution time exceeded</code> (e.g. "after 30000ms"). <em>Stats → Slow Scripts</em> and Session Debug → <em>Debug Metric Statistics</em> name the script.</td>
+                    <td>Bound the loop, <code>setLimit()</code> the query, batch the work, move it off the request thread (async business rule / Event Queue / Scheduled Job). Transaction quotas are a safety net, not a fix — the loop still has to be corrected.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Very long latency, but it finishes</strong></td>
+                    <td>The clock shows seconds instead of milliseconds; nothing is cancelled; one page or one list is consistently the slow one.</td>
+                    <td>Clock split → Transaction Log (SQL vs business-rule time) → Session Debug flags → <em>Stats → Slow Queries</em>.</td>
+                    <td>The Appendix F wins table: N+1 queries, unbounded queries, missing index, fat <code>onLoad</code>, oversized payload.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Everything is slow for everyone</strong></td>
+                    <td>Every transaction is slow, not one page — usually a job or integration saturating worker threads.</td>
+                    <td><code>stats.do</code> (threads, memory, background workers), <em>Active Transactions (All Nodes)</em>, <em>Stats → Slow Transactions</em> for the time window, Transaction Log filtered on 429/cancellations.</td>
+                    <td>Kill the offender, then fix the scheduled job / integration that caused it; check quotas and REST semaphore settings.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Slow for some users, or one list only</strong></td>
+                    <td>Role- or data-dependent: one team complains, another does not; or only a specific list is slow.</td>
+                    <td>Session Debug → <em>Debug Security</em> (their ACL set), sort/group on an unindexed field, export volume, reference-field data volume.</td>
+                    <td>Reference qualifier, index, remove the query hidden in an ACL script, trim the list's columns and dot-walks.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="notice"><strong>Why a transaction gets that slow in the first place</strong> — the platform's own list of causes: sorting a large table on an unindexed string field, grouping a large table on a mostly-unique field, exporting every row of a large table, and testing a badly scripted business rule that contains an <strong>infinite JavaScript loop</strong>. Four causes, four different owners: an index, a design change, a report, and a code fix.</div>
+            <div class="danger">
+              <h3>Guard every loop — the cheapest insurance in this appendix</h3>
+              <pre><code>// SERVER — a runaway query must not be able to spin forever
+var guard = 0;
+while (gr.next()) {
+    if (++guard &gt; 5000) {
+        gs.warn('Loop guard tripped on {0} after {1} rows', gr.getTableName(), guard);
+        break;
+    }
+    // ... work on gr
+}
+
+// CLIENT — same idea; a bounded for-loop cannot freeze the browser tab
+for (var i = 0; i &lt; rows.length &amp;&amp; i &lt; 5000; i++) {
+    // ... work on rows[i]
+}</code></pre>
+              <p>The guard turns a potential <em>infinite loop</em> into a logged warning you can find in <code>gs.warn</code> output — and it is what keeps the platform's transaction quota from ever becoming your user's error message.</p>
+            </div>
+
             <h3>Quick reference: symptom → tool</h3>
             <div class="table-wrap">
               <table class="table-map">
                 <thead><tr><th>Symptom</th><th>First tool</th></tr></thead>
                 <tbody>
-                  <tr><td>Whole page slow</td><td>Clock / <code>stats.do</code> → Transactions</td></tr>
-                  <tr><td>Form slow to open</td><td>Session Debug → Debug Business Rule + ACL</td></tr>
-                  <tr><td>List slow to load</td><td>Session Debug → Debug SQL; Slow Queries</td></tr>
-                  <tr><td>Typing lags on a form</td><td>Debug Client Scripts; browser console</td></tr>
+                  <tr><td>Whole page slow</td><td>Response-time clock → Transaction Log (<code>syslog_transaction</code>)</td></tr>
+                  <tr><td>Form slow to open</td><td>Session Debug → Debug Business Rule (Details) + Debug SQL; Transaction Log (BR vs SQL time)</td></tr>
+                  <tr><td>List slow to load</td><td>Session Debug → Debug SQL; System Diagnostics → Stats → Slow Queries</td></tr>
+                  <tr><td>Typing lags on a form</td><td>DevTools Performance; Client Transactions (client script / UI policy time); Debug UI Policies</td></tr>
+                  <tr><td>One specific form slow for everyone</td><td>Client Transactions filtered on that table; Slow Transactions filtered on its URL (e.g. <code>incident.do</code>)</td></tr>
+                  <tr><td>Request runs and runs, never returns</td><td>Alert-banner Cancel timer; System Diagnostics → Active Transactions (All Nodes) → Kill; Transaction Cancellation Log</td></tr>
+                  <tr><td>Browser tab frozen (script looping)</td><td>DevTools → Sources → Pause, read the stack, fix the loop</td></tr>
                   <tr><td>Intermittent slowness</td><td>Performance Analytics (trend, not single request)</td></tr>
-                  <tr><td>Specific users slow</td><td>ACL evaluation (their role set costs more)</td></tr>
+                  <tr><td>Specific users slow</td><td>ACL evaluation (their role set costs more) — Session Debug → Debug Security</td></tr>
                 </tbody>
               </table>
             </div>
@@ -4155,15 +4363,27 @@ if (resp.haveError()) {
               <p class="kcheck-intro">Answer before revealing. Click a question to see the answer.</p>
               <details>
                 <summary>Where does 'is it a business rule, a client script, or the DB?' get answered first?</summary>
-                <div class="kc-answer">The <strong>clock / <code>stats.do</code></strong> timing split. If Server dominates and Client is small, it was never the client script — measure before rewriting.</div>
+                <div class="kc-answer">The <strong>response-time clock</strong> at the end of the form or list — total / network / server / browser. If Server dominates and Browser is small, it was never the client script — measure before rewriting.</div>
               </details>
               <details>
                 <summary>Which debug flags turn on the detail you need for a server-heavy load?</summary>
-                <div class="kc-answer"><strong>Session Debug</strong> → Debug Business Rule, Debug Security (ACL), and Debug SQL (via right-click on the banner).</div>
+                <div class="kc-answer"><strong>All → System Diagnostics → Session Debug</strong> → Debug Business Rule (Details), Debug Security, Debug SQL (and Debug Metric Statistics for the aggregate view). Read the output at the bottom of the reload.</div>
               </details>
               <details>
                 <summary>List the symptom→tool pairings for: whole page slow, list slow, typing lag.</summary>
-                <div class="kc-answer">Whole page → clock/Transactions; list slow → Debug SQL + <strong>Slow Queries</strong>; typing lag → <strong>Debug Client Scripts</strong> + browser console.</div>
+                <div class="kc-answer">Whole page → response-time clock → Transactions; list slow → Debug SQL + <strong>System Diagnostics → Stats → Slow Queries</strong>; typing lag → <strong>DevTools Performance</strong> + Client Transactions.</div>
+              </details>
+              <details>
+                <summary>You turn on Session Debug and reload the incident form. Where does the output appear?</summary>
+                <div class="kc-answer">At the <strong>bottom of the page you just loaded</strong> — it describes the <em>previous</em> transaction, so a full page load is required. For history: Session Debug → <strong>Debug Log</strong>, or the <strong>Script Debugger → Session Log</strong> tab. It affects <strong>your session only</strong>; choose <em>Disable All</em> when finished.</div>
+              </details>
+              <details>
+                <summary>A form spins forever and never comes back. What do you do, in order?</summary>
+                <div class="kc-answer">Use the <strong>alert-banner timer / Cancel</strong>, then System Diagnostics → <em>Active Transactions (All Nodes)</em> → right-click → <em>Kill</em>. Find out why in <em>System Logs → System Log → Transaction Cancellation Log</em> (message <code>maximum execution time exceeded</code>) and <em>Stats → Slow Scripts</em> / <em>Debug Metric Statistics</em>. Transaction quotas protect the instance, not the user — the loop itself still has to be fixed.</div>
+              </details>
+              <details>
+                <summary>How do you prove a <em>client</em> script is the slow part rather than a business rule?</summary>
+                <div class="kc-answer">Two independent numbers must agree: the clock's <strong>browser</strong> share (and DevTools Performance), and the <strong>Client Transactions</strong> columns <em>client script time</em> / <em>UI policy time</em>. If the Transaction Log's business-rule time is what dominates, the client script is not the owner.</div>
               </details>
             </div>
           </section>
@@ -4791,7 +5011,7 @@ IncidentService.prototype = {
             <h3>Architecture &amp; scale</h3>
             <ol class="source-list">
               <li><strong>How do you process 100k inbound API requests without hitting transaction quotas or spiking latency?</strong> — Don't point 100k synchronous REST calls at the instance. Land the data in a ServiceNow <strong>Import Set / staging table</strong> (or a Scripted REST resource that auths, validates, inserts to staging and returns <code>202 Accepted</code>), then drain it with an <strong>asynchronous</strong> pipeline — a <strong>Scheduled Job</strong> or <strong>Event Queue + Script Action</strong> in bounded batches. That never consumes the <strong>REST semaphore</strong>, never exhausts worker threads, and never trips the <strong>transaction-quota</strong> governor. Coalesce on an external key for idempotency; raise the semaphore only after the staging queue absorbs the burst; observe via the Transaction Log (<code>429</code>s) and Event Queue depth. (Appendix O has the full breakdown + glossary.)</li>
-              <li><strong>The instance is slow for everyone. How do you find the cause?</strong> — Measure first: clock/<code>stats.do</code> splits Client/Server/Network/DB. Then Transactions for the specific request, then Session Debug flags (business rules, ACLs, SQL), then Slow Queries. Fix the owner, re-measure. (Appendix F/F2.)</li>
+              <li><strong>The instance is slow for everyone. How do you find the cause?</strong> — Measure first: the response-time clock splits total / network / server / browser, while <code>stats.do</code> and <em>Active Transactions (All Nodes)</em> show what the node is busy with. Then Transactions for the specific request, then Session Debug flags (business rules, ACLs, SQL), then Stats → Slow Queries. Fix the owner, re-measure. (Appendix F/F2.)</li>
               <li><strong>How do you make a change that survives upgrades?</strong> — Extend, don't edit: dictionary overrides, UI policies, scoped apps; never modify OOB records; keep custom logic in Script Includes you own. Fewer "skipped record" conflicts at upgrade. (Appendix O.)</li>
               <li><strong>Global vs scoped — and what changes with ES12?</strong> — Scoped apps get a namespace and are the upgrade-safe home for custom code; from Tokyo/Xanadu, JavaScript mode (ES12) is the deciding factor for modern syntax, not scope alone. (Section 12.)</li>
             </ol>
@@ -4885,8 +5105,9 @@ IncidentService.prototype = {
                   <tr><td><strong>ACL</strong></td><td>Access Control List — the server-side rules that grant or deny read/write/create/delete; the real security boundary.</td></tr>
                   <tr><td><strong>UI Policy</strong></td><td>Declarative client-side rule for making fields mandatory/read-only/visible; not a security control.</td></tr>
                   <tr><td><strong>Data Policy</strong></td><td>A field-level data rule enforced client-side and server-side (unlike a UI Policy).</td></tr>
-                  <tr><td><strong>Session Debug</strong></td><td>The banner menu that turns on debug output (business rules, ACLs, SQL, client scripts) for your session.</td></tr>
-                  <tr><td><strong>stats.do</strong></td><td>A built-in instance page (and the banner "clock") showing the timing split — Client / Server / Network / DB — for a page load.</td></tr>
+                  <tr><td><strong>Session Debug</strong></td><td>The flags under System Diagnostics → Session Debug that turn on debug output (business rules, ACLs, SQL, UI policies, quotas) for <em>your session only</em>; the output lands at the bottom of the next full page load.</td></tr>
+                  <tr><td><strong>Response Time Indicator</strong></td><td>The clock icon at the end of most forms and lists — total / network / server / browser milliseconds for the transaction you just made (<code>glide.ui.response_time</code> switches it off).</td></tr>
+                  <tr><td><strong>stats.do</strong></td><td>The instance's raw stats page (System Diagnostics → Stats, or type <code>stats.do</code> in the filter) — threads, memory, background workers and long-running thread stacks.</td></tr>
                   <tr><td><strong>Transaction Log</strong></td><td><code>syslog_transaction</code> — per-request timing and HTTP status (used to spot throttling/<code>429</code>s).</td></tr>
                   <tr><td><strong>Event Queue</strong></td><td><code>gs.eventQueue()</code> + a <em>Script Action</em> (<code>sysevent_script_action</code>) — async, decoupled processing.</td></tr>
                   <tr><td><strong>Scheduled Job</strong></td><td><code>sys_scheduled_job</code> — platform-run script on a schedule; runs asynchronously.</td></tr>
