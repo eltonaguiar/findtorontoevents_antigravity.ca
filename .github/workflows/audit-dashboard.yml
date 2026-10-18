@@ -1156,6 +1156,13 @@ jobs:
                   ftp_upload(ftp, "audit_dashboard/whopickedthis.html", f"/{SITE_ROOT}/audit", "whopickedthis.html", label)
               except Exception as e:
                   print(f"  [{label}] whopickedthis.html upload failed (non-fatal): {e}")
+              # 2026-10-18: MoneyMaker page (/audit/moneymaker.html) — per-class
+              # playable strategies with one-click simulations (reads verdict +
+              # research manifest client-side; Crypto shown as NOT READY).
+              try:
+                  ftp_upload(ftp, "audit_dashboard/moneymaker.html", f"/{SITE_ROOT}/audit", "moneymaker.html", label)
+              except Exception as e:
+                  print(f"  [{label}] moneymaker.html upload failed (non-fatal): {e}")
 
               # Apache config: gzip + cache-control. Without mod_deflate the
               # 17-22 MB dashboard_data.json times out on mobile cellular and
@@ -1220,7 +1227,7 @@ jobs:
               # HTML pages
               ftp.cwd(f"/{SITE_ROOT}/audit")
               for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
-                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html", "moneymaker.html",
                            "kimi_top_picks.html", "antigravity_picks.html", "portfolio_history.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
@@ -1345,7 +1352,7 @@ jobs:
               # HTML pages
               ftp.cwd("/audit")
               for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
-                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html", "moneymaker.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
                            "research.html",
@@ -1398,7 +1405,7 @@ jobs:
                   except Exception as e:
                       print(f"  [{label}] Failed {jsf}: {e}")
               for page in ["funds.html", "claudes_test.html", "trading_blueprint.html",
-                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html",
+                           "healthchecks.html", "moneyreadiness.html", "whopickedthis.html", "moneymaker.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
                            "research.html",

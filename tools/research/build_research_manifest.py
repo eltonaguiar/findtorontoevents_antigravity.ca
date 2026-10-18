@@ -121,6 +121,17 @@ def main() -> int:
         }
 
     top.sort(key=lambda s: s["score"], reverse=True)
+
+    # Per-class best strategies that carry walk-forward folds (n>=10) — the
+    # /audit/moneymaker.html replay source; global top-100 skews to few classes.
+    class_best = {}
+    for name in classes:
+        cand = [
+            s for s in top
+            if s["class"] == name and (s.get("n") or 0) >= 10 and len(s.get("folds") or []) >= 2
+        ]
+        class_best[name] = cand[:8]
+
     manifest = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": "tools/research/build_research_manifest.py",
@@ -128,6 +139,7 @@ def main() -> int:
         "n_strategies_total": len(top),
         "classes": classes,
         "top_strategies": top[:TOP_N],
+        "class_best": class_best,
     }
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(manifest, indent=1), encoding="utf-8")
