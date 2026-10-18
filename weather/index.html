@@ -285,6 +285,11 @@ body.scene-snowfall{background:linear-gradient(180deg,#0a1628,#1e3a5f)}
 body.scene-snowfall #bg-container{display:none}
 body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointer-events:none;color:#fff;font-size:18px;opacity:.15;animation:sceneSnow 6s linear infinite;white-space:pre;overflow:hidden}
 @keyframes sceneSnow{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+
+/* Collapsible sections */
+.card.collapsible .card-body{overflow:hidden;transition:max-height .3s ease,opacity .3s ease}
+.card.collapsible.collapsed .card-body{max-height:0;opacity:0;margin:0;padding:0}
+.collapse-toggle{float:right;cursor:pointer;font-size:.75rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--t2)}
 </style>
 </head>
 <body>
@@ -308,18 +313,41 @@ body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointe
     <button class="loc-btn" onclick="detectLocation()">&#128205; My location</button>
   </div>
 
+    </div>
+  </div>
+
+  <!-- LIVE CAMERAS -->
+  <div class="card collapsible" style="margin-top:16px">
+    <div class="lbl">📹 Live Toronto Cameras <button class="collapse-toggle" data-collapse="cams-body">Hide</button></div>
+    <div class="card-body" id="cams-body">
+    <div style="margin-top:8px;display:grid;grid-template-columns:1fr;gap:10px">
+      <iframe src="https://www.youtube.com/embed/bbjwotvAvDM?autoplay=0&mute=1" style="width:100%;height:260px;border:0;border-radius:12px" loading="lazy" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe src="https://www.youtube.com/embed/live_stream?channel=UC28IT4ghbKO988OzkIfRCbw" style="width:100%;height:260px;border:0;border-radius:12px" loading="lazy" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div style="font-size:.8rem;color:var(--t2);padding:8px">CN Tower East/West cams: <a href="https://share3.earthcam.net/tJ90CoLmq7TzrY396Yd88GfkimyXFNScXrEOdCSypnE!.tJ90CoLmq7TzrY396Yd88EBE9WWV4LNh9pQ1rv5B0Do!.tJ90CoLmq7TzrY396Yd88NxxCz9PmwhJDLJgkgiBR2s!/cn_tower/cn_tower_cam_-_east_view/live" target="_blank" rel="noopener" style="color:var(--accent)">East</a> · <a href="https://share3.earthcam.net/tJ90CoLmq7TzrY396Yd88GfkimyXFNScXrEOdCSypnE!.tJ90CoLmq7TzrY396Yd88EBE9WWV4LNh9pQ1rv5B0Do!.tJ90CoLmq7TzrY396Yd88MGEkOMrIFbd_7noZ9cXHeA!.tJ90CoLmq7TzrY396Yd88G41QaciuJNo1DCilzw4PWI!.tJ90CoLmq7TzrY396Yd88HNWVq1w-xKQPUAcVyBqiYo!/cn_tower/cn_tower_cam_-_west_view/live" target="_blank" rel="noopener" style="color:var(--accent)">West</a></div>
+    </div>
+    <div style="font-size:.72rem;color:var(--t3);margin-top:8px">Live streams from YouTube. If a stream is offline, try <a href="https://worldcams.tv/canada/toronto/city-views" target="_blank" rel="noopener" style="color:var(--accent)">WorldCams Toronto</a>.</div>
+  </div>
+
+    </div>
+  </div>
+
   <!-- LIVE WEATHER MAP -->
-  <div class="card" style="margin-top:16px">
-    <div class="lbl">🗺️ Live Weather Map (Toronto area)</div>
+  <div class="card collapsible" style="margin-top:16px">
+    <div class="lbl">🗺️ Live Weather Map (Toronto area) <button class="collapse-toggle" data-collapse="map-body">Hide</button></div>
+    <div class="card-body" id="map-body">
     <div style="margin-top:8px">
       <iframe src="https://embed.windy.com/embed2.html?lat=43.6532&lon=-79.3832&zoom=7&level=surface&overlay=rain&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" style="width:100%;height:320px;border:0;border-radius:12px" loading="lazy" allowfullscreen></iframe>
     </div>
     <div style="font-size:.72rem;color:var(--t3);margin-top:8px">Powered by Windy. Use overlay menu inside the map to switch rain/wind/temp/clouds. For AI-driven forecasts see <a href="https://deepmind.google/science/weathernext/" target="_blank" rel="noopener" style="color:var(--accent)">Google WeatherNext</a>.</div>
   </div>
 
+    </div>
+  </div>
+
   <!-- LOOK & FEEL (skins) -->
-  <div class="card" id="skins" style="margin-top:16px">
-    <div class="lbl">🎨 Skins &amp; Themes — click any to change the look (weather stays live in Auto)</div>
+  <div class="card collapsible" id="skins" style="margin-top:16px">
+    <div class="lbl">🎨 Skins &amp; Themes — click any to change the look (weather stays live in Auto) <button class="collapse-toggle" data-collapse="skins-body">Hide</button></div>
+    <div class="card-body" id="skins-body">
     <div class="theme-btns" style="margin-top:8px">
       <button class="theme-btn" data-theme="auto">Auto (weather)</button>
       <button class="theme-btn" data-theme="glass">Glass</button>
@@ -396,11 +424,13 @@ body.scene-snowfall::after{content:'❄';position:fixed;inset:0;z-index:0;pointe
       <button class="theme-btn" data-layout="diagonal">Diagonal</button>
       <button class="theme-btn" data-layout="centered">Centered</button>
     </div>
+    </div>
   </div>
 
   <!-- EMBEDDED PLAYER -->
-  <div class="card span2" style="margin-top:16px">
-    <div class="lbl">▶️ Embedded Player — Music Videos / Trailers / Radio</div>
+  <div class="card span2 collapsible" style="margin-top:16px">
+    <div class="lbl">▶️ Embedded Player — Music Videos / Trailers / Radio <button class="collapse-toggle" data-collapse="player-body">Hide</button></div>
+    <div class="card-body" id="player-body">
     <div class="player-tabs" id="player-tabs">
       <button class="player-tab active" data-cat="music">🎵 Music Videos</button>
       <button class="player-tab" data-cat="trailers">🎬 Movie Trailers</button>
@@ -1641,5 +1671,23 @@ setTimeout(function(){ loadSideEvents(); loadSideNews(); loadSideBooks(); loadSi
 </script>
 
 <!-- Vanta.js removed — canvas weather engine handles all backgrounds -->
+
+<script>
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t && t.classList && t.classList.contains('collapse-toggle')){
+    var id=t.getAttribute('data-collapse');
+    var body=document.getElementById(id);
+    var card=t.closest('.card');
+    if(body){
+      var collapsed=body.style.display==='none';
+      body.style.display=collapsed?'':'none';
+      if(card) card.classList.toggle('collapsed', !collapsed);
+      t.textContent=collapsed?'Hide':'Show';
+    }
+  }
+});
+</script>
+
 </body>
 </html>
