@@ -1327,11 +1327,33 @@ def main():
     all_results = []
     all_prices = {}
 
+    # ── Wall-clock budget + reduced-universe switch (2026-10-17) ─────────────
+    # The GHA job cap is 30 min and picks_now.json is written only AFTER this
+    # scoring loop. Cumulative yfinance/FMP 404+429 delays across the full
+    # universe previously burned the whole job (2026-10-17 06:06 UTC run was
+    # cancelled at 06:37) and the process died BEFORE the write -> page stale.
+    # Now the scan stops at the budget and falls through to the JSON/report
+    # writers with partial results (partial > stale), always.
+    #   PICKS_NOW_BUDGET_S        scoring wall-clock budget seconds (default 900)
+    #   PICKS_NOW_MAX_PER_CLASS   reduced-universe test: keep only N syms/class
+    budget_s = float(os.environ.get("PICKS_NOW_BUDGET_S", "900") or 900)
+    max_per_class = int(os.environ.get("PICKS_NOW_MAX_PER_CLASS", "0") or 0)
+    _t_score = time.monotonic()
+    _budget_hit = False
+
     for cls, config in UNIVERSE.items():
         tickers = config["tickers"]
+        if max_per_class > 0:
+            tickers = tickers[:max_per_class]
         print(f"\n📊 Scanning [{cls}] ({len(tickers)} symbols)...")
 
         for sym in tickers:
+            if time.monotonic() - _t_score > budget_s:
+                _budget_hit = True
+                print(f"\n⏱️  budget {budget_s:.0f}s reached — stopping scan, writing "
+                      f"PARTIAL results ({len(all_results)} symbols scored) instead "
+                      f"of being killed before the JSON write")
+                break
             try:
                 # Use multi-source failover chain instead of bare yfinance
                 df, info = fetch_ohlcv_failover(sym)
@@ -1360,6 +1382,8 @@ def main():
                 pass  # silently skip failed symbols
 
         print(f" done — {sum(1 for r in all_results if r['class']==cls)} scored")
+        if _budget_hit:
+            break
 
     # ── Build output ──
     df_res = pd.DataFrame(all_results)
@@ -1548,9 +1572,14 @@ def main():
         return obj
 
     json_data = clean_nan(json_data)
-    with open(json_path, "w") as f:
+    # Atomic write (2026-10-17): tmp + os.replace so a job cancel/kill can
+    # never leave picks_now.json truncated (invalid JSON breaks the page).
+    _tmp_path = json_path.with_suffix(".json.tmp")
+    with open(_tmp_path, "w") as f:
         json.dump(json_data, f, indent=2, default=str)
-    print(f"\n📁 JSON: {json_path}")
+    os.replace(_tmp_path, json_path)
+    print(f"\n📁 JSON: {json_path} (n_scored={json_data.get('n_scored')}, "
+          f"generated_at={json_data.get('generated_at')}, budget_hit={_budget_hit})")
 
     # ── Save to MySQL tracking table (best-effort, production GHA path preferred) ──
     try:

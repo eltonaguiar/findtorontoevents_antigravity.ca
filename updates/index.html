@@ -33,6 +33,81 @@
   Do NOT append to the end of the file - the oldest entries are at the bottom.
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
+
+  <!-- Update: Oct 17, 2026 — FavCreators /fc/#/guest: why follows vanished on refresh (root cause + fixes) -->
+  <div class="update-entry" style="--dot-color: #60a5fa;" data-tags="favcreators,follow,persistence,tiktok,quick-add,php52,bugfix,live-status" data-category="favcreators" data-types="fix,analysis">
+    <div class="update-date">Oct 17, 2026 &mdash; <strong style="color:#60a5fa;">FavCreators follow persistence restored — a PHP 5.2 parse error was silently killing every save, plus a Quick-Add URL parser gap</strong></div>
+    <div class="update-content">
+      <p><strong>What users saw:</strong> Quick Add on <code>/fc/#/guest</code> appeared to work, but after a refresh the creator (e.g. TikTok <code>nikkibby11</code>) was gone from the followed list &mdash; and Twitch/TikTok live notifications for newly-followed creators looked late or mis-ordered.</p>
+
+      <p><strong>Root cause (3 stacked defects):</strong></p>
+      <ul>
+        <li><strong>Backend &mdash; the real one.</strong> <code>ensure_tables.php</code> used the <code>[]</code> short-array literal, a <em>parse error on the host&rsquo;s PHP 5.2</em>. <code>save_creators.php</code> and <code>login.php</code> both include it, so <strong>every write died with HTTP 500 while reads kept working</strong>. Quick Add only ever wrote local state; the refresh reloaded the authoritative DB list and the creator &ldquo;disappeared&rdquo;. <code>login.php</code> had a second bug: the include overwrote <code>$data</code> (the request body), producing <code>WHERE email = ''</code> &rarr; &ldquo;User not found&rdquo; for every login. The SPA&rsquo;s <code>register.php</code> route was also missing entirely.</li>
+        <li><strong>Frontend &mdash; Quick Add parsing.</strong> The legacy <code>input.split(":")</code> parser turned <code>https://tiktok.com/@user</code> into platform <code>//tiktok.com/@user</code>, matching no supported platform, so no TikTok account was ever built to save. A full-URL parser (<code>urlMatch</code>) fixes scheme-ful URLs but required <code>https://</code> &mdash; the reported scheme-less, typo&rsquo;d input <code>tiktok.comm/@nikkibby11</code> still fell through. The handler now pre-parses <code>/^(?:https?:\/\/)?(?:www\.)?tiktok\.com+\/?@([^/?#]+)/i</code>, normalizing it to username <code>nikkibby11</code> + platform <code>tiktok</code> (live-checked) before the colon fallback &mdash; while twitch/kick/junk strings stay untouched.</li>
+        <li><strong>Staging &mdash; why it &ldquo;fixed itself&rdquo;.</strong> Production at one point served a stale <code>assets/main-DF_ZQ_dn.js</code> lacking the parser that was already fixed in the repo, so a plain cache refresh switched users onto the correct bundle. Separately, live checks start ~2&nbsp;s after load, then every 180&nbsp;s, sequentially with 500&nbsp;ms spacing in priority order (already-live &rarr; recently active &rarr; bell-enabled &rarr; others) &mdash; a newly followed TikTok creator only shows accurate live state after the first full pass, so early notifications can look late. That is scan latency by design, confirmed benign.</li>
+      </ul>
+
+      <p><strong>Fixes shipped today:</strong> commit <code>c56f1af9ee</code> (<code>ensure_tables.php</code> + <code>login.php</code> PHP 5.2-safe, new <code>register.php</code>, real-browser regression test <code>favcreators/tests/follow_persist_ui_test.js</code> &mdash; 2 users &times; 2 add methods, fresh DB read after reload), plus the Quick-Add parser hardening above in <code>favcreators/docs/assets/main-DF_ZQ_dn.js</code> with <code>favcreators/tests/quick_add_url_test.js</code> asserting the exact reported inputs.</p>
+
+      <p><strong>Verified:</strong> <code>node --check</code> on the bundle, both test files pass (follow-persistence UI test ALL PASS twice, exit 0), and production <code>login &rarr; save_creators {"status":"success"} &rarr; fresh get_my_creators</code> contains the TikTok account. Authentication was never bypassed &mdash; saves still require the signed-in session and only write to that user&rsquo;s own list. Full write-up: <code>updates/2026-10-17-favcreators-guest-follow-rootcause.md</code> (plus the earlier <code>...-follow-persistence-fix.md</code> / <code>...-tiktok-url-persistence-fix.md</code> notes).</p>
+    </div>
+  </div>
+
+  <!-- Update: Oct 17, 2026 (part 2) — FavCreators creator-tracking fixes + /audit deep QA -->
+  <div class="update-entry" id="fc-creator-tracking-audit-qa-2026-10-17" style="--dot-color: #f59e0b;" data-tags="favcreators,creator-tracking,live-status,guest,persistence,audit,qa,zero-pnl,fix" data-category="favcreators" data-types="fix,analysis">
+    <div class="update-date">Oct 17, 2026 &mdash; <strong style="color:#f59e0b;">Creator-tracking fixes shipped (guest persistence, Kick live status) + full /audit QA report</strong></div>
+    <div class="update-content">
+      <p><strong>Creator-tracking fixes deployed to <code>/fc/#/guest</code> today (all tested + live):</strong></p>
+      <ul>
+        <li><strong>Guest boot wipe (the real persistence killer).</strong> The creators-state initializer ran <code>if(qn) return ii</code> on the guest route &mdash; it <em>discarded localStorage on every reload</em> and the first save effect then overwrote storage with the 13-creator default pack, erasing anything a signed-out visitor had just followed. Removed; guests now hydrate from localStorage like every other route, and the server <code>user_id=0</code> fetch <em>merges</em> instead of hard-replacing. <code>kick.com/kaneljoseph</code> and <code>kick:kaneljoseph</code> both survive refresh now (<code>favcreators/tests/guest_follow_ui_test.js</code> <strong>8/8</strong>).</li>
+        <li><strong>Live/online status for quick-added streamers.</strong> Quick Add derived <code>isLiveStreamer</code>/<code>checkLive</code> from <code>defaultLivePlatforms</code> (<code>["tiktok"]</code> only, and guests never load server prefs), so a followed Kick/Twitch/YouTube creator was <em>explicitly excluded</em> from the live checker &mdash; online status could never appear. Quick-added kick/twitch/youtube accounts are now unioned into the live-capable set (per-creator toggles still override).</li>
+        <li><strong>Platform-first colon input.</strong> <code>kick:kaneljoseph</code> parsed as name &ldquo;kick&rdquo; with an <em>empty</em> accounts array; the parser now swaps <code>[platform, handle]</code> pairs (plain <code>name:platform</code> unchanged).</li>
+        <li><strong>Guest warning + bell nudges.</strong> Signed-out Quick Add now shows an amber toast &mdash; &ldquo;⚠ Not signed in &amp;#8212; sign in to persist your followed users!&rdquo; &mdash; and every successful add reminds the user to tap the 🔔 bell to track live notifications. Plus earlier: scheme-less/typo TikTok input (<code>tiktok.comm/@nikkibby11</code>) now normalizes to <code>nikkibby11</code>.</li>
+      </ul>
+      <p><strong>Verification:</strong> <code>node --check</code> + 6 guard-groups in <code>quick_add_url_test.js</code> pass; signed-in suite <code>follow_persist_ui_test.js</code> ALL PASS (2 users × 2 add methods); new guest E2E 8/8; deployed via FTP with <strong>SHA-256 byte-match</strong> and live HTTP probes confirming every marker on production.</p>
+      <p><strong><code>/audit</code> deep QA (read-only &mdash; findings below, no audit code changed yet):</strong> 0%-PnL rows are largely <em>inaccurate</em>: <code>universal_pick_resolver.py</code>&rsquo;s no-live-price TIME_EXIT fallback writes <code>exit_price = entry, pnl = 0</code> (142 flat rows, incl. impossible <code>TP_HIT</code>/<code>SL_HIT</code> with 0% and a Saturday batch close) &rarr; treat as UNRESOLVED. Active-window PnL is structurally frozen for non-crypto (18/21 actives have <code>current_price == entry_price</code>). Justifications: 16/21 actives carry a <code>reason</code> &mdash; all technical/quant/sentiment, <em>no fundamental analysis anywhere</em>; a few cite &ldquo;WR=80% on 0 trades&rdquo;. Zero picks: MEME/PENNY_STOCK have no emitters; all 7 classes fail Smart-Picks floors (0 smart picks; Money-Ready: 0 READY). Staleness sweep: only <code>/audit/</code>, research_index, trading_blueprint, claudes_test are fresh &mdash; <code>picks-now.html</code> stopped updating <strong>132d ago (Jun 13)</strong>, plus 10+ pages 126&ndash;166d stale; hyrotrader&rsquo;s backing JSONs are fresh except an <strong>empty journal (0 trades)</strong>. Rating-tuning recommendations (resolver first &rarr; suppress WR% below min-trades &rarr; dedupe TIP×2/SPY×2 &rarr; hide sub-floor scores &rarr; label analysis_type) were delivered to the operator for approval.</p>
+      <p><strong>Homepage thumbnail QA (also read-only):</strong> injector healthy (98/100 cards) but <code>nowtoronto.com</code> (1,341 events) and <code>torontobotanicalgarden.ca</code> (92) <strong>403 hotlinkers</strong> (proxy list gap), ROM contributes 901/901 events with no image + 7 broken self-hosted URLs; fixes proposed (extend <code>proxyImageUrl</code>, backfill ROM/NPS images).</p>
+      <p><span style="color:#94a3b8;font-size:0.9em">Full write-up: <code>updates/2026-10-17-favcreators-guest-follow-rootcause.md</code> (+ earlier follow-persistence / TikTok-URL notes).</span></p>
+    </div>
+  </div>
+
+  <!-- Update: Jul 11, 2026 — TAA is the one validated money-ready track; directional/ML/AI-tournament picks remain 0-solid (honestly) -->
+  <div class="update-entry" style="--dot-color: #34d399;" data-tags="money-ready,tactical-asset-allocation,smart-beta,taa,rotation,vaa,paa,ml-contained,goal-1,honest-verdict" data-category="trading" data-types="milestone,analysis">
+      <div class="update-date" style="line-height:1.5">Jul 11, 2026 &mdash; <strong style="color:#34d399;">First validated, deployable money-ready track: ETF tactical asset allocation (smart-beta) &mdash; while every directional / ML / AI-tournament pick stays honestly 0-solid</strong></div>
+      <div class="update-content">
+        <p><strong>The honest headline:</strong> after months proving there is <em>no net-of-cost directional alpha</em> reachable on our free data (the entire crypto ledger, all 9 databases, every cross-source), we now have <strong>one thing that robustly works and is deployable today: ETF Tactical Asset Allocation (TAA / dual-momentum)</strong>. It is <em>smart-beta, not alpha</em> &mdash; it matches the market&rsquo;s return with roughly <strong>half the drawdown</strong> (crash-avoidance), validated look-ahead-free across 2007&ndash;2026 <em>including</em> the 2008 GFC.</p>
+
+        <p><strong>Three independent TAA constructions all beat SPY risk-adjusted</strong> (2007&ndash;2026, monthly rebalance, absolute-momentum filter to bonds, on a 14-ETF free-data universe) &mdash; that three separate builds all work is the decisive evidence the family is real, not curve-fit:</p>
+        <ul>
+          <li><strong>Top-5 asset-class rotation (6-month momentum)</strong> &mdash; Sharpe <strong>0.88</strong> vs SPY 0.74; <strong>MaxDD &minus;19% vs SPY &minus;51%</strong>; Calmar 0.48 vs 0.21; positive in all three time-thirds.</li>
+          <li><strong>VAA-G4 (Keller Vigilant AA)</strong> &mdash; Sharpe 0.77, MaxDD &minus;20%; regime-<em>complementary</em> to the rotation (strong when rotation is weak).</li>
+          <li><strong>PAA1 (Keller Protective AA)</strong> &mdash; the highest single-strategy Sharpe <strong>0.93</strong>, MaxDD &minus;21%, positive in all three time-thirds (its gradual bond-protection smooths returns).</li>
+        </ul>
+        <p>The deployed <strong>v2 proof-of-concept is a 50/50 blend</strong> of the two most complementary members (rotation + VAA): Sharpe <strong>0.89</strong>, MaxDD <strong>&minus;16%</strong>, Calmar 0.50 &mdash; it beats <em>both</em> components with the smoothest regime profile, the strongest result of the whole investigation. Honestly labeled: better <em>risk-adjusted</em> return, <strong>not</strong> excess return; in-sample-robust, now forward-tracking at modest size (the real gate is 6&ndash;12 months live vs SPY).</p>
+
+        <p><strong>Live, measurable proof-of-concept.</strong> A real basket (<code>poc_picks / tactical_asset_rotation_v1</code>: EEM / IWM / DBC / QQQ / EFA at 20% each, entry 2026-07-04, benchmark SPY, entry prices locked) <strong>auto-resolves 2026-07-18</strong> &mdash; a plumbing/liveness read; the verdict-grade gate is months out.</p>
+
+        <p><strong>Do we have any &ldquo;solid picks&rdquo; elsewhere? Honestly, no &mdash; and the live audit pages agree.</strong> The current <a href="/audit/">/audit</a> verdict is still <strong>0/6 money-ready</strong>; <a href="/audit/pick_funnel.html">pick_funnel</a> shows nothing sized; the <a href="/audit/ai_leaderboard.html">AI-leaderboard</a> Monte-Carlo verdict independently concludes the tournament&rsquo;s high profit-factors are <em>&ldquo;trend-following shape, not edge&rdquo;</em> (only <code>grok3</code> at 67% WR / n=52 even clears the synthetic-contamination filter, and it is flagged UNPROVEN). That outside conclusion <em>corroborates</em> ours: the honest win is beta discipline, not a directional signal.</p>
+
+        <p><strong>ML layer &mdash; contained.</strong> A re-audit found the <code>enhanced-ml-crypto</code> emitter was quietly writing 28%-WR <code>ml_enhanced_*</code> losers into the live pick ledger every 2 hours with no halt gate. That is now <strong>fail-closed at the emitter</strong>, the fabricated hard-coded &ldquo;elite&rdquo; win-rates (87&ndash;94% claimed vs 28% real) were removed, and the verdict is <em>retire/pause, do not retrain</em> &mdash; the models train on entry-price-contaminated labels, so retraining only propagates the bias.</p>
+
+        <p><span style="color:#94a3b8;font-size:0.9em">Refs: <code>reports/TACTICAL_ROTATION_EDGE_2026-07-04.md</code>, <code>CROSS_ASSET_EDGE_SYNTHESIS_2026-07-04.md</code>, <code>DATA_INTEGRITY_entry_price_2026-07-03.md</code>, <code>ML_AUDIT_2026-07-04.md</code>; tools <code>tactical_rotation_tracker.py</code> / <code>tactical_blend_tracker.py</code>; skill <code>/money-maker-ready-July112026edition</code>. Not financial advice &mdash; research/educational.</span></p>
+      </div>
+    </div>
+
+
+  <!-- Update: Jun 22, 2026 (PM-2) — Parallel 6-angle adversarial edge-hunt swarm: no hedge-fund-tier edge on current data; the lead's multi-regime robustness corrected -->
+<!-- SUBQ-INDEPENDENT-REVIEW:2026-10-12:START -->
+  <div class="update-entry" id="subq-independent-review-2026-10-12" style="--dot-color: #d9b568;" data-tags="subq,decision-ai,independent-review,forward-testing,goal-1" data-category="trading" data-types="analysis,research">
+    <div class="update-date">October 12, 2026 &mdash; 5:26 PM EDT</div>
+    <h2 class="update-title">Is SubQ Snap worth paying for? Our independent audit</h2>
+    <div class="update-content">
+      <p><strong>20 inference calls, 159,430 input tokens, estimated token cost $0.00797.</strong> We compared our own pre-recorded ratings with SubQ, tested 24 labelled evidence claims against a local Qwen model, and inspected forward performance by asset class.</p>
+      <p>SubQ was fast and inexpensive, but twice accepted a missing-row-to-zero-trades inference. It did not establish a new profitable pick or forecasting advantage. Our verdict: <strong>a bounded semantic-review pilot, not an execution or capital-allocation gate.</strong></p>
+      <p><a href="/updates/2026-10-12-subq-independent-review.html"><strong>Read the full experiment: ratings, disagreements, errors, exact API ledger, costs and research priorities</strong></a></p>
+    </div>
+  </div>
+<!-- SUBQ-INDEPENDENT-REVIEW:2026-10-12:END -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -66,6 +141,7 @@
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
   <p class="intro"><strong>Refreshed:</strong> 2026-10-17 00:39 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-07-11 01:27 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -345,6 +421,7 @@
 
   <!-- Update: Jun 22, 2026 (PM-2) — Parallel 6-angle adversarial edge-hunt swarm: no hedge-fund-tier edge on current data; the lead's multi-regime robustness corrected -->
 <div class="update-entry" style="--dot-color: #f87171;" data-tags="money-ready,edge-hunt,parallel-swarm,adversarial,correction,data-constrained,goal-1" data-category="trading" data-types="analysis,milestone">
+  <div class="update-entry" style="--dot-color: #f87171;" data-tags="money-ready,edge-hunt,parallel-swarm,adversarial,correction,data-constrained,goal-1" data-category="trading" data-types="analysis,milestone">
       <div class="update-date" style="line-height:1.5">Jun 22, 2026 (PM-2) &mdash; <strong style="color:#f87171;">Parallel adversarial edge-hunt (6-angle swarm): no hedge-fund-tier edge on current data &mdash; and an honest correction to the lead&rsquo;s robustness</strong></div>
       <div class="update-content">
         <p><strong>What ran:</strong> a parallel multi-agent swarm hunted for a hedge-fund-tier (Tier-2: profit-factor &ge;1.5, win-rate &ge;50) honest edge across <strong>six independent angles at once</strong> &mdash; CRYPTO combined-features, CRYPTO long-side, MEMECOIN, FOREX+COMMODITY, EQUITY (beta-neutral), and non-price meta-signals &mdash; each gated through a bootstrap-confidence-interval robustness test, then <strong>adversarially verified</strong> (a skeptic agent tried to refute every candidate). All on the honest intrabar first-touch ledger.</p>
@@ -1499,6 +1576,7 @@ curl -s "https://findtorontoevents.ca/audit/data/pf_portfolio_deepseek_v4__aggre
 
 <div class="update-entry" style="--dot-color: #f97316;" data-tags="correction,verbatim-rt,resolver,forensic,wbkz389ek,pipeline-integrity,5-ai-peer-review,goal-1,trading,documentation" data-category="trading" data-types="documentation">
   <div class="update-date">Oct 04, 2026 &mdash; LIVE (updated hourly)</div>
+  <div class="update-date">Jul 11, 2026 &mdash; LIVE (updated hourly)</div>
   <p><strong>2026-06-01 EST (verbatim+RT applied to my own output):</strong> Workflow <code>wbkz389ek</code> (5-AI peer-reviewed pipeline-resolution plan) just landed. Its independent forensic agent ran <em>actual</em> grep on the resolver code + live SQL on <code>trading_picks</code> / <code>signal_outcomes</code> and the numbers diverge significantly from what I posted in the earlier ELI5 entry below (which repeated peer-reported figures from kilo's session). Per the canonical anti-fabrication discipline, I am correcting on the record before the operator acts on bad numbers.</p>
   <table style="border-collapse:collapse;font-size:0.92em;margin:8px 0;">
     <thead><tr style="background:#f3f4f6;"><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Claim in my ELI5 (from peer dump)</th><th style="padding:4px 10px;border:1px solid #ddd;text-align:left;">Actual (forensic agent on disk + DB)</th></tr></thead>
@@ -12275,6 +12353,8 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
+          Oct 17, 2026 &mdash; 06:25 PM EST | Hourly Portfolio Update
+          Jul 11, 2026 &mdash; 02:36 PM EST | Hourly Portfolio Update
           Oct 17, 2026 &mdash; 09:37 PM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
@@ -15671,6 +15751,8 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 17, 06:25 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Jul 11, 02:36 PM EST)</h4>
         <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 17, 09:37 PM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
