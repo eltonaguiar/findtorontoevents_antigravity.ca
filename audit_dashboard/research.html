@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Research Lab | findtorontoevents.ca/audit</title>
+<meta name="description" content="The 100 best research strategies across every asset class — PF, Sharpe, walk-forward folds, and the weekly research-run history with verdicts.">
+<link rel="canonical" href="https://findtorontoevents.ca/audit/research.html">
+<style>
+  :root{--bg:#060a14;--card:rgba(255,255,255,.05);--card-b:rgba(255,255,255,.10);--t1:#eef1f8;--t2:#94a3b8;--t3:#64748b;
+        --green:#22c55e;--amber:#f59e0b;--red:#ef4444;--accent:#38bdf8;--purple:#a855f7}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(180deg,#060a14 0%,#0b1224 100%);color:var(--t1);min-height:100vh;padding:22px;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1120px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .back{font-size:.82rem;padding:8px 14px;border:1px solid var(--card-b);border-radius:10px;background:var(--card);color:var(--accent);text-decoration:none}
+  .back:hover{text-decoration:none;border-color:var(--accent)}
+  h1{font-size:1.5rem;margin:10px 0 4px}
+  .sub{color:var(--t2);font-size:.86rem;margin-bottom:14px;line-height:1.5}
+  .status{color:var(--t3);font-size:.78rem;margin-bottom:14px}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--t3);border-top-color:transparent;border-radius:50%;
+        animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px}
+  .cc{background:var(--card);border:1px solid var(--card-b);border-radius:12px;padding:14px}
+  .cc h3{font-size:.95rem;margin-bottom:4px;text-transform:capitalize}
+  .cc .v{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:99px;display:inline-block;margin:4px 0}
+  .cc .v.edge{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.5)}
+  .cc .v.no{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.45)}
+  .cc .v.other{background:rgba(148,163,184,.12);color:var(--t2);border:1px solid var(--card-b)}
+  .cc .meta{color:var(--t3);font-size:.7rem;margin-top:4px}
+  h2{font-size:1.1rem;margin:22px 0 10px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .toolbar input{flex:1;min-width:200px;padding:9px 12px;border-radius:9px;border:1px solid var(--card-b);
+                 background:var(--card);color:var(--t1);font-size:.85rem;outline:none}
+  .toolbar input:focus{border-color:var(--accent)}
+  .fbtn{padding:7px 12px;border-radius:9px;border:1px solid var(--card-b);background:var(--card);color:var(--t2);
+        font-size:.75rem;font-weight:700;cursor:pointer;text-transform:capitalize}
+  .fbtn.active{border-color:var(--accent);color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:.79rem;background:var(--card);border:1px solid var(--card-b);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+  th{color:var(--t3);font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none}
+  th:hover{color:var(--t1)}
+  td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .rank{color:var(--t3);font-weight:700}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.71rem}
+  .good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}
+  .chip{font-size:.64rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid var(--card-b);color:var(--t2);white-space:nowrap;display:inline-block}
+  .chip.crypto{border-color:rgba(245,158,11,.5);color:#fbbf24}
+  .chip.equity{border-color:rgba(56,189,248,.5);color:#7dd3fc}
+  .chip.commodity{border-color:rgba(244,63,94,.5);color:#fda4af}
+  .chip.forex{border-color:rgba(34,197,94,.5);color:#86efac}
+  .chip.bond{border-color:rgba(168,85,247,.5);color:#c4b5fd}
+  .chip.etf{border-color:rgba(14,165,233,.5);color:#7dd3fc}
+  .chip.futures{border-color:rgba(251,191,36,.5);color:#fde68a}
+  .wf{display:inline-flex;gap:2px;vertical-align:middle}
+  .wf i{width:7px;height:14px;border-radius:2px;display:inline-block}
+  .a{background:var(--red)}.b{background:#7f1d1d}.c{background:#450a0a}
+  details{background:var(--card);border:1px solid var(--card-b);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  summary{cursor:pointer;font-weight:700;font-size:.9rem;text-transform:capitalize}
+  summary:hover{color:var(--accent)}
+  .runs{margin-top:10px;font-size:.78rem}
+  .run{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .run:last-child{border-bottom:none}
+  .funnel{color:var(--t3);font-size:.7rem}
+  .footer{margin-top:26px;padding-top:12px;border-top:1px solid var(--card-b);color:var(--t3);font-size:.74rem;line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/audit/">← Dashboard</a>
+    <a class="back" href="/audit/moneyreadiness.html">💰 Money readiness</a>
+  </div>
+  <h1>🧪 Strategy Research Lab</h1>
+  <div class="sub">Weekly autonomous research runs (literature → candidates → backtest → cross-test → synthesis)
+    across every asset class. Below: the <b>100 best strategies with their proof</b> — profit factor, Sharpe,
+    max drawdown, trade count, and the per-fold walk-forward strip — plus the full run history with verdicts.
+    <span id="loading"><span class="spin"></span>loading research manifest…</span></div>
+
+  <div class="class-grid" id="classes"></div>
+
+  <h2>🏆 Top 100 strategies (ranked by proof score: PF + Sharpe − MDD drag, n≥10 only)</h2>
+  <div class="toolbar">
+    <input id="q" type="text" placeholder="Filter by strategy id…" autocomplete="off" spellcheck="false">
+    <button class="fbtn active" data-cls="all">all</button>
+    <span id="clsbtns"></span>
+  </div>
+  <div id="topwrap"></div>
+
+  <h2>📜 Run history by class</h2>
+  <div id="history"></div>
+
+  <div class="footer">
+    Walk-forward strip = one bar per OOS fold, colored by fold profit factor
+    (<span class="good">■</span> PF≥2 · <span class="warn">■</span> 1≤PF&lt;2 · muted ■ PF&lt;1).
+    Strategies with n&lt;10 trades are excluded from the ranking (kept out of sight, not out of the data).
+    Full per-run artifacts (literature, candidates, backtests, cross-tests, synthesis) live under
+    <a href="/audit/research/">/audit/research/</a>; the older flat index is
+    <a href="/audit/research_index.html">research_index.html</a>. Manifest regenerated by
+    <code>tools/research/build_research_manifest.py</code> in the weekly research orchestrator.
+  </div>
+</div>
+
+<script>
+(function(){
+  var M = null, filterCls = "all", filterTxt = "";
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  function num(x,d){ return x==null?"—":(typeof x==="number"?x.toFixed(d==null?2:d):String(x)); }
+  function setStatus(h){ document.getElementById("loading").innerHTML = h; }
+
+  function verdictChip(v){
+    if(v === "EDGE_FOUND" || v === "EDGE") return '<span class="v edge">EDGE FOUND</span>';
+    if(v === "NO_EDGE") return '<span class="v no">NO EDGE</span>';
+    return '<span class="v other">' + esc(v || "—") + '</span>';
+  }
+
+  function wfStrip(folds){
+    if(!folds || !folds.length) return '<span style="color:var(--t3)">—</span>';
+    var bars = folds.map(function(f){
+      var pf = f.pf || 0;
+      var cls = pf >= 2 ? "good" : (pf >= 1 ? "warn" : "bad");
+      return '<i class="' + cls + '" title="PF ' + num(pf) + ' · WR ' + num(f.wr,0) + '% · n=' + (f.n==null?"?":f.n) + '"></i>';
+    }).join("");
+    return '<span class="wf">' + bars + '</span>';
+  }
+
+  function renderClasses(){
+    var html = "";
+    Object.keys(M.classes).forEach(function(k){
+      var c = M.classes[k];
+      html += '<div class="cc"><h3>' + esc(k) + '</h3>' + verdictChip(c.latest_verdict) +
+        '<div class="meta">' + c.n_runs + ' runs · latest ' + esc((c.latest_ts||"").slice(0,10)) + '</div></div>';
+    });
+    document.getElementById("classes").innerHTML = html;
+    var btns = Object.keys(M.classes).map(function(k){
+      return '<button class="fbtn" data-cls="' + esc(k) + '">' + esc(k) + '</button>';
+    }).join("");
+    document.getElementById("clsbtns").innerHTML = btns;
+    document.querySelectorAll(".fbtn").forEach(function(b){
+      b.addEventListener("click", function(){
+        filterCls = b.getAttribute("data-cls");
+        document.querySelectorAll(".fbtn").forEach(function(x){ x.classList.toggle("active", x === b); });
+        renderTop();
+      });
+    });
+  }
+
+  function renderTop(){
+    var rows = (M.top_strategies || []).filter(function(s){
+      if(filterCls !== "all" && s.class !== filterCls) return false;
+      if(filterTxt && String(s.spec_id||"").toLowerCase().indexOf(filterTxt) < 0) return false;
+      return true;
+    });
+    var tr = rows.map(function(s, i){
+      var pfCls = (s.pf||0) >= 2 ? "good" : ((s.pf||0) >= 1 ? "warn" : "bad");
+      var runLink = '<a class="mono" href="/audit/' + esc(s.run) + '/index.html" target="_blank" rel="noopener">' + esc((s.run_ts||"").slice(0,10)) + '</a>';
+      return '<tr>' +
+        '<td class="rank">#' + (i+1) + '</td>' +
+        '<td class="mono"><b>' + esc(s.spec_id) + '</b></td>' +
+        '<td><span class="chip ' + esc(s.class) + '">' + esc(s.class) + '</span></td>' +
+        '<td class="num ' + pfCls + '">' + num(s.pf) + '</td>' +
+        '<td class="num">' + num(s.wr,1) + '%</td>' +
+        '<td class="num">' + num(s.sharpe) + '</td>' +
+        '<td class="num">' + num(s.mdd,1) + '%</td>' +
+        '<td class="num">' + (s.n==null?"—":s.n) + '</td>' +
+        '<td>' + wfStrip(s.folds) + '</td>' +
+        '<td>' + runLink + '</td>' +
+        '</tr>';
+    }).join("");
+    document.getElementById("topwrap").innerHTML =
+      '<table><thead><tr><th>#</th><th>Strategy</th><th>Class</th><th>PF</th><th>WR</th><th>Sharpe</th><th>MDD</th><th>n</th><th>WF folds</th><th>Run</th></tr></thead><tbody>' +
+      (tr || '<tr><td colspan="10" style="color:var(--t2);text-align:center;padding:16px">no strategies match</td></tr>') + '</tbody></table>';
+  }
+
+  function renderHistory(){
+    var html = "";
+    Object.keys(M.classes).forEach(function(k){
+      var c = M.classes[k];
+      var runs = (c.runs || []).slice().reverse().map(function(r){
+        var f = r.funnel || {};
+        var cite = r.citations ? (r.citations.verified + "✓/" + r.citations.hallucinated + "✗ citations") : "";
+        return '<div class="run">' +
+          '<span class="mono">' + esc((r.ts||"").slice(0,16).replace("T"," ")) + '</span>' +
+          verdictChip(r.verdict) +
+          (r.aborted ? '<span class="chip" style="border-color:rgba(239,68,68,.5);color:var(--red)">ABORTED</span>' : '') +
+          '<span class="funnel">' + (f.candidates==null?"":f.candidates + " candidates → " + (f.backtested||0) + " backtested → " + (f.independent||0) + " independent → " + (f.validated||0) + " validated") + '</span>' +
+          '<span class="funnel">' + esc(cite) + '</span>' +
+          '<a class="mono" href="/audit/' + esc(r.path) + '/index.html" target="_blank" rel="noopener">artifacts →</a>' +
+          '</div>';
+      }).join("");
+      html += '<details' + (Object.keys(M.classes).indexOf(k) === 0 ? " open" : "") + '><summary>' + esc(k) +
+        ' <span style="color:var(--t3);font-weight:400">(' + c.n_runs + ' runs)</span></summary><div class="runs">' + runs + '</div></details>';
+    });
+    document.getElementById("history").innerHTML = html;
+  }
+
+  fetch("data/research_manifest.json", { cache: "no-store" })
+    .then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function(j){
+      M = j;
+      setStatus("manifest generated " + esc((j.generated_at||"").slice(0,19).replace("T"," ")) + " UTC · " + j.n_strategies_total + " strategies across " + Object.keys(j.classes).length + " classes");
+      renderClasses(); renderTop(); renderHistory();
+    })
+    .catch(function(e){ setStatus('<span class="bad">failed to load research manifest: ' + esc(e.message) + '</span>'); });
+
+  document.getElementById("q").addEventListener("input", function(e){
+    filterTxt = e.target.value.trim().toLowerCase();
+    if(M) renderTop();
+  });
+})();
+</script>
+</body>
+</html>

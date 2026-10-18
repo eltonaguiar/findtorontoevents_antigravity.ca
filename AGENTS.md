@@ -457,11 +457,15 @@ Before sending any response, you MUST check for these patterns:
 | `paper_trading/strategies/**` | Walk-forward elite & paper trading strategies |
 | `tools/db_freshness_check.py` | DB freshness guardian (live picks / resolver / backtests) |
 | `tools/cross_db_consistency.py` | Cross-DB strategy key consistency audit |
+| `tools/stamp_entry_conditions.py` | Shadow entry-gate forward measurement (STA-09 cohort; writes `audit_dashboard/data/entry_conditions_forward.json`) |
+| `tools/crypto_rsi5070_forward_tracker.py` | Forward-test sidecar for the crypto_rsi5070_us lead — computes net PF CI-LB gate (writes `audit_dashboard/data/crypto_rsi5070_us_forward_status.json`) |
 | `.github/workflows/db-freshness-guardian.yml` | Hourly DB freshness CI gate |
 | `.github/workflows/cross-db-audit.yml` | Daily cross-DB consistency audit |
 | `.github/workflows/audit-dashboard.yml` | The workflow file itself |
 | .github/workflows/pick-funnel-nightly.yml | Downstream consumer: fetches dashboard_data.json from live site → build_nav_surface_matrix.py (added 2026-05-27) |
+| `.github/workflows/rsi5070-forward-snapshot.yml` | Daily 07:00 UTC cron + manual dispatch — runs the two trackers above, sanity-checks the JSON, and commits BOTH status files to main for a git-tracked n-advancement trail toward the n≥150 + CI-LB≥1.15 promotion bar. Shares `dashboard-publish` concurrency group with audit-dashboard.yml so writes never collide. (added 2026-06-22, PR #642) |
 | `TORONTOEVENTS_ANTIGRAVITY/integrations/index.html` | Public integrations/tech-portfolio page (findtorontoevents.ca/integrations/) documenting CI/CD, every integration (protocol/direction/frequency/idempotency), page→integration map, asset-class coverage, refresh buttons. Update it in the same PR when an integration is added or changed. (added 2026-10-13) |
+| `audit_dashboard/healthchecks.html` | Standalone pipeline-freshness page (`/audit/healthchecks.html`, added 2026-10-18): client-side HEAD probes of 21 curated `data/*.json` Last-Modified timestamps, grouped tables, green ≤2h / amber 2–6h / red >6h or 404, auto-refresh 5 min. Deployed by `audit-dashboard.yml` (all sites) and `tools/deploy_audit_files.py`; update the registry inside the page when a pipeline's data file is added/renamed. |
 | `.github/workflows/deploy-fte-integrations.yml` | Push-to-main (own path) + manual dispatch — validates the integrations page (conflict markers + credential-literal guard) then FTP-uploads it to `findtorontoevents.ca/integrations/`. Shares the `fte-ftp-deploy` concurrency group with the other core-site FTP deploys. (added 2026-10-13) |
 
 > **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the hourly cron.
