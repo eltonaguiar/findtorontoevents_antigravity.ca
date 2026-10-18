@@ -261,6 +261,28 @@ def _float(v):
         return 0.0
 
 
+def _priceless_close(exit_price, entry=None) -> bool:
+    """True when a close carries no trustworthy price and must NOT be published
+    as a measured result.
+
+    2026-10-18: 38 TIME_EXIT rows landed in recent_closed with
+    ``exit_price=0.0`` + ``pnl_pct=0.0`` (29 FOREX, 9 EQUITY, all stocksunify2,
+    all closed 02:01:53Z). A zero exit price means the price fetch failed, and a
+    zero PnL alongside it is arithmetic on that failure — not a flat trade. Same
+    class of defect the 2026-10-17 honesty fix addressed for the no-live-price
+    path, but reachable whenever a caller passes a falsy price or a missing
+    entry. Consumers must see ``None`` (unmeasured) instead of a fake 0%.
+    """
+    def _bad(v):
+        if v is None:
+            return True
+        try:
+            return float(v) <= 0
+        except (TypeError, ValueError):
+            return True
+    return _bad(exit_price) or _bad(entry)
+
+
 def _compute_pnl(entry: float, exit_price: float, direction: str) -> float:
     """Compute PnL % with zero-safeguard fallback.
 
@@ -1446,11 +1468,25 @@ def main():
             if pick_dt and (now - pick_dt).total_seconds() > _max_hold * 3600:
                 # Time exit — compute PnL at current price
                 pnl = _compute_pnl(entry, current_price, pick["direction"])
+                # 2026-10-18: a failed price fetch must not be published as a
+                # flat 0% close (see _priceless_close).
+                if _priceless_close(current_price, entry):
+                    exit_price_out, pnl_out = None, None
+                    _mtm = "unresolved"
+                    log.warning(
+                        "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
+                        " -> recorded as UNRESOLVED, not a 0%% flat",
+                        system_name, pick.get("symbol"), entry, current_price,
+                    )
+                else:
+                    exit_price_out, pnl_out = current_price, pnl
+                    _mtm = "measured"
 
                 resolved = {
                     **pick,
-                    "exit_price": current_price,
-                    "pnl_pct": pnl,
+                    "exit_price": exit_price_out,
+                    "pnl_pct": pnl_out,
+                    "_mtm": _mtm,
                     "exit_reason": "TIME_EXIT",
                     "status": "CLOSED",
                     "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
