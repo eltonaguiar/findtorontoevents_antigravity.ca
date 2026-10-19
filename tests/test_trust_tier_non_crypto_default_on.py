@@ -105,6 +105,14 @@ def _clear_flags(monkeypatch):
     monkeypatch.setenv("FOREX_SHORT_ONLY_GATE_DISABLED", "1")
     # M-078 FOREX session gate is time-dependent; disable for isolation tests.
     monkeypatch.setenv("FOREX_SESSION_GATE_DISABLED", "1")
+    # Matrix-symbol gate (default ON) reads committed alpha_engine/data/
+    # matrix_symbol_gates.json whose allow-list for source_system=alpha_engine
+    # narrowed to ['USDJPY=X'] (Rapid-Fire scan, commit 733a86fe22). Every
+    # alpha_engine AAPL/SPY/TLT/ES=F/HG=F/EURUSD=X pick these fixtures build is
+    # rejected via matrix_allow_only BEFORE the trust-tier bypass under test runs.
+    # Module-scoped (not global conftest) so test_cta_replicator_symbol_gate.py's
+    # AUDUSD matrix-block coverage is preserved.
+    monkeypatch.setenv("MATRIX_SYMBOL_GATES", "0")
     yield
 
 

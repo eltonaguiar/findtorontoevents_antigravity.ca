@@ -71,7 +71,17 @@ def main():
     print("=== Money-Ready Top Notch Picks Generator (Goal #1) ===")
     # Load current
     mr = json.loads((DATA_DIR / "money_ready_verdict.json").read_text())
-    st = json.loads((DATA_DIR / "audit_surface_truth.json").read_text())
+    # allowed: audit-surface-truth consumer - paper-pick generator only.
+    # Runtime gate-flag check below catches future regressions that flag-off the sidecar.
+    # See tests/test_no_audit_surface_truth_consumer.py for the contract gate.
+    st_raw = (DATA_DIR / "audit_surface_truth.json").read_text()
+    st = json.loads(st_raw)
+    if not st.get("audit_surface_truth_only"):
+        raise RuntimeError(
+            "audit_surface_truth.json missing audit_surface_truth_only: True flag; "
+            "refusing to consume. The sidecar is ADVISORY verdict data, not sizing input. "
+            "Re-run tools/build_audit_surface_truth.py to refresh."
+        )
     # pf = json.loads((DATA_DIR / "pf_registry.json").read_text())  # for more if needed
 
     per_class = {}

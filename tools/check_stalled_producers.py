@@ -77,6 +77,9 @@ class RemoteFile:  # REMOTE — gitignored, HTTP-Last-Modified-checked
 
 # Files that ARE git-tracked (so `git pull` brings them onto the LAN disk).
 LOCAL_FILES: Tuple[CanonicalFile, ...] = (
+    # allowed: audit-surface-truth consumer
+    # (freshness/mtime registry only — does not parse the payload; see
+    # tests/test_no_audit_surface_truth_consumer.py contract)
     CanonicalFile("audit_dashboard/data/audit_surface_truth.json",      4.0,
                   "surface-truth reconciliation (git-tracked, LAN mtime)"),
     CanonicalFile("audit_dashboard/data/nav_surface_edge_matrix.json",  4.0,

@@ -5,6 +5,21 @@ from unittest.mock import patch
 from alpha_engine.money_ready_verdict import _rolling_mdd, _mdd_cvar_gate
 
 
+@pytest.fixture(autouse=True)
+def _no_live_intrabar_leak():
+    """money_ready_verdict() calls _intrabar_truth_map() (UNMOCKED by the
+    _load_picks patch) which queries the LIVE at_signal_outcomes DB and then
+    _sizing_metrics_from_intrabar (MONEY_READY_SIZING_SOURCE=intrabar default)
+    OVERRIDES the synthetic mocked wr/pf/n with live COMMODITY/CRYPTO ledger
+    numbers — leaking live data past the fixture mock. This mirrors the
+    module's own ci_mode=True behavior (zeros _INTRABAR_TRUTH_CACHE) so the
+    synthetic fixtures are honored. Tests that genuinely need live intrabar
+    can override this with their own patch.
+    """
+    with patch("alpha_engine.money_ready_verdict._intrabar_truth_map", return_value={}):
+        yield
+
+
 def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
                 symbols=None, win_pnl=0.05, loss_pnl=-0.02, source_system=None):
     """Build synthetic picks. `symbols` round-robins so the default sample is
@@ -20,6 +35,12 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
     that arises when all wins precede all losses in a sequential list.
     """
     syms = symbols or ["AAA", "BBB", "CCC", "DDD", "EEE"]
+    # Recency gate (Gate-0 14d / Gate-0.5 48h, money_ready_verdict.py:796) returns
+    # ok=None for dateless picks and _verdict treats `not recency_ok` as a hard
+    # NOT_READY (line ~1146). Stamp a recent closed_at so verdict-assertion tests
+    # exercise the edge gates, not the dateless-fail short-circuit.
+    from datetime import datetime, timezone
+    _now_iso = datetime.now(timezone.utc).isoformat()
     picks = []
     for i in range(n_won):
         src = source_system or strategy
@@ -28,7 +49,7 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "WON", "pnl_pct": win_pnl, "symbol": syms[i % len(syms)],
-            "source_system": src,
+            "source_system": src, "closed_at": _now_iso,
         })
     for i in range(n_lost):
         src = source_system or strategy
@@ -37,7 +58,7 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "LOST", "pnl_pct": loss_pnl, "symbol": syms[i % len(syms)],
-            "source_system": src,
+            "source_system": src, "closed_at": _now_iso,
         })
     rng = random.Random(42)
     rng.shuffle(picks)

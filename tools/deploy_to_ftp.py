@@ -7,6 +7,7 @@ Quick partial uploads (same FTP_* env vars):
   python tools/deploy_to_ftp.py --favcreators-only
   python tools/deploy_to_ftp.py --main-index-only
   python tools/deploy_to_ftp.py --updates-only
+  python tools/deploy_to_ftp.py --weather-only
   python tools/deploy_to_ftp.py --live-monitor-only
 
 Uploads to FTP_REMOTE_PATH only (never to FTP account root). Puts index.html,
@@ -265,6 +266,21 @@ def deploy_fightgame(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     n = _upload_tree(ftp, local_fg, remote)
     print(f"  Uploaded {n} files to /{remote}/")
     return n > 0
+
+
+def deploy_weather_jacket(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload weather/, jacket/, doineedajacket/ directories."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    total = 0
+    for sub in ("weather", "jacket", "doineedajacket"):
+        local_dir = WORKSPACE / sub
+        if not local_dir.is_dir():
+            print(f"  -> {sub}/ not found, skipping")
+            continue
+        n = _upload_tree(ftp, local_dir, f"{base}/{sub}")
+        print(f"  -> {n} files under {sub}/")
+        total += n
+    return total > 0
 
 
 def deploy_updates(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
@@ -636,6 +652,37 @@ def deploy_updates_only() -> None:
         raise SystemExit(1)
 
 
+def deploy_weather_only() -> None:
+    """FTP upload weather/, jacket/, doineedajacket/ only."""
+    host = _env("FTP_SERVER") or _env("FTP_HOST")
+    user = _env("FTP_USER")
+    password = _env("FTP_PASS")
+    remote_path = _env("FTP_REMOTE_PATH") or DEFAULT_REMOTE_PATH
+
+    if not host or not user or not password:
+        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
+        raise SystemExit(1)
+
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
+    print(f"Weather-only deploy to FTP: {host}")
+    print(f"Remote: {remote_path}/weather/, /jacket/, /doineedajacket/")
+    print()
+
+    try:
+        with ftplib.FTP(host) as ftp:
+            ftp.login(user, password)
+            deploy_weather_jacket(ftp, remote_path)
+            if parent_root:
+                deploy_weather_jacket(ftp, parent_root)
+        print("Weather deploy complete.")
+    except Exception as e:
+        print(f"Weather deploy failed: {e}")
+        raise SystemExit(1)
+
+
 def main() -> None:
     host = _env("FTP_SERVER") or _env("FTP_HOST")
     user = _env("FTP_USER")
@@ -708,6 +755,12 @@ def main() -> None:
                 deploy_updates(ftp, parent_root)
             print()
 
+            print("Uploading Weather + Jacket pages to /weather/, /jacket/, /doineedajacket/ ...")
+            deploy_weather_jacket(ftp, remote_path)
+            if parent_root:
+                deploy_weather_jacket(ftp, parent_root)
+            print()
+
             print("Uploading Investment Tools landing to /investments/ ...")
             deploy_investments(ftp, remote_path)
             if parent_root:
@@ -768,5 +821,7 @@ if __name__ == "__main__":
         deploy_live_monitor_only()
     elif "--updates-only" in sys.argv:
         deploy_updates_only()
+    elif "--weather-only" in sys.argv:
+        deploy_weather_only()
     else:
         main()

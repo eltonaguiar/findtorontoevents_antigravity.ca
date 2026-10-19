@@ -28,6 +28,15 @@ REGISTRY_PATH = REPO_ROOT / "audit_trail" / "blocked_registry.json"
 ALERTS_DIR = REPO_ROOT / "audit_trail" / "alerts"
 ALERTS_PATH = ALERTS_DIR / "overdue_unblock_reviews.json"
 
+# This module is a MONITOR (not a sizing surface consumer). It loads
+# audit_trail/blocked_registry.json to compute overdue reviews and write
+# audit_trail/alerts/overdue_unblock_reviews.json. It does NOT re-ingest
+# the registry as a sizing input. The allow-marker below surfaces this
+# intent to the contract test
+# (tests/test_no_blocked_registry_consumer.py)::test_no_unguarded_consumer_in_scan_roots
+# so the test does not false-positive on the legitimate read.
+# allowed: blocked-registry consumer
+
 
 def load_registry(path: Path) -> dict:
     with open(path) as f:
