@@ -851,6 +851,32 @@ def _recency_gate(ac_picks: list[dict]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Strict-JSON safety net (V2.1 P1, 2026-10-19)
+# ---------------------------------------------------------------------------
+def _json_safe(obj):
+    """Recursively replace non-finite floats with None so the --as_json stdout
+    artifact is always strict JSON.
+
+    2026-10-19 incident: money_ready_verdict.json served HTTP 200 with four
+    bare `"dsr_score": NaN` tokens. Python's json module accepts and EMITS NaN
+    by default (so local tooling never noticed), but browser JSON.parse rejects
+    it -- the Money Ready tab showed "No data available" despite a fresh
+    timestamp. Using allow_nan=False alone would crash the generator
+    mid-publish (artifact disappears); sanitizing FIRST keeps the artifact
+    valid and renders unknowns as null per the measurement contract
+    ("report null plus reason, not 999/infinity/proven").
+    """
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_json_safe(v) for v in obj]
+    # np.float64 subclasses float; np.float32/np.longdouble are np.floating.
+    if isinstance(obj, (float, np.floating)) and not np.isfinite(obj):
+        return None
+    return obj
+
+
+# ---------------------------------------------------------------------------
 # DSR gate (per-class aggregate — treat all class picks as one strategy)
 # ---------------------------------------------------------------------------
 
@@ -884,7 +910,19 @@ def _dsr_gate(returns: list[float]) -> dict[str, Any]:
         skew=stats["skewness"],
         kurtosis=stats["kurtosis"],
     )
-    return {"ok": dsr >= DSR_THRESHOLD, "dsr_score": round(dsr, 4), "note": ""}
+    # NaN guard (2026-10-19, V2.1 P1): degenerate sr_variance/skew/kurtosis
+    # inputs make deflated_sharpe_ratio return NaN, which json.dumps would
+    # serialize as a bare NaN token that browsers reject (Money Ready tab
+    # "No data available"). Contract: unknown evidence fails CLOSED -- null
+    # score + reason, never NaN/Infinity.
+    dsr_f = float(dsr)
+    if not np.isfinite(dsr_f):
+        return {
+            "ok": None,
+            "note": "deflated_sharpe non-finite (degenerate sr_variance/moments inputs)",
+            "dsr_score": None,
+        }
+    return {"ok": dsr_f >= DSR_THRESHOLD, "dsr_score": round(dsr_f, 4), "note": ""}
 
 
 # ---------------------------------------------------------------------------
@@ -1780,7 +1818,7 @@ def main() -> None:
                # pf_registry's win_rate_pct convention.
                "units": {"wr": "fraction", "wr_pct": "percent"}}
         out.update(results)
-        print(json.dumps(out, indent=2))
+        print(json.dumps(_json_safe(out), indent=2, allow_nan=False))
     else:
         print_report(results)
 
