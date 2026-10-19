@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-19T11:29:59Z",
+  "generated_at": "2026-10-19T11:53:20Z",
   "market_direction": "LONG",
   "cross_pair_ratio": 0.6,
   "active_symbols": 60,
@@ -21,7 +21,7 @@
       "cross_pair_ratio": 0.6,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-10-19T11:29:59Z",
+      "generated_at": "2026-10-19T11:53:20Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -62,7 +62,7 @@
       "cross_pair_ratio": 0.6,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-10-19T11:29:59Z",
+      "generated_at": "2026-10-19T11:53:20Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -103,7 +103,7 @@
       "cross_pair_ratio": 0.6,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-10-19T11:29:59Z",
+      "generated_at": "2026-10-19T11:53:20Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -144,7 +144,7 @@
       "cross_pair_ratio": 0.6,
       "signal_tier": "STRONG",
       "source_system": "kimi",
-      "generated_at": "2026-10-19T11:29:59Z",
+      "generated_at": "2026-10-19T11:53:20Z",
       "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -185,7 +185,7 @@
       "cross_pair_ratio": 0.6,
       "signal_tier": "STRONG",
       "source_system": "alpha_engine",
-      "generated_at": "2026-10-19T11:29:59Z",
+      "generated_at": "2026-10-19T11:53:20Z",
       "strategy": "super signal (strong) via alpha_engine",
       "conflict_resolution": {
         "recommended_direction": "LONG",
@@ -207,12 +207,13 @@
   "symbol_breakdown": {
     "BTCUSDT": {
       "dominant_direction": "SHORT",
-      "system_agreement": 4,
-      "long": 1,
+      "system_agreement": 5,
+      "long": 2,
       "short": 3,
       "systems": [
         "alpha_engine",
         "kimi",
+        "quan_engine",
         "luxalgo_filters",
         "kol_consensus"
       ],
@@ -226,6 +227,13 @@
         },
         {
           "system": "kimi",
+          "direction": "LONG",
+          "strategy": "",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
+        },
+        {
+          "system": "quan_engine",
           "direction": "LONG",
           "strategy": "",
           "trust_tier": "WATCH",
@@ -370,40 +378,6 @@
         {
           "system": "kimi",
           "direction": "LONG",
-          "strategy": "",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
-        },
-        {
-          "system": "luxalgo_filters",
-          "direction": "SHORT",
-          "strategy": "luxalgo_confluence",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "ADAUSDT": {
-      "dominant_direction": "SHORT",
-      "system_agreement": 3,
-      "long": 0,
-      "short": 3,
-      "systems": [
-        "alpha_engine",
-        "quan_engine",
-        "luxalgo_filters"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "SHORT",
-          "strategy": "clone_hl_copy_lb_None",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        },
-        {
-          "system": "quan_engine",
-          "direction": "SHORT",
           "strategy": "",
           "trust_tier": "WATCH",
           "vote_weight": 1.0
@@ -569,6 +543,32 @@
           "system": "alpha_engine",
           "direction": "LONG",
           "strategy": "clone_hl_copy_Auros_66M",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        },
+        {
+          "system": "luxalgo_filters",
+          "direction": "SHORT",
+          "strategy": "luxalgo_confluence",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "ADAUSDT": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 2,
+      "long": 0,
+      "short": 2,
+      "systems": [
+        "alpha_engine",
+        "luxalgo_filters"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "SHORT",
+          "strategy": "clone_hl_copy_lb_None",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         },
@@ -777,6 +777,24 @@
         }
       ]
     },
+    "GC=F": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 1,
+      "long": 0,
+      "short": 1,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "SHORT",
+          "strategy": "cftc_cot_commercial_signal",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
     "ONDOUSDT": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
@@ -844,24 +862,6 @@
           "system": "alpha_engine",
           "direction": "LONG",
           "strategy": "clone_hl_copy_Auros_66M",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "GC=F": {
-      "dominant_direction": "SHORT",
-      "system_agreement": 1,
-      "long": 0,
-      "short": 1,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "SHORT",
-          "strategy": "cftc_cot_commercial_signal",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
@@ -1047,7 +1047,7 @@
         }
       ]
     },
-    "TXN": {
+    "AAPL": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
       "long": 1,
@@ -1065,7 +1065,7 @@
         }
       ]
     },
-    "AAPL": {
+    "TXN": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
       "long": 1,
