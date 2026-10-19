@@ -70,3 +70,7 @@ jobs:
           fi
           python tools/deploy_audit_files.py --only incidents || echo "::warning title=ftp::incidents upload had failures"
           python tools/deploy_audit_files.py --only updates   || echo "::warning title=ftp::updates upload had failures"
+          # 2026-10-18: nothing was uploading the `audit_data` tag, so sidecars that
+          # ARE committed to git (e.g. strategy_tribunal_latest.json, written weekly by
+          # strategy-tribunal.yml) never reached the server and /audit 404'd on them.
+          python tools/deploy_audit_files.py --only audit_data || echo "::warning title=ftp::audit_data upload had failures"

@@ -98,6 +98,62 @@ UPLOADS = [
     ("audit_dashboard/data/ma_strategy_signals.json",        "/findtorontoevents.ca/audit/data/ma_strategy_signals.json",         "ai_leaderboard"),
 ]
 
+# 2026-10-18: every RECENTLY WRITTEN updates/*.md must reach production, not just the
+# hand-maintained subset above (last extended 2026-06-03).
+# BUG FIXED: updates/2026-10-18-legacy-status-backfill-...md was linked from the live
+# index.html but returned HTTP 404, because the nightly job only uploads UPLOADS entries
+# and nobody had run tools/deploy_to_ftp.py --updates-only. Expanding a 45-day window here
+# means a newly written doc deploys itself — no list to remember to edit.
+# Explicit UPLOADS entries are kept as-is (de-duplicated by source path).
+# See updates/2026-10-18-symbol-asset-class-cache-fallback-fix.md.
+_UPDATES_MD_WINDOW_DAYS = 45
+
+def _doc_timestamp(md: Path) -> float:
+    """Age-decide a doc WITHOUT trusting filesystem mtime.
+
+    2026-10-18: mtime is unusable here — every fresh clone / CI checkout stamps
+    all 800+ updates/*.md with checkout time, which turned a 45-day window into
+    a 753-file upload on the nightly job. Prefer the YYYY-MM-DD filename prefix
+    (the house convention), then the git commit date, then mtime.
+    """
+    import re as _re
+    import subprocess as _sp
+    import time as _time
+    m = _re.match(r"(\d{4})-(\d{2})-(\d{2})", md.name)
+    if m:
+        try:
+            return _time.mktime((int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                                 0, 0, 0, 0, 0, -1))
+        except (ValueError, OverflowError):
+            pass
+    try:
+        out = _sp.run(["git", "log", "-1", "--format=%ct", "--", str(md)],
+                      cwd=str(REPO), capture_output=True, text=True, timeout=10)
+        if out.returncode == 0 and out.stdout.strip():
+            return float(out.stdout.strip())
+    except Exception:
+        pass
+    try:
+        return md.stat().st_mtime
+    except OSError:
+        return 0.0
+
+def _recent_updates_md() -> list[tuple[str, str, str]]:
+    import time as _time
+    cutoff = _time.time() - _UPDATES_MD_WINDOW_DAYS * 86400
+    listed = {t[0] for t in UPLOADS}
+    entries: list[tuple[str, str, str]] = []
+    for md in sorted((REPO / "updates").glob("*.md")):
+        if _doc_timestamp(md) < cutoff:
+            continue
+        rel = f"updates/{md.name}"
+        if rel in listed:
+            continue
+        entries.append((rel, f"/findtorontoevents.ca/{rel}", "updates"))
+    return entries
+
+UPLOADS.extend(_recent_updates_md())
+
 
 def upload(ftps: FTP_TLS, local: Path, remote: str, dry_run: bool) -> tuple[bool, str]:
     if not local.exists():

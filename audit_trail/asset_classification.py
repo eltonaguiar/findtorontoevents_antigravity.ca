@@ -12,7 +12,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
+import json
 import re
+from pathlib import Path
 
 
 class AssetClass(Enum):
@@ -553,6 +555,39 @@ def is_obviously_crypto_symbol(symbol) -> bool:
 # ============================================================================
 
 # The old module exported these functions - provide aliases for compatibility
+# ============================================================================
+# SYMBOL → ASSET-CLASS CACHE (2026-10-18)
+# ============================================================================
+# The pattern lists above are intentionally small/curated and therefore return
+# UNKNOWN for many perfectly ordinary US tickers (AMD, PLTR, SOFI, XBI …
+# 2026-10-18 backfill resolved 2,623 of 2,629 UNKNOWN open picks this way).
+# Before giving up, consult this committed, hand/verified-populated cache so
+# a resolved symbol is classifiable at INSERT time and stays stable forever.
+# Fail-open: unreadable/absent cache behaves exactly like the old behaviour.
+
+_SYMBOL_CLASS_CACHE_PATH = Path(__file__).with_name("symbol_asset_class_cache.json")
+_symbol_class_cache: Optional[dict] = None
+
+
+def _symbol_class_cache_lookup(sym_upper: str) -> Optional[AssetClass]:
+    """Return the cached AssetClass for *sym_upper*, or None if unknown/unusable."""
+    global _symbol_class_cache
+    if _symbol_class_cache is None:
+        try:
+            data = json.loads(_SYMBOL_CLASS_CACHE_PATH.read_text(encoding="utf-8"))
+            _symbol_class_cache = data if isinstance(data, dict) else {}
+        except Exception:
+            _symbol_class_cache = {}
+    raw_cls = _symbol_class_cache.get(sym_upper)
+    if not raw_cls:
+        return None
+    try:
+        cls = AssetClass(str(raw_cls).upper().strip())
+    except ValueError:
+        return None
+    return None if cls == AssetClass.UNKNOWN else cls
+
+
 def resolve_asset_class(
     symbol: str,
     raw: Optional[dict] = None,
@@ -599,8 +634,13 @@ def resolve_asset_class(
         if result != AssetClass.UNKNOWN:
             return result.value
     
-    # Default to classification
+    # Default to classification; fall back to the committed symbol cache for
+    # tickers the curated regex lists don't cover (see cache note above).
     result = classify_asset(symbol)
+    if result == AssetClass.UNKNOWN:
+        cached = _symbol_class_cache_lookup(sym_upper)
+        if cached is not None:
+            return cached.value
     return result.value
 
 

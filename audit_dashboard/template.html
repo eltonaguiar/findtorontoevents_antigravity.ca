@@ -847,7 +847,8 @@ a:hover { text-decoration: underline; }
     <span style="color:#fde68a;font-weight:600">Dashboard vs DB-reality gap</span>
     <span style="color:#94a3b8">&middot;</span>
     <span style="color:#cbd5e1">Per-class tiles below show <strong style="color:#86efac">post-resolver-v2 filtered</strong> performance.</span>
-    <span style="color:#94a3b8">RAW at_raw_picks (Kimi + 2026-05-12 audit): <strong style="color:#fca5a5">11.13% WR / PF 0.46</strong>. Refreshed 2026-05-29 (n=73,817 closed): <strong style="color:#fca5a5">WR 25.28% / PF 0.61 (outlier-capped)</strong> &mdash; uncapped PF&nbsp;2.5 is a handful-of-rows outlier artifact, do NOT cite it. Either read: RAW is net-unprofitable.</span>
+    <span style="color:#94a3b8">RAW at_raw_picks (Kimi + 2026-05-12 audit): <strong style="color:#fca5a5">11.13% WR / PF 0.46</strong>. Raw-DB outlier-capped read, <strong>2026-05-29 snapshot (n=73,817 closed): <strong style="color:#fca5a5">WR 25.28% / PF 0.61</strong></strong> &mdash; uncapped PF&nbsp;2.5 is a handful-of-rows outlier artifact, do NOT cite it. Either read: RAW is net-unprofitable. <em>These two RAW figures are dated one-off DB audits, not recomputed each run &mdash; see the live line below for the current book.</em></span>
+    <span id="truth-live-headline" style="color:#7dd3fc;background:rgba(6,182,212,0.10);border:1px solid rgba(6,182,212,0.35);border-radius:6px;padding:2px 8px;margin-left:4px">HEADLINE book: loading&hellip;</span>
   </div>
   <div style="margin-top:6px;color:#94a3b8;font-size:0.92em">
     <strong style="color:#fde68a">No asset class</strong> currently passes industry-standard real-money thresholds (DSR&gt;0.95, PBO&lt;0.05, WFE&gt;60%, live-Sharpe&gt;0.5, n&ge;100). <strong style="color:#fca5a5">The earlier DSR=1.0 candidate (<code>cot_positioning + CT=F</code>) was FALSIFIED on 2026-05-13</strong> after dedup audit found 6.33&times; over-emission (38 raw signals from only 6 unique CFTC release weeks); pilot status is now <code>SHADOW_INSUFFICIENT_N</code> with <code>dsr=null</code>. See <a href="/audit/paper_pilot.html" style="color:#06b6d4">paper_pilot.html</a> for live pilot JSON and <code>reports/cot_paper_pilot_overemission_falsified_20260513.md</code> for the autopsy. <a href="/audit/real_money.html" style="color:#06b6d4">real_money.html</a> still gates the 10-step Lopez de Prado readiness; <strong>NFA</strong> &mdash; no real-money sizing without explicit greenlight + all gates clear.
@@ -867,6 +868,123 @@ a:hover { text-decoration: underline; }
     (tight-TP / wide-SL asymmetry); total PnL=&minus;15.84% confirms it is net-negative despite majority wins.
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LIVE TRUTH-LAYER + REAL-MONEY POSTURE (2026-10-18, P1 de-static-ify)
+     Before this block, two core-stat sentences in this banner were hand-written
+     prose that went stale silently:
+       (a) "Refreshed 2026-05-29 (n=73,817): WR 25.28% / PF 0.61"
+       (b) "Real-money posture as of 2026-05-31: …"
+     Both are now re-rendered from window.DASHBOARD_DATA (regenerated hourly by
+     audit-dashboard.yml) on DOMContentLoaded + every `dashboard-data-loaded`
+     refresh. If the payload is missing/abnormal the static text is left intact
+     (fail-open, same convention as updateMajorGoalBanner above).
+     ─────────────────────────────────────────────────────────────────────── -->
+<script>
+(function liveTruthLayerAndPosture(){
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function fmtGen(ts){
+    if (!ts) return '';
+    try {
+      var d = new Date(ts);
+      if (isNaN(d.getTime())) return String(ts).slice(0, 19).replace('T', ' ');
+      return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) +
+             ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ' UTC';
+    } catch (e) { return String(ts).slice(0, 19).replace('T', ' '); }
+  }
+  function num(v, d){ if (v == null || v === '' || isNaN(v)) return null; return Number(v).toFixed(d); }
+  function wrPct(row){
+    if (!row) return null;
+    var v = row.wr_pct != null ? row.wr_pct : (row.display_wr_pct != null ? row.display_wr_pct
+          : (row.win_rate != null ? (row.win_rate <= 1 ? row.win_rate * 100 : row.win_rate) : null));
+    return v;
+  }
+  function pfVal(row){
+    if (!row) return null;
+    var v = row.profit_factor != null ? row.profit_factor : (row.pf != null ? row.pf : row.display_pf);
+    return (v == null || isNaN(v)) ? null : Number(v);
+  }
+  function nVal(row){
+    if (!row) return null;
+    var v = row.n != null ? row.n : (row.resolved_n != null ? row.resolved_n
+          : (row.closed_trades != null ? row.closed_trades : row.display_n));
+    return (v == null || isNaN(v)) ? null : Number(v);
+  }
+  function renderHeadline(D){
+    var el = document.getElementById('truth-live-headline');
+    if (!el) return;
+    var s = D.summary || (D.performance && D.performance.summary) || null;
+    if (!s) return;                                   // fail-open: keep 'loading…'
+    var wr = s.overall_win_rate, pf = s.profit_factor, n = s.valid_closed_picks;
+    if (wr == null && pf == null) return;
+    var parts = [];
+    if (wr != null) parts.push('WR ' + num(wr, 1) + '%');
+    if (pf != null) parts.push('PF ' + num(pf, 2));
+    if (n != null) parts.push('n=' + n + ' valid closed');
+    if (s.wins != null && s.losses != null) parts.push(s.wins + 'W/' + s.losses + 'L');
+    var gen = fmtGen(D.generated_at || (D.meta && D.meta.generated_at));
+    el.innerHTML = 'HEADLINE book (live): <strong style="color:' + ((pf != null && pf < 1) ? '#fca5a5' : '#86efac') + '">' +
+      parts.join(' &middot; ') + '</strong> <span style="color:#94a3b8">&mdash; regenerated ' + (gen || 'hourly') + '</span>';
+    el.title = 'Computed each dashboard_data.json run from summary.overall_win_rate / profit_factor ' +
+               '(post-integrity-filtered closed picks). Not the RAW DB read above.';
+  }
+  function renderPosture(D){
+    var el = document.getElementById('real-money-posture');
+    if (!el) return;
+    var health = (D.performance && D.performance.asset_class_health) || null;
+    var mrv = D.money_ready_verdicts || null;
+    if ((!health || !Object.keys(health).length) && (!mrv || !Object.keys(mrv).length)) return; // keep static
+    if (!el.dataset.staticText) el.dataset.staticText = el.innerHTML;
+    var order = ['CRYPTO','EQUITY','ETF','FOREX','FUTURES','COMMODITY','BOND','MEME','MICRO_FUTURES','PENNY_STOCK','INDEX_STOCK','UNKNOWN'];
+    var seen = {}, classes = [];
+    order.forEach(function(c){ if ((health && health[c]) || (mrv && mrv[c])) { seen[c] = 1; classes.push(c); } });
+    Object.keys(health || {}).forEach(function(c){ if (!seen[c]) { seen[c] = 1; classes.push(c); } });
+    Object.keys(mrv || {}).forEach(function(c){ if (!seen[c]) { seen[c] = 1; classes.push(c); } });
+    var chips = classes.map(function(c){
+      var h = (health && health[c]) || {};
+      var m = (mrv && mrv[c]) || null;
+      var status = h.status || (m ? (/READY$/.test(String(m.verdict || '')) ? 'money_ready' : 'not_ready') : 'unknown');
+      status = String(status).replace(/_/g, ' ');
+      var bad = /(stressed|blocked|killed|fail|toxic|insufficient|not_ready|frozen)/i.test(status);
+      var wr = wrPct(h) || (m && m.wr != null ? Number(m.wr) * 100 : null);
+      var pf = pfVal(h) || (m && m.pf != null ? Number(m.pf) : null);
+      var n  = nVal(h) || (m && m.n_resolved != null ? m.n_resolved : null);
+      var sizing = h.sizing_allowed === true;
+      var bits = [];
+      if (wr != null) bits.push('WR ' + num(wr, 1) + '%');
+      if (pf != null) bits.push('PF ' + num(pf, 2));
+      if (n != null) bits.push('n=' + n);
+      return '<span style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border-radius:8px;' +
+        'background:rgba(148,163,184,0.10);border:1px solid ' + (bad ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.35)') +
+        ';font-size:11px"><strong style="color:' + (bad ? '#fca5a5' : '#86efac') + '">' + c + '</strong> ' +
+        '<span style="color:#cbd5e1">' + status + '</span>' +
+        '<span style="color:#94a3b8"> (' + (bits.join(', ') || 'n/a') + ')</span>' +
+        '<span style="color:' + (sizing ? '#86efac' : '#fbbf24') + ';font-weight:700"> &middot; sizing ' +
+        (sizing ? 'ON' : 'OFF') + '</span></span>';
+    }).join('');
+    var gen = fmtGen(D.generated_at || (D.meta && D.meta.generated_at));
+    el.dataset.staticText = el.dataset.staticText || el.innerHTML;
+    el.innerHTML = '<strong>Real-money posture (live):</strong> ' + chips +
+      ' <span style="color:#94a3b8">&mdash; from <code>asset_class_health</code> + <code>money_ready_verdicts</code>, generated ' +
+      (gen || '?') + '. <strong>NFA</strong> &mdash; no sizing without explicit greenlight + all gates clear.</span>' +
+      '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Static snapshot (2026-05-31)</summary>' +
+      '<div style="font-size:11px;color:#94a3b8;margin-top:4px">' + el.dataset.staticText + '</div></details>';
+  }
+  function run(){
+    var D = window.DASHBOARD_DATA;
+    if (!D || !D.generated_at) return;               // payload not ready yet — leave static/loading text
+    try { renderHeadline(D); } catch (e) {}
+    try { renderPosture(D); } catch (e) {}
+  }
+  window.__liveTruthLayerRun = run;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ run(); });
+  else run();
+  document.addEventListener('dashboard-data-loaded', run);
+  // Late safety nets: the embedded payload lands during async init(), which can
+  // finish after DOMContentLoaded; retries are idempotent (both renders are pure).
+  [1500, 4000, 9000].forEach(function(ms){ setTimeout(run, ms); });
+})();
+</script>
 
 <!-- ML calibration inversion banner (Phase J 2026-05-15, per Kimi protocol operationalization plan).
      The dashboard's confidence column is ANTI-PREDICTIVE: empirical WR vs reported confidence
@@ -1512,7 +1630,7 @@ a:hover { text-decoration: underline; }
         <strong style="color:#fbbf24">15-minute timeframe is overfit-bait</strong>: 33 of 42 audited strategies are OVERFIT_LIKELY (DSR &lt; 0.5). Pattern: <code>ml_enhanced_*_15m_*</code> family fails the multiple-testing correction even when raw Sharpe looks good. <strong>Avoid any 15m-tagged ML strategy as a standalone edge claim.</strong><br>
         <strong style="color:#fca5a5">FOREX has ZERO DSR-survivors</strong>: post-#876 unit clamp + #891 closed_at repair, no FOREX strategy passes DSR &ge; 0.5. Master plan FOREX state = BLOCKED. Elite-score floor raised 50&rarr;70 (commit 4a2d337a5dc) acts as admission hard-cap. <strong>Do not size FOREX even if forward WR looks recoverable &mdash; the multiple-testing bar is unmet.</strong><br>
         <strong style="color:#fca5a5">ML calibration is SYSTEM-WIDE INVERTED</strong> (Kimi finding verified P0 #9 via direct DB probe): conf&ge;0.9 bucket WR <strong>14.4%</strong>, conf 0.5-0.6 bucket WR <strong>60.3%</strong>. Confidence is currently an <em>anti-signal</em> across asset classes, not just ETF/CRYPTO. Mitigation: <code>_normalize_confidence</code> helper shipped at <code>audit_trail/quality_gates.py</code> defends against the additional schema bug (~2k rows on 0-10 scale leaking into 0-1 readers).<br>
-        <span style="color:#94a3b8;display:block;margin-top:8px"><strong>Real-money posture as of 2026-05-31:</strong> COMMODITY/EQUITY are <code>REHAB</code> (STABLE_EDGE per <a href="/audit/edge_stability.html">edge-stability</a> sidecar); CRYPTO has DSR-verified ML sleeves (see <a href="/audit/anti_overfit.html">anti-overfit audit</a>); FOREX is <code>BLOCKED</code> (PR #6 hard-gate, PF 0.29 / WR 46.1%); FUTURES remain <code>BLOCKED</code>; ETF/BOND/INDEX_STOCK are sample-size-thin. NFA.</span>
+        <span id="real-money-posture" data-static="1" style="color:#94a3b8;display:block;margin-top:8px"><strong>Real-money posture as of 2026-05-31 (static snapshot):</strong> COMMODITY/EQUITY are <code>REHAB</code> (STABLE_EDGE per <a href="/audit/edge_stability.html">edge-stability</a> sidecar); CRYPTO has DSR-verified ML sleeves (see <a href="/audit/anti_overfit.html">anti-overfit audit</a>); FOREX is <code>BLOCKED</code> (PR #6 hard-gate, PF 0.29 / WR 46.1%); FUTURES remain <code>BLOCKED</code>; ETF/BOND/INDEX_STOCK are sample-size-thin. NFA.</span>
       </div>
 
       <h4 style="color:#fbbf24;margin:0 0 8px">&#x1F3AF; Where Our Edge Actually Is (Closed-Pick Data, n=4,618)</h4>
