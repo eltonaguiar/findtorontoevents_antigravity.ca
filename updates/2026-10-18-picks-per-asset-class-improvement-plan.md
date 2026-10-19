@@ -15,6 +15,16 @@ Evidence-based plan for fixing the /audit pick pipeline: **staleness**, **PnL=0%
 
 Verification: `tests/test_smart_gate_funnel.py` (9 new tests, incl. evaluator↔gate decision-parity and no-handler-leak), `tests/test_dashboard_generator.py` + `test_ueps_dashboard_integration.py` + `test_shadow_promote.py` + `test_kill_list_audit.py` (63 pass), gate-sweep suites (846 pass; the 6 failures were reproduced on pristine HEAD via stash — pre-existing, unrelated).
 
+## New action items discovered during implementation
+
+These surfaced while wiring P1/P2/P4 and are ordered by risk:
+
+1. **N1 — Published-active vs re-evaluated-active discrepancy (highest priority).** `EURGBP=X` (elite 56) and `USDJPY=X` (elite 39) sit in published `picks.active`, yet re-running `passes_active_gate` under default env rejects them via the FOREX directional gate (`elite < 75`). Either the generation-time environment differs (CI env vars), or elite/score mutation happens after the gate runs, or the gate order diverges. Until resolved, the published book cannot be reproduced from its own code+data — audit `FOREX_DIRECTIONAL_GATE_ENABLED` in the CI workflow and the ordering of score-boosting vs `_filter_active_picks_with_gate`.
+2. **N2 — 6 gate tests failing on pristine HEAD.** `test_cta_replicator_symbol_gate` (AUDUSD block), `test_eagle2_phase0_gates` (equity draggers), `test_m001_cot_stale_gate`, `test_ns_c_e_exec_gate_filters`, `test_quality_gates` (M-044 forex parity + forex copytrade bypass) — all fail with no uncommitted changes applied (proven via stash baseline). Suggests forex/gate defaults drifted from their contracts; assign to the gates workstream.
+3. **N3 — `smart_picks.json` feed stale ~120 days (mtime age 2,872 h, `n_picks=0`).** The payload's `smart_picks` is recomputed from active, but the feed backs the Smart Picks UI filter, probation/quarantine summaries — surface its age in `/audit/healthchecks/` and fix whatever stopped regenerating it (`alpha_engine/smart_picks_engine.py` runs are operator-gated by policy).
+4. **N4 — Payload fields go live only after the next CI generation.** Post-merge, confirm on the live payload: `summary.total_active_raw_live` ≈ 836, every `active_raw` row has `_gate_status`, `summary.smart_gate_failure_histogram` non-empty, `picks.ueps_kpi.aggregate.unrealized_status == "unmarked"`. Add these four assertions to `tools/db_freshness_check.py` or a small payload-contract test if they don't fit there.
+5. **N5 — Earlier plan items still open:** P1.2 (per-class TTLs at scan time) and P3 (forex demotion, bond/commodity sample freeze, equity R:R fix) — unchanged, see table above.
+
 ## 1. What the data says (measured, not guessed)
 
 ### Closed-pick expectancy per class (last 3,500 closes)
