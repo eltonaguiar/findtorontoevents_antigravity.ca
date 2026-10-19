@@ -17375,6 +17375,50 @@ def generate():
 
         payload["summary"]["total_active_picks"] = len(payload["picks"]["active"])
         payload["summary"]["total_active_raw_picks"] = len(payload["picks"]["active_raw"])
+        # ── 2026-10-18 picks-plan P1/P4a (updates/2026-10-18-picks-per-asset-class-improvement-plan.md) ──
+        # P1: the raw pool is a DESIGN pre-filter diagnostic (Show All Picks)
+        # and stays complete — but consumers (pages/tools/research) were
+        # re-deriving staleness from age_hours because 80% of rows were dead.
+        # Ship an explicit live/expired split + counters next to it.
+        # P4a: `_gate_passed=False` was ambiguous (it also means "never
+        # evaluated" for auto-expired rows the gate loop never saw). Tag an
+        # explicit three-state `_gate_status`: passed (matches a published
+        # active pick by signal key) / not_evaluated (auto-expired before the
+        # gate ran) / rejected (evaluated, not published).
+        try:
+            from audit_trail.profitable_filtered_observer import _pick_key as _gstat_key
+        except Exception:  # pragma: no cover — fail-open, diagnostics only
+            _gstat_key = None  # type: ignore[assignment]
+        _published_keys: set = set()
+        if _gstat_key is not None:
+            for _ap in payload["picks"]["active"]:
+                if isinstance(_ap, dict):
+                    _k = _gstat_key(_ap)
+                    if _k:
+                        _published_keys.add(_k)
+        _raw_live: list = []
+        _raw_expired: list = []
+        for _rp in payload["picks"]["active_raw"]:
+            if not isinstance(_rp, dict):
+                continue
+            if _rp.get("_auto_expired"):
+                _rp["_gate_status"] = "not_evaluated"  # staleness fired before the gate
+                _raw_expired.append(_rp)
+                continue
+            _k = _gstat_key(_rp) if _gstat_key is not None else None
+            if _k and _k in _published_keys:
+                _rp["_gate_status"] = "passed"
+            else:
+                _rp["_gate_status"] = "rejected"
+            _raw_live.append(_rp)
+        payload["picks"]["active_raw_live"] = _raw_live
+        payload["summary"]["total_active_raw_live"] = len(_raw_live)
+        payload["summary"]["total_active_raw_expired"] = len(_raw_expired)
+        if _raw_expired:
+            log.info(
+                "  active_raw split: %d live / %d auto-expired (P1 staleness view)",
+                len(_raw_live), len(_raw_expired),
+            )
         # B10 Path B: UEPS KPI sidecar panel (active_raw is now fully assembled).
         payload["picks"]["ueps_kpi"] = _build_ueps_kpi_sidecar(
             payload["picks"].get("active_raw", [])
@@ -18173,6 +18217,14 @@ def _build_ueps_kpi_sidecar(active_raw_picks):
     ages = [p["age_hours"] for p in ueps_picks if p.get("age_hours") is not None]
     pnl_pcts = [p["pnl_pct"] for p in ueps_picks if p.get("pnl_pct") is not None]
 
+    # P2 (2026-10-18 picks plan): the UEPS B28 sidecar bypasses the outcome
+    # resolver, so every open UEPS pick carries a placeholder pnl_pct of 0.0.
+    # Reporting sum/avg 0.0 read as "the strategy is flat" — a fabricated
+    # result. Mark it honestly: status "unmarked" → aggregate PnL becomes null
+    # and the template shows "n/a (not marked)" instead of 0.0%.
+    _marked_pnls = [float(v) for v in pnl_pcts if abs(float(v)) > 1e-9]
+    _unrealized_status = "marked" if _marked_pnls else "unmarked"
+
     tp_pcts, sl_pcts = [], []
     for p in ueps_picks:
         ep = p.get("entry_price") or 0
@@ -18207,6 +18259,11 @@ def _build_ueps_kpi_sidecar(active_raw_picks):
         "status": "active",
         "message": (
             "Accumulating trade history — closed-pick metrics (WR/PF) available after first UEPS exits."
+            + (
+                ""
+                if _unrealized_status == "marked"
+                else " Unrealized PnL is not price-marked yet (shown as n/a — a 0.0% here would be fake)."
+            )
         ),
         "strategies": sorted(set(p.get("strategy") or "UEPS" for p in ueps_picks)),
         "tickers": [p.get("symbol") or p.get("ticker") or "?" for p in ueps_picks],
@@ -18214,8 +18271,14 @@ def _build_ueps_kpi_sidecar(active_raw_picks):
             "avg_score": sum(scores) / len(scores) if scores else None,
             "avg_confidence": sum(confidences) / len(confidences) if confidences else None,
             "avg_age_hours": sum(ages) / len(ages) if ages else None,
-            "sum_unrealized_pnl_pct": sum(pnl_pcts) if pnl_pcts else 0.0,
-            "avg_unrealized_pnl_pct": sum(pnl_pcts) / len(pnl_pcts) if pnl_pcts else None,
+            "sum_unrealized_pnl_pct": (
+                sum(pnl_pcts) if _unrealized_status == "marked" else None
+            ),
+            "avg_unrealized_pnl_pct": (
+                sum(pnl_pcts) / len(pnl_pcts) if _unrealized_status == "marked" else None
+            ),
+            "unrealized_status": _unrealized_status,
+            "pnl_marked_positions": len(_marked_pnls),
             "avg_tp_pct": avg_tp,
             "avg_sl_pct": avg_sl,
             "avg_rr": avg_rr,
