@@ -43489,3 +43489,49241 @@ Fast-forward
 **Failures:** 0
 
 ---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-21 07:45 UTC)
+
+**Check #2674**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 27897497292
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T07:44:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27897497292
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 27897496010
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T07:44:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27897496010
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-21 08:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #27897496010) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-21 11:15 UTC)
+
+**Check #2688**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### [torontoevent.net] Algorithm Competition Refresh
+- **Run ID:** 27902339244
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T11:07:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27902339244
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Algorithm Competition Refresh
+- **Run ID:** 27902261590
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T11:03:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27902261590
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-21 11:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-21 15:15 UTC)
+
+**Check #2704**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Rapid Validation Engine
+- **Run ID:** 27908339604
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T15:07:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27908339604
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-21 15:30 UTC)
+
+**Reason:** Complex failure in [torontoevent.net] Rapid Validation Engine (Run #27908339604) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-21 19:00 UTC)
+
+**Check #2719**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 27914034755
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T18:58:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27914034755
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 27914039875
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T18:49:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27914039875
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-21 19:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-21 22:45 UTC)
+
+**Check #2734**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 27919646015
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-21T22:37:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27919646015
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-21 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 02:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-22 04:45 UTC)
+
+**Check #2758**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Index All Creator Content
+- **Run ID:** 27929814870
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T04:36:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27929814870
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-22 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-22 08:45 UTC)
+
+**Check #2774**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Stale Branch Cleanup
+- **Run ID:** 27939809839
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T08:31:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27939809839
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 27939733791
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T08:30:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27939733791
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-22 09:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-22 09:30 UTC)
+
+**Check #2777**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 27941923508
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T09:28:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27941923508
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-22 09:45 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #27941923508) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-22 10:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-22 16:00 UTC)
+
+**Check #2803**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Weekly score quartile spread
+- **Run ID:** 27965729349
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T15:54:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27965729349
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-22 16:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-22 16:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-22 16:45 UTC)
+
+**Check #2806**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### HC Evaluator Parity Test
+- **Run ID:** 27968393411
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T16:37:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27968393411
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-22 17:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-22 20:00 UTC)
+
+**Check #2819**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 27977660401
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T19:45:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27977660401
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-22 20:15 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #27977660401) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-22 22:45 UTC)
+
+**Check #2830**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 27988699565
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-22T22:36:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27988699565
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-22 23:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-22 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 02:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 03:15 UTC)
+
+**Check #2848**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 27999338490
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T03:10:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/27999338490
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-23 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 07:45 UTC)
+
+**Check #2866**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 28009958336
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T07:33:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28009958336
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-23 08:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 08:45 UTC)
+
+**Check #2870**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28012364024
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T08:38:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28012364024
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-23 09:00 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #28012364024) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 15:30 UTC)
+
+**Check #2897**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Rapid Validation Engine
+- **Run ID:** 28036771694
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T15:27:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28036771694
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-23 15:45 UTC)
+
+**Reason:** Complex failure in [torontoevent.net] Rapid Validation Engine (Run #28036771694) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 19:00 UTC)
+
+**Check #2911**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28049141468
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T18:53:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28049141468
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### gha-summary-report
+- **Run ID:** 28049251521
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T18:51:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28049251521
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-23 19:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28049141468) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 20:00 UTC)
+
+**Check #2915**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28052580760
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T19:52:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28052580760
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-23 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28052580760) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 20:45 UTC)
+
+**Check #2918**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Run Backtests & Deploy Dashboards
+- **Run ID:** 28054932442
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T20:34:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28054932442
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 21:00 UTC)
+
+**Check #2919**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28056243566
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T20:57:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28056243566
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-23 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28056243566) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 21:45 UTC)
+
+**Check #2922**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Populate alpha_macro Daily
+- **Run ID:** 28058983969
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T21:41:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28058983969
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-23 22:00 UTC)
+
+**Reason:** Complex failure in Populate alpha_macro Daily (Run #28058983969) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 22:45 UTC)
+
+**Check #2926**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28061458812
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T22:30:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28061458812
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-23 23:15 UTC)
+
+**Check #2928**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 28062499818
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T23:14:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28062499818
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28062214624
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T23:00:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28062214624
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-23 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28062214624) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-23 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 00:00 UTC)
+
+**Check #2931**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28065048548
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-23T23:55:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28065048548
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 00:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28065048548) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 01:00 UTC)
+
+**Check #2935**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28067378234
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T00:55:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28067378234
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 01:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28067378234) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 02:15 UTC)
+
+**Check #2940**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28069975046
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T02:05:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28069975046
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28069975046) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 03:15 UTC)
+
+**Check #2944**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28072312582
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T03:10:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28072312582
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 04:15 UTC)
+
+**Check #2948**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28074457759
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T04:12:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28074457759
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 04:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28074457759) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 04:45 UTC)
+
+**Check #2950**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Index All Creator Content
+- **Run ID:** 28075131854
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T04:27:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28075131854
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 06:30 UTC)
+
+**Check #2957**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 28079567547
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T06:28:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28079567547
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28079452171
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T06:25:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28079452171
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28079452171) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 07:30 UTC)
+
+**Check #2961**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Verified pilot daily
+- **Run ID:** 28082527936
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T07:29:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28082527936
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### VOLATILE ALT SCANNER Hyperliquid High-Vol Alts
+- **Run ID:** 28082420612
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T07:26:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28082420612
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 07:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 08:30 UTC)
+
+**Check #2965**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28084848076
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T08:29:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28084848076
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28084767247
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T08:17:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28084767247
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 08:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28084767247) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 09:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 09:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 10:15 UTC)
+
+**Check #2972**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28090846553
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T10:08:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28090846553
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28090846553) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 10:45 UTC)
+
+**Check #2974**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Winner Pattern Precursor Scanner
+- **Run ID:** 28092828907
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T10:43:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28092828907
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 11:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 11:30 UTC)
+
+**Check #2977**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28094653260
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T11:27:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28094653260
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Missed Opportunity Analyzer Hourly Self-Improvement
+- **Run ID:** 28094796190
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T11:20:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28094796190
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 11:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 12:15 UTC)
+
+**Check #2980**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28096691956
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T12:01:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28096691956
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28096691956) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 14:00 UTC)
+
+**Check #2987**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28103631383
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T13:58:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28103631383
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 14:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28103631383) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-24 14:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 15:15 UTC)
+
+**Check #2992**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28107978316
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T15:04:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28107978316
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 15:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28107978316) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 15:45 UTC)
+
+**Check #2994**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28109985534
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T15:35:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28109985534
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 16:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28109985534) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 16:15 UTC)
+
+**Check #2996**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28112174476
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T16:09:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28112174476
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28110964673
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T15:56:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28110964673
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28110964673) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 18:00 UTC)
+
+**Check #3003**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28118163899
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T17:50:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28118163899
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 18:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28118163899) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 18:30 UTC)
+
+**Check #3005**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Run Backtests & Deploy Dashboards (ROOCODE)
+- **Run ID:** 28119597063
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T18:14:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28119597063
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 19:00 UTC)
+
+**Check #3007**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28121526950
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T18:48:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28121526950
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 19:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28121526950) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 20:00 UTC)
+
+**Check #3011**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28124931780
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T19:46:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28124931780
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28124931780) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 21:00 UTC)
+
+**Check #3015**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28128761435
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T20:55:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28128761435
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28128761435) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 21:45 UTC)
+
+**Check #3018**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Populate alpha_macro Daily
+- **Run ID:** 28131296257
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T21:39:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28131296257
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 22:00 UTC)
+
+**Reason:** Complex failure in Populate alpha_macro Daily (Run #28131296257) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 22:15 UTC)
+
+**Check #3020**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28131948568
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T21:55:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28131948568
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 22:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28131948568) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 22:45 UTC)
+
+**Check #3022**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28133804199
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T22:30:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28133804199
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-24 23:15 UTC)
+
+**Check #3024**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28134722585
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-24T23:01:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28134722585
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-24 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28134722585) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-24 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 00:15 UTC)
+
+**Check #3028**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28137355358
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T00:00:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28137355358
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 00:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28137355358) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 00:45 UTC)
+
+**Check #3030**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 28138716726
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T00:34:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28138716726
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 01:15 UTC)
+
+**Check #3032**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28139805800
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T01:06:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28139805800
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 01:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28139805800) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 02:15 UTC)
+
+**Check #3036**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28142080499
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T02:10:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28142080499
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28142080499) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 03:15 UTC)
+
+**Check #3040**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28144113711
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T03:10:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28144113711
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 04:30 UTC)
+
+**Check #3045**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28146338785
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T04:16:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28146338785
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 04:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28146338785) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 06:30 UTC)
+
+**Check #3053**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28151171812
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T06:28:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28151171812
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28151171812) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 07:30 UTC)
+
+**Check #3057**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 28154176501
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T07:29:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28154176501
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 07:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 08:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 08:30 UTC)
+
+**Check #3061**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28156452078
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T08:29:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28156452078
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28156246370
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T08:15:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28156246370
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 08:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28156246370) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 09:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 10:15 UTC)
+
+**Check #3068**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28162713876
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T10:12:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28162713876
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28162713876) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 10:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-25 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 12:00 UTC)
+
+**Check #3075**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28167992979
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T11:54:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28167992979
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 12:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28167992979) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 13:00 UTC)
+
+**Check #3079**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28171566618
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T12:59:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28171566618
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 13:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28171566618) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 13:30 UTC)
+
+**Check #3081**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28172315986
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T13:17:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28172315986
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 14:15 UTC)
+
+**Check #3084**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28175423322
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T14:01:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28175423322
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 14:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28175423322) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 15:15 UTC)
+
+**Check #3088**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28179761581
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T15:08:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28179761581
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 15:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28179761581) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 16:15 UTC)
+
+**Check #3092**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28183729774
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T16:11:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28183729774
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28183729774) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 18:15 UTC)
+
+**Check #3100**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28189358741
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T18:01:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28189358741
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 18:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28189358741) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 18:45 UTC)
+
+**Check #3102**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Run Backtests & Deploy Dashboards (ROOCODE)
+- **Run ID:** 28191759420
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T18:32:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28191759420
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 19:00 UTC)
+
+**Check #3103**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28193217541
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T18:58:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28193217541
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 19:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28193217541) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 20:00 UTC)
+
+**Check #3107**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28196250964
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T19:52:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28196250964
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28196250964) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 21:00 UTC)
+
+**Check #3111**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28199751380
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T20:57:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28199751380
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28199751380) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 21:45 UTC)
+
+**Check #3114**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Populate alpha_macro Daily
+- **Run ID:** 28202241919
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T21:41:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28202241919
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 22:00 UTC)
+
+**Reason:** Complex failure in Populate alpha_macro Daily (Run #28202241919) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 22:15 UTC)
+
+**Check #3116**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28203034480
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T22:01:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28203034480
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 22:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28203034480) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 22:45 UTC)
+
+**Check #3118**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28204726888
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T22:33:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28204726888
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-25 23:15 UTC)
+
+**Check #3120**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28205747330
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-25T23:02:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28205747330
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-25 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28205747330) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-25 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 00:15 UTC)
+
+**Check #3124**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28208021048
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T00:00:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28208021048
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 00:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28208021048) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 01:15 UTC)
+
+**Check #3128**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28210160420
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T01:00:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28210160420
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 01:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28210160420) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 02:15 UTC)
+
+**Check #3132**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28212589073
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T02:11:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28212589073
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28212589073) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 03:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 03:15 UTC)
+
+**Check #3136**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28214538480
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T03:11:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28214538480
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 04:15 UTC)
+
+**Check #3140**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28216374146
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T04:09:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28216374146
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 04:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28216374146) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 04:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 06:45 UTC)
+
+**Check #3150**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28221270146
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T06:31:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28221270146
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 07:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28221270146) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 07:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 07:45 UTC)
+
+**Check #3154**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 28224184477
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T07:36:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28224184477
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 08:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 08:30 UTC)
+
+**Check #3157**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28226271521
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T08:25:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28226271521
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 08:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28226271521) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 09:00 UTC)
+
+**Check #3159**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28226108202
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T08:34:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28226108202
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 09:15 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #28226108202) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 10:15 UTC)
+
+**Check #3164**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28231116175
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T10:05:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28231116175
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28231116175) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 10:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 12:00 UTC)
+
+**Check #3171**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28236382822
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T11:59:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28236382822
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 12:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28236382822) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-26 12:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 14:00 UTC)
+
+**Check #3179**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28242088486
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T13:50:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28242088486
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 14:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28242088486) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 16:00 UTC)
+
+**Check #3187**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28249339832
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T15:58:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28249339832
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 16:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28249339832) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 17:00 UTC)
+
+**Check #3191**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28252393899
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T16:54:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28252393899
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 17:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28252393899) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 18:00 UTC)
+
+**Check #3195**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28255331180
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T17:50:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28255331180
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 18:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28255331180) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 19:00 UTC)
+
+**Check #3199**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28258512217
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T18:52:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28258512217
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 19:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28258512217) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 20:00 UTC)
+
+**Check #3203**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28261386264
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T19:50:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28261386264
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28261386264) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 21:00 UTC)
+
+**Check #3207**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28264191819
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T20:47:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28264191819
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28264191819) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 21:45 UTC)
+
+**Check #3210**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Populate alpha_macro Daily
+- **Run ID:** 28266668886
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T21:37:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28266668886
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 22:00 UTC)
+
+**Reason:** Complex failure in Populate alpha_macro Daily (Run #28266668886) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 22:30 UTC)
+
+**Check #3213**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28268824187
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T22:28:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28268824187
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 22:45 UTC)
+
+**Check #3214**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28269224114
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T22:43:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28269224114
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 23:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28269224114) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-26 23:15 UTC)
+
+**Check #3216**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 28269680308
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T23:14:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28269680308
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-26 23:30 UTC)
+
+**Reason:** Complex failure in H-002 PEAD Shadow Collector (Run #28269680308) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-26 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 00:00 UTC)
+
+**Check #3219**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28271456161
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-26T23:57:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28271456161
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 00:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28271456161) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 01:00 UTC)
+
+**Check #3223**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28273215146
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T00:52:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28273215146
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 01:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28273215146) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 02:15 UTC)
+
+**Check #3228**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28275279398
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T02:07:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28275279398
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28275279398) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 03:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 03:15 UTC)
+
+**Check #3232**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28276740398
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T03:09:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28276740398
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 04:15 UTC)
+
+**Check #3236**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28278140648
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T04:12:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28278140648
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 04:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28278140648) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 04:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 06:30 UTC)
+
+**Check #3245**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28280955874
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T06:21:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28280955874
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28280955874) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 07:15 UTC)
+
+**Check #3248**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### [torontoevent.net] Run Backtests & Deploy Dashboards
+- **Run ID:** 28282062824
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T07:11:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28282062824
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### DB Sync: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 28281958690
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T07:10:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28281958690
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 07:30 UTC)
+
+**Reason:** Complex failure in DB Sync: findtorontoevents.ca  torontoevent.net (Run #28281958690) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 07:45 UTC)
+
+**Check #3250**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 28282413885
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T07:34:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28282413885
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 08:15 UTC)
+
+**Check #3252**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28283405396
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T08:11:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28283405396
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 08:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28283405396) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 08:45 UTC)
+
+**Check #3254**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28283291134
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T08:22:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28283291134
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 09:00 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #28283291134) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 10:00 UTC)
+
+**Check #3259**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28285758239
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T09:57:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28285758239
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 10:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28285758239) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-27 10:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 11:00 UTC)
+
+**Check #3263**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28287022245
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T10:55:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28287022245
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 11:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28287022245) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 12:00 UTC)
+
+**Check #3267**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28288393768
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T11:57:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28288393768
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 12:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28288393768) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 13:15 UTC)
+
+**Check #3272**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28289977605
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T13:06:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28289977605
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 13:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28289977605) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 14:15 UTC)
+
+**Check #3276**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28291410548
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T14:06:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28291410548
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 14:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28291410548) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 15:15 UTC)
+
+**Check #3280**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28292830329
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T15:05:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28292830329
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 15:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28292830329) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 16:15 UTC)
+
+**Check #3284**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28294251998
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T16:02:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28294251998
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28294251998) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 17:15 UTC)
+
+**Check #3288**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28295854139
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T17:06:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28295854139
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 17:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28295854139) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 17:45 UTC)
+
+**Check #3290**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Rapid Validation Engine
+- **Run ID:** 28296852557
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T17:44:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28296852557
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 18:00 UTC)
+
+**Reason:** Complex failure in [torontoevent.net] Rapid Validation Engine (Run #28296852557) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 18:15 UTC)
+
+**Check #3292**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28297142494
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T17:59:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28297142494
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 18:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28297142494) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 19:15 UTC)
+
+**Check #3296**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28298692778
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T19:02:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28298692778
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 19:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28298692778) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 20:15 UTC)
+
+**Check #3300**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28300179590
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T20:04:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28300179590
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 20:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28300179590) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 21:15 UTC)
+
+**Check #3304**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28301775732
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T21:10:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28301775732
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 21:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28301775732) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 22:15 UTC)
+
+**Check #3308**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28303234053
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T22:11:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28303234053
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 22:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28303234053) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-27 23:15 UTC)
+
+**Check #3312**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28304649069
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-27T23:13:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28304649069
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-27 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28304649069) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-27 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 00:30 UTC)
+
+**Check #3317**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28306127257
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T00:21:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28306127257
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 00:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28306127257) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 02:30 UTC)
+
+**Check #3325**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28308755306
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T02:28:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28308755306
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 02:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28308755306) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-28 03:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 04:30 UTC)
+
+**Check #3333**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28310977844
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T04:16:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28310977844
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 04:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28310977844) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 05:00 UTC)
+
+**Check #3335**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Index All Creator Content
+- **Run ID:** 28311396183
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T04:36:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28311396183
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-28 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-28 05:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 06:45 UTC)
+
+**Check #3342**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28313922736
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T06:37:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28313922736
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 07:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28313922736) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-28 07:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 07:45 UTC)
+
+**Check #3346**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 28315361123
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T07:39:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28315361123
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-28 08:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 08:45 UTC)
+
+**Check #3350**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28316462667
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T08:31:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28316462667
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 09:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28316462667) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 09:15 UTC)
+
+**Check #3352**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Run Backtests & Deploy Dashboards
+- **Run ID:** 28317370750
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T09:10:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28317370750
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 10:15 UTC)
+
+**Check #3356**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28318817288
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T10:12:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28318817288
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28318817288) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 10:45 UTC)
+
+**Check #3358**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Algorithm Competition Refresh
+- **Run ID:** 28319652301
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T10:44:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28319652301
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 11:00 UTC)
+
+**Check #3359**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Algorithm Competition Refresh
+- **Run ID:** 28319749039
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T10:48:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28319749039
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 11:45 UTC)
+
+**Check #3362**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28321026099
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T11:44:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28321026099
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 12:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28321026099) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 12:45 UTC)
+
+**Check #3366**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 28322575365
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T12:42:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28322575365
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 14:00 UTC)
+
+**Check #3371**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28324149296
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T13:46:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28324149296
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 14:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28324149296) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 15:00 UTC)
+
+**Check #3375**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28326012454
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T14:56:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28326012454
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 15:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28326012454) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 16:15 UTC)
+
+**Check #3380**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28327805258
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T16:02:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28327805258
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28327805258) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 17:15 UTC)
+
+**Check #3384**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28329564299
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T17:07:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28329564299
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 17:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28329564299) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 18:15 UTC)
+
+**Check #3388**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28331215690
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T18:08:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28331215690
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 18:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28331215690) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 19:15 UTC)
+
+**Check #3392**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28332659534
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T19:04:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28332659534
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 19:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28332659534) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 20:15 UTC)
+
+**Check #3396**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28334160310
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T20:01:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28334160310
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 20:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28334160310) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 21:00 UTC)
+
+**Check #3399**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28335689689
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T20:59:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28335689689
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28335689689) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 22:15 UTC)
+
+**Check #3404**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28337348681
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T22:02:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28337348681
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 22:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28337348681) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-28 23:15 UTC)
+
+**Check #3408**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28338886450
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-28T23:03:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28338886450
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-28 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28338886450) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-28 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 00:15 UTC)
+
+**Check #3412**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28340339835
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T00:00:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28340339835
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 00:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28340339835) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 01:15 UTC)
+
+**Check #3416**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28342211013
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T01:06:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28342211013
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 01:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28342211013) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 02:30 UTC)
+
+**Check #3421**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Edge stability refresh
+- **Run ID:** 28344765143
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T02:26:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28344765143
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28344306102
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T02:15:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28344306102
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 02:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28344306102) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 03:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 04:30 UTC)
+
+**Check #3429**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28348120886
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T04:18:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28348120886
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 04:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28348120886) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 05:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 06:45 UTC)
+
+**Check #3438**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28353337645
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T06:39:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28353337645
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 07:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28353337645) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 07:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 07:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 07:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 08:15 UTC)
+
+**Check #3444**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Stale Branch Cleanup
+- **Run ID:** 28357806640
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T08:09:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28357806640
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 28357745135
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T08:08:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28357745135
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 08:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 08:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 09:00 UTC)
+
+**Check #3447**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28360066796
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T08:55:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28360066796
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 09:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28360066796) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 09:30 UTC)
+
+**Check #3449**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28359706877
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T09:11:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28359706877
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 09:45 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #28359706877) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 10:45 UTC)
+
+**Check #3454**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28365663891
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T10:35:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28365663891
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 11:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28365663891) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 11:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 11:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 11:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 12:45 UTC)
+
+**Check #3462**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28372469696
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T12:41:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28372469696
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 13:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28372469696) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 13:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 13:30 UTC)
+
+**Check #3465**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy findtorontoevents.ca next/events.json
+- **Run ID:** 28375579315
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T13:28:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28375579315
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 13:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 14:45 UTC)
+
+**Check #3470**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28379870997
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T14:39:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28379870997
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 15:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28379870997) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 15:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 15:30 UTC)
+
+**Check #3473**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Weekly score quartile spread
+- **Run ID:** 28383256378
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T15:26:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28383256378
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 15:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 16:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 16:15 UTC)
+
+**Check #3476**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28385843825
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T16:11:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28385843825
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28385843825) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 16:45 UTC)
+
+**Check #3478**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### HC Evaluator Parity Test
+- **Run ID:** 28386654969
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T16:20:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28386654969
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-29 17:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 18:00 UTC)
+
+**Check #3483**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Run Backtests & Deploy Dashboards
+- **Run ID:** 28391385129
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T17:46:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28391385129
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 18:15 UTC)
+
+**Reason:** Complex failure in [torontoevent.net] Run Backtests & Deploy Dashboards (Run #28391385129) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 18:30 UTC)
+
+**Check #3485**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28392376960
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T18:20:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28392376960
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 18:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28392376960) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 20:00 UTC)
+
+**Check #3491**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28398234466
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T19:51:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28398234466
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28398234466) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 21:00 UTC)
+
+**Check #3495**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28402077591
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T20:59:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28402077591
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28402077591) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-29 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 22:15 UTC)
+
+**Check #3500**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28405493692
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T22:04:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28405493692
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 22:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28405493692) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 22:45 UTC)
+
+**Check #3502**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 28407559881
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T22:43:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28407559881
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 28407037946
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T22:32:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28407037946
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 23:00 UTC)
+
+**Check #3503**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 28407960273
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T22:52:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28407960273
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 23:15 UTC)
+
+**Check #3504**  
+**New Failures:** 2  
+**Total Known Failures:** 4
+
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 28407723209
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T23:09:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28407723209
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28408247138
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T23:03:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28408247138
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-29 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28408247138) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-29 23:45 UTC)
+
+**Check #3506**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 28409522282
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T23:29:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28409522282
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 28409381116
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T23:26:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28409381116
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 00:00 UTC)
+
+**Check #3507**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 28410388395
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T23:51:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28410388395
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 28410161274
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-29T23:49:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28410161274
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 00:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 00:30 UTC)
+
+**Check #3509**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28411620657
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T00:27:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28411620657
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 00:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28411620657) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 01:15 UTC)
+
+**Check #3512**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 28413504748
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T01:14:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28413504748
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### What Worked Active Picks Insights
+- **Run ID:** 28413206453
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T01:06:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28413206453
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 28412970283
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T01:00:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28412970283
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 01:30 UTC)
+
+**Check #3513**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Edge stability refresh
+- **Run ID:** 28413845067
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T01:25:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28413845067
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 28413787744
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T01:21:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28413787744
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 01:45 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #28413845067) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 02:00 UTC)
+
+**Check #3515**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 28414758983
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T01:49:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28414758983
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 02:15 UTC)
+
+**Check #3516**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28415300283
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T02:08:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28415300283
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28415300283) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 03:15 UTC)
+
+**Check #3520**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28417465930
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T03:10:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28417465930
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 04:30 UTC)
+
+**Check #3525**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28419726827
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T04:16:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28419726827
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 04:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28419726827) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 06:45 UTC)
+
+**Check #3534**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28424592044
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T06:32:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28424592044
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 07:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28424592044) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 07:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 07:30 UTC)
+
+**Check #3537**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### DB Sync: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 28427112436
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T07:19:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28427112436
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 07:45 UTC)
+
+**Reason:** Complex failure in DB Sync: findtorontoevents.ca  torontoevent.net (Run #28427112436) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 08:00 UTC)
+
+**Check #3539**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 28428169922
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T07:52:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28428169922
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 08:30 UTC)
+
+**Check #3541**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28430373865
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T08:22:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28430373865
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 08:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28430373865) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 09:00 UTC)
+
+**Check #3543**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28430366378
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T08:36:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28430366378
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 09:15 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #28430366378) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 10:15 UTC)
+
+**Check #3548**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28436225861
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T10:06:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28436225861
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28436225861) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 10:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 11:15 UTC)
+
+**Check #3552**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Forward Trade Tracking v2
+- **Run ID:** 28439371791
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T11:02:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28439371791
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 11:30 UTC)
+
+**Reason:** Complex failure in Forward Trade Tracking v2 (Run #28439371791) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 11:45 UTC)
+
+**Check #3554**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### LuxAlgo Signal Generator
+- **Run ID:** 28440792813
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T11:27:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28440792813
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Git operation failure
+- Possible race condition or state corruption
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 12:00 UTC)
+
+**Reason:** Complex failure in LuxAlgo Signal Generator (Run #28440792813) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 12:15 UTC)
+
+**Check #3556**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28442500949
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T12:02:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28442500949
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28442500949) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 14:00 UTC)
+
+**Check #3563**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28449567446
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T13:57:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28449567446
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 14:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28449567446) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 14:30 UTC)
+
+**Check #3565**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Asset Class Freshness Watchdog
+- **Run ID:** 28451362699
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T14:19:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28451362699
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 14:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 15:15 UTC)
+
+**Check #3568**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28454126877
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T15:05:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28454126877
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### VOLATILE ALT SCANNER Hyperliquid High-Vol Alts
+- **Run ID:** 28454314274
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T15:03:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28454314274
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 15:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28454126877) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 16:15 UTC)
+
+**Check #3572**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28457956928
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T16:03:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28457956928
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28457956928) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 17:15 UTC)
+
+**Check #3576**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28462344579
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T17:14:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28462344579
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 17:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28462344579) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 18:30 UTC)
+
+**Check #3581**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28465984698
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T18:16:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28465984698
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 18:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28465984698) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 19:15 UTC)
+
+**Check #3584**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28469347765
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T19:13:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28469347765
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 28469099453
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T19:04:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28469099453
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 19:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28469347765) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 19:45 UTC)
+
+**Check #3586**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### QUAN ENGINE - Live Autonomous Scanner
+- **Run ID:** 28470960578
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T19:40:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28470960578
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 20:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 20:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 20:30 UTC)
+
+**Check #3589**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28472945515
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T20:18:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28472945515
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 20:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28472945515) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 21:30 UTC)
+
+**Check #3593**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28476683569
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T21:25:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28476683569
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 21:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28476683569) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 22:00 UTC)
+
+**Check #3595**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Populate alpha_macro Daily
+- **Run ID:** 28477631344
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T21:40:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28477631344
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 22:15 UTC)
+
+**Reason:** Complex failure in Populate alpha_macro Daily (Run #28477631344) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 22:30 UTC)
+
+**Check #3597**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28480012492
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T22:29:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28480012492
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-06-30 22:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-06-30 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-06-30 23:30 UTC)
+
+**Check #3601**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28482296486
+- **Status:** ❌ FAILED
+- **Time:** 2026-06-30T23:26:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28482296486
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-06-30 23:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28482296486) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-01 00:30 UTC)
+
+**Check #3605**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28484622119
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-01T00:24:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28484622119
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-01 00:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28484622119) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-01 02:15 UTC)
+
+**Check #3612**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28488576488
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-01T02:11:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28488576488
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-01 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28488576488) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-01 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-01 03:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-01 03:15 UTC)
+
+**Check #3616**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28490696190
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-01T03:11:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28490696190
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-01 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-01 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 18:15 UTC)
+
+**Check #3621**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28676201787
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T18:05:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28676201787
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 18:30 UTC)
+
+**Check #3622**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28677376454
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T18:29:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28677376454
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-03 18:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28677376454) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-03 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-03 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 19:30 UTC)
+
+**Check #3626**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28679676814
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T19:29:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28679676814
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-03 19:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28679676814) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 20:00 UTC)
+
+**Check #3628**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### pages-build-deployment
+- **Run ID:** 28680836221
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T19:55:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28680836221
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-03 20:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-03 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-03 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 21:00 UTC)
+
+**Check #3632**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28682772566
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T20:52:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28682772566
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-03 21:15 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28682772566) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-03 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 21:45 UTC)
+
+**Check #3635**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28684341570
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T21:39:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28684341570
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Populate alpha_macro Daily
+- **Run ID:** 28684238078
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T21:32:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28684238078
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-03 22:00 UTC)
+
+**Reason:** Complex failure in Populate alpha_macro Daily (Run #28684238078) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 22:15 UTC)
+
+**Check #3637**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 28684712703
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T21:51:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28684712703
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 22:30 UTC)
+
+**Check #3638**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28685873949
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T22:23:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28685873949
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-03 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 23:00 UTC)
+
+**Check #3640**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28686504188
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T22:49:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28686504188
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-03 23:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28686504188) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-03 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-03 23:45 UTC)
+
+**Check #3643**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Rapid Validation Engine
+- **Run ID:** 28688070468
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T23:43:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28688070468
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 00:00 UTC)
+
+**Reason:** Complex failure in [torontoevent.net] Rapid Validation Engine (Run #28688070468) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 00:15 UTC)
+
+**Check #3645**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28688432987
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T23:59:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28688432987
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28688301187
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-03T23:53:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28688301187
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 00:30 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28688301187) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 00:45 UTC)
+
+**Check #3647**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28689410447
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T00:42:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28689410447
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 01:00 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28689410447) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 01:15 UTC)
+
+**Check #3649**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28690171264
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T01:08:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28690171264
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 01:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28690171264) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 01:45 UTC)
+
+**Check #3651**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28690916502
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T01:38:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28690916502
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 02:00 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28690916502) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 02:15 UTC)
+
+**Check #3653**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### pages-build-deployment
+- **Run ID:** 28691727108
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T02:09:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28691727108
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 02:30 UTC)
+
+**Check #3654**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28691898479
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T02:21:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28691898479
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 02:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28691898479) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-04 03:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 03:15 UTC)
+
+**Check #3657**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 28692951023
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T03:06:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28692951023
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 03:30 UTC)
+
+**Check #3658**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28693355990
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T03:24:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28693355990
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 03:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28693355990) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-04 04:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 04:15 UTC)
+
+**Check #3661**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28693472864
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T04:13:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28693472864
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 04:30 UTC)
+
+**Reason:** Complex failure in ALPHA ENGINE - Dynamic Runner (Cloud or Local) (Run #28693472864) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 05:00 UTC)
+
+**Check #3664**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28694809820
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T04:48:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28694809820
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28695235161
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T04:47:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28695235161
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 05:15 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28695235161) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 05:45 UTC)
+
+**Check #3667**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### pages-build-deployment
+- **Run ID:** 28696533966
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T05:39:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28696533966
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-04 06:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-04 06:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 06:30 UTC)
+
+**Check #3670**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28697300209
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T06:16:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28697300209
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28697300209) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 07:00 UTC)
+
+**Check #3672**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds
+- **Run ID:** 28697192017
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T06:53:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28697192017
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 07:15 UTC)
+
+**Check #3673**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Check Streamer Live Status
+- **Run ID:** 28698436020
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T07:05:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28698436020
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 07:30 UTC)
+
+**Check #3674**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 28698850819
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T07:28:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28698850819
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 07:45 UTC)
+
+**Check #3675**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28699090194
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T07:30:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28699090194
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 08:00 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28699090194) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 08:15 UTC)
+
+**Check #3677**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28699768959
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T08:00:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28699768959
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 08:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28699768959) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 08:45 UTC)
+
+**Check #3679**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28699886855
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T08:23:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28699886855
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 09:00 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #28699886855) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 10:00 UTC)
+
+**Check #3684**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28702375181
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T09:51:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28702375181
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 10:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28702375181) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 10:30 UTC)
+
+**Check #3686**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28703021157
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T10:19:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28703021157
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 10:45 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28703021157) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 11:00 UTC)
+
+**Check #3688**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28703893440
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T10:57:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28703893440
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 11:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28703893440) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 12:00 UTC)
+
+**Check #3692**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28705318893
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T11:56:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28705318893
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 12:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28705318893) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 13:00 UTC)
+
+**Check #3696**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28706851361
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T12:58:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28706851361
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 13:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28706851361) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-04 13:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 14:00 UTC)
+
+**Check #3700**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28708381825
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T13:59:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28708381825
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 14:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28708381825) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 15:15 UTC)
+
+**Check #3705**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28710000100
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T15:00:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28710000100
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 15:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28710000100) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 15:45 UTC)
+
+**Check #3707**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28710739069
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T15:28:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28710739069
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 16:00 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28710739069) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 16:15 UTC)
+
+**Check #3709**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28711791897
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T16:07:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28711791897
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28711791897) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 17:15 UTC)
+
+**Check #3713**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28713553817
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T17:14:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28713553817
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 17:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28713553817) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 17:45 UTC)
+
+**Check #3715**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28713906059
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T17:27:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28713906059
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 18:00 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28713906059) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 18:30 UTC)
+
+**Check #3718**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28715467189
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T18:26:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28715467189
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 18:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28715467189) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 19:45 UTC)
+
+**Check #3723**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28717271230
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T19:36:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28717271230
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 20:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28717271230) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 20:30 UTC)
+
+**Check #3726**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 28718663326
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T20:27:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28718663326
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 20:45 UTC)
+
+**Check #3727**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28718958439
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T20:43:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28718958439
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 21:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28718958439) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 21:15 UTC)
+
+**Check #3729**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28719700149
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T21:12:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28719700149
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 21:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28719700149) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 21:45 UTC)
+
+**Check #3731**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 28720562194
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T21:43:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28720562194
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 22:00 UTC)
+
+**Check #3732**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28720519258
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T21:53:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28720519258
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28720663976
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T21:51:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28720663976
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 22:15 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28720663976) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 22:45 UTC)
+
+**Check #3735**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### pages-build-deployment
+- **Run ID:** 28722006709
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T22:42:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28722006709
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 23:00 UTC)
+
+**Check #3736**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 28722122078
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T22:51:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28722122078
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 28722163970
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T22:49:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28722163970
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-04 23:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28722122078) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-04 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-04 23:45 UTC)
+
+**Check #3739**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### pages-build-deployment
+- **Run ID:** 28723419163
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T23:45:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28723419163
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 00:00 UTC)
+
+**Check #3740**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28723459785
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-04T23:50:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28723459785
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 00:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28723459785) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 01:00 UTC)
+
+**Check #3744**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28724949519
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T00:59:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28724949519
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 01:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28724949519) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 02:00 UTC)
+
+**Check #3748**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28726187211
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T01:57:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28726187211
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 02:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28726187211) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 02:30 UTC)
+
+**Check #3750**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### pages-build-deployment
+- **Run ID:** 28726586234
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T02:10:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28726586234
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 02:45 UTC)
+
+**Check #3751**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28726298953
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T02:38:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28726298953
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 03:00 UTC)
+
+**Reason:** Complex failure in ALPHA ENGINE - Dynamic Runner (Cloud or Local) (Run #28726298953) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 03:15 UTC)
+
+**Check #3753**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28727622101
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T03:12:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28727622101
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 03:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28727622101) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 04:15 UTC)
+
+**Check #3757**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28729081194
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T04:14:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28729081194
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28728185362
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T04:13:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28728185362
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 04:30 UTC)
+
+**Reason:** Complex failure in ALPHA ENGINE - Dynamic Runner (Cloud or Local) (Run #28728185362) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-05 04:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 05:00 UTC)
+
+**Check #3760**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28729870385
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T04:52:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28729870385
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 05:15 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28729870385) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 06:30 UTC)
+
+**Check #3766**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28731807186
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T06:24:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28731807186
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28731807186) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-05 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 07:15 UTC)
+
+**Check #3769**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Weekly Exhaustive Stock Simulation
+- **Run ID:** 28733002015
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T07:14:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28733002015
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### DB Sync: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 28732807550
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T07:08:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28732807550
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 07:30 UTC)
+
+**Reason:** Complex failure in DB Sync: findtorontoevents.ca  torontoevent.net (Run #28732807550) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 07:45 UTC)
+
+**Check #3771**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Verified pilot daily
+- **Run ID:** 28733281286
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T07:39:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28733281286
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### pages-build-deployment
+- **Run ID:** 28733516503
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T07:35:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28733516503
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 08:30 UTC)
+
+**Check #3774**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28734429330
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T08:18:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28734429330
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 08:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28734429330) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 09:00 UTC)
+
+**Check #3776**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28733836544
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T08:38:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28733836544
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 28734201395
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T08:36:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28734201395
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 09:15 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #28734201395) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 10:15 UTC)
+
+**Check #3781**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28737182198
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T10:11:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28737182198
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28737182198) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 10:45 UTC)
+
+**Check #3783**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Algorithm Competition Refresh
+- **Run ID:** 28738087603
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T10:43:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28738087603
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28737391374
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T10:19:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28737391374
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 11:00 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28737391374) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 11:45 UTC)
+
+**Check #3787**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28739545422
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T11:44:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28739545422
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28739015039
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T11:43:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28739015039
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 12:00 UTC)
+
+**Reason:** Complex failure in ALPHA ENGINE - Dynamic Runner (Cloud or Local) (Run #28739015039) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 13:00 UTC)
+
+**Check #3792**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28741315243
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T12:53:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28741315243
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### pages-build-deployment
+- **Run ID:** 28741364239
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T12:51:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28741364239
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 13:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28741315243) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-05 13:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 14:15 UTC)
+
+**Check #3797**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28743236104
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T14:04:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28743236104
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### pages-build-deployment
+- **Run ID:** 28743345716
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T14:04:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28743345716
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 14:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28743236104) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 16:00 UTC)
+
+**Check #3804**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28746385609
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T15:57:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28746385609
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 16:15 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28746385609) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 16:30 UTC)
+
+**Check #3806**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28747198342
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T16:27:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28747198342
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 16:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28747198342) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 18:00 UTC)
+
+**Check #3812**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28749591119
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T17:55:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28749591119
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+### pages-build-deployment
+- **Run ID:** 28749436525
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T17:45:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28749436525
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 18:15 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28749591119) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 18:45 UTC)
+
+**Check #3815**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28750660103
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T18:34:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28750660103
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 19:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28750660103) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 19:30 UTC)
+
+**Check #3818**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds
+- **Run ID:** 28751331789
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T19:24:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28751331789
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 19:45 UTC)
+
+**Check #3819**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28751794738
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T19:41:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28751794738
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28752217379
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T19:31:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28752217379
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 20:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28752217379) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 20:45 UTC)
+
+**Check #3823**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28754022865
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T20:38:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28754022865
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 21:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28754022865) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 21:45 UTC)
+
+**Check #3827**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### pages-build-deployment
+- **Run ID:** 28755880697
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T21:44:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28755880697
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28755587040
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T21:36:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28755587040
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 22:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28755587040) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-05 22:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 22:30 UTC)
+
+**Check #3830**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28756844807
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T22:24:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28756844807
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 22:45 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28756844807) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-05 23:00 UTC)
+
+**Check #3832**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28757375796
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T22:53:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28757375796
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28757543771
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T22:52:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28757543771
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-05 23:15 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28757543771) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-05 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 00:00 UTC)
+
+**Check #3836**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28759063191
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-05T23:51:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28759063191
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 00:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28759063191) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 01:00 UTC)
+
+**Check #3840**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28761020704
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T00:58:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28761020704
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 01:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28761020704) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 01:30 UTC)
+
+**Check #3842**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 28761466348
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T01:10:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28761466348
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 02:00 UTC)
+
+**Check #3844**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28762776823
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T01:56:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28762776823
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 02:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28762776823) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 02:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 03:15 UTC)
+
+**Check #3849**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28764796056
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T03:14:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28764796056
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 28765096879
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T03:10:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28765096879
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 03:30 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #28765096879) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 04:15 UTC)
+
+**Check #3853**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28767133594
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T04:14:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28767133594
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 04:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28767133594) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 04:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 06:00 UTC)
+
+**Check #3860**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### pages-build-deployment
+- **Run ID:** 28770872339
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T05:54:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28770872339
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 06:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 06:30 UTC)
+
+**Check #3862**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 28772069588
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T06:26:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28772069588
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28772069588) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 07:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 08:00 UTC)
+
+**Check #3868**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Stale Branch Cleanup
+- **Run ID:** 28776360955
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T07:53:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28776360955
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 28776294539
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T07:52:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28776294539
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 08:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 08:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 09:00 UTC)
+
+**Check #3872**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28778934455
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T08:45:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28778934455
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 09:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28778934455) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 09:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 10:30 UTC)
+
+**Check #3878**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28784688535
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T10:27:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28784688535
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 10:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28784688535) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 11:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 11:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-06 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-06 12:45 UTC)
+
+**Check #3887**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28791662785
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-06T12:35:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28791662785
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-06 13:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28791662785) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-06 13:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 20:00 UTC)
+
+**Check #3890**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28971028296
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T19:58:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28971028296
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 28970530006
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T19:42:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28970530006
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 20:15 UTC)
+
+**Check #3891**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28971729330
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T20:04:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28971729330
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-08 20:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28971729330) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-08 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 21:00 UTC)
+
+**Check #3894**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28974273539
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T20:52:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28974273539
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 21:15 UTC)
+
+**Check #3895**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28975881723
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T21:13:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28975881723
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-08 21:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28975881723) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 21:45 UTC)
+
+**Check #3897**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 28977689396
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T21:44:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28977689396
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 28976899150
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T21:36:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28976899150
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-08 22:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-08 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 22:30 UTC)
+
+**Check #3900**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28979586773
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T22:27:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28979586773
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 28979883219
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T22:27:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28979883219
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Price Refresh
+- **Run ID:** 28979895576
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T22:24:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28979895576
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-08 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-08 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 23:15 UTC)
+
+**Check #3903**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 28982045594
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T23:13:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28982045594
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 28981104257
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T23:11:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28981104257
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-08 23:30 UTC)
+
+**Reason:** Complex failure in H-002 PEAD Shadow Collector (Run #28981104257) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-08 23:45 UTC)
+
+**Check #3905**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 28983255511
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T23:42:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28983255511
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 28982765663
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-08T23:36:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28982765663
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 00:00 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #28983255511) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 00:30 UTC)
+
+**Check #3908**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28984988587
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T00:25:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28984988587
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 00:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28984988587) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 01:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 01:45 UTC)
+
+**Check #3913**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 28987565982
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T01:41:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28987565982
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 02:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28987565982) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 02:15 UTC)
+
+**Check #3915**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Feed Health Check
+- **Run ID:** 28989189850
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T02:14:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28989189850
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds
+- **Run ID:** 28988058528
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T02:02:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28988058528
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 28988150859
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T01:53:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28988150859
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 28987913850
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T01:47:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28987913850
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 02:30 UTC)
+
+**Check #3916**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Edge stability refresh
+- **Run ID:** 28989517047
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T02:21:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28989517047
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 02:45 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #28989517047) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 03:00 UTC)
+
+**Check #3918**  
+**New Failures:** 3  
+**Total Known Failures:** 5
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28989880484
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T02:41:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28989880484
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28989880499
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T02:35:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28989880499
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28988674556
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T02:35:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28988674556
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 03:15 UTC)
+
+**Reason:** Complex failure in ALPHA ENGINE - Dynamic Runner (Cloud or Local) (Run #28988674556) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 03:45 UTC)
+
+**Check #3921**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 28992328148
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T03:42:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28992328148
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28991848770
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T03:30:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28991848770
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 04:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28991848770) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 04:15 UTC)
+
+**Check #3923**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 28991853560
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T04:04:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28991853560
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 04:30 UTC)
+
+**Reason:** Complex failure in ALPHA ENGINE - Dynamic Runner (Cloud or Local) (Run #28991853560) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 04:45 UTC)
+
+**Check #3925**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 28994202245
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T04:36:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28994202245
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 28993699744
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T04:28:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28993699744
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 05:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28994202245) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-09 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 05:45 UTC)
+
+**Check #3929**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 28996280389
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T05:30:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28996280389
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 06:00 UTC)
+
+**Check #3930**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 28997053542
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T05:50:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28997053542
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-09 06:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 06:30 UTC)
+
+**Check #3932**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 28998242246
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T06:26:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28998242246
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 28998237816
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T06:26:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28998237816
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 28998242240
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T06:21:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/28998242240
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #28998242240) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-09 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 3
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 07:30 UTC)
+
+**Check #3936**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Kimi Fetch Movies/TV
+- **Run ID:** 29001302732
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T07:28:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29001302732
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 29001571824
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T07:28:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29001571824
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 07:45 UTC)
+
+**Reason:** Complex failure in Kimi Fetch Movies/TV (Run #29001302732) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 08:00 UTC)
+
+**Check #3938**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29002570308
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T07:51:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29002570308
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 08:15 UTC)
+
+**Check #3939**  
+**New Failures:** 3  
+**Total Known Failures:** 4
+
+
+### CI Tests
+- **Run ID:** 29003522160
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T08:10:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29003522160
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29003142099
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T08:07:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29003142099
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29003261373
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T08:02:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29003261373
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 08:30 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29003261373) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 08:45 UTC)
+
+**Check #3941**  
+**New Failures:** 2  
+**Total Known Failures:** 5
+
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 29003164352
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T08:42:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29003164352
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 29004040811
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T08:24:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29004040811
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 09:00 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #29004040811) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 09:15 UTC)
+
+**Check #3943**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Send Accountability Reminders
+- **Run ID:** 29007022627
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T09:08:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29007022627
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 09:30 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29007022627) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 10:00 UTC)
+
+**Check #3946**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29008724506
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T09:46:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29008724506
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 10:15 UTC)
+
+**Check #3947**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29010234880
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T10:07:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29010234880
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29010234880) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 10:45 UTC)
+
+**Check #3949**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29012074614
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T10:39:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29012074614
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29011697921
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T10:36:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29011697921
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-09 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 3
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 11:15 UTC)
+
+**Check #3951**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29013599636
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T11:14:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29013599636
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29013947842
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T11:12:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29013947842
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-09 11:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 11:45 UTC)
+
+**Check #3953**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 29015162457
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T11:36:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29015162457
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 12:00 UTC)
+
+**Check #3954**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29015917173
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T11:49:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29015917173
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 12:15 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29015917173) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 12:30 UTC)
+
+**Check #3956**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29016824622
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T12:07:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29016824622
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 12:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29016824622) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 13:00 UTC)
+
+**Check #3958**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sustained Gainer Confluence Scanner
+- **Run ID:** 29018887541
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T12:55:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29018887541
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 13:15 UTC)
+
+**Check #3959**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 29020051066
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T13:14:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29020051066
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### What Worked Active Picks Insights
+- **Run ID:** 29020325588
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T13:14:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29020325588
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 13:30 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #29020051066) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 13:45 UTC)
+
+**Check #3961**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29021744003
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T13:42:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29021744003
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy findtorontoevents.ca next/events.json
+- **Run ID:** 29021900865
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T13:37:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29021900865
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29021702010
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T13:36:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29021702010
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 14:00 UTC)
+
+**Check #3962**  
+**New Failures:** 1  
+**Total Known Failures:** 4
+
+
+### Send Accountability Reminders
+- **Run ID:** 29023250265
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T13:57:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29023250265
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 14:15 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29023250265) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 14:30 UTC)
+
+**Check #3964**  
+**New Failures:** 3  
+**Total Known Failures:** 4
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29024166076
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T14:18:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29024166076
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29024166007
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T14:13:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29024166007
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29023071053
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T14:02:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29023071053
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 14:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29024166007) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 15:00 UTC)
+
+**Check #3966**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29026949150
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T14:52:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29026949150
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 15:15 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29026949150) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 15:30 UTC)
+
+**Check #3968**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29028057155
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T15:13:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29028057155
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 16:15 UTC)
+
+**Check #3971**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29032383990
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T16:14:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29032383990
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29031891661
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T16:05:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29031891661
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29032383990) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 16:45 UTC)
+
+**Check #3973**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29033633258
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T16:40:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29033633258
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29033007481
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T16:21:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29033007481
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 17:00 UTC)
+
+**Check #3974**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### What Worked Active Picks Insights
+- **Run ID:** 29035170320
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T16:57:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29035170320
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Check Streamer Live Status
+- **Run ID:** 29034802065
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T16:55:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29034802065
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 17:15 UTC)
+
+**Check #3975**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 29036176829
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T17:14:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29036176829
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-09 17:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 18:00 UTC)
+
+**Check #3978**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29038182672
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T17:55:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29038182672
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29038182580
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T17:50:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29038182580
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29037809581
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T17:49:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29037809581
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 18:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29038182580) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 18:30 UTC)
+
+**Check #3980**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 29039423611
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T18:12:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29039423611
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29039008633
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T18:09:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29039008633
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 18:45 UTC)
+
+**Check #3981**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Send Accountability Reminders
+- **Run ID:** 29041260328
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T18:38:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29041260328
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 19:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29041260328) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 20:00 UTC)
+
+**Check #3986**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29045864857
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T19:57:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29045864857
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29045864857) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 20:30 UTC)
+
+**Check #3988**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29047884573
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T20:29:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29047884573
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29046236014
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T20:08:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29046236014
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 20:45 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29047884573) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 21:00 UTC)
+
+**Check #3990**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29049239346
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T20:59:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29049239346
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29049239426
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T20:54:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29049239426
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29049239426) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 21:45 UTC)
+
+**Check #3993**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Send Accountability Reminders
+- **Run ID:** 29051586873
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T21:32:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29051586873
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 22:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29051586873) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 22:15 UTC)
+
+**Check #3995**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29052738928
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T22:05:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29052738928
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29052664894
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T22:00:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29052664894
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 22:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29052738928) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 22:45 UTC)
+
+**Check #3997**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 29054785164
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T22:31:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29054785164
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-09 23:15 UTC)
+
+**Check #3999**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29056223800
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T23:11:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29056223800
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29056223783
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-09T23:06:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29056223783
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-09 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29056223783) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-09 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-10 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 00:15 UTC)
+
+**Check #4003**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29058964185
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T00:13:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29058964185
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29058964258
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T00:07:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29058964258
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 00:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29058964258) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-10 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 01:00 UTC)
+
+**Check #4006**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29061172457
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T00:58:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29061172457
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 01:15 UTC)
+
+**Check #4007**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29061543388
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T01:09:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29061543388
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 01:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29061543388) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 01:45 UTC)
+
+**Check #4009**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29062845819
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T01:43:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29062845819
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 02:00 UTC)
+
+**Check #4010**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29062796467
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T01:47:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29062796467
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 02:15 UTC)
+
+**Check #4011**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29063690486
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T02:05:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29063690486
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29063690486) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 03:00 UTC)
+
+**Check #4014**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 29065347566
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T02:49:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29065347566
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 03:15 UTC)
+
+**Check #4015**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29066093138
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T03:10:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29066093138
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Check Streamer Live Status
+- **Run ID:** 29065983247
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T03:09:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29065983247
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Price Refresh
+- **Run ID:** 29066025058
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T03:07:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29066025058
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 03:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29066093138) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 03:45 UTC)
+
+**Check #4017**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29066868824
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T03:37:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29066868824
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 04:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 04:15 UTC)
+
+**Check #4019**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29068470652
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T04:14:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29068470652
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29068374445
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T04:13:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29068374445
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 04:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29068374445) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 04:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 05:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 05:30 UTC)
+
+**Check #4024**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### What Worked Active Picks Insights
+- **Run ID:** 29071304072
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T05:27:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29071304072
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29071099016
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T05:22:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29071099016
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 05:45 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29071099016) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 06:00 UTC)
+
+**Check #4026**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 29072135716
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T05:48:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29072135716
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29071855164
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T05:43:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29071855164
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 06:15 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #29071855164) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 06:30 UTC)
+
+**Check #4028**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29073632384
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T06:26:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29073632384
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29073632384) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 07:00 UTC)
+
+**Check #4030**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29074241767
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T06:45:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29074241767
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29074177569
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T06:44:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29074177569
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 07:15 UTC)
+
+**Check #4031**  
+**New Failures:** 2  
+**Total Known Failures:** 4
+
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 29075722764
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T07:09:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29075722764
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Fetch New Movies & TV Shows
+- **Run ID:** 29075568214
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T07:06:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29075568214
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 07:30 UTC)
+
+**Check #4032**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Kimi Fetch Movies/TV
+- **Run ID:** 29076387212
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T07:27:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29076387212
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 29076691564
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T07:27:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29076691564
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29076495840
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T07:25:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29076495840
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 07:45 UTC)
+
+**Reason:** Complex failure in Kimi Fetch Movies/TV (Run #29076387212) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-10 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 08:15 UTC)
+
+**Check #4035**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy & Refresh MOVIESHOWS3
+- **Run ID:** 29078636504
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T08:07:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29078636504
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29078317165
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T08:01:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29078317165
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 08:30 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29078317165) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 08:45 UTC)
+
+**Check #4037**  
+**New Failures:** 2  
+**Total Known Failures:** 4
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 29078995093
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T08:26:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29078995093
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29079027697
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T08:16:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29079027697
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 09:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29079027697) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 09:15 UTC)
+
+**Check #4039**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Check Streamer Live Status
+- **Run ID:** 29081796173
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T09:09:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29081796173
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 09:30 UTC)
+
+**Check #4040**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sidecar Status Markdown Update
+- **Run ID:** 29082475979
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T09:18:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29082475979
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 09:45 UTC)
+
+**Check #4041**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29083278263
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T09:40:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29083278263
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 10:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 10:15 UTC)
+
+**Check #4043**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29085259488
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T10:10:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29085259488
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29085259488) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 10:45 UTC)
+
+**Check #4045**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### QUAN ENGINE - Live Autonomous Scanner
+- **Run ID:** 29086673418
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T10:35:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29086673418
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29085259675
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T10:16:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29085259675
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 3
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 11:15 UTC)
+
+**Check #4047**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29088237584
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T11:13:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29088237584
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29088131123
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T11:03:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29088131123
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 11:30 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29088131123) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 11:45 UTC)
+
+**Check #4049**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 29089374883
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T11:27:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29089374883
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-10 12:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 12:15 UTC)
+
+**Check #4051**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29091236452
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T12:05:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29091236452
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29091236452) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 12:45 UTC)
+
+**Check #4053**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29091787219
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T12:15:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29091787219
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 13:00 UTC)
+
+**Check #4054**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29093788600
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T12:58:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29093788600
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 13:15 UTC)
+
+**Check #4055**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Rapid Validation Engine
+- **Run ID:** 29094452142
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T13:07:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29094452142
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-10 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 13:45 UTC)
+
+**Check #4057**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29096504244
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T13:43:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29096504244
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29096174164
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T13:32:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29096174164
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 14:00 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29096174164) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 14:15 UTC)
+
+**Check #4059**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Feed Health Check
+- **Run ID:** 29098856312
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T14:13:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29098856312
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29097455086
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T13:59:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29097455086
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29097454723
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T13:53:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29097454723
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 14:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29097454723) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 14:45 UTC)
+
+**Check #4061**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29099300442
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T14:23:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29099300442
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-10 15:00 UTC)
+
+**Check #4062**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29100897063
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-10T14:46:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29100897063
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-10 15:15 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29100897063) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-10 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 03:15 UTC)
+
+**Check #4065**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29137611377
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T03:14:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29137611377
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29137409134
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T03:08:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29137409134
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Check Streamer Live Status
+- **Run ID:** 29137312925
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T03:07:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29137312925
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Price Refresh
+- **Run ID:** 29137347994
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T03:05:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29137347994
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 03:30 UTC)
+
+**Check #4066**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29137815800
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T03:29:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29137815800
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-11 03:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 04:00 UTC)
+
+**Check #4068**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29138781536
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T03:58:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29138781536
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29138462195
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T03:48:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29138462195
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 04:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29138462195) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 04:30 UTC)
+
+**Check #4070**  
+**New Failures:** 2  
+**Total Known Failures:** 4
+
+
+### DNA Genome Daily Pipeline
+- **Run ID:** 29138910143
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T04:23:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29138910143
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29138957788
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T04:07:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29138957788
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 04:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29138957788) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-11 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 05:15 UTC)
+
+**Check #4073**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29140633047
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T05:14:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29140633047
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sidecar Status Markdown Update
+- **Run ID:** 29140795554
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T05:12:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29140795554
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sign-Coherence Gate
+- **Run ID:** 29140698343
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T05:07:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29140698343
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 05:30 UTC)
+
+**Reason:** Complex failure in Sign-Coherence Gate (Run #29140698343) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 05:45 UTC)
+
+**Check #4075**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Rapid Validation Engine
+- **Run ID:** 29141066484
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T05:27:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29141066484
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 06:00 UTC)
+
+**Check #4076**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29141934195
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T05:58:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29141934195
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 06:15 UTC)
+
+**Check #4077**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29142108354
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T06:10:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29142108354
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29142108317
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T06:04:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29142108317
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 06:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29142108317) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 06:45 UTC)
+
+**Check #4079**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29142364390
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T06:19:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29142364390
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 07:00 UTC)
+
+**Check #4080**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 29143525659
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T06:55:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29143525659
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29143409674
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T06:52:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29143409674
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 07:15 UTC)
+
+**Check #4081**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 29143747941
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T07:00:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29143747941
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 07:45 UTC)
+
+**Check #4083**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29144926388
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T07:44:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29144926388
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29144856687
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T07:43:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29144856687
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 08:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29144856687) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 08:15 UTC)
+
+**Check #4085**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29145252889
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T08:04:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29145252889
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-11 08:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 08:45 UTC)
+
+**Check #4087**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### CI Tests
+- **Run ID:** 29146445114
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T08:43:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29146445114
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### What Worked Active Picks Insights
+- **Run ID:** 29146453391
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T08:41:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29146453391
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Check Streamer Live Status
+- **Run ID:** 29146302080
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T08:39:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29146302080
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29146320357
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T08:36:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29146320357
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 09:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29146320357) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 09:30 UTC)
+
+**Check #4090**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29147456709
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T09:18:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29147456709
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 09:45 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29147456709) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 10:00 UTC)
+
+**Check #4092**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29148284578
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T09:51:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29148284578
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29148090425
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T09:42:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29148090425
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 10:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29148284578) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 10:30 UTC)
+
+**Check #4094**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29148687819
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T10:11:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29148687819
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 10:45 UTC)
+
+**Check #4095**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29149530189
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T10:36:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29149530189
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 11:00 UTC)
+
+**Check #4096**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29150071457
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T10:58:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29150071457
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29149798395
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T10:53:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29149798395
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 11:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29150071457) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 11:30 UTC)
+
+**Check #4098**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 29150964771
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T11:29:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29150964771
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29150744512
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T11:28:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29150744512
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-11 11:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 12:15 UTC)
+
+**Check #4101**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29152011743
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T12:14:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29152011743
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29151911677
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T12:05:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29151911677
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29151911677) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 12:45 UTC)
+
+**Check #4103**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Rapid Validation Engine
+- **Run ID:** 29152894458
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T12:43:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29152894458
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sidecar Status Markdown Update
+- **Run ID:** 29152659385
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T12:29:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29152659385
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 13:00 UTC)
+
+**Check #4104**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29153287713
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T12:54:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29153287713
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 13:15 UTC)
+
+**Check #4105**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29153509571
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T13:07:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29153509571
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29153509580
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T13:02:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29153509580
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 13:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29153509580) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 14:15 UTC)
+
+**Check #4109**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29155291933
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T14:04:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29155291933
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 14:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29155291933) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 15:15 UTC)
+
+**Check #4113**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29157428401
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:13:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29157428401
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29157346164
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:10:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29157346164
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29157024905
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:01:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29157024905
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 15:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29157024905) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 15:45 UTC)
+
+**Check #4115**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29157809598
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:33:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29157809598
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29157944882
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:30:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29157944882
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 16:00 UTC)
+
+**Check #4116**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29158252775
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:58:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29158252775
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29158603418
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:53:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29158603418
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29158191023
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T15:45:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29158191023
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 16:15 UTC)
+
+**Check #4117**  
+**New Failures:** 3  
+**Total Known Failures:** 4
+
+
+### Sports data snapshots
+- **Run ID:** 29159162540
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T16:09:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29159162540
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29158923373
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T16:09:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29158923373
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29158923375
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T16:04:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29158923375
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29158923375) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 17:15 UTC)
+
+**Check #4121**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29160700246
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T17:01:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29160700246
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 17:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29160700246) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 17:45 UTC)
+
+**Check #4123**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29161636701
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T17:29:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29161636701
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29161443425
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T17:23:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29161443425
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 18:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29161443425) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 18:15 UTC)
+
+**Check #4125**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29162771443
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T18:14:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29162771443
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29162731077
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T18:07:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29162731077
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 18:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29162731077) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 18:45 UTC)
+
+**Check #4127**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 29163944299
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T18:44:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29163944299
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29163422163
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T18:28:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29163422163
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 21:00 UTC)
+
+**Check #4129**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29167652747
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T20:56:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29167652747
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 21:15 UTC)
+
+**Check #4130**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29168228291
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T21:10:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29168228291
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 21:30 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29168228291) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 21:45 UTC)
+
+**Check #4132**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29169031722
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T21:44:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29169031722
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29168981200
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T21:37:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29168981200
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29168651640
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T21:31:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29168651640
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29168651645
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T21:26:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29168651645
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 22:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29168651645) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 22:15 UTC)
+
+**Check #4134**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29169272855
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T21:53:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29169272855
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 22:30 UTC)
+
+**Check #4135**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### CI Tests
+- **Run ID:** 29170454466
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T22:29:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29170454466
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29170283296
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T22:28:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29170283296
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29170263472
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T22:22:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29170263472
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Check Streamer Live Status
+- **Run ID:** 29170206003
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T22:21:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29170206003
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-11 22:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29170454466) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 23:00 UTC)
+
+**Check #4137**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29170677012
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T22:42:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29170677012
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-11 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 23:30 UTC)
+
+**Check #4139**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29171945917
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T23:29:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29171945917
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-11 23:45 UTC)
+
+**Check #4140**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Sports data snapshots
+- **Run ID:** 29172340632
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T23:37:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29172340632
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29172236555
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T23:35:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29172236555
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 00:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29172236555) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 00:15 UTC)
+
+**Check #4142**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Sports data snapshots
+- **Run ID:** 29173173098
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T00:09:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29173173098
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29172415475
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T23:58:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29172415475
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29172705605
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-11T23:53:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29172705605
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-12 00:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 00:45 UTC)
+
+**Check #4144**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29174043126
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T00:43:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29174043126
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 01:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29174043126) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 01:15 UTC)
+
+**Check #4146**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29174559548
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T01:09:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29174559548
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-12 01:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 02:00 UTC)
+
+**Check #4149**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29175696806
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T01:49:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29175696806
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29175499606
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T01:46:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29175499606
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29175655909
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T01:45:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29175655909
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 02:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29175696806) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 02:30 UTC)
+
+**Check #4151**  
+**New Failures:** 3  
+**Total Known Failures:** 5
+
+
+### Edge stability refresh
+- **Run ID:** 29176607392
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T02:20:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29176607392
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29176128131
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T02:11:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29176128131
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 29176019007
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T02:09:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29176019007
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 02:45 UTC)
+
+**Reason:** Complex failure in Outcome Resolver  Validate Unresolved Picks (Run #29176019007) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 03:00 UTC)
+
+**Check #4153**  
+**New Failures:** 2  
+**Total Known Failures:** 5
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29177191190
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T02:54:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29177191190
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29177191194
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T02:48:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29177191194
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 03:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29177191194) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 03:30 UTC)
+
+**Check #4155**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29177883000
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T03:21:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29177883000
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29177913688
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T03:15:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29177913688
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29177809354
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T03:13:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29177809354
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 03:45 UTC)
+
+**Check #4156**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29178302357
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T03:39:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29178302357
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-12 04:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 04:15 UTC)
+
+**Check #4158**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29179185838
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T04:10:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29179185838
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29179115462
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T04:05:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29179115462
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 04:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29179185838) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 04:45 UTC)
+
+**Check #4160**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29179284873
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T04:19:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29179284873
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 05:00 UTC)
+
+**Check #4161**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29180037800
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T04:48:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29180037800
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 05:15 UTC)
+
+**Check #4162**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sign-Coherence Gate
+- **Run ID:** 29180745521
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T05:09:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29180745521
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29180632893
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T05:06:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29180632893
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 05:30 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29180632893) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 05:45 UTC)
+
+**Check #4164**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### AI Leaderboard Freshness (daily FTP + data rebuild)
+- **Run ID:** 29181443686
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T05:41:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29181443686
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Rapid Validation Engine
+- **Run ID:** 29181158391
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T05:33:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29181158391
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29181154547
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T05:29:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29181154547
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 06:00 UTC)
+
+**Reason:** Complex failure in AI Leaderboard Freshness (daily FTP + data rebuild) (Run #29181443686) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 06:15 UTC)
+
+**Check #4166**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29182022281
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T06:06:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29182022281
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 06:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29182022281) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 06:45 UTC)
+
+**Check #4168**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29182519558
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T06:31:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29182519558
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29182449547
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T06:28:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29182449547
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 07:00 UTC)
+
+**Check #4169**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Check Streamer Live Status
+- **Run ID:** 29183303785
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T06:58:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29183303785
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 29183281016
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T06:53:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29183281016
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### SEC EDGAR  Insider Trades & 13F Holdings
+- **Run ID:** 29183206998
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T06:48:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29183206998
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 07:15 UTC)
+
+**Check #4170**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Verified pilot daily
+- **Run ID:** 29183730646
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T07:09:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29183730646
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Kimi Fetch Movies/TV
+- **Run ID:** 29183536220
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T07:08:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29183536220
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### gha-summary-report
+- **Run ID:** 29183486128
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T07:03:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29183486128
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 07:30 UTC)
+
+**Reason:** Complex failure in gha-summary-report (Run #29183486128) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 07:45 UTC)
+
+**Check #4172**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29184099549
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T07:25:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29184099549
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 08:00 UTC)
+
+**Check #4173**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29184856893
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T07:52:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29184856893
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29184788441
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T07:52:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29184788441
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29184598106
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T07:50:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29184598106
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 08:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29184788441) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 08:45 UTC)
+
+**Check #4176**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29186031494
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T08:43:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29186031494
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29186032270
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T08:36:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29186032270
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 09:00 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29186032270) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 09:15 UTC)
+
+**Check #4178**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29186751636
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T09:10:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29186751636
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 09:45 UTC)
+
+**Check #4180**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Send Accountability Reminders
+- **Run ID:** 29187683660
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T09:36:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29187683660
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29187510658
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T09:30:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29187510658
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 10:00 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29187510658) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 10:15 UTC)
+
+**Check #4182**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29188210665
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T10:09:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29188210665
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29188210665) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 10:45 UTC)
+
+**Check #4184**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Send Accountability Reminders
+- **Run ID:** 29189235880
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T10:33:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29189235880
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+### [torontoevent.net] Algorithm Competition Refresh
+- **Run ID:** 29189283144
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T10:32:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29189283144
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Algorithm Competition Refresh
+- **Run ID:** 29189217201
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T10:30:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29189217201
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 11:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29189235880) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 11:15 UTC)
+
+**Check #4186**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29190207978
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T11:14:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29190207978
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29190365879
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T11:13:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29190365879
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29190207956
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T11:09:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29190207956
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 11:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29190207956) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 12:30 UTC)
+
+**Check #4191**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 29192514565
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T12:25:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29192514565
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 12:45 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #29192514565) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 13:30 UTC)
+
+**Check #4195**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29193933870
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T13:15:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29193933870
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 13:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29193933870) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 14:00 UTC)
+
+**Check #4197**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29195131690
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T13:54:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29195131690
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29194570885
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T13:42:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29194570885
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 14:15 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #29195131690) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 14:30 UTC)
+
+**Check #4199**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29195808597
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T14:22:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29195808597
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29195808625
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T14:17:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29195808625
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 14:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29195808625) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 15:00 UTC)
+
+**Check #4201**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29196761338
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T14:52:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29196761338
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 29196813643
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T14:46:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29196813643
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 15:15 UTC)
+
+**Check #4202**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29197661616
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T15:13:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29197661616
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 15:30 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29197661616) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 15:45 UTC)
+
+**Check #4204**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29198263022
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T15:31:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29198263022
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 16:00 UTC)
+
+**Check #4205**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29198940502
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T15:54:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29198940502
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 16:15 UTC)
+
+**Check #4206**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 29199518361
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T16:10:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29199518361
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 16:30 UTC)
+
+**Check #4207**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sidecar Status Markdown Update
+- **Run ID:** 29200105978
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T16:28:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29200105978
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29199958127
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T16:25:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29199958127
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 16:45 UTC)
+
+**Check #4208**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 29200620549
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T16:44:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29200620549
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29200180831
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T16:33:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29200180831
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 17:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29200180831) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 17:15 UTC)
+
+**Check #4210**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29201454769
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T17:12:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29201454769
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 17:30 UTC)
+
+**Check #4211**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Send Accountability Reminders
+- **Run ID:** 29201878236
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T17:25:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29201878236
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29201463891
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T17:19:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29201463891
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 17:45 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29201878236) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 18:00 UTC)
+
+**Check #4213**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29202313811
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T17:54:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29202313811
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29202413711
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T17:50:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29202413711
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 18:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29202313811) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 18:30 UTC)
+
+**Check #4215**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29203856872
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T18:28:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29203856872
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29203755523
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T18:27:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29203755523
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 29203736295
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T18:24:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29203736295
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29203678573
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T18:24:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29203678573
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 18:45 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #29203736295) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 19:00 UTC)
+
+**Check #4217**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29204426408
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T18:48:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29204426408
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 19:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29204426408) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-12 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 19:45 UTC)
+
+**Check #4220**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29205811681
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T19:31:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29205811681
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 20:00 UTC)
+
+**Check #4221**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29206617135
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T19:56:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29206617135
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29206617135) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 20:30 UTC)
+
+**Check #4223**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29207506636
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T20:24:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29207506636
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 20:45 UTC)
+
+**Check #4224**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29207939126
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T20:43:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29207939126
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 21:00 UTC)
+
+**Check #4225**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29208593265
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T20:58:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29208593265
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29208403118
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T20:52:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29208403118
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29208593265) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 21:30 UTC)
+
+**Check #4227**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29209423657
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T21:23:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29209423657
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 21:45 UTC)
+
+**Check #4228**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29209793227
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T21:41:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29209793227
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 22:00 UTC)
+
+**Check #4229**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29209909550
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T21:57:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29209909550
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 22:15 UTC)
+
+**Check #4230**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29210918475
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T22:11:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29210918475
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29210688356
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T22:10:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29210688356
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29210688368
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T22:05:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29210688368
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 22:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29210688368) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 22:45 UTC)
+
+**Check #4232**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 29212000352
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T22:43:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29212000352
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 23:00 UTC)
+
+**Check #4233**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 29212228378
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T22:51:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29212228378
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 23:15 UTC)
+
+**Check #4234**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29212665471
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T23:07:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29212665471
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-12 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29212665471) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-12 23:45 UTC)
+
+**Check #4236**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29213276606
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T23:32:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29213276606
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29213196724
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T23:29:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29213196724
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 00:00 UTC)
+
+**Check #4237**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29214059994
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T23:53:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29214059994
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29214076974
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-12T23:52:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29214076974
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 00:15 UTC)
+
+**Check #4238**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29214561128
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T00:09:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29214561128
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 00:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29214561128) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 00:45 UTC)
+
+**Check #4240**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### DNA Genome Daily Pipeline
+- **Run ID:** 29215103295
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T00:42:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29215103295
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 01:00 UTC)
+
+**Reason:** Complex failure in DNA Genome Daily Pipeline (Run #29215103295) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 01:15 UTC)
+
+**Check #4242**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29216471731
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T01:10:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29216471731
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29216421191
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T01:08:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29216421191
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 01:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 01:45 UTC)
+
+**Check #4244**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29217420282
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T01:36:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29217420282
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 02:00 UTC)
+
+**Check #4245**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29217777947
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T01:47:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29217777947
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 02:15 UTC)
+
+**Check #4246**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29218930496
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T02:14:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29218930496
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 02:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29218930496) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 02:45 UTC)
+
+**Check #4248**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29218930436
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T02:20:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29218930436
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 03:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 03:30 UTC)
+
+**Check #4251**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29221614893
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T03:29:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29221614893
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29220977215
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T03:18:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29220977215
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 03:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29221614893) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 04:00 UTC)
+
+**Check #4253**  
+**New Failures:** 3  
+**Total Known Failures:** 4
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29222402826
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T03:56:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29222402826
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29221786332
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T03:39:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29221786332
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29221614921
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T03:34:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29221614921
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 04:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 04:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 05:00 UTC)
+
+**Check #4257**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29224344148
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T04:46:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29224344148
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29224344150
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T04:45:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29224344150
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 05:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29224344148) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 05:30 UTC)
+
+**Check #4259**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29225743470
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T05:22:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29225743470
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sidecar Status Markdown Update
+- **Run ID:** 29225977613
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T05:20:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29225977613
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### What Worked Active Picks Insights
+- **Run ID:** 29225861579
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T05:17:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29225861579
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sign-Coherence Gate
+- **Run ID:** 29225864831
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T05:15:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29225864831
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 05:45 UTC)
+
+**Reason:** Complex failure in Sign-Coherence Gate (Run #29225864831) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 06:00 UTC)
+
+**Check #4261**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29227457774
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T05:58:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29227457774
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### AI Leaderboard Freshness (daily FTP + data rebuild)
+- **Run ID:** 29227044496
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T05:48:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29227044496
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 06:15 UTC)
+
+**Reason:** Complex failure in AI Leaderboard Freshness (daily FTP + data rebuild) (Run #29227044496) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 06:30 UTC)
+
+**Check #4263**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29228062316
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T06:12:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29228062316
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 06:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29228062316) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 07:00 UTC)
+
+**Check #4265**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29228954268
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T06:35:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29228954268
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 07:15 UTC)
+
+**Check #4266**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 29230737763
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T07:04:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29230737763
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Fetch New Movies & TV Shows
+- **Run ID:** 29230536876
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T07:00:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29230536876
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 07:30 UTC)
+
+**Check #4267**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Stale Branch Cleanup
+- **Run ID:** 29232159202
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T07:28:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29232159202
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Incubator Pipeline  Strategy Graduation
+- **Run ID:** 29231782219
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T07:28:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29231782219
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 29231957901
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T07:25:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29231957901
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### gha-summary-report
+- **Run ID:** 29231582067
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T07:20:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29231582067
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 07:45 UTC)
+
+**Reason:** Complex failure in gha-summary-report (Run #29231582067) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 08:15 UTC)
+
+**Check #4270**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29233415611
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T08:01:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29233415611
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 08:30 UTC)
+
+**Check #4271**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29234677749
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T08:18:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29234677749
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 08:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29234677749) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 09:00 UTC)
+
+**Check #4273**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 29234357337
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T08:43:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29234357337
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 09:15 UTC)
+
+**Reason:** Complex failure in Operator Review — Manual Candidates daily snapshot (Run #29234357337) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 09:30 UTC)
+
+**Check #4275**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### What Worked Active Picks Insights
+- **Run ID:** 29238248614
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T09:15:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29238248614
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 09:45 UTC)
+
+**Check #4276**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29238770074
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T09:31:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29238770074
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 10:00 UTC)
+
+**Check #4277**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29240918520
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T09:58:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29240918520
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 10:15 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29240918520) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 10:30 UTC)
+
+**Check #4279**  
+**New Failures:** 3  
+**Total Known Failures:** 4
+
+
+### DNA Genome Daily Pipeline
+- **Run ID:** 29241333341
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T10:26:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29241333341
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Mutation Lab  Strategy Evolution Pipeline
+- **Run ID:** 29241549594
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T10:07:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29241549594
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29241203608
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T10:05:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29241203608
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 10:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29241203608) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 11:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 11:15 UTC)
+
+**Check #4282**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29244957027
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T11:14:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29244957027
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 11:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 11:45 UTC)
+
+**Check #4284**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29246907183
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T11:41:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29246907183
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 12:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 12:30 UTC)
+
+**Check #4287**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29248863599
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T12:15:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29248863599
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 12:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29248863599) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 13:00 UTC)
+
+**Check #4289**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Feed Summary
+- **Run ID:** 29251434990
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T12:55:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29251434990
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 13:15 UTC)
+
+**Check #4290**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Rapid Validation Engine
+- **Run ID:** 29252265322
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T13:11:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29252265322
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29252231240
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T13:07:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29252231240
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 13:30 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #29252231240) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 13:45 UTC)
+
+**Check #4292**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29254150861
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T13:42:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29254150861
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29254040029
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T13:35:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29254040029
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### MOMENTUM CATCHER - Real-time Pump Detector
+- **Run ID:** 29253349102
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T13:24:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29253349102
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Consensus Outcome Tracker
+- **Run ID:** 29253235568
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T13:22:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29253235568
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 14:00 UTC)
+
+**Check #4293**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29255033973
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T13:50:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29255033973
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 14:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29255033973) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 14:30 UTC)
+
+**Check #4295**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Asset Class Freshness Watchdog
+- **Run ID:** 29257497586
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T14:24:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29257497586
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 14:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 15:00 UTC)
+
+**Check #4297**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29258844094
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T14:49:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29258844094
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 15:15 UTC)
+
+**Check #4298**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Weekly score quartile spread
+- **Run ID:** 29261360652
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T15:14:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29261360652
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29260386797
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T15:04:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29260386797
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29260245495
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T15:03:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29260245495
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 15:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29260245495) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 15:45 UTC)
+
+**Check #4300**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29262458584
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T15:34:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29262458584
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29261861120
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T15:31:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29261861120
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 16:00 UTC)
+
+**Check #4301**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### HC Evaluator Parity Test
+- **Run ID:** 29264277201
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T15:55:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29264277201
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 16:15 UTC)
+
+**Check #4302**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29265025404
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T16:10:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29265025404
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29263952376
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T16:01:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29263952376
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 16:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29265025404) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 16:45 UTC)
+
+**Check #4304**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29266381691
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T16:33:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29266381691
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 29265906809
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T16:26:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29265906809
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 17:00 UTC)
+
+**Check #4305**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29267964775
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T16:59:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29267964775
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Check Streamer Live Status
+- **Run ID:** 29267815741
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T16:53:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29267815741
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29267913465
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T16:52:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29267913465
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 17:45 UTC)
+
+**Check #4308**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### CI Tests
+- **Run ID:** 29271331394
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T17:44:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29271331394
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29271220210
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T17:40:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29271220210
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29270510938
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T17:37:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29270510938
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29270495639
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T17:30:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29270495639
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 18:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29271220210) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 18:45 UTC)
+
+**Check #4312**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29275452856
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T18:44:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29275452856
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 19:30 UTC)
+
+**Check #4315**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29277786535
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T19:20:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29277786535
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 19:45 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29277786535) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 20:00 UTC)
+
+**Check #4317**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29279846404
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T19:52:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29279846404
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29279695618
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T19:50:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29279695618
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 20:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29279695618) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-13 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 21:00 UTC)
+
+**Check #4321**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29283422533
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T20:57:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29283422533
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29283369990
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T20:51:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29283369990
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29283422533) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 21:30 UTC)
+
+**Check #4323**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29286373068
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T21:29:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29286373068
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-13 21:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 22:00 UTC)
+
+**Check #4325**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29287728761
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T21:53:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29287728761
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29287413847
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T21:48:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29287413847
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 22:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29287413847) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 22:30 UTC)
+
+**Check #4327**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 29289554102
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T22:20:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29289554102
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 22:45 UTC)
+
+**Check #4328**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29290305485
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T22:38:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29290305485
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 23:00 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #29290305485) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 23:15 UTC)
+
+**Check #4330**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 29290974995
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T23:08:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29290974995
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 29291573245
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T22:58:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29291573245
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29291294620
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T22:57:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29291294620
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-13 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29291294620) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-13 23:45 UTC)
+
+**Check #4332**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29293419449
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T23:37:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29293419449
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 00:00 UTC)
+
+**Check #4333**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29293571610
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-13T23:58:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29293571610
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 00:15 UTC)
+
+**Check #4334**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29295012863
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T00:11:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29295012863
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 00:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29295012863) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 00:45 UTC)
+
+**Check #4336**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 29295934794
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T00:40:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29295934794
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 29296421448
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T00:40:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29296421448
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 01:00 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #29296421448) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 01:15 UTC)
+
+**Check #4338**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Edge stability refresh
+- **Run ID:** 29297368989
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T01:11:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29297368989
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### robust-edge-miner
+- **Run ID:** 29297689692
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T01:06:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29297689692
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29297034547
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T01:01:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29297034547
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #29297689692) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 01:45 UTC)
+
+**Check #4340**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29298121507
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T01:39:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29298121507
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29298121502
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T01:26:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29298121502
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 02:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29298121507) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 02:15 UTC)
+
+**Check #4342**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29299613195
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T02:01:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29299613195
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 02:30 UTC)
+
+**Check #4343**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Edge stability refresh
+- **Run ID:** 29300788198
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T02:20:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29300788198
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 02:45 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #29300788198) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 03:00 UTC)
+
+**Check #4345**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29301017501
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T02:35:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29301017501
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29301017572
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T02:30:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29301017572
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 03:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29301017572) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 03:30 UTC)
+
+**Check #4347**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29302887248
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T03:13:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29302887248
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 03:45 UTC)
+
+**Check #4348**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29303663273
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T03:34:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29303663273
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 04:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29303663273) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 04:15 UTC)
+
+**Check #4350**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29304727890
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T04:07:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29304727890
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29304373407
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T03:51:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29304373407
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-14 04:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 3
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 04:45 UTC)
+
+**Check #4352**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29306457488
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T04:42:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29306457488
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29306174529
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T04:36:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29306174529
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 05:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29306457488) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 05:15 UTC)
+
+**Check #4354**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29307485820
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T05:12:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29307485820
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29307704295
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T05:10:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29307704295
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### What Worked Active Picks Insights
+- **Run ID:** 29307592049
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T05:07:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29307592049
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sign-Coherence Gate
+- **Run ID:** 29307580783
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T05:05:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29307580783
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 05:30 UTC)
+
+**Reason:** Complex failure in Sign-Coherence Gate (Run #29307580783) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 05:45 UTC)
+
+**Check #4356**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### AI Leaderboard Freshness (daily FTP + data rebuild)
+- **Run ID:** 29308150844
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T05:21:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29308150844
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 06:00 UTC)
+
+**Reason:** Complex failure in AI Leaderboard Freshness (daily FTP + data rebuild) (Run #29308150844) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 06:15 UTC)
+
+**Check #4358**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29309599559
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T05:55:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29309599559
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 06:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29309599559) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 06:45 UTC)
+
+**Check #4360**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29311608810
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T06:34:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29311608810
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 07:00 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29311608810) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 07:15 UTC)
+
+**Check #4362**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Feed Health Check
+- **Run ID:** 29313655591
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T07:12:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29313655591
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29313218836
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T07:12:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29313218836
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 29313025957
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T06:59:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29313025957
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 07:30 UTC)
+
+**Check #4363**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29314559608
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T07:29:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29314559608
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 07:45 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29314559608) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 08:00 UTC)
+
+**Check #4365**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29315246136
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T07:48:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29315246136
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29315118831
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T07:46:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29315118831
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29315246161
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T07:43:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29315246161
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 08:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29315246161) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 08:30 UTC)
+
+**Check #4367**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 29317041540
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T08:12:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29317041540
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 08:45 UTC)
+
+**Check #4368**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29318260714
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T08:34:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29318260714
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 09:00 UTC)
+
+**Check #4369**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29319591704
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T08:57:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29319591704
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29319234492
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T08:56:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29319234492
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sidecar Status Markdown Update
+- **Run ID:** 29319564872
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T08:54:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29319564872
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 09:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29319591704) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 09:30 UTC)
+
+**Check #4371**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 29320649956
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T09:11:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29320649956
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 09:45 UTC)
+
+**Check #4372**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29321944620
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T09:40:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29321944620
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29321589739
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T09:34:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29321589739
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 10:00 UTC)
+
+**Check #4373**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29322349363
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T09:46:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29322349363
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 10:15 UTC)
+
+**Check #4374**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29323537543
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T10:06:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29323537543
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29323537641
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T10:01:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29323537641
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29323537641) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 10:45 UTC)
+
+**Check #4376**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29325839024
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T10:44:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29325839024
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29325905172
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T10:40:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29325905172
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29325735884
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T10:35:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29325735884
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 11:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29325735884) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 11:15 UTC)
+
+**Check #4378**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29327040670
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T11:05:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29327040670
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29327172418
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T11:01:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29327172418
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 11:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29327172418) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 11:45 UTC)
+
+**Check #4380**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29328788670
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T11:34:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29328788670
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29329092556
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T11:32:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29329092556
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 12:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29329092556) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 12:15 UTC)
+
+**Check #4382**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29330791428
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T12:03:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29330791428
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29330215491
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T11:59:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29330215491
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 29330552184
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T11:57:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29330552184
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29330791428) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 13:15 UTC)
+
+**Check #4386**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29335158700
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T13:12:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29335158700
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### robust-edge-miner
+- **Run ID:** 29335023273
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T13:06:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29335023273
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 13:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #29335023273) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 13:45 UTC)
+
+**Check #4388**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29337114685
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T13:40:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29337114685
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-14 14:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 14:30 UTC)
+
+**Check #4391**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29340033010
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T14:20:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29340033010
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 14:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29340033010) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 15:00 UTC)
+
+**Check #4393**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29341620220
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T14:46:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29341620220
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Stock Data Refresh
+- **Run ID:** 29341661056
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T14:37:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29341661056
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 15:30 UTC)
+
+**Check #4395**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29344544083
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T15:20:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29344544083
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 15:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29344544083) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 16:00 UTC)
+
+**Check #4397**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29346820598
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T15:51:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29346820598
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29345759945
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T15:42:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29345759945
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29346182849
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T15:40:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29346182849
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29345841190
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T15:38:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29345841190
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 16:15 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #29346820598) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 17:30 UTC)
+
+**Check #4403**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29352939029
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T17:21:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29352939029
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 17:45 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #29352939029) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 18:30 UTC)
+
+**Check #4407**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Check Streamer Live Status
+- **Run ID:** 29357585557
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T18:28:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29357585557
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 18:45 UTC)
+
+**Check #4408**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29358675753
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T18:43:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29358675753
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 29358268625
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T18:35:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29358268625
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 19:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29358675753) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 19:15 UTC)
+
+**Check #4410**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 29359275754
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T18:57:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29359275754
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 19:45 UTC)
+
+**Check #4412**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 29362311936
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T19:37:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29362311936
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29362048239
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T19:32:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29362048239
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 20:00 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29362048239) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 20:15 UTC)
+
+**Check #4414**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29363248820
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T19:59:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29363248820
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-14 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 21:00 UTC)
+
+**Check #4417**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29367482940
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T20:58:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29367482940
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29366828723
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T20:55:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29366828723
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 21:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29366828723) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 21:30 UTC)
+
+**Check #4419**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 29368558733
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T21:26:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29368558733
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 29369166773
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T21:22:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29369166773
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 21:45 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #29369166773) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 22:00 UTC)
+
+**Check #4421**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29370596659
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T21:54:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29370596659
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29370596719
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T21:48:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29370596719
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 22:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29370596719) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 22:30 UTC)
+
+**Check #4423**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29373035938
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T22:30:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29373035938
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29372725207
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T22:25:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29372725207
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Price Refresh
+- **Run ID:** 29372736772
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T22:21:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29372736772
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 22:45 UTC)
+
+**Check #4424**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 29373481322
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T22:39:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29373481322
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Portfolio Trackers (Real Money + Theory)
+- **Run ID:** 29373478835
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T22:38:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29373478835
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 23:00 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #29373481322) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 23:15 UTC)
+
+**Check #4426**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 29374103584
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T23:09:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29374103584
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29374724174
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T23:03:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29374724174
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 29374702520
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T22:59:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29374702520
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-14 23:30 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #29374702520) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-14 23:45 UTC)
+
+**Check #4428**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29376058436
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T23:27:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29376058436
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 00:00 UTC)
+
+**Check #4429**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29377230415
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-14T23:53:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29377230415
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 00:15 UTC)
+
+**Check #4430**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29378266306
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T00:14:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29378266306
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29377949291
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T00:13:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29377949291
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 00:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29378266306) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 00:45 UTC)
+
+**Check #4432**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### gha-summary-report
+- **Run ID:** 29379569339
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T00:41:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29379569339
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 01:00 UTC)
+
+**Reason:** Complex failure in gha-summary-report (Run #29379569339) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 01:15 UTC)
+
+**Check #4434**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### robust-edge-miner
+- **Run ID:** 29380765845
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T01:06:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29380765845
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29380179868
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T01:02:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29380179868
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #29380765845) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 01:45 UTC)
+
+**Check #4436**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29382272497
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T01:44:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29382272497
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 02:00 UTC)
+
+**Check #4437**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29382053570
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T01:46:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29382053570
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 02:15 UTC)
+
+**Check #4438**  
+**New Failures:** 2  
+**Total Known Failures:** 4
+
+
+### Feed Health Check
+- **Run ID:** 29383460616
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T02:13:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29383460616
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds
+- **Run ID:** 29382154606
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T02:06:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29382154606
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 02:30 UTC)
+
+**Check #4439**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### Edge stability refresh
+- **Run ID:** 29383800076
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T02:19:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29383800076
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 02:45 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #29383800076) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 03:00 UTC)
+
+**Check #4441**  
+**New Failures:** 3  
+**Total Known Failures:** 5
+
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 29382882658
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T02:40:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29382882658
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29384119019
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T02:37:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29384119019
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 29384119015
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T02:32:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29384119015
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 03:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29384119015) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 03:30 UTC)
+
+**Check #4443**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29385944941
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T03:14:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29385944941
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29385766431
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T03:12:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29385766431
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 03:45 UTC)
+
+**Check #4444**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29386873572
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T03:39:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29386873572
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 04:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29386873572) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 04:15 UTC)
+
+**Check #4446**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### Index All Creator Content
+- **Run ID:** 29387931142
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T04:03:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29387931142
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 29387410462
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T03:51:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29387410462
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 04:30 UTC)
+
+**Check #4447**  
+**New Failures:** 1  
+**Total Known Failures:** 3
+
+
+### DNA Genome Daily Pipeline
+- **Run ID:** 29387840346
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T04:26:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29387840346
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 04:45 UTC)
+
+**Reason:** Complex failure in DNA Genome Daily Pipeline (Run #29387840346) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 05:00 UTC)
+
+**Check #4449**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29389034804
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T04:32:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29389034804
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 05:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29389034804) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 05:30 UTC)
+
+**Check #4451**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### AI Leaderboard Freshness (daily FTP + data rebuild)
+- **Run ID:** 29391102094
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T05:22:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29391102094
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 05:45 UTC)
+
+**Reason:** Complex failure in AI Leaderboard Freshness (daily FTP + data rebuild) (Run #29391102094) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 06:00 UTC)
+
+**Check #4453**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29392498209
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T05:55:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29392498209
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 06:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29392498209) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-15 06:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 06:45 UTC)
+
+**Check #4456**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 29394992842
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T06:44:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29394992842
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Fetch New Movies & TV Shows
+- **Run ID:** 29394829909
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T06:41:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29394829909
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Backup Restore Verification
+- **Run ID:** 29394924034
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T06:41:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29394924034
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 07:00 UTC)
+
+**Check #4457**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### gha-summary-report
+- **Run ID:** 29395519838
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T06:56:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29395519838
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 29395436780
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T06:53:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29395436780
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Daily Feed Summary
+- **Run ID:** 29395270564
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T06:52:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29395270564
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 07:15 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #29395436780) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 07:45 UTC)
+
+**Check #4460**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29398123332
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T07:44:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29398123332
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 29398096003
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T07:44:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29398096003
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 08:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29398123332) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 08:15 UTC)
+
+**Check #4462**  
+**New Failures:** 2  
+**Total Known Failures:** 4
+
+
+### Feed Health Check
+- **Run ID:** 29399826609
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T08:12:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29399826609
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29399277233
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T08:11:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29399277233
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-15 08:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 09:00 UTC)
+
+**Check #4465**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Check Streamer Live Status
+- **Run ID:** 29401975348
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T08:52:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29401975348
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 09:15 UTC)
+
+**Check #4466**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29403019553
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T09:13:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29403019553
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Rapid Validation Engine
+- **Run ID:** 29402915945
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T09:08:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29402915945
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-15 09:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 09:45 UTC)
+
+**Check #4468**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29405400685
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T09:44:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29405400685
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 10:00 UTC)
+
+**Check #4469**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29406253827
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T09:59:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29406253827
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 29405281939
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T09:49:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29405281939
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 10:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29406253827) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 11:15 UTC)
+
+**Check #4474**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29410261125
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T11:07:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29410261125
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 11:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29410261125) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 12:15 UTC)
+
+**Check #4478**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29413979229
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T12:11:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29413979229
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29413979229) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 13:15 UTC)
+
+**Check #4482**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29418084703
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T13:14:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29418084703
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### robust-edge-miner
+- **Run ID:** 29417749510
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T13:05:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29417749510
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 13:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #29417749510) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 14:30 UTC)
+
+**Check #4487**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29422805540
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T14:21:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29422805540
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 14:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29422805540) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 15:30 UTC)
+
+**Check #4491**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29427826234
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T15:27:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29427826234
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 15:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29427826234) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 16:45 UTC)
+
+**Check #4496**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 29432999699
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T16:38:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29432999699
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 17:45 UTC)
+
+**Check #4500**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29436646930
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T17:33:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29436646930
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 18:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29436646930) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 19:45 UTC)
+
+**Check #4508**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29445153751
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T19:41:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29445153751
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 20:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29445153751) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 20:45 UTC)
+
+**Check #4512**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29449012735
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T20:42:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29449012735
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 21:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29449012735) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 21:45 UTC)
+
+**Check #4516**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29452537813
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T21:41:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29452537813
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 22:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29452537813) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-15 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 22:30 UTC)
+
+**Check #4519**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 29455156151
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T22:22:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29455156151
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 22:45 UTC)
+
+**Check #4520**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29456055926
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T22:42:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29456055926
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 23:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29456055926) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 23:15 UTC)
+
+**Check #4522**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 29456533954
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T23:10:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29456533954
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 29457132188
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T22:59:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29457132188
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-15 23:30 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #29457132188) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-15 23:45 UTC)
+
+**Check #4524**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29458683180
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-15T23:34:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29458683180
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 00:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29458683180) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 00:45 UTC)
+
+**Check #4528**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29461801897
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T00:39:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29461801897
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 01:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29461801897) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 01:15 UTC)
+
+**Check #4530**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 29463386422
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T01:10:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29463386422
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #29463386422) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-16 01:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 02:00 UTC)
+
+**Check #4533**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29464843293
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T01:48:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29464843293
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 02:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29464843293) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 02:30 UTC)
+
+**Check #4535**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### Edge stability refresh
+- **Run ID:** 29466324577
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T02:20:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29466324577
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 02:45 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #29466324577) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 03:00 UTC)
+
+**Check #4537**  
+**New Failures:** 2  
+**Total Known Failures:** 3
+
+
+### CI Tests
+- **Run ID:** 29467456591
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T02:52:57Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29467456591
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### ALPHA ENGINE - Dynamic Runner (Cloud or Local)
+- **Run ID:** 29465394741
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T02:37:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29465394741
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 03:15 UTC)
+
+**Reason:** Complex failure in ALPHA ENGINE - Dynamic Runner (Cloud or Local) (Run #29465394741) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 04:15 UTC)
+
+**Check #4542**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29470390832
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T04:07:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29470390832
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 04:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29470390832) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-16 04:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-16 05:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 05:15 UTC)
+
+**Check #4546**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 29473198053
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T05:11:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29473198053
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sidecar Status Markdown Update
+- **Run ID:** 29473173561
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T05:10:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29473173561
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sign-Coherence Gate
+- **Run ID:** 29473053150
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T05:07:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29473053150
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 05:30 UTC)
+
+**Reason:** Complex failure in Sign-Coherence Gate (Run #29473053150) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 06:15 UTC)
+
+**Check #4550**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29475313386
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T06:02:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29475313386
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 06:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29475313386) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-16 06:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 07:15 UTC)
+
+**Check #4554**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 29478789194
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T07:06:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29478789194
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-16 07:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 08:00 UTC)
+
+**Check #4557**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29481248800
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T07:54:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29481248800
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 08:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29481248800) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-07-16 08:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 09:00 UTC)
+
+**Check #4561**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29485073987
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T08:57:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29485073987
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 09:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29485073987) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 09:30 UTC)
+
+**Check #4563**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Rapid Validation Engine
+- **Run ID:** 29485674936
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T09:10:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29485674936
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 10:00 UTC)
+
+**Check #4565**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 29487779368
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T09:46:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29487779368
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 10:15 UTC)
+
+**Check #4566**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29489413212
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T10:07:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29489413212
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 10:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29489413212) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 11:15 UTC)
+
+**Check #4570**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29492971024
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T11:07:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29492971024
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 11:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29492971024) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 12:15 UTC)
+
+**Check #4574**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29497031018
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T12:13:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29497031018
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29497031018) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 13:15 UTC)
+
+**Check #4578**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29500872813
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T13:11:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29500872813
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### robust-edge-miner
+- **Run ID:** 29500873205
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T13:08:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29500873205
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 13:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #29500873205) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 14:30 UTC)
+
+**Check #4583**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29505679795
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T14:19:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29505679795
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 14:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29505679795) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 15:30 UTC)
+
+**Check #4587**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29510804142
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T15:26:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29510804142
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 15:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29510804142) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 17:45 UTC)
+
+**Check #4596**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29520723493
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T17:45:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29520723493
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 18:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29520723493) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 19:00 UTC)
+
+**Check #4601**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29525574388
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T18:54:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29525574388
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 19:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29525574388) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 20:15 UTC)
+
+**Check #4606**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29530364637
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T20:06:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29530364637
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 20:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29530364637) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-16 21:30 UTC)
+
+**Check #4611**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29535085438
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-16T21:28:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29535085438
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-16 21:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29535085438) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-16 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ⚠️ MONITOR ERROR (2026-07-16 22:30 UTC)
+
+**Status:** Could not read GitHub Actions runs
+**Error:** failed to get runs: HTTP 503: 503 Service Unavailable (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs?per_page=60&exclude_pull_requests=true)
+
+---
+
+---
+
+## ⚠️ MONITOR ERROR (2026-07-16 22:45 UTC)
+
+**Status:** Could not read GitHub Actions runs
+**Error:** failed to get runs: HTTP 503: 503 Service Unavailable (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs?per_page=60&exclude_pull_requests=true)
+
+---
+
+---
+
+## ⚠️ MONITOR ERROR (2026-07-16 23:00 UTC)
+
+**Status:** Could not read GitHub Actions runs
+**Error:** failed to get runs: HTTP 503: 503 Service Unavailable (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs?per_page=60&exclude_pull_requests=true)
+
+---
+
+---
+
+## ⚠️ MONITOR ERROR (2026-07-16 23:15 UTC)
+
+**Status:** Could not read GitHub Actions runs
+**Error:** failed to get runs: HTTP 503: 503 Service Unavailable (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs?per_page=60&exclude_pull_requests=true)
+
+---
+
+---
+
+## ⚠️ MONITOR ERROR (2026-07-16 23:30 UTC)
+
+**Status:** Could not read GitHub Actions runs
+**Error:** failed to get runs: HTTP 503: 503 Service Unavailable (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs?per_page=60&exclude_pull_requests=true)
+
+---
+
+---
+
+## ⚠️ MONITOR ERROR (2026-07-16 23:45 UTC)
+
+**Status:** Could not read GitHub Actions runs
+**Error:** failed to get runs: HTTP 503: 503 Service Unavailable (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs?per_page=60&exclude_pull_requests=true)
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-17 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-17 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-17 00:30 UTC)
+
+**Check #4623**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29544721520
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-17T00:29:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29544721520
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-17 00:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29544721520) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-17 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-17 01:15 UTC)
+
+**Check #4626**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 29546774789
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-17T01:11:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29546774789
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-17 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #29546774789) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-17 01:45 UTC)
+
+**Check #4628**  
+**New Failures:** 1  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 29547860574
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-17T01:41:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29547860574
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-07-17 02:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29547860574) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-17 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-17 02:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-07-17 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-07-17 03:00 UTC)
+
+**Check #4633**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 29550560826
+- **Status:** ❌ FAILED
+- **Time:** 2026-07-17T02:46:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/29550560826
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-03 22:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #29550560826) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-03 22:30 UTC)
+
+**Check #4635**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### masking-policy-lint
+- **Run ID:** 37158547524
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-03T22:28:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37158547524
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### masking-policy-lint
+- **Run ID:** 37158531961
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-03T22:28:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37158531961
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-03 22:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-03 23:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-03 23:15 UTC)
+
+**Check #4638**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 37160445580
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-03T23:07:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37160445580
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 37160431842
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-03T23:06:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37160431842
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-03 23:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37160431842) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-03 23:45 UTC)
+
+**Check #4640**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Feed Health Check
+- **Run ID:** 37161382798
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-03T23:22:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37161382798
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 00:00 UTC)
+
+**Check #4641**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### CI Tests
+- **Run ID:** 37162719574
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-03T23:48:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37162719574
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 37162675458
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-03T23:47:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37162675458
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 00:15 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37162675458) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 00:30 UTC)
+
+**Check #4643**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 37163773057
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T00:19:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37163773057
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 00:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37163773057) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 01:30 UTC)
+
+**Check #4647**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 37167225022
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T01:21:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37167225022
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 01:45 UTC)
+
+**Check #4648**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 37168544641
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T01:41:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37168544641
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 02:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37168544641) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ⚠️ MONITOR ERROR (2026-10-04 02:15 UTC)
+
+**Status:** Could not read GitHub Actions runs
+**Error:** error connecting to api.github.com
+check your internet connection or https://githubstatus.com
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 02:30 UTC)
+
+**Check #4651**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### robust-edge-miner
+- **Run ID:** 37169073412
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T01:48:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37169073412
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 37168746097
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T01:45:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37168746097
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 02:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37168746097) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 04:45 UTC)
+
+**Check #4659**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### CI Tests
+- **Run ID:** 37177576770
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:42:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37177576770
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 37177578036
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:39:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37177578036
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### masking-policy-lint
+- **Run ID:** 37177578053
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:38:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37177578053
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 37177070082
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:32:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37177070082
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 05:00 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37177070082) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 05:15 UTC)
+
+**Check #4661**  
+**New Failures:** 6  
+**Total Known Failures:** 6
+
+
+### CI Tests
+- **Run ID:** 37178599536
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T05:01:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37178599536
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### masking-policy-lint
+- **Run ID:** 37178508826
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:58:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37178508826
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 37178316783
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:58:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37178316783
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### masking-policy-lint
+- **Run ID:** 37178316811
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:54:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37178316811
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### masking-policy-lint
+- **Run ID:** 37178277639
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:53:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37178277639
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### masking-policy-lint
+- **Run ID:** 37178229008
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T04:52:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37178229008
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 05:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37178316783) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 08:30 UTC)
+
+**Check #4674**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 37188619455
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T08:21:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37188619455
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 08:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 09:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 09:15 UTC)
+
+**Check #4677**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Operator Review — Manual Candidates daily snapshot
+- **Run ID:** 37191195909
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T09:13:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37191195909
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### rsi5070 Forward-Test Snapshot (Daily)
+- **Run ID:** 37190849396
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T09:11:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37190849396
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 09:30 UTC)
+
+**Reason:** Complex failure in rsi5070 Forward-Test Snapshot (Daily) (Run #37190849396) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 09:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 10:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 11:30 UTC)
+
+**Check #4686**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### [torontoevent.net] Algorithm Competition Refresh
+- **Run ID:** 37198639118
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T11:25:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37198639118
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Algorithm Competition Refresh
+- **Run ID:** 37198390640
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T11:20:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37198390640
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 11:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 12:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 12:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 14:15 UTC)
+
+**Check #4697**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sidecar Status Markdown Update
+- **Run ID:** 37207853463
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T14:03:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37207853463
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 14:30 UTC)
+
+**Reason:** Complex failure in Sidecar Status Markdown Update (Run #37207853463) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-04 14:45 UTC)
+
+**Check #4699**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37209484479
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-04T14:31:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37209484479
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-04 15:00 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37209484479) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-04 15:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-04 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 00:15 UTC)
+
+**Check #4737**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 37245448282
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T00:05:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37245448282
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-05 00:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 01:30 UTC)
+
+**Check #4742**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37251144315
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T01:23:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37251144315
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-05 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37251144315) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 02:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 07:15 UTC)
+
+**Check #4765**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Stale Branch Cleanup
+- **Run ID:** 37275817858
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T07:07:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37275817858
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 37275321524
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T07:01:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37275321524
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 12:45 UTC)
+
+**Check #4787**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sidecar Status Markdown Update
+- **Run ID:** 37310576513
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T12:35:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37310576513
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 13:15 UTC)
+
+**Check #4789**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37313378991
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T13:00:46Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37313378991
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-05 13:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37313378991) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 14:45 UTC)
+
+**Check #4795**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Weekly score quartile spread
+- **Run ID:** 37325571135
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T14:43:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37325571135
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 15:30 UTC)
+
+**Check #4798**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### HC Evaluator Parity Test
+- **Run ID:** 37331457713
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T15:16:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37331457713
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 19:45 UTC)
+
+**Check #4815**  
+**New Failures:** 6  
+**Total Known Failures:** 6
+
+
+### Copy Trader Forward Test
+- **Run ID:** 37363626615
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:43:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37363626615
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Baby Strat Real Forward Monitor
+- **Run ID:** 37363450976
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:42:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37363450976
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude Gainer ML  Live Scanner
+- **Run ID:** 37363380907
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:41:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37363380907
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Portfolio Trackers (Real Money + Theory)
+- **Run ID:** 37363357142
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:41:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37363357142
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Rapid Fire - NOW Scanner
+- **Run ID:** 37363337374
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:40:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37363337374
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### ML Gatekeeper Train A/B (Phase D)
+- **Run ID:** 37363256632
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:40:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37363256632
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 20:00 UTC)
+
+**Check #4816**  
+**New Failures:** 11  
+**Total Known Failures:** 11
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 37364881943
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:55:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364881943
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### QUAN ENGINE - Live Autonomous Scanner
+- **Run ID:** 37364839311
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:55:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364839311
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Consensus Outcome Tracker
+- **Run ID:** 37364803532
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:54:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364803532
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Meme Coin Scanner v2  Fixed & Monitored
+- **Run ID:** 37364738649
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:54:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364738649
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities
+- **Run ID:** 37364728793
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:53:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364728793
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### actions-failure-guardian
+- **Run ID:** 37364728865
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:53:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364728865
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### [torontoevent.net] Deploy Rise of the Claw
+- **Run ID:** 37364682786
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:53:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364682786
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 37364633655
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:53:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364633655
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Crypto Signal Engine
+- **Run ID:** 37364335559
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:50:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364335559
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Top Gainers Spike Scanner
+- **Run ID:** 37364287589
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:49:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364287589
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### TV Paper TP/SL Watchdog
+- **Run ID:** 37364290562
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T19:49:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37364290562
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 20:15 UTC)
+
+**Check #4817**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Meme Coin Scanner v2  Fixed & Monitored
+- **Run ID:** 37366614977
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T20:11:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37366614977
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 22:15 UTC)
+
+**Check #4825**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37380849306
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T22:11:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37380849306
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-05 22:45 UTC)
+
+**Check #4827**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 37384288190
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-05T22:44:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37384288190
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-05 23:00 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #37384288190) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-05 23:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-05 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 01:30 UTC)
+
+**Check #4838**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37398297453
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T01:28:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37398297453
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-06 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37398297453) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 02:00 UTC)
+
+**Check #4840**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Edge stability refresh
+- **Run ID:** 37401545868
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T01:55:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37401545868
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-06 02:15 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #37401545868) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 02:30 UTC)
+
+**Check #4842**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37403141196
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T02:18:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37403141196
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 06:15 UTC)
+
+**Check #4857**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 37421272804
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T06:09:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37421272804
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 07:00 UTC)
+
+**Check #4860**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 37425417432
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T06:57:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37425417432
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 09:45 UTC)
+
+**Check #4871**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 37444834033
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T09:43:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37444834033
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-06 10:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 13:00 UTC)
+
+**Check #4884**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37466848417
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T12:56:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37466848417
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-06 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37466848417) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 22:15 UTC)
+
+**Check #4921**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37539007504
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T22:11:51Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37539007504
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-06 22:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-06 22:45 UTC)
+
+**Check #4923**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 37542445446
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-06T22:44:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37542445446
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-06 23:00 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #37542445446) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-06 23:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-06 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 01:30 UTC)
+
+**Check #4934**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37556567506
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T01:21:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37556567506
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-07 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37556567506) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 02:15 UTC)
+
+**Check #4937**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Conviction Picks Ultra-Selective Discord Alert
+- **Run ID:** 37560626997
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T02:10:18Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37560626997
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Winner Pattern Precursor Scanner
+- **Run ID:** 37560460660
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T02:08:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37560460660
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 02:30 UTC)
+
+**Check #4938**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37561418290
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T02:23:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37561418290
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 06:45 UTC)
+
+**Check #4955**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 37583055594
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T06:44:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37583055594
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-07 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 12:15 UTC)
+
+**Check #4977**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy findtorontoevents.ca next/events.json
+- **Run ID:** 37619257208
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T12:12:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37619257208
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 13:15 UTC)
+
+**Check #4981**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37625003769
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T13:00:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37625003769
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-07 13:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37625003769) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 14:00 UTC)
+
+**Check #4984**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 37630565737
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T13:50:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37630565737
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 37630661718
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T13:46:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37630661718
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 14:15 UTC)
+
+**Check #4985**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Check Streamer Live Status
+- **Run ID:** 37633817938
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T14:11:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37633817938
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 14:30 UTC)
+
+**Check #4986**  
+**New Failures:** 3  
+**Total Known Failures:** 3
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 37636406498
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T14:27:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37636406498
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Deploy Competition to Live Site
+- **Run ID:** 37634745222
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T14:22:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37634745222
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 37635153133
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T14:20:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37635153133
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 15:00 UTC)
+
+**Check #4988**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 37638784210
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T14:48:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37638784210
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 37638875757
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T14:45:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37638875757
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 15:30 UTC)
+
+**Check #4990**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Sports data snapshots
+- **Run ID:** 37643776642
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T15:29:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37643776642
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### DNA Genome Daily Pipeline
+- **Run ID:** 37641705332
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T15:23:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37641705332
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-07 15:45 UTC)
+
+**Reason:** Complex failure in DNA Genome Daily Pipeline (Run #37641705332) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 16:00 UTC)
+
+**Check #4992**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 37646713927
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T15:51:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37646713927
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 16:15 UTC)
+
+**Check #4993**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 37648622431
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T16:11:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37648622431
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 16:30 UTC)
+
+**Check #4994**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 37651995500
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T16:29:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37651995500
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 37650809481
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T16:22:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37650809481
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 17:00 UTC)
+
+**Check #4996**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Dashboard Pick Trader
+- **Run ID:** 37655466501
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T16:59:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37655466501
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 37654334509
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T16:47:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37654334509
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-07 17:15 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 2
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 18:30 UTC)
+
+**Check #5002**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 37665828224
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T18:28:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37665828224
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-07 18:45 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #37665828224) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 22:15 UTC)
+
+**Check #5017**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37694438037
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T22:10:34Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37694438037
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-07 23:00 UTC)
+
+**Check #5020**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 37698157241
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-07T22:45:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37698157241
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-07 23:15 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #37698157241) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-07 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 01:30 UTC)
+
+**Check #5030**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37712362411
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T01:20:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37712362411
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-08 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37712362411) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 02:30 UTC)
+
+**Check #5034**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37717247612
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T02:18:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37717247612
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 05:45 UTC)
+
+**Check #5047**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### actions-failure-guardian
+- **Run ID:** 37733574014
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T05:41:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37733574014
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-08 06:00 UTC)
+
+**Reason:** Complex failure in actions-failure-guardian (Run #37733574014) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 07:00 UTC)
+
+**Check #5052**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 37739379063
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T06:59:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37739379063
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 10:30 UTC)
+
+**Check #5066**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 37763310203
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T10:28:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37763310203
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-08 10:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37763310203) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 12:15 UTC)
+
+**Check #5073**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 37774562309
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T12:09:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37774562309
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### CI Tests
+- **Run ID:** 37773412556
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T12:00:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37773412556
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-08 12:30 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #37773412556) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 13:15 UTC)
+
+**Check #5077**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37780814403
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T13:00:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37780814403
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-08 13:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37780814403) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 20:30 UTC)
+
+**Check #5106**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### What Worked Active Picks Insights
+- **Run ID:** 37838406222
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T20:20:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37838406222
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 22:15 UTC)
+
+**Check #5113**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37851857452
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T22:11:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37851857452
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-08 22:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-08 23:00 UTC)
+
+**Check #5116**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 37855516298
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-08T22:46:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37855516298
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-08 23:15 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #37855516298) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-08 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 01:30 UTC)
+
+**Check #5126**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37869403925
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T01:22:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37869403925
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-09 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37869403925) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 02:30 UTC)
+
+**Check #5130**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37874071744
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T02:24:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37874071744
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 03:30 UTC)
+
+**Check #5134**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Index All Creator Content
+- **Run ID:** 37878402159
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T03:18:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37878402159
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 07:00 UTC)
+
+**Check #5148**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 37895152986
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T06:59:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37895152986
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 11:00 UTC)
+
+**Check #5164**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 37919261931
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T10:46:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37919261931
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 11:15 UTC)
+
+**Check #5165**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 37920953176
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T11:09:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37920953176
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 13:00 UTC)
+
+**Check #5172**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 37933481369
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T12:58:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37933481369
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-09 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #37933481369) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 22:15 UTC)
+
+**Check #5209**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 37997841778
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T22:11:37Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/37997841778
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-09 22:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-09 23:00 UTC)
+
+**Check #5212**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 38000937816
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-09T22:46:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38000937816
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-09 23:15 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #38000937816) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-09 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 01:30 UTC)
+
+**Check #5222**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38012704728
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T01:19:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38012704728
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-10 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38012704728) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 02:30 UTC)
+
+**Check #5226**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38016478137
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T02:18:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38016478137
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 03:15 UTC)
+
+**Check #5229**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 38019129146
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T03:09:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38019129146
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-10 03:30 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #38019129146) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 05:30 UTC)
+
+**Check #5238**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 38027271035
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T05:22:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38027271035
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 05:45 UTC)
+
+**Check #5239**  
+**New Failures:** 4  
+**Total Known Failures:** 4
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 38027591853
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T05:42:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38027591853
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 38027610057
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T05:42:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38027610057
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 38028353412
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T05:42:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38028353412
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 38027979007
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T05:40:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38027979007
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-10 06:00 UTC)
+
+**Reason:** Complex failure in Outcome Resolver  Validate Unresolved Picks (Run #38027610057) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 06:15 UTC)
+
+**Check #5241**  
+**New Failures:** 8  
+**Total Known Failures:** 8
+
+
+### Send Accountability Reminders
+- **Run ID:** 38030154752
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:13:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38030154752
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+### Check Streamer Live Status
+- **Run ID:** 38029969782
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:11:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38029969782
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Cross-DB Strategy Consistency Audit
+- **Run ID:** 38030047606
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:11:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38030047606
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 38029806079
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:07:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38029806079
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Hoffman IRB Strategy Tracker
+- **Run ID:** 38029531811
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:02:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38029531811
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Strategy Funnel Hourly Refresh
+- **Run ID:** 38028911835
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:02:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38028911835
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Fetch New Movies & TV Shows
+- **Run ID:** 38029459793
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:01:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38029459793
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 38029044778
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T05:54:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38029044778
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-10 06:30 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #38029044778) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 06:45 UTC)
+
+**Check #5243**  
+**New Failures:** 5  
+**Total Known Failures:** 5
+
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 38031837650
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:44:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38031837650
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 38031777794
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:43:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38031777794
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 38031779687
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:41:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38031779687
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Low-Score Winner Tracker
+- **Run ID:** 38031465232
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:36:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38031465232
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### gha-summary-report
+- **Run ID:** 38030945159
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T06:28:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38030945159
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-10 07:00 UTC)
+
+**Reason:** Complex failure in gha-summary-report (Run #38030945159) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 07:15 UTC)
+
+**Check #5245**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy & Refresh MOVIESHOWS3
+- **Run ID:** 38033228806
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T07:14:59Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38033228806
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Send Accountability Reminders
+- **Run ID:** 38033564473
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T07:14:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38033564473
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-10 07:30 UTC)
+
+**Reason:** Complex failure in Send Accountability Reminders (Run #38033564473) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 13:00 UTC)
+
+**Check #5268**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38053639646
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T12:54:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38053639646
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-10 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38053639646) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-10 23:30 UTC)
+
+**Check #5310**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 38094316763
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-10T23:17:48Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38094316763
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-10 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-11 01:00 UTC)
+
+**Check #5316**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 38099532560
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T00:55:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38099532560
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-11 01:15 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #38099532560) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-11 01:30 UTC)
+
+**Check #5318**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### robust-edge-miner
+- **Run ID:** 38101714472
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T01:25:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38101714472
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Feed Health Check
+- **Run ID:** 38101338004
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T01:20:09Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38101338004
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-11 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38101714472) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 02:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-11 06:45 UTC)
+
+**Check #5339**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 38118894269
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T06:42:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38118894269
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-11 07:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-11 10:15 UTC)
+
+**Check #5353**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### [torontoevent.net] Algorithm Competition Refresh
+- **Run ID:** 38131100147
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T10:12:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38131100147
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Algorithm Competition Refresh
+- **Run ID:** 38130711912
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T10:11:04Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38130711912
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-11 10:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-11 13:00 UTC)
+
+**Check #5364**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38141127338
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T12:56:43Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38141127338
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-11 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38141127338) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-11 16:15 UTC)
+
+**Check #5377**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 38153560843
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-11T16:09:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38153560843
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-11 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 01:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 01:30 UTC)
+
+**Check #5414**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38191996959
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T01:29:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38191996959
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-12 01:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38191996959) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 02:15 UTC)
+
+**Check #5417**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Edge stability refresh
+- **Run ID:** 38194714365
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T02:10:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38194714365
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-12 02:30 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #38194714365) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 07:15 UTC)
+
+**Check #5437**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Stale Branch Cleanup
+- **Run ID:** 38216031767
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T07:09:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38216031767
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Verified pilot daily
+- **Run ID:** 38215519953
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T07:02:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38215519953
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 13:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 13:30 UTC)
+
+**Check #5462**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38254302361
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T13:15:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38254302361
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-12 13:45 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38254302361) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 14:00 UTC)
+
+**Check #5464**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 38258263293
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T13:58:27Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38258263293
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-12 14:15 UTC)
+
+**Reason:** Complex failure in Outcome Resolver  Validate Unresolved Picks (Run #38258263293) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 14:45 UTC)
+
+**Check #5467**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Feed Health Check
+- **Run ID:** 38265075507
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T14:44:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38265075507
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Weekly score quartile spread
+- **Run ID:** 38264101622
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T14:36:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38264101622
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-12 15:00 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 15:30 UTC)
+
+**Check #5470**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### HC Evaluator Parity Test
+- **Run ID:** 38269168335
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T15:18:14Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38269168335
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 16:30 UTC)
+
+**Check #5474**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Claude's Test - Portfolio Manager
+- **Run ID:** 38276166431
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T16:16:13Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38276166431
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 22:15 UTC)
+
+**Check #5497**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38315175287
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T22:11:15Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38315175287
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-12 22:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-12 23:00 UTC)
+
+**Check #5500**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 38318502469
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-12T22:46:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38318502469
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-12 23:15 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #38318502469) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-12 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 01:15 UTC)
+
+**Check #5509**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports endpoint smoke + Playwright
+- **Run ID:** 38330736331
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T01:13:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38330736331
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 01:30 UTC)
+
+**Reason:** Complex failure in Sports endpoint smoke + Playwright (Run #38330736331) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 01:45 UTC)
+
+**Check #5511**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38331863966
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T01:36:21Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38331863966
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 02:00 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38331863966) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 02:30 UTC)
+
+**Check #5514**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38336642614
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T02:27:53Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38336642614
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-13 02:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 06:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 07:00 UTC)
+
+**Check #5532**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 38358784359
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T06:49:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38358784359
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 07:15 UTC)
+
+**Check #5533**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Skyrocket Detector  Live Scanner
+- **Run ID:** 38360365762
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T07:04:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38360365762
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-13 07:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 08:00 UTC)
+
+**Check #5536**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Skyrocket Detector  Live Scanner
+- **Run ID:** 38365637369
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T07:56:33Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38365637369
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Git operation failure
+- Possible race condition or state corruption
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 08:15 UTC)
+
+**Reason:** Complex failure in Skyrocket Detector  Live Scanner (Run #38365637369) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 12:30 UTC)
+
+**Check #5554**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Sports data snapshots
+- **Run ID:** 38397263611
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T12:29:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38397263611
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 13:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 13:15 UTC)
+
+**Check #5557**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38401635654
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T13:02:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38401635654
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 13:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38401635654) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 18:45 UTC)
+
+**Check #5579**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 38448083569
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T18:43:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38448083569
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 19:00 UTC)
+
+**Reason:** Complex failure in Outcome Resolver  Validate Unresolved Picks (Run #38448083569) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 21:30 UTC)
+
+**Check #5590**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 38470169435
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T21:29:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38470169435
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-13 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 22:15 UTC)
+
+**Check #5593**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38475816984
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T22:09:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38475816984
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 22:30 UTC)
+
+**Check #5594**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 38477574266
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T22:29:55Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38477574266
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 22:45 UTC)
+
+**Reason:** Complex failure in Outcome Resolver  Validate Unresolved Picks (Run #38477574266) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 23:00 UTC)
+
+**Check #5596**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### H-002 PEAD Shadow Collector
+- **Run ID:** 38478603664
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T22:56:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38478603664
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 38479552108
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T22:43:05Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38479552108
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 23:15 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #38479552108) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-13 23:30 UTC)
+
+**Check #5598**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Rapid Validation Engine
+- **Run ID:** 38484137466
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-13T23:28:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38484137466
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-13 23:45 UTC)
+
+**Reason:** Complex failure in [torontoevent.net] Rapid Validation Engine (Run #38484137466) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 01:15 UTC)
+
+**Check #5605**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38494120455
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T01:10:30Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38494120455
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-14 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38494120455) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 02:15 UTC)
+
+**Check #5609**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38499526997
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T02:13:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38499526997
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-14 02:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 06:45 UTC)
+
+**Check #5627**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 38523587213
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T06:41:19Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38523587213
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 11:00 UTC)
+
+**Check #5644**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Picks-Now Live PnL (hourly)
+- **Run ID:** 38552656739
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T10:55:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38552656739
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-14 11:15 UTC)
+
+**Reason:** Complex failure in Picks-Now Live PnL (hourly) (Run #38552656739) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 13:00 UTC)
+
+**Check #5652**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38567257085
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T12:54:23Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38567257085
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-14 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38567257085) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 16:15 UTC)
+
+**Check #5665**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### actions-failure-guardian
+- **Run ID:** 38595868794
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T16:11:39Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38595868794
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 22:15 UTC)
+
+**Check #5689**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38645697179
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T22:10:00Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38645697179
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-14 22:45 UTC)
+
+**Check #5691**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 38649423045
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-14T22:42:42Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38649423045
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-14 23:00 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #38649423045) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-14 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 01:15 UTC)
+
+**Check #5701**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38663866192
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T01:08:32Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38663866192
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38663866192) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 02:00 UTC)
+
+**Check #5704**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 38666943113
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T01:51:08Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38666943113
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Edge stability refresh
+- **Run ID:** 38667611057
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T01:48:44Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38667611057
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 02:15 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #38667611057) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 02:30 UTC)
+
+**Check #5706**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38669522932
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T02:14:41Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38669522932
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 06:15 UTC)
+
+**Check #5721**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 38690549588
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T06:08:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38690549588
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+### Backup Restore Verification
+- **Run ID:** 38690316942
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T06:05:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38690316942
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 06:30 UTC)
+
+**Reason:** Complex failure in Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains) (Run #38690549588) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 06:45 UTC)
+
+**Check #5723**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 38693862153
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T06:41:45Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38693862153
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 07:15 UTC)
+
+**Check #5725**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Refresh Movies Databases (50webs + GoDaddy)
+- **Run ID:** 38696526284
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T07:06:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38696526284
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 07:30 UTC)
+
+**Reason:** Complex failure in Refresh Movies Databases (50webs + GoDaddy) (Run #38696526284) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 10:30 UTC)
+
+**Check #5738**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### CI Tests
+- **Run ID:** 38718419013
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T10:17:31Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38718419013
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 10:45 UTC)
+
+**Reason:** Complex failure in CI Tests (Run #38718419013) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 13:00 UTC)
+
+**Check #5748**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38738471644
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T12:57:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38738471644
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38738471644) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 16:45 UTC)
+
+**Check #5763**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 38770767833
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T16:44:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38770767833
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 17:00 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #38770767833) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 22:15 UTC)
+
+**Check #5785**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38815249335
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T22:10:25Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38815249335
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-15 22:45 UTC)
+
+**Check #5787**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 38818914700
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-15T22:43:02Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38818914700
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-15 23:00 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #38818914700) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-15 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 01:15 UTC)
+
+**Check #5797**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38833248614
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T01:07:20Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38833248614
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-16 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38833248614) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 02:15 UTC)
+
+**Check #5801**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38838999114
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T02:14:11Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38838999114
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-16 02:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 03:15 UTC)
+
+**Check #5805**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Index All Creator Content
+- **Run ID:** 38844183507
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T03:13:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38844183507
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-16 03:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 06:45 UTC)
+
+**Check #5819**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 38862504467
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T06:41:07Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38862504467
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 12:30 UTC)
+
+**Check #5842**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Honest Kill Switch
+- **Run ID:** 38899583068
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T12:19:26Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38899583068
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-16 12:45 UTC)
+
+**Reason:** Complex failure in Honest Kill Switch (Run #38899583068) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 13:00 UTC)
+
+**Check #5844**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 38903856114
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T12:55:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38903856114
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-16 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38903856114) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 15:15 UTC)
+
+**Check #5853**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Rise of the Claw Dashboard
+- **Run ID:** 38921311573
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T15:12:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38921311573
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-16 15:30 UTC)
+
+**Reason:** Complex failure in Deploy Rise of the Claw Dashboard (Run #38921311573) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 22:15 UTC)
+
+**Check #5881**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38974056259
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T22:09:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38974056259
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-16 22:45 UTC)
+
+**Check #5883**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Prices yfinance Refresh
+- **Run ID:** 38977341228
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-16T22:43:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38977341228
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-16 23:00 UTC)
+
+**Reason:** Complex failure in Daily Prices yfinance Refresh (Run #38977341228) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-16 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 00:15 UTC)
+
+**Check #5889**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)
+- **Run ID:** 38985058867
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T00:10:12Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38985058867
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 01:15 UTC)
+
+**Check #5893**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 38989262304
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T01:14:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38989262304
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### robust-edge-miner
+- **Run ID:** 38989471488
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T01:08:17Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38989471488
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-17 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #38989471488) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 02:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 02:15 UTC)
+
+**Check #5897**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Price Refresh
+- **Run ID:** 38993820568
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T02:13:56Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38993820568
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-17 02:30 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 03:30 UTC)
+
+**Check #5902**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Index All Creator Content
+- **Run ID:** 38997694287
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T03:15:40Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/38997694287
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 06:45 UTC)
+
+**Check #5915**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 39010505841
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T06:36:50Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39010505841
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 09:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 09:30 UTC)
+
+**Check #5926**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 39020648968
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T09:19:36Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39020648968
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 10:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 13:00 UTC)
+
+**Check #5940**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 39034011275
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T12:50:16Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39034011275
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-17 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #39034011275) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 17:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 17:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 18:30 UTC)
+
+**Check #5962**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Mirror: findtorontoevents.ca  torontoevent.net
+- **Run ID:** 39057166207
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T18:24:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39057166207
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-17 18:45 UTC)
+
+**Reason:** Complex failure in Mirror: findtorontoevents.ca  torontoevent.net (Run #39057166207) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-17 20:30 UTC)
+
+**Check #5970**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 39066191002
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-17T20:21:58Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39066191002
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-17 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-18 01:15 UTC)
+
+**Check #5989**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 39085633275
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T01:13:28Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39085633275
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-18 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #39085633275) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-18 01:45 UTC)
+
+**Check #5991**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### [torontoevent.net] Rapid Validation Engine
+- **Run ID:** 39087187164
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T01:40:47Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39087187164
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-18 02:00 UTC)
+
+**Reason:** Complex failure in [torontoevent.net] Rapid Validation Engine (Run #39087187164) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 02:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 02:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 04:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 06:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-18 06:45 UTC)
+
+**Check #6011**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Verified pilot daily
+- **Run ID:** 39104628933
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T06:37:06Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39104628933
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 07:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 07:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 07:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 07:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 08:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 08:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 08:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 08:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-18 09:00 UTC)
+
+**Check #6020**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Deploy Competition to Live Site
+- **Run ID:** 39112375829
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T08:51:10Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39112375829
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 09:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 09:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 09:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 10:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-18 10:15 UTC)
+
+**Check #6025**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### [torontoevent.net] Algorithm Competition Refresh
+- **Run ID:** 39118228805
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T10:11:24Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39118228805
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Algorithm Competition Refresh
+- **Run ID:** 39117847934
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T10:10:01Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39117847934
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 10:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 10:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 11:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 11:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 11:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 11:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 12:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 12:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 12:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 12:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-18 13:00 UTC)
+
+**Check #6036**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 39128828984
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T12:49:49Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39128828984
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-18 13:15 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #39128828984) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 13:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 13:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 14:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 14:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 14:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 14:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 15:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 15:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 15:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 15:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 16:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 16:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 16:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 16:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 17:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 17:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-18 17:30 UTC)
+
+**Check #6054**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Outcome Resolver  Validate Unresolved Picks
+- **Run ID:** 39149239803
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-18T17:27:03Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39149239803
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Authentication/credentials issue detected
+- Check GitHub Secrets and external service permissions
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-18 17:45 UTC)
+
+**Reason:** Complex failure in Outcome Resolver  Validate Unresolved Picks (Run #39149239803) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 18:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 18:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 18:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 18:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 19:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 19:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 19:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 19:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 20:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 20:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 20:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 20:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 21:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 21:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 21:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 21:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 22:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 22:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 22:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 22:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 23:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 23:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 23:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-18 23:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 00:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 00:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 00:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 00:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 01:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-19 01:15 UTC)
+
+**Check #6085**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### robust-edge-miner
+- **Run ID:** 39184399194
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-19T01:14:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39184399194
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-19 01:30 UTC)
+
+**Reason:** Complex failure in robust-edge-miner (Run #39184399194) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 01:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-19 02:00 UTC)
+
+**Check #6088**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Edge stability refresh
+- **Run ID:** 39187436005
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-19T01:54:38Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39187436005
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Database connectivity issue
+- Verify credentials and IP whitelists
+
+**Impact:** TBD
+
+---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-10-19 02:15 UTC)
+
+**Reason:** Complex failure in Edge stability refresh (Run #39187436005) - requires deep investigation
+
+**Next Check:** Will resume at next interval
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 02:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 02:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 03:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 03:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 03:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 03:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 04:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 04:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-19 04:30 UTC)
+
+**Check #6098**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### Low-Score Winner Tracker
+- **Run ID:** 39199449313
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-19T04:28:54Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39199449313
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### Sports data snapshots
+- **Run ID:** 39198839004
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-19T04:22:22Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39198839004
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 04:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 05:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 05:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 05:30 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 05:45 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 06:00 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## ✅ HEALTHY CHECK (2026-10-19 06:15 UTC)
+
+**Status:** All recent workflows passing
+**Checked:** 60 recent runs
+**Failures:** 0
+
+---
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-10-19 06:30 UTC)
+
+**Check #6106**  
+**New Failures:** 1  
+**Total Known Failures:** 1
+
+
+### Daily Feed Summary
+- **Run ID:** 39209607783
+- **Status:** ❌ FAILED
+- **Time:** 2026-10-19T06:27:29Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/39209607783
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+---
+
+## ℹ️ NO NEW FAILURES (2026-10-19 06:45 UTC)
+
+**Status:** Previously detected failures still being investigated
+**Known Failures:** 1
+
+---

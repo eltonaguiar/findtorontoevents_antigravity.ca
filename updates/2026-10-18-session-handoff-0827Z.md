@@ -35,3 +35,7 @@
 - Deployed weather-only to FTP: https://findtorontoevents.ca/weather/ → HTTP 200, last-modified 08:30Z, "Top Entertainment" present.
 - Remote full-page test (VERIFY_REMOTE=1): 2 failures — broken Quick Nav links to /findstocks/portfolio2/*.html (9 URLs, HTTP 404). Pre-existing missing pages, not caused by this session's changes. Recommend either restoring those pages or removing the Quick Nav entries.
 - Weather Playwright: 4/4 pass.
+
+## Weather skins (2026-10-18T09:05Z)
+
+- Added 5 weather-driven selectable skins (Glass, Neon, Minimal, Aurora, Retro) keeping live weather background; persisted via localStorage; 4/4 Playwright pass; deployed to FTP.

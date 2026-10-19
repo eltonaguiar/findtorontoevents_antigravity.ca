@@ -1,0 +1,101 @@
+<style>
+  .weather-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  .weather-option{cursor:pointer;border:2px solid transparent;border-radius:18px;background:#11172b;overflow:hidden;transition:.2s}
+  .weather-option:hover,.weather-option.selected{border-color:#22d3ee;transform:translateY(-2px)}
+  .weather-option-head{padding:12px 14px;background:#17203a;display:flex;justify-content:space-between;align-items:center}
+  .weather-option-head strong{color:#f8fafc}.weather-option-head span{color:#94a3b8;font-size:12px}
+  .weather-screen{padding:12px;min-height:330px;color:#e2e8f0;background:linear-gradient(180deg,#070b1c,#111936)}
+  .mini-top{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#94a3b8;margin-bottom:10px}
+  .mini-controls{height:22px;border-radius:11px;background:#252d45;margin-bottom:10px}
+  .mini-card{border:1px solid #334155;border-radius:10px;background:rgba(30,41,59,.85);padding:10px}
+  .mini-big{font-size:23px;font-weight:800;color:#f8fafc}.mini-accent{color:#fbbf24;font-weight:800}
+  .mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:7px}
+  .mini-grid.three{grid-template-columns:repeat(3,1fr)}
+  .mini-stat{min-height:55px;border:1px solid #334155;border-radius:8px;background:#18223c;padding:7px;font-size:9px;color:#94a3b8}
+  .mini-stat b{display:block;color:#f8fafc;font-size:13px;margin-top:5px}
+  .mini-forecast{display:flex;gap:4px;margin-top:7px}
+  .mini-day{flex:1;text-align:center;padding:7px 2px;border-radius:7px;background:#18223c;font-size:8px}
+  .nearby{margin-top:8px;border:1px solid #475569;border-radius:8px;padding:7px;font-size:9px;display:flex;justify-content:space-between;color:#cbd5e1}
+  .nearby button{font-size:9px;border:0;border-radius:8px;background:#334155;color:#fff;padding:2px 6px}
+  .split-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:7px}
+  .side-rail{display:grid;gap:7px}
+  .dense-row{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:6px;margin-top:7px}
+  .dense-row .mini-stat{min-height:48px}
+  .tabbar{display:flex;gap:5px;margin-bottom:8px}
+  .tab{padding:4px 8px;border-radius:10px;background:#27334f;font-size:9px}
+  .tab.active{background:#0891b2;color:white}
+  .weather-option-copy{padding:14px;background:#fff;color:#334155;min-height:150px}
+  .weather-option-copy h3{margin:0 0 6px;color:#0f172a}.weather-option-copy p{margin:0;font-size:13px;line-height:1.45}
+  @media(max-width:1000px){.weather-options{grid-template-columns:1fr}.weather-screen{min-height:auto}}
+</style>
+
+<h2>Which compact weather layout should lead?</h2>
+<p class="subtitle">All three retain the animated background, location search, full hourly/7-day data, and a dismissible Nearby &amp; News surface. Click the layout you prefer.</p>
+
+<div class="weather-options">
+  <div class="weather-option" data-choice="dashboard" onclick="toggleSelect(this)">
+    <div class="weather-option-head"><strong>A. Dashboard Grid</strong><span>Recommended</span></div>
+    <div class="weather-screen">
+      <div class="mini-top"><span>🌤 Toronto Weather</span><span>Compact · ▣ · ≡</span></div>
+      <div class="mini-controls"></div>
+      <div class="split-hero">
+        <div class="mini-card"><div class="mini-accent">🧣 Probably — Light jacket</div><div style="font-size:9px;margin-top:5px">Feels like 6°C · Clear sky</div></div>
+        <div class="mini-card"><div class="mini-big">8°C</div><div style="font-size:9px">Clear · feels 6°</div></div>
+      </div>
+      <div class="mini-grid three">
+        <div class="mini-stat">RAIN<b>10%</b></div>
+        <div class="mini-stat">WIND<b>12 km/h</b></div>
+        <div class="mini-stat">SUNSET<b>6:28 PM</b></div>
+      </div>
+      <div class="mini-forecast">
+        <div class="mini-day">NOW<br>8°</div><div class="mini-day">9 PM<br>7°</div><div class="mini-day">10 PM<br>7°</div><div class="mini-day">11 PM<br>6°</div><div class="mini-day">12 AM<br>6°</div>
+      </div>
+      <div class="nearby"><span>📌 Nearby &amp; News · 3 events · 5 stories</span><button>Hide ×</button></div>
+    </div>
+    <div class="weather-option-copy"><h3>Balanced dashboard</h3><p>Verdict, temperature, rain, wind, sunset, and near-term forecast all fit in one desktop viewport. Detail cards and the 7-day forecast continue below.</p></div>
+  </div>
+
+  <div class="weather-option" data-choice="command-center" onclick="toggleSelect(this)">
+    <div class="weather-option-head"><strong>B. Command Center</strong><span>Maximum density</span></div>
+    <div class="weather-screen">
+      <div class="mini-top"><span>🌤 Toronto · Updated 7:15 PM</span><span>Dense · ▣ · ≡</span></div>
+      <div class="mini-controls"></div>
+      <div class="mini-card">
+        <div style="display:flex;justify-content:space-between;align-items:center"><div><div class="mini-accent">🧣 Light jacket</div><div style="font-size:9px">Clear sky · feels 6°</div></div><div class="mini-big">8°C</div></div>
+      </div>
+      <div class="dense-row">
+        <div class="mini-stat">CONDITION<b>Clear night</b></div>
+        <div class="mini-stat">RAIN<b>10%</b></div>
+        <div class="mini-stat">WIND<b>12</b></div>
+        <div class="mini-stat">UV<b>2</b></div>
+        <div class="mini-stat">SUNSET<b>6:28</b></div>
+      </div>
+      <div class="mini-forecast">
+        <div class="mini-day">SAT<br>11° / 5°</div><div class="mini-day">SUN<br>13° / 7°</div><div class="mini-day">MON<br>14° / 8°</div><div class="mini-day">TUE<br>12° / 6°</div>
+      </div>
+      <div class="nearby"><span>📌 Nearby &amp; News</span><button>Dismiss ×</button></div>
+    </div>
+    <div class="weather-option-copy"><h3>Information-dense</h3><p>Everything important is compressed into compact rows. It minimizes scrolling most aggressively, but the smaller type and tighter spacing are less relaxed and less accessible.</p></div>
+  </div>
+
+  <div class="weather-option" data-choice="focus-tabs" onclick="toggleSelect(this)">
+    <div class="weather-option-head"><strong>C. Focus + Tabs</strong><span>Cleanest</span></div>
+    <div class="weather-screen">
+      <div class="mini-top"><span>🌤 Toronto Weather</span><span>Focus · ▣ · ≡</span></div>
+      <div class="tabbar"><div class="tab active">Overview</div><div class="tab">Hourly</div><div class="tab">7 Day</div><div class="tab">Details</div></div>
+      <div class="split-hero">
+        <div class="mini-card"><div class="mini-accent">🧣 Probably — Light jacket</div><div style="font-size:9px;margin-top:5px">A light jacket or hoodie should do it.</div></div>
+        <div class="mini-card"><div class="mini-big">8°C</div><div style="font-size:9px">Feels 6°</div></div>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-stat">RAIN<b>10% · Dry</b></div>
+        <div class="mini-stat">SUN<b>Sets 6:28 PM</b></div>
+      </div>
+      <div class="mini-forecast">
+        <div class="mini-day">NOW<br>8°</div><div class="mini-day">9 PM<br>7°</div><div class="mini-day">10 PM<br>7°</div><div class="mini-day">11 PM<br>6°</div>
+      </div>
+      <div class="nearby"><span>📌 Nearby &amp; News preview</span><button>Hide ×</button></div>
+    </div>
+    <div class="weather-option-copy"><h3>Tabbed focus</h3><p>The overview fits comfortably, while hourly, weekly, and technical details move into tabs. Clean and calm, but visitors must click to see information that is currently visible by scrolling.</p></div>
+  </div>
+</div>

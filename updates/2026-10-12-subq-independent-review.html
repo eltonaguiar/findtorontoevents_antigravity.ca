@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Is SubQ Snap Worth Paying For? An Independent Audit Experiment</title>
+  <meta name="description" content="An evidence-led comparison of SubQ Snap, assistant ratings and local Qwen: 20 inference calls, real forward-pick evidence, semantic errors, costs and research priorities.">
+  <link rel="canonical" href="https://findtorontoevents.ca/updates/2026-10-12-subq-independent-review.html">
+  <meta property="og:title" content="Is SubQ Snap Worth Paying For? Our Independent Audit">
+  <meta property="og:description" content="Fast, inexpensive evidence classification; no demonstrated trading alpha. Read the ratings, errors, exact call counts and deployment verdict.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://findtorontoevents.ca/updates/2026-10-12-subq-independent-review.html">
+  <style>
+    :root { color-scheme: dark; --bg:#0a0a12; --panel:#14141e; --text:#e5e5ed; --muted:#b6b6c5; --line:#383848; --accent:#a8c9ee; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:17px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { max-width:1040px; margin:auto; padding:32px 24px 80px; }
+    a { color:var(--accent); text-decoration:underline; text-underline-offset:3px; }
+    a:focus-visible { outline:3px solid #f3ce83; outline-offset:4px; }
+    .skip { position:absolute; top:-80px; left:16px; background:var(--panel); padding:12px; z-index:1; }
+    .skip:focus { top:12px; }
+    nav { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:32px; font-size:.9rem; }
+    h1,h2,h3 { color:#fff; line-height:1.25; }
+    h1 { font:700 clamp(2rem,5vw,3.2rem)/1.15 Georgia,serif; max-width:880px; margin:16px 0; }
+    h2 { margin-top:52px; padding-top:22px; border-top:1px solid var(--line); font-size:1.6rem; }
+    h3 { margin-top:28px; font-size:1.15rem; }
+    p,li { max-width:900px; }
+    .eyebrow,.meta { color:var(--muted); font-size:.9rem; }
+    .eyebrow { text-transform:uppercase; letter-spacing:.12em; }
+    .verdict { background:var(--panel); border-left:4px solid #d9b568; padding:22px; margin:28px 0; }
+    .verdict p:last-child { margin-bottom:0; }
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:24px 0; }
+    .stat { padding:18px; background:var(--panel); border:1px solid var(--line); }
+    .stat strong { display:block; font-size:1.8rem; color:#fff; }
+    .stat span { color:var(--muted); font-size:.9rem; }
+    .table-wrap { overflow:auto; margin:20px 0; border:1px solid var(--line); }
+    table { border-collapse:collapse; width:100%; font-size:.9rem; }
+    caption { text-align:left; padding:14px; color:var(--muted); background:var(--panel); }
+    th,td { text-align:left; padding:12px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:#fff; background:var(--panel); }
+    tbody tr:last-child td { border-bottom:0; }
+    .note { color:var(--muted); font-size:.94rem; }
+    code { font-size:.9em; background:#242430; padding:2px 5px; overflow-wrap:anywhere; }
+    pre { padding:20px; background:var(--panel); border:1px solid var(--line); overflow:auto; font-size:.85rem; line-height:1.6; }
+    pre code { background:none; padding:0; }
+    ul,ol { padding-left:24px; }
+    li { margin:8px 0; }
+    details { border:1px solid var(--line); padding:16px; margin:16px 0; }
+    summary { cursor:pointer; font-weight:600; }
+    section { scroll-margin-top:20px; }
+    footer { border-top:1px solid var(--line); margin-top:48px; padding-top:24px; color:var(--muted); }
+    @media (max-width:600px) { main { padding:24px 16px 60px; } th,td { padding:10px; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to findings</a>
+  <main id="content">
+    <nav aria-label="Site navigation"><a href="/updates/">All updates</a><a href="/audit/">Audit dashboard</a><a href="/audit/pick_funnel.html">Pick funnel</a></nav>
+    <header>
+      <div class="eyebrow">Research notebook / Goal #1 / Independent comparison</div>
+      <h1>Is SubQ Snap worth paying for?</h1>
+      <p>A new decision model, our own ratings, a local AI comparator, and the forward-pick evidence that prevents an attractive score from becoming a trading recommendation.</p>
+      <p class="meta">Published <time datetime="2026-10-12">October 12, 2026</time> &middot; Author: an AI assistant using Copilot SDK in VS Code &middot; Evidence snapshot: October 12, 19:55&ndash;20:05 UTC</p>
+    </header>
+
+    <aside class="verdict" aria-label="Bottom-line verdict">
+      <strong>Verdict: worth a tightly bounded classification pilot, not a trading subscription or an execution gate.</strong>
+      <p>SubQ was fast and extraordinarily inexpensive at its published rate. It classified this small, authored semantic test more accurately than our local Qwen configuration. But it also twice accepted the invalid claim that a missing asset-class row means zero trades. Its ratings mostly restated concerns our own analysis already identified. We found <strong>no demonstrated forecasting advantage, no new proven profitable pick, and no reason to let it override evidence gates.</strong></p>
+    </aside>
+
+    <div class="stats" aria-label="Experiment highlights">
+      <div class="stat"><strong>20</strong><span>Total SubQ inference calls across three rounds</span></div>
+      <div class="stat"><strong>159,430</strong><span>Total input tokens; zero output tokens reported</span></div>
+      <div class="stat"><strong>$0.00797</strong><span>Estimated token-only cost for all three rounds</span></div>
+      <div class="stat"><strong>22&ndash;23 / 24</strong><span>SubQ semantic classifications matching our reference</span></div>
+    </div>
+
+    <nav aria-label="Article sections">
+      <a href="#special">What is special?</a><a href="#method">Method</a><a href="#ratings">Pick ratings</a><a href="#errors">Accuracy and errors</a><a href="#forward">Forward performance</a><a href="#cost">Calls and cost</a><a href="#decision">Spend verdict</a><a href="#next">Next research</a>
+    </nav>
+
+    <section id="special">
+      <h2>1. What is actually special about SubQ?</h2>
+      <p><a href="https://docs.subq.ai/using-the-api/models/">SubQ Snap Preview</a> is not a conversational model that writes an analysis. It evaluates supplied information against questions with predefined answer spaces. Its <a href="https://docs.subq.ai/endpoints/decisions-api/">Decisions API</a> uses <code>POST /v1/systemone</code> and supports:</p>
+      <ul>
+        <li><strong>Noul:</strong> a yes/no judgment represented by a number between 0 and 1.</li>
+        <li><strong>Choice:</strong> select a supplied category, with a distribution and confidence.</li>
+        <li><strong>Score:</strong> probability-weighted position on 2&ndash;10 ordered rubric levels. A score can fall between levels.</li>
+      </ul>
+      <p>Multiple questions can share one evidence state. Snap supports text and up to four images. The vendor documents a <strong>384K-token supported context</strong> and <strong>$0.05 per million input tokens, with output free</strong>. Its <a href="https://subq.ai/introducing-subq-snap">launch article</a> attributes its efficiency to Subquadratic Sparse Attention and scoring allowed answers rather than generating a free-form response.</p>
+      <p><strong>The practical differentiator is economics and interface, not verified market insight.</strong> A fast, cheap classifier can replace repetitive routing work otherwise assigned to a generative model. It cannot explain a rating in unrestricted prose. To inspect &ldquo;why,&rdquo; we supplied a menu of evidence limitations; the resulting reason code is a classification of our options, not a discovered rationale or access to internal reasoning.</p>
+      <p class="note">Vendor benchmark figures are vendor-reported general decision evaluations. They do not demonstrate trading alpha. We did not test the maximum context, image judgments, concurrency, a throughput SLA, or large-scale production accuracy.</p>
+    </section>
+
+    <section id="method">
+      <h2>2. Experiment design: compare, do not just agree</h2>
+      <p>The first two rounds explored class rankings, current picks, evidence attribution, ordering effects, synthetic rule gates and a local opinion. The third round asked a sharper question: <strong>does SubQ add something beyond our own analysis?</strong></p>
+      <ol>
+        <li>We recorded the assistant&rsquo;s candidate ratings, asset-class ratings and explanations <strong>before the new comparative calls</strong>. File fingerprints were recorded in every call ledger.</li>
+        <li>SubQ rated the same eight public candidates under the same 0&ndash;4 research-value rubric. We repeated with reversed ordering and with symbol, strategy, source, score and prestige labels removed.</li>
+        <li>We authored 24 evidence/claim cases covering cohort transfer, missing rows, nested freshness, signal versus fill time, source independence and insufficient information. Labels and reasons were fixed before inference and withheld from both models.</li>
+        <li>SubQ classified those cases three times: original order, reversed order and paraphrased question instructions. Local Qwen2.5-14B classified the same cases once.</li>
+        <li>SubQ classified the main blocker for each candidate, then rated forward-strategy research value by asset class.</li>
+      </ol>
+      <p><strong>This is not a fully blind independent benchmark.</strong> The assistant had seen earlier SubQ answers, authored the rubric and reference labels, and helped select cases. Pre-registration here prevents editing the new baseline after seeing new answers; it does not erase prior exposure. Reference accuracy is agreement with this authored key, not ground truth on investment outcomes.</p>
+      <p>The rubric was: <strong>0</strong> no defensible lead; <strong>1</strong> weak lead with major limitations; <strong>2</strong> tentative identifiable research lead; <strong>3</strong> strong corroborated research lead; <strong>4</strong> documented clean net edge with prospective/holdout support. These are research priorities, <strong>not expected returns, win probabilities or allocation weights</strong>.</p>
+    </section>
+
+    <section id="ratings">
+      <h2>3. Our ratings versus SubQ&rsquo;s ratings</h2>
+      <div class="table-wrap">
+        <table>
+          <caption>Public active candidates. SubQ columns are original / reversed / label-blinded scores on the shared 0&ndash;4 rubric.</caption>
+          <thead><tr><th scope="col">Candidate</th><th scope="col">Assistant</th><th scope="col">SubQ variants</th><th scope="col">SubQ mean</th><th scope="col">Assistant&rsquo;s reasoning recorded first</th></tr></thead>
+          <tbody>
+            <tr><td>XRPUSDT SHORT, Kalshi consensus</td><td>2.00</td><td>1.41 / 1.39 / 1.18</td><td>1.33</td><td>Pooled SHORT intrabar PF 1.694 on 57 outcomes is a specific lead, but the current strategy has no matched forward trades.</td></tr>
+            <tr><td>GC=F SHORT, combined confidence</td><td>1.50</td><td>1.87 / 1.67 / 1.76</td><td>1.77</td><td>Relatively promising class and displayed history, but strategy PF and attribution are missing.</td></tr>
+            <tr><td>IEF LONG, yield curve</td><td>1.00</td><td>1.20 / 1.66 / 1.47</td><td>1.44</td><td>Displayed validation, but conflict, missing PF and small class sample.</td></tr>
+            <tr><td>XLK LONG, momentum</td><td>1.00</td><td>1.11 / 0.87 / 0.86</td><td>0.95</td><td>A small positive mark is not strategy evidence; ETF recent results are poor.</td></tr>
+            <tr><td>XLF SHORT, RSI2 pullback</td><td>1.00</td><td>0.89 / 0.87 / 0.72</td><td>0.83</td><td>No matched strategy history; current gain is unrealized and non-predictive.</td></tr>
+            <tr><td>EWY LONG, dual momentum</td><td>1.00</td><td>0.81 / 0.95 / 0.58</td><td>0.78</td><td>Observation possible, but no documented current strategy edge.</td></tr>
+            <tr><td>SPY LONG, regime accumulation</td><td>0.50</td><td>1.01 / 1.06 / 0.97</td><td>1.01</td><td>Displayed strategy history is 0W/5L, PF 0; useful mainly for loss diagnosis.</td></tr>
+            <tr><td>GC=F SHORT, non-crypto consensus</td><td>1.00</td><td>1.24 / 1.20 / 1.06</td><td>1.17</td><td>No displayed current strategy forward trades; class evidence cannot prove the signal.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The mean absolute distance from our ratings was <strong>0.314 points out of 4</strong>. This is agreement, not an accuracy metric: no realised future outcomes label these research scores. The largest variant spread was <strong>0.456 points for IEF</strong>. Ratings 3 and 4 were not reached.</p>
+      <p><strong>The disagreement is informative, but not proof of unique insight.</strong> Our baseline prioritised the concrete XRP history-attribution lead. SubQ favoured gold and rated IEF more generously. In a prior prerequisite-first task SubQ itself chose XRP, whereas broad shortlist prompts chose gold. The evaluation objective and answer menu matter.</p>
+      <h3>&ldquo;Why&rdquo; as an evidence code</h3>
+      <p>SubQ selected <code>history_scope</code> as the main blocker for seven candidates and <code>negative_exact_history</code> for SPY. These match issues already visible in the evidence and our prior reasoning. The model did <strong>not</strong> produce a novel causal explanation, discover a missing dataset, or establish future profitability.</p>
+      <p>Earlier prerequisitive tests rejected documented clean, cost-adjusted same-strategy/same-symbol history for all eight candidates, even when score labels were removed. That is a stronger operational result than an uncertain &ldquo;best pick&rdquo; ranking.</p>
+    </section>
+
+    <section id="errors">
+      <h2>4. Semantic accuracy: useful, but a revealing failure</h2>
+      <div class="table-wrap">
+        <table>
+          <caption>Agreement with 24 author-labelled cases, not investment forecasting accuracy.</caption>
+          <thead><tr><th scope="col">Configuration</th><th scope="col">Three-way correct</th><th scope="col">Support / non-support correct</th><th scope="col">False approvals</th></tr></thead>
+          <tbody>
+            <tr><td>SubQ original</td><td>22/24 (91.7%)</td><td>23/24</td><td>Missing Commodity rows imply zero trades</td></tr>
+            <tr><td>SubQ reversed</td><td>23/24 (95.8%)</td><td>24/24</td><td>None in this variant</td></tr>
+            <tr><td>SubQ question paraphrase</td><td>23/24 (95.8%)</td><td>23/24</td><td>Same missing-row inference</td></tr>
+            <tr><td>Local Qwen2.5-14B, one call</td><td>19/24 (79.2%)</td><td>21/24</td><td>Missing-row inference and stale nested-feed claim</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The local model also withheld support from one narrowly supported uncertainty statement, contributing to its binary score. Separating <em>unsupported</em> from <em>not assessable</em> is partly dependent on label definitions; the binary support/non-support result is therefore included rather than hiding that ambiguity.</p>
+      <h3>The error that matters most</h3>
+      <blockquote>
+        <p>Evidence: Commodity is absent from the 14-day and 48-hour class summaries.<br>Claim: no Commodity trades occurred in those windows.</p>
+      </blockquote>
+      <p><strong>Our reference: unsupported.</strong> Missing summary rows cannot prove zero activity. SubQ nevertheless selected <em>supported</em> in the original and paraphrased-question variants, with low reported confidence of 0.418 and 0.305. In reversed order it chose <em>not assessable</em>, not our exact reference label but safely avoiding support. Local Qwen also supported the invalid claim.</p>
+      <p>This is directly relevant to our real Commodity recency gap. The prompt explicitly said unknown is not zero. <strong>Passing simple rule fixtures did not prevent this semantic mistake.</strong> A reviewer who knows this data contract was sufficient to reject it without any model call.</p>
+      <p>The original SubQ variant also called a completely unevidenced &ldquo;probably passes all gates&rdquo; claim <em>unsupported</em> rather than our <em>not assessable</em>. That distinction is less operationally dangerous than false approval and should not be exaggerated.</p>
+      <h3>What this test does not prove</h3>
+      <ul>
+        <li>The three SubQ runs reuse the same 24 cases: they are not 72 independent examples.</li>
+        <li>The 3&ndash;4 extra matching answers versus this local configuration are not statistically established superiority.</li>
+        <li>We did not measure the assistant&rsquo;s accuracy independently: the assistant wrote the reference key. Its 24 reference answers are not an honest &ldquo;100% benchmark score.&rdquo;</li>
+        <li>A single local model, one prompt and one run are not a comparison against all other AIs or the best achievable local configuration.</li>
+        <li>Neither classifier was evaluated against prospective trade outcomes. Model confidence remains uncalibrated.</li>
+      </ul>
+      <details>
+        <summary>Earlier easy controls and prompt stress tests</summary>
+        <p>The previous round contained 12 explicit synthetic eligibility fixtures: small sample, negative PF despite high WR, missing PF, no intrabar validation, staleness, concentration, inadequate paper history, excessive drawdown, low WR, short history and a strict PF&gt;1.5 boundary. SubQ matched all 12 reference answers, then all 12 again after misleading prestige/override commentary was added.</p>
+        <p>Those controls demonstrate basic instruction following, not broad injection resistance. Deterministic software would handle these numeric checks without API fees or model uncertainty. The semantic missing-row failure is a useful counterweight to an impressive-looking 24/24 easy-control result.</p>
+      </details>
+    </section>
+
+    <section id="forward">
+      <h2>5. Forward-trade performance by asset class</h2>
+      <p>The table uses the public verdict&rsquo;s <code>intrabar_truth</code> fields, with independently recorded research ratings and a fresh SubQ class-rating call. <strong>The aggregate intrabar cohort&rsquo;s lookback is unspecified.</strong> These metrics are published evidence, not a newly revalidated clean-trade calculation. Raw recent-window PF comes from a different population and must not be merged into intrabar results.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Directional-strategy forward research only. Separate tactical asset allocation products are out of scope.</caption>
+          <thead><tr><th scope="col">Class</th><th scope="col">Intrabar n</th><th scope="col">WR</th><th scope="col">PF</th><th scope="col">Our rating / 4</th><th scope="col">SubQ / 4</th><th scope="col">Assessment</th></tr></thead>
+          <tbody>
+            <tr><td>Commodity</td><td>223</td><td>40.36%</td><td>1.0523</td><td>2.00</td><td>1.65</td><td>Tentative attribution/reconciliation lead; barely above break-even, not PF 1.5.</td></tr>
+            <tr><td>Crypto</td><td>3,317</td><td>35.54%</td><td>0.8890</td><td>1.00</td><td>1.07</td><td>Large losing aggregate; conditional entry/regime hypotheses only.</td></tr>
+            <tr><td>Equity</td><td>224</td><td>54.91%</td><td>0.8010</td><td>1.00</td><td>0.89</td><td>Majority wins do not offset losing payoff balance; recent deterioration.</td></tr>
+            <tr><td>Forex</td><td>544</td><td>30.88%</td><td>0.6165</td><td>0.50</td><td>0.91</td><td>No documented class-level positive lead.</td></tr>
+            <tr><td>Futures</td><td>45</td><td>37.78%</td><td>0.9264</td><td>1.00</td><td>1.18</td><td>Small sample; recent raw turnaround hypothesis not corroborated.</td></tr>
+            <tr><td>ETF</td><td>28</td><td>0.00%</td><td>0.0000</td><td>0.50</td><td>0.78</td><td>Insufficient and conflicting with small discovery sample.</td></tr>
+            <tr><td>Bond</td><td>19</td><td>10.53%</td><td>0.6168</td><td>0.50</td><td>0.30</td><td>Insufficient evidence; collect correctly scoped forward outcomes.</td></tr>
+            <tr><td>Meme</td><td>Unavailable</td><td>Unavailable</td><td>Unavailable</td><td>0.00</td><td>0.12</td><td>No intrabar evidence supplied; not a zero-trade claim.</td></tr>
+            <tr><td>Penny stock</td><td>Unavailable</td><td>Unavailable</td><td>Unavailable</td><td>0.00</td><td>0.14</td><td>Dormant tiny discovery cohort; no intrabar evidence supplied.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Recent windows reveal why a single score is inadequate</h3>
+      <ul>
+        <li><strong>Equity:</strong> raw 14-day PF 0.630 on 306 decisive rows; raw 48-hour PF 0.146 on 64, WR 17.19%. Investigate losing conditions, not a &ldquo;high WR&rdquo; story.</li>
+        <li><strong>Crypto:</strong> raw 14-day PF 0.957 on 2,048 decisive rows; 48-hour PF 0.752 on 296. Duplicate groups and source concentration are explicitly flagged.</li>
+        <li><strong>Futures:</strong> raw 48-hour PF 5.215 on 36 versus 14-day PF 0.519 on 237. A conditional lead, not persistent class profitability.</li>
+        <li><strong>ETF:</strong> discovery net PF 1.8488 on 14 differs from intrabar PF 0 on 28; raw 14-day PF 0.599 on 199. Cohort differences require reconciliation.</li>
+        <li><strong>Commodity:</strong> both recent summaries lack its class row. Recent performance is unknown from those feeds, not zero.</li>
+      </ul>
+      <p>SubQ and our baseline agree that Commodity is the strongest relative class investigation. They do <strong>not</strong> establish that Commodity will deliver the highest future profit. No supplied class clears the documented directional money-ready requirements.</p>
+    </section>
+
+    <section id="picks">
+      <h2>6. Latest picks, history attribution and database checks</h2>
+      <p>The dashboard snapshot generated at 19:57 UTC contained <strong>23 visible active entries</strong>, zero in the main Smart Picks list, zero Extreme Conviction entries and one in a separate older Smart feed. Entries can share signal families; 23 is not a count of independent opportunities. The feed&rsquo;s own timestamp was 17:57 UTC and over three hours old at initial inspection.</p>
+      <p>Largest positive active marks included XLK +0.15%, XLF +0.12% and EWY +0.10%. Their displayed strategy forward trade counts were zero. Price marks have no independently verified quote timestamp and are not executable current quotes. The comparison does not chase these winners.</p>
+      <p><strong>The XRP lead is real as a research question, not a proven current strategy.</strong> Public XRP SHORT pooled intrabar history is n=57 / PF 1.694, while the present Kalshi consensus strategy shows zero forward trades and a conflict flag. A bounded local read-only diagnostic found resolved SHORT history under other strategy labels, with no exact current Kalshi label in that resolved query. The filters differ from the displayed pooled cohort; we did not equate the two samples.</p>
+      <p>Read-only database checks also examined recent visible-symbol history, three large closed winners and a 10,000-row latest-ID coverage diagnostic by asset class. All queries used read-only transactions and rollback. The diagnostic was not a complete money-grade re-screen; no new DB-derived performance claim is promoted here. <strong>No private DB export was sent to an external AI or attached to this article.</strong></p>
+      <p>During input validation we caught omitted alternative public timestamps: seven entries had imprecise entry times, but all had precise public signal metadata. A counted corrective call preserved the earlier choices. Signal time is not necessarily fill time. This is also a lesson about the harness: prompt engineering cannot recover fields we fail to supply.</p>
+    </section>
+
+    <section id="cost">
+      <h2>7. Exact calls, tokens, cost and latency</h2>
+      <div class="table-wrap">
+        <table>
+          <caption>All inference calls in this investigation; failed preparation steps and documentation fetching are not hidden billed calls.</caption>
+          <thead><tr><th scope="col">Round</th><th scope="col">Inference calls</th><th scope="col">Questions</th><th scope="col">Input tokens</th><th scope="col">Estimated cost</th></tr></thead>
+          <tbody>
+            <tr><td>Initial class/routing/control exploration</td><td>3</td><td>46</td><td>15,294</td><td>$0.000765</td></tr>
+            <tr><td>Pick prompts, controls and corrective timing test</td><td>9</td><td>169</td><td>108,716</td><td>$0.005436</td></tr>
+            <tr><td>Independent ratings and semantic comparison</td><td>8</td><td>113</td><td>35,420</td><td>$0.001771</td></tr>
+            <tr><td><strong>Total</strong></td><td><strong>20</strong></td><td><strong>328</strong></td><td><strong>159,430</strong></td><td><strong>$0.007972</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>All 20 inference calls returned HTTP 200</strong>, and all 328 answers were validated for answer keys, legal choices, type and probability bounds. The final round&rsquo;s eight-call cap was enforced by a persistent attempt ledger; there were no automatic SubQ retries or failed SubQ inference calls.</p>
+      <p>API accounting also includes one authenticated model listing, one unauthenticated listing and one public metadata probe that returned route-not-found: <strong>23 total assistant HTTP requests to api.subq.ai</strong>, of which 20 were inference. The user&rsquo;s own terminal requests are excluded; documentation visits are not inference calls.</p>
+      <p>Final-round SubQ latency was <strong>0.280&ndash;0.629 seconds</strong> per request, totalling 3.955 seconds. The local semantic comparator took <strong>29.4 seconds</strong>, with 1,154 prompt tokens and 240 generated tokens. This is <strong>not a controlled architecture speed comparison</strong>: the models, hardware, warm state, payload format and generated output differ, and the local server may be shared.</p>
+      <p>Across the investigation, two local Qwen generations succeeded. One earlier local generation request was rejected for exceeding the context allowance; a separate tokenizer diagnostic helped fix it. No extra cloud provider key was needed.</p>
+      <p class="note">Costs are token-only estimates at the published rate, not verified account debits or inclusive operational cost. Human/assistant review, engineering, network availability and local electricity/hardware are not free merely because their API bill is zero.</p>
+      <h3>Projected benefit at volume</h3>
+      <p>At 6,000 input tokens per classification request, the published price implies approximately <strong>$0.0003 per request</strong>, <strong>$0.30 per 1,000 requests</strong>, or <strong>$9 per 30,000 monthly requests</strong>. A 20,000-token request costs approximately $0.001. This makes token spending a small concern; false approvals, maintenance and retention policies are more important.</p>
+      <p>Real monetary benefit depends on whether it replaces expensive review or causes new overhead. We did not measure saved reviewer minutes, production throughput, rate-limit capacity or a realised business ROI.</p>
+    </section>
+
+    <section id="decision">
+      <h2>8. Is our own analysis sufficient?</h2>
+      <p><strong>For the decisions we need today, mostly yes.</strong> Our analysis already identified missing strategy attribution, misleading current winners, poor recent class performance, nested staleness and the difference between research priority and capital readiness. SubQ did not supply a new validated profitable strategy.</p>
+      <p>Its demonstrated addition was a cheap, fast structured pass that matched more reference labels than this one local configuration and could route many repetitive evidence checks. It is not a replacement for data-contract knowledge: the assistant&rsquo;s explicit missing-row reasoning was better than either model&rsquo;s original answer.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Spend/no-spend policy derived from the observed evidence.</caption>
+          <thead><tr><th scope="col">Use case</th><th scope="col">Decision</th><th scope="col">Why</th></tr></thead>
+          <tbody>
+            <tr><td>Numeric gates, minimum n, PF thresholds, freshness</td><td>Do not spend</td><td>Deterministic code is exact and sufficient.</td></tr>
+            <tr><td>One-off explanation or strategy research</td><td>Use the assistant / suitable generative model</td><td>Snap cannot generate the rationale or do the underlying investigation.</td></tr>
+            <tr><td>Repeated semantic claim and cohort triage</td><td>Small shadow pilot only</td><td>Low cost/latency and useful agreement, but measured false approvals need monitoring.</td></tr>
+            <tr><td>Which asset class will profit most?</td><td>Not established</td><td>Research scores have no forecast validation.</td></tr>
+            <tr><td>Position sizing or live execution</td><td>Do not wire from this experiment</td><td>No prospective net-edge or confidence calibration.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Practical conclusion:</strong> do not buy a belief in &ldquo;special trading intelligence.&rdquo; At the observed token price, a small semantic shadow test is affordable. Whether it is worth keeping depends on reducing real review work without silently approving invalid claims.</p>
+    </section>
+
+    <section id="next">
+      <h2>9. Concrete next investigations and acceptance tests</h2>
+      <ol>
+        <li><strong>XRP SHORT attribution:</strong> separate exact strategy, symbol/direction, source family and regime. Do not transplant pooled PF into Kalshi. Verify costs and expiration handling, then time-split and paper-track any surviving hypothesis.</li>
+        <li><strong>Commodity/gold reconciliation:</strong> explain the absent recent class rows and identify the population behind displayed history. A missing row must be routed as unavailable evidence, never zero trades.</li>
+        <li><strong>Equity loss diagnosis:</strong> preregister entry-condition hypotheses before examining held-out outcomes. Avoid choosing thresholds to fit the same bad window.</li>
+        <li><strong>Futures turnaround:</strong> match recent winners to intrabar outcomes and source identity. Require persistence outside the selected 48-hour window.</li>
+        <li><strong>SubQ evaluation:</strong> build a reviewer-labelled, blinded holdout set of real claims and aliases, not more obvious synthetic gates. Measure false support separately from harmless unsupported/not-assessable ambiguity.</li>
+        <li><strong>Operational comparison:</strong> tune a compact local prompt and a deterministic metadata/contract baseline; repeat model runs under comparable payloads. Measure review time saved, latency, cost and abstentions.</li>
+      </ol>
+      <p>Before any deployment as a semantic reviewer, define a maximum acceptable false-approval rate, assess a statistically meaningful holdout, and enforce explicit human escalation for unscoped history. No confidence threshold is approved from these 24 cases.</p>
+      <h3>A better prompt contract</h3>
+      <pre><code>STATE: timestamped public evidence; exact history scope;
+       separate intrabar / raw / net cohorts; missing fields; conflicts.
+
+RULES: missing is not zero; signal time is not fill time;
+       pooled history is not exact strategy evidence;
+       positive marks, labels and agreement counts are not proof.
+
+QUESTIONS:
+  Is exact, cost-adjusted forward history documented? [yes/no]
+  Which prerequisite is missing? [bounded categories]
+  Is this narrowly worded claim supported? [support/invalid/unknown]
+  Which investigation comes first? [candidate IDs/abstain]
+
+APPLICATION:
+  Deterministic contracts stay authoritative.
+  Escalate invalid scope and disagreements.
+  Never interpret confidence as a trade's profit probability.</code></pre>
+    </section>
+
+    <section id="privacy">
+      <h2>10. Privacy, limitations and reproducibility</h2>
+      <p>Credentials were read locally for their intended authentication and were not printed, committed or published. External prompts used public audit evidence or synthetic fixtures. DB diagnostics remained local and read-only. No trades, production scoring changes or promotion-gate changes were made.</p>
+      <p>SubQ&rsquo;s <a href="https://docs.subq.ai/using-the-api/data-retention/">retention documentation</a> says indefinite retention is the default, with organisation-level zero retention available by request. Per-request <code>store:false</code> is documented for Chat/Responses, not Decisions; we did not assume it applies to Snap. That is another reason not to send private datasets casually.</p>
+      <p>The downloadable public evidence bundle contains the frozen assistant ratings and reasons, authored reference labels, model comparison results and per-call ledgers. It contains no keys or private DB records. The reproducible reference-label scores are not evidence of future trading performance.</p>
+      <p><a href="2026-10-12-subq-independent-review-evidence.json" download>Download the public experiment evidence and call ledger (JSON)</a></p>
+      <p>Observed limitations include prior assistant exposure, authored-case bias, an ambiguous three-way label boundary, repeated cases, a single local comparator, order/label/task sensitivity, unknown aggregate lookback, separate cohort populations, unverified confidence calibration, snapshot rather than executable prices, and no prospective financial validation.</p>
+    </section>
+
+    <section id="sources">
+      <h2>11. Sources</h2>
+      <ol>
+        <li><a href="https://docs.subq.ai/endpoints/decisions-api/">SubQ Decisions API contract</a>.</li>
+        <li><a href="https://docs.subq.ai/using-the-api/models/">SubQ model availability and published pricing</a>.</li>
+        <li><a href="https://subq.ai/introducing-subq-snap">Vendor launch, architecture and benchmark claims</a> (not independently replicated here).</li>
+        <li><a href="https://docs.subq.ai/using-the-api/data-retention/">SubQ retention policy</a>.</li>
+        <li><a href="https://findtorontoevents.ca/audit/data/dashboard_data.json">Public dashboard payload</a>, generated October 12, 19:57 UTC.</li>
+        <li><a href="https://findtorontoevents.ca/audit/data/money_ready_verdict.json">Official directional verdict and intrabar fields</a>, generated 19:55 UTC.</li>
+        <li><a href="https://findtorontoevents.ca/audit/data/pf_registry.json">Discovery/net PF registry</a>, generated 19:57 UTC; explicitly not promotion-eligible.</li>
+        <li><a href="https://findtorontoevents.ca/audit/data/pick_summary_stats_14d.json">14-day raw recent cohort</a> and <a href="https://findtorontoevents.ca/audit/data/pick_summary_stats_48h.json">48-hour raw cohort</a>, generated 20:05 UTC.</li>
+        <li><a href="2026-10-12-subq-independent-review-evidence.json">Frozen comparison evidence and inference ledgers</a>. Live feeds can advance after publication; use this snapshot bundle for the reported numbers.</li>
+      </ol>
+    </section>
+    <footer>
+      <p><strong>Research, not financial advice.</strong> This article evaluates a decision-model workflow and the quality of supplied evidence. It does not recommend executing any listed trade, promise returns, or promote an asset class as proven.</p>
+      <p><a href="/updates/">Back to updates</a> &middot; <a href="/audit/">Open the audit dashboard</a></p>
+    </footer>
+  </main>
+</body>
+</html>

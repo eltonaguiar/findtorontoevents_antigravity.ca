@@ -1,0 +1,65 @@
+<style>
+  .radio-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  .radio-option{cursor:pointer;border:2px solid transparent;border-radius:18px;background:#11172b;overflow:hidden;transition:.2s}
+  .radio-option:hover,.radio-option.selected{border-color:#22d3ee;transform:translateY(-2px)}
+  .radio-head{padding:12px 14px;background:#17203a;display:flex;justify-content:space-between;color:#f8fafc}
+  .radio-head span{font-size:12px;color:#94a3b8}
+  .radio-screen{padding:14px;color:#e2e8f0;background:linear-gradient(180deg,#070b1c,#111936);min-height:240px}
+  .weather-row{display:grid;grid-template-columns:1.5fr .5fr;gap:8px;margin-bottom:10px}
+  .weather-box{border:1px solid #334155;border-radius:10px;background:#18223c;padding:10px;font-size:11px}
+  .dock{border:1px solid #475569;border-radius:12px;background:#111827;padding:10px}
+  .dock-title{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;margin-bottom:8px}
+  .station{display:flex;align-items:center;gap:8px;padding:7px;border-radius:8px;background:#1e293b;margin-top:6px;font-size:10px}
+  .play{width:23px;height:23px;border-radius:50%;background:#0891b2;display:flex;align-items:center;justify-content:center}
+  .station b{display:block;font-size:10px}.station small{color:#94a3b8}
+  .embed{height:75px;border-radius:8px;background:#fff;color:#111827;padding:8px;font-size:10px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .links{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .link{padding:12px 6px;border-radius:8px;background:#1e293b;text-align:center;font-size:10px}
+  .copy{padding:14px;background:#fff;color:#334155;min-height:165px}
+  .copy h3{margin:0 0 6px;color:#0f172a}.copy p{margin:0;font-size:13px;line-height:1.45}
+  @media(max-width:1000px){.radio-options{grid-template-columns:1fr}}
+</style>
+
+<h2>Choose the Weather Radio approach</h2>
+<p class="subtitle">All options are click-to-play, never autoplay. This protects visitors from surprise sound and satisfies browser media rules.</p>
+
+<div class="radio-options">
+  <div class="radio-option" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="radio-head"><strong>A. Hybrid Weather Radio</strong><span>Recommended</span></div>
+    <div class="radio-screen">
+      <div class="weather-row"><div class="weather-box">🧣 Light jacket · 8°C · Clear</div><div class="weather-box">Rain 10%</div></div>
+      <div class="dock">
+        <div class="dock-title"><span>🎧 Weather Radio</span><span>Expand ▾</span></div>
+        <div class="station"><div class="play">▶</div><div><b>CHUM 104.5</b><small>Toronto hits · iHeart</small></div></div>
+        <div class="station"><div class="play">▶</div><div><b>Groove Salad</b><small>Chill weather mood · SomaFM</small></div></div>
+        <div class="station"><div class="play">▶</div><div><b>TSN 1050</b><small>Toronto sports · iHeart</small></div></div>
+      </div>
+    </div>
+    <div class="copy"><h3>Toronto + weather moods</h3><p>A compact station picker mixes official iHeart Toronto stations with listener-supported SomaFM moods. The selected third-party player loads only after a click, reducing tracking and page weight.</p></div>
+  </div>
+
+  <div class="radio-option" data-choice="official-embeds" onclick="toggleSelect(this)">
+    <div class="radio-head"><strong>B. iHeart Toronto Player</strong><span>Most familiar</span></div>
+    <div class="radio-screen">
+      <div class="weather-row"><div class="weather-box">🧣 Light jacket · 8°C · Clear</div><div class="weather-box">Rain 10%</div></div>
+      <div class="dock">
+        <div class="dock-title"><span>📻 Toronto Radio</span><span>Hide ×</span></div>
+        <div class="embed">Official iHeart player<br>CHUM 104.5 · Play controls</div>
+        <div style="display:flex;gap:6px;margin-top:7px"><div class="station" style="flex:1">CHUM</div><div class="station" style="flex:1">Virgin</div><div class="station" style="flex:1">TSN</div></div>
+      </div>
+    </div>
+    <div class="copy"><h3>Official embeds only</h3><p>Uses iHeart’s responsive embedded player for CHUM 104.5, Virgin 99.9, and TSN 1050. Strong Toronto identity, but heavier third-party UI and more tracking once loaded.</p></div>
+  </div>
+
+  <div class="radio-option" data-choice="links" onclick="toggleSelect(this)">
+    <div class="radio-head"><strong>C. Music Launchpad</strong><span>Lightest</span></div>
+    <div class="radio-screen">
+      <div class="weather-row"><div class="weather-box">🧣 Light jacket · 8°C · Clear</div><div class="weather-box">Rain 10%</div></div>
+      <div class="dock">
+        <div class="dock-title"><span>🎵 Listen elsewhere</span><span>Hide ×</span></div>
+        <div class="links"><div class="link">CHUM 104.5 ↗</div><div class="link">Virgin 99.9 ↗</div><div class="link">Groove Salad ↗</div><div class="link">Drone Zone ↗</div></div>
+      </div>
+    </div>
+    <div class="copy"><h3>External links only</h3><p>No embedded third-party code and almost no page weight. It is the most private and reliable option, but audio leaves the weather page—so it does less to make weather a place visitors stay and enjoy.</p></div>
+  </div>
+</div>
