@@ -405,6 +405,27 @@ def _strategy(row) -> str:
     return _norm(row.get("source_system") or row.get("strategy"))
 
 
+def _pnl_percent_to_fraction(pct) -> float:
+    """Convert at_pick_outcomes.pnl_pct (stored in PERCENT) to a fraction.
+
+    Traced 2026-10-19 (AUD-01 return-unit contract):
+      * CADJPY=X WON 427.9526 matches the documented "+428%" price-feed
+        artifact (a fraction 427.95 would be +42,795% -- impossible).
+      * CRYPTO floor is exactly -100.0 (a long position cannot lose >100%; a
+        fraction -100 would be -10,000%).
+      * The loader's SQL sanity cap is commented "Caps in PERCENT".
+    Downstream (SPOT_FLICKER_THRESHOLD=0.0002, DOLLAR_SCALE_ARTIFACT_THRESHOLD=
+    1.0, fraction-unit slippage, `_rolling_mdd` compounding `1.0 + r`) all
+    expect fractions, so the source percent MUST be divided by 100 here.
+
+    ALWAYS divides by 100 -- no magnitude inference. The previous
+    `pnl/100 if abs(pnl) > 1 else pnl` heuristic scaled only |v|>1, mixing
+    units within one cohort and inflating every percent value <= 1 by 100x (a
+    0.5% move was read as a 50% fraction), silently corrupting PF/WR.
+    """
+    return float(pct) / 100.0
+
+
 def _is_win(pnl_pct) -> bool:
     return pnl_pct is not None and pnl_pct > 0
 
@@ -626,7 +647,7 @@ def _load_outcomes_rows() -> tuple[list, dict]:
         pnl = r.get("pnl_pct")
         if pnl is not None:
             pnl_f = float(pnl)
-            r["pnl_pct"] = pnl_f / 100.0 if abs(pnl_f) > 1.0 else pnl_f
+            r["pnl_pct"] = _pnl_percent_to_fraction(pnl_f)
         status = str(r.get("status") or "").upper()
         r["status"] = "WIN" if status == "WON" else "LOSS"
         if r.get("asset_class"):
