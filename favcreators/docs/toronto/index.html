@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toronto Live Streamers | findtorontoevents.ca</title>
+<meta name="description" content="Toronto streamers on Kick & TikTok — live status, profiles, and downtown Toronto live streams on YouTube.">
+<link rel="canonical" href="https://findtorontoevents.ca/fc/toronto/">
+<style>
+  :root{--bg:#0a0e1a;--card:rgba(255,255,255,.06);--card-b:rgba(255,255,255,.12);--t1:#f0f0f5;--t2:#9ca3af;--accent:#00d4ff;--accent2:#a855f7;--live:#ef4444;--green:#22c55e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(180deg,#0a0e1a 0%,#101830 100%);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:20px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .back{font-size:.85rem;padding:8px 14px;border:1px solid var(--card-b);border-radius:10px;background:var(--card)}
+  h1{font-size:1.6rem;margin:10px 0 4px}
+  .sub{color:var(--t2);font-size:.9rem;margin-bottom:18px}
+  .section-title{font-size:1.05rem;font-weight:700;margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--card-b);border-radius:14px;padding:16px;position:relative;transition:transform .15s,border-color .15s}
+  .card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .card h3{font-size:1.02rem;margin-bottom:2px}
+  .handle{color:var(--t2);font-size:.8rem;margin-bottom:10px;word-break:break-all}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid var(--card-b);color:var(--t2);letter-spacing:.03em}
+  .badge.kick{border-color:rgba(83,252,24,.5);color:#53fc18}
+  .badge.tiktok{border-color:rgba(255,0,80,.5);color:#ff2c55}
+  .badge.ig{border-color:rgba(225,48,108,.5);color:#e1306c}
+  .badge.live{background:var(--live);border-color:var(--live);color:#fff;display:none;animation:pulse 1.6s infinite}
+  .badge.live.on{display:inline-block}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  .links{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{display:inline-block;font-size:.78rem;font-weight:600;padding:7px 12px;border-radius:9px;border:1px solid var(--card-b);background:rgba(255,255,255,.04);color:var(--t1)}
+  .btn:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff}
+  .live-note{font-size:.72rem;color:var(--t2);margin-top:8px;min-height:1em}
+  .yt{margin-top:10px;background:var(--card);border:1px solid var(--card-b);border-radius:14px;padding:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .yt .icon{font-size:2rem}
+  .status-line{font-size:.75rem;color:var(--t2);margin:18px 0 0}
+  footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--card-b);color:var(--t2);font-size:.75rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/fc/">← FavCreators</a>
+    <a class="back" href="/">🏠 Toronto Events</a>
+  </div>
+
+  <h1>🎙️ Toronto Live Streamers</h1>
+  <div class="sub">Toronto creators on <b>Kick</b> &amp; <b>TikTok</b>. Kick live-status refreshes automatically — catch them the moment they go live.</div>
+
+  <div class="section-title">⭐ Featured</div>
+  <div class="grid" id="featured"></div>
+
+  <div class="section-title">🎥 Toronto live on YouTube</div>
+  <div class="yt">
+    <div class="icon">📺</div>
+    <div style="flex:1;min-width:220px">
+      <h3 style="margin-bottom:4px">Downtown Toronto — live now on YouTube</h3>
+      <div style="color:var(--t2);font-size:.82rem">Street cams, live events and broadcasts happening downtown right now.</div>
+    </div>
+    <a class="btn primary" href="https://www.youtube.com/results?search_query=downtown+toronto" target="_blank" rel="noopener">▶ Open YouTube live search</a>
+  </div>
+
+  <div class="section-title">🍁 More Toronto creators on FavCreators</div>
+  <div class="grid" id="more"></div>
+
+  <div class="status-line" id="status-line">Kick live status: checking…</div>
+
+  <footer>
+    Follow, clip and share — creators open in their official apps. Add any of them to your own categories inside
+    <a href="/fc/">FavCreators</a>. Status powered by Kick's public channel API (auto-refresh every 2 min).
+  </footer>
+</div>
+
+<script>
+(function(){
+  var FEATURED = [
+    {name:"Moxie", handle:"@moxie", kick:"moxie", tiktok:"itsmoxieee"},
+    {name:"Lynderland", handle:"@lynderland", tiktok:"lynderland"},
+    {name:"Spread The Love", handle:"@spreadthelove.__", tiktok:"spreadthelove.__"},
+    {name:"A.R.A. Moore", handle:"@a.r.a.moore", tiktok:"a.r.a.moore", instagram:"a.r.a.moore"},
+    {name:"Orientgent", handle:"@orientgent", tiktok:"orientgent", instagram:"orientgent"}
+  ];
+  var MORE = [
+    {name:"Lolalocaaaa", handle:"@lolalocaaaa", tiktok:"lolalocaaaa", instagram:"lolalocaaaa"},
+    {name:"Khadija.mx_", handle:"@khadija.mx_", tiktok:"khadija.mx_", instagram:"khadija.mx_"},
+    {name:"Fredbeyer", handle:"@fredbeyer", tiktok:"fredbeyer", instagram:"fredbeyer"},
+    {name:"Zople", handle:"@zople", tiktok:"zople", instagram:"zople"},
+    {name:"Nevsrealm", handle:"@nevsrealm", tiktok:"nevsrealm", instagram:"nevsrealm"},
+    {name:"333ak.s", handle:"@333ak.s", tiktok:"333ak.s", instagram:"333ak.s"},
+    {name:"Carenview", handle:"@carenview", tiktok:"carenview", instagram:"carenview"},
+    {name:"Baabytrinity", handle:"@baabytrinity", tiktok:"baabytrinity", instagram:"baabytrinity"},
+    {name:"Honeymoontarot30", handle:"@honeymoontarot30", tiktok:"honeymoontarot30", instagram:"honeymoontarot30"},
+    {name:"Chantellfloress", handle:"@chantellfloress", tiktok:"chantellfloress"},
+    {name:"Gabbyvn3", handle:"@gabbyvn3", tiktok:"gabbyvn3", kick:"gabbyvn3"}
+  ];
+
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+  function card(c){
+    var badges='';
+    if(c.kick) badges+='<span class="badge kick" data-kick-badge="'+esc(c.kick)+'">KICK</span>';
+    if(c.tiktok) badges+='<span class="badge tiktok">TIKTOK</span>';
+    if(c.instagram) badges+='<span class="badge ig">INSTAGRAM</span>';
+    badges+='<span class="badge live" data-live="'+esc(c.kick||"")+'">● LIVE</span>';
+    var links='';
+    if(c.kick) links+='<a class="btn" href="https://kick.com/'+esc(c.kick)+'" target="_blank" rel="noopener">Kick ↗</a>';
+    if(c.tiktok) links+='<a class="btn" href="https://www.tiktok.com/@'+esc(c.tiktok)+'" target="_blank" rel="noopener">TikTok ↗</a>';
+    if(c.instagram) links+='<a class="btn" href="https://www.instagram.com/'+esc(c.instagram)+'/" target="_blank" rel="noopener">Instagram ↗</a>';
+    return '<div class="card"><h3>'+esc(c.name)+'</h3><div class="handle">'+esc(c.handle)+'</div>'+
+      '<div class="badges">'+badges+'</div><div class="links">'+links+'</div>'+
+      (c.kick?'<div class="live-note" data-note="'+esc(c.kick)+'"></div>':'')+'</div>';
+  }
+
+  document.getElementById('featured').innerHTML = FEATURED.map(card).join('');
+  document.getElementById('more').innerHTML = MORE.map(card).join('');
+
+  /* ---- Kick live status (via same-origin PHP proxy; degrades silently) ---- */
+  var slugs = [];
+  FEATURED.concat(MORE).forEach(function(c){ if(c.kick && slugs.indexOf(c.kick)===-1) slugs.push(c.kick); });
+
+  function setLive(slug, info){
+    document.querySelectorAll('[data-live="'+slug+'"]').forEach(function(el){ el.classList.add('on'); });
+    document.querySelectorAll('[data-note="'+slug+'"]').forEach(function(el){
+      var txt = 'LIVE NOW';
+      if(info && info.title) txt += ' — ' + info.title;
+      if(info && info.viewers) txt += ' · ' + info.viewers + ' watching';
+      el.textContent = txt;
+      el.style.color = '#f87171';
+    });
+  }
+  function clearLive(slug){
+    document.querySelectorAll('[data-live="'+slug+'"]').forEach(function(el){ el.classList.remove('on'); });
+  }
+
+  function refreshStatus(){
+    var line = document.getElementById('status-line');
+    var done = 0, liveCount = 0, failed = 0;
+    slugs.forEach(function(slug){
+      fetch('/fc/api/kick_status.php?slug=' + encodeURIComponent(slug), {cache:'no-store'})
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          if(j && j.live){ liveCount++; setLive(slug, j); } else { clearLive(slug); }
+        })
+        .catch(function(){ failed++; })
+        .then(function(){
+          done++;
+          if(done === slugs.length){
+            var t = new Date().toLocaleTimeString();
+            line.textContent = 'Kick live status: ' + (liveCount>0 ? liveCount + ' LIVE now 🔴' : 'nobody live right now') +
+              (failed ? ' (' + failed + ' check(s) unavailable)' : '') + ' · updated ' + t;
+          }
+        });
+    });
+    if(!slugs.length) line.textContent = 'Kick live status: no Kick channels to check.';
+  }
+
+  refreshStatus();
+  setInterval(refreshStatus, 120000); // every 2 minutes
+})();
+</script>
+</body>
+</html>

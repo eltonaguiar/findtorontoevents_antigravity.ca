@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Movies & TV Series – October 2026 onward</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary:#0d6efd;
+            --bg:#f8f9fa;
+            --dark:#212529;
+            --radius:8px;
+            --shadow:0 2px 6px rgba(0,0,0,0.1);
+        }
+        body{background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--dark);}
+        .hero{background:linear-gradient(135deg,#1a2a63,#b21f1f);color:#fff;padding:4rem 0;position:relative;overflow:hidden;}
+        .hero::before{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:url('https://www.transparenttextures.com/patterns/asfalt-dark.png');opacity:0.3;}
+        .hero .container{position:relative;z-index:2;}
+        .card{border:none;border-radius:var(--radius);box-shadow:var(--shadow);transition:transform .2s;}
+        .card:hover{transform:translateY(-5px);box-shadow:0 8px 12px rgba(0,0,0,0.15);}
+        .card-img-top{height:200px;object-fit:cover;}
+        .footer{background:#212529;color:#fff;padding:2rem 0;}
+    </style>
+</head>
+<body>
+    <!-- Navigation (simple placeholder) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">Find Toronto Events</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/MOVIESHOWS/">Movies & TV</a></li>
+                    <li class="nav-item active"><a class="nav-link" href="top-movies-and-series.html">Top Picks</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero text-center">
+        <div class="container">
+            <h1 class="display-4">Top Movies & TV Series (Oct 2026 +)</h1>
+            <p class="lead">Hand‑picked titles releasing from October 2026 onward. Updated automatically via TMDB.</p>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <h2 class="mb-4">Movies</h2>
+            <div id="movies" class="row"></div>
+            <h2 class="mt-5 mb-4">TV Series</h2>
+            <div id="tv" class="row"></div>
+        </div>
+    </section>
+
+    <footer class="footer text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Find Toronto Events – All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const API_KEY='b84ff7bfe35ffad8779b77bcbbda317f';
+        const BASE='https://api.themoviedb.org/3';
+        async function fetchData(url){
+            const r=await fetch(url);
+            if(!r.ok) return [];
+            const d=await r.json();
+            return d.results||[];
+        }
+        function card(item, type){
+            const img=item.poster_path||item.backdrop_path||'';
+            const src=img?`https://image.tmdb.org/t/p/w500${img}`:'https://via.placeholder.com/500x750?text=No+Image';
+            const title=type==='movie'?item.title:item.name;
+            const date=type==='movie'?item.release_date:item.first_air_date;
+            const rating=item.vote_average?.toFixed(1)||'N/A';
+            return `<div class="col-md-3 mb-4"><div class="card h-100"><img src="${src}" class="card-img-top" alt="${title}"><div class="card-body d-flex flex-column"><h5 class="card-title">${title}</h5><p class="card-text mb-2">${date}</p><div class="mt-auto"><span class="badge badge-info mr-2">${date}</span><span class="badge badge-success">⭐ ${rating}</span></div></div></div></div>`;
+        }
+        async function load(){
+            const movies=await fetchData(`${BASE}/discover/movie?api_key=${API_KEY}&language=en-US&sort_by=popularity.desc&release_date.gte=2026-10-01`);
+            document.getElementById('movies').innerHTML=movies.slice(0,8).map(m=>card(m,'movie')).join('');
+            const shows=await fetchData(`${BASE}/discover/tv?api_key=${API_KEY}&language=en-US&sort_by=popularity.desc&first_air_date.gte=2026-10-01`);
+            document.getElementById('tv').innerHTML=shows.slice(0,8).map(s=>card(s,'tv')).join('');
+        }
+        document.addEventListener('DOMContentLoaded',load);
+    </script>
+</body>
+</html>

@@ -19,6 +19,8 @@ FILES = [
     ('findcryptopairs/api/meme_scanner_fixed.php', '/findtorontoevents.ca/findcryptopairs/api/meme_scanner_fixed.php'),
     ('scripts/meme_sentiment_scraper_v2.py', '/findtorontoevents.ca/scripts/meme_sentiment_scraper_v2.py'),
     ('scripts/meme_scanner_monitor.py', '/findtorontoevents.ca/scripts/meme_scanner_monitor.py'),
+    ('TORONTOEVENTS_ANTIGRAVITY/servicenow/AIFeaturesOct2026/index.html', '/findtorontoevents.ca/servicenow/AIFeaturesOct2026/index.html'),
+    ('findtorontoevents.ca/servicenow/javascript/index.html', '/findtorontoevents.ca/servicenow/javascript/index.html'),
 ]
 
 print("="*60)

@@ -62,7 +62,7 @@ if (!in_array($mode, $validModes)) {
     $mode = 'trending';
 }
 
-// ---- DB connection (use shared config with credential fallback) ----
+// ---- DB connection ----
 $dbConfigPath = dirname(__FILE__) . '/api/db-config.php';
 if (!file_exists($dbConfigPath)) {
     echo json_encode(array(
@@ -91,10 +91,19 @@ if ($pdo === null) {
     exit;
 }
 
-// ---- TMDB API key (same as freestyle-search.php) ----
-$TMDB_API_KEY = '6dc4a9654d9748dd817413924088c9d6';
+// ---- TMDB API key ----
+$TMDB_API_KEY = getMoviesTmdbApiKey();
 
 // ---- Determine which types to fetch ----
+if ($TMDB_API_KEY === null) {
+    header('HTTP/1.1 503 Service Unavailable');
+    echo json_encode(array(
+        'success' => false,
+        'error' => 'TMDB API key is not configured'
+    ));
+    exit;
+}
+
 $fetchTypes = array();
 if ($type === 'both') {
     $fetchTypes = array('movie', 'tv');
@@ -385,7 +394,15 @@ $existingLog[] = $logEntry;
 if (count($existingLog) > 100) {
     $existingLog = array_slice($existingLog, -100);
 }
-@file_put_contents($logFile, json_encode($existingLog, JSON_PRETTY_PRINT));
+$encodedLog = defined('JSON_PRETTY_PRINT')
+    ? json_encode($existingLog, constant('JSON_PRETTY_PRINT'))
+    : json_encode($existingLog);
+if (file_put_contents($logFile, $encodedLog) === false) {
+    error_log('MovieShows3 refresh could not persist pull_log.json');
+    $summary['errors']++;
+    $logEntry['status'] = 'partial';
+    $logEntry['errors'] = $summary['errors'];
+}
 
 // ---- Output ----
 echo json_encode(array(

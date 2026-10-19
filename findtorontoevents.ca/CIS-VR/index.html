@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A concise, independently prepared briefing on ServiceNow Certified Implementation Specialist - Vulnerability Response (CIS-VR), with official ServiceNow learning and documentation links." />
+  <title>CIS-VR Study Briefing | FindTorontoEvents.ca</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b3a;
+      --muted: #506473;
+      --brand: #087e8b;
+      --brand-dark: #075d66;
+      --brand-soft: #e5f4f4;
+      --accent: #d67936;
+      --paper: #f4f6f5;
+      --card: #fff;
+      --line: #d8e1e3;
+      --shadow: 0 12px 34px rgba(20, 47, 57, 0.07);
+      font-family: "Segoe UI", Arial, sans-serif;
+      scroll-behavior: smooth;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.65;
+    }
+    a { color: var(--brand-dark); text-underline-offset: 0.16em; }
+    a:hover { color: #063f47; }
+    a:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+    .skip-link {
+      position: absolute;
+      top: -5rem;
+      left: 1rem;
+      z-index: 2;
+      padding: 0.7rem 1rem;
+      color: #fff;
+      background: var(--ink);
+    }
+    .skip-link:focus { top: 1rem; }
+    .page { width: min(1160px, 100% - 2rem); margin: 0 auto; }
+    .hero {
+      margin: 1.5rem 0 1rem;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--brand);
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .eyebrow {
+      margin: 0 0 0.5rem;
+      color: var(--brand-dark);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { line-height: 1.2; }
+    h1 {
+      max-width: 850px;
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: -0.035em;
+    }
+    .lede {
+      max-width: 800px;
+      margin: 1rem 0 0;
+      color: var(--muted);
+      font-size: 1.12rem;
+    }
+    .notice {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      margin-top: 1.3rem;
+      padding: 0.85rem 1rem;
+      border-left: 4px solid var(--accent);
+      background: #fff5e9;
+      color: #49331e;
+      font-size: 0.93rem;
+    }
+    .notice strong { white-space: nowrap; }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 270px) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+    .toc, article, .course-card, .concept, .checklist {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+      box-shadow: 0 6px 18px rgba(20, 47, 57, 0.04);
+    }
+    .toc {
+      position: sticky;
+      top: 1rem;
+      padding: 1.1rem;
+    }
+    .toc h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1rem;
+    }
+    .toc ol { margin: 0; padding-left: 1.3rem; }
+    .toc li { padding: 0.18rem 0; font-size: 0.91rem; }
+    .toc a { text-decoration: none; }
+    article { min-width: 0; padding: clamp(1.1rem, 3vw, 2rem); }
+    article section + section {
+      margin-top: 2rem;
+      padding-top: 1.6rem;
+      border-top: 1px solid var(--line);
+    }
+    h2 { margin: 0 0 0.8rem; font-size: clamp(1.35rem, 3vw, 1.8rem); }
+    h3 { margin: 1.25rem 0 0.4rem; font-size: 1.08rem; }
+    p { margin: 0.65rem 0; }
+    .muted { color: var(--muted); }
+    .concept-grid, .course-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+    .concept { padding: 1rem; box-shadow: none; }
+    .concept h3 { margin: 0 0 0.35rem; }
+    .concept p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    .flow {
+      margin: 1rem 0;
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      background: var(--brand-soft);
+      color: #123c43;
+      font-weight: 700;
+    }
+    .flow span { color: var(--brand-dark); }
+    .checklist { padding: 1rem 1.2rem; box-shadow: none; }
+    .checklist li { margin: 0.45rem 0; }
+    .course-card { padding: 1.1rem; box-shadow: none; }
+    .course-card h3 { margin: 0 0 0.45rem; }
+    .course-card p { color: var(--muted); font-size: 0.94rem; }
+    .course-card a { font-weight: 700; }
+    .source-list { padding-left: 1.25rem; }
+    .source-list li { margin: 0.65rem 0; }
+    footer {
+      margin: 0 0 2rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+      .toc { position: static; }
+      .concept-grid, .course-grid { grid-template-columns: 1fr; }
+      .notice { display: block; }
+      .notice strong { display: block; margin-bottom: 0.25rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      :root { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to briefing</a>
+  <div class="page">
+    <header class="hero">
+      <p class="eyebrow">ServiceNow Security Operations · Study Briefing</p>
+      <h1>CIS-VR: Vulnerability Response</h1>
+      <p class="lede">
+        A practical orientation to the concepts behind the Certified Implementation Specialist –
+        Vulnerability Response credential: how scanner findings become owned, prioritized,
+        and verifiably completed remediation work.
+      </p>
+      <div class="notice" role="note">
+        <strong>Independent study aid</strong>
+        <span>This is not an official ServiceNow publication or a substitute for the current exam blueprint, product documentation, or training. Credential rules and course availability can change; confirm them in ServiceNow University.</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="toc" aria-label="Table of contents">
+        <h2>On this page</h2>
+        <ol>
+          <li><a href="#credential">Credential at a glance</a></li>
+          <li><a href="#purpose">What Vulnerability Response does</a></li>
+          <li><a href="#data-model">Core records and relationships</a></li>
+          <li><a href="#ingestion">Finding ingestion and data quality</a></li>
+          <li><a href="#prioritization">Prioritization and ownership</a></li>
+          <li><a href="#remediation">Remediation, targets, and exceptions</a></li>
+          <li><a href="#implementation">Implementation sequence</a></li>
+          <li><a href="#learning">Official learning links</a></li>
+          <li><a href="#references">Official reference links</a></li>
+        </ol>
+      </nav>
+
+      <main id="main-content">
+        <article>
+          <section id="credential">
+            <h2>1. Credential at a glance</h2>
+            <p>
+              CIS-VR is ServiceNow’s implementation-specialist credential for its Vulnerability
+              Response application. Treat the linked mainline exam blueprint as the authority
+              for the current exam scope and the credential page as the authority for eligibility
+              and registration details.
+            </p>
+            <p>
+              A useful study lens is implementation reasoning: understand the records and data
+              flow, decide how work should be grouped and routed, then prove that remediation
+              outcomes are visible and governed.
+            </p>
+            <p>
+              <a href="https://learning.servicenow.com/lxp/en/credentials/certified-implementation-specialist-vulnerability-response?id=kb_article_view&amp;sysparm_article=KB0011555" target="_blank" rel="noopener noreferrer">Open the official CIS-VR mainline exam blueprint</a>
+              ·
+              <a href="https://learning.servicenow.com/lxp/en/security-operations/certified-implementation-specialist-vulnerability?id=learning_content_prev&amp;course_id=a808a34a47f8b21019dfe23c326d43d9" target="_blank" rel="noopener noreferrer">Open the CIS-VR credential learning page</a>
+            </p>
+          </section>
+
+          <section id="purpose">
+            <h2>2. What Vulnerability Response does</h2>
+            <p>
+              Vulnerability Response (VR) organizes vulnerability findings into an operational
+              workflow. It connects security findings with affected configuration items and
+              accountable teams, so organizations can prioritize work, track remediation, and
+              review exceptions instead of handling scanner output as disconnected lists.
+            </p>
+            <p class="flow">
+              Scanner findings <span>→</span> matched assets <span>→</span> prioritized work
+              <span>→</span> remediation ownership <span>→</span> verified status
+            </p>
+            <p class="muted">
+              Exact capabilities and integrations depend on the product release and licensed
+              applications. Use the release-matched ServiceNow documentation for configuration.
+            </p>
+          </section>
+
+          <section id="data-model">
+            <h2>3. Core records and relationships</h2>
+            <p>
+              Keep the difference between a vulnerability definition and each affected instance
+              clear. That distinction is central to understanding how records are consolidated,
+              prioritized, and converted into work.
+            </p>
+            <div class="concept-grid">
+              <div class="concept">
+                <h3>Vulnerability</h3>
+                <p>The shared description of a security weakness or finding that can affect multiple assets.</p>
+              </div>
+              <div class="concept">
+                <h3>Vulnerable item</h3>
+                <p>A finding instance associated with an affected asset or configuration item; this is the operational evidence to investigate and remediate.</p>
+              </div>
+              <div class="concept">
+                <h3>Remediation task</h3>
+                <p>Actionable work routed to a responsible owner or group. Rules can group related vulnerable items into manageable work.</p>
+              </div>
+              <div class="concept">
+                <h3>Exception</h3>
+                <p>A governed disposition for findings that will not follow the normal remediation path; it should retain review and risk context.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="ingestion">
+            <h2>4. Finding ingestion and data quality</h2>
+            <p>
+              Scanner integrations bring external findings into the VR process. Successful
+              implementation depends on more than connecting a feed: data must map to the
+              expected fields, affected items should match the right assets, and repeated
+              imports should update the intended records rather than create confusing duplicates.
+            </p>
+            <ul>
+              <li>Confirm the scanner source, supported integration, and release prerequisites.</li>
+              <li>Validate identifiers and field mappings against representative scanner records.</li>
+              <li>Check that affected items reconcile to the intended configuration items and owners.</li>
+              <li>Review import errors and update behavior before relying on dashboards or task automation.</li>
+            </ul>
+            <p>
+              <a href="https://www.servicenow.com/docs/r/yokohama/security-management/vulnerability-response/vuln_integrations.html" target="_blank" rel="noopener noreferrer">ServiceNow docs: Vulnerability Response integrations</a>
+            </p>
+          </section>
+
+          <section id="prioritization">
+            <h2>5. Prioritization and ownership</h2>
+            <p>
+              Prioritization turns a large inventory into a defensible order of work. Use the
+              product’s supported classification and prioritization capabilities together with
+              organizational context such as asset ownership and exposure. Confirm the relevant
+              inputs and behavior in the documentation for the installed release; do not assume
+              a scanner severity by itself defines business priority.
+            </p>
+            <p>
+              Assignment and remediation-task rules provide repeatable routing. Design them
+              around who can actually remediate the affected asset, then test representative
+              records for missing owners, conflicting rules, and unintended bulk assignment.
+            </p>
+            <p>
+              <a href="https://www.servicenow.com/docs/r/yokohama/security-management/vulnerability-response/create-vul-group-rules.html" target="_blank" rel="noopener noreferrer">ServiceNow docs: Create or edit Vulnerability Response remediation task rules</a>
+            </p>
+          </section>
+
+          <section id="remediation">
+            <h2>6. Remediation, targets, and exceptions</h2>
+            <h3>Make remediation work actionable</h3>
+            <p>
+              A useful task has a clear responsible team, enough context to act, and a status
+              that can be followed through to completion. Group related vulnerable items only
+              where the same team can work them together without obscuring asset-level detail.
+            </p>
+            <h3>Set and monitor target dates</h3>
+            <p>
+              Remediation target rules define expected remediation timeframes. Align rule
+              conditions and targets with the organization’s policy, then verify that the
+              resulting dates and overdue reporting match representative cases.
+            </p>
+            <p>
+              <a href="https://www.servicenow.com/docs/r/yokohama/security-management/vulnerability-response/time-to-remediate-rules.html" target="_blank" rel="noopener noreferrer">ServiceNow docs: Vulnerability Response remediation target rules</a>
+            </p>
+            <h3>Govern exceptions and confirm closure</h3>
+            <p>
+              An exception should be an explicit, reviewable decision—not a way to make a finding
+              disappear. Capture the rationale and approval required by local policy, and ensure
+              exception status remains visible to the teams responsible for risk. For remediation,
+              validate the completion path and any rescan or updated scanner evidence used to
+              confirm that the vulnerable item is resolved.
+            </p>
+          </section>
+
+          <section id="implementation">
+            <h2>7. Implementation sequence</h2>
+            <p>Use this checklist to structure a first implementation or a focused design review:</p>
+            <ol class="checklist">
+              <li><strong>Set the foundation:</strong> verify required applications, roles, release compatibility, and the asset/CMDB data the process depends on.</li>
+              <li><strong>Prove ingestion:</strong> connect a representative scanner feed and validate mapping, reconciliation, and repeat-import behavior.</li>
+              <li><strong>Design ownership:</strong> agree on classification, assignment, and task grouping with security and remediation teams.</li>
+              <li><strong>Define policy:</strong> configure target rules and the organization’s exception and approval process.</li>
+              <li><strong>Exercise end to end:</strong> test an imported finding through assignment, remediation, status update, and closure evidence.</li>
+              <li><strong>Operate and improve:</strong> monitor data quality, aging work, ownership gaps, exceptions, and outcomes; revise rules using observed cases.</li>
+            </ol>
+            <p class="muted">
+              This is a study framework, not a ServiceNow-prescribed deployment procedure.
+              Follow official product documentation and your organization’s security policy.
+            </p>
+          </section>
+
+          <section id="learning">
+            <h2>8. Official learning links</h2>
+            <p>
+              These ServiceNow University links may require a ServiceNow account. Course names,
+              releases, and delivery options can change; check the catalog after signing in.
+            </p>
+            <div class="course-grid">
+              <div class="course-card">
+                <h3>Vulnerability Response Implementation</h3>
+                <p>Core implementation learning for the Vulnerability Response application. Open the course page to check its current delivery options.</p>
+                <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=6c687208db1a7340760a7104399619ba" target="_blank" rel="noopener noreferrer">Open the official course</a>
+              </div>
+              <div class="course-card">
+                <h3>Vulnerability Response Learning Bytes</h3>
+                <p>Supplemental ServiceNow University learning path for focused Vulnerability Response topics.</p>
+                <a href="https://learning.servicenow.com/lxp?id=learning_path_prev&amp;path_id=18e3c39b87c12dd4f2f443f7dabb352a" target="_blank" rel="noopener noreferrer">Open the official learning path</a>
+              </div>
+              <div class="course-card">
+                <h3>Security Operations (SecOps) Fundamentals</h3>
+                <p>Foundational SecOps material. The linked catalog entry may represent a legacy release; check for the current version or replacement.</p>
+                <a href="https://learning.servicenow.com/lxp?id=learning_course_prev&amp;course_id=66f090cfc3d1f110cfdf34ee05013195" target="_blank" rel="noopener noreferrer">Check the official course listing</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="references">
+            <h2>9. Official reference links</h2>
+            <p>
+              The sources below are all hosted by ServiceNow. The documentation links are
+              versioned; select the release that matches the instance being implemented.
+            </p>
+            <ul class="source-list">
+              <li><a href="https://www.servicenow.com/docs/r/yokohama/security-management/vulnerability-response/vuln-landing-page.html" target="_blank" rel="noopener noreferrer">Vulnerability Response product documentation</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/yokohama/security-management/vulnerability-response/vuln_integrations.html" target="_blank" rel="noopener noreferrer">Vulnerability Response integrations</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/yokohama/security-management/vulnerability-response/create-vul-group-rules.html" target="_blank" rel="noopener noreferrer">Remediation task rules</a></li>
+              <li><a href="https://www.servicenow.com/docs/r/yokohama/security-management/vulnerability-response/time-to-remediate-rules.html" target="_blank" rel="noopener noreferrer">Remediation target rules</a></li>
+              <li><a href="https://www.servicenow.com/products/vulnerability-response.html" target="_blank" rel="noopener noreferrer">ServiceNow Vulnerability Response product overview</a></li>
+            </ul>
+          </section>
+        </article>
+      </main>
+    </div>
+
+    <footer>
+      <p>
+        Independent educational content. ServiceNow, ServiceNow University, and related product
+        names are trademarks of ServiceNow. Always use official ServiceNow materials for current
+        product behavior and certification requirements.
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

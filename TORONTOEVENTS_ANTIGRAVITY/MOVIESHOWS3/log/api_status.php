@@ -1,7 +1,7 @@
 <?php
 /**
  * API Status — returns DB stats for the MOVIESHOWS3 admin dashboard.
- * Uses shared api/db-config.php with credential fallback chain.
+ * Uses shared api/db-config.php with host-local private credentials.
  *
  * PHP 5.2 compatible — no short array syntax, no ?? operator
  */
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// ---- DB connection (use shared config with credential fallback) ----
+// ---- DB connection ----
 $dbConfigPath = dirname(__FILE__) . '/../api/db-config.php';
 if (!file_exists($dbConfigPath)) {
     echo json_encode(array(

@@ -44,13 +44,18 @@
 
     /* Motion */
     --ease:cubic-bezier(.4,0,.2,1);
+
+    /* Height of the sticky .sn-lnav guide switcher. Keep in sync with the
+       .sn-lnav padding/font below so sticky TOC offsets and scroll anchors
+       clear the menu bar exactly. */
+    --sn-nav-h: 58px;
   }
   * { box-sizing: border-box; }
 
   html {
     background: var(--bg-0);
     scroll-behavior: smooth;
-    scroll-padding-top: 6rem;
+    scroll-padding-top: calc(var(--sn-nav-h) + 1.25rem);
   }
 
   body {
@@ -67,12 +72,27 @@
      CSS-only aurora: drifting radial blooms over a dark ink base,
      plus a film-grain overlay for texture. No canvas, no JS.
      ============================================================ */
+  .bg-scene,
   .bg-aurora,
   .bg-orbit,
   .bg-grain {
     position: fixed;
     inset: 0;
     pointer-events: none;
+  }
+
+  .bg-scene {
+    z-index: 0;
+    inset: -8%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1000'%3E%3Cdefs%3E%3ClinearGradient id='line' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2362f5c7' stop-opacity='.22'/%3E%3Cstop offset='100%25' stop-color='%237aa2ff' stop-opacity='.18'/%3E%3C/linearGradient%3E%3CradialGradient id='node' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='.92'/%3E%3Cstop offset='45%25' stop-color='%2362f5c7' stop-opacity='.55'/%3E%3Cstop offset='100%25' stop-color='%2362f5c7' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23line)' stroke-width='2'%3E%3Cpath d='M120 770 L360 590 L620 630 L820 420 L1090 470 L1380 260'/%3E%3Cpath d='M220 260 L470 330 L700 180 L980 250 L1210 120 L1480 200'/%3E%3Cpath d='M180 520 L390 440 L590 500 L790 360 L1030 380 L1260 560 L1470 520'/%3E%3Cpath d='M320 850 L560 720 L760 760 L1010 650 L1280 720'/%3E%3C/g%3E%3Cg fill='url(%23node)'%3E%3Ccircle cx='120' cy='770' r='40'/%3E%3Ccircle cx='360' cy='590' r='30'/%3E%3Ccircle cx='620' cy='630' r='26'/%3E%3Ccircle cx='820' cy='420' r='38'/%3E%3Ccircle cx='1090' cy='470' r='26'/%3E%3Ccircle cx='1380' cy='260' r='44'/%3E%3Ccircle cx='220' cy='260' r='34'/%3E%3Ccircle cx='470' cy='330' r='22'/%3E%3Ccircle cx='700' cy='180' r='42'/%3E%3Ccircle cx='980' cy='250' r='28'/%3E%3Ccircle cx='1210' cy='120' r='20'/%3E%3Ccircle cx='1480' cy='200' r='34'/%3E%3Ccircle cx='180' cy='520' r='28'/%3E%3Ccircle cx='390' cy='440' r='18'/%3E%3Ccircle cx='590' cy='500' r='22'/%3E%3Ccircle cx='790' cy='360' r='24'/%3E%3Ccircle cx='1030' cy='380' r='20'/%3E%3Ccircle cx='1260' cy='560' r='38'/%3E%3Ccircle cx='1470' cy='520' r='24'/%3E%3Ccircle cx='320' cy='850' r='44'/%3E%3Ccircle cx='560' cy='720' r='26'/%3E%3Ccircle cx='760' cy='760' r='18'/%3E%3Ccircle cx='1010' cy='650' r='28'/%3E%3Ccircle cx='1280' cy='720' r='34'/%3E%3C/g%3E%3Cg stroke='%23a9b6c9' stroke-opacity='.08'%3E%3Cpath d='M0 120 H1600'/%3E%3Cpath d='M0 320 H1600'/%3E%3Cpath d='M0 520 H1600'/%3E%3Cpath d='M0 720 H1600'/%3E%3Cpath d='M260 0 V1000'/%3E%3Cpath d='M620 0 V1000'/%3E%3Cpath d='M980 0 V1000'/%3E%3Cpath d='M1340 0 V1000'/%3E%3C/g%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    mix-blend-mode: screen;
+    opacity: .28;
+    filter: saturate(1.05);
+    animation: scene-drift 46s ease-in-out infinite alternate;
+    will-change: transform;
   }
 
   .bg-aurora {
@@ -127,6 +147,11 @@
     to   { transform: translate3d(3%, 2%, 0) rotate(7deg) scale(1.06); }
   }
 
+  @keyframes scene-drift {
+    from { transform: translate3d(-1.5%, -1%, 0) scale(1.02); }
+    to   { transform: translate3d(1.5%, 1%, 0) scale(1.08); }
+  }
+
   @keyframes orbit-drift {
     from { transform: translate3d(-1.5%, 0, 0) rotate(0deg) scale(1); }
     50%  { transform: translate3d(1%, 1.5%, 0) rotate(5deg) scale(1.03); }
@@ -170,7 +195,7 @@
 
   /* Accessibility: honour reduced-motion on every ambient animation */
   @media (prefers-reduced-motion: reduce) {
-    .bg-aurora, .bg-orbit { animation: none; }
+    .bg-scene, .bg-aurora, .bg-orbit { animation: none; }
     .scroll-progress { animation: none; transform: scaleX(1); opacity: .35; }
     html { scroll-behavior: auto; }
     *, *::before, *::after {
@@ -206,7 +231,7 @@
     margin: 0 auto;
     padding: 2.5rem 1.5rem 4rem;
   }
-  section { margin: 3.5rem 0; scroll-margin-top: 5.5rem; }
+  section { margin: 3.5rem 0; scroll-margin-top: calc(var(--sn-nav-h) + 1.25rem); }
   h2 {
     font-size: clamp(1.4rem, 2.6vw, 1.85rem);
     margin: 0 0 1.4rem;
@@ -338,6 +363,11 @@
     border-radius: var(--r-lg);
     padding: 1.3rem 1.6rem;
     margin: 1.5rem auto 2.5rem;
+    /* Stick below the .sn-lnav guide switcher so the "Contents" heading is
+       never covered by the menu bar as the user scrolls. */
+    position: sticky;
+    top: calc(var(--sn-nav-h) + 0.75rem);
+    z-index: 10;
   }
   nav.toc h2 {
     margin: 0 0 .85rem;
@@ -448,18 +478,48 @@
   }
   nav.rail a.active .rail-num { color: var(--brand-green); opacity: 1; }
 
-  /* The rail is expanded by default (labels always visible), so the content
-     column shifts right to clear it. main stays centred in the space that
-     remains rather than hugging the rail. */
+  /* Wide layout: the rail becomes a real, expanded sidebar column in the flow
+     and the content sits beside it. Using a grid (not a fixed overlay + body
+     padding) means the two columns can never overlap, and the sticky menu bar
+     above stays full-width. Below 1280px there is not enough room, so the rail
+     is dropped and the in-page Contents box takes over. */
   @media (min-width: 1280px) {
-    body { padding-left: 372px; }
-    /* Pull the hero back to full-bleed while keeping its text aligned with
-       main's content, so the page doesn't get a hard vertical seam. */
-    header.hero { margin-left: -372px; padding-left: calc(1.5rem + 372px); }
+    /* One shared layout wrapper so the rail + content align as two columns. */
+    body {
+      display: grid;
+      grid-template-columns: var(--rail-w) minmax(0, 1fr);
+      grid-template-areas:
+        "nav nav"
+        "hero hero"
+        "rail main"
+        "rail foot";
+      align-items: start;
+    }
+    :root { --rail-w: 320px; }
+    .sn-lnav { grid-area: nav; }
+    header.hero { grid-area: hero; }
+    nav.rail {
+      grid-area: rail;
+      /* Override the fixed/centred overlay positioning from the base rule. */
+      position: sticky;
+      top: calc(var(--sn-nav-h) + 1rem);
+      left: auto;
+      transform: none;
+      z-index: 5;
+      margin: 1.5rem 0 2rem 1rem;
+      max-height: calc(100vh - var(--sn-nav-h) - 2rem);
+      overflow-y: auto;
+      align-self: start;
+    }
+    main { grid-area: main; }
+    footer { grid-area: foot; }
+    /* The fixed rail and the in-page "Contents" box are the same navigation;
+       showing both at once duplicated it. Hide the box while the rail shows. */
+    nav.toc { display: none; }
   }
 
   /* Below 1280px there is no room for a labelled rail beside the content
-     column. The in-page TOC (nav.toc) already covers navigation there. */
+     column. The in-page TOC (nav.toc) covers navigation there. */
   @media (max-width: 1279px) {
     nav.rail { display: none; }
   }
@@ -741,16 +801,167 @@
     table { font-size: .82rem; }
     th, td { padding: .5rem .6rem; }
   }
+
+
+.toc {
+  position: sticky;
+  top: 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(20,47,57,0.04);
+  padding: 16px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+.toc h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  color: var(--muted);
+}
+.toc ol { margin: 0; padding-left: 1.3rem; }
+.toc li { padding: 0.18rem 0; font-size: 0.91rem; }
+.toc a { text-decoration: none; }
+
+.top-nav {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+}
+.top-nav a {
+  text-decoration: none;
+  color: var(--ink);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+.top-nav a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+    .sn-lnav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 14px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(8,12,20,0.72);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      font-size: 0.85rem;
+    }
+    .sn-lnav-brand {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #e6edf6;
+    }
+    .sn-lnav-brand-dot { color: #62f5c7; margin: 0 2px; }
+    .sn-lnav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sn-lnav-links a {
+      color: #8b98ac;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+    }
+    .sn-lnav-links a:hover { color: #e6edf6; background: rgba(255,255,255,0.05); text-decoration: none; }
+    .sn-lnav-links a[aria-current="page"] {
+      color: #62f5c7;
+      background: rgba(98,245,199,0.10);
+    }
+    .kind-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(98,245,199,0.12);
+      border: 1px solid rgba(98,245,199,0.35);
+      color: #62f5c7;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    .page { max-width: 1280px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* ============================================================
+       KNOWLEDGE CHECKS — self-test blocks that reveal the answer on
+       click (native <details>, no JS). Used at the end of appendix
+       sections so readers can verify they actually absorbed the
+       key points before moving on.
+       ============================================================ */
+    .kcheck {
+      margin: 22px 0 6px;
+      padding: 16px 18px;
+      border: 1px solid rgba(122,162,255,0.28);
+      border-left: 3px solid var(--accent-2);
+      border-radius: var(--radius);
+      background: rgba(122,162,255,0.05);
+    }
+    .kcheck > h3 {
+      margin: 0 0 4px; font-size: 0.82rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent-2);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .kcheck > p.kcheck-intro { margin: 0 0 12px; font-size: 0.88rem; color: var(--muted); }
+    .kcheck details {
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-sm);
+      background: var(--panel-2);
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    .kcheck details[open] { border-color: rgba(98,245,199,0.35); }
+    .kcheck summary {
+      cursor: pointer; padding: 10px 14px; font-size: 0.9rem; font-weight: 500;
+      color: var(--text); list-style: none; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .kcheck summary::-webkit-details-marker { display: none; }
+    .kcheck summary::before {
+      content: "Q"; flex: 0 0 auto;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(122,162,255,0.18); color: var(--accent-2);
+      font-size: 0.7rem; font-weight: 700; margin-top: 1px;
+    }
+    .kcheck details[open] summary::before { content: "A"; background: rgba(98,245,199,0.2); color: var(--accent); }
+    .kcheck summary:hover { background: rgba(255,255,255,0.03); }
+    .kcheck .kc-answer {
+      padding: 2px 14px 14px 44px; font-size: 0.88rem; color: #a7f3d0;
+      border-top: 1px dashed rgba(143,163,189,0.2); margin-top: -1px;
+    }
+    .kcheck .kc-answer strong { color: var(--accent); }
+    .kcheck .kc-answer code { background: rgba(10,15,26,0.7); }
 </style>
 </head>
 <body>
 
-<!-- Dynamic background layers: aurora bloom + film grain (decorative only) -->
+<!-- Dynamic background layers: SVG scene + aurora bloom + film grain (decorative only) -->
+<div class="bg-scene" aria-hidden="true"></div>
 <div class="bg-aurora" aria-hidden="true"></div>
 <div class="bg-orbit" aria-hidden="true"></div>
 <div class="bg-grain" aria-hidden="true"></div>
 <div class="bg-veil" aria-hidden="true"></div>
 <div class="scroll-progress" aria-hidden="true"></div>
+<!-- SERVICE NOW LEARNING — shared header across the ServiceNow guide family -->
+<nav class="sn-lnav" aria-label="ServiceNow learning guides">
+  <span class="sn-lnav-brand">ServiceNow<span class="sn-lnav-brand-dot">·</span>Learning</span>
+  <span class="sn-lnav-links">
+    <a href="/servicenow/javascript/index.html">JavaScript Reference</a>
+    <a href="/servicenow/AIFeaturesOct2026/index.html" aria-current="page">AI Features Guide</a>
+    <a href="/servicenow/CIS-CSM/index.html">CIS‑CSM Study Briefing</a>
+    <a href="/servicenow/CIS-VR/index.html">CIS‑VR Study Briefing</a>
+  </span>
+</nav>
 
 <header class="hero">
   <div class="kicker">ServiceNow AI &middot; October 2026</div>
@@ -1368,10 +1579,6 @@ Retrieved knowledge:
   <h2>Official ServiceNow Resources</h2>
   <p>Use these as your source of truth. Links may change; search the catalog if a direct link fails.</p>
   <div class="servicenow-links">
-    <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/ai-native-sku-overview.html" target="_blank" rel="noopener">
-      <h3>AI-Native SKU Overview (Packaging)</h3>
-      <p>Official tier comparison: Foundation, Advanced, Prime capabilities and entitlements.</p>
-    </a>
     <a class="sn-link" href="https://www.servicenow.com/docs/r/intelligent-experiences/now-assist-skill-kit/configuring-now-assist-skill-kit.html" target="_blank" rel="noopener">
       <h3>Configuring Now Assist Skill Kit</h3>
       <p>Prerequisites, plugin installation, role setup, and skill creation workflow.</p>
@@ -1623,6 +1830,24 @@ Retrieved knowledge:
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll, { passive: true });
   setActive();
+})();
+
+/* Keep --sn-nav-h in sync with the real height of the sticky .sn-lnav bar.
+   The bar wraps to two rows on narrow viewports, so a hard-coded 58px would
+   let the TOC / anchored sections slip under it. Measuring at runtime keeps
+   the sticky TOC offset and scroll-padding correct at every width. */
+(function () {
+  'use strict';
+  var bar = document.querySelector('.sn-lnav');
+  if (!bar) return;
+  function sync() {
+    var h = Math.round(bar.getBoundingClientRect().height);
+    if (h > 0) document.documentElement.style.setProperty('--sn-nav-h', h + 'px');
+  }
+  sync();
+  window.addEventListener('resize', sync, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(sync).observe(bar);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
 })();
 </script>
 

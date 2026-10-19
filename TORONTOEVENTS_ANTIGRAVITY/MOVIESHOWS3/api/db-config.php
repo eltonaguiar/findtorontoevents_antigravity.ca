@@ -1,52 +1,82 @@
 <?php
 /**
- * Database configuration for MovieShows3
- * Supports both legacy 50webs credentials and GoDaddy admin credentials.
+ * Movies database credentials come from the environment or a private
+ * movies-db-private.php file outside the document root. Hosts with a
+ * virtual FTP root can use the HTTP-blocked .movies-db-private directory.
  */
+function getMoviesPrivateConfigPath()
+{
+    $siteRoot = dirname(dirname(dirname(__FILE__)));
+    $privatePath = dirname($siteRoot) . '/movies-db-private.php';
+    if (!is_readable($privatePath) &&
+        is_readable($siteRoot . '/.movies-db-private/.htaccess')) {
+        $privatePath = $siteRoot . '/.movies-db-private/credentials.php';
+    }
+    return $privatePath;
+}
+
+function getMoviesTmdbApiKey()
+{
+    $key = getenv('TMDB_API_KEY');
+    if ($key !== false && $key !== '') {
+        return $key;
+    }
+    $privatePath = getMoviesPrivateConfigPath();
+    if (is_readable($privatePath)) {
+        $credentials = require $privatePath;
+        if (is_array($credentials) && isset($credentials['tmdb_api_key']) &&
+            is_string($credentials['tmdb_api_key']) &&
+            $credentials['tmdb_api_key'] !== '') {
+            return $credentials['tmdb_api_key'];
+        }
+    }
+    error_log('Movies TMDB API key is not configured');
+    return null;
+}
 
 function getDbConnection()
 {
-    $host = 'localhost';
-    $dbname = 'ejaguiar1_tvmoviestrailers';
-    $serverHost = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+    $username = getenv('EJAGUIAR1_TVMOVIESTRAILERS_USER');
+    $password = getenv('EJAGUIAR1_TVMOVIESTRAILERS_PASS');
+    $hasUser = $username !== false && $username !== '';
+    $hasPass = $password !== false && $password !== '';
 
-    // Allow secure override from environment first.
-    $envUser = getenv('EJAGUIAR1_TVMOVIESTRAILERS_USER');
-    $envPass = getenv('EJAGUIAR1_TVMOVIESTRAILERS');
-    $credCandidates = array();
-
-    if (!empty($envUser) && !empty($envPass)) {
-        $credCandidates[] = array($envUser, $envPass);
-    }
-
-    // Prefer host-specific defaults, then include fallback chain.
-    if (strpos($serverHost, 'torontoevent.net') !== false) {
-        $credCandidates[] = array('admin', '3ADDzY*stB6Qd#$!l1%IIKYuHVRCCupl');
-        $credCandidates[] = array('ejaguiar1_tvmoviestrailers', 'tvmoviestrailers');
-    } else {
-        $credCandidates[] = array('ejaguiar1_tvmoviestrailers', 'tvmoviestrailers');
-        $credCandidates[] = array('admin', '3ADDzY*stB6Qd#$!l1%IIKYuHVRCCupl');
-    }
-
-    $lastError = null;
-
-    foreach ($credCandidates as $creds) {
-        $username = $creds[0];
-        $password = $creds[1];
-
-        try {
-            $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-            return $pdo;
-        } catch (PDOException $e) {
-            $lastError = $e->getMessage();
-            error_log("MovieShows3 DB connect failed for user '" . $username . "': " . $lastError);
+    if ($hasUser || $hasPass) {
+        if (!$hasUser || !$hasPass) {
+            error_log('Movies DB environment credentials are incomplete');
+            return null;
         }
+    } else {
+        $privatePath = getMoviesPrivateConfigPath();
+        if (!is_readable($privatePath)) {
+            error_log('Movies DB credentials are not configured');
+            return null;
+        }
+        $credentials = require $privatePath;
+        if (!is_array($credentials) ||
+            !isset($credentials['username'], $credentials['password']) ||
+            !is_string($credentials['username']) ||
+            !is_string($credentials['password']) ||
+            $credentials['username'] === '' ||
+            $credentials['password'] === '') {
+            error_log('Movies DB private configuration is invalid');
+            return null;
+        }
+        $username = $credentials['username'];
+        $password = $credentials['password'];
     }
 
-    error_log("MovieShows3 DB connection failed after all credential fallbacks");
-    return null;
+    try {
+        $pdo = new PDO(
+            'mysql:host=localhost;dbname=ejaguiar1_tvmoviestrailers;charset=utf8mb4',
+            $username,
+            $password
+        );
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        return $pdo;
+    } catch (PDOException $e) {
+        error_log('Movies DB connection failed (code ' . $e->getCode() . ')');
+        return null;
+    }
 }
-?>
-

@@ -1,0 +1,78 @@
+name: Beta Portfolio Refresh (monthly)
+
+# Diversified beta-harvesting tracker (reports/BETA_PORTFOLIO_DEPLOYMENT_2026-07-04.md).
+# Monthly: refresh diversifier-ETF prices, recompute inverse-vol + crash-guard target
+# weights, commit the status JSON. The git history of the status JSON IS the live
+# forward track record. This is BETA (a disciplined allocation), not alpha.
+
+on:
+  schedule:
+    - cron: "20 6 1 * *"   # 06:20 UTC on the 1st of each month
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beta-portfolio-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+      DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+      DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+      DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
+      DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install --quiet pymysql yfinance pandas
+      - name: Refresh diversifier ETF prices (non-fatal)
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import yfinance as yf, pymysql, sys
+          sys.path.insert(0, ".")
+          from tools.db_env import get_stocks_creds
+          keep=('host','user','password','database','port','connect_timeout')
+          c=pymysql.connect(**{k:v for k,v in get_stocks_creds().items() if k in keep}); cur=c.cursor()
+          cur.execute("""CREATE TABLE IF NOT EXISTS etf_daily_ohlcv(
+            id INT AUTO_INCREMENT PRIMARY KEY, symbol VARCHAR(16) NOT NULL, trade_date DATE NOT NULL,
+            open DOUBLE, high DOUBLE, low DOUBLE, close DOUBLE, volume BIGINT,
+            UNIQUE KEY uk(symbol,trade_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4""")
+          c.commit()
+          for t in ['SPY','DBC','AGG','TLT','IEF','GLD']:
+              try:
+                  df=yf.download(t, period='400d', progress=False, auto_adjust=True)
+                  rows=[]
+                  for idx,r in df.iterrows():
+                      def g(k):
+                          v=r[k]
+                          try: return float(v.iloc[0]) if hasattr(v,'iloc') else float(v)
+                          except Exception: return None
+                      cl=g('Close')
+                      if cl and cl>0: rows.append((t, idx.date(), g('Open'), g('High'), g('Low'), cl, int(g('Volume') or 0)))
+                  cur.executemany("""INSERT INTO etf_daily_ohlcv(symbol,trade_date,open,high,low,close,volume)
+                    VALUES(%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE close=VALUES(close),volume=VALUES(volume)""", rows)
+                  c.commit(); print(f"{t}: {len(rows)} rows")
+              except Exception as e:
+                  print(f"{t}: {e}")
+          c.close()
+          PY
+      - name: Recompute target weights
+        run: python3 tools/beta_portfolio_tracker.py
+      - name: Commit status JSON (track record)
+        run: |
+          git config user.name "beta-portfolio-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add audit_dashboard/data/beta_portfolio_status.json || true
+          git commit -m "chore(beta): monthly portfolio status $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
+          git push || echo "push skipped"

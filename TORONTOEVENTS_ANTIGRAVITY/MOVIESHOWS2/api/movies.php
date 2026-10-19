@@ -50,6 +50,9 @@ try {
         case 'list':
             $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 5000) : 5000;
             $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+            $orderBy = isset($_GET['sort']) && $_GET['sort'] === 'newest'
+                ? 'm.created_at DESC, m.id DESC'
+                : 'm.imdb_rating DESC, m.created_at DESC';
 
             $where = '1=1';
             if (isset($_GET['type']) && in_array($_GET['type'], array('movie', 'tv'))) {
@@ -72,7 +75,7 @@ try {
             INNER JOIN trailers t ON t.movie_id = m.id AND t.is_active = TRUE
             WHERE $where AND t.youtube_id IS NOT NULL AND t.youtube_id != ''
             GROUP BY m.id
-            ORDER BY m.imdb_rating DESC, m.created_at DESC
+            ORDER BY $orderBy
             LIMIT $limit OFFSET $offset";
 
             $stmt = $pdo->query($sql);

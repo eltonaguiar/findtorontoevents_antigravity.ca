@@ -9,31 +9,55 @@
     :root {
       color-scheme: dark;
       --ink: #e6edf1;
-      --muted: #aabac4;
-      --brand: #51c7ba;
-      --brand-dark: #83ded3;
-      --brand-soft: #173b3d;
-      --accent: #f0b36e;
-      --paper: #101820;
-      --card: #18232c;
-      --line: #34434d;
-      --shadow: 0 12px 34px rgba(0, 0, 0, 0.24);
-      font-family: "Segoe UI", Arial, sans-serif;
-      scroll-behavior: smooth;
+      --bg: #080c14;
+      --panel: #0f1626;
+      --panel-2: #121b2e;
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #e6edf6;
+      --muted: #8b98ac;
+      --accent: #62f5c7;
+      --accent-2: #7aa2ff;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --success: #4ade80;
+      --code-bg: #0a0f1a;
+      --radius: 14px;
+      --radius-sm: 8px;
+      /* Height of the sticky .sn-lnav switcher; kept in sync at runtime so the
+         sidebar TOC and scroll anchors clear the menu bar at every width. */
+      --sn-nav-h: 58px;
     }
+
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--sn-nav-h) + 16px); }
     body {
-      margin: 0;
-      color: var(--ink);
-      background: var(--paper);
-      line-height: 1.65;
+      margin: 0; padding: 0;
+      background:
+        radial-gradient(900px 500px at 15% -10%, rgba(98,245,199,0.08), transparent 60%),
+        radial-gradient(900px 600px at 90% 0%, rgba(122,162,255,0.08), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      font-feature-settings: "tnum";
     }
-    a { color: var(--brand-dark); text-underline-offset: 0.16em; }
-    a:hover { color: #b0fff2; }
-    a:focus-visible {
-      outline: 3px solid var(--accent);
-      outline-offset: 3px;
-      border-radius: 3px;
+
+    a { color: var(--accent-2); text-decoration: none; transition: color .15s ease; }
+    a:hover { color: var(--accent); text-decoration: underline; }
+
+    /* ============================================================
+       ACCESSIBILITY — keyboard navigation is part of the design.
+       Visible focus on every interactive element, and a real skip
+       link so keyboard users can bypass the sidebar nav.
+       ============================================================ */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    summary:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
     }
     .skip-link {
       position: absolute;
@@ -101,11 +125,25 @@
       background: var(--card);
       box-shadow: 0 6px 18px rgba(20, 47, 57, 0.04);
     }
-    .toc {
-      position: sticky;
-      top: 1rem;
-      padding: 1.1rem;
-    }
+.toc {
+  position: sticky;
+  top: calc(var(--sn-nav-h) + 16px);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(20,47,57,0.04);
+  padding: 16px;
+  max-height: calc(100vh - var(--sn-nav-h) - 32px);
+  overflow-y: auto;
+}
+.toc h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  color: var(--muted);
+}
+.toc ol { margin: 0; padding-left: 1.3rem; }
+.toc li { padding: 0.18rem 0; font-size: 0.91rem; }
+.toc a { text-decoration: none; }
     .toc h2 {
       margin: 0 0 0.65rem;
       font-size: 1rem;
@@ -207,11 +245,213 @@
     @media (prefers-reduced-motion: reduce) {
       :root { scroll-behavior: auto; }
     }
-  </style>
+  
+  /* ============================================================
+     DYNAMIC BACKGROUND
+     CSS-only aurora: drifting radial blooms over a dark ink base,
+     plus a film-grain overlay for texture. No canvas, no JS.
+     ============================================================ */
+  .bg-scene,
+  .bg-aurora,
+  .bg-orbit,
+  .bg-grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .bg-scene {
+    z-index: 0;
+    inset: -8%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1000'%3E%3Cdefs%3E%3ClinearGradient id='line' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2362f5c7' stop-opacity='.22'/%3E%3Cstop offset='100%25' stop-color='%237aa2ff' stop-opacity='.18'/%3E%3C/linearGradient%3E%3CradialGradient id='node' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='.92'/%3E%3Cstop offset='45%25' stop-color='%2362f5c7' stop-opacity='.55'/%3E%3Cstop offset='100%25' stop-color='%2362f5c7' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23line)' stroke-width='2'%3E%3Cpath d='M120 770 L360 590 L620 630 L820 420 L1090 470 L1380 260'/%3E%3Cpath d='M220 260 L470 330 L700 180 L980 250 L1210 120 L1480 200'/%3E%3Cpath d='M180 520 L390 440 L590 500 L790 360 L1030 380 L1260 560 L1470 520'/%3E%3Cpath d='M320 850 L560 720 L760 760 L1010 650 L1280 720'/%3E%3C/g%3E%3Cg fill='url(%23node)'%3E%3Ccircle cx='120' cy='770' r='40'/%3E%3Ccircle cx='360' cy='590' r='30'/%3E%3Ccircle cx='620' cy='630' r='26'/%3E%3Ccircle cx='820' cy='420' r='38'/%3E%3Ccircle cx='1090' cy='470' r='26'/%3E%3Ccircle cx='1380' cy='260' r='44'/%3E%3Ccircle cx='220' cy='260' r='34'/%3E%3Ccircle cx='470' cy='330' r='22'/%3E%3Ccircle cx='700' cy='180' r='42'/%3E%3Ccircle cx='980' cy='250' r='28'/%3E%3Ccircle cx='1210' cy='120' r='20'/%3E%3Ccircle cx='1480' cy='200' r='34'/%3E%3Ccircle cx='180' cy='520' r='28'/%3E%3Ccircle cx='390' cy='440' r='18'/%3E%3Ccircle cx='590' cy='500' r='22'/%3E%3Ccircle cx='790' cy='360' r='24'/%3E%3Ccircle cx='1030' cy='380' r='20'/%3E%3Ccircle cx='1260' cy='560' r='38'/%3E%3Ccircle cx='1470' cy='520' r='24'/%3E%3Ccircle cx='320' cy='850' r='44'/%3E%3Ccircle cx='560' cy='720' r='26'/%3E%3Ccircle cx='760' cy='760' r='18'/%3E%3Ccircle cx='1010' cy='650' r='28'/%3E%3Ccircle cx='1280' cy='720' r='34'/%3E%3C/g%3E%3Cg stroke='%23a9b6c9' stroke-opacity='.08'%3E%3Cpath d='M0 120 H1600'/%3E%3Cpath d='M0 320 H1600'/%3E%3Cpath d='M0 520 H1600'/%3E%3Cpath d='M0 720 H1600'/%3E%3Cpath d='M260 0 V1000'/%3E%3Cpath d='M620 0 V1000'/%3E%3Cpath d='M980 0 V1000'/%3E%3Cpath d='M1340 0 V1000'/%3E%3C/g%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    mix-blend-mode: screen;
+    opacity: .28;
+    filter: saturate(1.05);
+    animation: scene-drift 46s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  .bg-aurora {
+    z-index: 0;
+    inset: -25%;
+    /* Continuous dynamic background in the JS page's accent hues: teal-green
+       bloom lower-left, slate-blue bloom upper-right, over the shared navy base. */
+    background:
+      radial-gradient(42% 46% at 18% 22%, rgba(98,245,199,.16) 0%, transparent 66%),
+      radial-gradient(40% 44% at 82% 18%, rgba(122,162,255,.15) 0%, transparent 64%),
+      radial-gradient(46% 50% at 62% 78%, rgba(98,245,199,.07) 0%, transparent 68%),
+      radial-gradient(40% 44% at 24% 84%, rgba(18,27,46,.9) 0%, transparent 70%);
+    filter: blur(82px) saturate(1.05) brightness(.8);
+    animation: aurora-drift 32s ease-in-out infinite alternate;
+    will-change: transform;
+    opacity: .8;
+  }
+
+  .bg-orbit {
+    z-index: 0;
+    inset: -12%;
+    background:
+      radial-gradient(28% 28% at 22% 30%, rgba(98,245,199,.10) 0%, transparent 72%),
+      radial-gradient(24% 24% at 76% 22%, rgba(122,162,255,.12) 0%, transparent 70%),
+      radial-gradient(34% 34% at 62% 74%, rgba(98,245,199,.08) 0%, transparent 74%),
+      repeating-linear-gradient(
+        125deg,
+        rgba(255,255,255,.00) 0 18px,
+        rgba(122,162,255,.025) 18px 19px,
+        rgba(255,255,255,.00) 19px 44px
+      );
+    mix-blend-mode: screen;
+    filter: blur(1px) saturate(1.02);
+    opacity: .34;
+    animation: orbit-drift 44s linear infinite;
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+
+  /* Calming veil over the ambient layers so the blooms never fight body text.
+     Sits above the aurora/grain (z-index 1) but below all content (z-index 2). */
+  .bg-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: rgba(0,0,0, var(--veil-opacity));
+  }
+
+  /* Content sits above the ambient layers */
+  body > header.hero,
+  body > main,
+  body > footer {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Reading-progress bar, native scroll-driven CSS (no JS) */
+  .scroll-progress {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 60;
+    background: linear-gradient(90deg, var(--brand-green), var(--sage), var(--critical));
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    animation: progress-grow linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes progress-grow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  /* Accessibility: honour reduced-motion on every ambient animation */
+  @media (prefers-reduced-motion: reduce) {
+    .bg-scene, .bg-aurora, .bg-orbit { animation: none; }
+    .scroll-progress { animation: none; transform: scaleX(1); opacity: .35; }
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
+
+
+
+.top-nav {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+}
+.top-nav a {
+  text-decoration: none;
+  color: var(--ink);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+.top-nav a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+    .sn-lnav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 14px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(8,12,20,0.72);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      font-size: 0.85rem;
+    }
+    .sn-lnav-brand {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #e6edf6;
+    }
+    .sn-lnav-brand-dot { color: #62f5c7; margin: 0 2px; }
+    .sn-lnav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sn-lnav-links a {
+      color: #8b98ac;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+    }
+    .sn-lnav-links a:hover { color: #e6edf6; background: rgba(255,255,255,0.05); text-decoration: none; }
+    .sn-lnav-links a[aria-current="page"] {
+      color: #62f5c7;
+      background: rgba(98,245,199,0.10);
+    }
+    .kind-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(98,245,199,0.12);
+      border: 1px solid rgba(98,245,199,0.35);
+      color: #62f5c7;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    .page { max-width: 1280px; margin: 0 auto; padding: 0 24px 80px; }
+</style>
 </head>
 <body>
+  <div class="bg-scene"></div>
+  <div class="bg-aurora"></div>
+  <div class="bg-orbit"></div>
+  <div class="bg-grain"></div>
+  <div class="bg-veil"></div>
+
   <a class="skip-link" href="#main-content">Skip to briefing</a>
   <div class="page">
+    <!-- SERVICE NOW LEARNING — shared header across the ServiceNow guide family -->
+    <nav class="sn-lnav" aria-label="ServiceNow learning guides">
+      <span class="sn-lnav-brand">ServiceNow<span class="sn-lnav-brand-dot">·</span>Learning</span>
+      <span class="sn-lnav-links">
+        <a href="/servicenow/javascript/index.html">JavaScript Reference</a>
+        <a href="/servicenow/AIFeaturesOct2026/index.html">AI Features Guide</a>
+        <a href="/servicenow/CIS-CSM/index.html" aria-current="page">CIS‑CSM Study Briefing</a>
+        <a href="/servicenow/CIS-VR/index.html">CIS‑VR Study Briefing</a>
+      </span>
+    </nav>
+
     <header class="hero">
       <p class="eyebrow">ServiceNow Customer Service Management · Study Briefing</p>
       <h1>CIS-CSM: Customer Service Management</h1>
@@ -944,5 +1184,39 @@
       </p>
     </footer>
   </div>
+  <div id="veil-slider-container" style="position:fixed; top:10px; right:10px; z-index:1000; background:rgba(0,0,0,0.5); padding:10px; border-radius:5px; color:#fff; font-family:sans-serif;">
+    <label>Veil opacity: <span id="veil-value">0.4</span></label><br>
+    <input type="range" id="veil-slider" min="0" max="1" step="0.01" value="0.4">
+  </div>
+
+  <script>
+    const slider = document.getElementById('veil-slider');
+    const valueSpan = document.getElementById('veil-value');
+    const root = document.documentElement;
+    function update() {
+      const val = parseFloat(slider.value);
+      valueSpan.textContent = val.toFixed(2);
+      root.style.setProperty('--veil-opacity', val);
+    }
+    slider.addEventListener('input', update);
+    // Initialize
+    update();
+
+    // Keep --sn-nav-h in sync with the real height of the sticky .sn-lnav bar
+    // (it wraps to two rows on narrow viewports) so the sidebar TOC and scroll
+    // anchors never slide under the menu.
+    (function () {
+      var bar = document.querySelector('.sn-lnav');
+      if (!bar) return;
+      function sync() {
+        var h = Math.round(bar.getBoundingClientRect().height);
+        if (h > 0) document.documentElement.style.setProperty('--sn-nav-h', h + 'px');
+      }
+      sync();
+      window.addEventListener('resize', sync, { passive: true });
+      if (window.ResizeObserver) new ResizeObserver(sync).observe(bar);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+    })();
+  </script>
 </body>
 </html>

@@ -1,0 +1,289 @@
+# Winner-hunt replay — STA-09 monthly re-audit (2026-06-22)
+#
+# Runs the same hunt recipe that produced today's winner-hunt verdict, on the
+# 1st of every month at 08:00 UTC — sequenced AFTER:
+#   06:00 UTC : monthly-tournament.yml (DNA tournament)
+#   07:00 UTC : monthly-calibrator-refit.yml (M-060 calibrators)
+# so upstream jobs are quiet on this runner by the time we land the verdict.
+#
+# Sister template: .github/workflows/operator-review-today.yml (daily).
+# Monthly cadence precedent: .github/workflows/monthly-tournament.yml
+#                            (.github/workflows/monthly-calibrator-refit.yml)
+#
+# The alerts surface as GHA groupMarkers:
+#   ::error::   if crypto_rsi5070_us.n >= 150  (PROMOTE the lead)
+#   ::warning:: if a fresh cell appears outside the curated 6 + outside last
+#               cycle's baseline set
+# Either alert is a meaningful event; the operator should review.
+#
+# Manual dispatch:   gh workflow run winner-hunt-replay.yml --ref main
+# Force on a date:   pass --date=YYYY-MM-DD (only the MD filename honors it;
+#                     the JSON payload always uses today's UTC ISO).
+
+name: Winner-hunt STA-09 Replay (monthly)
+
+on:
+  schedule:
+    # 1st of each month at 08:00 UTC — see header for upstream sequencing.
+    - cron: '0 8 1 * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force a replay even if the prior payload is current (manual smoke-test)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      time_suffix:
+        description: "Optional suffix to differentiate the verdict MD filename on same-day force=true reruns (e.g., 'test-retry'); populates WINNER_HUNT_TIME_SUFFIX env var for the build step. Default empty = no suffix, idempotent with the cron cycle."
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  # Sister-group to monthly-tournament + monthly-calibrator-refit. cancel-in-progress=false
+  # so a 30-min 06:00 tournament that overruns past 08:00 doesn't kill our run — we queue and
+  # run when the group is free, reading the FRESHEST upstream state.
+  group: winner-hunt-replay
+  cancel-in-progress: false
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Keep the env minimal. DB credentials inherit from the runner's GHA env
+      # (same pattern as monthly-tournament.yml + monthly-calibrator-refit.yml —
+      #  the hunt scripts fetch their creds via tools/db_env.get_stocks_creds()).
+      PYTHONUTF8: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: false
+          python-version: '3.11'
+
+      - name: Run hunt — stamp (curated 6) + tee to /tmp
+        # The stamp script's --stdout flag is the canonical READ-ONLY mode; it
+        # never writes audit_dashboard/data/entry_conditions_forward.json from
+        # a cron run. The json.dumps payload is the contract.
+        run: |
+          python3 tools/stamp_entry_conditions.py --stdout --limit 6000 > /tmp/staff.json 2>/tmp/staff.err
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "::error::stamp_entry_conditions.py exited $rc; aborting"
+            cat /tmp/staff.err
+            exit 1
+          fi
+          python3 - <<'PYEOF'
+          import json, sys
+          d = json.load(open("/tmp/staff.json"))
+          ok = (d.get("cohort_n") is not None
+                and isinstance(d.get("conditions"), dict)
+                and d["conditions"].get("crypto_rsi5070_us") is not None)
+          if not ok:
+              sys.exit("STAFF JSON schema drift: cohort_n/conditions/crypto_rsi5070_us missing")
+          n_lead = d["conditions"]["crypto_rsi5070_us"].get("n")
+          print(f"STAFF ok: cohort_n={d['cohort_n']} stamped_n={d['stamped_n']} "
+                f"crypto_rsi5070_us.n={n_lead}", file=sys.stderr)
+          PYEOF
+
+      - name: Run hunt — mine (exhaustive + FDR)
+        run: |
+          python3 tools/mine_entry_condition_cells.py --limit 6000 > /tmp/mine.json 2>/tmp/mine.err
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "::error::mine_entry_condition_cells.py exited $rc; aborting"
+            cat /tmp/mine.err
+            exit 1
+          fi
+          python3 - <<'PYEOF'
+          import json, sys
+          d = json.load(open("/tmp/mine.json"))
+          arr = d.get("all_cells_ranked")
+          win = d.get("fdr_passing_net_pf_ge_1_5") or []
+          if not isinstance(arr, list) or not isinstance(win, list):
+              sys.exit("MINE JSON schema drift: all_cells_ranked/fdr_passing_net_pf_ge_1_5 missing")
+          print(f"MINE ok: cells_tested={d.get('cells_tested')} "
+                f"fdr_passing_net_pf_ge_1_5={len(win)} "
+                f"fdr_rejected={d.get('bh_rejected')}", file=sys.stderr)
+          PYEOF
+
+      - name: Build payload + verdict doc (tools/build_winner_hunt_replay.py --apply)
+        # The build script emits its own ::error:: / ::warning:: groupMarkers on
+        # stderr for the two alert paths. We let those propagate so GHA surfaces
+        # them in the run summary and (if watch rules are configured) on PR/issue
+        # notifications.
+        # WINNER_HUNT_TIME_SUFFIX passed through workflow_dispatch input so manual
+        # `force=true` reruns on the same UTC day can land a sibling MD instead of
+        # overwriting the cron-cycle one. Default empty = idempotent with cron.
+        env:
+          WINNER_HUNT_TIME_SUFFIX: ${{ github.event.inputs.time_suffix || '' }}
+        run: |
+          python3 tools/build_winner_hunt_replay.py --apply
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "::error::build_winner_hunt_replay.py exited $rc; aborting"
+            exit 1
+          fi
+
+      - name: Schema gate on the written payload (fail-loud on drift)
+        run: |
+          python3 - <<'PYEOF'
+          import json, sys, datetime as dt
+          p = "audit_dashboard/data/winner_hunt_replay_payload.json"
+          d = json.load(open(p))
+          required = ["generated_at", "cohort_n", "lead", "new_cells", "alerts"]
+          for k in required:
+              if k not in d:
+                  sys.exit(f"SCHEMA DRIFT: {p} missing top-level {k!r}")
+          if not isinstance(d["lead"], dict):
+              sys.exit(f"SCHEMA DRIFT: lead must be a dict, got {type(d['lead']).__name__}")
+          for k in ("cell", "n", "status"):
+              if k not in d["lead"]:
+                  sys.exit(f"SCHEMA DRIFT: lead missing {k!r}")
+          # Verify the alerts dict has the expected keys with bool values
+          for k in ("promote", "new_cell"):
+              if k not in d["alerts"] or not isinstance(d["alerts"][k], bool):
+                  sys.exit(f"SCHEMA DRIFT: alerts.{k} must be a bool, got {type(d['alerts'][k]).__name__}")
+          ts = dt.datetime.fromisoformat(d["generated_at"].replace("Z","+00:00"))
+          age_min = (dt.datetime.now(dt.timezone.utc) - ts).total_seconds() / 60
+          if age_min > 60:
+              print(f"::warning::payload age {age_min:.1f}min > 60 — workflow took longer than expected", file=sys.stderr)
+          print(f"payload OK: lead_cell={d['lead']['cell']} n={d['lead']['n']} "
+                f"passed_n150={d['lead'].get('passed_n150')} "
+                f"new_cells={len(d['new_cells'])} "
+                f"alerts={d['alerts']}", file=sys.stderr)
+          PYEOF
+
+      - name: Schema gate on the written verdict doc
+        run: |
+          today="$(date -u +%Y-%m-%d)"
+          md="updates/${today}-winner-hunt-replay.md"
+          if [ ! -f "$md" ]; then
+            echo "::error::verdict doc missing: $md"
+            exit 1
+          fi
+          python3 - <<PYEOF
+          import re, sys
+          text = open("$md").read()
+          required_sections = ["## 1. Alerts", "## 2. Lead status", "## 3. Fresh cells",
+                               "## 4. Drift vs prior cycle", "## 5. Verdict", "## 6. Maintenance"]
+          missing = [s for s in required_sections if s not in text]
+          if missing:
+              sys.exit(f"SCHEMA DRIFT: {md} missing sections: {missing}")
+          print(f"verdict doc OK: {len(text)} bytes, {len(text.splitlines())} lines, "
+                f"all 6 sections present", file=sys.stderr)
+          PYEOF
+
+      - name: Install pip deps for contract tests
+        # Every other step in this workflow uses stdlib only (json, sys,
+        # datetime, subprocess). The "Run contract tests" step below runs
+        # pytest which is third-party. `python3 -m pip` is preferred over
+        # bare `pip` because pip may not be on PATH in some runner images,
+        # but `python3 -m pip` always is. pytest is pinned to the version
+        # locally used by the test author (9.0.3) so a future breaking
+        # pytest release can't degrade the contract silently.
+        run: python3 -m pip install pytest==9.0.3
+
+      - name: Run contract tests (fail-closed on skip + missing-sidecar)
+        env:
+          WINNER_HUNT_CRON_MODE: "1"
+        # Contract test for the winner-hunt-replay sidecar-isolation
+        # discipline. Sister of the operator-review contract gate — both
+        # fail-closed the same way: runs AFTER the build step has written
+        # the sidecar + AFTER both schema gates have validated its surface
+        # shape, but BEFORE the commit step (a contract regression must
+        # not push to main). The env var triggers an explicit pytest.fail()
+        # (not skip) in tests/test_no_winner_hunt_replay_consumer.py when
+        # the sidecar is missing — so a build-step regression cannot
+        # silently skip past the gate. Fails the workflow on any test
+        # failure + any skipped test.
+        run: python3 -m pytest tests/test_no_winner_hunt_replay_consumer.py -v --tb=short
+
+      - name: Commit payload + verdict doc back to main
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+          FORCE: ${{ github.event.inputs.force || 'false' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          git config --global submodule.recurse false
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+
+          # The ONLY two files ever committed by this workflow. Never seed, build
+          # script, hunt scripts, or anything else.
+          git add \
+            audit_dashboard/data/winner_hunt_replay_payload.json \
+            "updates/*winner-hunt-replay.md"
+
+          # Diff vs HEAD: if the prior payload + today's verdict MD are byte-identical
+          # to what's already on main (manual rerun of the same cycle, no real change),
+          # skip the push. The `force` workflow_dispatch input flips this check off
+          # for smoke-tests — the operator wants every run recorded.
+          if [ "$FORCE" != "true" ] && git diff --cached --quiet; then
+            echo "no diff vs HEAD; nothing to commit (rerun the workflow with force=true to record anyway)"
+            exit 0
+          fi
+
+          TODAY=$(date -u +%Y-%m-%d)
+          n_picks=$(python3 -c "import json; d=json.load(open('audit_dashboard/data/winner_hunt_replay_payload.json')); print(len(d.get('new_cells',[])))")
+          alerts=$(python3 -c "import json; d=json.load(open('audit_dashboard/data/winner_hunt_replay_payload.json')); a=d.get('alerts',{}); print('promote' if a.get('promote') else ('new_cell' if a.get('new_cell') else 'no_alert'))")
+          git commit -m "chore(winner-hunt): monthly STA-09 replay ${TODAY} alert=${alerts} new_cells=${n_picks} [skip ci]"
+
+          # Mirror the safe_push retry pattern used by operator-review-today.yml.
+          push_ok=false
+          for i in 1 2 3 4 5; do
+            push_rc=0
+            push_output=$(git push origin main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              push_ok=true
+              break
+            fi
+            if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
+              echo "ERROR: Push permanently rejected — aborting"
+              break
+            fi
+            delay=$((2 ** i + RANDOM % 5))
+            [ $delay -gt 60 ] && delay=$((60 + RANDOM % 5))
+            sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: Push failed after 5 attempts"
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          TODAY=$(date -u +%Y-%m-%d)
+          echo "## Winner-hunt monthly replay — ${TODAY}"
+          python3 - <<PYEOF
+          import json
+          d = json.load(open("audit_dashboard/data/winner_hunt_replay_payload.json"))
+          a = d.get("alerts", {})
+          print(f"- lead: {d['lead']['cell']} n={d['lead']['n']}/{d['lead']['n_gate']} "
+                f"wr_pct={d['lead'].get('wr_pct')} net_pf={d['lead'].get('net_pf')} "
+                f"passed_n150={d['lead'].get('passed_n150')}")
+          print(f"- new_cells: {len(d.get('new_cells',[]))}")
+          print(f"- alerts: promote={'YES' if a.get('promote') else 'no'} "
+                f"new_cell={'YES' if a.get('new_cell') else 'no'}")
+          print(f"- workflow: winner-hunt-replay")
+          print(f"- queue-group: winner-hunt-replay (sister of monthly-tournament + monthly-calibrator-refit)")
+          print(f"- cron: 0 8 1 * * (UTC)")
+          print(f"- manual: gh workflow run winner-hunt-replay.yml --ref main -- force=true for smoke-tests")
+          PYEOF

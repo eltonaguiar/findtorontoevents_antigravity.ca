@@ -124,6 +124,8 @@ try {
     echo json_encode(array(
         'success' => true,
         'count' => count($movies),
+        'rating_source' => 'TMDB',
+        'rating_scale' => 10,
         'movie_count' => $movieCount,
         'tv_count' => $tvCount,
         'movies' => $movies

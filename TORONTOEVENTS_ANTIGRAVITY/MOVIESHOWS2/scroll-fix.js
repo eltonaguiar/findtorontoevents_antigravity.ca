@@ -4032,6 +4032,7 @@
             type: m.type || 'movie',
             year: String(m.release_year || m.year || '2026'),
             rating: String(m.imdb_rating || m.rating || ''),
+            ratingSource: 'TMDB',
             genres: m.genres || (m.genre ? m.genre.split(',').map(function(g){ return g.trim(); }).filter(Boolean) : []),
             source: m.source || 'In Theatres',
             trailerUrl: m.trailerUrl || (m.trailer_id ? 'https://www.youtube.com/watch?v=' + m.trailer_id : ''),
@@ -4087,7 +4088,7 @@
 
     async function loadMoreMovies(offset, totalTarget) {
         try {
-            var url = 'api/movies.php?action=list&limit=' + _stagedPageSize + '&offset=' + offset;
+            var url = 'api/movies.php?action=list&limit=' + _stagedPageSize + '&offset=' + offset + '&sort=newest';
             var res = await fetch(url);
             if (!res.ok) return [];
             var data = await res.json();
@@ -4282,7 +4283,7 @@
             `<span class="text-xs bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full text-gray-100 border border-white/10">${g}</span>`
         ).join("");
 
-        const rating = movie.rating ? `IMDb ${movie.rating}` : "TBD";
+        const rating = movie.rating ? `${movie.ratingSource || 'Rating'} ${movie.rating}` : "TBD";
         const year = movie.year || "2026";
 
         // If loadImmediately is true, set src directly; otherwise use lazy loading
