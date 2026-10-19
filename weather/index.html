@@ -671,6 +671,11 @@ body.hide-extras .card.collapsible{display:none}
       <div class="side-title">💻 Tech News <a class="side-more" href="/techfinds/">more →</a></div>
       <ul id="side-tech" class="side-list"><li class="side-loading">Loading tech…</li></ul>
     </div>
+    <div class="side-section">
+      <div class="side-title">🎮 Dexerto News <a class="side-more" href="https://www.dexerto.com/esports/" target="_blank" rel="noopener">more →</a></div>
+      <ul id="side-dexerto" class="side-list"><li class="side-loading">Loading Dexerto…</li></ul>
+      <div style="font-size:.65rem;color:var(--t3);margin-top:4px">Real articles from Dexerto — refreshed daily.</div>
+    </div>
   </div>
 </aside>
 
@@ -1868,6 +1873,21 @@ function loadSideTech(){
   }).catch(function(){el.innerHTML='<li class="side-empty">Tech news unavailable.</li>';});
 }
 
+function loadSideDexerto(){
+  var el=document.getElementById('side-dexerto');
+  if(!el) return;
+  fetch('/weather/api/dexerto_news.php').then(function(r){return r.json();}).then(function(j){
+    var items=(j&&j.items)?j.items:[];
+    if(!items.length){el.innerHTML='<li class="side-empty">No Dexerto news right now.</li>';return;}
+    el.innerHTML=items.slice(0,5).map(function(it){
+      var u=it.url||'https://www.dexerto.com/';
+      var meta='Dexerto';
+      if(it.date) meta+=' · '+escapeHtml(it.date);
+      return '<li><a href="'+escapeHtml(u)+'" target="_blank" rel="noopener">'+escapeHtml(it.title||'Article')+'</a><div class="side-meta">'+meta+'</div></li>';
+    }).join('');
+  }).catch(function(){el.innerHTML='<li class="side-empty">Dexerto news unavailable.</li>';});
+}
+
 /* ===== INIT ===== */
 season();
 loadWeather(LAT,LON,AREA_LABEL);
@@ -1877,7 +1897,7 @@ setPlayer('music');
 // silently reverted a looked-up location back to Toronto (with a mismatched
 // area label). _lastLat/_lastLon track the active request.
 setInterval(function(){ loadWeather(_lastLat,_lastLon,AREA_LABEL); }, 600000);
-setTimeout(function(){ loadSideEvents(); loadSideNews(); loadSideBooks(); loadSideTech(); }, 1500);
+setTimeout(function(){ loadSideEvents(); loadSideNews(); loadSideBooks(); loadSideTech(); loadSideDexerto(); }, 1500);
 setInterval(function(){ loadSideBooks(); }, 900000); // rotate self-dev books every 15 min
 
 })();

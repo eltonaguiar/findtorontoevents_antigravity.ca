@@ -70,6 +70,7 @@ export default defineConfig({
     /(?:^|\/)tests\/vr_mode_toggle_focused\.spec\.ts$/,
     /(?:^|\/)tests\/full_page_test\.spec\.ts$/,
     /(?:^|\/)tests\/weather_page\.spec\.ts$/,
+    /(?:^|\/)tests\/dexerto_right_panel\.spec\.ts$/,
     /(?:^|\/)tests\/otherstuff_popup\.spec\.ts$/,
     /(?:^|\/)tests\/vr_cross_platform_full\.spec\.ts$/,
     /(?:^|\/)tests\/ant_rush_smoke\.spec\.ts$/,
