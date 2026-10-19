@@ -11,8 +11,8 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
 #weather-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
-#bg-container{position:fixed;inset:0;z-index:0;overflow:hidden}
-.bg-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease,filter 2s;background-size:cover;background-position:center}
+#bg-container{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease,filter 2s;background-size:cover;background-position:center;pointer-events:none}
 .bg-layer.active{opacity:1}
 .bg-overlay{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.5))}
 .bg-layer.clear{background:radial-gradient(ellipse at 70% 20%,#fff5cc 0%,transparent 35%),linear-gradient(180deg,#1a6fc4 0%,#4aa8e8 45%,#87ceeb 100%)}
@@ -65,6 +65,11 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
 
 /* grid cards */
 .grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+/* 2026-10-18: without an explicit min, the 1fr track's automatic minimum is
+   driven by .hourly's min-content (24 cells = 1786px), which defeats the
+   strip's overflow-x:auto and makes the whole document scroll ~1800px on
+   phones. min-width:0 lets the hourly strip scroll internally instead. */
+.grid>*{min-width:0}
 @media(max-width:700px){.grid{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--card-b);border-radius:16px;padding:20px;backdrop-filter:blur(8px);transition:border-color .3s}
 .card:hover{border-color:rgba(0,212,255,.3)}
@@ -131,6 +136,10 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
 /* ===== SIDE PANEL (right, collapsible) ===== */
 .side-toggle{position:fixed;top:14px;right:14px;z-index:300;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:var(--t1);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .side-toggle:hover{border-color:var(--accent);color:var(--accent)}
+/* 2026-10-18: emergency recovery button — high-contrast (solid white bg, black text)
+   so it stays readable on ANY theme (incl. Glass where text can blend into background) */
+.look-reset-fab{position:fixed;top:66px;right:14px;z-index:300;padding:8px 12px;border-radius:12px;border:2px solid #111;background:#fff;color:#111;font-size:.75rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45);font-family:inherit}
+.look-reset-fab:hover,.look-reset-fab:focus{background:#ffe9e9;border-color:#b00020;color:#b00020}
 .side-panel{position:fixed;top:0;right:0;bottom:0;width:320px;max-width:90vw;z-index:395;background:rgba(12,12,28,.96);backdrop-filter:blur(14px);border-left:1px solid rgba(255,255,255,.1);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column}
 .side-panel.open{transform:translateX(0)}
 .side-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
@@ -138,6 +147,12 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;b
 .side-head button{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer}
 .side-body{flex:1;overflow-y:auto;padding:14px}
 .side-section{margin-bottom:18px}
+.player-in-panel .player-tabs{flex-wrap:wrap;gap:4px}
+.player-in-panel .player-tab{font-size:.68rem;padding:5px 7px}
+.player-in-panel .ent-tabs{flex-wrap:wrap;gap:4px}
+.player-in-panel .ent-tab{font-size:.66rem;padding:4px 7px}
+.player-in-panel .player-frame{border-radius:10px}
+.side-panel .collapse-toggle{float:right}
 .side-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
 .side-more{font-size:.72rem;color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0}
 .side-list{list-style:none;padding:0;margin:0}
@@ -362,6 +377,7 @@ body.hide-extras .card.collapsible{display:none}
   <div class="card collapsible" id="skins" style="margin-top:16px">
     <div class="lbl">🎨 Skins &amp; Themes — click any to change the look (weather stays live in Auto) <button class="collapse-toggle" data-collapse="skins-body">Hide</button></div>
     <div class="card-body" id="skins-body">
+    <div style="margin-top:8px"><button class="theme-btn reset-look" style="border-color:rgba(225,29,72,.6);color:#f87171" title="Clear saved theme/filters and restore defaults">🔄 Reset look &amp; feel to default</button></div>
     <div class="theme-btns" style="margin-top:8px">
       <button class="theme-btn" data-theme="auto">Auto (weather)</button>
       <button class="theme-btn" data-theme="glass">Glass</button>
@@ -441,63 +457,20 @@ body.hide-extras .card.collapsible{display:none}
     </div>
   </div>
 
-  <!-- EMBEDDED PLAYER -->
-  <div class="card span2 collapsible" style="margin-top:16px">
-    <div class="lbl">▶️ Embedded Player — Music Videos / Trailers / Radio <button class="collapse-toggle" data-collapse="player-body">Hide</button></div>
-    <div class="card-body" id="player-body">
-    <div class="player-tabs" id="player-tabs">
-      <button class="player-tab active" data-cat="music">🎵 Music Videos</button>
-      <button class="player-tab" data-cat="trailers">🎬 Movie Trailers</button>
-      <button class="player-tab" data-cat="songs">🎧 Top Songs</button>
-      <button class="player-tab" data-cat="radio">📻 Live Radio</button>
-    </div>
-    <div class="ent-tabs" id="vid-subtabs" style="display:none">
-      <button class="ent-tab active" data-vtab="top">🔥 Top</button>
-      <button class="ent-tab" data-vtab="new">🆕 New Releases</button>
-      <button class="ent-tab" data-vtab="trend">📈 Trending</button>
-    </div>
-    <div id="player-video" class="player-frame" style="display:none">
-      <iframe id="yt-player" style="width:100%;border:0;border-radius:12px" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    </div>
-    <div id="vid-controls" style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
-      <button class="loc-btn" id="vid-prev" style="padding:6px 12px">◀ Prev</button>
-      <div id="vid-title" style="flex:1;font-size:.85rem;font-weight:700;color:var(--t1);text-align:center">Loading…</div>
-      <button class="loc-btn" id="vid-next" style="padding:6px 12px">Next ▶</button>
-    </div>
-    <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <span style="font-size:.72rem;color:var(--t3)">Player size:</span>
-      <button class="theme-btn" data-psize="sm">Small</button>
-      <button class="theme-btn" data-psize="md">Medium</button>
-      <button class="theme-btn" data-psize="lg">Large</button>
-      <button class="theme-btn" data-psize="xl">X-Large</button>
-    </div>
-    <div class="player-note" id="vid-note"></div>
-    <div id="player-songs" style="display:none;margin-top:8px">
-      <div class="ent-tabs" id="song-tabs">
-        <button class="ent-tab active" data-sp="top">🔥 Top 50</button>
-        <button class="ent-tab" data-sp="new">🆕 New Releases</button>
-        <button class="ent-tab" data-sp="trend">📈 Trending</button>
-      </div>
-      <div class="player-frame">
-        <iframe id="spotify-player" src="https://open.spotify.com/embed/playlist/37i9dQZEVXbMDoHDwVN2tF?utm_source=generator" style="width:100%;border:0;border-radius:12px" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-      </div>
-      <div class="player-note" id="song-note">Spotify Top 50 Global.</div>
-    </div>
-    <div id="player-radio" class="player-radio" style="display:none">
-      <select id="radio-station">
-        <option value="https://ice1.somafm.com/groovesalad-128-mp3">SomaFM Groove Salad</option>
-        <option value="https://ice1.somafm.com/dronezone-128-mp3">SomaFM Drone Zone</option>
-        <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/CHUMFM.mp3">CHUM 104.5 (Toronto)</option>
-      </select>
-      <audio id="radio-audio" controls preload="none"></audio>
-    </div>
-    <div class="player-note">Videos via YouTube search playlists (dynamic). Radio streams play on demand.</div>
-  </div>
 
   <div class="priv">Location stays in your browser &mdash; we only use it to fetch weather.</div>
   <div class="priv" style="margin-top:10px"><a href="https://www.reddit.com/r/LivestreamFail/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">📺 r/LivestreamFail</a></div>
 
   <div id="area-label" class="updated" style="margin-top:6px">Area: <b>--</b></div>
+
+  <!-- Refresh-failure notice: shown only when a refresh fails while a good
+       render is still on screen. The old code hid #content on every failed
+       fetch (including the 10-min auto-refresh), wiping the whole weather
+       display and forecast — this keeps the last good data instead. -->
+  <div id="wx-stale" style="display:none;text-align:center;margin:8px 0;padding:9px 12px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);color:#fbbf24;font-size:.82rem">
+    <span id="wx-stale-msg">Couldn&rsquo;t refresh weather.</span>
+    <button id="wx-stale-retry" type="button" style="margin-left:8px;padding:3px 12px;border-radius:12px;border:1px solid rgba(245,158,11,.5);background:rgba(245,158,11,.18);color:#fbbf24;font-size:.78rem;font-weight:700;cursor:pointer">Retry</button>
+  </div>
 
   <div id="loading" class="loading">
     <div class="spinner"></div>
@@ -619,16 +592,68 @@ body.hide-extras .card.collapsible{display:none}
       <button class="theme-btn" data-theme="minimal">Minimal</button>
       <button class="theme-btn" data-theme="aurora">Aurora</button>
       <button class="theme-btn" data-theme="retro">Retro</button>
+      <button class="theme-btn reset-look" style="border-color:rgba(225,29,72,.6);color:#f87171" title="Clear saved theme/filters and restore defaults">🔄 Reset</button>
     </div>
   </div>
 </aside>
-<div id="nav-overlay" class="nav-overlay"></div>
-
-<!-- SIDE PANEL (right) -->
-<button id="side-toggle" class="side-toggle" aria-label="Open side panel">◀</button>
+<div id="nav-overlay" class="nav-overlay"></div>  <!-- SIDE PANEL (right) -->
+  <button id="side-toggle" class="side-toggle" aria-label="Open side panel">◀</button>
+  <button id="look-reset" class="look-reset-fab" title="Reset theme, filters & effects to default (clears saved selection)" aria-label="Reset look and feel">↺ Reset look</button>
 <aside id="side-panel" class="side-panel" aria-hidden="true">
   <div class="side-head"><h3>📌 Nearby &amp; News</h3><button id="side-close" aria-label="Close">✕</button></div>
   <div class="side-body">
+    <div class="side-section">
+      <div class="side-title">▶️ Player <button class="collapse-toggle" data-collapse="player-body">Hide</button></div>
+      <div id="player-body" class="player-in-panel">
+    <div class="player-tabs" id="player-tabs">
+      <button class="player-tab active" data-cat="music">🎵 Music Videos</button>
+      <button class="player-tab" data-cat="trailers">🎬 Movie Trailers</button>
+      <button class="player-tab" data-cat="songs">🎧 Top Songs</button>
+      <button class="player-tab" data-cat="radio">📻 Live Radio</button>
+    </div>
+    <div class="ent-tabs" id="vid-subtabs" style="display:none">
+      <button class="ent-tab active" data-vtab="top">🔥 Top</button>
+      <button class="ent-tab" data-vtab="new">🆕 New Releases</button>
+      <button class="ent-tab" data-vtab="trend">📈 Trending</button>
+    </div>
+    <div id="player-video" class="player-frame" style="display:none">
+      <iframe id="yt-player" style="width:100%;border:0;border-radius:12px" allow="autoplay; encrypted-media; fullscreen"></iframe>
+    </div>
+    <div id="vid-controls" style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="loc-btn" id="vid-prev" style="padding:6px 12px">◀ Prev</button>
+      <div id="vid-title" style="flex:1;font-size:.85rem;font-weight:700;color:var(--t1);text-align:center">Loading…</div>
+      <button class="loc-btn" id="vid-next" style="padding:6px 12px">Next ▶</button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:.72rem;color:var(--t3)">Player size:</span>
+      <button class="theme-btn" data-psize="sm">Small</button>
+      <button class="theme-btn" data-psize="md">Medium</button>
+      <button class="theme-btn" data-psize="lg">Large</button>
+      <button class="theme-btn" data-psize="xl">X-Large</button>
+    </div>
+    <div class="player-note" id="vid-note"></div>
+    <div id="player-songs" style="display:none;margin-top:8px">
+      <div class="ent-tabs" id="song-tabs">
+        <button class="ent-tab active" data-sp="top">🔥 Top 50</button>
+        <button class="ent-tab" data-sp="new">🆕 New Releases</button>
+        <button class="ent-tab" data-sp="trend">📈 Trending</button>
+      </div>
+      <div class="player-frame">
+        <iframe id="spotify-player" src="https://open.spotify.com/embed/playlist/37i9dQZEVXbMDoHDwVN2tF?utm_source=generator"style="width:100%;border:0;border-radius:12px" allow="autoplay; encrypted-media; fullscreen"></iframe>
+  </div>
+      <div class="player-note" id="song-note">Spotify Top 50 Global.</div>
+    </div>
+    <div id="player-radio" class="player-radio" style="display:none">
+      <select id="radio-station">
+        <option value="https://ice1.somafm.com/groovesalad-128-mp3">SomaFM Groove Salad</option>
+        <option value="https://ice1.somafm.com/dronezone-128-mp3">SomaFM Drone Zone</option>
+        <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/CHUMFM.mp3">CHUM 104.5 (Toronto)</option>
+      </select>
+      <audio id="radio-audio" controls preload="none"></audio>
+    </div>
+    <div class="player-note">Videos via YouTube search playlists (dynamic). Radio streams play on demand.</div>
+      </div>
+    </div>
     <div class="side-section">
       <div class="side-title">🗓️ Upcoming Events <a class="side-more" href="/">more →</a></div>
       <ul id="side-events" class="side-list"><li class="side-loading">Loading events…</li></ul>
@@ -638,9 +663,9 @@ body.hide-extras .card.collapsible{display:none}
       <ul id="side-news" class="side-list"><li class="side-loading">Loading news…</li></ul>
     </div>
     <div class="side-section">
-      <div class="side-title">📚 Self-Dev Books <a class="side-more" href="https://openlibrary.org/subjects/self-help" target="_blank" rel="noopener">more →</a></div>
+      <div class="side-title">📚 Top Self-Dev Books <a class="side-more" href="https://www.goodreads.com/search?q=self-help" target="_blank" rel="noopener">Goodreads →</a></div>
       <ul id="side-books" class="side-list"><li class="side-loading">Loading books…</li></ul>
-      <div style="font-size:.65rem;color:var(--t3);margin-top:4px">Auto-refreshes on each visit (Open Library, newest first).</div>
+      <div style="font-size:.65rem;color:var(--t3);margin-top:4px">Goodreads top-rated self-development picks — rotates as you browse; covers via Open Library.</div>
     </div>
     <div class="side-section">
       <div class="side-title">💻 Tech News <a class="side-more" href="/techfinds/">more →</a></div>
@@ -1063,8 +1088,14 @@ function fmtTime(iso){
 
 /* ===== RENDER ===== */
 function render(d){
-  document.getElementById('loading').style.display='none';
-  document.getElementById('content').style.display='block';
+  /* Shape guard BEFORE any DOM write: a partial payload (missing
+     current/daily/hourly) used to throw after the content was already
+     shown, leaving every card empty with the error hidden — the exact
+     "all items missing" report. Throwing here routes to loadWeather's
+     catch instead, which shows a visible error + Retry. */
+  if(!d||!d.current||!d.daily||!d.hourly||!d.daily.time||!d.hourly.time||!d.current.time){
+    throw new Error('incomplete forecast payload');
+  }
 
   var c=d.current, daily=d.daily, hourly=d.hourly;
   var temp=Math.round(c.temperature_2m), wind=Math.round(c.wind_speed_10m), hum=c.relative_humidity_2m;
@@ -1115,7 +1146,9 @@ function render(d){
     document.getElementById('sunset').textContent=fmtTime(daily.sunset[0]);
     document.getElementById('daylight-left').textContent=daylightLeft(daily.sunset[0], c.time, daily.sunrise[0], (daily.sunrise&&daily.sunrise[1])?daily.sunrise[1]:null);
   }
-  document.getElementById('uv').textContent=daily.uv_index_max?daily.uv_index_max[0].toFixed(1):'--';
+  // uv_index_max[0] can be null (missing solar data) — null.toFixed used to
+  // throw mid-render and blank everything below the Sun card.
+  document.getElementById('uv').textContent=(daily.uv_index_max&&daily.uv_index_max[0]!=null)?daily.uv_index_max[0].toFixed(1):'--';
 
   /* details */
   document.getElementById('wind').textContent=wind+' km/h';
@@ -1180,6 +1213,12 @@ function render(d){
 
   /* speech */
   buildSpeech(temp, info, rf, v, rainProb, daily, isDay);
+
+  /* Flip the page visible ONLY after a fully successful render — never show
+     an empty skeleton. Mirrors the original first-two-lines behaviour for
+     the happy path. */
+  document.getElementById('loading').style.display='none';
+  document.getElementById('content').style.display='block';
 }
 
 function renderHourly(h){
@@ -1257,26 +1296,107 @@ document.addEventListener('click',function(e){
 });
 
 /* ===== FETCH ===== */
+/* 2026-10-19 fix (updates/2026-10-19-weather-missing-display-fix.md):
+   three failure paths all produced "everything missing":
+   1. any failed fetch hid #content permanently — the 10-min auto-refresh
+      wiped an already-good render on a single network blip;
+   2. a partial API payload made render() throw AFTER the content flip,
+      leaving a visible skeleton with every card empty and the error hidden
+      inside the (already hidden) #loading box;
+   3. no fetch timeout and no retry, so one transient error was fatal.
+   Now: retries with backoff + timeout, payload validated before any DOM
+   write, content flip moved to the END of a fully successful render, and a
+   failed refresh keeps the last good data behind a dismissable notice. */
+var _wxRendered=false;   // a good render is currently on screen
+var _wxRetry=null;       // {lat,lon,label} of the last request (for Retry)
+
+function _wxSpinner(){
+  return '<div class="spinner"></div><p>Fetching weather&hellip;</p>';
+}
+function _wxShowStale(msg){
+  var el=document.getElementById('wx-stale');
+  if(!el) return;
+  document.getElementById('wx-stale-msg').textContent=msg;
+  el.style.display='block';
+}
+function _wxHideStale(){
+  var el=document.getElementById('wx-stale');
+  if(el) el.style.display='none';
+}
+function _wxShowFatal(msg){
+  var l=document.getElementById('loading');
+  l.style.display='block';
+  document.getElementById('content').style.display='none';
+  l.innerHTML='<p style="color:#f87171">Could not load weather. '+msg+'</p>'+
+    '<button id="wx-retry" type="button" style="margin-top:10px;padding:8px 22px;border-radius:14px;border:1px solid rgba(0,212,255,.5);background:rgba(0,212,255,.14);color:var(--accent);font-size:.9rem;font-weight:700;cursor:pointer">Retry</button>';
+  var rb=document.getElementById('wx-retry');
+  if(rb) rb.addEventListener('click', function(){ if(window.retryWeather) window.retryWeather(); });
+}
+
+/* fetch + JSON with timeout (10s) and up to 3 attempts (500ms/1500ms backoff).
+   Render/validation errors are NOT retried here — they surface immediately. */
+async function _wxFetchForecast(lat,lon){
+  var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+    +'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,cloud_cover,is_day,pressure_msl'
+    +'&hourly=temperature_2m,weather_code,precipitation_probability'
+    +'&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,uv_index_max,sunrise,sunset'
+    +'&timezone='+TZ+'&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=7';
+  var delays=[0,500,1500];
+  var lastErr=null;
+  for(var attempt=0; attempt<3; attempt++){
+    if(delays[attempt]) await new Promise(function(res){setTimeout(res,delays[attempt]);});
+    try{
+      var opts={};
+      if(typeof AbortController!=='undefined'){
+        var ctl=new AbortController();
+        opts.signal=ctl.signal;
+        var timer=setTimeout(function(){ctl.abort();},10000);
+      }
+      var r=await fetch(url,opts);
+      if(timer) clearTimeout(timer);
+      if(!r.ok)throw new Error('API '+r.status);
+      var d=await r.json();
+      return d;
+    }catch(err){
+      lastErr=(err&&err.name==='AbortError')?new Error('request timed out'):err;
+    }
+  }
+  throw lastErr||new Error('fetch failed');
+}
+
 async function loadWeather(lat,lon,label){
   _lastLat=lat; _lastLon=lon;
-  if(label){AREA_LABEL=label;}
-  document.getElementById('loading').style.display='block';
-  document.getElementById('content').style.display='none';
-  season();
+  var newLabel=label||AREA_LABEL;
+  _wxRetry={lat:lat,lon:lon,label:newLabel};
+  // Only blank the screen when there is nothing to show yet. A failed refresh
+  // must never destroy an already-rendered weather display.
+  if(!_wxRendered){
+    var l=document.getElementById('loading');
+    l.style.display='block';
+    l.innerHTML=_wxSpinner();
+    document.getElementById('content').style.display='none';
+  }
   try{
-    var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
-      +'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,cloud_cover,is_day,pressure_msl'
-      +'&hourly=temperature_2m,weather_code,precipitation_probability'
-      +'&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,uv_index_max,sunrise,sunset'
-      +'&timezone='+TZ+'&temperature_unit=celsius&wind_speed_unit=kmh&forecast_days=7';
-    var r=await fetch(url);
-    if(!r.ok)throw new Error('API '+r.status);
-    var d=await r.json();
+    var d=await _wxFetchForecast(lat,lon);
+    AREA_LABEL=newLabel;   // commit the new label only on success, so a failed
+    season();              // lookup keeps label + data consistent
     render(d);
+    _wxRendered=true;
+    _wxHideStale();
   }catch(err){
-    document.getElementById('loading').innerHTML='<p style="color:#f87171">Could not load weather. '+err.message+'</p>';
+    var msg=(err&&err.message)?err.message:'unknown error';
+    if(_wxRendered){
+      // Keep the last good data visible; just surface the failed refresh.
+      _wxShowStale('Couldn\'t refresh weather ('+msg+') — showing the last update.');
+    }else{
+      _wxShowFatal(msg);
+    }
   }
 }
+window.retryWeather=function(){
+  var a=_wxRetry;
+  if(a) loadWeather(a.lat,a.lon,a.label);
+};
 
 /* ===== POSTAL / ZIP LOOKUP ===== */
 window.lookupPostal=function(){
@@ -1393,10 +1513,13 @@ window.detectLocation=function(){
 window.setWeatherBackground=setWeatherBackground;
 
 /* ===== PANEL TOGGLES ===== */
-function openNav(){document.getElementById('nav-panel').classList.add('open');document.getElementById('nav-overlay').classList.add('open');}
-function closeNav(){document.getElementById('nav-panel').classList.remove('open');document.getElementById('nav-overlay').classList.remove('open');}
-function openSide(){document.getElementById('side-panel').classList.add('open');}
-function closeSide(){document.getElementById('side-panel').classList.remove('open');}
+// 2026-10-18: keep aria-hidden in sync with the open class — the drawer used to
+// stay aria-hidden="true" while open, hiding Quick Nav, the entertainment tabs
+// and all 12 theme buttons from screen readers.
+function openNav(){var p=document.getElementById('nav-panel');p.classList.add('open');p.setAttribute('aria-hidden','false');document.getElementById('nav-overlay').classList.add('open');}
+function closeNav(){var p=document.getElementById('nav-panel');p.classList.remove('open');p.setAttribute('aria-hidden','true');document.getElementById('nav-overlay').classList.remove('open');}
+function openSide(){var p=document.getElementById('side-panel');p.classList.add('open');p.setAttribute('aria-hidden','false');}
+function closeSide(){var p=document.getElementById('side-panel');p.classList.remove('open');p.setAttribute('aria-hidden','true');}
 document.addEventListener('click',function(e){
   if(e.target.id==='nav-toggle') openNav();
   if(e.target.id==='nav-close'||e.target.id==='nav-overlay') closeNav();
@@ -1676,17 +1799,58 @@ document.addEventListener('click',function(e){
 });
 
 
+/* Curated Goodreads top self-development books. Goodreads has no public API and
+   blocks scraping, so the ranking list is curated here; covers/links are then
+   resolved LIVE from Open Library each time the widget renders, and the 5 books
+   shown are re-rotated on every visit + every 15 minutes (see INIT below). */
+var GOODREADS_SELFDEV=[
+  {t:'Atomic Habits',a:'James Clear'},
+  {t:'The 7 Habits of Highly Effective People',a:'Stephen R. Covey'},
+  {t:'How to Win Friends and Influence People',a:'Dale Carnegie'},
+  {t:'Think and Grow Rich',a:'Napoleon Hill'},
+  {t:"Man's Search for Meaning",a:'Viktor E. Frankl'},
+  {t:'The Subtle Art of Not Giving a F*ck',a:'Mark Manson'},
+  {t:'Deep Work',a:'Cal Newport'},
+  {t:'Grit: The Power of Passion and Perseverance',a:'Angela Duckworth'},
+  {t:'Mindset: The New Psychology of Success',a:'Carol S. Dweck'},
+  {t:'The Four Agreements',a:'Don Miguel Ruiz'},
+  {t:"Can't Hurt Me",a:'David Goggins'},
+  {t:'The 5 AM Club',a:'Robin Sharma'},
+  {t:'Who Moved My Cheese?',a:'Spencer Johnson'},
+  {t:'Start with Why',a:'Simon Sinek'},
+  {t:'Extreme Ownership',a:'Jocko Willink'},
+  {t:'The Miracle Morning',a:'Hal Elrod'},
+  {t:'You Are a Badass',a:'Jen Sincero'},
+  {t:'Thinking, Fast and Slow',a:'Daniel Kahneman'},
+  {t:'The Richest Man in Babylon',a:'George S. Clason'},
+  {t:'Feel the Fear and Do It Anyway',a:'Susan Jeffers'},
+  {t:'Awaken the Giant Within',a:'Tony Robbins'},
+  {t:'The Power of Habit',a:'Charles Duhigg'},
+  {t:'The Monk Who Sold His Ferrari',a:'Robin Sharma'},
+  {t:'The Power of Your Subconscious Mind',a:'Joseph Murphy'}
+];
 function loadSideBooks(){
   var el=document.getElementById('side-books');
-  fetch('https://openlibrary.org/search.json?q=subject:self+help&sort=new&limit=5').then(function(r){return r.json();}).then(function(j){
-    var docs=j.docs||[];
-    if(!docs.length){el.innerHTML='<li class="side-empty">No books right now.</li>';return;}
-    el.innerHTML=docs.map(function(b){
-      var title=b.title||'Book';
-      var author=(b.author_name&&b.author_name[0])||'';
-      var cover=b.cover_i?('https://covers.openlibrary.org/b/id/'+b.cover_i+'-S.jpg'):'';
-      var link='https://openlibrary.org'+(b.key||'');
-      return '<li><a href="'+escapeHtml(link)+'" target="_blank" rel="noopener">'+(cover?'<img src="'+escapeHtml(cover)+'" alt="" style="width:32px;height:44px;object-fit:cover;border-radius:4px;float:left;margin-right:8px">':'')+escapeHtml(title)+'</a><div class="side-meta">'+escapeHtml(author)+'</div><div style="clear:both"></div></li>';
+  if(!el) return;
+  // Rotate: Fisher-Yates shuffle, show 5 (different mix each call)
+  var pool=GOODREADS_SELFDEV.slice();
+  for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[j];pool[j]=tmp;}
+  var picks=pool.slice(0,5);
+  el.innerHTML='<li class="side-loading">Loading books…</li>';
+  Promise.all(picks.map(function(b){
+    var gr='https://www.goodreads.com/search?q='+encodeURIComponent(b.t+' '+b.a);
+    return fetch('https://openlibrary.org/search.json?q='+encodeURIComponent('title:"'+b.t+'" author:'+b.a)+'&limit=1')
+      .then(function(r){return r.json();})
+      .then(function(j){
+        var d=((j.docs||[])[0])||{};
+        return {t:b.t,a:b.a,
+          cover:d.cover_i?('https://covers.openlibrary.org/b/id/'+d.cover_i+'-S.jpg'):'',
+          link:d.key?('https://openlibrary.org'+d.key):gr};
+      })
+      .catch(function(){return {t:b.t,a:b.a,cover:'',link:gr};});
+  })).then(function(rows){
+    el.innerHTML=rows.map(function(b){
+      return '<li><a href="'+escapeHtml(b.link)+'" target="_blank" rel="noopener">'+(b.cover?'<img src="'+escapeHtml(b.cover)+'" alt="" style="width:32px;height:44px;object-fit:cover;border-radius:4px;float:left;margin-right:8px">':'')+escapeHtml(b.t)+'</a><div class="side-meta">'+escapeHtml(b.a)+'</div><div style="clear:both"></div></li>';
     }).join('');
   }).catch(function(){el.innerHTML='<li class="side-empty">Books unavailable.</li>';});
 }
@@ -1708,13 +1872,37 @@ function loadSideTech(){
 season();
 loadWeather(LAT,LON,AREA_LABEL);
 setPlayer('music');
-setInterval(function(){ loadWeather(LAT,LON,AREA_LABEL); }, 600000);
+// Refresh the CURRENT coordinates: LAT/LON are the Toronto defaults and were
+// never updated after a postal/geolocation lookup, so every 10-min auto-refresh
+// silently reverted a looked-up location back to Toronto (with a mismatched
+// area label). _lastLat/_lastLon track the active request.
+setInterval(function(){ loadWeather(_lastLat,_lastLon,AREA_LABEL); }, 600000);
 setTimeout(function(){ loadSideEvents(); loadSideNews(); loadSideBooks(); loadSideTech(); }, 1500);
+setInterval(function(){ loadSideBooks(); }, 900000); // rotate self-dev books every 15 min
 
 })();
 </script>
 
 <!-- Vanta.js removed — canvas weather engine handles all backgrounds -->
+
+<script>
+/* ===== RESET LOOK & FEEL (recovery for a bad cached theme/fx/scene) =====
+   2026-10-18: users could pick e.g. the Glass theme (or an FX filter) that makes
+   text blend into the background, and since the choice is cached in localStorage
+   it persisted with no way back. This clears every appearance key and reloads,
+   restoring factory defaults. The button is deliberately high-contrast so it is
+   readable even when the rest of the page is not. */
+(function(){
+  var WEATHER_KEYS=['weather-theme','weather-fx','weather-scene','weather-layout','weather-hide-extras','weather-player-size'];
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    var isReset=t && ((t.id==='look-reset') || (t.classList && t.classList.contains('reset-look')));
+    if(!isReset) return;
+    WEATHER_KEYS.forEach(function(k){ try{localStorage.removeItem(k);}catch(err){} });
+    location.reload();
+  });
+})();
+</script>
 
 <script>
 document.addEventListener('click',function(e){
@@ -1743,7 +1931,9 @@ window.addEventListener('load',function(){
     ifr.style.border='0';
     ifr.loading='lazy';
     ifr.allow='autoplay; encrypted-media; fullscreen';
-    ifr.allowFullscreen=true;
+    // 2026-10-18: removed `ifr.allowFullscreen=true` — Chrome logs "Allow attribute
+    // will take precedence over 'allowfullscreen'" when both are set; the `allow`
+    // attribute already carries `fullscreen`, so the legacy property is redundant.
     d.replaceWith(ifr);
   });
 });
