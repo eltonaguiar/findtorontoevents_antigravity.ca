@@ -2,6 +2,19 @@
 
 Evidence-based plan for fixing the /audit pick pipeline: **staleness**, **PnL=0%**, and **closed-pick quality**, measured from the live `dashboard_data.json` payload (2026-10-18, 1.15 MB, 4,240 active-raw + 3,500 closed picks).
 
+## Implementation status (same day)
+
+| Item | Status | Evidence |
+|---|---|---|
+| P1 — live/expired split of the raw pool | ✅ implemented | `dashboard_generator` now emits `picks.active_raw_live` (836 rows on live data) + `summary.total_active_raw_live` / `total_active_raw_expired` (3,404). The designed pre-filter pool (`active_raw`, Show All Picks) is untouched — consumers no longer re-derive staleness from `age_hours`. |
+| P2 — UEPS honest PnL | ✅ implemented | `_build_ueps_kpi_sidecar` classifies `unrealized_status`: all-placeholder `0.0` → `"unmarked"` with `null` sums (template renders `n/a (not marked)` instead of 0.0%); any real mark → `"marked"` with true sums. Message states it explicitly. |
+| P4a — `_gate_status` | ✅ implemented | Every `active_raw` row now carries three-state `_gate_status`: `passed` (key matches a published active pick) / `not_evaluated` (auto-expired before the gate) / `rejected`. `_gate_passed` kept unchanged for UI back-compat. |
+| P4b — smart-picks funnel trace | ✅ implemented | Root cause: `evaluate_smart_gate_funnel()` was imported by both consumers (`tools/audit_smart_gate_funnel.py`, `dashboard_generator._build_smart_gate_failure_histogram`) but **never existed in `quality_gates.py`** → ImportError → silent `{}` / tool crash. Implemented it (wraps `passes_smart_gate` with debug capture + annotations; single source of truth), annotated 17 silent reject sites with `_smart_gate_code`, and the previously-broken tool now reports 13/13 attributed: `forward_validated=false×5, forex_directional_gate×2, score_below_floor×2, rr_below_floor×1, commodity_subclass_killed×1, strategy=futures_connors_rsi2×1, ETF_elite_score×1`. The payload histogram (`summary.smart_gate_failure_histogram`) works on next generation. |
+| P1.2 — per-class TTLs at scan time | ⬜ remaining | Requires resolver/scan changes — follow-up |
+| P3 — per-class quality actions | ⬜ remaining | Strategy-level (forex demotion, bond/commodity sample freeze, equity R:R) — recommendations above |
+
+Verification: `tests/test_smart_gate_funnel.py` (9 new tests, incl. evaluator↔gate decision-parity and no-handler-leak), `tests/test_dashboard_generator.py` + `test_ueps_dashboard_integration.py` + `test_shadow_promote.py` + `test_kill_list_audit.py` (63 pass), gate-sweep suites (846 pass; the 6 failures were reproduced on pristine HEAD via stash — pre-existing, unrelated).
+
 ## 1. What the data says (measured, not guessed)
 
 ### Closed-pick expectancy per class (last 3,500 closes)

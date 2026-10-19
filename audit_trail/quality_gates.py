@@ -131,6 +131,15 @@ def _load_strategy_returns_cache() -> "dict[str, list[float]]":
     return cache
 
 
+# allowed: anti-overfit-audit consumer
+# Downstream of alpha_engine.anti_overfit_validator: this file calls
+# _anti_overfit_evaluate(per_pick_returns_history) at runtime and BLOCKS
+# picks whose DSR<0.95 or PBO>0.50. The sidecar (audit_dashboard/data/
+# anti_overfit_audit.json) is generated separately by tools/anti_overfit_
+# audit_sidecar.py and consumed (for display only) by M-012 in dashboard_
+# generator.py — this gate operates on the validator's runtime output, not
+# the cached sidecar. The sidecar's _schema_note advisory-only contract is
+# honored end-to-end: never auto-ingested as a sizing signal. See tests/test_no_anti_overfit_audit_consumer.py for the contract gate.
 def _anti_overfit_reject(pick: Dict[str, Any]) -> bool:
     """Return True iff opt-in anti-overfit validator says reject.
 
@@ -9661,6 +9670,7 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
         # FwdWR≥50 gives PF 1.62 on n=466, beats random. Apply as additional gate.
         _fwd_wr = _effective_forward_wr_ratio(pick) * 100.0
         if _fwd_wr > 0 and _fwd_wr < 50 and not _pair_exc_active:
+            pick["_smart_gate_code"] = "forex_fwd_wr_below_50"
             return False
 
     # Forward-validated strategy bypass: if the strategy has strong forward
@@ -9701,6 +9711,7 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     )
 
     if score < _min_score and not _forward_bypass and not _pair_exc_active and not _source_trust_bypass:
+        pick["_smart_gate_code"] = "score_below_floor"
         return False
 
     # ETF elite_score floor enforcement (swarm round 3 finding 2026-05-13).
@@ -9852,14 +9863,17 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
 
     # SCALP mode: 24.8% WR — exclude from Smart Picks entirely
     if mode == "SCALP":
+        pick["_smart_gate_code"] = "scalp_mode"
         return False
 
     # Panic health: 24% WR — not Smart Pick material
     if health == "panic":
+        pick["_smart_gate_code"] = "panic_health"
         return False
 
     rr = _trade_rr(pick)
     if rr < SMART_PICKS_MIN_RR and not _pair_exc_active:
+        pick["_smart_gate_code"] = "rr_below_floor"
         return False
 
     # R:R ceiling — data shows R:R >= 2.0 has lower hit rate (TP too far)
@@ -9879,6 +9893,7 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     sym_track_total = _int(pick.get("sym_track_total", 0))
 
     if conf < SMART_PICKS_MIN_CONFIDENCE:
+        pick["_smart_gate_code"] = "confidence_below_floor"
         return False
     # NEW: ML score filter (decile test shows ml_score < 0.50 = 22% WR Kill Zone)
     ml_score = pick.get("ml_score")
@@ -9890,11 +9905,13 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     if conf > SMART_PICKS_MAX_CONFIDENCE and not (
         edge_trades >= 10 and edge_wr >= 0.60
     ):
+        pick["_smart_gate_code"] = "confidence_above_ceiling"
         return False
     # Only block on numeric trust_score if the field is explicitly set.
     # trust_score=None means "unrated by registry" — not the same as bad.
     # tier/label checks below still protect against explicitly bad picks.
     if trust_score is not None and trust_score < SMART_PICKS_MIN_TRUST_SCORE:
+        pick["_smart_gate_code"] = "trust_score_below_floor"
         return False
     if (
         trust_label in BLOCKED_ACTIVE_TRUST_LABELS
@@ -9916,15 +9933,20 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
             and os.environ.get(_force_flag, "0") != "1"
         )
         if not (_legacy_equity_flag_on or _non_crypto_default_bypass):
+            pick["_smart_gate_code"] = "trust_tier_blocked"
             return False
     if _has_direction_conflict(pick):
+        pick["_smart_gate_code"] = "direction_conflict"
         return False
     if sym_track_total >= 3 and sym_track_wr < 45:
+        pick["_smart_gate_code"] = "symbol_track_wr_low"
         return False
     # Hard-block only REJECTED/BROKEN; FAILING is a soft penalty (score already penalizes it)
     if wf_verdict in {"REJECTED", "BROKEN"}:
+        pick["_smart_gate_code"] = "walkforward_rejected"
         return False
     if tech_bucket in {"strong_opposition", "weak_opposition"}:
+        pick["_smart_gate_code"] = "tech_opposition"
         return False
     if tech_bucket in {"no_support", "weak_support"}:
         proven_contrarian = trust_score >= 7 and (
@@ -9932,6 +9954,7 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
             or (edge_trades >= 20 and edge_wr >= 0.55)
         )
         if not proven_contrarian:
+            pick["_smart_gate_code"] = "tech_no_support"
             return False
 
     # Forward-test viability check: only accept picks from viable strategies
@@ -9961,10 +9984,12 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
         and strat_fwd_trades >= 10
         and not _pair_exc_active
     ):
+        pick["_smart_gate_code"] = "strategy_fwd_wr_low"
         return False
 
     # Consensus rows need real edge, not just many agreeing sources.
     if _is_consensus_pick(pick) and edge_trades >= 10 and edge_wr < 0.45 and not _pair_exc_active:
+        pick["_smart_gate_code"] = "consensus_edge_low"
         return False
 
     # Trust/high-conviction rework:
@@ -9980,13 +10005,16 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     )
     if not _is_verified_pm_or_copy_pick(pick) and not _conv_cot_exempt:
         if edge_trades < 5:
+            pick["_smart_gate_code"] = "insufficient_forward_trades"
             return False
         if edge_wr < 0.45 and not _pair_exc_active:
+            pick["_smart_gate_code"] = "forward_wr_below_45"
             return False
 
     _age_h = _float(pick.get("age_hours") or 0)
     _live_pnl = _float(pick.get("pnl_pct") or pick.get("unrealized_pnl_pct") or 0)
     if _age_h >= 1.0 and _live_pnl <= -2.0:
+        pick["_smart_gate_code"] = "live_pnl_drawdown"
         return False
 
     pick["high_conviction_gate_passed"] = bool(
@@ -10361,6 +10389,106 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
             pass  # fail-open — better unprotect than block
 
     return True
+
+
+def evaluate_smart_gate_funnel(pick: Dict[str, Any]) -> Tuple[bool, str]:
+    """First-failure code for the Smart Picks gate (funnel diagnostics).
+
+    Contract expected by ``tools/audit_smart_gate_funnel.py`` and
+    ``dashboard_generator._build_smart_gate_failure_histogram``:
+    ``(passed: bool, reason_code: str)``.
+
+    Runs ``passes_smart_gate`` itself (single source of truth — this never
+    re-implements gate logic) with a temporary DEBUG handler on this module's
+    logger, then resolves the failure code from, in precedence order:
+
+      1. ``pick['_smart_gate_code']`` / ``_smart_reject_reasons`` annotations
+         the gate writes in place at its reject sites
+      2. the newest ``Smart gate:`` / ``Pick rejected:`` debug line captured
+         during this evaluation
+      3. ``criteria_not_met`` — a silent reject path with no annotation yet
+
+    The gate mutates ``pick`` (annotations); callers should pass a copy (both
+    known callers already do). Errors never propagate: they surface as
+    ``(False, "evaluator_error")`` so dashboard generation and the audit
+    tool stay functional while making the failure visible in the histogram.
+
+    Added 2026-10-18 (updates/2026-10-18-picks-per-asset-class-improvement-plan.md
+    P4b): both consumers had been silently swallowed by ImportError →
+    ``{}``/crash, so smartCount=0 was never explained anywhere.
+    """
+    import logging as _logging
+
+    class _FunnelCapture(_logging.Handler):
+        def __init__(self) -> None:
+            super().__init__(_logging.DEBUG)
+            self.lines: List[str] = []
+
+        def emit(self, record: _logging.LogRecord) -> None:
+            try:
+                self.lines.append(record.getMessage())
+            except Exception:
+                pass
+
+    cap = _FunnelCapture()
+    prev_level = logger.level
+    logger.addHandler(cap)
+    ok: Optional[bool]
+    try:
+        if not logger.isEnabledFor(_logging.DEBUG):
+            logger.setLevel(_logging.DEBUG)
+        ok = passes_smart_gate(pick)
+    except Exception:
+        ok = None
+    finally:
+        logger.removeHandler(cap)
+        logger.setLevel(prev_level)
+
+    if ok is None:
+        return False, "evaluator_error"
+    if ok:
+        return True, ""
+
+    # 1) in-place annotations written at the reject sites
+    code = pick.get("_smart_gate_code")
+    if code:
+        return False, str(code)
+    reasons = pick.get("_smart_reject_reasons")
+    if isinstance(reasons, list) and reasons:
+        return False, str(reasons[0])
+
+    # 2) parse captured debug lines (newest first — the last reject wins)
+    def _code_after(line: str, marker: str) -> str:
+        idx = line.find(marker)
+        if idx < 0:
+            return ""
+        seg = line[idx + len(marker):].strip(" :")
+        for sep in ("(", " — ", " -- ", " – "):
+            j = seg.find(sep)
+            if j > 0:
+                seg = seg[:j]
+        parts = seg.split()
+        if not parts:
+            return ""
+        # snake_case code token (commodity_subclass_killed, forward_validated=false…)
+        if "_" in parts[0] or "=" in parts[0]:
+            return parts[0]
+        # "FOREX symbol gate …" / "ETF elite_score=17 < floor=35" — take the
+        # two-word descriptor instead of a meaningless bare first word.
+        if len(parts) >= 2:
+            two = parts[0] + "_" + parts[1].split("=")[0]
+            return two
+        return parts[0]
+
+    for line in reversed(cap.lines):
+        if "rejected by directional gate" in line:
+            return False, "forex_directional_gate"
+        parsed = _code_after(line, "Smart gate:") or _code_after(line, "Pick rejected:")
+        if parsed:
+            return False, parsed
+
+    # 3) silent reject path not yet annotated
+    return False, "criteria_not_met"
 
 
 def _is_verified_pm_or_copy_pick(pick: Dict[str, Any]) -> bool:
