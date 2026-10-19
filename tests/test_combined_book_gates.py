@@ -38,6 +38,33 @@ def test_deflated_sharpe_lower_than_raw():
     assert df < raw
 
 
+def test_gate_sanity_no_edge_fails():
+    """A coin-flip-ish series must NOT pass the go-live gate."""
+    import numpy as np
+    import pandas as pd
+    from combined_book.simulator import compute_stats
+    rng = np.random.default_rng(4)
+    returns = rng.choice([0.03, -0.03], size=200)
+    stats = compute_stats(pd.Series(returns))
+    go, checks = gates.evaluate_go_live(stats)
+    assert not go
+    assert checks["pf"] is False  # PF ~ 1 < 1.5
+
+
+def test_gate_sanity_known_edge_passes():
+    """A stable positive-drift series must pass the go-live gate."""
+    import numpy as np
+    import pandas as pd
+    from combined_book.simulator import compute_stats
+    rng = np.random.default_rng(4)
+    returns = rng.normal(0.02, 0.004, size=120)
+    stats = compute_stats(pd.Series(returns))
+    go, _ = gates.evaluate_go_live(stats)
+    assert go
+    killed, _ = gates.evaluate_kill(stats)
+    assert not killed
+
+
 def test_random_entry_percentile_in_range():
     pct = gates.random_entry_percentile([0.01, 0.02, -0.01], [0.02, 0.01, -0.02], seed=3, n_sims=200)
     assert 0.0 <= pct <= 1.0

@@ -23,19 +23,40 @@ from combined_book.quality_sleeve import QUALITY_UNIVERSE, quality_monthly_retur
 from combined_book.trend_sleeve import trend_target_weights
 
 
-def combine_sleeves(sleeve_returns, weights):
-    frame = pd.DataFrame(sleeve_returns).fillna(0.0)
+def combine_sleeves(sleeve_returns, weights, renormalize=True):
+    """Combine sleeve returns into a book series.
+
+    ``weights`` is a dict of scalar sleeve weights. When ``renormalize`` is
+    true, for each month a sleeve that has no data is excluded and the remaining
+    sleeves' weights are renormalized to sum to 1 (instead of treating the
+    missing sleeve as 0% cash).
+    """
+    frame = pd.DataFrame(sleeve_returns)
     ordered = [k for k in weights if k in frame.columns]
-    return frame[ordered].dot(
-        pd.Series({k: weights[k] for k in ordered})
-    )
+    if not ordered:
+        return pd.Series(dtype=float)
+    available = frame[ordered].notna()
+    out = pd.Series(index=frame.index, dtype=float)
+    for t in frame.index:
+        present = [k for k in ordered if available.loc[t, k]]
+        if not present:
+            continue  # no sleeve data this month -> drop the row
+        w = {k: weights[k] for k in present}
+        total = sum(w.values())
+        if total <= 0:
+            continue
+        if renormalize:
+            w = {k: v / total for k, v in w.items()}
+        row = frame.loc[t]
+        out.loc[t] = sum(float(row[k]) * w[k] for k in present)
+    return out
 
 
 def book_return_series(sleeve_returns, vols, vol_cap):
     w = apply_per_sleeve_cap(inverse_vol_weights(vols))
-    r = combine_sleeves(sleeve_returns, w)
+    r = combine_sleeves(sleeve_returns, w).dropna()
     annual = r.std(ddof=0) * math.sqrt(12)
-    if annual > 0:
+    if annual > 0 and len(r) > 0:
         r = r * (vol_cap / annual)
     return r, w
 
@@ -99,9 +120,10 @@ def run_backtest(fetch_func, vol_cap=0.05, start=None, end=None):
         for k, v in sleeve.items()
     }
     r, w = book_return_series(sleeve, vols, vol_cap)
+    r.index = pd.to_datetime(r.index)
     if start:
-        r = r.loc[start:]
+        r = r.loc[pd.Timestamp(start):]
     if end:
-        r = r.loc[:end]
+        r = r.loc[:pd.Timestamp(end)]
     r = r.dropna()
     return {"returns": r, "weights": w, "stats": compute_stats(r)}

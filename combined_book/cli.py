@@ -46,6 +46,31 @@ def _cmd_backtest(args):
     return 0
 
 
+def _cmd_research_backtest(args):
+    from combined_book.research import run_research_backtest, sleeve_stats
+    result = run_research_backtest(
+        vol_cap=args.vol_cap,
+        start=args.start,
+        end=args.end,
+        cache_dir=args.cache,
+    )
+    stats = result["stats"]
+    print(f"n_months={stats['n_months']}")
+    print(f"cagr={stats['cagr']:.4f}")
+    print(f"annualized_sharpe={stats['annualized_sharpe']:.4f}")
+    print(f"max_dd={stats['max_dd']:.4f}")
+    print(f"pf={stats['pf']:.4f}")
+    print(f"win_rate={stats['win_rate']:.4f}")
+    print("--- per-sleeve ---")
+    for name, s in sleeve_stats(result["sleeves"]).items():
+        print(
+            f"{name}: n={s['n_months']} cagr={s['cagr']:.4f} "
+            f"sharpe={s['annualized_sharpe']:.4f} mdd={s['max_dd']:.4f} "
+            f"pf={s['pf']:.4f}"
+        )
+    return 0
+
+
 def _cmd_gates(args):
     from combined_book.gates import evaluate_go_live, evaluate_kill
     ledger = load_ledger(args.path)
@@ -78,6 +103,13 @@ def build_parser():
     p_bt.add_argument("--end", default=None)
     p_bt.add_argument("--cache", default=None)
     p_bt.set_defaults(func=_cmd_backtest)
+
+    p_rbt = sub.add_parser("research-backtest")
+    p_rbt.add_argument("--vol-cap", type=float, default=0.05)
+    p_rbt.add_argument("--start", default=None)
+    p_rbt.add_argument("--end", default=None)
+    p_rbt.add_argument("--cache", default=None)
+    p_rbt.set_defaults(func=_cmd_research_backtest)
 
     p_g = sub.add_parser("gates")
     p_g.add_argument("--path", default="combined_book/data/ledger.json")
