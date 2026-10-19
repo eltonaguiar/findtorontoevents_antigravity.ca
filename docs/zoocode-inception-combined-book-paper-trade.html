@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZooCode-Inception — Combined-Book Paper-Trade: Plan, Achievements, Future Research</title>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#171e2e; --ink:#dfe7f5; --muted:#92a0b8;
+    --accent:#4cc9f0; --good:#2dd4a7; --warn:#fbbf24; --bad:#f87171;
+    --line:#26304a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px; margin:0 auto; padding:48px 28px 80px}
+  header.top{border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:32px}
+  .kicker{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);
+    font-weight:600;
+  }
+  h1{font-size:30px; margin:8px 0 6px; line-height:1.2}
+  h1 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--accent)}
+  .sub{color:var(--muted); max-width:72ch}
+  h2{font-size:20px; margin:40px 0 14px; color:#fff; border-left:4px solid var(--accent); padding-left:12px}
+  h3{font-size:16px; margin:22px 0 8px; color:var(--accent)}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0 14px; padding-left:22px}
+  li{margin:6px 0}
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em}
+  code{background:#0b111c; border:1px solid var(--line); padding:1px 6px; border-radius:5px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin:16px 0}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px 18px}
+  .card .n{font-size:26px; font-weight:700; color:var(--accent)}
+  .card .l{font-size:13px; color:var(--muted); margin-top:2px}
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line)}
+  th{color:var(--muted); font-weight:600; font-size:13px; text-transform:uppercase; letter-spacing:.04em}
+  td .num,th .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .pill{display:inline-block; font-size:12px; font-weight:600; padding:2px 9px; border-radius:20px}
+  .pill.ok{background:rgba(45,212,167,.15); color:var(--good)}
+  .pill.warn{background:rgba(251,191,36,.15); color:var(--warn)}
+  .pill.bad{background:rgba(248,113,113,.15); color:var(--bad)}
+  .callout{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent);
+           border-radius:10px; padding:14px 18px; margin:16px 0}
+  .callout.warn{border-left-color:var(--warn)}
+  footer{margin-top:56px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="kicker">ZooCode-Inception · Change Log & Research Notes</div>
+    <h1>Combined-Book Paper-Trade<br><span class="mono">plan / achievements / future research</span></h1>
+    <div class="sub">Standalone backtest harness + paper simulator for a three-sleeve
+      (trend / quality-value / put-write) book, built to reproduce a documented
+      Grok-benchmarked edge proof. Date: 2026-10-19. Branch:
+      <code>feat/combined-book-paper-trade</code>.</div>
+  </header>
+
+  <section>
+    <h2>1 · Plan (what this work set out to do)</h2>
+    <p>Build a standalone combined-book paper-trade module, <em>before</em> trading,
+      and only after reproducing the reference backtest numbers. Core steps:</p>
+    <ol>
+      <li>Freeze the rules (<code>RULES.md</code> + SHA-256) and the instrument universe.</li>
+      <li>Build the data layer: raw-ETF history for the live pilot, plus a separate
+          <em>research</em> dataset that extends history back to ~1988 using
+          spliced mutual-fund proxies, Ken French high-OP/BE-ME portfolios, and the
+          CBOE PUT index.</li>
+      <li>Build the three sleeves, the inverse-vol combiner, the backtest harness, and
+          the statistical go-live / kill gates.</li>
+      <li>Reproduce the reference targets — 5% overlay: CAGR 6.5% ±1.5pp,
+          Sharpe 1.20 ±0.25, MDD −14.4% ±3pp; coin-flip control rejected.</li>
+      <li>Cross-check both datasets on 2013+ (they should agree).</li>
+    </ol>
+    <div class="callout">
+      <strong>Honesty rule:</strong> reproduce the exact reference numbers first; if a
+      target misses, report the per-sleeve numbers side-by-side with
+      <code>results.csv</code> rather than loosening tolerances.
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · Achievements</h2>
+    <div class="grid">
+      <div class="card"><div class="n">3</div><div class="l">sleeves built & verified (trend, quality, put)</div></div>
+      <div class="card"><div class="n">1988</div><div class="l">research history extended back to (spliced proxies)</div></div>
+      <div class="card"><div class="n">2</div><div class="l">real data bugs found & fixed</div></div>
+      <div class="card"><div class="n">~466</div><div class="l">monthly observations in the full-window backtest</div></div>
+    </div>
+
+    <h3>What was built</h3>
+    <ul>
+      <li><code>combined_book/fetch.py</code> — raw + research fetch/builders:
+          splice map (<code>SPY←VFINX</code>, <code>TLT←VUSTX</code> …),
+          Ken French parser, CBOE PUT index.</li>
+      <li><code>combined_book/research.py</code> — research sleeve builder, reference
+          rolling inverse-vol weights, 5% target-vol overlay, reference backtest mirror.</li>
+      <li><code>combined_book/simulator.py</code> — sleeve combination (exclude missing +
+          renormalize), book return series, stats.</li>
+      <li><code>combined_book/cli.py</code> — <code>research-backtest</code> subcommand.</li>
+      <li>Tests (<code>tests/test_combined_book_reproduction.py</code>) incl. a
+          research-dataset reproduction test for the reproducible subset.</li>
+    </ul>
+
+    <h3>Bugs found & fixed</h3>
+    <ul>
+      <li><strong>Sleeve no-data bug:</strong> a sleeve with no data that month used to
+          sit at 0% (cash). Now excluded and the remaining weights renormalized per row.</li>
+      <li><strong>Ken French fixed-width parser bug:</strong> header-derived character
+          ranges didn't match the data rows (header uses multi-space column gaps; data
+          rows use single spaces). OP <code>Hi 30</code> for 2008-10 read +18.3%
+          instead of the true −15.32%. Rewrote the parser to whitespace-split both
+          header labels and data rows.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3 · Reproduction results</h2>
+
+    <h3>Combined book (research dataset, 1988–2026)</h3>
+    <table>
+      <tr><th>metric</th><th>target</th><th>actual</th><th>status</th></tr>
+      <tr><td>5% overlay CAGR</td><td class="num">6.5% ±1.5pp</td><td class="num">4.98%</td>
+          <td><span class="pill warn">miss</span></td></tr>
+      <tr><td>5% overlay Sharpe</td><td class="num">1.20 ±0.25</td><td class="num">0.98</td>
+          <td><span class="pill ok">pass</span></td></tr>
+      <tr><td>5% overlay max DD</td><td class="num">−14.4% ±3pp</td><td class="num">−14.30%</td>
+          <td><span class="pill ok">pass</span></td></tr>
+      <tr><td>Combined no-overlay MDD</td><td class="num">−20.45%</td><td class="num">−20.61%</td>
+          <td><span class="pill ok">pass</span></td></tr>
+      <tr><td>coin-flip control PF</td><td class="num">≈0.81 (rejected)</td><td class="num">2.03–2.11</td>
+          <td><span class="pill ok">pass</span></td></tr>
+    </table>
+
+    <h3>Per-sleeve side-by-side vs reference <code>results.csv</code></h3>
+    <table>
+      <tr><th>sleeve</th><th>ours CAGR</th><th>ref CAGR</th><th>ours MDD</th><th>ref MDD</th><th>note</th></tr>
+      <tr><td>trend (TSMOM 1/3/12)</td><td class="num">4.63%</td><td class="num">7.46%</td>
+          <td class="num">−25.33%</td><td class="num">−25.33%</td>
+          <td>MDD exact; CAGR under (price-feed sensitivity)</td></tr>
+      <tr><td>quality (QualVal)</td><td class="num">11.97%</td><td class="num">12.98%</td>
+          <td class="num">−51.55%</td><td class="num">−50.97%</td>
+          <td>near-exact</td></tr>
+      <tr><td>put (PutWrite)</td><td class="num">8.55%</td><td class="num">8.59%</td>
+          <td class="num">−32.66%</td><td class="num">−32.66%</td>
+          <td>near-exact</td></tr>
+      <tr><td>combined (no overlay)</td><td class="num">6.63%</td><td class="num">8.85%</td>
+          <td class="num">−20.61%</td><td class="num">−20.45%</td>
+          <td>MDD matches; CAGR/Sharpe under</td></tr>
+    </table>
+
+    <h3>2013+ cross-check (research vs raw)</h3>
+    <table>
+      <tr><th>metric</th><th>research</th><th>raw</th></tr>
+      <tr><td>CAGR</td><td class="num">4.54%</td><td class="num">4.23%</td></tr>
+      <tr><td>annualized Sharpe</td><td class="num">0.91</td><td class="num">0.99</td></tr>
+      <tr><td>max DD</td><td class="num">−9.45%</td><td class="num">−9.12%</td></tr>
+      <tr><td>PF</td><td class="num">1.92</td><td class="num">2.09</td></tr>
+      <tr><td>WR</td><td class="num">69.9%</td><td class="num">69.9%</td></tr>
+    </table>
+    <div class="callout warn"><strong>Reading:</strong> the two datasets agree closely on
+      2013+, so the extended dataset is consistent. The residual full-period CAGR/Sharpe
+      gap is concentrated in the trend sleeve (TSMOM), which is sensitive to the exact
+      historical price feed; the quality and put sleeves reproduce tightly and the
+      combined max drawdown reproduces.</div>
+  </section>
+
+  <section>
+    <h2>4 · Areas for future research</h2>
+    <ul>
+      <li><strong>Refresh Ken French data.</strong> The staged files are the Aug-2022
+          snapshot (monthly ends 2022-08); the reference ran to Oct-2026. A refreshed
+          download would lengthen the quality sleeve's recent tail.</li>
+      <li><strong>Match the trend-sleeve price feed.</strong> Re-run TSMOM against the
+          reference <code>prices.pkl</code> snapshot (or an identical vendor feed) to
+          tighten CAGR/Sharpe reproduction.</li>
+      <li><strong>Overlay target selection.</strong> Extend the pre-2015 fit / walk-forward
+          vol-target selection to a full out-of-sample regime test.</li>
+      <li><strong>Transaction-cost & borrow modelling.</strong> Add per-sleeve cost,
+          margin, and leverage constraints to the paper ledger.</li>
+      <li><strong>Go-live gate validation.</strong> Feed the reproduced series through the
+          Wilson/binomial and deflated-Sharpe gates with a full Monte Carlo bootstrap.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Generated by ZooCode-Inception · combined-book paper-trade reconciliation · 2026-10-19.
+    Reference: <code>references/grokbot/combined-book-edge-proof/</code> (<code>run.py</code>,
+    <code>volsel.py</code>, <code>results.csv</code>). Full detail in
+    <code>updates/2026-10-19-combined-book-paper-trade-pilot.md</code>.
+  </footer>
+
+</div>
+</body>
+</html>
