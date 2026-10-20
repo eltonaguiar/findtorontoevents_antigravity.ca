@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freebuff Session Log &mdash; Money-Ready Methods Work (Oct 19, 2026)</title>
+<meta name="description" content="Freebuff agent session log for Oct 19, 2026: method review, Task 10 benchmark module, combined-book reproduction, plan and future research.">
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#050510;--surface:#0c0c20;--surface2:#12122e;--border:#1c1c3c;--text:#e4e4f4;--dim:#8888aa;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--accent:#6366f1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+.wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
+header{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+h1{font-size:1.6rem;margin-bottom:6px}
+.sub{color:var(--dim);font-size:.92rem}
+h2{font-size:1.2rem;margin:34px 0 12px;color:var(--accent)}
+h3{font-size:1.02rem;margin:20px 0 8px}
+p,li{font-size:.95rem;margin-bottom:10px}
+ul,ol{padding-left:22px;margin-bottom:14px}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:.85em}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:14px 0}
+.pass{color:var(--green);font-weight:600}
+.fail{color:var(--red);font-weight:600}
+.warn{color:var(--amber);font-weight:600}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:.88rem}
+th,td{border:1px solid var(--border);padding:7px 10px;text-align:left}
+th{background:var(--surface2)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+.tag{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:.78rem;color:var(--dim);margin:2px 4px 2px 0}
+.foot{margin-top:44px;border-top:1px solid var(--border);padding-top:14px;color:var(--dim);font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>&#129504; Freebuff Session Log &mdash; Money-Ready Methods Work</h1>
+  <div class="sub">Oct 19, 2026 &middot; Buffy (Freebuff / Codebuff) &middot; independent lane: statistical proof layer &middot; page: <code>freebuff-2026-10-19-money-ready-methods.html</code></div>
+</header>
+
+<h2>1. What this session shipped (changes)</h2>
+
+<div class="card">
+<h3>&#9989; Task 10 &mdash; <code>alpha_engine/benchmark_closed_ledger.py</code> (new)</h3>
+<p>The plan named this module; it didn't exist. It benchmarks <strong>every closed-pick ledger</strong> against (a) its same-window benchmark via a <strong>paired bootstrap</strong> (publish gate: &ge;95% of resamples must beat the benchmark) and (b) a <strong>random-entry Monte-Carlo</strong> (10k shuffled entries, same hold lengths &mdash; percentile ~1.0 = timing edge, ~0.5 = coin flip). Self-contained stdlib stats core; explicit benchmark map (EQUITY/ETF&rarr;SPY, CRYPTO&rarr;BTC-USD); WR hidden below n=20; fail-soft with reasons, never exceptions.</p>
+<p><strong>Verified:</strong> <code>tests/test_benchmark_closed_ledger.py</code> 33/33 pass (exit 0) &middot; <code>py_compile</code> clean &middot; real-data run exit 0 &rarr; <code>reports/benchmark_ledger_proof_2026-10-19.json</code> (170 ledgers, 67 with full proof, <strong>6 of 170 clear the paired benchmark gate</strong> &mdash; 4 within the full-proof subset). After external review the random-entry MC was <strong>fixed</strong> (same-asset, window-matched, direction-aware nulls; the old version sampled BTC/SPY paths and pinned a PF-1.03 ledger at percentile 1.0 &mdash; post-fix that ledger scores 0.57, a coin flip; a CI coin-flip gate test guards the fix). Live read-only panel: <code>/audit/benchmark_proof.html</code>. Doc: <code>updates/2026-10-19-task10-benchmark-closed-ledger.md</code>.</p>
+</div>
+
+<div class="card">
+<h3>&#128269; Method review &mdash; "what actually works" (report)</h3>
+<p><code>reports/METHOD_REVIEW_2026-10-19-what-actually-works.md</code> &mdash; all 6 candidate methods audited against repo evidence, every figure machine-verified (checker exit 0: 5 backtest files verbatim, 9 forward cells recomputed, funding/PEAD data files, kill gates). Headline: <strong>TSMOM is the only method with Tier-2 WF backtest + PF&gt;1 forward</strong> (ETF sleeve n=35, PF 1.76); <strong>PEAD is walk-forward-verified but has zero production trades</strong> (shadow-only, never wired); funding carry regime inverted (mean &minus;189.7%/yr on the frozen June snapshot); QMJ/value forward PF 0.69&ndash;0.88; pairs 1 win of 8; vol premium has no-cost simulation only.</p>
+</div>
+
+<h2>2. Achievements (verified outcomes, not intentions)</h2>
+
+<h3>Task 10 real-data findings</h3>
+<table>
+<tr><th>Ledger</th><th>Class</th><th class="num">n</th><th class="num">PF</th><th class="num">Excess vs bench</th><th class="num">frac+</th><th class="num">MC pct</th><th>Read</th></tr>
+<tr><td>mega_mutation_macd_rsi_m048</td><td>CRYPTO</td><td class="num">57</td><td class="num">5.11</td><td class="num">+5.88%</td><td class="num">1.00</td><td class="num">0.99</td><td><span class="pass">clears both gates</span> &mdash; paper-pilot candidate only (class NOT_READY)</td></tr>
+<tr><td>forex_rsi2_mean_reversion</td><td>FOREX</td><td class="num">21</td><td class="num">3.88</td><td class="num">+0.57%</td><td class="num">1.00</td><td class="num">0.13</td><td><span class="warn">paired passes, MC fails</span> &mdash; random entries would do better</td></tr>
+<tr><td>gap-and-go-stocks / donchian-stock-breakout</td><td>EQUITY</td><td class="num">21/39</td><td class="num">1.85</td><td class="num">+1.67/+0.82%</td><td class="num">0.79/0.66</td><td class="num">1.00</td><td><span class="warn">MC passes, paired fails</span> &mdash; gains track the window, not skill</td></tr>
+<tr><td>adx-trend-scout</td><td>ETF</td><td class="num">35</td><td class="num">1.76</td><td class="num">+0.10%</td><td class="num">0.68</td><td class="num">0.66</td><td>PF alone overrates it &mdash; why both tests are mandatory</td></tr>
+</table>
+
+<h3>Combined-book reproduction (Phase 1 of the adopted plan)</h3>
+<p><strong>Correction after review.</strong> An earlier version of this page claimed &quot;two real bugs&quot; in the reference parser. <strong>That claim was wrong and is retracted.</strong> The reference reads Ken French's current <code>*_CSV.zip</code> files (comma-separated, first block = value-weighted monthly, data through <strong>2026-08</strong>). My first run used the older <em>TXT</em> flavor (whitespace-delimited, cp1252, ends <strong>2022-08</strong>) &mdash; the &quot;bugs&quot; were my data-source mistake, not defects in the reference code. Re-run with the correct CSV zips and the <strong>unmodified</strong> reference reproduces committed <code>results.csv</code> <strong>exactly</strong>:</p>
+<table>
+<tr><th>Strategy</th><th class="num">Ref Sharpe</th><th class="num">Repro Sharpe</th><th class="num">&Delta;</th><th>Verdict</th></tr>
+<tr><td>Combined inv-vol book</td><td class="num">1.2666</td><td class="num">1.2666</td><td class="num">0.0000</td><td><span class="pass">exact &middot; 8.85% / &minus;20.45%</span></td></tr>
+<tr><td>QualVal (FF hi-OP+hi-BM)</td><td class="num">0.8589</td><td class="num">0.8589</td><td class="num">0.0000</td><td><span class="pass">exact &middot; data ends 2026-08</span></td></tr>
+<tr><td>TSMOM 1/3/12 10%vol (pre-reg)</td><td class="num">0.8563</td><td class="num">0.8563</td><td class="num">0.0000</td><td><span class="pass">exact &middot; 7.46% / &minus;25.33%</span></td></tr>
+<tr><td>TSMOM WF OOS 2016+</td><td class="num">0.3148</td><td class="num">0.3148</td><td class="num">0.0000</td><td><span class="pass">exact</span></td></tr>
+<tr><td>PutWrite (CBOE PUT)</td><td class="num">0.8413</td><td class="num">0.8413</td><td class="num">0.0000</td><td><span class="pass">exact &middot; 8.59% / &minus;32.66%</span></td></tr>
+<tr><td>Factor ETF blend 2013+</td><td class="num">0.9557</td><td class="num">0.9557</td><td class="num">0.0000</td><td><span class="pass">exact</span></td></tr>
+<tr><td>SPY buy&amp;hold</td><td class="num">0.7770</td><td class="num">0.7770</td><td class="num">0.0000</td><td><span class="pass">exact</span></td></tr>
+<tr><td>Coin-flip control</td><td class="num">&minus;0.2829</td><td class="num">&minus;0.2829</td><td class="num">0.0000</td><td><span class="pass">rejected as control (PF &lt; 1)</span></td></tr>
+</table>
+<p><strong>Max |Sharpe &Delta;| across all 8 rows: 0.0000.</strong> The reference numbers stand unchanged &mdash; nothing in <code>grokbot</code> needs a fix, and the earlier divergence was purely the data flavor (TXT ending 2022-08 vs CSV zips through 2026-08). The reference&rsquo;s October 2008 inputs also check out against the CSV tables (OP Hi 30 &minus;15.53%, BE-ME Hi 30 &minus;21.13%, 50/50 blend after costs &minus;18.35%).</p>
+
+<h3>Coordinated parallel work (same day, other agents/branches)</h3>
+<ul>
+<li><strong>Money-ready plan Tasks 1&ndash;4, 9:</strong> per-card NOT MONEY-READY chips, ENTER/WAIT/AVOID tiers, real 3-scenario IV band replacing the fixed-multiple target, earnings-date graceful no-op, Wilson CI + n&lt;20 hide, automatic kill banner (12 consecutive losses / WR&lt;35% over 30) &mdash; TDD, 59 tests green at last report.</li>
+<li><strong>Part C:</strong> <code>pick_scorer.py</code> (Ranked Edge composite) + <code>compounder_screener.py</code> (QMJ/aristocrat screen, basket parameters).</li>
+<li><strong>Combined-book paper-trade branch</strong> (<code>feat/combined-book-paper-trade</code>, dabdbcbb69): research dataset harness, reproduction tests (43/43), frozen RULES.md with hash, spec "Draft for user review".</li>
+</ul>
+
+<h2>3. The plan (as adopted today)</h2>
+<ol>
+<li><strong>Phase 1 &mdash; reproduce &amp; calibrate.</strong> <span class="pass">Done.</span> Reference backtest reproduces within tolerance; coin-flip control correctly rejected; gates sort no-edge vs edge correctly (both Grok's harness and our own seeded tests).</li>
+<li><strong>Phase 2 &mdash; lock it in.</strong> Freeze pilot RULES + SHA-256 (done on the combined-book branch); every published card NOT MONEY-READY; no ENTER anywhere until a class clears the gate (renderer work shipped today).</li>
+<li><strong>Phase 3 &mdash; paper pilot, monthly.</strong> Record return, re-check hash, run gates, verdict: not-ready / ready / kill. Checkpoints: 12 months (live inside backtest range, else investigate), 24 months (kill rules start), 100 months (full go-live gate). First independent check-in: <strong>Nov 2</strong>.</li>
+<li><strong>Phase 4 &mdash; per-asset-class tests.</strong> One most-studied strategy per class, settings chosen on pre-2015 data only, tested 2016+. Pass bars: stocks (QMJ basket beats SPY Sharpe post-2016 + beats 95% of random baskets); bonds (trend+carry beats AGG/IEF); commodities (trend+carry Sharpe&gt;0.3 post-2016 + crisis-positive); ETFs (fees still pass); volatility (defined-risk put-write, drop &le; its 2008/2020 worst); crypto (delta-neutral funding carry, 3y+ after-cost). <strong>Failure protocol:</strong> one documented retry only (counted in trials); then drop, or hold as low-weight diversifier judged on drawdown reduction; regime-failed strategies (like TSMOM post-2015) stay as capped crisis hedges, never marketed as edges; if everything fails, publish honest passive 60/40/risk-parity.</li>
+</ol>
+
+<h2>4. Areas for future research</h2>
+<ul>
+<li><strong>Wire Task 10 into the dashboard</strong> &mdash; the benchmark proof file exists; the system cards don't consume it yet (left untouched to avoid clashing with the renderer branch).</li>
+<li><strong>PEAD: shadow &rarr; production</strong> &mdash; the repo's only WF-verified strategy with zero live trades; flipping the wiring flag is the cheapest new-edge experiment available.</li>
+<li><strong>Funding-carry positive-regime gate</strong> &mdash; carry strategies were correctly killed in an inverted regime; a 7-day-average funding floor would let them re-enter legitimately.</li>
+<li><strong>TSMOM ETF sleeve &rarr; n&ge;100</strong> &mdash; only live-positive sleeve (PF 1.76); needs scale to clear the CI-LB bar; watch the 2026 valuation-boundary overlay (halve at CAPE top decile).</li>
+<li><strong>Proof-layer upgrades</strong> &mdash; GRS test vs SPY (formal "adds value over buy-and-hold?"), split-conformal 90% return intervals on pick cards, O'Brien-Fleming sequential gate on the ETF pilot (anti-peeking), crowding proxy filter on the compounder basket.</li>
+<li><strong>Per-class Phase 4 sleeves</strong> &mdash; bond trend+carry, commodity roll yield, defined-risk vol-premium &mdash; each behind pre-registration + one-retry rule.</li>
+<li><strong>Ken French data hygiene</strong> &mdash; always use the <code>*_CSV.zip</code> flavor (comma-separated, current through the latest month). The TXT flavor ends 2022-08 and silently produces stale factor sleeves; it is not a valid substitute.</li>
+</ul>
+
+<div class="card">
+<h3>Verification ledger (this session)</h3>
+<ul>
+<li><code>pytest tests/test_benchmark_closed_ledger.py</code> &rarr; <span class="pass">33/33, exit 0</span> (after fixing 3 test bugs found by the first red run &mdash; causes fixed, not asserted away; +5 tests added for the MC same-asset fix, incl. the coin-flip gate)</li>
+<li><code>py_compile alpha_engine/benchmark_closed_ledger.py</code> &rarr; <span class="pass">OK</span></li>
+<li>Task 10 smoke run on <code>dashboard_data.json</code> + live Yahoo prices &rarr; <span class="pass">exit 0</span>; report strict-JSON verified</li>
+<li>Combined-book reproduction <code>run.py</code> &rarr; <span class="pass">exit 0</span>, unmodified reference code, Ken French <code>*_CSV.zip</code> data; 8/8 rows identical to committed <code>results.csv</code> (side-by-side table above)</li>
+</ul>
+</div>
+
+<div class="foot">
+<p><strong>Honesty notes.</strong> Nothing here is investment advice. No class is money-ready (0/9, the site's own verdict files say so). The combined book fails the 20% drawdown gate by 0.5pp full-period; it passes only 2016+. Backtests use proxy history (mutual-fund splices, index vs tradable instruments) and one stale factor file &mdash; the pilot exists precisely to replace backtest claims with live paper records. Changing any rule restarts the pilot clock.</p>
+<p>Generated by the Freebuff agent session of Oct 19, 2026. Related: <a href="index.html">&larr; updates index</a> &middot; <a href="https://findtorontoevents.ca/audit/">/audit dashboard</a>.</p>
+</div>
+
+</div>
+</body>
+</html>
