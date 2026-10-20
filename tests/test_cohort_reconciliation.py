@@ -245,7 +245,25 @@ def test_disagreement_stale_source_flags_age_in_days():
     assert stale[0]["stale_days"] == 121
     # stale summary is a different-time cohort: no spurious per-class disagreement
     assert len(out["checks"]) == 1
+    # but a dead/stale summary job must show up at the top level
+    assert out["flagged"] is True
+    assert out["stale_sources_flagged"] is True
+
+
+def test_disagreement_sample_not_full_cohort_skips_disagree():
+    # dashboard in-window n=69 EQUITY vs summary n_closed=2780 (>2x) ->
+    # input limitation, not a disagreement -> status recorded, disagree skipped.
+    dash = _dashboard(n=69)
+    summary = _summary(pf=2.0, n_closed=2780, wins=1500, losses=1280,
+                       generated="2026-10-20T00:00:00Z")
+    out = flag_published_disagreement({336: dash}, {"s14": summary},
+                                      dashboard_generated_at="2026-10-20T01:00:00Z")
+    eq = [c for c in out["checks"] if c.get("cohort") == "336h/EQUITY"]
+    assert len(eq) == 1
+    assert eq[0].get("status") == "sample_not_full_cohort"
+    assert eq[0].get("disagree") in (None, False)
     assert out["flagged"] is False
+    assert out["stale_sources_flagged"] is False
 
 
 from tools.cohort_reconciliation import assemble_output, main

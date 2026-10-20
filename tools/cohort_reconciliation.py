@@ -247,23 +247,42 @@ def flag_published_disagreement(dashboard_by_window, summary_stats,
             pass
         if stale_source:
             # a stale summary reflects a different-time cohort; per-class
-            # disagreement against the current dashboard would be spurious
+            # disagreement against the current dashboard would be spurious.
+            # BUT a stale source is itself a top-level problem (dead summary
+            # job) and must set flagged=True so it is never hidden.
             continue
         for cls, sm in summary.get("by_class", {}).items():
             dm = dash["by_class"].get(cls)
             if dm is None:
                 continue
+            summary_n = sm.get("n_closed", 0)
+            dash_n = dm.get("n", 0)
+            # recent_closed is a capped/filtered sample, not the full cohort.
+            # When the published summary's n is more than 2x the dashboard's
+            # in-window n for a class, that is an input limitation, not a
+            # disagreement -> record status and skip disagree for the class.
+            if summary_n > 2 * dash_n:
+                checks.append({
+                    "file": path, "cohort": f"{wh}h/{cls}",
+                    "status": "sample_not_full_cohort",
+                    "dashboard_n": dash_n, "summary_n": summary_n,
+                    "disagree": False,
+                })
+                continue
             pf_delta = _pf_delta(dm.get("pf"), sm.get("pf"))
-            n_delta_frac = abs(dm.get("n", 0) - sm.get("n_closed", 0)) / max(dm.get("n", 0), sm.get("n_closed", 0), 1)
+            n_delta_frac = abs(dash_n - summary_n) / max(dash_n, summary_n, 1)
             disagree = pf_delta > tol_pf or n_delta_frac > tol_n_pct
             checks.append({
                 "file": path, "cohort": f"{wh}h/{cls}",
                 "coverage_status": "complete",
-                "dashboard_n": dm.get("n"), "dashboard_pf": dm.get("pf"),
-                "summary_n": sm.get("n_closed"), "summary_pf": sm.get("pf"),
+                "dashboard_n": dash_n, "dashboard_pf": dm.get("pf"),
+                "summary_n": summary_n, "summary_pf": sm.get("pf"),
                 "disagree": disagree,
             })
-    return {"flagged": any(c.get("disagree") for c in checks), "checks": checks}
+    stale_flagged = any(c.get("source") == "stale" for c in checks)
+    disagreement_flagged = any(c.get("disagree") for c in checks)
+    return {"flagged": stale_flagged or disagreement_flagged, "checks": checks,
+            "stale_sources_flagged": stale_flagged}
 
 
 import argparse
@@ -278,7 +297,9 @@ def assemble_output(parts):
         "rolling_metrics_by_window": parts.get("rolling_metrics_by_window", {}),
         "blocklist_bypass": parts.get("blocklist_bypass", {"flagged": False, "count": 0, "issues": []}),
         "batch_artefact": parts.get("batch_artefact", {"flagged": False, "clusters": []}),
-        "published_disagreement": parts.get("published_disagreement", {"flagged": False, "checks": []}),
+        "published_disagreement": parts.get("published_disagreement",
+                                           {"flagged": False, "checks": [],
+                                            "stale_sources_flagged": False}),
         "notes": parts.get("notes", []),
     }
 
@@ -335,7 +356,7 @@ def main(argv=None):
     summary_map = {"14d": s14, "48h": s48}
     dash_by_window = {336: w14, 48: w48}
     disagreement = flag_published_disagreement(dash_by_window, summary_map,
-                                              dashboard_generated_at=generated_at) if dash else {"flagged": False, "checks": []}
+                                              dashboard_generated_at=generated_at) if dash else {"flagged": False, "checks": [], "stale_sources_flagged": False}
 
     notes = ["comparison_scope=published-file-vs-published-file; no live DB read performed"]
     if s14 and s14.get("generated_at"):
