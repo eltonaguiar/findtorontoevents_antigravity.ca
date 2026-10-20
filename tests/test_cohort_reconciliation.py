@@ -266,6 +266,32 @@ def test_disagreement_sample_not_full_cohort_skips_disagree():
     assert out["stale_sources_flagged"] is False
 
 
+def test_disagreement_low_n_skips_pf():
+    # 48h/FOREX: either side n<20 -> skip PF disagreement, status "low_n".
+    # A 48h window has so few forex trades that one losing trade can swing the
+    # profit factor wildly; the same low-n rule as for win rate applies.
+    summary = {
+        "window_hours": 48,
+        "generated_at": "2026-10-20T00:00:00Z",
+        "by_class": {"FOREX": {"n_closed": 11, "wins": 9, "losses": 2,
+                                "wr_pct": 81.8, "pf": 23.64}},
+    }
+    dashboard = {
+        "window_hours": 48,
+        "coverage": {"status": "complete"},
+        "by_class": {"FOREX": {"n": 37, "wins": 12, "losses": 25,
+                                "win_rate": 0.324, "pf": 1.78}},
+    }
+    out = flag_published_disagreement({48: dashboard}, {"s48": summary},
+                                      dashboard_generated_at="2026-10-20T01:00:00Z")
+    fx = [c for c in out["checks"] if c.get("cohort") == "48h/FOREX"]
+    assert len(fx) == 1
+    assert fx[0].get("status") == "low_n"
+    assert fx[0].get("disagree") in (None, False)
+    assert out["flagged"] is False
+    assert out["stale_sources_flagged"] is False
+
+
 from tools.cohort_reconciliation import assemble_output, main
 import subprocess
 
