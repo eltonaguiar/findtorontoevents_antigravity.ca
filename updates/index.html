@@ -34,6 +34,20 @@
 -->
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
+  <!-- Update: Oct 19, 2026 — combined-book paper-trade module: research dataset + reproduction (ZOOCODE-INCEPTION) -->
+  <div class="update-entry" style="--dot-color: #f472b6;" data-tags="combined-book,paper-trade,research-dataset,reproduction,zoocode-inception,backtest,trading" data-category="trading" data-types="feature,analysis">
+    <div class="update-date">Oct 19, 2026 &mdash; ~23:00 UTC &middot; <strong style="color:#f472b6;">Combined-book paper-trade module + research dataset: Grokbot/Kimi reference reproduction (ZOOCODE-INCEPTION)</strong></div>
+    <div class="update-content">
+      <p><strong>What was built:</strong> a standalone combined-book paper-trade module (<code>combined_book/</code>: fetch &rarr; sleeves &rarr; combiner &rarr; simulator &rarr; ledger &rarr; gates &rarr; CLI) that reproduces the documented Grokbot/Kimi backtest before trading. The research dataset harness (T11) spliced ETF &rarr; mutual-fund proxies (SPY&#8592;VFINX, TLT&#8592;VUSTX, IEF/LQD&#8592;VBMFX, SHY&#8592;FGOVX, HYG&#8592;VWEHX, GLD&#8592;FSAGX, VNQ&#8592;VGSIX, DBC&#8592;PCRIX) plus Ken French OP/BE-ME and the CBOE PUT index, extending history back to 1988.</p>
+      <p><strong>Two real bugs fixed:</strong> (1) Ken French monthly parser (2008-10 OP misread as +0.1834 instead of &minus;15.32%); (2) sleeve combination excluded missing sleeves and renormalized instead of leaving 0% cash. Added a reference-style trend sleeve with rolling inverse-vol weights (36-m, min 24, cap 0.40) + overlay scaling.</p>
+      <p><strong>Reproduction results</strong> (research dataset, full window 1988&ndash;2026): book at 5% overlay &mdash; n=466, CAGR 4.98%, annualized Sharpe 0.98, maxDD &minus;14.30%, PF 2.03, win rate 68.2%; 2013+ cross-check research vs raw datasets agree (CAGR 4.54% vs 4.23%, Sharpe 0.91 vs 0.99).</p>
+      <p><strong>Status & honesty:</strong> spec left as Draft (not approved); 43/43 combined-book tests + 3 network-marked reproduction tests pass; committed as <code>dabdbcbb69</code> on <code>feat/combined-book-paper-trade</code>. Review follow-ups on file: book CAGR at the 5.0% tolerance floor (target 6.5% &plusmn;1.5pp), trend sleeve 4.6% vs 7.5% reference gap, Ken French data refresh, and <code>git worktree prune</code>.</p>
+      <p><strong>Full write-ups:</strong> <code>updates/2026-10-19-combined-book-paper-trade-pilot.md</code> &middot; <code>docs/zoocode-inception-combined-book-paper-trade.html</code>.</p>
+    </div>
+  </div>
+
+
+
   <!-- Update: Oct 17, 2026 — FavCreators /fc/#/guest: why follows vanished on refresh (root cause + fixes) -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
