@@ -21,12 +21,20 @@ def utcnow_iso():
 
 
 def parse_ts(ts):
-    """Parse an ISO timestamp; tolerate trailing 'Z' and microseconds."""
+    """Parse an ISO timestamp; tolerate trailing 'Z', microseconds, and tz abbreviations."""
     if ts is None:
         raise ValueError("parse_ts(None)")
     s = str(ts).strip()
     if s.endswith("Z") or s.endswith("z"):
         s = s[:-1] + "+00:00"
+    for abbrev, offset in (("EST", "-05:00"), ("EDT", "-04:00"),
+                           ("CST", "-06:00"), ("CDT", "-05:00"),
+                           ("MST", "-07:00"), ("MDT", "-06:00"),
+                           ("PST", "-08:00"), ("PDT", "-07:00"),
+                           ("UTC", "+00:00"), ("GMT", "+00:00")):
+        if s.endswith(" " + abbrev):
+            s = s[: -(len(abbrev) + 1)] + offset
+            break
     return datetime.fromisoformat(s)
 
 
@@ -255,3 +263,92 @@ def flag_published_disagreement(dashboard_by_window, summary_stats,
                 "disagree": disagree,
             })
     return {"flagged": any(c.get("disagree") for c in checks), "checks": checks}
+
+
+import argparse
+
+
+def assemble_output(parts):
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "generated_utc": utcnow_iso(),
+        "comparison_scope": "published-file-vs-published-file",
+        "inputs": parts.get("inputs", {}),
+        "rolling_metrics_by_window": parts.get("rolling_metrics_by_window", {}),
+        "blocklist_bypass": parts.get("blocklist_bypass", {"flagged": False, "count": 0, "issues": []}),
+        "batch_artefact": parts.get("batch_artefact", {"flagged": False, "clusters": []}),
+        "published_disagreement": parts.get("published_disagreement", {"flagged": False, "checks": []}),
+        "notes": parts.get("notes", []),
+    }
+
+
+def _read_inputs(dash_path, s14_path, s48_path):
+    dash = load_json(dash_path)
+    s14 = load_json(s14_path)
+    s48 = load_json(s48_path)
+    recs = []
+    if dash and dash.get("picks", {}).get("recent_closed"):
+        recs = dash["picks"]["recent_closed"]
+    inputs = {
+        "dashboard_data": {"path": dash_path, "present": dash is not None,
+                           "generated_utc": (dash or {}).get("generated_at"),
+                           "records": len(recs)},
+        "summary_stats_14d": {"path": s14_path, "present": s14 is not None,
+                              "generated_utc": (s14 or {}).get("generated_at")},
+        "summary_stats_48h": {"path": s48_path, "present": s48 is not None,
+                              "generated_utc": (s48 or {}).get("generated_at")},
+    }
+    return dash, recs, s14, s48, inputs
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="cohort_reconciliation")
+    ap.add_argument("--dashboard", default="audit_dashboard/data/dashboard_data.json")
+    ap.add_argument("--summary14d", default="audit_dashboard/data/pick_summary_stats_14d.json")
+    ap.add_argument("--summary48h", default="audit_dashboard/data/pick_summary_stats_48h.json")
+    ap.add_argument("--block-dates", default=None, help="optional JSON: strategy -> block ISO date")
+    ap.add_argument("--out", default="audit_dashboard/data/cohort_reconciliation.json")
+    ap.add_argument("--strict", action="store_true")
+    args = ap.parse_args(argv)
+
+    dash, recs, s14, s48, inputs = _read_inputs(args.dashboard, args.summary14d, args.summary48h)
+    if args.strict and dash is None:
+        raise FileNotFoundError(args.dashboard)
+
+    generated_at = dash.get("generated_at") if dash else utcnow_iso()
+    w14 = recompute_rolling_metrics(recs, 336, generated_at) if dash else {}
+    w48 = recompute_rolling_metrics(recs, 48, generated_at) if dash else {}
+    rolling = {}
+    if w14:
+        rolling["14d"] = w14
+    if w48:
+        rolling["48h"] = w48
+
+    block_dates = None
+    if args.block_dates:
+        with open(args.block_dates, encoding="utf-8") as f:
+            block_dates = json.load(f)
+    bypass = flag_blocklist_bypass(recs, block_dates) if dash else {"flagged": False, "count": 0, "issues": []}
+    batch = flag_batch_artefact(recs) if dash else {"flagged": False, "clusters": []}
+
+    summary_map = {"14d": s14, "48h": s48}
+    dash_by_window = {336: w14, 48: w48}
+    disagreement = flag_published_disagreement(dash_by_window, summary_map,
+                                              dashboard_generated_at=generated_at) if dash else {"flagged": False, "checks": []}
+
+    notes = ["comparison_scope=published-file-vs-published-file; no live DB read performed"]
+    if s14 and s14.get("generated_at"):
+        notes.append(f"summary_stats_14d generated_at={s14.get('generated_at')}")
+    if s48 and s48.get("generated_at"):
+        notes.append(f"summary_stats_48h generated_at={s48.get('generated_at')}")
+
+    out = assemble_output({"inputs": inputs, "rolling_metrics_by_window": rolling,
+                           "blocklist_bypass": bypass, "batch_artefact": batch,
+                           "published_disagreement": disagreement, "notes": notes})
+    with open(args.out, "w", encoding="utf-8") as f:
+        json.dump(out, f, indent=2, default=str)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

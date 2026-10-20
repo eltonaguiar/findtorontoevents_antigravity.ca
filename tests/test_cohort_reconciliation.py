@@ -43,6 +43,16 @@ def test_parse_ts_normalizes_z_and_microseconds():
     assert dt2.tzinfo is not None
 
 
+def test_parse_ts_handles_est_edt_abbrev():
+    # real published dashboard contains e.g. "2026-10-18T14:48:19 EST"
+    dt_est = parse_ts("2026-10-18T14:48:19 EST")
+    assert dt_est.tzinfo is not None
+    assert dt_est.utcoffset().total_seconds() == -5 * 3600
+    dt_edt = parse_ts("2026-10-18T14:48:19 EDT")
+    assert dt_edt.tzinfo is not None
+    assert dt_edt.utcoffset().total_seconds() == -4 * 3600
+
+
 from tools.cohort_reconciliation import _pf, metric_block, recompute_rolling_metrics
 
 
@@ -216,3 +226,44 @@ def test_disagreement_stale_source_flags_age_in_days():
     stale = [c for c in out["checks"] if c.get("source") == "stale"]
     assert len(stale) == 1
     assert stale[0]["stale_days"] == 121
+
+
+from tools.cohort_reconciliation import assemble_output, main
+import subprocess
+
+
+def test_assemble_has_no_ready_enter():
+    out = assemble_output({
+        "inputs": {}, "rolling_metrics_by_window": {}, "blocklist_bypass": {"flagged": False, "count": 0, "issues": []},
+        "batch_artefact": {"flagged": False, "clusters": []},
+        "published_disagreement": {"flagged": False, "checks": []}, "notes": [],
+    })
+    blob = json.dumps(out)
+    assert "READY" not in blob
+    assert "ENTER" not in blob
+    assert out["comparison_scope"] == "published-file-vs-published-file"
+
+
+def test_main_writes_output(tmp_path):
+    dashboard = {
+        "generated_at": "2026-10-20T00:00:00Z",
+        "picks": {"recent_closed": [
+            {"id": "a", "strategy": "s1", "asset_class": "EQUITY",
+             "pnl_pct": 1.0, "closed_at": "2026-10-19T00:00:00Z", "source_system": "alpha_engine"},
+            {"id": "b", "strategy": "s1", "asset_class": "EQUITY",
+             "pnl_pct": -1.0, "closed_at": "2026-10-18T00:00:00Z", "source_system": "alpha_engine"},
+        ]},
+    }
+    sum14 = {"window_hours": 336, "generated_at": "2026-10-20T00:00:00Z",
+             "by_class": {"EQUITY": {"n_closed": 2, "wins": 1, "losses": 1, "wr_pct": 50.0, "pf": 1.0}}}
+    sum48 = {"window_hours": 48, "generated_at": "2026-10-20T00:00:00Z",
+             "by_class": {"EQUITY": {"n_closed": 1, "wins": 1, "losses": 0, "wr_pct": 100.0, "pf": "inf"}}}
+    d = tmp_path / "d.json"; s14 = tmp_path / "s14.json"; s48 = tmp_path / "s48.json"
+    out = tmp_path / "out.json"
+    d.write_text(json.dumps(dashboard)); s14.write_text(json.dumps(sum14)); s48.write_text(json.dumps(sum48))
+    rc = main(["--dashboard", str(d), "--summary14d", str(s14), "--summary48h", str(s48), "--out", str(out)])
+    assert rc == 0
+    data = json.loads(out.read_text())
+    assert data["schema_version"] == "1.1.0"
+    assert data["comparison_scope"] == "published-file-vs-published-file"
+    assert "14d" in str(data["rolling_metrics_by_window"])
