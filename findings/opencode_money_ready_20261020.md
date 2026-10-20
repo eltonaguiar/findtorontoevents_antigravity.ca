@@ -1,9 +1,9 @@
 # opencode money_ready 20261020 — crypto lane
 
 ## 1. Verdict (3 lines)
-- No strategy in the crypto lane is MONEY-READY. All five fail the MDD gate (and most fail DSR/PF/CI/MC).
-- Closest candidate: crypto_r1 (volume >2x 20-day avg + up close, 5-day hold) — OOS n=689, PF 2.449, WR 55.73, MC 100, pf@2x 2.332, but MDD -89.85% and DSR 0.00. Classified FAIL (misses MDD).
-- macd_rsi_m048 is the next closest (PF 1.56, MDD -78.11, MC 83.2). Recommend forward paper track only after adding a stop-loss/volatility sizing to fix MDD.
+- No strategy in the crypto lane is MONEY-READY. All fail DSR (0.00 with NTRIALS=24) and most fail MDD.
+- Best tradeoff: crypto_r1_v2 (volume >2x 20d avg + up close + 50-day SMA uptrend, ATR TP 4x / SL 2x, 3-day hold) — OOS n=595, WR 50.59%, PF 1.572, 95% CI [1.236, 2.032], MDD -21.29%, MC 98.3, PF@2x 1.485. Misses MDD by 1.29 pts and DSR. Classified FAIL (misses MDD + DSR); closest to candidate.
+- crypto_r1_v3 (tighter stop) passes MDD (-16.63%) but fails PF (1.486) and CI (1.178). The PF/MDD tradeoff cannot be resolved with a fixed ATR stop on daily bars. Recommend forward paper track with a trailing stop.
 
 ## 2. Step 1 idea list (crypto lane, written before seeing new results)
 Count of trials = 5 (used for Deflated Sharpe).
@@ -15,6 +15,14 @@ Count of trials = 5 (used for Deflated Sharpe).
 | 3 | connors_rsi2 (RSI(2)<5 & close>200SMA, exit RSI(2)>65 or 10d) | alpha_engine/connors_rsi2.py (adapted to crypto) | 73-76% WR on SPY 1993-2008 | Not previously tested on crypto |
 | 4 | crypto_mom20 (20d momentum>0, 5-day hold) | novel simple baseline | none | baseline |
 | 5 | crypto_mr_rsi14 (RSI(14)<30, 5-day hold) | novel simple baseline | none | baseline |
+
+## Method (fixed per review)
+- Entry at next bar's open. Exit intraday on TP/SL (high/low) else at close of final hold day.
+- MDD from dated equity curve at 10% fixed fractional sizing (not sequential compounding).
+- MC null: same hold length, OOS window only, same symbols, close-to-close.
+- Cost: 30bp round trip (assumed, no external source cited). PF shown at 1x and 2x.
+- NTRIALS = 24 (5 base + 19 grid variants). DSR uses this count.
+- PF CI lower bound >=1.2 and top symbol <=30% enforced in verdict. WR hidden when n<20 (none here; all n>=244).
 
 ## 3. Results table (OOS = 2020-01-01 to 2026-10-20, crypto 30bp costs; IS = <=2019)
 
@@ -33,20 +41,30 @@ Count of trials = 5 (used for Deflated Sharpe).
 
 Yearly OOS PF (crypto_r1): 2020 1.434, 2021 2.221, 2022 1.259, 2023 1.372, 2024 2.126, 2025 2.124, 2026 0.589 (loss year flagged).
 
+## 3b. Additional variants
+| Strategy | OOS n | WR% | PF | CI | MDD% | MC | DSR | PF@2x | top share | Gates missed |
+|---|---|---|---|---|---|---|---|---|---|---|
+| crypto_r1_v2 (TP4/SL2/hold3/trend) | 595 | 50.59 | 1.572 | [1.236,2.032] | -21.29 | 98.3 | 0.00 | 1.485 | 0.175 | MDD, DSR |
+| crypto_r1_v3 (TP3/SL2/hold2/trend) | 595 | 53.95 | 1.486 | [1.178,1.906] | -16.63 | 98.2 | 0.00 | 1.389 | 0.175 | PF, CI, DSR |
+| crypto_r1_v4 (TP4/SL1.5/hold3/trend) | 595 | 47.39 | 1.493 | [1.190,1.900] | -21.69 | 97.1 | 0.00 | 1.407 | 0.175 | PF, WR, MDD, DSR, CI |
+
 ## 4. Gate evaluation
 Gates: OOS after costs n>=100, PF>=1.5, PF CI lower>=1.2, WR>=50%, MDD<=20%, MC pct>=95, DSR>0.95, PF@2x>=1.3, top symbol <=30%, PF ex-top >=1.3.
 
 - macd_rsi_m048: FAIL (MDD -78.11, MC 83.2<95, DSR 0.00, PF@2x 1.476>=1.3 ok, top 0.13<=0.3 ok, pf_ex 1.636>=1.3 ok). Misses MDD, MC, DSR.
-- crypto_r1: FAIL (MDD -89.85, DSR 0.00). Misses MDD, DSR. (PF, CI, WR, MC, pf@2x, top share, pf_ex all pass.)
+- crypto_r1 (orig): FAIL (MDD -24.72, DSR 0.00). Misses MDD, DSR.
+- crypto_r1_v2: FAIL (MDD -21.29, DSR 0.00). Misses MDD, DSR. Closest to passing; all other gates pass.
+- crypto_r1_v3: FAIL (PF 1.486<1.5, CI 1.178<1.2, DSR 0.00). Passes MDD (-16.63).
 - connors_rsi2: FAIL (PF 1.479<1.5, CI lo 1.192<1.2, MDD -97.5, DSR 0.00).
 - crypto_mom20: FAIL (WR 48.71<50, PF 1.497<1.5, MDD -100, DSR 0.00).
 - crypto_mr_rsi14: FAIL (PF 1.394<1.5, CI lo 1.13<1.2, MDD -95.26, MC 92.7<95, DSR 0.00, PF@2x 1.282<1.3).
 
 Closest candidate: crypto_r1 — passes all gates except MDD and DSR. Single gate that most blocks promotion: MDD (-89.85% vs <=20% limit). Root cause: no stop loss, 5-day fixed hold in volatile crypto.
 
-## 5. No MONEY-READY strategy. No CANDIDATE (all fail MDD, a hard gate). No paper tracker added.
+## 5. Conclusion
+No MONEY-READY strategy. No CANDIDATE per strict definition (crypto_r1_v2 misses MDD and DSR; contingency for CANDIDATE required missing only n or DSR).
 
-What would change the verdict for crypto_r1: add a volatility-scaled stop loss (e.g., 2x ATR) and re-test MDD on OOS; if MDD <=20% and DSR>0.95 with n>=100, reclassify as MONEY-READY. Do not loosen gates.
+Best viable strategy: crypto_r1_v2 — profitable (PF 1.572) with MDD near the limit (-21.29%). To reach MONEY-READY: reduce MDD below 20% without dropping PF below 1.5. Candidate approaches: trailing stop instead of fixed ATR stop, or position sizing that scales down after a losing streak. DSR will remain 0 unless NTRIALS is reduced by pre-registering a single variant (not 24).
 
 ## 6. Reproduce
 Command: `cd ../wt-opencode-moneyready && python3 scripts/opencode_crypto_backtest.py`
