@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 SCHEMA_VERSION = "1.1.0"
+LOW_N_MIN = 20  # same low-n floor as for win rate; skip PF below this
 
 
 def utcnow_iso():
@@ -266,6 +267,18 @@ def flag_published_disagreement(dashboard_by_window, summary_stats,
                     "file": path, "cohort": f"{wh}h/{cls}",
                     "status": "sample_not_full_cohort",
                     "dashboard_n": dash_n, "summary_n": summary_n,
+                    "disagree": False,
+                })
+                continue
+            # Low-n rule (same as for win rate): with fewer than 20 trades on
+            # either side, one losing trade can swing the profit factor wildly,
+            # so skip the PF comparison. Record status, skip disagree.
+            if summary_n < LOW_N_MIN or dash_n < LOW_N_MIN:
+                checks.append({
+                    "file": path, "cohort": f"{wh}h/{cls}",
+                    "status": "low_n",
+                    "dashboard_n": dash_n, "summary_n": summary_n,
+                    "dashboard_pf": dm.get("pf"), "summary_pf": sm.get("pf"),
                     "disagree": False,
                 })
                 continue
