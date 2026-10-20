@@ -168,7 +168,22 @@ def test_batch_artefact_detects_cluster_and_excl_metrics():
     assert c["metrics_excl_batch"]["n"] == 2
     assert c["metrics_excl_batch"]["win_rate"] is None
     assert c["metrics_excl_batch"]["win_rate_hidden"] is True
-    assert c["metrics_excl_batch"]["win_rate_low_n"] == 0.5
+    assert "win_rate_low_n" not in c["metrics_excl_batch"]
+
+
+def test_batch_artefact_mixed_timestamp_flags_each_strategy_separately():
+    ts = "2026-10-19T22:43:12Z"
+    rows = [_rec(1.0, ts, strategy="strat_a", asset_class="CRYPTO") for _ in range(6)]
+    rows += [_rec(-1.0, ts, strategy="strat_b", asset_class="CRYPTO") for _ in range(6)]
+    out = flag_batch_artefact(rows)
+    assert out["flagged"] is True
+    assert len(out["clusters"]) == 2
+    strats = {c["strategy"] for c in out["clusters"]}
+    assert strats == {"strat_a", "strat_b"}
+    for c in out["clusters"]:
+        assert c["count"] == 6
+        assert c["metrics"]["n"] == 6
+        assert c["metrics_excl_batch"]["n"] == 0
 
 
 def test_batch_artefact_no_flag_below_min_cluster():

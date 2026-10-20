@@ -172,38 +172,32 @@ from collections import defaultdict
 
 
 def flag_batch_artefact(records, min_cluster=5):
-    by_ts = defaultdict(list)
+    # group by (closed_at, strategy): each strategy gets its own cluster so a
+    # single timestamp closing several strategies never collapses into one
+    # random strategy
+    by_key = defaultdict(list)
     for r in records:
         ts = r.get("closed_at")
-        if ts:
-            by_ts[ts].append(r)
+        strat = r.get("strategy")
+        if ts and strat:
+            by_key[(ts, strat)].append(r)
     clusters = []
-    for ts, rows in sorted(by_ts.items()):
+    for (ts, strat), rows in sorted(by_key.items(), key=lambda kv: kv[0][0]):
         if len(rows) < min_cluster:
             continue
-        strats = {r.get("strategy") for r in rows}
         sources = {r.get("source_system") for r in rows}
-        primary_strat = next(iter(strats), None)
         # base metrics for the strategy cohort (all records of that strategy)
-        strat_all = [r for r in records if r.get("strategy") == primary_strat]
+        strat_all = [r for r in records if r.get("strategy") == strat]
         # excl metrics: drop rows that share this batch timestamp AND this strategy
         strat_excl = [r for r in strat_all
-                      if not (r.get("closed_at") == ts and r.get("strategy") == primary_strat)]
-        excl_metrics = metric_block(strat_excl) if primary_strat else None
-        # artefact-diagnostic bucket: expose the raw low-n win-rate in a DISTINCT
-        # field so the honesty flag (win_rate=None + hidden) is preserved while
-        # still surfacing the number for diagnosis.
-        if excl_metrics and excl_metrics["win_rate_hidden"]:
-            excl_metrics["win_rate_low_n"] = (
-                excl_metrics["wins"] / excl_metrics["n"]
-                if excl_metrics["n"] else None)
+                      if not (r.get("closed_at") == ts and r.get("strategy") == strat)]
+        excl_metrics = metric_block(strat_excl)
         clusters.append({
             "closed_at": ts,
             "count": len(rows),
-            "distinct_strategies": len(strats),
-            "strategy": primary_strat,
+            "strategy": strat,
             "source_system": next(iter(sources), None),
-            "metrics": metric_block(strat_all) if primary_strat else None,
+            "metrics": metric_block(strat_all),
             "metrics_excl_batch": excl_metrics,
         })
     return {"flagged": bool(clusters), "clusters": clusters}
