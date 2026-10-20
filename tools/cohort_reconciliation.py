@@ -190,12 +190,13 @@ def flag_batch_artefact(records, min_cluster=5):
         strat_excl = [r for r in strat_all
                       if not (r.get("closed_at") == ts and r.get("strategy") == primary_strat)]
         excl_metrics = metric_block(strat_excl) if primary_strat else None
-        # artefact-diagnostic bucket: report raw win-rate even when n < 20
+        # artefact-diagnostic bucket: expose the raw low-n win-rate in a DISTINCT
+        # field so the honesty flag (win_rate=None + hidden) is preserved while
+        # still surfacing the number for diagnosis.
         if excl_metrics and excl_metrics["win_rate_hidden"]:
-            excl_metrics["win_rate"] = (
+            excl_metrics["win_rate_low_n"] = (
                 excl_metrics["wins"] / excl_metrics["n"]
                 if excl_metrics["n"] else None)
-            excl_metrics["win_rate_hidden"] = False
         clusters.append({
             "closed_at": ts,
             "count": len(rows),
@@ -237,6 +238,7 @@ def flag_published_disagreement(dashboard_by_window, summary_stats,
                            "coverage_status": cov_status, "disagree": False})
             continue
         # stale check (flags with age in days per user requirement)
+        stale_source = False
         try:
             gen = parse_ts(summary["generated_at"])
             if dashboard_generated_at:
@@ -246,8 +248,13 @@ def flag_published_disagreement(dashboard_by_window, summary_stats,
                     checks.append({"file": path, "source": "stale",
                                    "stale_days": stale_days,
                                    "stale_hours": round((dash_gen - gen).total_seconds() / 3600, 1)})
+                    stale_source = True
         except Exception:
             pass
+        if stale_source:
+            # a stale summary reflects a different-time cohort; per-class
+            # disagreement against the current dashboard would be spurious
+            continue
         for cls, sm in summary.get("by_class", {}).items():
             dm = dash["by_class"].get(cls)
             if dm is None:

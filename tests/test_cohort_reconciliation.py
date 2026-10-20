@@ -166,7 +166,9 @@ def test_batch_artefact_detects_cluster_and_excl_metrics():
     # base includes cluster; excl drops it
     assert c["metrics"]["n"] == 75
     assert c["metrics_excl_batch"]["n"] == 2
-    assert c["metrics_excl_batch"]["win_rate"] == 0.5
+    assert c["metrics_excl_batch"]["win_rate"] is None
+    assert c["metrics_excl_batch"]["win_rate_hidden"] is True
+    assert c["metrics_excl_batch"]["win_rate_low_n"] == 0.5
 
 
 def test_batch_artefact_no_flag_below_min_cluster():
@@ -226,6 +228,9 @@ def test_disagreement_stale_source_flags_age_in_days():
     stale = [c for c in out["checks"] if c.get("source") == "stale"]
     assert len(stale) == 1
     assert stale[0]["stale_days"] == 121
+    # stale summary is a different-time cohort: no spurious per-class disagreement
+    assert len(out["checks"]) == 1
+    assert out["flagged"] is False
 
 
 from tools.cohort_reconciliation import assemble_output, main
