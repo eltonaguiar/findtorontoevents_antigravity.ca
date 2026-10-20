@@ -135,3 +135,30 @@ def test_blocklist_bypass_issue_time_before_block_not_flagged():
                  entry="2026-09-01T00:00:00Z")]
     block_dates = {"inverse_quan_engine_scalp": "2026-09-15T00:00:00Z"}
     assert flag_blocklist_bypass(recs, block_dates)["flagged"] is False
+
+
+from tools.cohort_reconciliation import flag_batch_artefact
+
+
+def test_batch_artefact_detects_cluster_and_excl_metrics():
+    ts = "2026-10-19T22:43:12Z"
+    rows = [_rec(1.0, ts, strategy="momentum_ema", asset_class="CRYPTO") for _ in range(73)]
+    # add one clean non-batch win + one loss for same strategy
+    rows.append(_rec(1.0, "2026-10-18T00:00:00Z", strategy="momentum_ema", asset_class="CRYPTO"))
+    rows.append(_rec(-1.0, "2026-10-17T00:00:00Z", strategy="momentum_ema", asset_class="CRYPTO"))
+    out = flag_batch_artefact(rows)
+    assert out["flagged"] is True
+    assert len(out["clusters"]) == 1
+    c = out["clusters"][0]
+    assert c["count"] == 73
+    assert c["closed_at"] == ts
+    assert c["strategy"] == "momentum_ema"
+    # base includes cluster; excl drops it
+    assert c["metrics"]["n"] == 75
+    assert c["metrics_excl_batch"]["n"] == 2
+    assert c["metrics_excl_batch"]["win_rate"] == 0.5
+
+
+def test_batch_artefact_no_flag_below_min_cluster():
+    rows = [_rec(1.0, "2026-10-19T22:43:12Z") for _ in range(3)]
+    assert flag_batch_artefact(rows)["flagged"] is False
