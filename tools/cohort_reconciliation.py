@@ -198,3 +198,60 @@ def flag_batch_artefact(records, min_cluster=5):
             "metrics_excl_batch": excl_metrics,
         })
     return {"flagged": bool(clusters), "clusters": clusters}
+
+
+def _pf_delta(a, b):
+    if a == b:
+        return 0.0
+    if a == "inf":
+        return 10.0  # treat infinite vs finite as large delta
+    if b == "inf":
+        return 10.0
+    return abs((a or 0.0) - (b or 0.0))
+
+
+def flag_published_disagreement(dashboard_by_window, summary_stats,
+                               tol_pf=0.1, tol_n_pct=0.2,
+                               stale_hours=48, dashboard_generated_at=None):
+    checks = []
+    for path, summary in summary_stats.items():
+        if summary is None:
+            checks.append({"file": path, "source": "missing"})
+            continue
+        wh = summary.get("window_hours")
+        dash = dashboard_by_window.get(wh)
+        if dash is None:
+            checks.append({"file": path, "source": "no_matching_window"})
+            continue
+        cov_status = dash["coverage"]["status"]
+        if cov_status != "complete":
+            checks.append({"file": path, "cohort": f"{wh}h",
+                           "coverage_status": cov_status, "disagree": False})
+            continue
+        # stale check (flags with age in days per user requirement)
+        try:
+            gen = parse_ts(summary["generated_at"])
+            if dashboard_generated_at:
+                dash_gen = parse_ts(dashboard_generated_at)
+                if (dash_gen - gen).total_seconds() > stale_hours * 3600:
+                    stale_days = round((dash_gen - gen).total_seconds() / 86400)
+                    checks.append({"file": path, "source": "stale",
+                                   "stale_days": stale_days,
+                                   "stale_hours": round((dash_gen - gen).total_seconds() / 3600, 1)})
+        except Exception:
+            pass
+        for cls, sm in summary.get("by_class", {}).items():
+            dm = dash["by_class"].get(cls)
+            if dm is None:
+                continue
+            pf_delta = _pf_delta(dm.get("pf"), sm.get("pf"))
+            n_delta_frac = abs(dm.get("n", 0) - sm.get("n_closed", 0)) / max(dm.get("n", 0), sm.get("n_closed", 0), 1)
+            disagree = pf_delta > tol_pf or n_delta_frac > tol_n_pct
+            checks.append({
+                "file": path, "cohort": f"{wh}h/{cls}",
+                "coverage_status": "complete",
+                "dashboard_n": dm.get("n"), "dashboard_pf": dm.get("pf"),
+                "summary_n": sm.get("n_closed"), "summary_pf": sm.get("pf"),
+                "disagree": disagree,
+            })
+    return {"flagged": any(c.get("disagree") for c in checks), "checks": checks}

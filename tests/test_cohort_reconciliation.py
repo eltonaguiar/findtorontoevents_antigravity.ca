@@ -162,3 +162,57 @@ def test_batch_artefact_detects_cluster_and_excl_metrics():
 def test_batch_artefact_no_flag_below_min_cluster():
     rows = [_rec(1.0, "2026-10-19T22:43:12Z") for _ in range(3)]
     assert flag_batch_artefact(rows)["flagged"] is False
+
+
+from tools.cohort_reconciliation import flag_published_disagreement
+
+
+def _summary(pf, n_closed, wins, losses, generated=None, window_hours=336):
+    return {
+        "window_hours": window_hours,
+        "generated_at": generated or "2026-10-20T00:00:00Z",
+        "by_class": {"EQUITY": {"n_closed": n_closed, "wins": wins, "losses": losses,
+                                "wr_pct": 100.0 * wins / max(n_closed, 1), "pf": pf}},
+    }
+
+
+def _dashboard(window_hours=336, status="complete", n=2780, pf=1.47):
+    return {
+        "window_hours": window_hours,
+        "coverage": {"status": status},
+        "by_class": {"EQUITY": {"n": n, "wins": 2000, "losses": 780,
+                                "win_rate": 0.719, "win_rate_hidden": False, "pf": pf}},
+    }
+
+
+def test_disagreement_flags_pf_delta():
+    summary = _summary(pf=1.012, n_closed=69, wins=35, losses=34)
+    dashboard = _dashboard(n=2780, pf=1.47)
+    out = flag_published_disagreement({336: dashboard}, {"s14": summary})
+    assert out["flagged"] is True
+    assert out["checks"][0]["disagree"] is True
+
+
+def test_disagreement_incomplete_coverage_skipped():
+    summary = _summary(pf=1.012, n_closed=69, wins=35, losses=34)
+    dashboard = _dashboard(status="incomplete_coverage")
+    out = flag_published_disagreement({336: dashboard}, {"s14": summary})
+    assert out["checks"][0]["coverage_status"] == "incomplete_coverage"
+    assert out["checks"][0]["disagree"] is False
+    assert out["flagged"] is False
+
+
+def test_disagreement_missing_summary_file():
+    out = flag_published_disagreement({336: _dashboard()}, {"s14": None})
+    assert out["checks"][0]["source"] == "missing"
+
+
+def test_disagreement_stale_source_flags_age_in_days():
+    summary = _summary(pf=1.1, n_closed=100, wins=50, losses=50,
+                       generated="2026-06-21T00:00:00Z")
+    # dashboard generated_at = 2026-10-20T00:00:00Z -> ~121 days stale
+    out = flag_published_disagreement({336: _dashboard()}, {"s14": summary},
+                                      dashboard_generated_at="2026-10-20T00:00:00Z")
+    stale = [c for c in out["checks"] if c.get("source") == "stale"]
+    assert len(stale) == 1
+    assert stale[0]["stale_days"] == 121
