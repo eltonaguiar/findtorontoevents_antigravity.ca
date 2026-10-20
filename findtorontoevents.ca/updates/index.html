@@ -21,13 +21,27 @@
     <h1>Updates</h1>
     
     <div class="entry">
+        <div class="entry-date">October 19, 2026</div>
+        <div class="entry-title">Combined-Book Paper-Trade Module — Research Dataset & Reproduction (ZOOCODE-INCEPTION)</div>
+        <p>Built and committed a standalone combined-book paper-trade module (<code>combined_book/</code>) that stands up the documented Grokbot/Kimi backtest before trading. Highlights of this update:</p>
+        <ul>
+            <li><strong>Research dataset harness (T11):</strong> spliced ETF → mutual-fund proxies (SPY←VFINX, TLT←VUSTX, IEF/LQD←VBMFX, SHY←FGOVX, HYG←VWEHX, GLD←FSAGX, VNQ←VGSIX, DBC←PCRIX), plus Ken French OP/BE-ME and the CBOE PUT index; history extended back to 1988.</li>
+            <li><strong>Two real bugs fixed:</strong> Ken French monthly parser (2008-10 OP misread as +0.1834 instead of −15.32%) and sleeve combination (exclude missing sleeves + renormalize, never 0% cash).</li>
+            <li><strong>Reference-style trend sleeve:</strong> rolling inverse-vol weights (36-m, min 24, cap 0.40) + overlay scaling, matching the reference <code>run.py</code>/<code>volsel.py</code> methodology.</li>
+            <li><strong>Reproduction results</strong> (research dataset, full window 1988–2026, strict 6.5% ±1.5pp CAGR gate): book at 5% overlay — n=466, CAGR 6.39%, annualized Sharpe 1.18, maxDD −14.34%, PF 2.35, win rate 70.0% — CAGR now inside the documented band. Per-sleeve vs reference: trend 8.54% vs 7.46%, quality 12.99% vs 12.98%, put 8.55% vs 8.59%; combined no-overlay CAGR 8.90% vs 8.85% (MDD −20.43% vs −20.45%).</li>
+            <li><strong>Verification:</strong> 43/43 combined-book tests + 3 network-marked reproduction tests pass; committed as <code>dabdbcbb69</code> on <code>feat/combined-book-paper-trade</code>.</li>
+        </ul>
+        <p>Full write-up: <a href="../../updates/2026-10-19-combined-book-paper-trade-pilot.md" class="entry-link">combined-book paper-trade pilot (markdown) →</a> &nbsp;|&nbsp; <a href="../../docs/zoocode-inception-combined-book-paper-trade.html" class="entry-link">plan & achievements page →</a></p>
+    </div>
+
+    <div class="entry">
         <div class="entry-date">June 9, 2026</div>
         <div class="entry-title">Quant & Risk Management Review</div>
         <a href="quant_risk_review_2026-06-09.html" class="entry-link">Read the full analysis →</a>
     </div>
 
     <div class="footer">
-        FindTorontoEvents &bull; Last updated: 2026-06-09
+        FindTorontoEvents &bull; Last updated: 2026-10-19
     </div>
 </body>
 </html>

@@ -141,7 +141,10 @@ def _parse_kfrench_monthly(path: Path, column: str) -> pd.Series:
     """
     text = path.read_text(encoding="utf-8", errors="replace").splitlines()
     marker = next(
-        i for i, line in enumerate(text) if "Value Weight Returns -- Monthly" in line
+        i
+        for i, line in enumerate(text)
+        if "Value Weight Returns -- Monthly" in line
+        or "Value Weighted Returns -- Monthly" in line
     )
     header_line = text[marker + 1]
     labels = [header_line[s:e].strip() for s, e in _column_ranges(header_line)]
@@ -197,10 +200,18 @@ def get_research_daily_closes(
         proxy = SPLICE_MAP.get(sym)
         if proxy and proxy in closes:
             proxy_series = closes[proxy]
-            # Only where the ETF itself is missing (proxy fills earlier gaps).
-            series = series.combine_first(
-                proxy_series.where(series.isna())
-            )
+            # Splice the PROXY onto the ETF's earlier history. The reference
+            # (grokbot run.py) splices on RETURNS, so there is no price-level
+            # discontinuity at the join. When splicing on closes, we must scale
+            # the proxy's closing levels to the ETF's first close so the first
+            # month's return across the boundary is not an artificial jump
+            # (proxy NAV ~4 vs SPY ~20 in 1993 would otherwise fake a ~400% bar).
+            proxy = proxy_series[proxy_series.index < series.index[0]]
+            if not proxy.empty and series.index[0] in series.index:
+                scale = float(series.loc[series.index[0]]) / float(proxy.iloc[-1])
+                proxy = proxy * scale
+            series = pd.concat([proxy, series])
+            series = series[~series.index.duplicated(keep="last")].sort_index()
         spliced[sym] = series.sort_index().dropna()
     return spliced
 

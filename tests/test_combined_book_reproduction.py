@@ -69,6 +69,10 @@ def test_research_dataset_reproducible_subset():
     assert per["quality"]["cagr"] == pytest.approx(0.1299, abs=0.02)
     # put ~= reference PutWrite CAGR 0.0859 ±1pp
     assert per["put"]["cagr"] == pytest.approx(0.0859, abs=0.01)
+    # STRICT book CAGR assertion: documented target 6.5% ±1.5pp exactly
+    # (acceptance window [5.0%, 8.0%]). Currently ~4.98% -> below the floor
+    # and must FAIL. This is the reproduction gate the reference defines.
+    assert res["stats"]["cagr"] == pytest.approx(0.065, abs=0.015)
     # combined book MDD within the reference -20.5% band (no overlay)
     assert res["stats"]["max_dd"] == pytest.approx(-0.144, abs=0.05)
     # book is alive and profitable
