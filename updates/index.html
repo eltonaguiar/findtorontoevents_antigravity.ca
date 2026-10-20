@@ -35,30 +35,6 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
   <!-- Update: Oct 19, 2026 — Freebuff session log: Task 10 benchmark module, method review, combined-book reproduction -->
-  <div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,money-ready,benchmark,task10,statistical-gates,combined-book,reproduction,freebuff" data-category="trading" data-types="feature,analysis">
-    <div class="update-date">Oct 19, 2026 &mdash; LIVE (updated hourly)</div>
-    <div class="update-content">
-      <p><strong>Shipped:</strong> <code>alpha_engine/benchmark_closed_ledger.py</code> &mdash; benchmarks every closed-pick ledger vs its same-window benchmark (paired bootstrap, &ge;95% publish gate) and vs random-entry Monte-Carlo (timing percentile). 33/33 tests, real-data run over 170 ledgers &rarr; <code>reports/benchmark_ledger_proof_2026-10-19.json</code> (<strong>6 of 170 ledgers clear the paired benchmark gate</strong>, 4 with full paired+MC proof &mdash; the headline measure). <strong>MC fixed after external review:</strong> nulls were sampled on BTC/SPY paths, pinning volatile instruments at percentile 1.0 (a PF-1.03 ledger scored 1.0; now 0.57) &mdash; v3 uses same-asset, window-matched, direction-aware nulls, guarded by a coin-flip CI gate test. Read-only dashboard panel: <code>/audit/benchmark_proof.html</code> (no picks, no signals, nothing money-ready).</p>
-      <p><strong>Also verified today:</strong> the six-method review (<code>reports/METHOD_REVIEW_2026-10-19-what-actually-works.md</code> &mdash; TSMOM the only Tier-2 + forward-PF&gt;1 method; PEAD WF-verified but never wired; carry regime inverted) and an independent reproduction of the combined multi-sleeve book. <strong>Correction after review:</strong> an earlier version of this entry claimed &quot;two parser bugs&quot; in the reference code &mdash; that was wrong and is retracted. The reference reads Ken French's current <code>*_CSV.zip</code> files (comma-separated, through 2026-08); my first run used the older TXT flavor (ends 2022-08), which the parser was never meant to handle. Re-run with the CSV zips and the <strong>unmodified</strong> reference reproduces the committed <code>results.csv</code> <strong>exactly</strong>: max |Sharpe &Delta;| <strong>0.0000</strong> across all 8 rows, Combined Sharpe 1.2666 / CAGR 8.85% / MDD &minus;20.45%, QualVal identical &mdash; Grok's reference numbers stand, nothing in <code>grokbot</code> changes.</p>
-      <p><strong>Full session write-up</strong> (changes / achievements / plan / future research): <a href="freebuff-2026-10-19-money-ready-methods.html">Freebuff session log &mdash; money-ready methods work</a>.</p>
-    </div>
-  </div>
-
-  <!-- Update: Oct 19, 2026 — combined-book paper-trade module: research dataset + reproduction (ZOOCODE-INCEPTION) -->
-  <div class="update-entry" style="--dot-color: #f472b6;" data-tags="combined-book,paper-trade,research-dataset,reproduction,zoocode-inception,backtest,trading" data-category="trading" data-types="feature,analysis">
-    <div class="update-date">Oct 19, 2026 &mdash; LIVE (updated hourly)</div>
-    <div class="update-content">
-      <p><strong>What was built:</strong> a standalone combined-book paper-trade module (<code>combined_book/</code>: fetch &rarr; sleeves &rarr; combiner &rarr; simulator &rarr; ledger &rarr; gates &rarr; CLI) that reproduces the documented Grokbot/Kimi backtest before trading. The research dataset harness (T11) spliced ETF &rarr; mutual-fund proxies (SPY&#8592;VFINX, TLT&#8592;VUSTX, IEF/LQD&#8592;VBMFX, SHY&#8592;FGOVX, HYG&#8592;VWEHX, GLD&#8592;FSAGX, VNQ&#8592;VGSIX, DBC&#8592;PCRIX) plus Ken French OP/BE-ME and the CBOE PUT index, extending history back to 1988.</p>
-      <p><strong>Two real bugs fixed:</strong> (1) Ken French monthly parser (2008-10 OP misread as +0.1834 instead of &minus;15.32%); (2) sleeve combination excluded missing sleeves and renormalized instead of leaving 0% cash. Added a reference-style trend sleeve with rolling inverse-vol weights (36-m, min 24, cap 0.40) + overlay scaling.</p>
-      <p><strong>Reproduction results</strong> (research dataset, full window 1988&ndash;2026, strict 6.5% &plusmn;1.5pp CAGR gate): book at 5% overlay &mdash; n=466, CAGR 6.39%, annualized Sharpe 1.18, maxDD &minus;14.34%, PF 2.35, win rate 70.0% &mdash; CAGR now inside the documented band. Per-sleeve vs reference: trend 8.54% vs 7.46%, quality 12.99% vs 12.98%, put 8.55% vs 8.59%; combined no-overlay CAGR 8.90% vs 8.85% (MDD &minus;20.43% vs &minus;20.45%). 2013+ research cross-check: CAGR 5.25%, Sharpe 1.00, MDD &minus;9.46%, PF 2.04, WR 68.7% (n=166).</p>
-      <p><strong>Status & honesty:</strong> spec left as Draft (not approved); 43/43 combined-book tests + 3 network-marked reproduction tests pass (strict CAGR assert now passes); committed as <code>dabdbcbb69</code> + subsequent fixes on <code>feat/combined-book-paper-trade</code>. Resolved review items: trend-sleeve CAGR gap closed by the splice fix (CAGR 4.63% &rarr; 8.54%); Ken French data refreshed 202208 &rarr; 202608 CRSP (quality sleeve 11.97% &rarr; 12.99%, matching ref). One item remains a miss: <code>git worktree prune</code> ran, but branch <code>wt-rollback-pr622</code> is <strong>not present</strong> on origin (139 remote heads checked) &mdash; awaiting confirmation it was intended to be pushed.</p>
-      <p><strong>Full write-ups:</strong> <code>updates/2026-10-19-combined-book-paper-trade-pilot.md</code> &middot; <code>docs/zoocode-inception-combined-book-paper-trade.html</code>.</p>
-    </div>
-  </div>
-
-
-
-  <!-- Update: Oct 17, 2026 — FavCreators /fc/#/guest: why follows vanished on refresh (root cause + fixes) -->
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -91,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-10-19 00:43 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-10-20 00:40 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -245,7 +221,31 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-  <div class="update-entry" style="--dot-color: #60a5fa;" data-tags="favcreators,follow,persistence,tiktok,quick-add,php52,bugfix,live-status" data-category="favcreators" data-types="fix,analysis">
+    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,money-ready,benchmark,task10,statistical-gates,combined-book,reproduction,freebuff" data-category="trading" data-types="feature,analysis">
+    <div class="update-date">Oct 20, 2026 &mdash; LIVE (updated hourly)</div>
+    <div class="update-content">
+      <p><strong>Shipped:</strong> <code>alpha_engine/benchmark_closed_ledger.py</code> &mdash; benchmarks every closed-pick ledger vs its same-window benchmark (paired bootstrap, &ge;95% publish gate) and vs random-entry Monte-Carlo (timing percentile). 33/33 tests, real-data run over 170 ledgers &rarr; <code>reports/benchmark_ledger_proof_2026-10-19.json</code> (<strong>6 of 170 ledgers clear the paired benchmark gate</strong>, 4 with full paired+MC proof &mdash; the headline measure). <strong>MC fixed after external review:</strong> nulls were sampled on BTC/SPY paths, pinning volatile instruments at percentile 1.0 (a PF-1.03 ledger scored 1.0; now 0.57) &mdash; v3 uses same-asset, window-matched, direction-aware nulls, guarded by a coin-flip CI gate test. Read-only dashboard panel: <code>/audit/benchmark_proof.html</code> (no picks, no signals, nothing money-ready).</p>
+      <p><strong>Also verified today:</strong> the six-method review (<code>reports/METHOD_REVIEW_2026-10-19-what-actually-works.md</code> &mdash; TSMOM the only Tier-2 + forward-PF&gt;1 method; PEAD WF-verified but never wired; carry regime inverted) and an independent reproduction of the combined multi-sleeve book. <strong>Correction after review:</strong> an earlier version of this entry claimed &quot;two parser bugs&quot; in the reference code &mdash; that was wrong and is retracted. The reference reads Ken French's current <code>*_CSV.zip</code> files (comma-separated, through 2026-08); my first run used the older TXT flavor (ends 2022-08), which the parser was never meant to handle. Re-run with the CSV zips and the <strong>unmodified</strong> reference reproduces the committed <code>results.csv</code> <strong>exactly</strong>: max |Sharpe &Delta;| <strong>0.0000</strong> across all 8 rows, Combined Sharpe 1.2666 / CAGR 8.85% / MDD &minus;20.45%, QualVal identical &mdash; Grok's reference numbers stand, nothing in <code>grokbot</code> changes.</p>
+      <p><strong>Full session write-up</strong> (changes / achievements / plan / future research): <a href="freebuff-2026-10-19-money-ready-methods.html">Freebuff session log &mdash; money-ready methods work</a>.</p>
+    </div>
+  </div>
+
+  <!-- Update: Oct 19, 2026 — combined-book paper-trade module: research dataset + reproduction (ZOOCODE-INCEPTION) -->
+  <div class="update-entry" style="--dot-color: #f472b6;" data-tags="combined-book,paper-trade,research-dataset,reproduction,zoocode-inception,backtest,trading" data-category="trading" data-types="feature,analysis">
+    <div class="update-date">Oct 19, 2026 &mdash; LIVE (updated hourly)</div>
+    <div class="update-content">
+      <p><strong>What was built:</strong> a standalone combined-book paper-trade module (<code>combined_book/</code>: fetch &rarr; sleeves &rarr; combiner &rarr; simulator &rarr; ledger &rarr; gates &rarr; CLI) that reproduces the documented Grokbot/Kimi backtest before trading. The research dataset harness (T11) spliced ETF &rarr; mutual-fund proxies (SPY&#8592;VFINX, TLT&#8592;VUSTX, IEF/LQD&#8592;VBMFX, SHY&#8592;FGOVX, HYG&#8592;VWEHX, GLD&#8592;FSAGX, VNQ&#8592;VGSIX, DBC&#8592;PCRIX) plus Ken French OP/BE-ME and the CBOE PUT index, extending history back to 1988.</p>
+      <p><strong>Two real bugs fixed:</strong> (1) Ken French monthly parser (2008-10 OP misread as +0.1834 instead of &minus;15.32%); (2) sleeve combination excluded missing sleeves and renormalized instead of leaving 0% cash. Added a reference-style trend sleeve with rolling inverse-vol weights (36-m, min 24, cap 0.40) + overlay scaling.</p>
+      <p><strong>Reproduction results</strong> (research dataset, full window 1988&ndash;2026, strict 6.5% &plusmn;1.5pp CAGR gate): book at 5% overlay &mdash; n=466, CAGR 6.39%, annualized Sharpe 1.18, maxDD &minus;14.34%, PF 2.35, win rate 70.0% &mdash; CAGR now inside the documented band. Per-sleeve vs reference: trend 8.54% vs 7.46%, quality 12.99% vs 12.98%, put 8.55% vs 8.59%; combined no-overlay CAGR 8.90% vs 8.85% (MDD &minus;20.43% vs &minus;20.45%). 2013+ research cross-check: CAGR 5.25%, Sharpe 1.00, MDD &minus;9.46%, PF 2.04, WR 68.7% (n=166).</p>
+      <p><strong>Status & honesty:</strong> spec left as Draft (not approved); 43/43 combined-book tests + 3 network-marked reproduction tests pass (strict CAGR assert now passes); committed as <code>dabdbcbb69</code> + subsequent fixes on <code>feat/combined-book-paper-trade</code>. Resolved review items: trend-sleeve CAGR gap closed by the splice fix (CAGR 4.63% &rarr; 8.54%); Ken French data refreshed 202208 &rarr; 202608 CRSP (quality sleeve 11.97% &rarr; 12.99%, matching ref). One item remains a miss: <code>git worktree prune</code> ran, but branch <code>wt-rollback-pr622</code> is <strong>not present</strong> on origin (139 remote heads checked) &mdash; awaiting confirmation it was intended to be pushed.</p>
+      <p><strong>Full write-ups:</strong> <code>updates/2026-10-19-combined-book-paper-trade-pilot.md</code> &middot; <code>docs/zoocode-inception-combined-book-paper-trade.html</code>.</p>
+    </div>
+  </div>
+
+
+
+  <!-- Update: Oct 17, 2026 — FavCreators /fc/#/guest: why follows vanished on refresh (root cause + fixes) -->
+<div class="update-entry" style="--dot-color: #60a5fa;" data-tags="favcreators,follow,persistence,tiktok,quick-add,php52,bugfix,live-status" data-category="favcreators" data-types="fix,analysis">
     <div class="update-date">Oct 19, 2026 &mdash; LIVE (updated hourly)</div>
     <div class="update-content">
       <p><strong>What users saw:</strong> Quick Add on <code>/fc/#/guest</code> appeared to work, but after a refresh the creator (e.g. TikTok <code>nikkibby11</code>) was gone from the followed list &mdash; and Twitch/TikTok live notifications for newly-followed creators looked late or mis-ordered.</p>
@@ -12421,7 +12421,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          Oct 19, 2026 &mdash; 11:35 PM EST | Hourly Portfolio Update
+          Oct 20, 2026 &mdash; 01:30 AM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -12440,6 +12440,8 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
+
 
 
 
@@ -15867,9 +15869,9 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 19, 11:35 PM EST)</h4>
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 19, 11:35 PM EST)</h4>
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 19, 11:35 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 20, 01:30 AM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 20, 01:30 AM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Oct 20, 01:30 AM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>
