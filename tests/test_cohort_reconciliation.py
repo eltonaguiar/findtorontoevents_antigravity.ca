@@ -41,3 +41,57 @@ def test_parse_ts_normalizes_z_and_microseconds():
     assert dt.tzinfo is not None
     dt2 = parse_ts("2026-06-21T06:31:08+00:00")
     assert dt2.tzinfo is not None
+
+
+from tools.cohort_reconciliation import _pf, metric_block, recompute_rolling_metrics
+
+
+def _rec(pnl, closed_at, strategy="s1", asset_class="EQUITY"):
+    return {"strategy": strategy, "asset_class": asset_class,
+            "pnl_pct": pnl, "closed_at": closed_at,
+            "source_system": "alpha_engine", "id": "x"}
+
+
+def test_pf_basic():
+    rows = [_rec(2.0, "2026-10-19T00:00:00Z"), _rec(-1.0, "2026-10-19T00:00:00Z")]
+    assert _pf(rows) == 2.0
+
+
+def test_pf_no_losses_is_inf():
+    assert _pf([_rec(1.0, "2026-10-19T00:00:00Z")]) == "inf"
+
+
+def test_pf_empty_is_none():
+    assert _pf([]) is None
+
+
+def test_metric_block_hides_wr_below_20():
+    rows = [_rec(1.0 if i % 2 == 0 else -1.0, "2026-10-19T00:00:00Z") for i in range(10)]
+    m = metric_block(rows)
+    assert m["n"] == 10
+    assert m["win_rate"] is None
+    assert m["win_rate_hidden"] is True
+
+
+def test_metric_block_shows_wr_at_20():
+    rows = [_rec(1.0 if i % 2 == 0 else -1.0, "2026-10-19T00:00:00Z") for i in range(20)]
+    m = metric_block(rows)
+    assert m["win_rate"] == 0.5
+    assert m["win_rate_hidden"] is False
+
+
+def test_recompute_coverage_complete():
+    generated = "2026-10-20T00:00:00Z"
+    start = "2026-10-05T00:00:00Z"  # 15d before -> covers 14d window
+    records = [_rec(1.0, start), _rec(-1.0, "2026-10-19T00:00:00Z")]
+    out = recompute_rolling_metrics(records, 336, generated)
+    assert out["coverage"]["status"] == "complete"
+    assert out["by_class"]["EQUITY"]["n"] == 2
+
+
+def test_recompute_coverage_incomplete():
+    generated = "2026-10-20T00:00:00Z"
+    start = "2026-10-18T00:00:00Z"  # only 2d back -> incomplete for 14d
+    records = [_rec(1.0, start)]
+    out = recompute_rolling_metrics(records, 336, generated)
+    assert out["coverage"]["status"] == "incomplete_coverage"
