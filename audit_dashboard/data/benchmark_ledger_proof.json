@@ -1,0 +1,4701 @@
+{
+ "generated_at": "2026-10-20T00:30:26.114912+00:00",
+ "source": "alpha_engine/benchmark_closed_ledger.py (Task 10)",
+ "n_boot": 10000,
+ "n_perm": 10000,
+ "seed": 42,
+ "conventions": {
+  "wr_hidden_below_n": 20,
+  "pass_95_rule": "paired bootstrap frac_positive >= 0.95",
+  "mc_reading": "percentile ~1.0 timing edge; ~0.5 coin flip; nulls window-matched to the ledger's own trading span (fixed 2026-10-19 \u2014 full-history nulls overstated timing)"
+ },
+ "ledgers": [
+  {
+   "strategy": "luxalgo_confluence",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 1211,
+   "wins": 508,
+   "wr": 0.4194880264244426,
+   "wr_published": true,
+   "pf": 1.0287407538775692,
+   "cum_return": -0.264295399797319,
+   "paired_bootstrap": {
+    "mean_excess": 5.6220182529754644e-05,
+    "ci_lo": -0.002262123454715498,
+    "ci_hi": 0.0024021366279250345,
+    "frac_positive": 0.521,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 3.102466,
+    "percentile": 0.5682,
+    "n_perm": 10000,
+    "n_simulated": 551,
+    "n_skipped": 660,
+    "n_symbols": 13,
+    "n_benchmark_fallback": 190
+   },
+   "notes": [
+    "190 MC trades null-sampled on the BTC-USD benchmark path (own-symbol series unavailable)"
+   ],
+   "wilson_ci": [
+    0.3919920417932912,
+    0.44749318602458715
+   ],
+   "n_paired": 1211,
+   "bench_cum_return_same_windows": 0.4552106398242117,
+   "cum_return_vs_benchmark_pp": -71.95060396215307
+  },
+  {
+   "strategy": "intermarket-flow-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 97,
+   "wins": 47,
+   "wr": 0.4845360824742268,
+   "wr_published": true,
+   "pf": 1.181051906429461,
+   "cum_return": 0.16154772464156997,
+   "paired_bootstrap": {
+    "mean_excess": -0.0007923180419371731,
+    "ci_lo": -0.006068931889866182,
+    "ci_hi": 0.004633953496067338,
+    "frac_positive": 0.3862,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.19517600000000002,
+    "percentile": 0.3561,
+    "n_perm": 10000,
+    "n_simulated": 74,
+    "n_skipped": 5,
+    "n_symbols": 9
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3875815952518113,
+    0.5826687359603313
+   ],
+   "n_paired": 79,
+   "bench_cum_return_same_windows": 0.17331129646939725,
+   "cum_return_vs_benchmark_pp": -1.176357182782728
+  },
+  {
+   "strategy": "MomentumEMA",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 73,
+   "wins": 42,
+   "wr": 0.5753424657534246,
+   "wr_published": true,
+   "pf": 1.9946576007770762,
+   "cum_return": 0.8044882278910572,
+   "paired_bootstrap": {
+    "mean_excess": -0.08994887250075179,
+    "ci_lo": -0.12413858498833136,
+    "ci_hi": -0.058899140426605864,
+    "frac_positive": 0.0,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.39759999999999995,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 29,
+    "n_skipped": 0,
+    "n_symbols": 7
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.4609938046379387,
+    0.6821580845742112
+   ],
+   "n_paired": 29,
+   "bench_cum_return_same_windows": 14.837256100395098,
+   "cum_return_vs_benchmark_pp": -1403.2767872504041
+  },
+  {
+   "strategy": "strong consensus (alpha_engine, luxalgo_filters)",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 70,
+   "wins": 29,
+   "wr": 0.4142857142857143,
+   "wr_published": true,
+   "pf": 1.528068648999419,
+   "cum_return": -0.8928569077670208,
+   "paired_bootstrap": {
+    "mean_excess": 0.016069735387591533,
+    "ci_lo": -0.03012485152743984,
+    "ci_hi": 0.06711494838893584,
+    "frac_positive": 0.7368,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.018095999999999998,
+    "percentile": 0.4727,
+    "n_perm": 10000,
+    "n_simulated": 18,
+    "n_skipped": 52,
+    "n_symbols": 10,
+    "n_benchmark_fallback": 17
+   },
+   "notes": [
+    "17 MC trades null-sampled on the BTC-USD benchmark path (own-symbol series unavailable)"
+   ],
+   "wilson_ci": [
+    0.30630178568736466,
+    0.5311878821543955
+   ],
+   "n_paired": 70,
+   "bench_cum_return_same_windows": -0.0687571551392594,
+   "cum_return_vs_benchmark_pp": -82.40997526277613
+  },
+  {
+   "strategy": "momentum_breakout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 69,
+   "wins": 34,
+   "wr": 0.4927536231884058,
+   "wr_published": true,
+   "pf": 1.2991016473362516,
+   "cum_return": 0.6204022562033646,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": [
+    0.3783242300928733,
+    0.6079473243736349
+   ],
+   "n_paired": 0
+  },
+  {
+   "strategy": "mega_mutation_ema_momentum_m006",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 66,
+   "wins": 32,
+   "wr": 0.48484848484848486,
+   "wr_published": true,
+   "pf": 0.7670844269915624,
+   "cum_return": -0.33790379535734283,
+   "paired_bootstrap": {
+    "mean_excess": -0.005142308918441571,
+    "ci_lo": -0.015375894425163366,
+    "ci_hi": 0.005149147168374596,
+    "frac_positive": 0.175,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.022463999999999998,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 64,
+    "n_symbols": 2
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3684696267060676,
+    0.6028940871428277
+   ],
+   "n_paired": 66,
+   "bench_cum_return_same_windows": -0.012232235528243485,
+   "cum_return_vs_benchmark_pp": -32.56715598290994
+  },
+  {
+   "strategy": "rs-breakout-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 66,
+   "wins": 37,
+   "wr": 0.5606060606060606,
+   "wr_published": true,
+   "pf": 1.7051595136651772,
+   "cum_return": 0.5357048228320238,
+   "paired_bootstrap": {
+    "mean_excess": 0.000818293248144048,
+    "ci_lo": -0.007183981343573089,
+    "ci_hi": 0.008603339859458827,
+    "frac_positive": 0.5918,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.19730399999999998,
+    "percentile": 0.4469,
+    "n_perm": 10000,
+    "n_simulated": 52,
+    "n_skipped": 3,
+    "n_symbols": 12
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.4408263537999137,
+    0.6737187908045056
+   ],
+   "n_paired": 55,
+   "bench_cum_return_same_windows": 0.10294288683268338,
+   "cum_return_vs_benchmark_pp": 43.27619359993405
+  },
+  {
+   "strategy": "london-breakout-scout",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 64,
+   "wins": 25,
+   "wr": 0.390625,
+   "wr_published": true,
+   "pf": 0.7396230512285005,
+   "cum_return": -0.04059850662443121,
+   "paired_bootstrap": {
+    "mean_excess": -0.0018076356198022132,
+    "ci_lo": -0.004709678803309737,
+    "ci_hi": 0.0010412995437076697,
+    "frac_positive": 0.1118,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.03266,
+    "percentile": 0.1404,
+    "n_perm": 10000,
+    "n_simulated": 54,
+    "n_skipped": 7,
+    "n_symbols": 8
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.2805556918824008,
+    0.5130808211972754
+   ],
+   "n_paired": 61,
+   "bench_cum_return_same_windows": 0.0820995177887398,
+   "cum_return_vs_benchmark_pp": -12.2698024413171
+  },
+  {
+   "strategy": "vol-contraction-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 59,
+   "wins": 29,
+   "wr": 0.4915254237288136,
+   "wr_published": true,
+   "pf": 1.4577935932083144,
+   "cum_return": 0.5396186553440947,
+   "paired_bootstrap": {
+    "mean_excess": 0.00059606428541422,
+    "ci_lo": -0.015624292052577034,
+    "ci_hi": 0.016975029688392068,
+    "frac_positive": 0.516,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.072195,
+    "percentile": 0.8047,
+    "n_perm": 10000,
+    "n_simulated": 46,
+    "n_skipped": 1,
+    "n_symbols": 11
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3684383690774015,
+    0.6156485694061034
+   ],
+   "n_paired": 47,
+   "bench_cum_return_same_windows": 0.14908391660086728,
+   "cum_return_vs_benchmark_pp": 39.05347387432274
+  },
+  {
+   "strategy": "mega_mutation_macd_rsi_m048",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 57,
+   "wins": 39,
+   "wr": 0.6842105263157895,
+   "wr_published": true,
+   "pf": 5.108370422918449,
+   "cum_return": 21.99296992017112,
+   "paired_bootstrap": {
+    "mean_excess": 0.05878377601070067,
+    "ci_lo": 0.038971670714349635,
+    "ci_hi": 0.07770922511652575,
+    "frac_positive": 1.0,
+    "pass_95": true,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.23713199999999998,
+    "percentile": 0.7527,
+    "n_perm": 10000,
+    "n_simulated": 7,
+    "n_skipped": 50,
+    "n_symbols": 3,
+    "n_benchmark_fallback": 22
+   },
+   "notes": [
+    "22 MC trades null-sampled on the BTC-USD benchmark path (own-symbol series unavailable)"
+   ],
+   "wilson_ci": [
+    0.5552022530213656,
+    0.7899571236117475
+   ],
+   "n_paired": 57,
+   "bench_cum_return_same_windows": 0.029402439885262144,
+   "cum_return_vs_benchmark_pp": 2196.3567480285856
+  },
+  {
+   "strategy": "momentum-factor",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 57,
+   "wins": 28,
+   "wr": 0.49122807017543857,
+   "wr_published": true,
+   "pf": 1.193426260196549,
+   "cum_return": 0.14091133344428508,
+   "paired_bootstrap": {
+    "mean_excess": 0.000751922022633766,
+    "ci_lo": -0.010021012877138375,
+    "ci_hi": 0.01237827797288327,
+    "frac_positive": 0.5584,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.21722,
+    "percentile": 0.4614,
+    "n_perm": 10000,
+    "n_simulated": 51,
+    "n_skipped": 5,
+    "n_symbols": 6
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3661628241840743,
+    0.6174010150238727
+   ],
+   "n_paired": 56,
+   "bench_cum_return_same_windows": 0.10849673472941124,
+   "cum_return_vs_benchmark_pp": 3.2414598714873843
+  },
+  {
+   "strategy": "quality-minus-junk",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 49,
+   "wins": 24,
+   "wr": 0.4897959183673469,
+   "wr_published": true,
+   "pf": 0.693189320661536,
+   "cum_return": -0.2188981019031907,
+   "paired_bootstrap": {
+    "mean_excess": -0.009830946750186606,
+    "ci_lo": -0.02097692894509272,
+    "ci_hi": 0.0003128639841097765,
+    "frac_positive": 0.0278,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.277064,
+    "percentile": 0.2885,
+    "n_perm": 10000,
+    "n_simulated": 30,
+    "n_skipped": 1,
+    "n_symbols": 8
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3557511031030578,
+    0.6253243625953194
+   ],
+   "n_paired": 31,
+   "bench_cum_return_same_windows": -0.007617291227870804,
+   "cum_return_vs_benchmark_pp": -21.12808106753199
+  },
+  {
+   "strategy": "adx-trend-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 49,
+   "wins": 21,
+   "wr": 0.42857142857142855,
+   "wr_published": true,
+   "pf": 0.9256162012375526,
+   "cum_return": -0.14905887849314403,
+   "paired_bootstrap": {
+    "mean_excess": -0.003480096023396502,
+    "ci_lo": -0.017517635570214133,
+    "ci_hi": 0.011031231668203323,
+    "frac_positive": 0.3158,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.026955999999999966,
+    "percentile": 0.13,
+    "n_perm": 10000,
+    "n_simulated": 42,
+    "n_skipped": 1,
+    "n_symbols": 7
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.30023319078881594,
+    0.5672950690998263
+   ],
+   "n_paired": 43,
+   "bench_cum_return_same_windows": 0.050229096316422694,
+   "cum_return_vs_benchmark_pp": -19.92879748095667
+  },
+  {
+   "strategy": "rsi-divergence-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 45,
+   "wins": 18,
+   "wr": 0.4,
+   "wr_published": true,
+   "pf": 0.9094413178188361,
+   "cum_return": -0.09713268625784,
+   "paired_bootstrap": {
+    "mean_excess": -0.0025244241094528274,
+    "ci_lo": -0.012071088495416639,
+    "ci_hi": 0.00750347469721967,
+    "frac_positive": 0.3148,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.03797600000000001,
+    "percentile": 0.393,
+    "n_perm": 10000,
+    "n_simulated": 37,
+    "n_skipped": 1,
+    "n_symbols": 8
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.27024886565009165,
+    0.5454814540964862
+   ],
+   "n_paired": 38,
+   "bench_cum_return_same_windows": 0.013525630540048406,
+   "cum_return_vs_benchmark_pp": -11.06583167978884
+  },
+  {
+   "strategy": "rs-breakout-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 45,
+   "wins": 24,
+   "wr": 0.5333333333333333,
+   "wr_published": true,
+   "pf": 1.8988891264797334,
+   "cum_return": 0.5981971115047635,
+   "paired_bootstrap": {
+    "mean_excess": 0.001686125239295677,
+    "ci_lo": -0.01107730700091154,
+    "ci_hi": 0.015460049409291054,
+    "frac_positive": 0.5945,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.054966000000000015,
+    "percentile": 0.2648,
+    "n_perm": 10000,
+    "n_simulated": 31,
+    "n_skipped": 1,
+    "n_symbols": 9
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3907745474012537,
+    0.670648679349887
+   ],
+   "n_paired": 32,
+   "bench_cum_return_same_windows": -0.01981233420299544,
+   "cum_return_vs_benchmark_pp": 61.8009445707759
+  },
+  {
+   "strategy": "crypto_liquidity_wick_reversal_v1",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 43,
+   "wins": 25,
+   "wr": 0.5813953488372093,
+   "wr_published": true,
+   "pf": 1.4982152778306301,
+   "cum_return": 0.06576917732729526,
+   "paired_bootstrap": {
+    "mean_excess": 0.001429206523984298,
+    "ci_lo": -0.004428693240499246,
+    "ci_hi": 0.0063503923577175655,
+    "frac_positive": 0.7104,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.004281999999999999,
+    "percentile": 0.385,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 8,
+    "n_symbols": 1
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.43328577386964223,
+    0.716154490721508
+   ],
+   "n_paired": 11,
+   "bench_cum_return_same_windows": 0.015949520238940584,
+   "cum_return_vs_benchmark_pp": 4.981965708835467
+  },
+  {
+   "strategy": "stoch-rsi-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 42,
+   "wins": 20,
+   "wr": 0.47619047619047616,
+   "wr_published": true,
+   "pf": 0.6932942264876021,
+   "cum_return": -0.23673712917150602,
+   "paired_bootstrap": {
+    "mean_excess": -0.004615391557860883,
+    "ci_lo": -0.016037441702896837,
+    "ci_hi": 0.0074887462491001,
+    "frac_positive": 0.2178,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.13712,
+    "percentile": 0.1953,
+    "n_perm": 10000,
+    "n_simulated": 36,
+    "n_skipped": 3,
+    "n_symbols": 11
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3335960123070547,
+    0.6227753586865502
+   ],
+   "n_paired": 39,
+   "bench_cum_return_same_windows": 0.004545214065410308,
+   "cum_return_vs_benchmark_pp": -24.128234323691633
+  },
+  {
+   "strategy": "quality-minus-junk",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 41,
+   "wins": 14,
+   "wr": 0.34146341463414637,
+   "wr_published": true,
+   "pf": 0.8769602064442518,
+   "cum_return": -0.06445070452065704,
+   "paired_bootstrap": {
+    "mean_excess": -0.0007569092952019276,
+    "ci_lo": -0.006040815659431688,
+    "ci_hi": 0.0048755686791262,
+    "frac_positive": 0.3847,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.038713000000000004,
+    "percentile": 0.3152,
+    "n_perm": 10000,
+    "n_simulated": 27,
+    "n_skipped": 2,
+    "n_symbols": 7
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.21558808257384848,
+    0.494501634801703
+   ],
+   "n_paired": 29,
+   "bench_cum_return_same_windows": -0.04307189249980836,
+   "cum_return_vs_benchmark_pp": -2.137881202084868
+  },
+  {
+   "strategy": "donchian-stock-breakout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 39,
+   "wins": 23,
+   "wr": 0.5897435897435898,
+   "wr_published": true,
+   "pf": 1.851241696571734,
+   "cum_return": 1.0864858649592004,
+   "paired_bootstrap": {
+    "mean_excess": 0.008182161020130486,
+    "ci_lo": -0.02571671953471614,
+    "ci_hi": 0.041524812320489234,
+    "frac_positive": 0.6796,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.258466,
+    "percentile": 0.063,
+    "n_perm": 10000,
+    "n_simulated": 28,
+    "n_skipped": 0,
+    "n_symbols": 12
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.43418622882896973,
+    0.7292068999927483
+   ],
+   "n_paired": 28,
+   "bench_cum_return_same_windows": 0.028362162114053957,
+   "cum_return_vs_benchmark_pp": 105.81237028451464
+  },
+  {
+   "strategy": "macd-hidden-div-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 37,
+   "wins": 16,
+   "wr": 0.43243243243243246,
+   "wr_published": true,
+   "pf": 1.078223899827375,
+   "cum_return": 0.0107791734207483,
+   "paired_bootstrap": {
+    "mean_excess": 0.007046021632280551,
+    "ci_lo": -0.008089180661572345,
+    "ci_hi": 0.02341466822278753,
+    "frac_positive": 0.8121,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.122658,
+    "percentile": 0.687,
+    "n_perm": 10000,
+    "n_simulated": 26,
+    "n_skipped": 4,
+    "n_symbols": 10
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.28671719277157315,
+    0.5908581890983192
+   ],
+   "n_paired": 30,
+   "bench_cum_return_same_windows": -0.05668678465318866,
+   "cum_return_vs_benchmark_pp": 6.746595807393696
+  },
+  {
+   "strategy": "price-accel-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 35,
+   "wins": 13,
+   "wr": 0.37142857142857144,
+   "wr_published": true,
+   "pf": 0.7934669204656762,
+   "cum_return": -0.19938965803989206,
+   "paired_bootstrap": {
+    "mean_excess": -0.01948764047033957,
+    "ci_lo": -0.034230775119851654,
+    "ci_hi": -0.003824466287455957,
+    "frac_positive": 0.0082,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.395197,
+    "percentile": 0.0298,
+    "n_perm": 10000,
+    "n_simulated": 24,
+    "n_skipped": 3,
+    "n_symbols": 7
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.2316581950336571,
+    0.5366306315640468
+   ],
+   "n_paired": 27,
+   "bench_cum_return_same_windows": 0.0167412539053311,
+   "cum_return_vs_benchmark_pp": -21.613091194522315
+  },
+  {
+   "strategy": "adx-trend-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 35,
+   "wins": 19,
+   "wr": 0.5428571428571428,
+   "wr_published": true,
+   "pf": 1.759423766853327,
+   "cum_return": 0.14216120917641617,
+   "paired_bootstrap": {
+    "mean_excess": 0.001010692448121959,
+    "ci_lo": -0.003046760059135223,
+    "ci_hi": 0.005359578538769043,
+    "frac_positive": 0.6739,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.08210400000000001,
+    "percentile": 0.5477,
+    "n_perm": 10000,
+    "n_simulated": 27,
+    "n_skipped": 3,
+    "n_symbols": 4
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.38189725068483754,
+    0.6953398071159278
+   ],
+   "n_paired": 30,
+   "bench_cum_return_same_windows": 0.016552015027103906,
+   "cum_return_vs_benchmark_pp": 12.560919414931227
+  },
+  {
+   "strategy": "alpha_engine",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 33,
+   "wins": 28,
+   "wr": 0.8484848484848485,
+   "wr_published": true,
+   "pf": 11.060247781887265,
+   "cum_return": 0.6359846952941448,
+   "paired_bootstrap": {
+    "mean_excess": 0.015083969696969698,
+    "ci_lo": 0.01147818181818182,
+    "ci_hi": 0.018627272727272732,
+    "frac_positive": 1.0,
+    "pass_95": true,
+    "n_boot": 10000
+   },
+   "random_entry_mc": null,
+   "notes": [
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": [
+    0.6908012411955788,
+    0.9334954271839244
+   ],
+   "n_paired": 33,
+   "bench_cum_return_same_windows": 0.0,
+   "cum_return_vs_benchmark_pp": 63.59846952941448
+  },
+  {
+   "strategy": "crypto-bb-squeeze-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 32,
+   "wins": 14,
+   "wr": 0.4375,
+   "wr_published": true,
+   "pf": 1.136782327697073,
+   "cum_return": 0.051572739621261965,
+   "paired_bootstrap": {
+    "mean_excess": -0.0029180270736096975,
+    "ci_lo": -0.013617143785895567,
+    "ci_hi": 0.008319471879501298,
+    "frac_positive": 0.2987,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.09661600000000001,
+    "percentile": 0.2982,
+    "n_perm": 10000,
+    "n_simulated": 29,
+    "n_skipped": 3,
+    "n_symbols": 6
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.2816533111504036,
+    0.6067440886314801
+   ],
+   "n_paired": 32,
+   "bench_cum_return_same_windows": 0.1779561360212023,
+   "cum_return_vs_benchmark_pp": -12.638339639994033
+  },
+  {
+   "strategy": "rsi-divergence-scalp-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 29,
+   "wins": 11,
+   "wr": 0.3793103448275862,
+   "wr_published": true,
+   "pf": 1.1406973218158922,
+   "cum_return": 0.043154942563643495,
+   "paired_bootstrap": {
+    "mean_excess": -0.0026003358803959207,
+    "ci_lo": -0.02589218013111379,
+    "ci_hi": 0.023811297111091503,
+    "frac_positive": 0.3968,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.035588,
+    "percentile": 0.0515,
+    "n_perm": 10000,
+    "n_simulated": 27,
+    "n_skipped": 2,
+    "n_symbols": 11
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.2268802210080984,
+    0.5599745579401147
+   ],
+   "n_paired": 29,
+   "bench_cum_return_same_windows": 0.2186989404600559,
+   "cum_return_vs_benchmark_pp": -17.554399789641238
+  },
+  {
+   "strategy": "MeanReversionBB",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 29,
+   "wins": 0,
+   "wr": 0.0,
+   "wr_published": true,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": {
+    "mean_excess": -0.0448539866866194,
+    "ci_lo": -0.05050110502061994,
+    "ci_hi": -0.039365571175171296,
+    "frac_positive": 0.0,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.0,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 12,
+    "n_symbols": 1,
+    "n_benchmark_fallback": 8
+   },
+   "notes": [
+    "8 MC trades null-sampled on the SPY benchmark path (own-symbol series unavailable)"
+   ],
+   "wilson_ci": [
+    0.0,
+    0.11696979849974075
+   ],
+   "n_paired": 16,
+   "bench_cum_return_same_windows": 1.0159491181824407,
+   "cum_return_vs_benchmark_pp": -101.59491181824407
+  },
+  {
+   "strategy": "atr_percentile_gate",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 29,
+   "wins": 17,
+   "wr": 0.5862068965517241,
+   "wr_published": true,
+   "pf": 1.1045239388531078,
+   "cum_return": 0.006369235179110699,
+   "paired_bootstrap": {
+    "mean_excess": 0.00021984065260723757,
+    "ci_lo": -0.0026115005129673436,
+    "ci_hi": 0.0029864085779417473,
+    "frac_positive": 0.5611,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.007663,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 10,
+    "n_symbols": 1
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.4073783598787858,
+    0.744868226586776
+   ],
+   "n_paired": 11,
+   "bench_cum_return_same_windows": -0.004999247178679611,
+   "cum_return_vs_benchmark_pp": 1.136848235779031
+  },
+  {
+   "strategy": "unknown",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 28,
+   "wins": 13,
+   "wr": 0.4642857142857143,
+   "wr_published": true,
+   "pf": 1.1993626528974135,
+   "cum_return": 0.015332855280703495,
+   "paired_bootstrap": {
+    "mean_excess": 0.00041174246905581853,
+    "ci_lo": -0.007466930122637068,
+    "ci_hi": 0.00796757754056656,
+    "frac_positive": 0.54,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.014443999999999999,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 7,
+    "n_skipped": 2,
+    "n_symbols": 6
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.29531569982795375,
+    0.641873107655321
+   ],
+   "n_paired": 9,
+   "bench_cum_return_same_windows": 0.014438723828217315,
+   "cum_return_vs_benchmark_pp": 0.08941314524861799
+  },
+  {
+   "strategy": "multi_period_rsi_confluence_eth",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 27,
+   "wins": 12,
+   "wr": 0.4444444444444444,
+   "wr_published": true,
+   "pf": 0.8488608184798708,
+   "cum_return": -0.019382809144416258,
+   "paired_bootstrap": {
+    "mean_excess": -0.0014157535520613043,
+    "ci_lo": -0.0072867875305767755,
+    "ci_hi": 0.004793884660907665,
+    "frac_positive": 0.3241,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.0010350000000000001,
+    "percentile": 0.8475,
+    "n_perm": 10000,
+    "n_simulated": 6,
+    "n_skipped": 7,
+    "n_symbols": 1
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.27585858177023004,
+    0.6268697548677552
+   ],
+   "n_paired": 13,
+   "bench_cum_return_same_windows": 0.002339779261247177,
+   "cum_return_vs_benchmark_pp": -2.1722588405663434
+  },
+  {
+   "strategy": "crypto-momentum-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 25,
+   "wins": 8,
+   "wr": 0.32,
+   "wr_published": true,
+   "pf": 0.6505834739449502,
+   "cum_return": -0.22794336224603318,
+   "paired_bootstrap": {
+    "mean_excess": -0.0037434842905474,
+    "ci_lo": -0.02167460949092317,
+    "ci_hi": 0.015643527641378486,
+    "frac_positive": 0.3347,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.16281800000000005,
+    "percentile": 0.7407,
+    "n_perm": 10000,
+    "n_simulated": 21,
+    "n_skipped": 2,
+    "n_symbols": 9
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.1720519030690798,
+    0.5158973072689775
+   ],
+   "n_paired": 23,
+   "bench_cum_return_same_windows": -0.1670412542212617,
+   "cum_return_vs_benchmark_pp": -6.090210802477147
+  },
+  {
+   "strategy": "momentum-factor",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 25,
+   "wins": 14,
+   "wr": 0.56,
+   "wr_published": true,
+   "pf": 1.4768549749399285,
+   "cum_return": 0.08359114042144156,
+   "paired_bootstrap": {
+    "mean_excess": 0.0027769608242579967,
+    "ci_lo": -0.004685502029544884,
+    "ci_hi": 0.009562876621139702,
+    "frac_positive": 0.7757,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.11489500000000001,
+    "percentile": 0.7504,
+    "n_perm": 10000,
+    "n_simulated": 24,
+    "n_skipped": 0,
+    "n_symbols": 5
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3706733186979878,
+    0.7333436111893266
+   ],
+   "n_paired": 24,
+   "bench_cum_return_same_windows": 0.04747347269456337,
+   "cum_return_vs_benchmark_pp": 3.611766772687819
+  },
+  {
+   "strategy": "rsi-divergence-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 25,
+   "wins": 12,
+   "wr": 0.48,
+   "wr_published": true,
+   "pf": 1.088566436447455,
+   "cum_return": 0.008209068914305728,
+   "paired_bootstrap": {
+    "mean_excess": -0.009527130159208037,
+    "ci_lo": -0.029306297470749046,
+    "ci_hi": 0.009125670513888733,
+    "frac_positive": 0.1709,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.118007,
+    "percentile": 0.4535,
+    "n_perm": 10000,
+    "n_simulated": 19,
+    "n_skipped": 0,
+    "n_symbols": 6
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.30031285954112974,
+    0.6650148304964322
+   ],
+   "n_paired": 19,
+   "bench_cum_return_same_windows": 0.06364392866417101,
+   "cum_return_vs_benchmark_pp": -5.543485974986528
+  },
+  {
+   "strategy": "unknown",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 24,
+   "wins": 9,
+   "wr": 0.375,
+   "wr_published": true,
+   "pf": 0.8673987588092984,
+   "cum_return": -0.19546726258048241,
+   "paired_bootstrap": {
+    "mean_excess": 0.0032147860638409077,
+    "ci_lo": -0.023157726126050396,
+    "ci_hi": 0.033151773109635886,
+    "frac_positive": 0.5764,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.09484,
+    "percentile": 0.004,
+    "n_perm": 10000,
+    "n_simulated": 21,
+    "n_skipped": 2,
+    "n_symbols": 13
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.21159367559548778,
+    0.5729003755732572
+   ],
+   "n_paired": 23,
+   "bench_cum_return_same_windows": -0.003462208313190329,
+   "cum_return_vs_benchmark_pp": -19.200505426729208
+  },
+  {
+   "strategy": "ema-ribbon-momentum-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 23,
+   "wins": 7,
+   "wr": 0.30434782608695654,
+   "wr_published": true,
+   "pf": 0.5200809360154096,
+   "cum_return": -0.38152068955338225,
+   "paired_bootstrap": {
+    "mean_excess": -0.013762361537434037,
+    "ci_lo": -0.03384374849913746,
+    "ci_hi": 0.007854158821808671,
+    "frac_positive": 0.1034,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.36518,
+    "percentile": 0.0078,
+    "n_perm": 10000,
+    "n_simulated": 18,
+    "n_skipped": 5,
+    "n_symbols": 11
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.15604024453214022,
+    0.508657562687592
+   ],
+   "n_paired": 23,
+   "bench_cum_return_same_windows": -0.11270578251012375,
+   "cum_return_vs_benchmark_pp": -26.88149070432585
+  },
+  {
+   "strategy": "quality-momentum-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 22,
+   "wins": 10,
+   "wr": 0.45454545454545453,
+   "wr_published": true,
+   "pf": 1.0323915857481605,
+   "cum_return": -0.0005151059675780889,
+   "paired_bootstrap": {
+    "mean_excess": -0.002357061293856498,
+    "ci_lo": -0.01345064173851015,
+    "ci_hi": 0.00997059205479078,
+    "frac_positive": 0.3347,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.011852999999999997,
+    "percentile": 0.1069,
+    "n_perm": 10000,
+    "n_simulated": 12,
+    "n_skipped": 0,
+    "n_symbols": 3
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.2692029418081331,
+    0.6534020467926505
+   ],
+   "n_paired": 12,
+   "bench_cum_return_same_windows": 0.03983821151490763,
+   "cum_return_vs_benchmark_pp": -4.035331748248572
+  },
+  {
+   "strategy": "forex-rsi-ema-scout",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 22,
+   "wins": 12,
+   "wr": 0.5454545454545454,
+   "wr_published": true,
+   "pf": 1.6761014410412685,
+   "cum_return": 0.039384837667166606,
+   "paired_bootstrap": {
+    "mean_excess": -0.009105880433764747,
+    "ci_lo": -0.01985535978905497,
+    "ci_hi": 0.0015391920873567158,
+    "frac_positive": 0.0777,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.0020810000000000004,
+    "percentile": 0.6449,
+    "n_perm": 10000,
+    "n_simulated": 5,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.3465979532073493,
+    0.7307970581918668
+   ],
+   "n_paired": 5,
+   "bench_cum_return_same_windows": 0.048446265578631964,
+   "cum_return_vs_benchmark_pp": -0.9061427911465358
+  },
+  {
+   "strategy": "forex_rsi2_mean_reversion",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 21,
+   "wins": 13,
+   "wr": 0.6190476190476191,
+   "wr_published": true,
+   "pf": 3.8799157303370784,
+   "cum_return": 0.11147863222897159,
+   "paired_bootstrap": {
+    "mean_excess": 0.006119087212563606,
+    "ci_lo": 0.0029531273091803986,
+    "ci_hi": 0.009116809020708718,
+    "frac_positive": 1.0,
+    "pass_95": true,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.01,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 19,
+    "n_symbols": 2
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.4087865377511576,
+    0.7924898863143551
+   ],
+   "n_paired": 21,
+   "bench_cum_return_same_windows": -0.021755220719022583,
+   "cum_return_vs_benchmark_pp": 13.323385294799417
+  },
+  {
+   "strategy": "mega_mutation_macd_rsi_m017",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 21,
+   "wins": 13,
+   "wr": 0.6190476190476191,
+   "wr_published": true,
+   "pf": 2.8015874251031048,
+   "cum_return": 0.7184254356744244,
+   "paired_bootstrap": {
+    "mean_excess": 0.026960497505697685,
+    "ci_lo": 0.003142129757197975,
+    "ci_hi": 0.05015880952380953,
+    "frac_positive": 0.986,
+    "pass_95": true,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.17064000000000001,
+    "percentile": 0.9875,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 18,
+    "n_symbols": 1
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.4087865377511576,
+    0.7924898863143551
+   ],
+   "n_paired": 21,
+   "bench_cum_return_same_windows": 0.010478728890074507,
+   "cum_return_vs_benchmark_pp": 70.79467067843498
+  },
+  {
+   "strategy": "price-accel-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 21,
+   "wins": 9,
+   "wr": 0.42857142857142855,
+   "wr_published": true,
+   "pf": 0.8758082032418911,
+   "cum_return": -0.04782990888492933,
+   "paired_bootstrap": {
+    "mean_excess": -0.0035101023233037824,
+    "ci_lo": -0.0160347374796432,
+    "ci_hi": 0.009783177625521805,
+    "frac_positive": 0.292,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.075499,
+    "percentile": 0.2149,
+    "n_perm": 10000,
+    "n_simulated": 18,
+    "n_skipped": 0,
+    "n_symbols": 5
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.24469968925375957,
+    0.6345344563069328
+   ],
+   "n_paired": 18,
+   "bench_cum_return_same_windows": -0.013139052414179786,
+   "cum_return_vs_benchmark_pp": -3.4690856470749543
+  },
+  {
+   "strategy": "gap-and-go-stocks",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 21,
+   "wins": 10,
+   "wr": 0.47619047619047616,
+   "wr_published": true,
+   "pf": 1.852554984922244,
+   "cum_return": 0.41306673249163595,
+   "paired_bootstrap": {
+    "mean_excess": 0.01671675884513239,
+    "ci_lo": -0.01896310122731567,
+    "ci_hi": 0.057082314901291904,
+    "frac_positive": 0.7993,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.3145,
+    "percentile": 0.3736,
+    "n_perm": 10000,
+    "n_simulated": 17,
+    "n_skipped": 0,
+    "n_symbols": 6
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.2834400610153417,
+    0.6763046541715557
+   ],
+   "n_paired": 17,
+   "bench_cum_return_same_windows": 0.02897250382258809,
+   "cum_return_vs_benchmark_pp": 38.409422866904784
+  },
+  {
+   "strategy": "quality-momentum-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 20,
+   "wins": 7,
+   "wr": 0.35,
+   "wr_published": true,
+   "pf": 0.8837707087434105,
+   "cum_return": -0.018418735454983626,
+   "paired_bootstrap": {
+    "mean_excess": -0.0015958838095793803,
+    "ci_lo": -0.00773009019672852,
+    "ci_hi": 0.00507690596882897,
+    "frac_positive": 0.2959,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.041465,
+    "percentile": 0.1891,
+    "n_perm": 10000,
+    "n_simulated": 15,
+    "n_skipped": 1,
+    "n_symbols": 3
+   },
+   "notes": [],
+   "wilson_ci": [
+    0.1811918241010821,
+    0.5671457233147637
+   ],
+   "n_paired": 16,
+   "bench_cum_return_same_windows": -0.030312598048354844,
+   "cum_return_vs_benchmark_pp": 1.1893862593371218
+  },
+  {
+   "strategy": "extreme_fear",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 19,
+   "wins": 10,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.3066670110815488,
+   "cum_return": 0.1259046562398678,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "stoch-rsi-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 18,
+   "wins": 7,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.9749711325406484,
+   "cum_return": -0.005539006630269405,
+   "paired_bootstrap": {
+    "mean_excess": -0.006910064738838866,
+    "ci_lo": -0.011096226222392272,
+    "ci_hi": -0.0025229477808013973,
+    "frac_positive": 0.0009,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.05971599999999999,
+    "percentile": 0.8576,
+    "n_perm": 10000,
+    "n_simulated": 14,
+    "n_skipped": 3,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 17,
+   "bench_cum_return_same_windows": 0.14589424490840264,
+   "cum_return_vs_benchmark_pp": -15.143325153867204
+  },
+  {
+   "strategy": "mtf-align-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 18,
+   "wins": 8,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.0606653861308117,
+   "cum_return": 0.005882671105953641,
+   "paired_bootstrap": {
+    "mean_excess": -0.0018094505164353127,
+    "ci_lo": -0.011030337282245813,
+    "ci_hi": 0.008418993863404282,
+    "frac_positive": 0.3431,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.009853999999999995,
+    "percentile": 0.1784,
+    "n_perm": 10000,
+    "n_simulated": 18,
+    "n_skipped": 0,
+    "n_symbols": 6
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 18,
+   "bench_cum_return_same_windows": 0.041984509866797026,
+   "cum_return_vs_benchmark_pp": -3.6101838760843386
+  },
+  {
+   "strategy": "clone_hl_copy_lb_None",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 17,
+   "wins": 8,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.1093214576194348,
+   "cum_return": 0.013376957940939072,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "vol-contraction-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 16,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.22464664068234358,
+   "cum_return": -0.18212715611036234,
+   "paired_bootstrap": {
+    "mean_excess": -0.005797946388178387,
+    "ci_lo": -0.01353400745703202,
+    "ci_hi": 0.0028166071381933245,
+    "frac_positive": 0.0866,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.143114,
+    "percentile": 0.0014,
+    "n_perm": 10000,
+    "n_simulated": 11,
+    "n_skipped": 2,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 13,
+   "bench_cum_return_same_windows": -0.05083177272481598,
+   "cum_return_vs_benchmark_pp": -13.129538338554635
+  },
+  {
+   "strategy": "penny-tracker-live",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 16,
+   "wins": 8,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.3125357695766728,
+   "cum_return": 0.08249098926980669,
+   "paired_bootstrap": {
+    "mean_excess": 0.008805388274002464,
+    "ci_lo": -0.02567513546111643,
+    "ci_hi": 0.050650611648124365,
+    "frac_positive": 0.6568,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.211649,
+    "percentile": 0.8573,
+    "n_perm": 10000,
+    "n_simulated": 12,
+    "n_skipped": 2,
+    "n_symbols": 7
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 14,
+   "bench_cum_return_same_windows": -0.0038685470883315087,
+   "cum_return_vs_benchmark_pp": 8.63595363581382
+  },
+  {
+   "strategy": "macd-hidden-div-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 16,
+   "wins": 6,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.9140205622782277,
+   "cum_return": -0.016406505158633733,
+   "paired_bootstrap": {
+    "mean_excess": -0.004695409053188564,
+    "ci_lo": -0.014444368144635436,
+    "ci_hi": 0.006480256109899962,
+    "frac_positive": 0.1859,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.052778,
+    "percentile": 0.2782,
+    "n_perm": 10000,
+    "n_simulated": 14,
+    "n_skipped": 0,
+    "n_symbols": 4
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 14,
+   "bench_cum_return_same_windows": 0.012334692767615785,
+   "cum_return_vs_benchmark_pp": -2.8741197926249518
+  },
+  {
+   "strategy": "vwap-reversion-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 16,
+   "wins": 9,
+   "wr": null,
+   "wr_published": false,
+   "pf": 2.498450872635814,
+   "cum_return": 0.5653436717215967,
+   "paired_bootstrap": {
+    "mean_excess": 0.02858104225041837,
+    "ci_lo": -0.01708175712791779,
+    "ci_hi": 0.07345795901899231,
+    "frac_positive": 0.8853,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.436721,
+    "percentile": 0.9933,
+    "n_perm": 10000,
+    "n_simulated": 13,
+    "n_skipped": 0,
+    "n_symbols": 6
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 13,
+   "bench_cum_return_same_windows": 0.06450832911736959,
+   "cum_return_vs_benchmark_pp": 50.08353426042271
+  },
+  {
+   "strategy": "funding-rate-reversal",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 15,
+   "wins": 8,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.5877823984377235,
+   "cum_return": 0.2371832179145088,
+   "paired_bootstrap": {
+    "mean_excess": 0.008983293009457438,
+    "ci_lo": -0.0205658625690644,
+    "ci_hi": 0.0400511796314513,
+    "frac_positive": 0.7057,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.299856,
+    "percentile": 0.8245,
+    "n_perm": 10000,
+    "n_simulated": 14,
+    "n_skipped": 1,
+    "n_symbols": 6
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 15,
+   "bench_cum_return_same_windows": 0.12384574844530238,
+   "cum_return_vs_benchmark_pp": 11.333746946920641
+  },
+  {
+   "strategy": "orderbook-imbalance",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 15,
+   "wins": 6,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.2878556831178247,
+   "cum_return": 0.07109582334298414,
+   "paired_bootstrap": {
+    "mean_excess": 0.0021095286237798254,
+    "ci_lo": -0.015489216699407754,
+    "ci_hi": 0.02248677249128863,
+    "frac_positive": 0.5717,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.092119,
+    "percentile": 0.0619,
+    "n_perm": 10000,
+    "n_simulated": 15,
+    "n_skipped": 0,
+    "n_symbols": 6
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 15,
+   "bench_cum_return_same_windows": 0.05243477976986344,
+   "cum_return_vs_benchmark_pp": 1.8661043573120706
+  },
+  {
+   "strategy": "mtf-align-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 15,
+   "wins": 10,
+   "wr": null,
+   "wr_published": false,
+   "pf": 2.9586530796906305,
+   "cum_return": 0.519994478666677,
+   "paired_bootstrap": {
+    "mean_excess": 0.007401605123393857,
+    "ci_lo": -0.0360770135485871,
+    "ci_hi": 0.05604656410834986,
+    "frac_positive": 0.6217,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.06256199999999998,
+    "percentile": 0.3729,
+    "n_perm": 10000,
+    "n_simulated": 7,
+    "n_skipped": 0,
+    "n_symbols": 4
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 7,
+   "bench_cum_return_same_windows": 0.010364127802800605,
+   "cum_return_vs_benchmark_pp": 50.96303508638764
+  },
+  {
+   "strategy": "cci-crypto-reversal",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 14,
+   "wins": 6,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.0234481622058678,
+   "cum_return": -0.018258773283576057,
+   "paired_bootstrap": {
+    "mean_excess": -0.014452110349838287,
+    "ci_lo": -0.03858426320788462,
+    "ci_hi": 0.010112209780000951,
+    "frac_positive": 0.1245,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.009105999999999961,
+    "percentile": 0.6091,
+    "n_perm": 10000,
+    "n_simulated": 14,
+    "n_skipped": 0,
+    "n_symbols": 8
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 14,
+   "bench_cum_return_same_windows": 0.22565940950474905,
+   "cum_return_vs_benchmark_pp": -24.39181827883251
+  },
+  {
+   "strategy": "macd_rsi_confluence",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 14,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.11538461538461538,
+   "cum_return": -0.207906939062093,
+   "paired_bootstrap": {
+    "mean_excess": -0.015329468214064114,
+    "ci_lo": -0.019999999999999997,
+    "ci_hi": -0.007087507856699658,
+    "frac_positive": 0.0005,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.02,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 13,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 14,
+   "bench_cum_return_same_windows": -0.015387445003102407,
+   "cum_return_vs_benchmark_pp": -19.25194940589906
+  },
+  {
+   "strategy": "drawdown_recovery_rsi_eth",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 14,
+   "wins": 9,
+   "wr": null,
+   "wr_published": false,
+   "pf": 5.9783830720716615,
+   "cum_return": 0.11307014656447967,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "golden-cross-stocks",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 13,
+   "wins": 8,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.3707253064346616,
+   "cum_return": 0.05444362245930279,
+   "paired_bootstrap": {
+    "mean_excess": -0.0010033433846826157,
+    "ci_lo": -0.01898149082810852,
+    "ci_hi": 0.016615495860504207,
+    "frac_positive": 0.4691,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.014080000000000014,
+    "percentile": 0.2567,
+    "n_perm": 10000,
+    "n_simulated": 12,
+    "n_skipped": 0,
+    "n_symbols": 7
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 12,
+   "bench_cum_return_same_windows": 0.025837467057871377,
+   "cum_return_vs_benchmark_pp": 2.860615540143141
+  },
+  {
+   "strategy": "vwap-reversion-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 12,
+   "wins": 7,
+   "wr": null,
+   "wr_published": false,
+   "pf": 2.1946048249922137,
+   "cum_return": 0.10019460420316317,
+   "paired_bootstrap": {
+    "mean_excess": 0.006888569325861229,
+    "ci_lo": -0.0038239230379846527,
+    "ci_hi": 0.018351355863734833,
+    "frac_positive": 0.8834,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.045579999999999996,
+    "percentile": 0.9025,
+    "n_perm": 10000,
+    "n_simulated": 8,
+    "n_skipped": 0,
+    "n_symbols": 4
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 8,
+   "bench_cum_return_same_windows": -0.010319238346294335,
+   "cum_return_vs_benchmark_pp": 11.05138425494575
+  },
+  {
+   "strategy": "aroon-trend-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 12,
+   "wins": 7,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.023645844142368,
+   "cum_return": -0.005443227920989502,
+   "paired_bootstrap": {
+    "mean_excess": 0.00222364967158261,
+    "ci_lo": -0.02742071769672342,
+    "ci_hi": 0.03180197236562125,
+    "frac_positive": 0.5715,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.017613000000000004,
+    "percentile": 0.7214,
+    "n_perm": 10000,
+    "n_simulated": 7,
+    "n_skipped": 1,
+    "n_symbols": 4
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 8,
+   "bench_cum_return_same_windows": -0.03776244642604487,
+   "cum_return_vs_benchmark_pp": 3.231921850505537
+  },
+  {
+   "strategy": "post-earnings-rev-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 12,
+   "wins": 8,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.7040221001087053,
+   "cum_return": 0.1324275814515723,
+   "paired_bootstrap": {
+    "mean_excess": 0.001898953092871167,
+    "ci_lo": -0.03330106713137941,
+    "ci_hi": 0.03709897331712175,
+    "frac_positive": 0.5297,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.086212,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 5,
+    "n_skipped": 0,
+    "n_symbols": 5
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": 0.07840078101870551,
+   "cum_return_vs_benchmark_pp": 5.402680043286678
+  },
+  {
+   "strategy": "fibonacci-bounce-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 12,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.15452899307389728,
+   "cum_return": -0.3011895720534301,
+   "paired_bootstrap": {
+    "mean_excess": -0.0310820081940412,
+    "ci_lo": -0.05437974729199417,
+    "ci_hi": -0.006452115320147352,
+    "frac_positive": 0.0054,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.305786,
+    "percentile": 0.4506,
+    "n_perm": 10000,
+    "n_simulated": 10,
+    "n_skipped": 0,
+    "n_symbols": 5
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 10,
+   "bench_cum_return_same_windows": 0.004190867439660684,
+   "cum_return_vs_benchmark_pp": -30.538043949309078
+  },
+  {
+   "strategy": "regime_mild_bear",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 11,
+   "wins": 11,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.7182185653604478,
+   "paired_bootstrap": {
+    "mean_excess": 0.05049745454545454,
+    "ci_lo": 0.04396136363636364,
+    "ci_hi": 0.05707127272727272,
+    "frac_positive": 1.0,
+    "pass_95": true,
+    "n_boot": 10000
+   },
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 11,
+   "bench_cum_return_same_windows": 0.0,
+   "cum_return_vs_benchmark_pp": 71.82185653604478
+  },
+  {
+   "strategy": "strong consensus (alpha_engine, quan_engine)",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 10,
+   "wins": 7,
+   "wr": null,
+   "wr_published": false,
+   "pf": 43.451319296167576,
+   "cum_return": 6.289742637362992,
+   "paired_bootstrap": {
+    "mean_excess": 0.2714476964432364,
+    "ci_lo": 0.034992411403539446,
+    "ci_hi": 0.5308822632067518,
+    "frac_positive": 0.9937,
+    "pass_95": true,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.013900000000000001,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 6,
+    "n_symbols": 3,
+    "n_benchmark_fallback": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "2 MC trades null-sampled on the BTC-USD benchmark path (own-symbol series unavailable)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 10,
+   "bench_cum_return_same_windows": 0.008921666035565323,
+   "cum_return_vs_benchmark_pp": 628.0820971327427
+  },
+  {
+   "strategy": "meme-velocity",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 9,
+   "wins": 6,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.6212513279338812,
+   "cum_return": 0.17791619563021777,
+   "paired_bootstrap": {
+    "mean_excess": 0.03307165783107281,
+    "ci_lo": -0.11698276444019287,
+    "ci_hi": 0.1803850371512567,
+    "frac_positive": 0.6675,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.030901000000000012,
+    "percentile": 0.7455,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 1,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": -0.006926706832952045,
+   "cum_return_vs_benchmark_pp": 18.48429024631698
+  },
+  {
+   "strategy": "ema-ribbon",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 9,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.07053193535975376,
+   "cum_return": -0.1453330830264875,
+   "paired_bootstrap": {
+    "mean_excess": -0.003382233625379589,
+    "ci_lo": -0.015147040526621839,
+    "ci_hi": 0.008498812594302716,
+    "frac_positive": 0.3439,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.061790000000000005,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 1,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": -0.0639166515694708,
+   "cum_return_vs_benchmark_pp": -8.141643145701671
+  },
+  {
+   "strategy": "betting-against-beta",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 9,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.18742940746159473,
+   "cum_return": -0.13204805515791262,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.018312,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "clone_hl_copy_PensionFund_24M",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 8,
+   "wins": 7,
+   "wr": null,
+   "wr_published": false,
+   "pf": 236.183,
+   "cum_return": 0.260184569019865,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "crash_reversal",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 8,
+   "wins": 6,
+   "wr": null,
+   "wr_published": false,
+   "pf": 3.481242096388928,
+   "cum_return": 0.2646759339456277,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "gap-and-go-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 8,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.5156054255253857,
+   "cum_return": -0.13883478123689408,
+   "paired_bootstrap": {
+    "mean_excess": -0.017052951152780098,
+    "ci_lo": -0.06026534656910161,
+    "ci_hi": 0.05539770666127712,
+    "frac_positive": 0.2566,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.073715,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 5,
+    "n_skipped": 0,
+    "n_symbols": 4
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": 0.011502321516358105,
+   "cum_return_vs_benchmark_pp": -15.033710275325218
+  },
+  {
+   "strategy": "sector-rotation",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 8,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.27788785243372144,
+   "cum_return": -0.15702450709406368,
+   "paired_bootstrap": {
+    "mean_excess": -0.013161977661382725,
+    "ci_lo": -0.030614361213050417,
+    "ci_hi": 0.007830233613033635,
+    "frac_positive": 0.1013,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.141035,
+    "percentile": 0.589,
+    "n_perm": 10000,
+    "n_simulated": 7,
+    "n_skipped": 1,
+    "n_symbols": 5
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 8,
+   "bench_cum_return_same_windows": -0.05903109852807964,
+   "cum_return_vs_benchmark_pp": -9.799340856598404
+  },
+  {
+   "strategy": "hs_Auros_66M",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 8,
+   "wins": 8,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.011248974870550432,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "vwma_momentum_trend",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 7,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.03264693228503218,
+   "cum_return": -0.11023189276154732,
+   "paired_bootstrap": {
+    "mean_excess": -0.01728905304539259,
+    "ci_lo": -0.03151030135238723,
+    "ci_hi": -0.005588534662213751,
+    "frac_positive": 0.0004,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.0045179999999999994,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 4,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 7,
+   "bench_cum_return_same_windows": 0.006341003343237839,
+   "cum_return_vs_benchmark_pp": -11.657289610478516
+  },
+  {
+   "strategy": "extreme_fear",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 7,
+   "wins": 6,
+   "wr": null,
+   "wr_published": false,
+   "pf": 7.243966560750491,
+   "cum_return": 0.3729196350250552,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "golden-cross-stocks",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 7,
+   "wins": 5,
+   "wr": null,
+   "wr_published": false,
+   "pf": 2.2621475040891372,
+   "cum_return": 0.10183651717695263,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.027432000000000012,
+    "percentile": 0.5036,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "rsi-divergence-scout",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 7,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.5051980960049257,
+   "cum_return": -0.020965863955473285,
+   "paired_bootstrap": {
+    "mean_excess": -0.0028518651423385033,
+    "ci_lo": -0.009093132121013956,
+    "ci_hi": 0.005041139434349108,
+    "frac_positive": 0.2285,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.010665999999999998,
+    "percentile": 0.4761,
+    "n_perm": 10000,
+    "n_simulated": 6,
+    "n_skipped": 1,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 7,
+   "bench_cum_return_same_windows": -0.0010741439885338933,
+   "cum_return_vs_benchmark_pp": -1.9891719966939392
+  },
+  {
+   "strategy": "call-surge-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 7,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.34816585126200084,
+   "cum_return": -0.12477316025392149,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.004614,
+    "percentile": 0.6198,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "whale-accum-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 7,
+   "wins": 4,
+   "wr": null,
+   "wr_published": false,
+   "pf": 2.122132397413727,
+   "cum_return": 0.12702564686706697,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "seasonal_momentum",
+   "asset_class": "COMMODITY",
+   "benchmark": "SPY",
+   "n": 6,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.5885508265916286,
+   "cum_return": -0.03862174765390214,
+   "paired_bootstrap": {
+    "mean_excess": -0.004394473671492109,
+    "ci_lo": -0.021814140338158778,
+    "ci_hi": 0.016857666666666663,
+    "frac_positive": 0.3112,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.019996,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 5,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 6,
+   "bench_cum_return_same_windows": -0.011065157971047346,
+   "cum_return_vs_benchmark_pp": -2.7556589682854793
+  },
+  {
+   "strategy": "bb-squeeze-breakout-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 6,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.2306947246333895,
+   "cum_return": 0.022971154334724853,
+   "paired_bootstrap": {
+    "mean_excess": 0.035151378533288306,
+    "ci_lo": -0.01483959801572523,
+    "ci_hi": 0.08895906838324324,
+    "frac_positive": 0.9075,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": 0.037394,
+    "percentile": 0.2396,
+    "n_perm": 10000,
+    "n_simulated": 6,
+    "n_skipped": 0,
+    "n_symbols": 5
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 6,
+   "bench_cum_return_same_windows": -0.16183001355509308,
+   "cum_return_vs_benchmark_pp": 18.480116788981793
+  },
+  {
+   "strategy": "price-accel-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 6,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.2113167987726924,
+   "cum_return": -0.14727785352388734,
+   "paired_bootstrap": {
+    "mean_excess": -0.0193572495298861,
+    "ci_lo": -0.02946976496482964,
+    "ci_hi": -0.008190987565467902,
+    "frac_positive": 0.0006,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.125228,
+    "percentile": 0.0176,
+    "n_perm": 10000,
+    "n_simulated": 5,
+    "n_skipped": 1,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 6,
+   "bench_cum_return_same_windows": -0.04119978290686832,
+   "cum_return_vs_benchmark_pp": -10.607807061701902
+  },
+  {
+   "strategy": "drawdown_recovery_rsi_sol",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 6,
+   "wins": 4,
+   "wr": null,
+   "wr_published": false,
+   "pf": 8.56816922224275,
+   "cum_return": 0.08403433958962903,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "strong consensus (alpha_engine, kimi)",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.05566741670593045,
+   "paired_bootstrap": {
+    "mean_excess": -0.006462392504493389,
+    "ci_lo": -0.010553486268902885,
+    "ci_hi": -0.0017081643101174997,
+    "frac_positive": 0.0028,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.046728,
+    "percentile": 0.569,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 1,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": -0.024460191681810683,
+   "cum_return_vs_benchmark_pp": -3.1207225024119767
+  },
+  {
+   "strategy": "high_trust_momentum",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 5,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.8398610562223103,
+   "cum_return": 0.03925820021245374,
+   "paired_bootstrap": {
+    "mean_excess": 0.008075600000000002,
+    "ci_lo": -0.014167599999999997,
+    "ci_hi": 0.029485,
+    "frac_positive": 0.6777,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": 0.0,
+   "cum_return_vs_benchmark_pp": 3.925820021245374
+  },
+  {
+   "strategy": "claude_ml_moderate_mut",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 5,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": 3.4751325891035867,
+   "cum_return": 0.13381693219792323,
+   "paired_bootstrap": {
+    "mean_excess": 0.0266948,
+    "ci_lo": -0.015099000000000001,
+    "ci_hi": 0.0697362,
+    "frac_positive": 0.8684,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": 0.0,
+   "cum_return_vs_benchmark_pp": 13.381693219792323
+  },
+  {
+   "strategy": "cal-effect-crypto-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 5,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.2214234363767074,
+   "cum_return": 0.015399889731560146,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.130179,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "momentum_breakout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.8239319996319884,
+   "cum_return": -0.04621436280065583,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "rsi_bounce",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.11890430664062512,
+   "paired_bootstrap": {
+    "mean_excess": -0.025,
+    "ci_lo": -0.025,
+    "ci_hi": -0.025,
+    "frac_positive": 0.0,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": 0.0,
+   "cum_return_vs_benchmark_pp": -11.890430664062512
+  },
+  {
+   "strategy": "volume-anomaly-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.3252342237708092,
+   "cum_return": -0.1719422921857654,
+   "paired_bootstrap": {
+    "mean_excess": -0.027474190297110422,
+    "ci_lo": -0.07639584858309559,
+    "ci_hi": 0.028960669501688036,
+    "frac_positive": 0.1561,
+    "pass_95": false,
+    "n_boot": 10000
+   },
+   "random_entry_mc": {
+    "obs_total": -0.128569,
+    "percentile": 0.1971,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 1,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)"
+   ],
+   "wilson_ci": null,
+   "n_paired": 5,
+   "bench_cum_return_same_windows": -0.03670419658701718,
+   "cum_return_vs_benchmark_pp": -13.523809559874822
+  },
+  {
+   "strategy": "vix-mean-rev-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": 2.3194148851688317,
+   "cum_return": 0.0816393108914415,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.042103,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "options-flow-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.10247401272983947,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.07181,
+    "percentile": 0.1645,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "goldmine_5x_consensus",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.8572946502818072,
+   "cum_return": -0.003377706793023072,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "betting-against-beta",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 5,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.368768160893271,
+   "cum_return": -0.0193418463572812,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "strong consensus (luxalgo_filters, quan_engine)",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.6617485672478965,
+   "cum_return": -0.014423860246747355,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.0127,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 3,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "regime_strong_bear",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 4,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.22882847900478898,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "forex_zscore_200d_fade",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 4,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.017957747097843257,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "crypto-rsi-divergence-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.5851153314142583,
+   "cum_return": 0.05415267393385492,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.06260500000000002,
+    "percentile": 0.3487,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 0,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "tsmom_28d",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.8749042879019908,
+   "cum_return": -0.010216746865401083,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "ema_momentum_volume",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.08201140857652667,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "mtf-align-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.11131472629200534,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.07477,
+    "percentile": 0.0067,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 1,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "btc-4h-rsi-macd-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 4,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.5069188869309047,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.33721199999999996,
+    "percentile": 0.8295,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 1,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "bollinger-squeeze",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 4,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.48841111308426666,
+   "cum_return": -0.0885746189391835,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.08354400000000001,
+    "percentile": 0.4355,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "stocksunify2_volatility_adjusted_momentum_v2",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 4,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "stocksunify2_regime_aware_reversion_v2",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 4,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "volume-anomaly-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 4,
+   "wins": 4,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.14365587845122652,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.122796,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "quick_engine",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 4,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.1942748609415275,
+   "cum_return": 0.003932888247719868,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "clone_hl_bybit_copy_C_R_Y_P_T_O___K_I_N_",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 4,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.11470719000000007,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.12,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 4,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 4 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 4
+  },
+  {
+   "strategy": "ema_stack_momentum",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 4,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "atr_percentile_gate_scanner",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.045784972429999904,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "regime_mild_bear",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 3.2256676595636353,
+   "cum_return": 0.0826563840034309,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "connors_williams_hybrid",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.08560731553843415,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.035982,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 2,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "stochastic_momentum_index",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.08282980119531258,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "vt_equity_two_day_rsi_reversal",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.06436605302978315,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "crypto-funding-confluence",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.882863813229572,
+   "cum_return": -0.004644573095297089,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.0037629999999999994,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 3
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "adx_momentum",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.31619032815869746,
+   "cum_return": -0.03536042730495226,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "short-squeeze",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.25388333227541054,
+   "cum_return": -0.0833961193851418,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.08228099999999999,
+    "percentile": 0.0886,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "volume-anomaly-scout",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.7056949929927379,
+   "cum_return": -0.004748148267761598,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.004620000000000002,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "donchian-stock-breakout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 4.3302059116572575,
+   "cum_return": 0.03984368851359421,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.040109000000000006,
+    "percentile": 0.5767,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "mtf-align-scout",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.7713462231295783,
+   "cum_return": -0.003951728629492779,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.0038080000000000006,
+    "percentile": 0.0519,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "vix-mean-rev-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 3.5233225486529984,
+   "cum_return": 0.1528905361824875,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.109337,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "funding-rate-arb",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.12976342343387082,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.13567,
+    "percentile": 0.2187,
+    "n_perm": 10000,
+    "n_simulated": 3,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 3 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 3
+  },
+  {
+   "strategy": "goldmine_1x_consensus",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.25775086505190314,
+   "cum_return": -0.0437572484385399,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "st_fear_greed_contrarian (Revival)",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 3.3156926793115753,
+   "cum_return": 0.15651356284965878,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "hs_ABC_41M",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 3,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0021014703429995674,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "drawdown_recovery_rsi_xrp",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 3,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": 2.967630809229769,
+   "cum_return": 0.02983278193802774,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "call-surge-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.2556480999479438,
+   "cum_return": -0.014304081687114945,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "options-flow-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.05391249857516034,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "pairs-trading",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.04384877815129529,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "macd_divergence",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 3,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "prediction_market_consensus",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.03073334429800001,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "fractal_decay_penny",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.020442136664000077,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.013521,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 1,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "strong consensus (alpha_engine, smart_money)",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.19709279796000012,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.188246,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "aroon-trend-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.025764058729000006,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.0033090000000000003,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "short-squeeze-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.16874405284400007,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.007889,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "vwap-reclaim-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 2,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.04065993946800006,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.040401000000000006,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "post-earnings-rev-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.7032614118233975,
+   "cum_return": 0.020803002856000008,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.054627,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "adx-trend-scout",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.019911886047999983,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.020012,
+    "percentile": 0.0195,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "rs-breakout-scout",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.156745661504012,
+   "cum_return": 0.0015471182359998448,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.012398,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "cmf-accumulation-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.061029568404999956,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.061596,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 0,
+    "n_symbols": 2
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "pairs-trading",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.15045878059200002,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.156091,
+    "percentile": 0.5033,
+    "n_perm": 10000,
+    "n_simulated": 2,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 2 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 2
+  },
+  {
+   "strategy": "ema-ribbon",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.048627028059999966,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.024605000000000002,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "pairs-trading",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": 1.8670807453416147,
+   "cum_return": 0.0034597521249999375,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "williams-r-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.09758245243000008,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "bb_mean_reversion_forex",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 2,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.0020369999999999555,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "Crypto Funding Confluence (RSI+BB)",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.020000000000000018,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "commodity_momentum",
+   "asset_class": "COMMODITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.02635900000000002,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "macd_divergence_scanner",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.020000000000000018,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "regime_mild_bull",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.01959999999999995,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "strong consensus (alpha_engine, kol_consensus, luxalgo_filters)",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.283334,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "futures_cross_asset_momentum",
+   "asset_class": "FUTURES",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.004746000000000028,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.004746,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "commodity_term_cot",
+   "asset_class": "COMMODITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.01398799999999989,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "cta_cross_asset_tsmom",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "futures_momentum",
+   "asset_class": "COMMODITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "williams_vix_fix",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.11718800000000007,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "cta_golden_cross_200",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0011890000000001066,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.001189,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "adx-trend-scout",
+   "asset_class": "CRYPTO",
+   "benchmark": "BTC-USD",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.06980500000000012,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.069805,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "stocksunify2_adversarial_trend_v2",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "vwap-reclaim-scout",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.008050000000000002,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.00805,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "breadth-thrust-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.08207699999999996,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": 0.08207700000000001,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "bollinger-squeeze",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.00417500000000004,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.004175,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "sector-rotation",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.03350299999999995,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.033503,
+    "percentile": 1.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "quick_engine",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "pairs-trading",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.003855000000000053,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.003855,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "betting-against-beta",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.033255000000000035,
+   "paired_bootstrap": null,
+   "random_entry_mc": {
+    "obs_total": -0.033255,
+    "percentile": 0.0,
+    "n_perm": 10000,
+    "n_simulated": 1,
+    "n_skipped": 0,
+    "n_symbols": 1
+   },
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 1 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped"
+   ],
+   "wilson_ci": null,
+   "n_paired": 1
+  },
+  {
+   "strategy": "vwap-reclaim-scout",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.06876400000000005,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "keltner-bounce",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.06330999999999998,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "cmf-accumulation-scout",
+   "asset_class": "ETF",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": 0.0,
+   "cum_return": -0.02673000000000003,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "hyperopt_bollinger_mr",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "vwap-reversion-scout",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.005573999999999968,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "connors_rsi2",
+   "asset_class": "FOREX",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "ema_stack_momentum",
+   "asset_class": "BOND",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 1,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0013099999999999223,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  },
+  {
+   "strategy": "ema_stack_momentum",
+   "asset_class": "EQUITY",
+   "benchmark": "SPY",
+   "n": 1,
+   "wins": 0,
+   "wr": null,
+   "wr_published": false,
+   "pf": null,
+   "cum_return": 0.0,
+   "paired_bootstrap": null,
+   "random_entry_mc": null,
+   "notes": [
+    "n<20: WR/wilson hidden (insufficient sample)",
+    "only 0 trades had usable timestamps/benchmark prices (<5): paired bootstrap skipped",
+    "no simulatable trades for random-entry MC"
+   ],
+   "wilson_ci": null,
+   "n_paired": 0
+  }
+ ],
+ "summary": {
+  "n_ledgers": 170,
+  "n_full_proof": 67,
+  "n_pass_95": 4,
+  "n_mc_top_decile": 9
+ }
+}
