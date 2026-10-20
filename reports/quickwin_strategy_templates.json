@@ -1,0 +1,139 @@
+{
+  "schema": "quickwin_strategy_templates/v1",
+  "created": "2026-10-19",
+  "source_report": "reports/QUICKWIN_STRATEGY_TEMPLATES_2026-10-19.md",
+  "note": "Verified/corrected form of the Quick-Win Symbols & Strategy Templates task. Gates = Tier 2 of alpha_engine/value_backtest.py::classify_tier plus the money-maker-readyv2 data-integrity filters. 'implemented: false' rules are proposals, not code. Read by tools/quickwin_template_gate_check.py.",
+  "gates": {
+    "tier_label": "Tier 2",
+    "pf_min": 1.5,
+    "wr_min_pct": 50.0,
+    "money_ready_wr_min_pct": 52.0,
+    "max_dd_max": 0.2,
+    "n_min": 100
+  },
+  "templates": [
+    {
+      "id": "etf_taa_dual_momentum",
+      "asset_class": "ETF",
+      "name": "Tactical Asset Allocation - dual momentum (Antonacci)",
+      "methodology": "Absolute + relative momentum across low-correlation asset-class ETFs, monthly rebalance, negative absolute momentum rotates to cash/bonds",
+      "universe": ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "AGG", "GLD", "DBC", "VNQ", "LQD", "HYG", "TIP"],
+      "symbols": [],
+      "entry_rule": {
+        "text": "Rank universe by trailing 6-month total return; hold top-5 while absolute momentum > 0; rotate negative-momentum slots to AGG",
+        "implemented": true,
+        "code": "tools/tactical_rotation_tracker.py",
+        "params": {"top_n": 5, "lookback_months": 6, "cash_asset": "AGG"}
+      },
+      "evidence": {
+        "kind": "backtest",
+        "sharpe": 0.88,
+        "max_dd_pct": -19.0,
+        "report": "reports/TACTICAL_ROTATION_EDGE_2026-07-04.md",
+        "note": "top5-6m cell 2007-2026; 9m region Sharpe 1.09-1.21. Smart-beta risk-adjusted gain, NOT excess return; in-sample-robust, forward-track before sizing."
+      },
+      "ledger_gate_applies": false,
+      "track": "FORWARD_TRACK",
+      "paper_only": false
+    },
+    {
+      "id": "equity_dividend_lowbeta_quality",
+      "asset_class": "EQUITY",
+      "name": "High-dividend, low-beta quality equity",
+      "methodology": "Dividend capture + low-volatility anomaly (Frazzini-Pedersen) + quality factor (Novy-Marx)",
+      "universe": [],
+      "symbols": ["SCHD", "VIG", "AAPL", "MSFT", "JNJ", "KO", "PEP", "PG", "V", "WMT"],
+      "entry_rule": {
+        "text": "Code-backed: SafetyGate Altman Z'' >= 1.10 AND Beneish M <= -1.78, universe gates mcap >= $300M / >=5y operating / 10-K <= 540d / not Financial-or-Utilities, Piotroski F in QualityComposite. Proposed (NOT coded): yield >= 2.5%, beta <= 0.8, Piotroski F >= 7 hard gates.",
+        "implemented": "partial",
+        "code": "alpha_engine/value_screener.py",
+        "proposed_rules": ["yield >= 2.5%", "beta <= 0.8", "Piotroski F >= 7"]
+      },
+      "exit_rule": {
+        "text": "Thesis-break rules via pick contract; proposed: dividend cut / 2 consecutive earnings misses / beta > 1.2",
+        "implemented": "partial",
+        "code": "alpha_engine/long_term_pick_contract.py"
+      },
+      "evidence": {"kind": "pick_ledger", "note": "Closest candidate: n and WR gates pass live (n=229, WR 55.9%); binding failure PF 0.8365 < 1.5"},
+      "ledger_gate_applies": true,
+      "track": "GATE_FAIL_PF",
+      "paper_only": true
+    },
+    {
+      "id": "commodity_carry_backwardation",
+      "asset_class": "COMMODITY",
+      "name": "Commodity carry - normal backwardation / roll yield",
+      "methodology": "Keynesian normal backwardation: long commodities in backwardation (positive roll yield)",
+      "universe": [],
+      "symbols": ["GLD", "SLV", "USO", "UNG", "DBC"],
+      "entry_rule": {
+        "text": "Code: backwardation proxy = price above SMA, long top-3 strongest carry. Proposed refinement: positive roll yield AND 3-month momentum > 0.",
+        "implemented": "partial",
+        "code": "alpha_engine/commodity_basis_carry.py",
+        "proposed_rules": ["3-month momentum > 0"]
+      },
+      "evidence": {"kind": "pick_ledger", "note": "n=227 clears; WR 40.1% and PF 1.0281 fail. Class frozen at intake (BLOCKED_ASSET_CLASSES, 0.0 volume cap)."},
+      "ledger_gate_applies": true,
+      "track": "FROZEN_GATE_FAIL",
+      "paper_only": true
+    },
+    {
+      "id": "forex_interest_rate_carry",
+      "asset_class": "FOREX",
+      "name": "Forex carry trade (G10 rate differential)",
+      "methodology": "Long high-yield vs short low-yield currencies (Burnside-Hanson-Jagannathan)",
+      "universe": [],
+      "pairs": ["USD/JPY", "EUR/JPY", "AUD/JPY"],
+      "entry_rule": {
+        "text": "Long high-yield, short low-yield. Proposed: vol-target 10% annualized (NOT coded).",
+        "implemented": "partial",
+        "code": "alpha_engine/forex_carry_momentum_harvest.py",
+        "related_code": ["alpha_engine/forex_carry_ppp.py", "alpha_engine/fx_carry_vix_regime.py"],
+        "proposed_rules": ["vol-target 10% annualized"]
+      },
+      "evidence": {"kind": "net_cost_gate", "note": "Gross PF 1.79 / CI-LB 1.35 dies at ~1bp round-trip cost (net PF 0.46 @ 5bp) - reports/FOREX_NETCOST_CILB_SENSITIVITY_2026-06-13.md. Live: n=547 but WR 30.7% / PF 0.6111. NOT the 'PF 0.460 ledger' of the original draft - that row is EQUITY."},
+      "ledger_gate_applies": true,
+      "track": "GATE_FAIL_COST",
+      "paper_only": true
+    },
+    {
+      "id": "crypto_stablecoin_funding_arb",
+      "asset_class": "CRYPTO",
+      "name": "Crypto stable-coin inflow signal + funding-rate arbitrage",
+      "methodology": "On-chain flow regime signal (Glassnode free tier, NOT Santiment) + perpetual funding-rate basis capture",
+      "universe": [],
+      "symbols": ["BTC", "ETH"],
+      "entry_rule": {
+        "text": "USDT/USDC inflow > 2x 7-day avg -> long BTC/ETH 24-48h; funding > +0.05%/8h -> short perp / long spot; funding < -0.03%/8h -> long perp / short spot",
+        "implemented": "partial",
+        "code": "alpha_engine/funding_rate_arb.py",
+        "params": {"min_funding_threshold_8h": 0.0005},
+        "related_code": ["alpha_engine/crypto_funding_rate_carry.py", "alpha_engine/crypto_onchain_momentum.py"],
+        "proposed_rules": ["stable-coin inflow > 2x 7-day average (on-chain momentum module uses Glassnode MVRV-Z/active addresses instead)"]
+      },
+      "evidence": {"kind": "pick_ledger", "note": "Frozen: WR 32.4% / PF 0.727 (n=1155). Live: n=3497, WR 35.5%, PF 0.881 - FAIL. Paper only until n>=250 clean with PF >= 1.5."},
+      "ledger_gate_applies": true,
+      "track": "GATE_FAIL",
+      "paper_only": true
+    },
+    {
+      "id": "bond_yield_curve_carry",
+      "asset_class": "BOND",
+      "name": "Bond yield-curve carry (duration premium / steepness)",
+      "methodology": "Duration risk premium and curve steepness carry",
+      "universe": [],
+      "symbols": ["TLT", "IEF", "SHY"],
+      "entry_rule": {
+        "text": "Long TLT / short SHY steepener, or long IEF belly. Proposed: 2s10s spread > 50bp AND VIX < 20 (NOT coded).",
+        "implemented": "partial",
+        "code": "alpha_engine/bond_yield_curve_slope.py",
+        "related_code": ["alpha_engine/antigravity_strategies.py::ag_bond_yield_curve_momentum"],
+        "proposed_rules": ["2s10s > 50bp", "VIX < 20"]
+      },
+      "evidence": {"kind": "pick_ledger", "note": "Sample far below bar: BOND n=6 (frozen ledger) -> n=0 (live). Freeze until n>=100."},
+      "ledger_gate_applies": true,
+      "track": "INSUFFICIENT_N",
+      "paper_only": true
+    }
+  ]
+}

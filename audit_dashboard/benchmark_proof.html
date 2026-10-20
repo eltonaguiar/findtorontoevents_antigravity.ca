@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Ledger Benchmark Proof — read-only</title>
+<style>
+  :root { --bg:#050510; --surface:#0c0c20; --surface2:#12122e; --border:#1c1c3c;
+          --text:#e4e4f4; --dim:#8888aa; --green:#22c55e; --red:#ef4444; --amber:#f59e0b; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         background:var(--bg); color:var(--text); min-height:100vh; padding:24px; }
+  a { color:inherit; }
+  h1 { font-size:22px; margin-bottom:4px; }
+  h2 { font-size:16px; margin:26px 0 10px; color:var(--text); }
+  .sub { color:var(--dim); font-size:13px; margin-bottom:14px; }
+  .banner { background:var(--surface2); border:1px solid var(--border); border-left:4px solid var(--amber);
+            border-radius:10px; padding:10px 14px; font-size:13px; color:var(--dim); margin-bottom:18px; }
+  .cards { display:flex; flex-wrap:wrap; gap:12px; margin:14px 0; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px;
+          padding:12px 16px; min-width:140px; }
+  .card .v { font-size:22px; font-weight:700; }
+  .card .k { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin-top:6px; }
+  th, td { border-bottom:1px solid var(--border); padding:7px 10px; text-align:left; white-space:nowrap; }
+  th { color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .pos { color:var(--green); } .neg { color:var(--red); } .muted { color:var(--dim); }
+  details { margin-top:10px; }
+  summary { cursor:pointer; color:var(--dim); font-size:13px; }
+  .conv { background:var(--surface); border:1px solid var(--border); border-radius:10px;
+          padding:12px 16px; font-size:13px; color:var(--dim); line-height:1.6; }
+  code { background:var(--surface2); border:1px solid var(--border); border-radius:6px;
+         padding:1px 6px; font-size:12px; }
+  .err { color:var(--red); padding:30px 0; }
+  .headline { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--green);
+              border-radius:10px; padding:12px 16px; font-size:16px; margin:6px 0 14px; }
+</style>
+</head>
+<body>
+<h1>Ledger Benchmark Proof</h1>
+<div class="sub">Every closed-pick ledger, measured against its own same-window benchmark and a random-entry control.</div>
+<div class="banner"><strong>Read-only benchmark view.</strong> This page contains no picks, no entry or exit
+signals, and no money-ready verdicts. The <strong>headline measure is the paired benchmark gate</strong>: does a
+ledger beat its own same-window benchmark with &ge;95% bootstrap confidence. PF alone overrates.
+<strong>Measurement &ne; permission:</strong> a ledger clearing this gate can still be a blocked or
+resolution-flagged family (e.g. <code>forex_rsi2_mean_reversion</code> passes here on a same-batch cohort
+yet is blocklisted in three places &mdash; see <code>reports/2026-10-20-weekly-picks-snipe-findings.md</code>);
+this panel never overrides blocklists, kill switches, or money-ready gates.</div>
+<div class="headline" id="headline"></div>
+<div class="cards" id="cards"></div>
+<div id="body-err"></div>
+<h2>Headline &mdash; ledgers clearing the paired benchmark gate (&ge;95% of bootstrap resamples positive)</h2>
+<table id="t-paired"><thead><tr>
+  <th>Ledger</th><th>Class</th><th>Benchmark</th><th class="num">n</th><th class="num">WR</th>
+  <th class="num">PF</th><th class="num">vs bench (pp)</th><th class="num">Mean excess</th><th class="num">95% CI</th><th class="num">Frac. positive</th>
+</tr></thead><tbody></tbody></table>
+<h2>Random-entry MC timing percentile (top decile) &mdash; same-asset nulls (fixed 2026-10-19)</h2>
+<div class="sub">Supporting evidence only; the paired gate above is the headline. Nulls are sampled on each
+trade&rsquo;s own symbol, same window, same hold length, same direction (shorts negate the path) &mdash; the
+pre-fix version sampled BTC/SPY paths and pinned volatile instruments at 1.0. Coin-flip sanity gate passes
+in CI. Percentile ~1.0 = timing luck would essentially never produce this; ~0.5 = coin flip. Skipped =
+same-day round trips, which cannot be simulated on daily closes (counted per row).</div>
+<table id="t-mc"><thead><tr>
+  <th>Ledger</th><th>Class</th><th class="num">n</th><th class="num">Observed total</th>
+  <th class="num">Percentile</th><th class="num">Simulated / skipped</th>
+</tr></thead><tbody></tbody></table>
+<details><summary id="full-toggle">Show all ledgers (full table)</summary>
+<table id="t-all"><thead><tr>
+  <th>Ledger</th><th>Class</th><th>Benchmark</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th>
+  <th class="num">Cum. return</th><th class="num">vs bench (pp)</th><th class="num">Frac. pos.</th><th class="num">MC pctile (skipped)</th>
+</tr></thead><tbody></tbody></table>
+</details>
+<h2>Conventions</h2>
+<div class="conv" id="conv"></div>
+<script>
+const pct = (x, d=1) => (x==null||Number.isNaN(x)) ? "—" : (x*100).toFixed(d)+"%";
+const fx  = (x, d=4) => (x==null||Number.isNaN(x)) ? "—" : x.toFixed(d);
+const wrCell = l => l.wr_published
+  ? `<span class="${l.wr>=0.5?'pos':'neg'}">${pct(l.wr)}</span>`
+  : `<span class="muted" title="n &lt; 20 — hidden by convention">${pct(l.wr)}*</span>`;
+
+fetch("data/benchmark_ledger_proof.json", { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+  .then(j => {
+    const L = j.ledgers || [];
+    const s = j.summary || {};
+    const nL = s.n_ledgers ?? L.length;
+    const nPaired = L.filter(l => l.paired_bootstrap && l.paired_bootstrap.pass_95).length;
+    document.getElementById("headline").innerHTML =
+      `<strong>${nPaired} of ${nL}</strong> closed ledgers beat their same-window benchmark ` +
+      `with &ge;95% paired-bootstrap confidence (n_boot=${j.n_boot ?? "—"}, seed=${j.seed ?? "—"}). ` +
+      `<span class="muted">${s.n_full_proof ?? "—"} ledgers have full proof (paired + MC); ` +
+      `the summary card counts those.</span>`;
+    document.getElementById("cards").innerHTML = [
+      ["Generated (UTC)", (j.generated_at||"").slice(0,16).replace("T"," ")],
+      ["Ledgers", s.n_ledgers ?? L.length],
+      ["Full proof (paired + MC)", s.n_full_proof ?? "—"],
+      ["Clear paired gate", s.n_pass_95 ?? "—"],
+      ["MC top decile", s.n_mc_top_decile ?? "—"],
+      ["Boot / perms", `${j.n_boot??"—"} / ${j.n_perm??"—"}`],
+    ].map(([k,v]) => `<div class="card"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+
+    const paired = L.filter(l => l.paired_bootstrap && l.paired_bootstrap.pass_95)
+                    .sort((a,b) => b.paired_bootstrap.frac_positive - a.paired_bootstrap.frac_positive);
+    document.querySelector("#t-paired tbody").innerHTML = paired.length ? paired.map(l => {
+      const p = l.paired_bootstrap;
+      const pp = l.cum_return_vs_benchmark_pp;
+      return `<tr><td>${l.strategy}</td><td>${l.asset_class}</td><td>${l.benchmark}</td>
+        <td class="num">${l.n}</td><td class="num">${wrCell(l)}</td><td class="num">${fx(l.pf,2)}</td>
+        <td class="num ${(pp ?? 0)>=0?'pos':'neg'}">${fx(pp,1)}</td>
+        <td class="num ${p.mean_excess>=0?'pos':'neg'}">${fx(p.mean_excess,5)}</td>
+        <td class="num muted">[${fx(p.ci_lo,4)}, ${fx(p.ci_hi,4)}]</td>
+        <td class="num pos">${pct(p.frac_positive)}</td></tr>`;
+    }).join("") : `<tr><td colspan="9" class="muted">No ledger clears the paired gate this run.</td></tr>`;
+
+    const mcPct = m => m.n_simulated < 20
+      ? `<span class="muted" title="n&lt;20 — uninformative">${fx(m.percentile,3)}*</span>`
+      : `<span class="pos">${fx(m.percentile,3)}</span>`;
+    const mc = L.filter(l => l.random_entry_mc && l.random_entry_mc.percentile >= 0.90)
+                .sort((a,b) => (b.random_entry_mc.percentile - a.random_entry_mc.percentile)
+                            || (b.random_entry_mc.n_simulated - a.random_entry_mc.n_simulated));
+    document.querySelector("#t-mc tbody").innerHTML = mc.length ? mc.map(l => {
+      const m = l.random_entry_mc;
+      return `<tr><td>${l.strategy}</td><td>${l.asset_class}</td><td class="num">${l.n}</td>
+        <td class="num ${m.obs_total>=0?'pos':'neg'}">${fx(m.obs_total,2)}</td>
+        <td class="num">${mcPct(m)}</td>
+        <td class="num muted">${m.n_simulated} / ${m.n_skipped}</td></tr>`;
+    }).join("") : `<tr><td colspan="6" class="muted">No ledger in the MC top decile this run.</td></tr>`;
+
+    const all = [...L].sort((a,b) =>
+      (b.paired_bootstrap?.frac_positive ?? -1) - (a.paired_bootstrap?.frac_positive ?? -1));
+    document.querySelector("#t-all tbody").innerHTML = all.map(l => `<tr>
+      <td>${l.strategy}</td><td>${l.asset_class}</td><td>${l.benchmark}</td>
+      <td class="num">${l.n}</td><td class="num">${wrCell(l)}</td><td class="num">${fx(l.pf,2)}</td>
+      <td class="num ${l.cum_return>=0?'pos':'neg'}">${pct(l.cum_return)}</td>
+      <td class="num ${(l.cum_return_vs_benchmark_pp ?? 0)>=0?'pos':'neg'}">${fx(l.cum_return_vs_benchmark_pp,1)}</td>
+      <td class="num">${fx(l.paired_bootstrap?.frac_positive,3)}</td>
+      <td class="num">${l.random_entry_mc ? (l.random_entry_mc.n_simulated < 20 ? `<span class="muted" title="n&lt;20 — uninformative">${fx(l.random_entry_mc.percentile,3)}*</span>` : fx(l.random_entry_mc.percentile,3)) : "—"}${l.random_entry_mc ? ` <span class="muted">(${l.random_entry_mc.n_skipped})</span>` : ""}</td></tr>`).join("");
+    document.getElementById("full-toggle").textContent = `Show all ledgers (full table, ${all.length})`;
+
+    const c = j.conventions || {};
+    document.getElementById("conv").innerHTML = Object.entries(c)
+      .map(([k,v]) => `<div><code>${k}</code> — ${v}</div>`).join("")
+      + `<div style="margin-top:8px">Producer: <code>python3 -m alpha_engine.benchmark_closed_ledger --fetch</code>
+         (Task 10). Source: <code>${j.source||"—"}</code>. WR marked * is hidden below n=${c.wr_hidden_below_n ?? 20}.</div>`;
+  })
+  .catch(e => {
+    document.getElementById("body-err").innerHTML =
+      `<div class="err">Failed to load data/benchmark_ledger_proof.json — ${e.message}</div>`;
+  });
+</script>
+</body>
+</html>
