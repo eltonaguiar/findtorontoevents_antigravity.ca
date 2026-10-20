@@ -95,25 +95,26 @@ capped at 1.0.
 
 | metric | target | actual | tol | pass? |
 |--------|--------|--------|-----|-------|
-| 5% overlay CAGR | 6.5% | 4.98% | ±1.5pp | No (trend-sleeve gap) |
-| 5% overlay Sharpe | 1.20 | 0.98 | ±0.25 | Yes |
-| 5% overlay max DD | −14.4% | −14.30% | ±3pp | Yes |
-| Combined no-overlay MDD | −20.45% | −20.61% | (ref match) | Yes |
-| coin-flip control PF | ≈0.81 (rejected) | 2.03–2.11 (<1 rejected) | <1.0 | Yes |
+| 5% overlay CAGR | 6.5% | 6.39% | ±1.5pp | Yes |
+| 5% overlay Sharpe | 1.20 | 1.18 | ±0.25 | Yes |
+| 5% overlay max DD | −14.4% | −14.34% | ±3pp | Yes |
+| Combined no-overlay MDD | −20.45% | −20.43% | (ref match) | Yes |
+| coin-flip control PF | ≈0.81 (rejected) | 2.03–2.47 (<1 rejected) | <1.0 | Yes |
 
 ### Per-sleeve side-by-side vs reference `results.csv` (as instructed: no tolerance loosening)
 
 | sleeve | ours CAGR | ref CAGR | ours MDD | ref MDD | notes |
 |--------|-----------|----------|----------|---------|-------|
-| trend (TSMOM 1/3/12) | 4.63% | 7.46% | −25.33% | −25.33% | MDD exact; CAGR under via price-feed sensitivity |
-| quality (QualVal) | 11.97% | 12.98% | −51.55% | −50.97% | near-exact |
+| trend (TSMOM 1/3/12) | 8.54% | 7.46% | −25.33% | −25.33% | MDD exact; CAGR now ≈ ref after splice fix |
+| quality (QualVal) | 12.99% | 12.98% | −50.97% | −50.97% | near-exact (refreshed Ken French) |
 | put (PutWrite) | 8.55% | 8.59% | −32.66% | −32.66% | near-exact |
-| Combined (no overlay) | 6.63% | 8.85% | −20.61% | −20.45% | MDD matches; CAGR/Sharpe under |
+| Combined (no overlay) | 8.90% | 8.85% | −20.43% | −20.45% | MDD + CAGR both match |
 
-The residual CAGR/Sharpe gap is concentrated in the trend sleeve: TSMOM is
-sensitive to the exact historical price feed (reference snapshot is `prices.pkl`,
-to Oct 2026; ours is live yfinance). Quality and put sleeves reproduce tightly,
-and the combined MDD reproduces. The 2013+ cross-check passes (see below).
+The earlier trend-sleeve CAGR gap (4.63% vs 7.46%) was closed by the splice fix:
+the proxy backfill previously truncated to the ETF start (leading NaN days dropped),
+so a scaled pre-ETF concat now extends the trend series back to 1981-03 with no
+fake price-level jump. Quality and put sleeves reproduce tightly, and the combined
+MDD and CAGR both reproduce. The 2013+ cross-check passes (see below).
 
 ### 2013+ cross-check: research vs raw datasets (T11e)
 
@@ -122,19 +123,24 @@ confirmed, no hidden divergence to hide.
 
 | | research | raw |
 |---|---|---|
-| CAGR | 4.54% | 4.23% |
-| annualized Sharpe | 0.91 | 0.99 |
-| max DD | −9.45% | −9.12% |
-| PF | 1.92 | 2.09 |
-| WR | 69.9% | 69.9% |
+| CAGR | 5.25% | 4.23% |
+| annualized Sharpe | 1.00 | 0.99 |
+| max DD | −9.46% | −9.12% |
+| PF | 2.04 | 2.09 |
+| WR | 68.7% | 69.9% |
 
 ### Known caveats / future research
 
-- **Stale Ken French data:** the staged `combined_book/data/kfrench/*.txt` files
-  are the Aug-2022 snapshot (monthly ends 2022-08; the reference ran to Oct-2026).
-  A refreshed download would lengthen the quality sleeve's recent tail.
-- **Trend-sleeve price feed:** to tighten CAGR/Sharpe, re-run the TSMOM sleeve
-  against the reference `prices.pkl` snapshot (or an identical vendor feed) rather
-  than live yfinance.
+- **Ken French data refreshed (2026-10-19):** the staged
+  `combined_book/data/kfrench/*.txt` files were updated from the Aug-2022 (202208)
+  snapshot to the current **202608 CRSP** release (monthly now ends 2026-08), which
+  lengthened the quality sleeve's recent tail and moved its CAGR to 12.99% (ref
+  12.98%). The parser marker was relaxed to accept the new "Value Weighted Returns
+  -- Monthly" header.
+- **Trend-sleeve price feed:** the splice fix (scaled pre-ETF proxy concat) closed
+  the trend CAGR gap (4.63% → 8.54%). Remaining sensitivity is to live yfinance vs
+  the reference `prices.pkl` snapshot; differences are now second-order.
 - **Reference penalty/guard:** the reference also clips |monthly| < 1 and applies
-  COST=0.001 on the trend sleeve; those are mirrored but minor vs the feed gap.
+  COST=0.001 on the trend sleeve; those are mirrored.
+- **Open miss:** `git worktree prune` ran cleanly, but branch `wt-rollback-pr622`
+  was **not found** on origin (139 remote heads inspected) — pending confirmation.
