@@ -46,6 +46,7 @@ TIER2_WR = 0.50
 TIER2_PF = 1.5
 TIER2_MDD = 0.20
 N_FLOOR = 100  # n>=100 to leave "Building (n=N/100)" pre-tier state
+MIN_WR_N = 20  # Operator verdict: hide WR when n<20 (PF/MDD still shown)
 
 # LTCG bands (US tax)
 
@@ -346,6 +347,12 @@ def render_aggregate_stat_block(
     tier = classify_tier(wr, pf, mdd, n_int)
     badge_class = _badge_class(tier)
 
+    # Operator verdict: hide WR when n<20, but always show PF/MDD whenever
+    # WR is shown (fall back to "n/a" placeholders if raw values missing).
+    wr_visible = wr is not None and (n_int is None or n_int >= MIN_WR_N)
+    pf_visible = pf is not None or wr_visible
+    mdd_visible = mdd is not None or wr_visible
+
     parts: list[str] = []
     parts.append(
         f'<div class="ueps-agg-stats" data-strategy="{_esc_attr(strategy)}">'
@@ -353,15 +360,15 @@ def render_aggregate_stat_block(
     if strategy:
         parts.append(f'<span class="ueps-strategy-name">{strategy}</span>')
     parts.append(f'<span class="{badge_class}">{_esc(tier)}</span>')
-    if wr is not None:
+    if wr_visible:
         parts.append(
             f'<span class="ueps-stat">WR {_pct_str(wr)} <em>({n_label})</em></span>'
         )
-    if pf is not None:
+    if pf_visible:
         parts.append(
             f'<span class="ueps-stat">PF {_num_str(pf, 2)} <em>({n_label})</em></span>'
         )
-    if mdd is not None:
+    if mdd_visible:
         parts.append(
             f'<span class="ueps-stat">MDD {_pct_str(mdd)} <em>({n_label})</em></span>'
         )
@@ -370,8 +377,8 @@ def render_aggregate_stat_block(
             f'<span class="ueps-stat">Sharpe {_num_str(sharpe, 2)} <em>({n_label})</em></span>'
         )
     if (
-        wr is None and pf is None and mdd is None and sharpe is None
-        and not strategy
+        not wr_visible and not pf_visible and not mdd_visible
+        and sharpe is None and not strategy
     ):
         # Caller passed something but it had no useful fields. Still surface
         # the n= for traceability.

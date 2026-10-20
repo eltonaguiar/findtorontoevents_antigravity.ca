@@ -276,7 +276,7 @@ a:hover { text-decoration:underline; }
   <div class="tab-content" id="tab-top10">
     <div style="margin:20px 0 16px;">
       <h3 style="font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;display:inline;">🏆 Top 10 Picks — Quantitative Analysis</h3>
-      <p style="font-size:12px;color:var(--text-dim);margin-top:6px;max-width:800px;">Institutional-grade analysis of our highest-conviction picks. Each card includes a confidence gauge, honest verdict (ENTER / WAIT / AVOID), symbol track record across all systems, and FAQ-style insights. Only picks from <strong>PROVEN or RELIABLE</strong> systems with fresh signals qualify.</p>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:6px;max-width:800px;">Institutional-grade analysis of our highest-conviction picks. Each card includes a confidence gauge, neutral status (SETUP / MONITOR / AVOID), symbol track record across all systems, and FAQ-style insights. Only picks from <strong>PROVEN or RELIABLE</strong> systems with fresh signals qualify.</p>
     </div>
     <div id="top10-container"><div style="text-align:center;padding:40px;color:var(--text-dim);">Loading analysis...</div></div>
   </div>
@@ -1688,7 +1688,8 @@ function getVerdict(pick) {
   }
   const dec = entry < 1 ? 6 : entry < 100 ? 4 : 2;
 
-  // ENTER NOW: High score, fresh, near entry — works even with minor conflicts
+  // STRONG SETUP (formerly ENTER NOW): High score, fresh, near entry — works
+  // even with minor conflicts. Relabeled per operator verdict #10 (no ENTER wording).
   if (score >= 60 && age <= 8 && pnl > -1.5 && pnl < 3.0 && (tier === 'PROVEN' || tier === 'RELIABLE')) {
     // If there's a meaningful conflict, downgrade to WAIT with conflict info
     if (meaningfulConflict) {
@@ -1707,7 +1708,7 @@ function getVerdict(pick) {
       const masterMatchesMe = conflictInfo.masterDir === myDir;
       if (masterMatchesMe) {
         return {
-          verdict: 'ENTER NOW', cls: 'verdict-enter', icon: '✅',
+          verdict: 'STRONG SETUP', cls: 'verdict-enter', icon: '✅',
           reason: `Score ${score}/100 from ${tier} system. Signal is ${age < 1 ? Math.round(age*60) + 'm' : fmt(age,1) + 'h'} old. Price drift: ${pnl >= 0 ? '+' : ''}${fmt(pnl,2)}%. ⚔️ Minor conflict exists but master system agrees with ${myDir}.`,
           action: `Market order at $${livePrice > 0 ? fmt(livePrice, dec) : 'N/A'} with 70% position size (conflict discount). SL $${fmt(sl, dec)}, TP $${fmt(tp, dec)}.`,
           _conflictDetail: conflictInfo
@@ -1722,7 +1723,7 @@ function getVerdict(pick) {
       }
     }
     return {
-      verdict: 'ENTER NOW', cls: 'verdict-enter', icon: '✅',
+      verdict: 'STRONG SETUP', cls: 'verdict-enter', icon: '✅',
       reason: `Score ${score}/100 from ${tier} system. Signal is ${age < 1 ? Math.round(age*60) + 'm' : fmt(age,1) + 'h'} old. Price is ${Math.abs(pnl) < 0.5 ? 'right at' : 'near'} entry level (${pnl >= 0 ? '+' : ''}${fmt(pnl,2)}% drift).`,
       action: `Market order at current price ($${livePrice > 0 ? fmt(livePrice, dec) : 'N/A'}). Set SL at $${fmt(sl, dec)}, TP at $${fmt(tp, dec)}.`
     };
@@ -1744,7 +1745,7 @@ function getVerdict(pick) {
   // Remaining meaningful conflicts — show analysis
   if (conflict && meaningfulConflict) {
     conflictInfo = conflictInfo || analyzeConflict(pick);
-    // If master recommends this direction, it's a cautious ENTER/LIMIT
+    // If master recommends this direction, it's a cautious SETUP/LIMIT
     if (conflictInfo.masterDir === dir && score >= 45) {
       return {
         verdict: 'SET LIMIT', cls: 'verdict-limit', icon: '📋',

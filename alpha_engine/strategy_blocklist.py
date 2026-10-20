@@ -433,10 +433,101 @@ _PAPER_ONLY_STRATEGIES = frozenset({
     "golden_combo_forex_rsi_ema",
     "golden_combo_commodity_tsmom",
     "golden_combo_crypto_choppiness_quan",
+    # 2026-10-20: Operator FREEZE (mutation-before-kill approved) — re-added
+    # to paper-only to stop live emission pending forward validation. Was
+    # REMOVED from this set on 2026-04-29 per the Near-Miss Deep-Dive panel
+    # (standalone n=205, WR 52.2%, PF 1.66). The operator kill-list FREEZE
+    # supersedes that earlier removal.
+    "luxalgo_confluence",
 })
 
 # Legacy symbol kept for any caller still importing it.
 _BLOCKED_STRATEGIES = _RETIRED_STRATEGIES | _PAPER_ONLY_STRATEGIES
+
+# -----------------------------------------------------------------------
+# Class-scoped kill pairs — 2026-10-20 operator kill list (mutation-before-kill
+# approved). Kill is keyed on (asset_class, strategy) PAIR, never on the
+# strategy name alone, so a name survives in classes that are NOT killed
+# (e.g. `rs-breakout-scout` stays live in ETF but is killed in BOND; the
+# operator also explicitly KEEPS the ETF `rs-breakout-scout` pair).
+# Source: /audit/data/dashboard_data.json (2026-10-19 20:41 ET, last 3,500
+# closed rows). Rule: banned OR (n>=30 AND PF<1) OR class ETF/BOND/FUTURES.
+# -----------------------------------------------------------------------
+_CLASS_SCOPED_BLOCKED_PAIRS: frozenset[tuple[str, str]] = frozenset({
+    # BANNED: multi_asset_copytrader (all classes) — source-level ban exists
+    # (production_scanner.py / smart_picks_engine.py / emitter_whitelist.py),
+    # but no strategy-level class-scoped key existed. Added for gate parity.
+    ("CRYPTO", "multi_asset_copytrader"),
+    ("EQUITY", "multi_asset_copytrader"),
+    ("FOREX", "multi_asset_copytrader"),
+    ("COMMODITY", "multi_asset_copytrader"),
+    ("FUTURES", "multi_asset_copytrader"),
+    # n>=30 & PF<1
+    ("CRYPTO", "mega_mutation_ema_momentum_m006"),      # n=68 PF 0.77
+    ("CRYPTO", "strong consensus (alpha_engine, luxalgo_filters)"),  # n=70 PF 0.94
+    ("EQUITY", "adx-trend-scout"),                      # n=49 PF 0.93
+    ("EQUITY", "price-accel-scout"),                    # n=35 PF 0.79
+    ("EQUITY", "quality-minus-junk"),                   # n=49 PF 0.69
+    ("EQUITY", "stoch-rsi-scout"),                      # n=42 PF 0.69
+    ("FOREX", "london-breakout-scout"),                 # n=64 PF 0.74
+    # BOND (all 12)
+    ("BOND", "adx-trend-scout"),
+    ("BOND", "betting-against-beta"),
+    ("BOND", "cta_golden_cross_200"),
+    ("BOND", "ema_stack_momentum"),
+    ("BOND", "mtf-align-scout"),
+    ("BOND", "pairs-trading"),
+    ("BOND", "quick_engine"),
+    ("BOND", "rs-breakout-scout"),
+    ("BOND", "rsi-divergence-scout"),
+    ("BOND", "volume-anomaly-scout"),
+    ("BOND", "vwap-reclaim-scout"),
+    ("BOND", "vwap-reversion-scout"),
+    # FUTURES (all 2)
+    ("FUTURES", "commodity_term_cot"),
+    ("FUTURES", "futures_cross_asset_momentum"),
+    # ETF (all 30 except rs-breakout-scout — KEPT, n=66 PF 1.71 forward-test)
+    ("ETF", "adx-trend-scout"),
+    ("ETF", "aroon-trend-scout"),
+    ("ETF", "betting-against-beta"),
+    ("ETF", "bollinger-squeeze"),
+    ("ETF", "call-surge-scout"),
+    ("ETF", "cmf-accumulation-scout"),
+    ("ETF", "donchian-stock-breakout"),
+    ("ETF", "ema-ribbon"),
+    ("ETF", "golden-cross-stocks"),
+    ("ETF", "goldmine_1x_consensus"),
+    ("ETF", "intermarket-flow-scout"),
+    ("ETF", "macd-hidden-div-scout"),
+    ("ETF", "momentum-factor"),
+    ("ETF", "mtf-align-scout"),
+    ("ETF", "options-flow-scout"),
+    ("ETF", "pairs-trading"),
+    ("ETF", "post-earnings-rev-scout"),
+    ("ETF", "price-accel-scout"),
+    ("ETF", "quality-minus-junk"),
+    ("ETF", "quality-momentum-scout"),
+    ("ETF", "quick_engine"),
+    ("ETF", "regime_mild_bull"),
+    ("ETF", "sector-rotation"),
+    ("ETF", "stoch-rsi-scout"),
+    ("ETF", "strong consensus (alpha_engine, kimi)"),
+    ("ETF", "vix-mean-rev-scout"),
+    ("ETF", "vol-contraction-scout"),
+    ("ETF", "volume-anomaly-scout"),
+    ("ETF", "vwap-reclaim-scout"),
+    ("ETF", "vwap-reversion-scout"),
+})
+
+
+def _class_scoped_pair_is_blocked(asset_class: str, strat: str) -> bool:
+    """Return True if the (asset_class, strategy) pair is class-scoped killed."""
+    if not asset_class or not strat:
+        return False
+    pair = (str(asset_class).strip().casefold(), str(strat).strip().casefold())
+    return pair in {
+        (a.casefold(), s.casefold()) for a, s in _CLASS_SCOPED_BLOCKED_PAIRS
+    }
 
 
 def is_blocked_strategy(name, asset_class: str = "") -> bool:
@@ -565,17 +656,22 @@ def _pair_is_blocked(sys_name: str, strat: str) -> bool:
 
 
 def is_blocked_pick(pick) -> bool:
-    """Return True if the pick should be blocked, checking both strategy name
-    and system-strategy composite pairs.
+    """Return True if the pick should be blocked, checking strategy name,
+    system-strategy composite pairs, and class-scoped (asset_class, strategy)
+    kill pairs.
 
-    Accepts a pick dict with optional 'strategy' and 'source_system' fields."""
+    Accepts a pick dict with optional 'strategy', 'source_system' and
+    'asset_class' fields."""
     if not isinstance(pick, dict):
         return False
     strat = str(pick.get("strategy") or "").strip()
     sys_name = str(pick.get("source_system") or "").strip()
+    asset_cls = str(pick.get("asset_class") or "").strip()
     if is_blocked_strategy(strat):
         return True
     if _pair_is_blocked(sys_name, strat):
+        return True
+    if _class_scoped_pair_is_blocked(asset_cls, strat):
         return True
     return False
 
@@ -586,9 +682,12 @@ def pick_block_reason(pick) -> str:
         return ""
     strat = str(pick.get("strategy") or "").strip()
     sys_name = str(pick.get("source_system") or "").strip()
+    asset_cls = str(pick.get("asset_class") or "").strip()
     r = block_reason(strat)
     if r:
         return r
     if _pair_is_blocked(sys_name, strat):
         return "retired-composite"
+    if _class_scoped_pair_is_blocked(asset_cls, strat):
+        return "retired-class-scoped"
     return ""
