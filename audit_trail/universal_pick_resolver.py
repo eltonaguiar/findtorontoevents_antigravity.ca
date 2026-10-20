@@ -615,6 +615,28 @@ def _parse_ts_ms(ts_str):
 _ENTRY_ANCHORED = os.environ.get("RESOLVER_ENTRY_ANCHORED", "1").strip() == "1"
 
 
+def _exit_ts_str(pick: dict, now: datetime) -> str:
+    """True exit timestamp for a resolved pick, else the resolver run time.
+
+    Batch-close fix (2026-10-20). Previously every resolution path stamped
+    ``resolved_at = now`` (the resolver RUN time), so all picks resolved in a
+    single run shared one identical close minute — e.g. 73 MomentumEMA picks all
+    ``2026-10-20T00:02:50Z``. When intrabar replay recorded the first-touch bar
+    timestamp (``pick['_intrabar_exit_ms']``), use that instead: it is the real
+    exit moment and is consistent with the SL/TP exit price on that bar.
+    Falls back to ``now`` for close_approx / unstamped-bar resolutions.
+    """
+    _ms = pick.get("_intrabar_exit_ms")
+    if isinstance(_ms, (int, float)) and _ms > 0:
+        try:
+            return datetime.fromtimestamp(
+                _ms / 1000.0, tz=timezone.utc
+            ).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except (OverflowError, OSError, ValueError):
+            pass
+    return now.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
     """Check TP/SL against intrabar OHLC data (not just close price).
 
@@ -666,6 +688,13 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
         low = bar.get("low", 0)
         if not high or not low:
             continue
+
+        # Batch-close fix (2026-10-20): carry the CURRENT bar's timestamp as a
+        # side-channel on the pick (same convention as _intrabar_ambiguous). The
+        # loop returns immediately on a first touch, so at return this is always
+        # the hitting bar's timestamp (or None if the source bar is un-stamped).
+        # The caller uses it to stamp resolved_at with the true exit time.
+        pick["_intrabar_exit_ms"] = bar.get("timestamp")
 
         # SL-first conservative ordering (mirrors tournament's _scan_bars_for_touch).
         if direction == "LONG":
@@ -1290,8 +1319,14 @@ def main():
                         "exit_price": None,
                         "pnl_pct": None,
                         "exit_reason": "TIME_EXIT",
-                        "status": "CLOSED",
+                        # 2026-10-20: no trustworthy price -> explicit status, NEVER 0.0.
+                        "status": "UNRESOLVED_NO_PRICE",
                         "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        # TIME_EXIT keeps run-time for BOTH price + time (consistent);
+                        # the true deadline was pick_dt+max_hold, so flag the time as
+                        # estimated and keep these out of PF/WR until a historical-bar
+                        # exit price is wired in.
+                        "exit_time_estimated": True,
                         "hold_hours": hold_hours,
                         "_note": "no-live-price",
                         "_mtm": "unresolved",
@@ -1445,7 +1480,10 @@ def main():
                     "exit_reason": reason,
                     "status": "CLOSED",
                     "resolution_method": _res_method,  # "intrabar" (accurate) | "close_approx" (Bug 1B)
-                    "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    # Batch-close fix (2026-10-20): use the intrabar first-touch bar
+                    # time as the true exit timestamp when available (TP/SL hits),
+                    # else fall back to the run time (close_approx).
+                    "resolved_at": _exit_ts_str(pick, now),
                     "current_price_at_resolve": current_price,
                     "_resolver_version": RESOLVER_VERSION,
                     "_resolver_source": RESOLVER_SOURCE_ID,
@@ -1473,6 +1511,7 @@ def main():
                 if _priceless_close(current_price, entry):
                     exit_price_out, pnl_out = None, None
                     _mtm = "unresolved"
+                    _status = "UNRESOLVED_NO_PRICE"
                     log.warning(
                         "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
                         " -> recorded as UNRESOLVED, not a 0%% flat",
@@ -1481,6 +1520,7 @@ def main():
                 else:
                     exit_price_out, pnl_out = current_price, pnl
                     _mtm = "measured"
+                    _status = "CLOSED"
 
                 resolved = {
                     **pick,
@@ -1488,7 +1528,12 @@ def main():
                     "pnl_pct": pnl_out,
                     "_mtm": _mtm,
                     "exit_reason": "TIME_EXIT",
-                    "status": "CLOSED",
+                    "status": _status,
+                    # 2026-10-20: run-time is used for BOTH the exit price and the
+                    # timestamp (consistent — never mix deadline-time with run-time
+                    # price). Flag so consumers keep these out of PF/WR until a
+                    # historical-bar exit price at pick_dt+max_hold is wired in.
+                    "exit_time_estimated": True,
                     "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "_resolver_version": RESOLVER_VERSION,
                     "_resolver_source": RESOLVER_SOURCE_ID,
