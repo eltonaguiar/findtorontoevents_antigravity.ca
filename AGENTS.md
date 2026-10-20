@@ -461,6 +461,9 @@ Before sending any response, you MUST check for these patterns:
 | `.github/workflows/cross-db-audit.yml` | Daily cross-DB consistency audit |
 | `.github/workflows/audit-dashboard.yml` | The workflow file itself |
 | .github/workflows/pick-funnel-nightly.yml | Downstream consumer: fetches dashboard_data.json from live site → build_nav_surface_matrix.py (added 2026-05-27) |
+| `audit_dashboard/benchmark_proof.html` | Read-only ledger-benchmark panel (`/audit/benchmark_proof.html`, added 2026-10-19): paired-bootstrap-vs-benchmark headline + random-entry MC timing (same-asset nulls, coin-flip CI gate). Reads `data/benchmark_ledger_proof.json` client-side. NOT MONEY-READY — no picks/signals/verdicts. Deployed via the `audit-dashboard.yml` per-site HTML page lists (all 3 sites) and `tools/deploy_audit_files.py`. |
+| `audit_dashboard/data/benchmark_ledger_proof.json` | Sidecar snapshot consumed by `benchmark_proof.html`. Regenerate manually: `python3 -m alpha_engine.benchmark_closed_ledger --picks audit_dashboard/data/dashboard_data.json --fetch SPY BTC-USD --fetch-picks --out reports/benchmark_ledger_proof_YYYY-MM-DD.json`, then copy to `audit_dashboard/data/benchmark_ledger_proof.json`. Auto-deploys with the `data/*.json` glob. |
+| `alpha_engine/benchmark_closed_ledger.py` + `tests/test_benchmark_closed_ledger.py` | Task 10 module: per-ledger Wilson/compound/PF, paired bootstrap vs same-window benchmark, random-entry MC timing (same-asset, direction-aware nulls; MC fix 2026-10-19 after external review). 33 deterministic tests incl. the coin-flip MC gate. |
 
 > **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the hourly cron.
 

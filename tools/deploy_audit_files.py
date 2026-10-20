@@ -38,6 +38,9 @@ UPLOADS = [
     ("audit_dashboard/data/strategy_ic_analysis.json",        "/findtorontoevents.ca/audit/data/strategy_ic_analysis.json",         "pick_funnel"),
     ("audit_dashboard/model.html",                           "/findtorontoevents.ca/audit/model.html",                            "model"),
     ("audit_dashboard/ai-tournament.html",                   "/findtorontoevents.ca/audit/ai-tournament.html",                    "ai_tournament"),
+    # 2026-10-19: Task 10 read-only ledger-benchmark panel + its sidecar JSON
+    ("audit_dashboard/benchmark_proof.html",                 "/findtorontoevents.ca/audit/benchmark_proof.html",                  "healthchecks"),
+    ("audit_dashboard/data/benchmark_ledger_proof.json",     "/findtorontoevents.ca/audit/data/benchmark_ledger_proof.json",      "healthchecks"),
     ("audit_dashboard/ai_postmortem_helper.js",              "/findtorontoevents.ca/audit/ai_postmortem_helper.js",               "ai_tournament"),
     ("audit_dashboard/data/ai_tournament_picks_latest.json", "/findtorontoevents.ca/audit/data/ai_tournament_picks_latest.json",  "ai_tournament"),
     ("audit_dashboard/data/ai_tournament_model_summary.json","/findtorontoevents.ca/audit/data/ai_tournament_model_summary.json", "ai_tournament"),
