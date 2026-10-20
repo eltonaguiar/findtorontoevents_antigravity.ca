@@ -115,3 +115,46 @@ def recompute_rolling_metrics(records, window_hours, generated_at):
     by_strategy = {it["strategy"]: it["metrics"] for it in _group_metrics(filtered)[1]}
     return {"window_hours": window_hours, "coverage": cov,
             "by_class": by_class, "by_strategy": by_strategy}
+
+
+def _block_dates_map(block_dates):
+    if not block_dates:
+        return {}
+    return {str(k).strip().casefold(): parse_ts(v) for k, v in block_dates.items()}
+
+
+def flag_blocklist_bypass(records, block_dates=None):
+    from alpha_engine.strategy_blocklist import is_blocked_strategy, block_reason
+    dates = _block_dates_map(block_dates)
+    issues = []
+    for r in records:
+        strat = r.get("strategy")
+        if not strat:
+            continue
+        ac = r.get("asset_class") or ""
+        if not is_blocked_strategy(strat, ac):
+            continue
+        reason = block_reason(strat, ac) or "blocked"
+        entry = r.get("entry_time")
+        known = False
+        bypass = "blocked_now_issue_time_unknown"
+        if strat.strip().casefold() in dates and entry:
+            try:
+                entry_dt = parse_ts(entry)
+                if entry_dt >= dates[strat.strip().casefold()]:
+                    known, bypass = True, "blocked_at_issue_time"
+                else:
+                    continue  # not blocked at issue time -> no flag
+            except Exception:
+                pass
+        issues.append({
+            "pick_id": r.get("id"),
+            "symbol": r.get("symbol"),
+            "direction": r.get("direction"),
+            "strategy": strat,
+            "asset_class": ac or "UNKNOWN",
+            "reason": reason,
+            "issue_time_known": known,
+            "bypass": bypass,
+        })
+    return {"flagged": bool(issues), "count": len(issues), "issues": issues}

@@ -96,3 +96,42 @@ def test_recompute_coverage_incomplete():
     records = [_rec(1.0, start)]
     out = recompute_rolling_metrics(records, 336, generated)
     assert out["coverage"]["status"] == "incomplete_coverage"
+
+
+from tools.cohort_reconciliation import flag_blocklist_bypass
+
+
+def _pie(strategy, asset_class="FOREX", pick_id="p1", entry="2026-10-01T00:00:00Z"):
+    return {"id": pick_id, "symbol": "EURUSD", "direction": "SHORT",
+            "strategy": strategy, "asset_class": asset_class,
+            "entry_time": entry, "pnl_pct": 0.5, "closed_at": "2026-10-19T00:00:00Z"}
+
+
+def test_blocklist_bypass_flags_blocked_now_unknown():
+    # 'forex_rsi2_mean_reversion' is FX-killed (verified in strategy_blocklist.py)
+    recs = [_pie("forex_rsi2_mean_reversion")]
+    out = flag_blocklist_bypass(recs)
+    assert out["flagged"] is True
+    assert out["count"] == 1
+    assert out["issues"][0]["bypass"] == "blocked_now_issue_time_unknown"
+    assert out["issues"][0]["issue_time_known"] is False
+
+
+def test_blocklist_bypass_no_flag_when_unblocked():
+    recs = [_pie("random_unblocked_strategy", asset_class="EQUITY")]
+    assert flag_blocklist_bypass(recs)["flagged"] is False
+
+
+def test_blocklist_bypass_issue_time_known_blocks_after_date():
+    recs = [_pie("inverse_quan_engine_scalp", asset_class="EQUITY", pick_id="q1")]
+    block_dates = {"inverse_quan_engine_scalp": "2026-09-15T00:00:00Z"}
+    out = flag_blocklist_bypass(recs, block_dates)
+    assert out["issues"][0]["issue_time_known"] is True
+    assert out["issues"][0]["bypass"] == "blocked_at_issue_time"
+
+
+def test_blocklist_bypass_issue_time_before_block_not_flagged():
+    recs = [_pie("inverse_quan_engine_scalp", asset_class="EQUITY", pick_id="q2",
+                 entry="2026-09-01T00:00:00Z")]
+    block_dates = {"inverse_quan_engine_scalp": "2026-09-15T00:00:00Z"}
+    assert flag_blocklist_bypass(recs, block_dates)["flagged"] is False
