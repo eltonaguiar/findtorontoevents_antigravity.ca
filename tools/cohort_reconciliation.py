@@ -94,10 +94,24 @@ def _group_metrics(records):
            ({"strategy": k, "metrics": metric_block(v)} for k, v in by_strategy.items())
 
 
+def _window_filter(records, window_hours, generated_dt):
+    cutoff = generated_dt - timedelta(hours=window_hours)
+    out = []
+    for r in records:
+        try:
+            ts = parse_ts(r.get("closed_at"))
+        except Exception:
+            continue
+        if ts >= cutoff:
+            out.append(r)
+    return out
+
+
 def recompute_rolling_metrics(records, window_hours, generated_at):
     generated_dt = parse_ts(generated_at)
     cov = _coverage(records, window_hours, generated_dt)
-    by_class = {it["class"]: it["metrics"] for it in _group_metrics(records)[0]}
-    by_strategy = {it["strategy"]: it["metrics"] for it in _group_metrics(records)[1]}
+    filtered = _window_filter(records, window_hours, generated_dt)
+    by_class = {it["class"]: it["metrics"] for it in _group_metrics(filtered)[0]}
+    by_strategy = {it["strategy"]: it["metrics"] for it in _group_metrics(filtered)[1]}
     return {"window_hours": window_hours, "coverage": cov,
             "by_class": by_class, "by_strategy": by_strategy}

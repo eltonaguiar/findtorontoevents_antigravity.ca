@@ -86,7 +86,8 @@ def test_recompute_coverage_complete():
     records = [_rec(1.0, start), _rec(-1.0, "2026-10-19T00:00:00Z")]
     out = recompute_rolling_metrics(records, 336, generated)
     assert out["coverage"]["status"] == "complete"
-    assert out["by_class"]["EQUITY"]["n"] == 2
+    # Only the in-window record (>= window start 2026-10-06) counts toward metrics
+    assert out["by_class"]["EQUITY"]["n"] == 1
 
 
 def test_recompute_coverage_incomplete():
