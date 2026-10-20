@@ -1,19 +1,73 @@
 {
   "metadata": {
-    "timestamp": "2026-10-20T18:35:24.870015+00:00",
+    "timestamp": "2026-10-20T21:19:11.895150+00:00",
     "total_mutations": 18,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 18,
+    "total_picks": 2,
+    "mutations_triggered": 2,
+    "mutations_silent": 16,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_winner_mutations"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "gainer_momentum_streak_mut",
+      "symbol": "INJUSDT",
+      "signal_type": "BUY",
+      "entry_price": 8.886,
+      "take_profit": 9.1533,
+      "stop_loss": 8.7078,
+      "confidence": 0.7,
+      "risk_reward": 1.5,
+      "reason": "Gainer momentum streak: 4 consecutive green bars, RSI=63.1, volume accelerating \u2014 early pump phase",
+      "timestamp": "2026-10-20T21:19:11.804691+00:00",
+      "category": "crypto",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "claude_gainer",
+      "mutation_type": "aggressive",
+      "green_streak": 4,
+      "rsi_14": 63.1,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "claude_ml_moderate_mut",
+      "symbol": "WUSDT",
+      "signal_type": "BUY",
+      "entry_price": 0.01347,
+      "take_profit": 0.013941,
+      "stop_loss": 0.013117,
+      "confidence": 0.618,
+      "risk_reward": 1.33,
+      "reason": "Claude ML moderate: pump_score=0.46 (threshold>=0.45), RSI=60.7, vol=1.4x, mom7d=0.67%",
+      "timestamp": "2026-10-20T21:19:11.727253+00:00",
+      "category": "crypto",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "claude_gainer_ml_perf",
+      "mutation_type": "moderate",
+      "rsi_14": 60.7,
+      "volume_ratio": 1.44,
+      "pump_score": 0.46,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "claude_ml_moderate_mut",
+      "parent": "claude_gainer_ml_perf",
+      "mutation": "moderate",
+      "picks": 1
+    },
+    {
+      "strategy": "gainer_momentum_streak_mut",
+      "parent": "claude_gainer",
+      "mutation": "aggressive",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
     "claude_ml_conservative_mut",
-    "claude_ml_moderate_mut",
     "claude_ml_aggressive_mut",
     "kimi_funding_arb_relaxed_mut",
     "kimi_flash_crash_relaxed_mut",
@@ -21,7 +75,6 @@
     "kimi_drought_adaptive_mut",
     "gainer_compression_relaxed_mut",
     "gainer_obv_divergence_mut",
-    "gainer_momentum_streak_mut",
     "battleground_ml_relaxed_mut",
     "battleground_rsi_no_regime_mut",
     "battleground_vwap_1h_mut",
