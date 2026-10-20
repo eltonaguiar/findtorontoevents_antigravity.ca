@@ -17855,11 +17855,21 @@ def generate():
     # Quality gates applied to final scored picks for premium tier
     smart_picks = []
     smart_candidates = []
+    _smart_gate_failures = {}
+    _smart_near_miss = []
     try:
         if _QUALITY_GATES_AVAILABLE:
             active_picks = payload["picks"]["active"]
             for pick in active_picks:
                 if not passes_smart_gate(pick):
+                    _reason = (
+                        pick.get("_smart_gate_code")
+                        or (pick.get("_smart_reject_reasons") or [None])[0]
+                        or pick.get("_hf_quality_gate_reason")
+                        or "unknown"
+                    )
+                    _smart_gate_failures[_reason] = _smart_gate_failures.get(_reason, 0) + 1
+                    _smart_near_miss.append((pick, _reason))
                     continue
                 pick_copy = dict(pick)
                 pick_copy["smart_score"] = calculate_smart_score(pick_copy)
@@ -17873,9 +17883,31 @@ def generate():
                 ),
                 reverse=True,
             )[:50]  # Top 50 max
+            # Contingency: top 3 near-miss picks with their failed gate shown.
+            _smart_near_miss.sort(key=lambda t: _float(t[0].get("score", 0)), reverse=True)
+            _smart_near_miss = [
+                {"symbol": p.get("symbol"), "source_system": p.get("source_system"),
+                 "strategy": p.get("strategy"), "score": p.get("score"), "failed_gate": r}
+                for p, r in _smart_near_miss[:3]
+            ]
     except Exception as e:
         log.warning("Smart picks calculation failed (non-fatal): %s", e)
     payload["picks"]["smart_picks"] = smart_picks
+    # Curated feed: picks vetted by the smart-picks engine but NOT gate-validated.
+    # Shown separately so unvalidated picks never appear as "Smart Picks".
+    _curated_feed = []
+    try:
+        _spf = payload.get("smart_picks_feed") or {}
+        _spf_picks = _spf.get("picks") if isinstance(_spf, dict) else []
+        for _sp in (_spf_picks or []):
+            _mapped = dict(_sp)
+            _mapped["validation_status"] = "Curated – not gate-validated"
+            _curated_feed.append(_mapped)
+    except Exception as _e:
+        log.warning("Curated feed build failed (non-fatal): %s", _e)
+    payload["picks"]["curated_feed"] = _curated_feed
+    payload["picks"]["smart_picks_gate_failures"] = _smart_gate_failures
+    payload["picks"]["smart_picks_near_miss"] = _smart_near_miss
     # ── opt-in pick-surface snapshot — populates at_pick_surface_eval so every
     # /audit surface (Smart Picks / High Conviction / Money Ready) is traceable.
     # Env-gated (PICK_SURFACE_SNAPSHOT_ENABLED, default OFF) — pure sidecar,
