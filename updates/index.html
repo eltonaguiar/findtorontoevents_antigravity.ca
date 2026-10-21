@@ -67,7 +67,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-10-20 00:40 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-10-21 00:41 EDT · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -221,7 +221,7 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
-    <div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,money-ready,benchmark,task10,statistical-gates,combined-book,reproduction,freebuff" data-category="trading" data-types="feature,analysis">
+  <div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,money-ready,benchmark,task10,statistical-gates,combined-book,reproduction,freebuff" data-category="trading" data-types="feature,analysis">
     <div class="update-date">Oct 21, 2026 &mdash; LIVE (updated hourly)</div>
     <div class="update-content">
       <p><strong>Shipped:</strong> <code>alpha_engine/benchmark_closed_ledger.py</code> &mdash; benchmarks every closed-pick ledger vs its same-window benchmark (paired bootstrap, &ge;95% publish gate) and vs random-entry Monte-Carlo (timing percentile). 33/33 tests, real-data run over 170 ledgers &rarr; <code>reports/benchmark_ledger_proof_2026-10-19.json</code> (<strong>6 of 170 ledgers clear the paired benchmark gate</strong>, 4 with full paired+MC proof &mdash; the headline measure). <strong>MC fixed after external review:</strong> nulls were sampled on BTC/SPY paths, pinning volatile instruments at percentile 1.0 (a PF-1.03 ledger scored 1.0; now 0.57) &mdash; v3 uses same-asset, window-matched, direction-aware nulls, guarded by a coin-flip CI gate test. Read-only dashboard panel: <code>/audit/benchmark_proof.html</code> (no picks, no signals, nothing money-ready).</p>
