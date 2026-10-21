@@ -393,3 +393,68 @@ def test_dividend_sparkline_handles_single_point_history():
     # Single point still produces a valid <svg> element
     assert "<svg" in html
     assert "ueps-div-sparkline" in html
+
+
+# ── Operator verdict #10: hide WR when n<20, PF/MDD ride along with WR ──
+
+
+def test_aggregate_stats_hides_wr_when_n_below_20():
+    """WR must NOT be displayed when the sample is n<20 (operator rule)."""
+    stats = {
+        "strategy": "magic_formula",
+        "wr": 0.52,
+        "pf": 1.7,
+        "mdd": 0.08,
+        "n": 19,
+    }
+    html = render_aggregate_stat_block(stats)
+    # WR span suppressed at n=19
+    assert "WR 52.0%" not in html
+    # PF/MDD still shown independently (they are not n-gated)
+    assert "PF 1.70" in html
+    assert "MDD 8.0%" in html
+    # n label still surfaces for traceability
+    assert "n=19" in html
+
+
+def test_aggregate_stats_shows_wr_when_n_at_or_above_20():
+    """WR is shown once n>=20 (boundary check)."""
+    stats = {
+        "strategy": "magic_formula",
+        "wr": 0.52,
+        "pf": 1.7,
+        "mdd": 0.08,
+        "n": 20,
+    }
+    html = render_aggregate_stat_block(stats)
+    assert "WR 52.0%" in html
+    assert "PF 1.70" in html
+    assert "MDD 8.0%" in html
+
+
+def test_aggregate_stats_forces_pf_mdd_when_wr_shown():
+    """Whenever WR renders, PF and MDD must render too (fall back to n/a)."""
+    stats = {
+        "strategy": "magic_formula",
+        "wr": 0.55,
+        "n": 120,
+    }
+    html = render_aggregate_stat_block(stats)
+    # WR shows (n>=20) and PF/MDD are forced alongside with n/a placeholders
+    assert "WR 55.0%" in html
+    assert "PF n/a" in html
+    assert "MDD n/a" in html
+
+
+def test_aggregate_stats_unknown_n_still_shows_wr():
+    """If n is unknown we cannot prove n<20, so WR is kept visible."""
+    stats = {
+        "strategy": "magic_formula",
+        "wr": 0.52,
+        "pf": 1.7,
+        "mdd": 0.08,
+    }
+    html = render_aggregate_stat_block(stats)
+    assert "WR 52.0%" in html
+    assert "PF 1.70" in html
+    assert "MDD 8.0%" in html

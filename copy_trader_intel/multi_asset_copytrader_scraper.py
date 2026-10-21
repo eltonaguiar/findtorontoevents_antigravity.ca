@@ -2630,6 +2630,32 @@ def scan_all():
     return results
 
 
+def _load_blocklist_gate():
+    """Load the canonical strategy_blocklist gate (fail-closed).
+
+    Returns (is_blocked_pick, pick_block_reason) callables. On import
+    failure, prints FAIL-CLOSED and returns a gate that blocks EVERYTHING
+    so the scraper never emits unfiltered picks.
+    """
+    try:
+        _REPO_ROOT = Path(__file__).resolve().parent.parent
+        if str(_REPO_ROOT) not in sys.path:
+            sys.path.insert(0, str(_REPO_ROOT))
+        from alpha_engine.strategy_blocklist import (
+            is_blocked_pick as _gate_is_blocked,
+            pick_block_reason as _gate_block_reason,
+        )
+        return _gate_is_blocked, _gate_block_reason
+    except Exception as _gate_err:
+        print(f"[ERROR] FAIL-CLOSED: strategy_blocklist gate could not be loaded "
+              f"({_gate_err!r}); dropping ALL rows to avoid emitting unfiltered picks.")
+        def _always_blocked(_pick):
+            return True
+        def _no_reason(_pick):
+            return "fail-closed-gate-unavailable"
+        return _always_blocked, _no_reason
+
+
 def save_results(results):
     """Save all multi-asset picks to data files.
 
@@ -2663,6 +2689,24 @@ def save_results(results):
             strategy_name: [p for p in picks if p.get("strategy") not in _PERMANENTLY_KILLED]
             for strategy_name, picks in results.items()
             if strategy_name not in _PERMANENTLY_KILLED
+        }
+
+    # Fail-closed canonical blocklist gate (operator directive #4). The canonical
+    # strategy_blocklist is the source of truth; if it cannot be loaded we DROP
+    # every row (never emit unfiltered).
+    try:
+        _gate_is_blocked, _gate_block_reason = _load_blocklist_gate()
+    except Exception as _gate_err:
+        print(f"[ERROR] FAIL-CLOSED: blocklist gate unavailable ({_gate_err!r}); "
+              f"dropping ALL rows to avoid emitting unfiltered picks.")
+        _gate_is_blocked = lambda _p: True
+        _gate_block_reason = lambda _p: "fail-closed-gate-unavailable"
+
+    if _gate_is_blocked is not None:
+        all_picks = [p for p in all_picks if not _gate_is_blocked(p)]
+        results = {
+            strategy_name: [p for p in picks if not _gate_is_blocked(p)]
+            for strategy_name, picks in results.items()
         }
 
     # Summary by asset class

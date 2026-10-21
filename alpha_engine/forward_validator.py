@@ -783,6 +783,26 @@ def save_active_picks(picks: list[dict]):
     except Exception:
         pass  # fail-open: never let a missing import crash the save
 
+    # -- BLACKLISTED_STRATEGIES defense-in-depth filter --
+    # Canonical strategy blocklist (alpha_engine.config). This is the recording
+    # layer safety net: emitters that bypass production_scanner's emitter
+    # discipline (or the core whitelist kill list) can still reach this write
+    # path. Filter here so no blacklisted strategy ever persists to
+    # active_picks.json. Fail-open on import errors.
+    try:
+        from alpha_engine.config import BLACKLISTED_STRATEGIES as _BLACKLIST
+        _bl_lc = {str(s).lower() for s in _BLACKLIST}
+        _before = len(picks)
+        picks = [
+            p for p in picks
+            if str(p.get("strategy") or p.get("strategy_name") or "").lower().strip() not in _bl_lc
+        ]
+        _removed = _before - len(picks)
+        if _removed:
+            print(f"  [BLACKLISTED_STRATEGIES] Filtered {_removed} blacklisted picks before save")
+    except Exception:
+        pass  # fail-open: never let a missing import crash the save
+
     # -- Per-symbol caps & conflict resolution --
     # Max 2 picks per symbol. If LONG+SHORT conflict, keep the majority direction.
     # Added 2026-03-12: NIO had 6 picks, WIF had 7 (4 LONG + 1 SHORT), AUDJPY had 6.
