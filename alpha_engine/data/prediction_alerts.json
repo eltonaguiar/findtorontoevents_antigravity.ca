@@ -1,16 +1,30 @@
 {
   "alerts": [
     {
+      "type": "MODEL_FLAT",
+      "severity": "WARNING",
+      "message": "Prediction variance 0.0072 < 0.01 -- model not discriminating between good and bad picks",
+      "timestamp": "2026-10-21T16:18:37.221535+00:00"
+    },
+    {
       "type": "PSI_SHIFT",
       "severity": "CRITICAL",
-      "message": "PSI = 0.994 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
-      "timestamp": "2026-10-21T14:20:09.080161+00:00"
+      "message": "PSI = 0.728 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-10-21T16:18:37.221535+00:00"
+    },
+    {
+      "type": "CONSECUTIVE_LOSSES",
+      "severity": "WARNING",
+      "message": "Strategy 'luxalgo_confluence' has 6 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
+      "strategy": "luxalgo_confluence",
+      "streak": 6,
+      "timestamp": "2026-10-21T16:18:37.339588+00:00"
     }
   ],
   "summary": {
-    "total_alerts": 1,
+    "total_alerts": 3,
     "critical": 1,
-    "warning": 0,
+    "warning": 2,
     "info": 0,
     "sizing_multiplier": 0.5
   },
@@ -20,9 +34,9 @@
     "center_line": null
   },
   "prediction_dist": {
-    "psi": 0.994,
-    "mean_shift": 0.0231,
-    "current_var": 0.0189
+    "psi": 0.7284,
+    "mean_shift": 0.0014,
+    "current_var": 0.0072
   },
-  "updated_at": "2026-10-21T14:20:09.080161+00:00"
+  "updated_at": "2026-10-21T16:18:37.221535+00:00"
 }
