@@ -3248,6 +3248,9 @@ _KNOWN_CRYPTO = {
     "PEPE",
     "ARB",
     "OP",
+    # Top-10 winner cohort (2026-10-22): BNB is unambiguously crypto, but
+    # momentum_breakout stamps asset_class="EQUITY"; lock in as CRYPTO.
+    "BNB",
 }
 _KNOWN_EQUITY = {
     # Indices & ETFs
@@ -3451,6 +3454,14 @@ def _derive_asset_class(
         return True
 
     if _symbol_strongly_crypto(stripped_symbol):
+        return "CRYPTO"
+
+    # 1a. Unambiguous known crypto tokens (BNB, SOL, AVAX, ...) trump weak
+    # upstream hints. Some strategies (e.g. momentum_breakout) stamp
+    # asset_class="EQUITY" on crypto symbols; that must not silently drag the
+    # token into the EQUITY tile. Guard: only skip a token when it is also a
+    # known equity ticker (e.g. COIN/MSTR/SHOP are real stocks, never here).
+    if stripped_symbol in _KNOWN_CRYPTO and stripped_symbol not in _KNOWN_EQUITY:
         return "CRYPTO"
 
     # 1b. Unambiguous forex/commodity: =X or =F suffix overrides upstream hints.
@@ -4843,6 +4854,20 @@ def _is_valid_resolved_pick(pick: dict) -> bool:
     # ratio) producing fake -99.84% wipeout that polluted super_signals.
     if _price_magnitude_corrupt(pick):
         return False
+
+    # Reject placeholder/sentinel exits: exit_price <= 0 (or missing while pnl
+    # recorded as 0) stamps a price-fetch FAILURE as a flat close — NOT a real
+    # trade outcome (Grok R7: no placeholder exits). Concentrated in stocksunify2
+    # (EQUITY) and signal_validation (FOREX) TIME_EXIT rows. Counting them as
+    # "flat" inflates flat counts and deflates WR/PF for those classes.
+    _raw_exit = pick.get("exit_price")
+    if _raw_exit is not None:
+        try:
+            _exit_f = float(_raw_exit)
+        except (TypeError, ValueError):
+            _exit_f = 0.0
+        if _exit_f <= 0:
+            return False
 
     # Reject historical rows from strategies/symbols we've since blocked.
     # These rows can't be re-traded but stay in the ledger and drag down
