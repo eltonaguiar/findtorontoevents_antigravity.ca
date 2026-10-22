@@ -55,21 +55,18 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 </div>
 
 <div class="card">
-  <h2>Per-asset-class best candidates (strict non-artifact gate + bootstrap P&gt;0≥0.90)</h2>
+  <h2>Per-asset-class best candidates (strict gate + bootstrap + independence)</h2>
   <table>
-    <tr><th>Asset class</th><th>Strategy</th><th>Symbol(s)</th><th>Direction</th><th>n</th><th>Train PF</th><th>Test PF</th><th>P(>0)</th><th>One-pos PF (0.10%)</th><th>Status</th></tr>
-    <tr><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>SHORT</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>1.20</td><td>Candidate (best overall)</td></tr>
-    <tr><td>FOREX</td><td>regime_accumulation</td><td>USDCAD=X</td><td>LONG</td><td>204</td><td>3.88</td><td>2.74</td><td>1.0000</td><td>2.56</td><td>Candidate (best independence)</td></tr>
-    <tr><td>CRYPTO</td><td>prediction_market_consensus</td><td>BNBUSDT</td><td>LONG</td><td>59</td><td>1.94</td><td>1.97</td><td>0.9954</td><td>not tested</td><td>Candidate</td></tr>
-    <tr><td>FOREX</td><td>cta_fx_multifactor</td><td>USDJPY=X</td><td>LONG</td><td>75</td><td>1.96</td><td>1.79</td><td>0.9930</td><td>not tested</td><td>Candidate</td></tr>
-    <tr><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>LONG</td><td>64</td><td>1.66</td><td>1.99</td><td>0.9730</td><td>not tested</td><td>Candidate</td></tr>
-    <tr><td>EQUITY</td><td>smart_money_accumulation</td><td>UNH</td><td>LONG</td><td>30</td><td>9.24</td><td>6.17</td><td>1.0000</td><td>5.28 (n=3)</td><td>Candidate (tiny sample)</td></tr>
-    <tr><td>EQUITY</td><td>regime_accumulation</td><td>AAPL</td><td>LONG</td><td>76</td><td>1.90</td><td>5.93</td><td>1.0000</td><td>not tested</td><td>Candidate (test PF jump)</td></tr>
-    <tr><td>FUTURES/ETF/BOND/COMMODITY</td><td colspan="9">No cell passes all gates. Free libraries recommended: backtrader, freqtrade, vectorbt, yfinance, ccxt.</td></tr>
+    <tr><th>Asset</th><th>Strategy</th><th>Symbol(s)</th><th>Dir</th><th>n</th><th>WR</th><th>PF</th><th>TP / SL</th><th>Hold time</th><th>R:R</th><th>Status</th></tr>
+    <tr><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>SHORT</td><td>404</td><td>56.9%</td><td>1.57</td><td>-3.2% / +2.2%</td><td>~0.8d (0-13d)</td><td>1.56</td><td>Candidate (P=1.0)</td></tr>
+    <tr><td>CRYPTO</td><td>Inception RSI 30-50 SHORT</td><td>28-31 syms</td><td>SHORT</td><td>125</td><td>60.8%</td><td>2.16</td><td>not stored</td><td>not stored</td><td>not stored</td><td>Candidate (CI-LB 1.688)</td></tr>
+    <tr><td>FOREX</td><td>regime_accumulation</td><td>USDCAD=X</td><td>LONG</td><td>204</td><td>61%</td><td>2.74</td><td>+1.0% / -0.6%</td><td>~3.9d (0-6d)</td><td>2.04</td><td>Candidate (one-pos PF 2.56)</td></tr>
+    <tr><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>LONG</td><td>64</td><td>65.6%</td><td>1.80</td><td>+3.8% / -2.2%</td><td>~1.1d (0-2d)</td><td>1.68</td><td>Candidate (small sample)</td></tr>
+    <tr><td>EQUITY</td><td>smart_money_accumulation</td><td>UNH</td><td>LONG</td><td>30</td><td>80%</td><td>6.17</td><td>not stored</td><td>not stored</td><td>not stored</td><td>Candidate (tiny sample)</td></tr>
+    <tr><td>FUTURES/ETF/BOND/COMMODITY</td><td colspan="10">No cell passes all gates. Free libraries recommended: backtrader, freqtrade, vectorbt.</td></tr>
   </table>
-  <p><strong>Inception's mined candidate:</strong> CRYPTO SHORT @ RSI 30-50 — n=125, WR 60.8%, net PF 2.163, CI-LB 1.688, last 30d PF 4.97. Stronger than luxalgo. Status: CANDIDATE (forward-monitoring, not sized).</p>
-  <p><strong>13F institutional accumulation:</strong> AMZN (4 funds, $5.97B), MSFT, META, GOOGL, NVDA, JNJ, etc. — potential EQUITY edge via smart_money_accumulation.</p>
-</div>
+  <p><em>Hold time = average days from entry to exit. TP/SL = average take-profit / stop-loss % from entry price. All candidates are CANDIDATE status — not proven. Do not size with real capital.</em></p>
+
 
 <div class="card">
   <h2>Proven picks per asset class: none independently established</h2>
