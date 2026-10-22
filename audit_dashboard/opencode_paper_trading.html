@@ -160,6 +160,17 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 </div>
 
 <div class="card">
+  <h2>Hidden-winner scan (cross-agent master plan)</h2>
+  <p><strong>Result: No hidden top performers found.</strong> Scanned 34 closed-trade files (16,761 raw rows → 10,187 after cleaning). 65 groups with n≥20; top 14 by CI lower bound; none with CI-LB ≥1.1 and n≥50 that isn't already shown worse on /audit.</p>
+  <ul>
+    <li><strong>Artifact removal:</strong> genome mega_mutation (n=542, WR 63-87%, PF +2.5-8.5) had 955 rows closing within 2 min (lookahead). After removal, PF drops to 1.6-2.2 with CIs including 1.0.</li>
+    <li><strong>DSR bug:</strong> strategy_funnel_data.json reports DSR 1.99 (impossible). Same cell has PBO 0.86 and walk-forward Sharpe -999999.9999 (sentinel).</li>
+    <li><strong>Red flags:</strong> QUBT 100% WR on 301 trades not reproducible; 92 cross-class mislabels; 45 sign mismatches (LONG).</li>
+    <li><strong>Conclusion:</strong> No hidden winners. All apparent winners are artifacts, small-n, or overfit.</li>
+  </ul>
+</div>
+
+<div class="card">
   <h2>Paper trading status</h2>
   <p>Status JSON: <a href="/audit/data/opencode_paper_trading_status.json">opencode_paper_trading_status.json</a></p>
   <p>Update job: <code>python3 tools/opencode_paper_trading_update.py</code> (run hourly via cron/GHA)</p>
