@@ -170,28 +170,57 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 <div class="card" style="border:2px solid #ef4444;background:#2d0a0a;">
   <h2 style="color:#ef4444;">❌ BTC 12-Month Momentum — VERDICT: FAIL (after daily mark-to-market audit)</h2>
   <div style="line-height:1.6;">
-    <p style="color:#fca5a5;"><strong>Grok's correction confirmed — and it's worse than estimated.</strong> The earlier 12.5% max drawdown was computed only on <em>closed trades</em> (the final P/L after selling). It ignored what your account was worth <em>while you were still holding Bitcoin</em>.</p>
-
-    <table>
-      <tr><th>Metric (corrected)</th><th>Value</th><th>Gate</th><th>Result</th></tr>
-      <tr><td><strong>Daily mark-to-market Max Drawdown (MDD)</strong></td><td style="color:#ef4444;font-weight:bold">−79.8%</td><td>≤ 20%</td><td style="color:#ef4444">FAIL</td></tr>
-      <tr><td>Time underwater</td><td>86.5% of all days</td><td>—</td><td>worst possible value (86.5% of the time below prior peak)</td></tr>
-      <tr><td>Worst single trade while holding (2015→2018)</td><td style="color:#ef4444">−69.7% intra-trade</td><td>—</td><td>watched 2/3 of money vanish before exiting</td></tr>
-      <tr><td>Trade #10 (2020→2022) intra-trade</td><td style="color:#ef4444">−53.1%</td><td>—</td><td>$69k peak → sold $37k</td></tr>
-      <tr><td>n trades</td><td>13</td><td>≥ 100</td><td style="color:#ef4444">FAIL</td></tr>
-      <tr><td>Profit Factor (PF)</td><td>94.87</td><td>≥ 1.5</td><td style="color:#22c55e">PASS</td></tr>
-      <tr><td>PF without top trade</td><td>24.77</td><td>—</td><td>edge survives removing the 75% outlier</td></tr>
-      <tr><td>PF bootstrap 95% CI (n=13)</td><td>[3.79, 1530.09]</td><td>CI low ≥ 1.2</td><td style="color:#22c55e">PASS (but CI width = 400× — n too small to trust)</td></tr>
-      <tr><td>Deflated Sharpe Ratio (DSR, N=50 trials)</td><td>0.664</td><td>&gt; 0.95</td><td style="color:#ef4444">FAIL</td></tr>
-      <tr><td>Daily Sharpe (annualized, corrected)</td><td>1.08</td><td>—</td><td>decent, but doesn't excuse −79.8% MDD</td></tr>
-      <tr><td><strong>Final gates</strong></td><td colspan="3"><strong>3/6 PASS → FAIL</strong></td></tr>
-    </table>
-
-    <p style="color:#fca5a5;"><strong>ELI5:</strong> You counted the drop only when you sold. That's like saying your car never broke down because it always made it home eventually — even after being towed. While holding, the account fell ~80% from its peak at one point. Any real investor would have sold in panic long before the trade "won."</p>
-
-    <p style="color:#fca5a5;"><strong>Honest answer to "this or a mutual fund?":</strong> <strong>A plain index mutual fund / ETF (S&P 500) is better for anyone who would flinch at an −80% account drop.</strong> This strategy fails the 20% drawdown gate badly, has 13 trades, 1 trade = 75% of profit, and DSR 0.664 (fails lucky-guess discount). It is <strong>NOT</strong> a recommendation. What survives is only the weaker claim: <em>a trend filter on Bitcoin is calmer than raw buy-and-hold Bitcoin</em> — plausible, but still far riskier than an index fund.</p>
+    <p><strong>The evaluator is corrected, not just this verdict.</strong> The earlier 12.5% drawdown ignored losses while positions remained open. Results below require a daily marked-to-market curve; unavailable proof never becomes a pass.</p>
+    <div id="btc-mtm-evidence" aria-live="polite" style="overflow-x:auto;overflow-wrap:anywhere;">verdicts unavailable - no verified Bitcoin performance claim</div>
+    <details>
+      <summary>Show / hide: what changed and what does it mean?</summary>
+      <p><strong>ELI5:</strong> Measure the entire roller-coaster ride, not just the height when passengers get off. A winning final trade can hide a very large loss along the way.</p>
+      <p>The rolling 365-day trend is checked daily, not once a year. A signal known at today's close fills at the next daily close. The model uses one fully funded spot position or cash, no leverage, zero cash yield, and 0.1% cost per side. It is a historical research model, not a current order or independently proven execution.</p>
+      <p>Missing matched-random-entry, day-cluster confidence and trial-adjusted DSR implementations remain unverified. Bitcoin is 100% of this universe and fails the stated 30% concentration gate. No MONEY-READY or CANDIDATE promotion follows from this test.</p>
+    </details>
   </div>
 </div>
+<script>
+(async function () {
+  var host = document.getElementById('btc-mtm-evidence');
+  try {
+    var response = await fetch('data/published_strategy_gates.json', {cache: 'no-store'});
+    if (!response.ok) throw new Error('BTC evidence request failed');
+    var data = await response.json();
+    var result = Array.isArray(data) && data.find(function (row) { return row.label === 'BTC 12-month absolute momentum'; });
+    if (!result || result.equity_basis !== 'daily_close_mtm' ||
+        result.execution !== 'signal_close_t_fill_close_t_plus_1' ||
+        result.gate !== 'FAIL' ||
+        !Number.isInteger(result.n) || result.n < 0 ||
+        !Number.isFinite(result.mdd) || result.mdd < 0 || result.mdd > 100 ||
+        !Number.isFinite(result.cagr_pct) || !Number.isFinite(result.compound_pct) ||
+        !/^[a-f0-9]{64}$/.test(result.input_sha256) ||
+        !Number.isFinite(Date.parse(result.data_first)) ||
+        !Number.isFinite(Date.parse(result.data_last))) throw new Error('Unverified BTC evidence contract');
+    var table = document.createElement('table');
+    [
+      ['Historical metric', 'Recomputed value'],
+      ['Verdict', 'FAIL - no validated statistical edge'],
+      ['Execution', 'Signal close t, fill close t+1'],
+      ['Maximum daily drawdown', result.mdd.toFixed(2) + '% loss'],
+      ['Historical CAGR', result.cagr_pct.toFixed(2) + '%'],
+      ['Historical compound return', result.compound_pct.toFixed(2) + '%'],
+      ['Closed trades / win rate', result.n + (result.n < 20 ? ' / n<20; WR hidden' : ' / see saved results')],
+      ['Confidence interval / random-entry MC / DSR', 'unverified - cannot pass'],
+      ['Coverage', result.data_first + ' to ' + result.data_last],
+      ['Input SHA-256', result.input_sha256]
+    ].forEach(function (cells) {
+      var row = document.createElement('tr');
+      cells.forEach(function (text) { var cell = document.createElement('td'); cell.textContent = text; row.appendChild(cell); });
+      table.appendChild(row);
+    });
+    host.replaceChildren(table);
+  } catch (error) {
+    host.textContent = 'verdicts unavailable - no verified Bitcoin performance claim';
+    console.warn('[BTC MTM] Evidence unavailable or invalid');
+  }
+}());
+</script>
 
 <div class="card">
   <h2>ELI5: What is a "candidate" vs "proven"?</h2>

@@ -1,14 +1,14 @@
-"""Test 3 published crypto strategies on 10+ years of BTC-USD data with GROK's 9 gates.
+"""Research-only BTC baselines with causal next-close fills and daily MTM.
 
 Strategies:
 1. 10-month SMA trend (above=long, below=cash)
 2. 200-day SMA trend (above=long, below=cash)
-3. Dual momentum (absolute: BTC return >0; relative: BTC > TLT)
+3. Absolute momentum (BTC return >0; no relative-asset comparison)
 
 Gates (GROK_20261022):
 1. n >= 100 trades
 2. PF >= 1.5
-3. PF CI low >= 1.2 (bootstrap, 5000 resamples by day)
+3. PF CI low >= 1.2 (unverified until a valid day-cluster adapter is supplied)
 4. MDD <= 20%
 5. Random-entry MC >= 95th percentile
 6. DSR > 0.95 (with trials logged)
@@ -16,38 +16,64 @@ Gates (GROK_20261022):
 8. Top symbol <= 30% concentration
 9. Profitable in both halves (walk-forward)
 """
-import pandas as pd, numpy as np, json, os, random, sys, csv
+import argparse
+import csv
+import hashlib
+import json
+from pathlib import Path
 
-DATA = "audit_dashboard/data/btcusd_daily.csv"
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "audit_dashboard/data/btcusd_daily.csv"
 COST_PER_TRADE = 0.001  # 0.1% per side (taker fee + slippage)
-TRIALS_LOG = "audit_dashboard/data/trials.csv"
+TRIALS_LOG = ROOT / "audit_dashboard/data/trials.csv"
 
-def load():
-    df = pd.read_csv(DATA, index_col=0, parse_dates=True)
+def validate_prices(df):
+    if not isinstance(df.index, pd.DatetimeIndex) or df.empty or "close" not in df:
+        raise ValueError("Expected a nonempty dated daily close price series")
+    if not df.index.is_monotonic_increasing or df.index.has_duplicates:
+        raise ValueError("Daily price timestamps must be sorted and unique")
+    if len(df) > 1 and not (df.index.to_series().diff().iloc[1:] == pd.Timedelta(days=1)).all():
+        raise ValueError("BTC daily path has missing or non-daily observations")
+    close = df["close"].to_numpy(dtype=float)
+    if not np.isfinite(close).all() or (close <= 0).any():
+        raise ValueError("Daily prices must be finite and positive")
+
+
+def load(path=DATA):
+    df = pd.read_csv(path, index_col=0, parse_dates=True)
     if "close" not in df.columns:
         for c in df.columns:
             if str(c).lower() == "close":
                 df = df.rename(columns={c: "close"})
                 break
-    df = df[["close"]].dropna()
+    validate_prices(df)
+    df = df[["close"]]
     return df
 
 def backtest(df, entry_signal, label):
-    """Next-day entry: signal computed on day t, enter at close of day t, exit at close of day t+1 (or hold)."""
-    close = df["close"].values
+    """Signal at close t executes at close t+1, not at its own closing price."""
+    validate_prices(df)
+    close = df["close"].to_numpy(dtype=float)
     n = len(close)
-    sig = entry_signal(df) if callable(entry_signal) else entry_signal  # 1=long, 0=cash
-    # Next-day entry: enter at close[t] when sig[t]==1, exit when sig[t]==0
+    signal = entry_signal(df) if callable(entry_signal) else entry_signal
+    if isinstance(signal, pd.Series) and not signal.index.equals(df.index):
+        raise ValueError("Signal timestamps must match daily prices")
+    sig = np.asarray(signal)
+    if sig.shape != (n,) or not np.isin(sig, [0, 1]).all():
+        raise ValueError("Signal must contain one binary long/cash value per day")
     trades = []
     in_pos = False
     entry_price = 0
     entry_day = None
-    for i in range(n-1):
-        if sig[i] == 1 and not in_pos:
+    for i in range(1, n):
+        if sig[i-1] == 1 and not in_pos and i < n-1:
             entry_price = close[i]
             entry_day = df.index[i]
             in_pos = True
-        elif sig[i] == 0 and in_pos:
+        elif sig[i-1] == 0 and in_pos:
             exit_price = close[i]
             exit_day = df.index[i]
             ret = (exit_price - entry_price) / entry_price * 100
@@ -62,96 +88,93 @@ def backtest(df, entry_signal, label):
                       "entry": entry_price, "exit": exit_price, "pnl_pct": ret})
     return trades
 
-def gates(trades, label, costs=COST_PER_TRADE, trials_so_far=0):
+def daily_equity(df, trades, costs):
+    validate_prices(df)
+    held = np.zeros(len(df))
+    turnover = np.zeros(len(df))
+    previous_exit = -1
+    for trade in trades:
+        entry = df.index.get_indexer([pd.Timestamp(trade["entry_day"])])[0]
+        exit_ = df.index.get_indexer([pd.Timestamp(trade["exit_day"])])[0]
+        if entry < 0 or exit_ <= entry:
+            raise ValueError("Trade dates must match a positive-duration daily path")
+        if entry < previous_exit:
+            raise ValueError("Trade overlap exceeds the single-position capital model")
+        for field, index in (("entry", entry), ("exit", exit_)):
+            if not np.isclose(float(trade[field]), float(df.close.iloc[index]), rtol=1e-10, atol=0):
+                raise ValueError("Recorded fill does not match its daily close")
+        held[entry+1:exit_+1] = 1
+        turnover[entry] += 1
+        turnover[exit_] += 1
+        previous_exit = exit_
+    returns = df.close.pct_change().fillna(0).to_numpy()
+    factors = (1 + held * returns) * (1 - costs) ** turnover
+    return pd.Series(np.cumprod(factors), index=df.index)
+
+
+def profit_factor(pnls):
+    gain = sum(p for p in pnls if p > 0)
+    loss = -sum(p for p in pnls if p < 0)
+    return float(gain / loss) if loss > 0 else None
+
+
+def gates(trades, label, costs=COST_PER_TRADE, trials_so_far=0, prices=None):
+    if not np.isfinite(costs) or not 0 <= costs < 1:
+        raise ValueError("Per-side costs must be finite and in [0, 1)")
+    curve = daily_equity(prices, trades, costs) if prices is not None else None
     if not trades:
         return {"label": label, "n": 0, "gate": "FAIL", "reason": "no trades"}
-    pnls = [t["pnl_pct"] for t in trades]
+    for trade in trades:
+        if any(not np.isfinite(float(trade[key])) or float(trade[key]) <= 0 for key in ("entry", "exit")):
+            raise ValueError("Trade fill prices must be finite and positive")
+    pnls = [(float(t["exit"]) / float(t["entry"]) - 1) * 100 for t in trades]
     n = len(pnls)
-    w = sum(1 for p in pnls if p > 0)
-    l = n - w
-    gross_profit = sum(p for p in pnls if p > 0)
-    gross_loss = abs(sum(p for p in pnls if p <= 0))
-    pf = gross_profit / gross_loss if gross_loss > 0 else float("inf")
+    pf = profit_factor(pnls)
     # Apply costs
-    pnls_cost = [p - 2*costs*100 for p in pnls]  # entry + exit
-    gp_c = sum(p for p in pnls_cost if p > 0)
-    gl_c = abs(sum(p for p in pnls_cost if p <= 0))
-    pf_cost = gp_c / gl_c if gl_c > 0 else float("inf")
-    pf_2x = (sum(p - 4*costs*100 for p in pnls if p > 4*costs*100) /
-             abs(sum(p - 4*costs*100 for p in pnls if p <= 4*costs*100))) if any(p <= 4*costs*100 for p in pnls) else float("inf")
-    # Equity curve & MDD
-    eq = [100.0]
-    for p in pnls_cost:
-        eq.append(eq[-1] * (1 + p/100))
-    peak = eq[0]; mdd = 0
-    for v in eq:
-        if v > peak: peak = v
-        dd = (peak - v) / peak * 100
-        if dd > mdd: mdd = dd
-    # Bootstrap PF CI (resample by trade)
-    random.seed(42)
-    pf_samples = []
-    for _ in range(5000):
-        sample = [random.choice(pnls_cost) for _ in range(n)]
-        gp = sum(p for p in sample if p > 0)
-        gl = abs(sum(p for p in sample if p <= 0))
-        pf_samples.append(gp/gl if gl > 0 else 10.0)
-    pf_samples.sort()
-    ci_lo = pf_samples[125]
-    # Random-entry MC: random entry days, hold for same distribution as strategy
-    random.seed(42)
-    mc_pfs = []
-    hold_lengths = [abs((t["exit_day"] - t["entry_day"]).days) for t in trades if "entry_day" in t]
-    avg_hold = int(np.mean(hold_lengths)) if hold_lengths else 30
-    closes = [t["entry"] for t in trades]  # approximate price series from trade entries
-    # Better: use actual price series
-    for _ in range(2000):
-        # Random entry index in price series, hold avg_hold days
-        if len(pnls_cost) < 2: break
-        n_random = max(10, len(pnls_cost) // 3)
-        random_pnls = []
-        for _ in range(n_random):
-            ei = random.randint(0, len(pnls_cost) - 1)
-            # Hold for avg_hold trades worth (approximate by picking a random slice)
-            hold = min(avg_hold, len(pnls_cost) - ei)
-            if hold <= 0: continue
-            slice_pnls = pnls_cost[ei:ei+hold]
-            cum = 1.0
-            for p in slice_pnls:
-                cum *= (1 + p/100)
-            random_pnls.append((cum - 1) * 100)
-        if not random_pnls: continue
-        gp = sum(p for p in random_pnls if p > 0)
-        gl = abs(sum(p for p in random_pnls if p <= 0))
-        mc_pfs.append(gp/gl if gl > 0 else 0)
-    mc_pfs.sort()
-    pct = sum(1 for p in mc_pfs if p < pf_cost) / len(mc_pfs) if mc_pfs else 0
-    # DSR (deflated Sharpe, simplified)
-    sharpe = np.mean(pnls_cost) / np.std(pnls_cost) if np.std(pnls_cost) > 0 else 0
-    expected_max = sharpe * (1 - 0.5772) + 0.5772 / sharpe if sharpe != 0 else 0  # approx
-    dsr = 1.0 if sharpe > expected_max * 2 else max(0, 1 - np.exp(-sharpe))
+    pnls_cost = [((1 + p/100) * (1-costs)**2 - 1) * 100 for p in pnls]
+    w = sum(p > 0 for p in pnls_cost)
+    l = sum(p < 0 for p in pnls_cost)
+    pf_cost = profit_factor(pnls_cost)
+    pf_2x = profit_factor([((1+p/100) * (1-2*costs)**2-1)*100 for p in pnls]) if costs < 0.5 else None
+    mdd = compound = cagr = sharpe = None
+    if curve is not None:
+        mdd = float((1 - curve / curve.cummax().clip(lower=1)).max() * 100)
+        compound = float((curve.iloc[-1]-1)*100)
+        years = (curve.index[-1]-curve.index[0]).total_seconds() / (365.25*86400)
+        cagr = float((curve.iloc[-1]**(1/years)-1)*100) if years > 0 else None
+        returns = curve.div(curve.shift(1).fillna(1))-1
+        std = returns.std(ddof=1)
+        sharpe = float(returns.mean()/std*np.sqrt(365.25)) if len(returns)>1 and std>0 else None
+    # These require independently validated adapters, not trade resampling or an ad hoc formula.
+    ci_lo = pct = dsr = None
     # Walk-forward: first half vs second half
     half = n // 2
-    first_half_pf = (sum(p for p in pnls_cost[:half] if p > 0) /
-                     abs(sum(p for p in pnls_cost[:half] if p <= 0))) if any(p <= 0 for p in pnls_cost[:half]) else float("inf")
-    second_half_pf = (sum(p for p in pnls_cost[half:] if p > 0) /
-                      abs(sum(p for p in pnls_cost[half:] if p <= 0))) if any(p <= 0 for p in pnls_cost[half:]) else float("inf")
-    # Symbol concentration (single asset = 100%, but for single-symbol strategies this gate is N/A)
-    top_sym_pct = 100  # single symbol
+    first_half_pf = profit_factor(pnls_cost[:half])
+    second_half_pf = profit_factor(pnls_cost[half:])
     # Gate results
     g1 = n >= 100
-    g2 = pf_cost >= 1.5
-    g3 = ci_lo >= 1.2
-    g4 = mdd <= 20
-    g5 = pct >= 0.95
-    g6 = dsr > 0.95
-    g7 = pf_2x >= 1.3
-    g8 = True  # single-symbol: concentration gate applies to multi-symbol only
-    g9 = first_half_pf > 1.0 and second_half_pf > 1.0
+    g2 = pf_cost is not None and pf_cost >= 1.5
+    g3 = False
+    g4 = mdd is not None and mdd <= 20
+    g5 = False
+    g6 = False
+    g7 = pf_2x is not None and pf_2x >= 1.3
+    g8 = False  # This suite is 100% BTC; no unregistered single-asset exemption.
+    g9 = first_half_pf is not None and second_half_pf is not None and first_half_pf > 1 and second_half_pf > 1
     all_pass = all([g1,g2,g3,g4,g5,g6,g7,g8,g9])
     return {
-        "label": label, "n": n, "w": w, "l": l, "wr": w/n,
+        "label": label, "n": n, "w": w, "l": l, "wr": w/n if n >= 20 else None,
         "pf_raw": pf, "pf_cost": pf_cost, "pf_2x": pf_2x,
+        "compound_pct": compound, "cagr_pct": cagr, "top_symbol_pct": 100,
+        "equity_basis": "daily_close_mtm" if curve is not None else "unverified",
+        "execution": "signal_close_t_fill_close_t_plus_1",
+        "per_side_cost_fraction": costs,
+        "half_split_basis": "retrospective_completed_trades_not_independent_OOS",
+        "unverified": {
+            "bootstrap_ci_lo": "No validated day-cluster PF interval adapter",
+            "mc_pct": "No matched random entries from actual market bars",
+            "dsr": "No validated DSR with family trial history",
+        },
         "mdd": mdd, "bootstrap_ci_lo": ci_lo, "mc_pct": pct,
         "dsr": dsr, "first_half_pf": first_half_pf, "second_half_pf": second_half_pf,
         "sharpe": sharpe, "gates": {"g1_n": g1, "g2_pf": g2, "g3_ci": g3, "g4_mdd": g4,
@@ -161,7 +184,12 @@ def gates(trades, label, costs=COST_PER_TRADE, trials_so_far=0):
     }
 
 def main():
-    df = load()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--input", type=Path, default=DATA)
+    parser.add_argument("--output", type=Path, default=ROOT / "audit_dashboard/data/published_strategy_gates.json")
+    parser.add_argument("--trials", type=Path, default=TRIALS_LOG)
+    args = parser.parse_args()
+    df = load(args.input)
     results = []
     trials = 0
 
@@ -169,30 +197,30 @@ def main():
     sma200 = df["close"].rolling(200).mean()
     sig1 = (df["close"] > sma200).astype(int).fillna(0)
     t1 = backtest(df, sig1, "sma200")
-    r1 = gates(t1, "BTC 200-day SMA trend", trials_so_far=trials); trials += 1
+    r1 = gates(t1, "BTC 200-day SMA trend", trials_so_far=trials, prices=df); trials += 1
     results.append(r1)
 
     # Strategy 2: 10-month SMA (300 calendar days ~ 10 months)
     sma300 = df["close"].rolling(300).mean()
     sig2 = (df["close"] > sma300).astype(int).fillna(0)
     t2 = backtest(df, sig2, "sma300")
-    r2 = gates(t2, "BTC 10-month (300d) SMA trend", trials_so_far=trials); trials += 1
+    r2 = gates(t2, "BTC 10-month (300d) SMA trend", trials_so_far=trials, prices=df); trials += 1
     results.append(r2)
 
     # Strategy 3: Dual momentum (absolute: 12-month return > 0)
     ret12 = df["close"].pct_change(365)
     sig3 = (ret12 > 0).astype(int).fillna(0)
     t3 = backtest(df, sig3, "dual_momentum")
-    r3 = gates(t3, "BTC 12-month absolute momentum", trials_so_far=trials); trials += 1
+    r3 = gates(t3, "BTC 12-month absolute momentum", trials_so_far=trials, prices=df); trials += 1
     results.append(r3)
 
 
-    # Strategy 4: 50/200 golden cross (with short below)
+    # Strategy 4: 50/200 golden cross, long/cash.
     sma50 = df["close"].rolling(50).mean()
     sma200b = df["close"].rolling(200).mean()
     sig4 = ((sma50 > sma200b).astype(int)).fillna(0)
     t4 = backtest(df, sig4, "golden_cross")
-    r4 = gates(t4, "BTC 50/200 golden cross", trials_so_far=trials); trials += 1
+    r4 = gates(t4, "BTC 50/200 golden cross", trials_so_far=trials, prices=df); trials += 1
     results.append(r4)
 
     # Strategy 5: RSI(14) mean reversion: buy RSI<30, sell RSI>70 (with 200d filter)
@@ -219,40 +247,30 @@ def main():
         sig5_hold.append(1 if in_pos else 0)
     sig5 = pd.Series(sig5_hold, index=df.index)
     t5 = backtest(df, sig5, "rsi_mr")
-    r5 = gates(t5, "BTC RSI<30 mean reversion (200d filter, 30d time stop)", trials_so_far=trials); trials += 1
+    r5 = gates(t5, "BTC RSI<30 mean reversion (200d filter, 30d time stop)", trials_so_far=trials, prices=df); trials += 1
     results.append(r5)
 
-    # Strategy 6: Dual momentum LONG+SHORT (absolute: 12m return, short if <0)
-    sig6 = (ret12 > 0).astype(int)
-    # Also short when ret12 < -10%
-    sig6 = ((ret12 > 0).astype(int) | ((ret12 < -0.10).astype(int) * 0)).astype(int)
-    # For now: long when positive, cash when negative (already have) - add 6m momentum
+    # Strategy 6: both 12-month and 6-month returns positive, long/cash.
     ret6m = df["close"].pct_change(182)
     sig6 = ((ret12 > 0) & (ret6m > 0)).astype(int).fillna(0)
     t6 = backtest(df, sig6, "dual_momentum_12m_6m")
-    r6 = gates(t6, "BTC 12m+6m dual momentum (both positive)", trials_so_far=trials); trials += 1
+    r6 = gates(t6, "BTC 12m+6m dual momentum (both positive)", trials_so_far=trials, prices=df); trials += 1
     results.append(r6)
 
-    # Print results
-    print("=" * 80)
-    for r in results:
-        print(f"\n{r['label']}:")
-        print(f"  n={r['n']} WR={r.get('wr',0):.1%} PF(raw)={r.get('pf_raw',0):.2f} PF(cost)={r.get('pf_cost',0):.2f} PF(2x)={r.get('pf_2x',0):.2f}")
-        print(f"  MDD={r.get('mdd',0):.1f}% CI_lo={r.get('bootstrap_ci_lo',0):.2f} MC_pct={r.get('mc_pct',0):.3f} DSR={r.get('dsr',0):.3f}")
-        print(f"  Half1_PF={r.get('first_half_pf',0):.2f} Half2_PF={r.get('second_half_pf',0):.2f} Sharpe={r.get('sharpe',0):.2f}")
-        print(f"  Gates: {r.get('gates_passed',0)}/9 GATE={r['gate']}")
-        if r.get('gates'):
-            fails = [k for k,v in r['gates'].items() if not v]
-            if fails: print(f"  FAILED: {fails}")
-
-    # Save
-    os.makedirs("audit_dashboard/data", exist_ok=True)
-    json.dump(results, open("audit_dashboard/data/published_strategy_gates.json","w"), indent=2, default=str)
-    # Append to trials.csv
-    with open(TRIALS_LOG, "a", newline="") as f:
+    source_hash = hashlib.sha256(args.input.read_bytes()).hexdigest()
+    for result in results:
+        result["input_sha256"] = source_hash
+        result["data_first"] = df.index[0].isoformat()
+        result["data_last"] = df.index[-1].isoformat()
+    serialized = json.dumps(results, indent=2, allow_nan=False) + "\n"
+    print(serialized)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(serialized)
+    args.trials.parent.mkdir(parents=True, exist_ok=True)
+    with args.trials.open("a", newline="") as f:
         w = csv.writer(f)
         for r in results:
-            w.writerow([r["label"], r["n"], r.get("pf_cost",0), r.get("mdd",0), r["gate"]])
+            w.writerow([r["label"], r["n"], r.get("pf_cost"), r.get("mdd"), r["gate"], source_hash])
 
 if __name__ == "__main__":
     main()
