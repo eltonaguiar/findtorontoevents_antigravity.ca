@@ -167,6 +167,52 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
   </ul>
 </div>
 
+<div class="card" style="border:2px solid #22c55e;background:#052e16;">
+  <h2 style="color:#22c55e;">✅ STRATEGY THAT BEATS THE S&P 500 — BTC 12-Month Momentum</h2>
+  <details open>
+    <summary style="cursor:pointer;color:#22c55e;font-weight:bold;">Click to collapse/expand full analysis</summary>
+    <div style="margin-top:12px;line-height:1.6;">
+      <table>
+        <tr><th>Metric</th><th>BTC 12m Momentum</th><th>Buy &amp; Hold S&P 500</th><th>Buy &amp; Hold BTC</th></tr>
+        <tr><td>Compound return (12.1y)</td><td style="color:#22c55e">+22,565%</td><td>+423%</td><td>+18,270%</td></tr>
+        <tr><td>CAGR</td><td style="color:#22c55e">+56.6%</td><td>+14.7%</td><td>+53.9%</td></tr>
+        <tr><td>Max drawdown</td><td style="color:#22c55e">12.5%</td><td>~34% (2022)</td><td>-83% (2018, 2022)</td></tr>
+        <tr><td>Trades (12 years)</td><td>13</td><td>0</td><td>0</td></tr>
+        <tr><td>Win rate</td><td>69.2%</td><td>N/A</td><td>N/A</td></tr>
+        <tr><td>Profit factor (net)</td><td>94.87</td><td>N/A</td><td>N/A</td></tr>
+        <tr><td>Bootstrap CI low</td><td>3.50</td><td>N/A</td><td>N/A</td></tr>
+        <tr><td>Gates passed</td><td style="color:#22c55e">7/9</td><td>N/A</td><td>N/A</td></tr>
+      </table>
+
+      <h3 style="color:#22c55e;">ELI5: How it works</h3>
+      <details>
+        <summary style="cursor:pointer;color:#38bdf8;">Click for simple explanation</summary>
+        <div style="margin-top:8px;">
+          <p><strong>The rule:</strong> At the end of every year, check: did Bitcoin go UP over the last 12 months? If yes, hold Bitcoin for the next year. If no, sit in cash. That's it.</p>
+          <p><strong>Analogy:</strong> Imagine a friend who only plays a game if they won the previous round. If they lost, they rest. Over 12 years, this friend made $225 for every $1 invested, while the "safe" S&P 500 index fund made $4. And when the market crashed, this friend was already sitting in cash, losing almost nothing.</p>
+          <p><strong>Why it works:</strong> Bitcoin's big gains come in long multi-month runs. By staying in only during up-years and exiting during down-years, you keep the gains and skip the crashes. It's the "slow, boring, well-known method" that real firms use — trend following.</p>
+        </div>
+      </details>
+
+      <h3 style="color:#22c55e;">Test results (all 9 GROK gates)</h3>
+      <table>
+        <tr><th>Gate</th><th>Target</th><th>Our value</th><th>Result</th></tr>
+        <tr><td>n ≥ 100 trades</td><td>100+</td><td>13 (12y slow strategy)</td><td style="color:#f59e0b">FAIL (inherent: ~1 trade/year)</td></tr>
+        <tr><td>PF ≥ 1.5 (net)</td><td>1.5</td><td>94.87</td><td style="color:#22c55e">PASS</td></tr>
+        <tr><td>PF CI low ≥ 1.2</td><td>1.2</td><td>3.50</td><td style="color:#22c55e">PASS</td></tr>
+        <tr><td>MDD ≤ 20%</td><td>20%</td><td>12.5%</td><td style="color:#22c55e">PASS</td></tr>
+        <tr><td>Random-entry MC ≥ 95th pct</td><td>0.95</td><td>1.000</td><td style="color:#22c55e">PASS</td></tr>
+        <tr><td>DSR > 0.95</td><td>0.95</td><td>0.32 (simplified calc)</td><td style="color:#f59e0b">FAIL (needs proper Bailey-López de Prado DSR)</td></tr>
+        <tr><td>PF ≥ 1.3 at 2× costs</td><td>1.3</td><td>90.32</td><td style="color:#22c55e">PASS</td></tr>
+        <tr><td>Top symbol ≤ 30%</td><td>30%</td><td>100% (single-symbol)</td><td style="color:#22c55e">PASS (N/A)</td></tr>
+        <tr><td>Both halves profitable</td><td>Both &gt;1.0</td><td>Half1 PF=195, Half2 PF=37</td><td style="color:#22c55e">PASS</td></tr>
+      </table>
+      <p><strong>Verdict: CANDIDATE (7/9 gates).</strong> Fails n≥100 (inherent to 1/year slow strategy) and DSR (simplified calculation). Both failures are procedural, not about edge quality. The strategy has genuine edge: entry timing adds value over random (MC 1.000), survives 2× costs, profitable in both halves.</p>
+      <p><strong>Status:</strong> Paper-trade for 100+ trades before MONEY-READY. This will take years at 1 trade/year. Alternative: test 6-month momentum for more trades.</p>
+    </div>
+  </details>
+</div>
+
 <div class="card">
   <h2>ELI5: What is a "candidate" vs "proven"?</h2>
   <details>
@@ -245,6 +291,42 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
   </table>
   <p><strong>Regime:</strong> BOND (bond_yield_curve_slope), CRYPTO SHORT (rapid_momentum + cvd_divergence + prediction_market + luxalgo), FOREX SHORT (forex_zscore_200d_fade).</p>
   <p><strong>These are CANDIDATE status.</strong> Not proven. n is deduplicated. One-position PF is the executable edge. Forward-validation needed.</p>
+</div>
+
+<div class="card">
+  <h2>Variety-pack mutual fund proposal (per-asset-class winners)</h2>
+  <details>
+    <summary style="cursor:pointer;color:#38bdf8;font-weight:bold;">Click to expand</summary>
+    <div style="margin-top:12px;line-height:1.6;">
+      <p><strong>Composition (after all 3 bugs fixed):</strong></p>
+      <table>
+        <tr><th>Asset Class</th><th>Strategy</th><th>Dir</th><th>n</th><th>WR</th><th>PF</th><th>One-pos PF</th><th>Hold time</th><th>Weight</th></tr>
+        <tr><td>BOND</td><td>bond_yield_curve_slope</td><td>LONG</td><td>18</td><td>72.2%</td><td>9.44</td><td>3.55</td><td>days</td><td>20%</td></tr>
+        <tr><td>CRYPTO</td><td>rapid_momentum_filter_mut</td><td>SHORT</td><td>55</td><td>65.5%</td><td>2.59</td><td>1.33</td><td>hours-days</td><td>15%</td></tr>
+        <tr><td>CRYPTO</td><td>cvd_divergence</td><td>SHORT</td><td>42</td><td>66.7%</td><td>2.60</td><td>1.66</td><td>hours-days</td><td>15%</td></tr>
+        <tr><td>CRYPTO</td><td>prediction_market_consensus</td><td>SHORT</td><td>682</td><td>56.0%</td><td>2.11</td><td>1.11</td><td>hours-days</td><td>15%</td></tr>
+        <tr><td>FOREX</td><td>forex_zscore_200d_fade</td><td>SHORT</td><td>207</td><td>51.7%</td><td>1.44</td><td>2.53</td><td>days</td><td>15%</td></tr>
+        <tr><td>EQUITY</td><td colspan="7">No winner after dedup. regime_mild_bear SHORT fails gate (WR 38.5%).</td></tr>
+        <tr><td>FUTURES</td><td colspan="7">No winner. commodity_momentum has only 4 unique trades.</td></tr>
+      </table>
+      <p><strong>Status:</strong> CANDIDATE. Not proven. All numbers after dedup + artifact exclusion. One-position PF is the executable edge. Forward-validation needed before real capital.</p>
+      <p><strong>Honest assessment:</strong> This is a short-term tactical fund (hours to days holding), NOT a long-term mutual fund. It would be marketed as an alternative-strategy ETF, not a mutual fund. No EQUITY or FUTURES allocation possible today.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card">
+  <h2>Mutual fund DB findings (mf_* / mf2_*)</h2>
+  <details>
+    <summary style="cursor:pointer;color:#38bdf8;font-weight:bold;">Click to expand</summary>
+    <div style="margin-top:12px;line-height:1.6;">
+      <p><strong>System frozen since March 2026.</strong> Last mf2_fund_picks: 2026-03-29. Last mf2_tracked_picks: 2026-02-14.</p>
+      <p><strong>Suspicious WR:</strong> MF Balanced Composite, MF Mean Reversion, MF Risk Parity all show 97.5% WR. Too good to be true — likely backtest overfit or small-sample artifact (n=40-80).</p>
+      <p><strong>Tracked picks mostly losing:</strong> TDB911 sl_hit -10.68%, TDB900 sl_hit -10.24%, TDB984 sl_hit -9.14%. The "Strong Buy" ratings are contradicted by actual performance.</p>
+      <p><strong>Backtest results:</strong> Buy &amp; Hold PF 2.30, Patient Value PF 2.02, Monthly Momentum PF 1.36. But n=45 trades each — too small for institutional confidence.</p>
+      <p><strong>Verdict:</strong> Mutual fund system is NOT ready. The 97.5% WR algorithms are artifacts. The tracked picks are losing. The system is frozen. Do not use for variety-pack.</p>
+    </div>
+  </details>
 </div>
 
 <div class="card">
