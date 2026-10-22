@@ -130,6 +130,36 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 </div>
 
 <div class="card">
+  <h2>Data quality &amp; stale data audit</h2>
+  <table>
+    <tr><th>Asset class</th><th>Total rows</th><th>Last activity</th><th>Stale (&gt;30d)</th><th>Zero pnl</th><th>Null pnl</th><th>Status</th></tr>
+    <tr><td>CRYPTO</td><td>66,770</td><td>2026-10-22</td><td>62,610 (93.8%)</td><td>17,865</td><td>6,274</td><td>Active (AlphaEngine live)</td></tr>
+    <tr><td>FOREX</td><td>14,895</td><td>2026-10-22</td><td>12,740 (85.5%)</td><td>1,248</td><td>1,428</td><td>Active (AlphaEngine live)</td></tr>
+    <tr><td>EQUITY</td><td>14,197</td><td>2026-10-22</td><td>13,068 (92.1%)</td><td>1,201</td><td>1,128</td><td>Active (AlphaEngine live)</td></tr>
+    <tr><td>FUTURES</td><td>8,020</td><td>2026-10-22</td><td>7,335 (91.5%)</td><td>287</td><td>906</td><td>Active (AlphaEngine live)</td></tr>
+    <tr><td>ETF</td><td>1,740</td><td>2026-10-22</td><td>1,344 (77.2%)</td><td>138</td><td>164</td><td>Active (AlphaEngine live)</td></tr>
+    <tr><td>BOND</td><td>214</td><td>2026-10-21</td><td>182 (85.0%)</td><td>17</td><td>14</td><td>Sparse (2 sources)</td></tr>
+    <tr><td>MEMECOIN</td><td>2,001</td><td>2026-05-13</td><td>2,001 (100%)</td><td>741</td><td>525</td><td>FROZEN</td></tr>
+    <tr><td>PENNY_STOCK</td><td>494</td><td>2026-05-12</td><td>494 (100%)</td><td>231</td><td>236</td><td>FROZEN</td></tr>
+    <tr><td>UNKNOWN</td><td>145</td><td>2026-10-22</td><td>117 (80.7%)</td><td>138</td><td>7</td><td>JUNK (mostly zero pnl)</td></tr>
+  </table>
+  <p><em>Consensus table: only CRYPTO (10,439) and EQUITY (771) have resolved picks. FOREX/COMMODITY have 1 each. Only AlphaEngine + mega_mutation are live pipelines (all others stale since May 2026).</em></p>
+</div>
+
+<div class="card">
+  <h2>Top picks from all agents (consensus)</h2>
+  <table>
+    <tr><th>Agent</th><th>Pick</th><th>Asset</th><th>n</th><th>WR</th><th>PF</th><th>Status</th></tr>
+    <tr><td>OpenCode/Beam</td><td>luxalgo_confluence SHORT</td><td>CRYPTO</td><td>404</td><td>56.9%</td><td>1.57</td><td>Candidate (P=1.0, one-pos PF 1.20)</td></tr>
+    <tr><td>Inception</td><td>CRYPTO SHORT @ RSI 30-50</td><td>CRYPTO</td><td>125</td><td>60.8%</td><td>2.16</td><td>Candidate (CI-LB 1.688)</td></tr>
+    <tr><td>Poolside</td><td>mega_mutation (4-sym)</td><td>CRYPTO</td><td>171</td><td>80.7%</td><td>7.66</td><td>Contested (NULL timestamps)</td></tr>
+    <tr><td>GHCOPILOT</td><td>regime_accumulation</td><td>FOREX</td><td>100</td><td>53.8%</td><td>2.745</td><td>Not proven (weekend price issue)</td></tr>
+    <tr><td>OpenCode/Beam</td><td>regime_accumulation</td><td>FOREX (USDCAD)</td><td>204</td><td>61%</td><td>2.74</td><td>Candidate (one-pos PF 2.56)</td></tr>
+  </table>
+  <p><em>Consensus: no strategy is PROVEN. All are candidates subject to forward validation. See CROSS_AGENT_MASTER_PLAN_2026-10-22.md for full cross-agent analysis.</em></p>
+</div>
+
+<div class="card">
   <h2>Paper trading status</h2>
   <p>Status JSON: <a href="/audit/data/opencode_paper_trading_status.json">opencode_paper_trading_status.json</a></p>
   <p>Update job: <code>python3 tools/opencode_paper_trading_update.py</code> (run hourly via cron/GHA)</p>
