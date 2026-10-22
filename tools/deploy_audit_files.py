@@ -24,6 +24,8 @@ REPO = Path(__file__).resolve().parents[1]
 
 # (local_path_relative_to_repo, remote_path_on_50webs, optional_tag)
 UPLOADS = [
+    ("audit_dashboard/audit_scorecard.js", "/findtorontoevents.ca/audit/audit_scorecard.js", "audit_js"),
+    ("audit_dashboard/data/verdicts.json", "/findtorontoevents.ca/audit/data/verdicts.json", "audit_data"),
     ("audit_dashboard/incidents.html",                       "/findtorontoevents.ca/audit/incidents.html",                        "incidents"),
     ("audit_dashboard/data/incidents_enhancements_feed.json","/findtorontoevents.ca/audit/data/incidents_enhancements_feed.json", "incidents"),
     ("audit_dashboard/strategy_audit_summary.html",          "/findtorontoevents.ca/audit/strategy_audit_summary.html",          "pick_funnel"),

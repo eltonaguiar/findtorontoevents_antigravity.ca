@@ -419,6 +419,7 @@ Before sending any response, you MUST check for these patterns:
 | `audit_dashboard/blueprint_generator.py` | Trading blueprint page generator |
 | `audit_dashboard/merge_ai_challenge_picks.py` | AI challenge picks merger |
 | `audit_trail/dashboard_generator.py` | Main dashboard payload + HTML generator |
+| `tools/audit_scorecard.py`, `audit/gates.json`, `audit_dashboard/audit_scorecard.js` | Post-generation, deterministic bounded-snapshot GROK scorecard; writes `data/verdicts.json`, consumed by the main cards and owned paper page. No promotion without independent evidence; stale/missing/mismatched verdicts cannot become verified results. |
 | `audit_trail/universal_pick_resolver.py` | Active pick TP/SL/time exit resolver |
 | `audit_trail/fetch_stock_prices.py` | Server-side stock price fetcher |
 | `alpha_engine/config.py` | Strategy families, scoring config |

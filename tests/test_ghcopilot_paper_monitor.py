@@ -24,6 +24,49 @@ def test_bh_corrects_entire_family():
     assert bh_adjust([.01, .04, .03]) == pytest.approx([.03, .04, .04])
 
 
+def test_deploy_includes_scorecard_dependency_without_changing_ledger(tmp_path, monkeypatch):
+    from tools import ghcopilot_paper_monitor as monitor
+
+    root = tmp_path / "audit_dashboard"
+    root.mkdir()
+    (root / "audit_scorecard.js").write_bytes(b"scorecard")
+    (root / "ghcopilot_paper.html").write_bytes(b"page")
+    ledger = root / "ledger.json"
+    ledger.write_bytes(b'{"immutable":"fixture"}')
+    uploaded = []
+
+    class FakeFTP:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def login(self, *args):
+            pass
+
+        def prot_p(self):
+            pass
+
+        def storbinary(self, command, stream):
+            uploaded.append((command, stream.read()))
+
+    monkeypatch.setattr(monitor, "ROOT", tmp_path)
+    monkeypatch.setattr(monitor, "FTP_TLS", FakeFTP)
+    monkeypatch.setenv("FTP_USER", "fixture")
+    monkeypatch.setenv("FTP_PASS", "fixture")
+    monitor.deploy(ledger)
+    assert uploaded == [
+        ("STOR /findtorontoevents.ca/audit/audit_scorecard.js", b"scorecard"),
+        ("STOR /findtorontoevents.ca/audit/ghcopilot_paper.html", b"page"),
+        ("STOR /findtorontoevents.ca/audit/data/ghcopilot_paper.json", b'{"immutable":"fixture"}'),
+    ]
+    assert ledger.read_bytes() == b'{"immutable":"fixture"}'
+
+
 def test_stop_first_on_ambiguous_bar():
     result = resolve_leg(leg(), [bar(0, high=105, low=97)], NOW + timedelta(hours=2), "CRYPTO")
     assert result["reason"] == "SL_HIT"
