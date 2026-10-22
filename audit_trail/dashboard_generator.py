@@ -66,6 +66,13 @@ except Exception:  # pragma: no cover
     def get_reverse_split_info(symbol: str):  # type: ignore
         return None
 
+# Measurement-fix rollout flag (Sub-project 1 / Task 1). Default-OFF.
+# When OFF (env var absent, "0", or anything other than literal "1")
+# the dashboard output is byte-identical to the un-flagged build. When
+# ON ("1") this gates the net-of-cost, overlap-aware compounding, benchmark
+# columns, and the 4 quick-fix gates (wired up by later plan tasks).
+MEASUREMENT_HYGIENE_V1 = os.environ.get("MEASUREMENT_HYGIENE_V1", "0") == "1"
+
 
 def _annotate_reverse_split_pick(pick: dict) -> dict:
     """Stamp reverse-split metadata on a pick for dashboard badges/filters."""
