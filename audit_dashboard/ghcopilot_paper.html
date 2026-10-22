@@ -7,8 +7,10 @@
 <style>
 :root{color-scheme:dark}body{margin:0;background:#0b1020;color:#e2e8f0;font:15px/1.55 system-ui,sans-serif}main{max-width:1400px;margin:auto;padding:24px}a{color:#67e8f9}h1{font-size:27px}h2{margin-top:30px}.notice,section{padding:18px;border:1px solid #334155;border-radius:10px;margin:16px 0;background:#111a2e}.notice{border-color:#fbbf24}.muted{color:#a5b4cc}.error{color:#fda4af;white-space:pre-wrap}.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #334155;vertical-align:top}th{color:#a5b4cc}code{overflow-wrap:anywhere}.good{color:#86efac}.badge{display:inline-block;padding:3px 8px;border:1px solid #64748b;border-radius:8px;font-size:12px}#freshness{font-weight:bold}summary{cursor:pointer;color:#67e8f9}ul{padding-left:22px}.cards{display:flex;flex-wrap:wrap;gap:20px}.cards>div{flex:1;min-width:160px}
 </style>
+<script src="audit_scorecard.js"></script>
 </head>
 <body><main>
+<section id="owned-scorecard" data-keys="[]" aria-live="polite"><h2>Common GROK scorecard</h2><p>verdicts unavailable - loading evidence</p></section>
 <nav><a href="/audit/">&larr; Audit dashboard</a> |
 <a href="paper_pilot.html">Existing COT pilot</a> |
 <a href="crypto_paper_pilot.html">Existing crypto pilot</a> |
@@ -128,7 +130,9 @@ No leverage, $10,000 starting book, $1,000 fixed notional per class. At most one
 <li>Conservative limitation: hourly gaps, including unverified overnight/weekend closures, block resolution rather than assuming no stop was touched. Session calendars are not yet certified; non-crypto paper coverage may therefore remain incomplete.</li>
 </ul></section>
 <h2>Prospective observations (latest first)</h2>
-<div class="scroll"><table><thead><tr><th>Class / symbol</th><th>Observed / entry</th><th>Direction / random control</th><th>Status / marks</th><th>Strategy result</th><th>Control result</th></tr></thead><tbody id="trades"></tbody></table></div>
+<details><summary>ELI5: how long is a paper observation held, and what are TP / SL?</summary><p>This experiment is short-horizon: at most 48 wall-clock hours (two days) after entry, not weeks, months or years. It exits earlier if the target or stop is reached. The target and stop distances are frozen from the original source and re-anchored to the next eligible hourly entry open. LONG puts the target above entry and stop below; SHORT reverses them. Prices are exit rules, not forecasts. Gaps can fill worse than the stop; missing bars block verification instead of inventing a result. There is no calibrated certainty of future profit.</p></details>
+<p><a href="https://github.com/eltonaguiar/COMMUNITY/blob/main/GHCOPILOT_EXECUTION_AND_ALGORITHM_REVIEW_2026-10-22.md">Cross-agent review: actual holding rules, TP/SL, ML limitations and stronger validation methods</a></p>
+<div class="scroll"><table><thead><tr><th>Class / symbol</th><th>Observed / entry</th><th>Direction / random control</th><th>Entry / TP / SL / deadline</th><th>Status / marks</th><th>Strategy result</th><th>Control result</th></tr></thead><tbody id="trades"></tbody></table></div>
 <section><h2>Database feed quality - diagnostic, not certification</h2><p id="quality-date"></p>
 <div class="scroll"><table><thead><tr><th>Class</th><th>Raw rows / last 24h</th><th>Latest recorded / signal</th><th>Missing signal</th><th>Closed / missing PnL / zero PnL</th><th>|PnL| &gt;30%</th><th>Replay coverage / ambiguous</th></tr></thead><tbody id="quality"></tbody></table></div>
 <p class="muted">A zero can be a real flat result or a migration placeholder; it is not silently removed or assumed correct.
@@ -146,12 +150,19 @@ const num=(v,n=3)=>v===null||v===undefined?'N/A':Number(v).toFixed(n);
 const ci=v=>v?'['+v.map(x=>num(x)).join(', ')+']':'insufficient';
 function row(parent,values){const tr=document.createElement('tr');for(const value of values){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);}parent.appendChild(tr);}
 function result(r){return r?r.reason+' | net '+num(r.net_pct)+'% | $'+num(r.net_usd,2):'pending / no invented PnL';}
+function exitPlan(t){
+ const sign=t.direction==='LONG'?1:t.direction==='SHORT'?-1:null;
+ if(sign===null||!Number.isFinite(t.entry)||!Number.isFinite(t.tp_distance)||!Number.isFinite(t.sl_distance))return 'Pending entry: prices unverified | maximum 48 hours after entry';
+ return 'Entry '+num(t.entry,6)+' | TP '+num(t.entry*(1+sign*t.tp_distance),6)+' | SL '+num(t.entry*(1-sign*t.sl_distance),6)+' | expires '+(t.expires_at||'unverified')+' | maximum 48 hours';
+}
 async function load(){
  try{
   const response=await fetch('data/ghcopilot_paper.json?t='+Date.now(),{cache:'no-store'});
   if(!response.ok)throw new Error('Ledger HTTP '+response.status);
   const d=await response.json();
   if(d.schema_version!==1||!d.summary||!d.candidates||!Array.isArray(d.trades))throw new Error('Invalid ledger contract');
+  el('owned-scorecard').dataset.keys=JSON.stringify(Object.entries(d.candidates).filter(([,c])=>c).map(([cls,c])=>({asset_class:c.asset_class||cls,source:c.source,strategy:c.strategy,direction:c.direction||null})));
+  if(window.AuditScorecard)window.AuditScorecard.load();
   const age=(Date.now()-Date.parse(d.updated_at))/3600000;
   if(!Number.isFinite(age))throw new Error('Invalid update timestamp');
   el('freshness').textContent=(age>3?'STALE - ':'')+'Updated '+d.updated_at+' | '+num(age,1)+' hours old | lock '+d.locked_at;
@@ -160,10 +171,10 @@ async function load(){
   for(const [label,value] of [['Starting book','$10,000'],['Realized equity','$'+num(d.portfolio.realized_equity_usd,2)],['Realized-only drawdown',num(d.portfolio.realized_drawdown_pct,2)+'%']]){const div=document.createElement('div');div.textContent=label+': '+value;el('portfolio').appendChild(div);}
   for(const [cls,s] of Object.entries(d.summary)){
    const c=d.candidates[cls];
-   row(el('classes'),[cls+' | '+s.verdict,c?c.source+' / '+c.strategy:'No eligible historical candidate',c?'n='+c.n+' | PF '+num(c.net_pf)+' | CI '+ci(c.day_bootstrap_ci95)+' | '+(c.historical_gate_pass?'historical gate pass':'exploratory, NOT proven'):'Insufficient clean positive evidence',s.n+' closed / '+s.active+' active','PF '+num(s.net_pf)+' | mean '+num(s.net_mean_pct)+'% | $'+num(s.net_usd,2)+' | CI '+ci(s.day_bootstrap_ci95),'WR '+(s.win_rate===null?'N/A':num(s.win_rate*100,1)+'%')+' | BH q '+num(s.coinflip_q,5)+' | paired CI '+ci(s.paired_control.day_bootstrap_ci95)]);
+   row(el('classes'),[cls+' | FAIL: full certification not established | experiment '+s.verdict,c?c.source+' / '+c.strategy:'No eligible historical candidate',c?'n='+c.n+' | PF '+num(c.net_pf)+' | CI '+ci(c.day_bootstrap_ci95)+' | '+(c.historical_gate_pass?'preliminary historical gate only':'exploratory, NOT proven'):'Insufficient clean positive evidence',s.n+' closed / '+s.active+' active','PF '+num(s.net_pf)+' | mean '+num(s.net_mean_pct)+'% | $'+num(s.net_usd,2)+' | CI '+ci(s.day_bootstrap_ci95),'WR '+(s.n<20?'n<20':s.win_rate===null?'unverified':num(s.win_rate*100,1)+'%')+' | BH q '+num(s.coinflip_q,5)+' | paired CI '+ci(s.paired_control.day_bootstrap_ci95)]);
   }
-  for(const t of [...d.trades].reverse())row(el('trades'),[t.asset_class+' / '+t.symbol,t.observed_at+' / '+(t.entry_at||'pending'),t.direction+' / '+t.control_direction,t.status+(t.error?' | ERROR: '+t.error:'')+(t.mark_at?' | mark '+t.mark_price+' @ '+t.mark_at:''),result(t.strategy_result),result(t.control_result)]);
-  if(!d.trades.length)row(el('trades'),['No prospective observations yet. Historical trades are never imported.','','','','','']);
+  for(const t of [...d.trades].reverse())row(el('trades'),[t.asset_class+' / '+t.symbol,t.observed_at+' / '+(t.entry_at||'pending'),t.direction+' / '+t.control_direction,exitPlan(t),t.status+(t.error?' | ERROR: market data unavailable (details withheld)':'')+(t.mark_at?' | mark '+t.mark_price+' @ '+t.mark_at:''),result(t.strategy_result),result(t.control_result)]);
+  if(!d.trades.length)row(el('trades'),['No prospective observations yet. Historical trades are never imported.','','','','','','']);
   const outcomes=new Map(d.database_quality.outcome_classes.map(x=>[x.asset_class,x]));
   for(const r of d.database_quality.raw_classes){const o=outcomes.get(r.asset_class);row(el('quality'),[r.asset_class,r.n+' / '+r.recorded_24h,r.latest_recorded+' / '+r.latest_signal,r.missing_signal,r.closed_n+' / '+r.missing_closed_pnl+' / '+r.zero_closed_pnl,r.extreme_pnl,o?o.replay_n+'/'+o.n+' | ambiguous '+o.ambiguous:'No outcome class']);}
   el('quality-date').textContent='Checked '+d.database_quality.checked_at+' | '+d.database_quality.scope;
