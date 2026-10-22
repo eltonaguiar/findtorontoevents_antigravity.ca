@@ -1,0 +1,38 @@
+name: Walk-Forward Artifact Detector
+
+# Standing guard (P1-1): fail when the latest walk-forward evaluation report
+# contains frozen-exit artifact cells (wins > 2x distinct exit dates). This
+# ensures a stale/regressed resolver can never silently poison downstream
+# rankings. See tools/check_walkforward_artifact_cells.py.
+
+on:
+  schedule:
+    - cron: '30 6 * * *'   # daily 06:30 UTC
+  push:
+    branches: [main]
+    paths:
+      - tools/check_walkforward_artifact_cells.py
+      - .github/workflows/artifact-detector.yml
+      - tools/walkforward_strategy_eval.py
+  workflow_dispatch:
+
+jobs:
+  artifact-detector:
+    name: Artifact Cell Check
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run artifact-cell check
+        run: python tools/check_walkforward_artifact_cells.py
+        # Exit 0 = clean; 1 = artifact cells found (CI fails); 2 = report missing.
