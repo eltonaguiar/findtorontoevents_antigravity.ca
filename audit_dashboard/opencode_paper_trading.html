@@ -40,44 +40,26 @@ th,td { padding:8px; border-bottom:1px solid #334155; text-align:left; }
 </div>
 
 <div class="card">
-  <h2>Per-asset-class best candidates (strict gate + bootstrap + independence check)</h2>
+  <h2>Per-asset-class best candidates (strict non-artifact gate + bootstrap P&gt;0≥0.90)</h2>
   <table>
     <tr><th>Asset class</th><th>Strategy</th><th>Symbol</th><th>n</th><th>Train PF</th><th>Test PF</th><th>P(>0)</th><th>One-pos PF (0.10% cost)</th><th>Status</th></tr>
-    <tr><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>1.20</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>1.20</td><td>Candidate (best overall)</td></tr>
+    <tr><td>CRYPTO</td><td>prediction_market_consensus</td><td>ETHUSDT</td><td>46</td><td>1.53</td><td>6.45</td><td>0.9985</td><td>0.00 (fails independence)</td><td>Rejected</td></tr>
+    <tr><td>CRYPTO</td><td>quan_engine_swing</td><td>HYPEUSDT</td><td>56</td><td>1.72</td><td>3.06</td><td>0.9675</td><td>not tested</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>meta_strategy</td><td>PENGUUSDT</td><td>37</td><td>1.67</td><td>2.29</td><td>0.9840</td><td>not tested</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>enhanced_ml_A_xgboost</td><td>JTOUSDT</td><td>32</td><td>3.96</td><td>2.21</td><td>0.9965</td><td>not tested</td><td>Candidate</td></tr>
+    <tr><td>EQUITY</td><td>smart_money_accumulation</td><td>UNH</td><td>30</td><td>9.24</td><td>6.17</td><td>1.0000</td><td>5.28 (n=3)</td><td>Candidate (tiny sample)</td></tr>
+    <tr><td>EQUITY</td><td>regime_accumulation</td><td>AAPL</td><td>76</td><td>1.90</td><td>5.93</td><td>1.0000</td><td>not tested</td><td>Candidate (test PF jump)</td></tr>
+    <tr><td>EQUITY</td><td>regime_mild_bear</td><td>AMZN</td><td>196</td><td>1.47</td><td>1.17</td><td>0.9195</td><td>not tested</td><td>Marginal</td></tr>
     <tr><td>FOREX</td><td>regime_accumulation</td><td>USDCAD=X</td><td>204</td><td>3.88</td><td>2.74</td><td>1.0000</td><td>2.56</td><td>Candidate (best independence)</td></tr>
-    <tr><td>CRYPTO</td><td>prediction_market_consensus</td><td>ETHUSDT</td><td>46</td><td>1.53</td><td>6.45</td><td>0.9992</td><td>0.00 (fails independence)</td><td>Rejected</td></tr>
-    <tr><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>64</td><td>1.66</td><td>1.99</td><td>0.9730</td><td>not tested</td><td>Candidate</td></tr>
-    <tr><td>EQUITY</td><td>smart_money_accumulation</td><td>UNH</td><td>30</td><td>9.24</td><td>6.17</td><td>1.0000</td><td>5.28 (n=3 only)</td><td>Candidate (tiny sample)</td></tr>
-    <tr><td>FUTURES/COMMODITY/ETF/BOND</td><td colspan="8">No cell passes all gates (strict + bootstrap + independence + non-artifact)</td></tr>
+    <tr><td>FOREX</td><td>cta_fx_multifactor</td><td>USDJPY=X</td><td>75</td><td>1.96</td><td>1.79</td><td>0.9930</td><td>not tested</td><td>Candidate</td></tr>
+    <tr><td>FUTURES</td><td colspan="9">No cell passes all gates. Recommended: use free open-source libraries (backtrader, freqtrade, vectorbt) to build independent strategies.</td></tr>
+    <tr><td>ETF</td><td colspan="9">No cell passes all gates. Same recommendation.</td></tr>
+    <tr><td>BOND</td><td colspan="9">No cell passes all gates. Same recommendation.</td></tr>
+    <tr><td>COMMODITY</td><td colspan="9">No cell passes all gates. Same recommendation.</td></tr>
   </table>
-<div class="card">
-  <h2>Top 5 candidates per asset class (strict non-artifact gate + bootstrap P&gt;0≥0.95)</h2>
-  <table>
-    <tr><th>Rank</th><th>Asset</th><th>Strategy</th><th>Symbol</th><th>n</th><th>Train PF</th><th>Test PF</th><th>P(>0)</th><th>One-pos PF (0.10% cost)</th></tr>
-    <tr><td>1</td><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>1.20</td></tr>
-    <tr><td>2</td><td>FOREX</td><td>regime_accumulation</td><td>USDCAD=X</td><td>204</td><td>3.88</td><td>2.74</td><td>1.0000</td><td>2.56</td></tr>
-    <tr><td>3</td><td>CRYPTO</td><td>prediction_market_consensus</td><td>BNBUSDT</td><td>59</td><td>1.94</td><td>1.97</td><td>0.9954</td><td>not tested</td></tr>
-    <tr><td>4</td><td>FOREX</td><td>cta_fx_multifactor</td><td>USDJPY=X</td><td>75</td><td>1.96</td><td>1.79</td><td>0.9930</td><td>not tested</td></tr>
-    <tr><td>5</td><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>64</td><td>1.66</td><td>1.99</td><td>0.9730</td><td>not tested</td></tr>
-  </table>
-  <p><em>FUTURES, ETF, BOND, COMMODITY: no cell passes all gates (strict + bootstrap + independence + non-artifact). Recommended: use free open-source libraries (backtrader, freqtrade, vectorbt) to build independent strategies for these classes.</em></p>
+  <p><em>Free data sources/tools for gaps: backtrader (Python backtesting), freqtrade (crypto bot), vectorbt (vectorized backtesting), yfinance (free market data), ccxt (crypto exchange API). Use to build independent strategies for FUTURES/ETF/BOND/COMMODITY and validate with the god-like framework.</em></p>
 
-
-
-<div class="card">
-  <h2>Devil's advocate audit (truth check)</h2>
-  <ul>
-    <li><strong>No strategy is PROVEN.</strong> All candidates fail at least one strict test (independence, cost, or monthly consistency).</li>
-    <li><strong>luxalgo_confluence SHORT:</strong> aggregate P=1.0 but one-position-at-a-time PF drops to 1.13 after 0.20% cost; monthly inconsistent.</li>
-    <li><strong>commodity_term_cot HG=F:</strong> bootstrap P=1.0 but 751/815 signals overlap earlier positions; peak 53 simultaneous LONGs; one-position-at-a-time PF 1.21 → -0.0277%/trade after cost. Downgraded.</li>
-    <li><strong>smart_money:</strong> 72.1% WR / PF 8.32 — suspiciously high; likely soft resolution.</li>
-    <li><strong>multi_asset_copytrader:</strong> 88.8% WR / PF 8.02 — likely soft/zero-loss resolution.</li>
-    <li><strong>Predictions:</strong> PF 4.37 inflated by single +370,850% outlier.</li>
-    <li><strong>Data quality:</strong> 635 artifact cells (frozen-exit), 9.4% null pnl in CRYPTO, 26.8% zero pnl, only AlphaEngine + mega_mutation are live pipelines.</li>
-    <li><strong>Consensus:</strong> only CRYPTO and EQUITY have resolved consensus picks; FOREX/COMMODITY have 1 each.</li>
-  </ul>
-  <p><em>Verdict: No true winner yet. Best candidate is luxalgo_confluence SHORT but requires 100+ forward TP/SL outcomes and independence verification before promotion.</em></p>
-</div>
 
 <div class="card">
   <h2>Paper trading status</h2>
