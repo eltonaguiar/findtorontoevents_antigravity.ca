@@ -84,7 +84,35 @@
 <p class="small" style="margin-top:6px">Tools: <code>tools/buffy_mega_mutation_paper_tracker.py</code> · data: <code>audit_dashboard/data/buffy_paper_trades.json</code></p>
 </div>
 
-<h2>5 · Master direction (compiled from all 5 agent plans + 24h of commits)</h2>
+<h2>5 · Top-5 candidates per asset class — my independent cross-check (every claim re-run hard-only with the 4-gate battery, 2026-10-22 22:30 UTC)</h2>
+<table>
+<tr><th>Class</th><th>#</th><th>Candidate (claim source)</th><th>My re-measure</th><th>Verdict</th></tr>
+<tr><td rowspan="5">CRYPTO</td><td class="num">1</td><td>luxalgo_confluence SHORT (OpenCode #1)</td><td>n=1,484 hard, PF 1.39, pooled CI [0.37,1.20] — but fwd-60d CI [−0.15,+0.45] crosses 0; WR coin-flip p=0.41</td><td class="v-cand">CANDIDATE (best in system)</td></tr>
+<tr><td class="num">2</td><td>mega_mutation SHORT (Poolside/Kilocode)</td><td>n=38 hard, PF 1.73, fwd-30d WR 61.5% — only forward-positive sleeve; CI crosses 0 (thin n)</td><td class="v-cand">CANDIDATE — sealed-tracked hourly</td></tr>
+<tr><td class="num">3</td><td>prediction_market_consensus BNB (OpenCode #3)</td><td>artifact-flagged (482 wins / 80 exit days = the known BNB batch-close); fwd-30d exp +0.003%, CI [−0.32,+0.33]</td><td class="v-fail">REFUTED</td></tr>
+<tr><td class="num">4</td><td>high_trust_momentum BTC (OpenCode #5)</td><td>n=31 hard only, artifact-flagged, fwd-30d n=4; family Oct WR 38.1%</td><td class="v-fail">REFUTED</td></tr>
+<tr><td class="num">5</td><td>conf 0.75–0.80 LONG slice (Poolside + Zoo: “strongest statistically-vetted edge”)</td><td>n=4,114 hard: WR 39.3%, PF 1.17 — <b>fwd-30d n=475 exp −0.487%, CI [−0.87,−0.09] entirely negative</b>; deduped sym-day CI crosses 0</td><td class="v-fail">REFUTED forward</td></tr>
+<tr><td rowspan="4">FOREX</td><td class="num">1</td><td>regime_accumulation USDCAD (OpenCode #2, “PF 3.88→2.74”)</td><td>artifact: 44 wins on 5 exit days; hard-only n=80; fwd-30d exp −0.47%, CI [−0.53,−0.36]</td><td class="v-fail">REFUTED (artifact)</td></tr>
+<tr><td class="num">2</td><td>cta_fx_multifactor USDJPY (OpenCode #4)</td><td>artifact: 32 wins / 6 exit days; fwd-30d n=11 exp −0.30%</td><td class="v-fail">REFUTED (artifact)</td></tr>
+<tr><td class="num">3</td><td>myfxbook_retail_contrarian (Kilocode)</td><td>repeated winning price pairs on closed weekends (GHCOPILOT D4 fail)</td><td class="v-fail">REFUTED (data)</td></tr>
+<tr><td class="num">4</td><td>non_crypto_consensus FX (Kilocode)</td><td>same weekend-price exposure; class fwd-30d −0.31%</td><td class="v-flip">COIN-FLIP</td></tr>
+<tr><td rowspan="3">EQUITY</td><td class="num">1</td><td>AAPL vt_equity_two_day_rsi_reversal</td><td>detector-clean (107 TP / 4 SL, positive Jun→Oct) but n_symbols=1</td><td class="v-cand">CANDIDATE (single-ticker)</td></tr>
+<tr><td class="num">2</td><td>MRBB+200d / IBS+200d (Grok canvas)</td><td>OOS backtest only (n=487 PF 1.84 / n=775 PF 1.63); no DB forward rows; next-open entry untested</td><td class="v-cand">RESEARCH — seal forward before trusting</td></tr>
+<tr><td class="num">3</td><td>class headline +7.6%/trade prior-60d</td><td>frozen-exit artifacts still live in pre-fix rows (fix landed 21:26 today, historical not rewritten)</td><td class="v-fail">UNTRUSTED</td></tr>
+<tr><td rowspan="2">ETF/BOND</td><td class="num">1</td><td>Tactical Rotation TAA (Kilocode/Grok)</td><td>Sharpe 0.88 vs SPY 0.74, monthly, no per-trade ledger</td><td class="v-cand">RESEARCH (most defensible non-directional product)</td></tr>
+<tr><td class="num">2</td><td>AI-tournament BOND PF 1.79 (Kimi)</td><td>replay-artifact file (MISPRICED_ENTRY/REPLAY rows), not real fills; hard-only class PF 0.62</td><td class="v-fail">REFUTED</td></tr>
+<tr><td colspan="2">FUTURES / COMMODITY / MEMECOIN</td><td>FUTURES class PF 1.32 pooled but fwd-30d −0.75% (no sleeve passes); copper REFUTED (overlap n=137 PF 1.21 → negative after costs); mercury2 net loser</td><td class="v-fail">NO CREDIBLE CANDIDATE</td></tr>
+</table>
+<div class="small" style="margin-bottom:10px"><b>Hidden-winner hunts (DB + orphan pages):</b> (1) <code>atr_percentile_gate_scanner</code> — 7 dedup-clean per-symbol sleeves PF 1.4–2.2 looked like a hidden multi-symbol edge, but the family battery kills it: fwd-30d n=794 exp −0.46%, CI [−0.76,−0.16] — per-symbol slicing of a decaying family (survivorship). (2) Zoo's DOTUSDT (+282% of alpha_engine PnL) and EURGBP (74.9% of copytrader PnL) are <b>concentration red flags, not edges</b> — remove-the-top-symbol is exactly gate G2's purpose. (3) Orphan pages found (funds.html, strategy_perf_by_class.html, benchmark_proof.html …) contain no additional forward-proven edge.</div>
+
+<h2>6 · Regime context — why every forward-30d test failed at once (fairness check)</h2>
+<div class="small" style="margin-bottom:10px">The blanket forward failures above are <b>partly market regime, not only strategy decay</b>: in the last 30 days the <i>entire system</i> is negative — CRYPTO −0.14%/trade (n=3,515), FOREX −0.31% (n=1,099), FUTURES −0.75% (n=548), ETF −2.14% (n=90) — versus a positive prior-60d for CRYPTO/FOREX/FUTURES. Only EQUITY stays positive (+1.40%, still artifact-contaminated) and BOND (n=32, too thin). Two conclusions: (a) monthly-split decay seen in high_trust_momentum / copper / conf-slice predates this window, so those refutations stand; (b) <b>no class deserves sizing during a system-wide losing month</b> — this is precisely what sealed forward cohorts are for.</div>
+
+<h2>7 · Free libraries to close the data gaps (per class)</h2>
+<!-- libraries section -->
+<div class="small">CRYPTO: <code>ccxt</code> (Binance/Bybit depth + funding history) — needed for honest perp funding in cost model. EQUITY/ETF/BOND: <code>yfinance</code> total-return bars (dividends!) + <code>pandas_market_calendars</code> for session/exchange-calendar checks (kills weekend FX prints at the source). COMMODITY: <code>zipline-reloaded</code> or CME DataMine free tier for continuous front-month contracts with stated roll method. Cross-cutting: <code>vectorbt</code> for purged/CV embargo cross-validation (PBO), <code>backtrader</code>/<code>freqtrade</code> for independent re-implementation of any candidate (two-codebase replication is the cheapest defense against implementation-lookahead bugs). All free/open-source; no paid feed needed until a candidate is MONEY-READY.</div>
+
+<h2>8 · Master direction (compiled from all 5 agent plans + 24h of commits)</h2>
 <div class="card">
 <h3>The scoreboard was broken, not the strategies</h3>
 <p class="small">All five agents (OpenCode, Poolside/Kilocode, GHCOPILOT, INCEPTION/VLLM, FREEBUFF) converged on the same root cause: the frozen-exit resolver stamped one price snapshot onto every open pick → fake win clusters → every headline number inflated. Fix deployed today 21:26 (commit 305f9a79, per-pick price resolution). <b>Consequence: all pre-fix forward numbers get re-measured; pooled certificates are suspect by default.</b></p>
