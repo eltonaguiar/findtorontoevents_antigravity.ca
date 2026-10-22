@@ -14802,6 +14802,17 @@ def generate():
     total_pnl_pct_compounded_ew = _compound_equal_weight_capped_sequence(
         resolved_closed, float(_MAX_PNL_COMPOUND)
     )
+    # Sub-project 1 / Task 3: overlap-aware compounding. The sequential
+    # `total_pnl_pct_compounded_ew` above assumes 100% of capital per trade,
+    # which is wrong whenever positions overlap (and catastrophically wrong
+    # for resolver batch-closes, where dozens of trades share one closed_at).
+    # We publish BOTH numbers for one release cycle so the size of the
+    # distortion is visible, then retire the sequential figure.
+    from audit_trail.compound_overlap_aware import compound_overlap_aware
+    total_pnl_pct_compounded_overlap_aware, _overlap_diag = compound_overlap_aware(
+        resolved_closed, float(_MAX_PNL_COMPOUND)
+    )
+    payload_overlap_diagnostics = _overlap_diag
     # Hard sanity ceiling so the summary card doesn't show absurd numbers
     # while the redesign lands. 9999% is well above any realistic portfolio
     # return but visually communicates "uncapped".
