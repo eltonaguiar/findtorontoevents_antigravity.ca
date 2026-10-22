@@ -168,28 +168,32 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 </div>
 
 <div class="card" style="border:2px solid #ef4444;background:#2d0a0a;">
-  <h2 style="color:#ef4444;">❌ BTC 12-Month Momentum — VERDICT: FAIL (after daily mark-to-market audit)</h2>
+  <h2 style="color:#ef4444;">❌ BTC 12-Month Momentum — LABEL: FAIL</h2>
   <div style="line-height:1.6;">
-    <p style="color:#fca5a5;"><strong>Grok's correction confirmed — and it's worse than estimated.</strong> The earlier 12.5% max drawdown was computed only on <em>closed trades</em> (the final P/L after selling). It ignored what your account was worth <em>while you were still holding Bitcoin</em>.</p>
+    <p style="color:#fca5a5;"><strong>Independent rebuilds (2 methods) agree: this does NOT beat just holding Bitcoin, and the earlier "small drawdown / beats S&P 500" claims were measurement errors.</strong> The old drawdown was computed only on closed trades — every drop <em>while still holding</em> was invisible.</p>
 
     <table>
-      <tr><th>Metric (corrected)</th><th>Value</th><th>Gate</th><th>Result</th></tr>
-      <tr><td><strong>Daily mark-to-market Max Drawdown (MDD)</strong></td><td style="color:#ef4444;font-weight:bold">−79.8%</td><td>≤ 20%</td><td style="color:#ef4444">FAIL</td></tr>
-      <tr><td>Time underwater</td><td>86.5% of all days</td><td>—</td><td>worst possible value (86.5% of the time below prior peak)</td></tr>
-      <tr><td>Worst single trade while holding (2015→2018)</td><td style="color:#ef4444">−69.7% intra-trade</td><td>—</td><td>watched 2/3 of money vanish before exiting</td></tr>
-      <tr><td>Trade #10 (2020→2022) intra-trade</td><td style="color:#ef4444">−53.1%</td><td>—</td><td>$69k peak → sold $37k</td></tr>
-      <tr><td>n trades</td><td>13</td><td>≥ 100</td><td style="color:#ef4444">FAIL</td></tr>
-      <tr><td>Profit Factor (PF)</td><td>94.87</td><td>≥ 1.5</td><td style="color:#22c55e">PASS</td></tr>
-      <tr><td>PF without top trade</td><td>24.77</td><td>—</td><td>edge survives removing the 75% outlier</td></tr>
-      <tr><td>PF bootstrap 95% CI (n=13)</td><td>[3.79, 1530.09]</td><td>CI low ≥ 1.2</td><td style="color:#22c55e">PASS (but CI width = 400× — n too small to trust)</td></tr>
-      <tr><td>Deflated Sharpe Ratio (DSR, N=50 trials)</td><td>0.664</td><td>&gt; 0.95</td><td style="color:#ef4444">FAIL</td></tr>
-      <tr><td>Daily Sharpe (annualized, corrected)</td><td>1.08</td><td>—</td><td>decent, but doesn't excuse −79.8% MDD</td></tr>
-      <tr><td><strong>Final gates</strong></td><td colspan="3"><strong>3/6 PASS → FAIL</strong></td></tr>
+      <tr><th>Metric</th><th>Strategy (daily mark-to-market)</th><th>Just holding BTC</th><th>SPY (S&amp;P 500 ETF)</th></tr>
+      <tr><td>CAGR (yearly growth)</td><td>52.7% (Grok rebuild: 58.6%)</td><td><strong>53.9% (Grok: 70.2%)</strong></td><td>13.7%</td></tr>
+      <tr><td>MDD (worst daily drop)</td><td style="color:#ef4444">−80.1% (Grok: −81.9%)</td><td>−83.4%</td><td>−33.7%</td></tr>
+      <tr><td>Worst calendar year</td><td style="color:#ef4444">−56.0% (Grok: −59.8%)</td><td>−73.6%</td><td>−18.2%</td></tr>
+      <tr><td>Sharpe (return per unit of risk)</td><td>1.04 (Grok: 1.08)</td><td><strong>0.99 (Grok: 1.14)</strong></td><td>0.83 (Grok: 0.87)</td></tr>
     </table>
 
-    <p style="color:#fca5a5;"><strong>ELI5:</strong> You counted the drop only when you sold. That's like saying your car never broke down because it always made it home eventually — even after being towed. While holding, the account fell ~80% from its peak at one point. Any real investor would have sold in panic long before the trade "won."</p>
+    <table>
+      <tr><th>Gate</th><th>Target</th><th>Value</th><th>Result</th></tr>
+      <tr><td>n ≥ 100 trades</td><td>100</td><td>11–13</td><td style="color:#ef4444">FAIL</td></tr>
+      <tr><td>Profit Factor net ≥ 1.5</td><td>1.5</td><td>43.5 (but 1 trade = 75% of profit)</td><td style="color:#22c55e">PASS</td></tr>
+      <tr><td>PF CI low ≥ 1.2</td><td>1.2</td><td>3.79 at n=13 (CI width 400×)</td><td style="color:#f59e0b">PASS (unstable)</td></tr>
+      <tr><td><strong>Daily MDD ≤ 20%</strong></td><td>≤ 20%</td><td><strong>−80.1%</strong></td><td style="color:#ef4444">FAIL</td></tr>
+      <tr><td>Random-entry MC ≥ 95th pct</td><td>≥ 95</td><td>Grok: 77 (2,000 runs, random buy dates with same hold lengths) — FAIL; our shuffle variant differs, but Grok's is the correct protocol</td><td style="color:#ef4444">FAIL</td></tr>
+      <tr><td>DSR (Bailey–López de Prado) &gt; 0.95</td><td>&gt; 0.95</td><td>≈ 0 at N=65 trials (all strategies tried by all agents)</td><td style="color:#ef4444">FAIL</td></tr>
+      <tr><td>PF ≥ 1.3 at 2× costs</td><td>1.3</td><td>passes (not decisive)</td><td style="color:#22c55e">PASS</td></tr>
+      <tr><td>Beats just holding BTC?</td><td>—</td><td>Lower CAGR AND only marginally lower MDD</td><td style="color:#ef4444">NO</td></tr>
+    </table>
 
-    <p style="color:#fca5a5;"><strong>Honest answer to "this or a mutual fund?":</strong> <strong>A plain index mutual fund / ETF (S&P 500) is better for anyone who would flinch at an −80% account drop.</strong> This strategy fails the 20% drawdown gate badly, has 13 trades, 1 trade = 75% of profit, and DSR 0.664 (fails lucky-guess discount). It is <strong>NOT</strong> a recommendation. What survives is only the weaker claim: <em>a trend filter on Bitcoin is calmer than raw buy-and-hold Bitcoin</em> — plausible, but still far riskier than an index fund.</p>
+    <p style="color:#fca5a5;"><strong>Final label: FAIL.</strong> (Labels used on this page: MONEY-READY / CANDIDATE / FAIL only. Daily MDD &gt; 20% = FAIL.) Research note: a trend filter on Bitcoin is <em>slightly</em> calmer than raw buy-and-hold (−80% vs −83%) but gives up return — it adds nothing worth having. For any real investor: <strong>a plain index fund (SPY: +13.7%/yr, −33.7% worst drop) is the better choice than either this strategy or holding Bitcoin.</strong></p>
+    <p style="color:#94a3b8;font-size:13px;">Method: next-day fills, 0.30% per side costs, daily mark-to-market equity. DSR counts N=65 trials across all agents. MC = 2,000 random-entry-date runs with matched hold lengths.</p>
   </div>
 </div>
 
