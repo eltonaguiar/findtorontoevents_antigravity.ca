@@ -167,51 +167,30 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
   </ul>
 </div>
 
-<div class="card" style="border:2px solid #22c55e;background:#052e16;">
-  <h2 style="color:#f59e0b;">⚠️ FLUKE AUDIT: BTC 12-Month Momentum — fragile CANDIDATE, not a recommendation</h2>
-  <p style="color:#f59e0b;"><strong>Updated after stress-testing (2026-10-22):</strong> only 2 of 9 lookback variants pass both PF and MDD gates (parameter instability = curve-fitting warning); the top 1 trade produces 75% of total profit; n=13 is too thin; the Sharpe of 0.39 was computed incorrectly and the proper risk-adjusted comparison vs S&P 500 is <em>not yet established</em>; the strategy was selected from 6 tested without a lucky-guess discount. <strong>Status: UNVERIFIED research lead.</strong> Do not treat the +56.6% CAGR headline as proven.</p>
-  <details open>
-    <summary style="cursor:pointer;color:#22c55e;font-weight:bold;">Click to collapse/expand full analysis</summary>
-    <div style="margin-top:12px;line-height:1.6;">
-      <table>
-        <tr><th>Metric</th><th>BTC 12m Momentum</th><th>Buy &amp; Hold S&P 500</th><th>Buy &amp; Hold BTC</th></tr>
-        <tr><td>Compound return (12.1y)</td><td style="color:#22c55e">+22,565%</td><td>+423%</td><td>+18,270%</td></tr>
-        <tr><td>CAGR</td><td style="color:#22c55e">+56.6%</td><td>+14.7%</td><td>+53.9%</td></tr>
-        <tr><td>Max drawdown</td><td style="color:#22c55e">12.5%</td><td>~34% (2022)</td><td>-83% (2018, 2022)</td></tr>
-        <tr><td>Trades (12 years)</td><td>13</td><td>0</td><td>0</td></tr>
-        <tr><td>Win rate</td><td>69.2%</td><td>N/A</td><td>N/A</td></tr>
-        <tr><td>Profit factor (net)</td><td>94.87</td><td>N/A</td><td>N/A</td></tr>
-        <tr><td>Bootstrap CI low</td><td>3.50</td><td>N/A</td><td>N/A</td></tr>
-        <tr><td>Gates passed</td><td style="color:#22c55e">7/9</td><td>N/A</td><td>N/A</td></tr>
-      </table>
+<div class="card" style="border:2px solid #ef4444;background:#2d0a0a;">
+  <h2 style="color:#ef4444;">❌ BTC 12-Month Momentum — VERDICT: FAIL (after daily mark-to-market audit)</h2>
+  <div style="line-height:1.6;">
+    <p style="color:#fca5a5;"><strong>Grok's correction confirmed — and it's worse than estimated.</strong> The earlier 12.5% max drawdown was computed only on <em>closed trades</em> (the final P/L after selling). It ignored what your account was worth <em>while you were still holding Bitcoin</em>.</p>
 
-      <h3 style="color:#22c55e;">ELI5: How it works</h3>
-      <details>
-        <summary style="cursor:pointer;color:#38bdf8;">Click for simple explanation</summary>
-        <div style="margin-top:8px;">
-          <p><strong>The rule:</strong> At the end of every year, check: did Bitcoin go UP over the last 12 months? If yes, hold Bitcoin for the next year. If no, sit in cash. That's it.</p>
-          <p><strong>Analogy:</strong> Imagine a friend who only plays a game if they won the previous round. If they lost, they rest. Over 12 years, this friend made $225 for every $1 invested, while the "safe" S&P 500 index fund made $4. And when the market crashed, this friend was already sitting in cash, losing almost nothing.</p>
-          <p><strong>Why it works:</strong> Bitcoin's big gains come in long multi-month runs. By staying in only during up-years and exiting during down-years, you keep the gains and skip the crashes. It's the "slow, boring, well-known method" that real firms use — trend following.</p>
-        </div>
-      </details>
+    <table>
+      <tr><th>Metric (corrected)</th><th>Value</th><th>Gate</th><th>Result</th></tr>
+      <tr><td><strong>Daily mark-to-market Max Drawdown (MDD)</strong></td><td style="color:#ef4444;font-weight:bold">−79.8%</td><td>≤ 20%</td><td style="color:#ef4444">FAIL</td></tr>
+      <tr><td>Time underwater</td><td>86.5% of all days</td><td>—</td><td>worst possible value (86.5% of the time below prior peak)</td></tr>
+      <tr><td>Worst single trade while holding (2015→2018)</td><td style="color:#ef4444">−69.7% intra-trade</td><td>—</td><td>watched 2/3 of money vanish before exiting</td></tr>
+      <tr><td>Trade #10 (2020→2022) intra-trade</td><td style="color:#ef4444">−53.1%</td><td>—</td><td>$69k peak → sold $37k</td></tr>
+      <tr><td>n trades</td><td>13</td><td>≥ 100</td><td style="color:#ef4444">FAIL</td></tr>
+      <tr><td>Profit Factor (PF)</td><td>94.87</td><td>≥ 1.5</td><td style="color:#22c55e">PASS</td></tr>
+      <tr><td>PF without top trade</td><td>24.77</td><td>—</td><td>edge survives removing the 75% outlier</td></tr>
+      <tr><td>PF bootstrap 95% CI (n=13)</td><td>[3.79, 1530.09]</td><td>CI low ≥ 1.2</td><td style="color:#22c55e">PASS (but CI width = 400× — n too small to trust)</td></tr>
+      <tr><td>Deflated Sharpe Ratio (DSR, N=50 trials)</td><td>0.664</td><td>&gt; 0.95</td><td style="color:#ef4444">FAIL</td></tr>
+      <tr><td>Daily Sharpe (annualized, corrected)</td><td>1.08</td><td>—</td><td>decent, but doesn't excuse −79.8% MDD</td></tr>
+      <tr><td><strong>Final gates</strong></td><td colspan="3"><strong>3/6 PASS → FAIL</strong></td></tr>
+    </table>
 
-      <h3 style="color:#22c55e;">Test results (all 9 GROK gates)</h3>
-      <table>
-        <tr><th>Gate</th><th>Target</th><th>Our value</th><th>Result</th></tr>
-        <tr><td>n ≥ 100 trades</td><td>100+</td><td>13 (12y slow strategy)</td><td style="color:#f59e0b">FAIL (inherent: ~1 trade/year)</td></tr>
-        <tr><td>PF ≥ 1.5 (net)</td><td>1.5</td><td>94.87</td><td style="color:#22c55e">PASS</td></tr>
-        <tr><td>PF CI low ≥ 1.2</td><td>1.2</td><td>3.50</td><td style="color:#22c55e">PASS</td></tr>
-        <tr><td>MDD ≤ 20%</td><td>20%</td><td>12.5%</td><td style="color:#22c55e">PASS</td></tr>
-        <tr><td>Random-entry MC ≥ 95th pct</td><td>0.95</td><td>1.000</td><td style="color:#22c55e">PASS</td></tr>
-        <tr><td>DSR > 0.95</td><td>0.95</td><td>0.32 (simplified calc)</td><td style="color:#f59e0b">FAIL (needs proper Bailey-López de Prado DSR)</td></tr>
-        <tr><td>PF ≥ 1.3 at 2× costs</td><td>1.3</td><td>90.32</td><td style="color:#22c55e">PASS</td></tr>
-        <tr><td>Top symbol ≤ 30%</td><td>30%</td><td>100% (single-symbol)</td><td style="color:#22c55e">PASS (N/A)</td></tr>
-        <tr><td>Both halves profitable</td><td>Both &gt;1.0</td><td>Half1 PF=195, Half2 PF=37</td><td style="color:#22c55e">PASS</td></tr>
-      </table>
-      <p><strong>Verdict: CANDIDATE (7/9 gates).</strong> Fails n≥100 (inherent to 1/year slow strategy) and DSR (simplified calculation). Both failures are procedural, not about edge quality. The strategy has genuine edge: entry timing adds value over random (MC 1.000), survives 2× costs, profitable in both halves.</p>
-      <p><strong>Status:</strong> Paper-trade for 100+ trades before MONEY-READY. This will take years at 1 trade/year. Alternative: test 6-month momentum for more trades.</p>
-    </div>
-  </details>
+    <p style="color:#fca5a5;"><strong>ELI5:</strong> You counted the drop only when you sold. That's like saying your car never broke down because it always made it home eventually — even after being towed. While holding, the account fell ~80% from its peak at one point. Any real investor would have sold in panic long before the trade "won."</p>
+
+    <p style="color:#fca5a5;"><strong>Honest answer to "this or a mutual fund?":</strong> <strong>A plain index mutual fund / ETF (S&P 500) is better for anyone who would flinch at an −80% account drop.</strong> This strategy fails the 20% drawdown gate badly, has 13 trades, 1 trade = 75% of profit, and DSR 0.664 (fails lucky-guess discount). It is <strong>NOT</strong> a recommendation. What survives is only the weaker claim: <em>a trend filter on Bitcoin is calmer than raw buy-and-hold Bitcoin</em> — plausible, but still far riskier than an index fund.</p>
+  </div>
 </div>
 
 <div class="card">
