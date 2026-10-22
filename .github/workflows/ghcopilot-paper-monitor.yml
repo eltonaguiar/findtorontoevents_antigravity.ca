@@ -1,0 +1,61 @@
+name: GHCOPILOT prospective paper monitor
+on:
+  schedule:
+    - cron: '37 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ghcopilot-paper-monitor
+  cancel-in-progress: false
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install pymysql scipy requests pytest
+      - name: Test prospective accounting
+        run: python -m pytest tests/test_ghcopilot_paper_monitor.py -q
+      - name: Update sealed paper ledger
+        env:
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+        run: python tools/ghcopilot_paper_monitor.py
+      - name: Persist observations even if market data failed
+        if: always()
+        run: |
+          git add audit_dashboard/data/ghcopilot_paper.json
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "data: GHCOPILOT sealed prospective ledger [skip ci]"
+            pushed=0
+            for attempt in 1 2 3 4 5; do
+              git pull --rebase origin main && git push origin HEAD:main && { pushed=1; break; }
+              sleep $((attempt * 5))
+            done
+            test "$pushed" = 1
+          fi
+      - name: Deploy public monitor and preserve live footer
+        if: always()
+        env:
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python -c "from tools.ghcopilot_paper_monitor import deploy, STATE; deploy(STATE, link_footer=True)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ghcopilot-prospective-ledger
+          path: audit_dashboard/data/ghcopilot_paper.json
+          if-no-files-found: error
