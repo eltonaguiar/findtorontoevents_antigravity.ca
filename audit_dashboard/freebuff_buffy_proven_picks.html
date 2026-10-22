@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FREEBUFF (Buffy) — Proven-Picks Audit &amp; Per-Asset-Class Truth Board</title>
+<style>
+  :root { --bg:#0a0e17; --panel:#111827; --line:#1f2937; --txt:#e5e7eb; --mut:#9ca3af;
+          --green:#22c55e; --red:#ef4444; --amber:#f59e0b; --cyan:#67e8f9; --purple:#a78bfa; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--txt); font-family:'Segoe UI',system-ui,sans-serif; padding:24px; max-width:1180px; margin:0 auto; }
+  h1 { font-size:22px; margin-bottom:4px; }
+  h1 .brand { color:var(--cyan); }
+  h2 { font-size:16px; margin:26px 0 10px; color:var(--purple); border-bottom:1px solid var(--line); padding-bottom:6px; }
+  .sub { color:var(--mut); font-size:13px; margin-bottom:14px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:8px; }
+  th, td { padding:7px 9px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.4px; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .v-proven { color:var(--green); font-weight:700; }
+  .v-cand { color:var(--amber); font-weight:700; }
+  .v-fail { color:var(--red); font-weight:700; }
+  .v-flip { color:#f97316; font-weight:700; }
+  .banner { border:1px solid var(--line); border-left:4px solid var(--amber); background:#1a1408; padding:12px 16px; border-radius:8px; font-size:14px; margin:14px 0; }
+  .banner b { color:var(--amber); }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin:12px 0; }
+  .card h3 { font-size:14px; margin-bottom:8px; color:var(--cyan); }
+  .gates { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; margin:10px 0; }
+  .gate { background:#0d1524; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:12.5px; }
+  .gate b { display:block; font-size:12px; color:var(--txt); margin-bottom:3px; }
+  code { background:#0d1524; padding:1px 5px; border-radius:4px; font-size:12px; color:var(--cyan); }
+  .small { font-size:12px; color:var(--mut); }
+  footer { margin-top:30px; padding-top:14px; border-top:1px solid var(--line); color:var(--mut); font-size:12px; }
+  a { color:#06b6d4; }
+</style>
+</head>
+<body>
+
+<h1><span class="brand">FREEBUFF</span> (Buffy) — Proven-Picks Audit &amp; Per-Asset-Class Truth Board</h1>
+<div class="sub">Agent: <b>Buffy / Freebuff (MiMo)</b> · Adversarial auditor pass · 2026-10-22 · Read-only MySQL <code>ejaguiar1_stocks</code> · hard first-touch TP/SL only, sentinels excluded, dedup-checked</div>
+
+<div class="banner">
+<b>HEADLINE: 0 classes are proven today.</b> Every pooled "winner" either decays forward, collapses under one-position-at-a-time overlap removal, or is a resolver artifact. The two best honest candidates — <b>luxalgo_confluence SHORT</b> (CRYPTO, largest n, pooled CI excludes zero) and <b>mega_mutation SHORT</b> (CRYPTO, the only forward-positive sleeve) — are being sealed-tracked hourly. Their next ~100 hard outcomes decide, not the pooled past.
+</div>
+
+<h2>1 · Per-asset-class truth board (my own DB measurement, hard TP/SL only)</h2>
+<table>
+<tr><th>Class</th><th>n (90d hard)</th><th>WR</th><th>PF</th><th>avg/trade</th><th>Verdict</th><th>Note</th></tr>
+<tr><td>CRYPTO</td><td class="num">10,727</td><td class="num">40.3%</td><td class="num">1.00</td><td class="num">+0.002%</td><td class="v-flip">COIN-FLIP</td><td>135 strategies pooled ≈ breakeven. Class edge does not exist yet; only sleeves do.</td></tr>
+<tr><td>EQUITY</td><td class="num">1,808</td><td class="num">55.5%</td><td class="num">1.98</td><td class="num">+6.01%</td><td class="v-fail">UNTRUSTED</td><td>Inflated by frozen-exit resolver bug (QUBT/IONQ/PLTR clusters, 1 exit day × 180+ wins). Resolver fix deployed 21:26 today (305f9a79); historical rows NOT rewritten.</td></tr>
+<tr><td>FUTURES</td><td class="num">2,420</td><td class="num">48.3%</td><td class="num">1.32</td><td class="num">+0.27%</td><td class="v-cand">CANDIDATE</td><td>Thin but positive, no artifact clusters found. Needs n-growth + costs.</td></tr>
+<tr><td>FOREX</td><td class="num">2,710</td><td class="num">37.5%</td><td class="num">0.79</td><td class="num">−0.075%</td><td class="v-fail">LOSING</td><td>Dragged by copy-trader-intel contamination (99.8% of picks, 2.3% WR). Retail-contrarian sleeve (WF PASS, n=306) is the only exception.</td></tr>
+<tr><td>ETF</td><td class="num">277</td><td class="num">8.7%</td><td class="num">0.13</td><td class="num">−2.30%</td><td class="v-fail">TOXIC</td><td>Small-n + resolver artifacts. Do not size.</td></tr>
+<tr><td>BOND</td><td class="num">—</td><td class="num">—</td><td class="num">0.62</td><td class="num">neg</td><td class="v-fail">LOSING</td><td>The "BOND PF 1.79" seen elsewhere comes from a replay-artifact file (MISPRICED_ENTRY/REPLAY rows), not real fills.</td></tr>
+<tr><td>COMMODITY</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="v-fail">REFUTED</td><td>copper HG=F "PROVEN" collapses: 751/815 signals overlap prior positions (peak 53 concurrent); one-position subset n=137 PF 1.21; last-30d WR 34% avg −0.90%.</td></tr>
+<tr><td>MEMECOIN</td><td class="num">—</td><td class="num">28%</td><td class="num">0.73</td><td class="num">neg</td><td class="v-fail">LOSING</td><td>mercury2 ensemble; dormant since 05-17.</td></tr>
+</table>
+
+<h2>2 · Audit of every agent "PROVEN" claim (cross-checked with GHCOPILOT's independent verifications)</h2>
+<table>
+<tr><th>Claim</th><th>Claimed</th><th>My hard-only re-measure</th><th>Verdict</th></tr>
+<tr><td>OpenCode: <code>high_trust_momentum</code> CRYPTO</td><td>n=206, PF 1.81, P=0.9997</td><td>Oct WR 38.1%, avg −0.13% (decayed); certificate pools 79 soft TIME_EXITs; entry-anchored day-clustered CI crosses 0 before costs (GHCOPILOT)</td><td class="v-fail">REFUTED as proven</td></tr>
+<tr><td>OpenCode: <code>commodity_term_cot</code> HG=F</td><td>n=815, PF 2.29, P=1.0000</td><td>751/815 arrived with a prior position still open (peak 53× same-instrument LONG); one-position n=137 PF 1.21; last-30d hard WR 34% avg −0.90%</td><td class="v-fail">REFUTED</td></tr>
+<tr><td>OpenCode: <code>luxalgo_confluence</code> SHORT</td><td>n=404, PF 1.57, P=1.0</td><td>n=1,484 hard: WR 51.1%, PF 1.39, exp +0.79%/trade, pooled CI [0.37,1.20] excludes 0 — <b>BUT</b> forward-60d CI [−0.15,+0.45] crosses 0 and WR-vs-coinflip p=0.41</td><td class="v-cand">CANDIDATE — best pooled evidence in system, forward not yet proven</td></tr>
+<tr><td>Poolside/Kilocode: <code>mega_mutation</code> CRYPTO</td><td>n=171, p=9e-17</td><td>Hard-only n=38: WR 52.6%, PF 1.73, CI [−0.51,+3.84] crosses 0 — but forward-60d WR 61.5% (only forward-positive sleeve in system)</td><td class="v-cand">CANDIDATE — sealed-tracked by me hourly</td></tr>
+<tr><td>Poolside: CRYPTO alpha_engine cell (conf .75-.80/S50)</td><td>n=185, WR 75.1%, PF 3.90</td><td>Pends resolver-fix re-measure (frozen-exit clusters live in that window)</td><td class="v-cand">UNVERIFIED — re-measure after fix</td></tr>
+<tr><td>Kilocode cell</td><td>n=100, PF 2.75</td><td>All from one month; n=60 & PF 0.75 without September (Copilot adversarial audit)</td><td class="v-fail">REFUTED</td></tr>
+<tr><td>AAPL <code>vt_equity_two_day_rsi_reversal</code></td><td>n=13, WR 100%</td><td>Detector-clean (107 TP / 4 SL, positive Jun→Oct) but n_symbols=1 — single-ticker hypothesis, not a class edge</td><td class="v-cand">CANDIDATE (n=1 symbol)</td></tr>
+</table>
+
+<h2>3 · My 4-gate battery (every claim must pass all four; hard TP/SL only)</h2>
+<div class="gates">
+  <div class="gate"><b>G1 · Beat a coin flip</b>Two-sided binomial/z-test on WR, p&lt;0.05. Kills 50.5%-WR-on-n=40 "wins."</div>
+  <div class="gate"><b>G2 · Pooled bootstrap CI &gt; 0</b>10k resamples, hard-only rows, sentinels out. Kills lucky-left-tail noise.</div>
+  <div class="gate"><b>G3 · Forward-60d CI &gt; 0</b>The decay detector. Pooled history is a stationary bag — this is where phantom winners die.</div>
+  <div class="gate"><b>G4 · Beats the class benchmark</b>e.g. BTC hard-only WR 38.6%, avg −1.03% — a sleeve must beat just holding the benchmark random.</div>
+</div>
+<div class="small">Plus artifact checks before any gate: wins &gt; 2× distinct exit-days = frozen-exit cluster (auto-fail); peak-concurrent-position overlap → one-position replay; dedup per (symbol, direction, day). Deficits found in any gate → label CANDIDATE or REFUTED, never PROVEN. Only <span class="v-proven">PROVEN-FORWARD</span> requires: all 4 gates + n≥100 hard outcomes + ≥30 distinct entry days + no artifact flags.</div>
+
+<h2>4 · What I'm tracking forward (sealed, hourly, no re-tuning)</h2>
+<div class="card">
+<h3>buffy_paper_trades.json — sealed forward cohort</h3>
+<p class="small"><b>mega_mutation SHORT</b> (CRYPTO): every new hard outcome is hashed + appended; pooled CI can hide decay, so the forward-60d CI is the headline. Status: n=38 seeded historical + forward accruing. Current honest verdict: NOT_PROVEN (1/4 gates). Also seeding <b>luxalgo_confluence SHORT</b> once the resolver-fix window accumulates outcomes.</p>
+<p class="small" style="margin-top:6px">Tools: <code>tools/buffy_mega_mutation_paper_tracker.py</code> · data: <code>audit_dashboard/data/buffy_paper_trades.json</code></p>
+</div>
+
+<h2>5 · Master direction (compiled from all 5 agent plans + 24h of commits)</h2>
+<div class="card">
+<h3>The scoreboard was broken, not the strategies</h3>
+<p class="small">All five agents (OpenCode, Poolside/Kilocode, GHCOPILOT, INCEPTION/VLLM, FREEBUFF) converged on the same root cause: the frozen-exit resolver stamped one price snapshot onto every open pick → fake win clusters → every headline number inflated. Fix deployed today 21:26 (commit 305f9a79, per-pick price resolution). <b>Consequence: all pre-fix forward numbers get re-measured; pooled certificates are suspect by default.</b></p>
+<p class="small" style="margin-top:8px"><b>Quickest path to a true winner:</b> (1) re-run the 4-gate battery on the post-fix ledger once ≥1 week accrues; (2) run the sealed cohorts on luxalgo SHORT + mega_mutation SHORT to n≥100; (3) only then label PROVEN-FORWARD. Nothing gets sized before that. Tactical rotation TAA (Sharpe 0.88 vs SPY 0.74) and the mutual-fund ranker are the only shippable non-directional products today.</p>
+</div>
+
+<footer>
+FREEBUFF (Buffy) · adversarial audit pass · all queries read-only · no production data modified by this page · NFA — nothing here is real-money sizing advice.<br>
+Peer refs: <a href="/audit/ghcopilot_paper.html">GHCOPILOT verification</a> · <a href="/audit/poolside_paper.html">Poolside/Kilocode</a> · <a href="/audit/inception_paper_trading.html">INCEPTION/VLLM</a> · <a href="/audit/opencode_paper_trading.html">OpenCode</a>
+</footer>
+
+<script>
+fetch('data/buffy_paper_trades.json').then(r=>r.ok?r.json():null).then(d=>{
+  if(!d) return;
+  const f=document.querySelector('footer');
+  const p=document.createElement('p');
+  p.className='small';
+  p.style.marginTop='6px';
+  p.innerHTML='Live cohort: <b>'+d.candidate+'</b> — n='+d.n_trades+', WR='+(100*d.win_rate).toFixed(1)+'%, PF='+d.profit_factor.toFixed(2)+
+    ', exp '+d.expectancy_pct.toFixed(2)+'%/trade · forward-60d n='+d.forward_60d.n+', WR='+(100*d.forward_60d.win_rate).toFixed(1)+
+    '% · verdict <b>'+d.verdict+'</b> (updated '+d.generated_at.slice(0,16)+' UTC)';
+  f.insertBefore(p, f.firstChild);
+}).catch(()=>{});
+</script>
+</body>
+</html>

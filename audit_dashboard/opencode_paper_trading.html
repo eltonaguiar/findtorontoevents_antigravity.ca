@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OpenCode/Beam Paper Trading — Proven Picks Analysis</title>
+<style>
+body { font-family: system-ui, sans-serif; background:#0f172a; color:#e2e8f0; margin:0; padding:20px; }
+h1 { color:#38bdf8; }
+h2 { color:#7dd3fc; margin-top:24px; }
+.card { background:#1e293b; border-radius:8px; padding:16px; margin:12px 0; }
+a { color:#38bdf8; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th,td { padding:8px; border-bottom:1px solid #334155; text-align:left; }
+.badge { padding:2px 8px; border-radius:4px; font-size:12px; }
+.candidate { background:#ca8a04; color:#fff; }
+.proven { background:#16a34a; color:#fff; }
+.warn { background:#dc2626; color:#fff; }
+</style>
+</head>
+<body>
+<h1>OpenCode/Beam Paper Trading Monitor</h1>
+<p>Agent: <strong>OPENCODE_BEAM</strong> (opencode/beam-free) · Model: beam-free · Updated: 2026-10-22</p>
+
+<div class="card">
+  <h2>Primary candidate — luxalgo_confluence SHORT (CRYPTO)</h2>
+  <p><span class="badge candidate">CANDIDATE</span> (downgraded from PROVEN after independence/cost audit)</p>
+  <table>
+    <tr><th>Metric</th><th>Value</th></tr>
+    <tr><td>Symbols</td><td>XRPUSDT, ETHUSDT, BTCUSDT, STXUSDT</td></tr>
+    <tr><td>n (hard-resolved)</td><td>404</td></tr>
+    <tr><td>Win rate (aggregate)</td><td>56.9%</td></tr>
+    <tr><td>Profit factor (aggregate)</td><td>1.57</td></tr>
+    <tr><td>Bootstrap P(Expectancy&gt;0)</td><td>1.0000</td></tr>
+    <tr><td>Bootstrap 95% CI</td><td>[+0.283, +0.880]%/trade</td></tr>
+    <tr><td>Strict gate (INCEPTION)</td><td>4 cells pass (non-artifact, test n≥10, PF≥1.15, WR≥0.5, train PF&gt;1)</td></tr>
+    <tr><td>One-position-at-a-time</td><td>n=104, PF 1.29 gross → 1.20 (0.10% cost) → 1.13 (0.20% cost)</td></tr>
+    <tr><td>Monthly consistency</td><td>Jul WR 0.47, Aug avg -0.29 (inconsistent)</td></tr>
+  </table>
+  <p>Certificate: <a href="/audit/data/winner_certificate_luxalgo_confluence_short_portfolio.json">winner_certificate_luxalgo_confluence_short_portfolio.json</a></p>
+</div>
+
+<div class="card">
+  <h2>Per-asset-class best candidates (strict non-artifact gate + bootstrap P&gt;0≥0.95)</h2>
+  <table>
+    <tr><th>Asset class</th><th>Strategy</th><th>Symbol</th><th>n</th><th>Train PF</th><th>Test PF</th><th>P(>0)</th><th>Status</th></tr>
+    <tr><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>regime_accumulation</td><td>USDCAD=X</td><td>204</td><td>3.88</td><td>2.74</td><td>1.0000</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>prediction_market_consensus</td><td>BNBUSDT</td><td>59</td><td>1.94</td><td>1.97</td><td>0.9954</td><td>Candidate</td></tr>
+    <tr><td>FOREX</td><td>cta_fx_multifactor</td><td>USDJPY=X</td><td>75</td><td>1.96</td><td>1.79</td><td>0.9930</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>64</td><td>1.66</td><td>1.99</td><td>0.9730</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>luxalgo_confluence</td><td>ETHUSDT</td><td>132</td><td>1.48</td><td>1.47</td><td>0.9728</td><td>Candidate</td></tr>
+    <tr><td>CRYPTO</td><td>regime_accumulation</td><td>AAPL</td><td>76</td><td>1.90</td><td>5.93</td><td>1.0000</td><td>Suspicious (test PF jump)</td></tr>
+    <tr><td>FUTURES</td><td>commodity_term_cot</td><td>HG=F</td><td>815</td><td>2.21</td><td>2.41</td><td>1.0000</td><td>Artifact-flagged (751/815 overlap)</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Devil's advocate audit (truth check)</h2>
+  <ul>
+    <li><strong>No strategy is PROVEN.</strong> All candidates fail at least one strict test (independence, cost, or monthly consistency).</li>
+    <li><strong>luxalgo_confluence SHORT:</strong> aggregate P=1.0 but one-position-at-a-time PF drops to 1.13 after 0.20% cost; monthly inconsistent.</li>
+    <li><strong>commodity_term_cot HG=F:</strong> bootstrap P=1.0 but 751/815 signals overlap earlier positions; peak 53 simultaneous LONGs; one-position-at-a-time PF 1.21 → -0.0277%/trade after cost. Downgraded.</li>
+    <li><strong>smart_money:</strong> 72.1% WR / PF 8.32 — suspiciously high; likely soft resolution.</li>
+    <li><strong>multi_asset_copytrader:</strong> 88.8% WR / PF 8.02 — likely soft/zero-loss resolution.</li>
+    <li><strong>Predictions:</strong> PF 4.37 inflated by single +370,850% outlier.</li>
+    <li><strong>Data quality:</strong> 635 artifact cells (frozen-exit), 9.4% null pnl in CRYPTO, 26.8% zero pnl, only AlphaEngine + mega_mutation are live pipelines.</li>
+    <li><strong>Consensus:</strong> only CRYPTO and EQUITY have resolved consensus picks; FOREX/COMMODITY have 1 each.</li>
+  </ul>
+  <p><em>Verdict: No true winner yet. Best candidate is luxalgo_confluence SHORT but requires 100+ forward TP/SL outcomes and independence verification before promotion.</em></p>
+</div>
+
+<div class="card">
+  <h2>Paper trading status</h2>
+  <p>Status JSON: <a href="/audit/data/opencode_paper_trading_status.json">opencode_paper_trading_status.json</a></p>
+  <p>Update job: <code>python3 tools/opencode_paper_trading_update.py</code> (run hourly via cron/GHA)</p>
+  <p>Validation harness: <code>python3 tools/validate_winner.py --strategy &lt;name&gt; --source AlphaEngine [--symbol SYM]</code></p>
+  <p><em>NFA — research only. Not financial advice.</em></p>
+</div>
+<p><a href="/audit/index.html">Back to Audit Dashboard</a></p>
+</body>
+</html>
