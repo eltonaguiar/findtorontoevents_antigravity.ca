@@ -25,15 +25,22 @@ DB_PASS = os.getenv("AUDIT_DB_PASS", "stocks1234560")
 DB_NAME = os.getenv("AUDIT_DB_NAME", "ejaguiar1_stocks")
 
 
-def fetch(strategy, source):
+def fetch(strategy, source, symbol=None):
     conn = pymysql.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASS,
                            database=DB_NAME, connect_timeout=15)
     cur = conn.cursor()
-    cur.execute(
-        "SELECT pnl_pct FROM at_raw_picks "
-        "WHERE source_system=%s AND strategy=%s AND status IN ('WON','LOST')",
-        (source, strategy),
-    )
+    if symbol:
+        cur.execute(
+            "SELECT pnl_pct FROM at_raw_picks "
+            "WHERE source_system=%s AND strategy=%s AND symbol=%s AND status IN ('WON','LOST')",
+            (source, strategy, symbol),
+        )
+    else:
+        cur.execute(
+            "SELECT pnl_pct FROM at_raw_picks "
+            "WHERE source_system=%s AND strategy=%s AND status IN ('WON','LOST')",
+            (source, strategy),
+        )
     pnls = [float(r[0]) for r in cur.fetchall()]
     conn.close()
     return pnls
@@ -65,9 +72,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--strategy", required=True)
     ap.add_argument("--source", default="AlphaEngine")
+    ap.add_argument("--symbol", default=None)
     args = ap.parse_args()
 
-    pnls = fetch(args.strategy, args.source)
+    pnls = fetch(args.strategy, args.source, args.symbol)
     if len(pnls) < 30:
         print("INSUFFICIENT_DATA", len(pnls))
         sys.exit(1)
@@ -78,6 +86,7 @@ def main():
     cert = {
         "strategy": args.strategy,
         "source_system": args.source,
+    "symbol": args.symbol,
         "n_hard_resolved": len(pnls),
         "win_rate": w,
         "profit_factor": pf,
