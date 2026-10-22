@@ -690,6 +690,38 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
     return None
 
 
+def _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price):
+    """Resolve a PER-PICK reference price instead of reusing one frozen
+    snapshot for every pick of a symbol (Bug: frozen-exit stamping).
+
+    The old main() loop fetched prices once per run (line ~1117) and stamped
+    the same ``current_price`` onto every unresolved pick of that symbol
+    (line ~1265). When several picks of the same symbol resolved in one run,
+    they all received the identical exit price + resolved_at -> fake clustered
+    "wins" (artifact cells). This helper returns a pick-specific price:
+
+      1. Prefers the latest intrabar OHLC bar whose open time is >= the pick's
+         entry timestamp (entry-anchored; avoids stale-window look-ahead).
+      2. Falls back to the global live snapshot ONLY when no usable bar exists —
+         byte-identical to legacy behavior in that case.
+
+    Returns a float price, or the passed ``current_price`` (may be None).
+    """
+    bars = ohlc_bars_cache.get(norm_sym) or []
+    entry_ms = _parse_ts_ms(pick.get("timestamp"))
+    if entry_ms is not None and bars:
+        # Chronological: the FIRST bar at/after entry is the pick's own close
+        # (entry-anchored; different entries anchor to different bars, so each
+        # pick resolves against its own price, not one shared snapshot).
+        for b in bars:
+            ts = b.get("timestamp")
+            if ts is not None and ts >= entry_ms:
+                close = b.get("close")
+                if close:
+                    return float(close)
+    return current_price
+
+
 def _normalize_symbol(sym):
     """Normalize symbol for price lookup (BTC-USD -> BTCUSDT)."""
     if not sym:
@@ -1427,7 +1459,10 @@ def main():
             # exclude/flag these. (Bug 1A: when bars exist but are older-than-pick stale,
             # intrabar replays the wrong window — entry-anchored fetch fix is pending.)
             if result is None:
-                result = check_tp_sl(pick, current_price)
+                # Frozen-exit fix (2026-10-22): resolve this pick against its own
+                # price, not the single run-wide snapshot reused for every symbol pick.
+                pp_price = _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price)
+                result = check_tp_sl(pick, pp_price)
                 if result:
                     _res_method = "close_approx"
             if result:
@@ -1446,7 +1481,7 @@ def main():
                     "status": "CLOSED",
                     "resolution_method": _res_method,  # "intrabar" (accurate) | "close_approx" (Bug 1B)
                     "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                    "current_price_at_resolve": current_price,
+                    "current_price_at_resolve": pp_price,
                     "_resolver_version": RESOLVER_VERSION,
                     "_resolver_source": RESOLVER_SOURCE_ID,
                 }
@@ -1466,20 +1501,22 @@ def main():
             pick_dt = _parse_timestamp(pick["timestamp"])
             _max_hold = _max_hold_hours_for(pick)
             if pick_dt and (now - pick_dt).total_seconds() > _max_hold * 3600:
-                # Time exit — compute PnL at current price
-                pnl = _compute_pnl(entry, current_price, pick["direction"])
+                # Time exit — compute PnL at the PICK's OWN price (frozen-exit fix
+                # 2026-10-22), falling back to the run-wide snapshot when no bars.
+                pp_price = _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price)
+                pnl = _compute_pnl(entry, pp_price, pick["direction"])
                 # 2026-10-18: a failed price fetch must not be published as a
                 # flat 0% close (see _priceless_close).
-                if _priceless_close(current_price, entry):
+                if _priceless_close(pp_price, entry):
                     exit_price_out, pnl_out = None, None
                     _mtm = "unresolved"
                     log.warning(
                         "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
                         " -> recorded as UNRESOLVED, not a 0%% flat",
-                        system_name, pick.get("symbol"), entry, current_price,
+                        system_name, pick.get("symbol"), entry, pp_price,
                     )
                 else:
-                    exit_price_out, pnl_out = current_price, pnl
+                    exit_price_out, pnl_out = pp_price, pnl
                     _mtm = "measured"
 
                 resolved = {
