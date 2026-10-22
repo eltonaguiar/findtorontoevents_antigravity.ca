@@ -30,7 +30,7 @@ We want to build a trading system that makes more money than simply buying an in
 | Worst calendar year | −56 to −60% | −73.6% | −18.2% |
 
 **Why it FAILS:**
-1. Daily mark-to-market MDD ≈ −80% (gate: ≤20%) — the earlier "12.5%" figure measured only closed trades; every drop while holding was invisible
+1. Daily mark-to-market MDD ≈ −80% (gate: ≤20%) — the earlier closed-trade-only figure ignored every drop while holding (it checked the account only when a trade closed)
 2. It does NOT beat just holding Bitcoin (lower CAGR, marginally lower MDD)
 3. MC (random entry dates, same hold lengths, 2,000 runs): 77th percentile (gate: ≥95th) — FAIL
 4. DSR (Bailey–López de Prado, N=65 trials across all agents): ≈0 (gate: >0.95) — FAIL
