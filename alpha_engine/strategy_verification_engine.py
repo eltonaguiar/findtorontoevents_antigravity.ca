@@ -591,7 +591,7 @@ def verify_strategy(
     pbo = compute_pbo_parameter_perms(pnl_costed)
 
     # 5. DSR
-    dsr = compute_deflated_sharpe(costed_sharpe, n_trials=n, n_observations=n,
+    dsr = compute_deflated_sharpe(costed_sharpe, n_trials=n_trials, n_observations=n,
                                    base_sharpe=DSR_CONFIG['base_sharpe']
                                    if 'base_sharpe' in DSR_CONFIG else 0.0,
                                    conf_level=DSR_CONFIG['conf_level'])
