@@ -8476,7 +8476,7 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
     # shadow rule. When OFF: no behavior change. When ON: net_of_cost_pnl_pct
     # is added to every normalized pick; downstream PF aggregators can
     # opt in by reading the new field.
-    if os.environ.get("HF_NET_PF_ENABLED", "0") == "1":
+    if MEASUREMENT_HYGIENE_V1 or os.environ.get("HF_NET_PF_ENABLED", "0") == "1":
         try:
             from audit_trail.transaction_cost_model import apply_costs_to_pick as _apply_costs
             _pick = _apply_costs(_pick)

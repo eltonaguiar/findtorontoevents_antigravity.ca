@@ -18,8 +18,9 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _restore_env(monkeypatch):
-    """Always restore HF_NET_PF_ENABLED to its un-set state between tests."""
+    """Always restore the net-of-cost env flags to their un-set state between tests."""
     monkeypatch.delenv("HF_NET_PF_ENABLED", raising=False)
+    monkeypatch.delenv("MEASUREMENT_HYGIENE_V1", raising=False)
     yield
 
 
@@ -157,3 +158,24 @@ def test_malformed_pick_short_circuits_before_overlay():
     dg = _reload_dg()
     out = dg._normalize_pick("not a dict", "test_source")
     assert out.get("skip") is True
+
+
+# ─────────────────────────────────────────────────────────────────
+# Measurement-hygiene (V1) flag: net-of-cost runs UNCONDITIONALLY
+# for the closed-ledger path even when HF_NET_PF_ENABLED is OFF.
+# ─────────────────────────────────────────────────────────────────
+
+def test_stamp_after_cost_fields_unconditional(monkeypatch):
+    """When MEASUREMENT_HYGIENE_V1=1, net_of_cost_pnl_pct is populated
+    even if HF_NET_PF_ENABLED=0."""
+    monkeypatch.setenv("MEASUREMENT_HYGIENE_V1", "1")
+    monkeypatch.setenv("HF_NET_PF_ENABLED", "0")
+    dg = _reload_dg()
+    out = dg._normalize_pick(_pick(pnl_pct=5.0), "test_source")
+    assert "net_of_cost_pnl_pct" in out, \
+        "MEASUREMENT_HYGIENE_V1=1 must stamp net_of_cost_pnl_pct even with HF_NET_PF_ENABLED=0"
+    assert out["net_of_cost_pnl_pct"] is not None
+    # CRYPTO_SPOT total cost = 0.20 + 0.10 + 0.06 = 0.36% RT
+    # 5.0 - 0.36 = 4.64
+    assert abs(out["net_of_cost_pnl_pct"] - 4.64) < 0.01, \
+        f"Expected ~4.64 net for 5.0 gross CRYPTO; got {out['net_of_cost_pnl_pct']}"
