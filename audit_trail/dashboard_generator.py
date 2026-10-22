@@ -3255,6 +3255,9 @@ _KNOWN_CRYPTO = {
     "PEPE",
     "ARB",
     "OP",
+    # Top-10 winner cohort (2026-10-22): BNB is unambiguously crypto, but
+    # momentum_breakout stamps asset_class="EQUITY"; lock in as CRYPTO.
+    "BNB",
 }
 _KNOWN_EQUITY = {
     # Indices & ETFs
@@ -3458,6 +3461,14 @@ def _derive_asset_class(
         return True
 
     if _symbol_strongly_crypto(stripped_symbol):
+        return "CRYPTO"
+
+    # 1a. Unambiguous known crypto tokens (BNB, SOL, AVAX, ...) trump weak
+    # upstream hints. Some strategies (e.g. momentum_breakout) stamp
+    # asset_class="EQUITY" on crypto symbols; that must not silently drag the
+    # token into the EQUITY tile. Guard: only skip a token when it is also a
+    # known equity ticker (e.g. COIN/MSTR/SHOP are real stocks, never here).
+    if stripped_symbol in _KNOWN_CRYPTO and stripped_symbol not in _KNOWN_EQUITY:
         return "CRYPTO"
 
     # 1b. Unambiguous forex/commodity: =X or =F suffix overrides upstream hints.
@@ -4809,6 +4820,40 @@ def _is_auto_expired_pick(pick: dict) -> bool:
     return False
 
 
+_MIN_HOLD_SECONDS = 60  # any resolved "trade" held < 60s is a synthetic/instant fill
+
+
+def _pick_hold_duration_seconds(pick: dict) -> float | None:
+    """Elapsed hold (entry→exit) in seconds, or None if not computable.
+
+    Only returns a value when BOTH an entry and an exit timestamp are present.
+    When either is missing we return None so callers do NOT gate (we never
+    over-reject rows we cannot time).
+    """
+    if not isinstance(pick, dict):
+        return None
+    en_raw = (
+        pick.get("entry_time")
+        or pick.get("entry_ts")
+        or pick.get("opened_at")
+        or pick.get("entry_time_est")
+        or pick.get("timestamp")  # genome/mega_mutation rows stamp entry here
+        or pick.get("created_at")
+    )
+    ex_raw = (
+        pick.get("exit_time")
+        or pick.get("exit_ts")
+        or pick.get("exit_timestamp")
+        or pick.get("closed_at")
+        or pick.get("exit_time_est")
+    )
+    en = _parse_pick_timestamp_utc(en_raw) if en_raw else None
+    ex = _parse_pick_timestamp_utc(ex_raw) if ex_raw else None
+    if en is None or ex is None:
+        return None
+    return (ex - en).total_seconds()
+
+
 def _is_valid_resolved_pick(pick: dict) -> bool:
     """Return True only for picks that should count in performance metrics.
 
@@ -4851,6 +4896,20 @@ def _is_valid_resolved_pick(pick: dict) -> bool:
     if _price_magnitude_corrupt(pick):
         return False
 
+    # Reject placeholder/sentinel exits: exit_price <= 0 (or missing while pnl
+    # recorded as 0) stamps a price-fetch FAILURE as a flat close — NOT a real
+    # trade outcome (Grok R7: no placeholder exits). Concentrated in stocksunify2
+    # (EQUITY) and signal_validation (FOREX) TIME_EXIT rows. Counting them as
+    # "flat" inflates flat counts and deflates WR/PF for those classes.
+    _raw_exit = pick.get("exit_price")
+    if _raw_exit is not None:
+        try:
+            _exit_f = float(_raw_exit)
+        except (TypeError, ValueError):
+            _exit_f = 0.0
+        if _exit_f <= 0:
+            return False
+
     # Reject historical rows from strategies/symbols we've since blocked.
     # These rows can't be re-traded but stay in the ledger and drag down
     # current performance metrics. Example: 7 historical TRXUSDT trades
@@ -4875,6 +4934,16 @@ def _is_valid_resolved_pick(pick: dict) -> bool:
 
     terminal_status = str(pick.get("status", "") or "").upper().strip()
     if terminal_status in _NON_PERFORMANCE_STATUSES:
+        return False
+
+    # Reject micro-hold / instant synthetic fills (opened and closed within
+    # seconds at same-tick prices). These are backfill/artifact rows, not real
+    # trades, and counting them inflates WR/PF/total PnL with phantom wins.
+    # Evidence: genome/data/closed_picks.json mega_mutation_* — 955 rows held
+    # <60s, 583 recorded WON/TP_HIT, contributing ~+2200% phantom PnL.
+    # Gated ONLY when both timestamps exist; never reject on missing timestamps.
+    _hold_secs = _pick_hold_duration_seconds(pick)
+    if _hold_secs is not None and _hold_secs < _MIN_HOLD_SECONDS:
         return False
 
     if exit_reason in ("", "UNKNOWN"):
@@ -14474,7 +14543,347 @@ def _apply_alert_shadow_demotion(active_picks, perf_alerts, shadow_probation):
     return active_picks
 
 
+# ── Measurement Hygiene V1 (Sub-project 1 / Task 1) ──
+# Implemented per docs/superpowers/specs/2026-10-22-measurement-fix-design.md
+# Gated behind MEASUREMENT_HYGIENE_V1 (default OFF → byte-identical output).
+
+
+def stamp_net_of_cost(rows: list[dict]) -> list[dict]:
+    """Stage B: unconditionally stamp net-of-cost PnL on every closed pick.
+
+    Uses transaction_cost_model.apply_costs_to_pick to add
+    `net_of_cost_pnl_pct`, `cost_cleared`, `_total_cost_pct`, `_cost_assumption`
+    alongside the existing gross `pnl_pct`. The original `pnl_pct` is NEVER
+    overwritten (downstream consumers depend on it).
+
+    Fail-open: if the cost model raises on a row, the row is returned unchanged
+    with `net_of_cost_pnl_pct = None` and a reason recorded.
+    """
+    try:
+        from audit_trail.transaction_cost_model import apply_costs_to_pick
+    except ImportError:
+        return rows
+    out = []
+    for p in rows:
+        if not isinstance(p, dict):
+            out.append(p)
+            continue
+        try:
+            enriched = apply_costs_to_pick(p)
+            out.append(enriched)
+        except Exception:
+            p = dict(p)
+            p.setdefault("net_of_cost_pnl_pct", None)
+            p.setdefault("cost_cleared", None)
+            p.setdefault("_cost_assumption", "error")
+            p.setdefault("_total_cost_pct", None)
+            out.append(p)
+    return out
+
+
+def _profit_factor(net_pnls: list[float]) -> float | None:
+    """Net profit factor: gross wins / gross losses. None if undefined."""
+    wins = sum(p for p in net_pnls if p > 0)
+    losses = sum(-p for p in net_pnls if p < 0)
+    if losses <= 0:
+        return float("inf") if wins > 0 else None
+    return wins / losses
+
+
+def _max_drawdown(pnls: list[float]) -> float:
+    """Max drawdown of the compounded equity curve starting at 1.0."""
+    equity = 1.0
+    peak = 1.0
+    max_dd = 0.0
+    for r in pnls:
+        equity *= (1.0 + r)
+        if equity > peak:
+            peak = equity
+        dd = (peak - equity) / peak if peak > 0 else 0.0
+        if dd > max_dd:
+            max_dd = dd
+    return round(max_dd, 6)
+
+
+# ── LEGACY (superseded by Task 4: audit_trail/ledger_gates.py) ──
+# Not called by generate(); kept only for reference. The authoritative ledger
+# gate evaluator is audit_trail.ledger_gates.compute_ledger_gates.
+def _compute_ledger_gates_legacy(rows: list[dict]) -> tuple[list[dict], dict]:
+    """Stage C: group rows into ledgers, apply the 4 quick-fix gates.
+
+    Ledger key = (strategy, asset_class, direction).  For each ledger the
+    following statistics and gates are computed and the verdict is stamped
+    back onto every row in that ledger:
+
+    Gates (all required for PASS):
+      G1  n >= 100
+      G2  pf_net >= 1.5  (net of round-trip costs)
+      G3  pf_net_ci_lower >= 1.2  (cluster bootstrap, seed=42)
+      G4  mdd <= 0.20
+
+    Rows whose ledger fails any gate get:
+      ledger_gate_pass = False
+      ledger_gate_reasons = [list of failing gate names]
+      ledger_status = "UNVERIFIED::<reason>"
+
+    Returns (rows_with_stamps, measurement_hygiene_block).
+    The block is a dict with: { "ledgers": [...], "n_unverified": int, "total_ledgers": int }
+    """
+    # Cluster bootstrap helper
+    def _pf_ci_lower(pnls, clusters=None, n_boot=2000, seed=42):
+        import random
+        from collections import defaultdict as _dd
+        n = len(pnls)
+        if n < 5:
+            return None
+        rng = random.Random(seed)
+        if clusters:
+            groups = _dd(list)
+            for c, p in zip(clusters, pnls):
+                groups[c].append(p)
+            keys = list(groups.keys())
+            draws = []
+            for _ in range(n_boot):
+                sample = []
+                for _ in range(len(keys)):
+                    sample.extend(groups[rng.choice(keys)])
+                pf = _profit_factor(sample)
+                if pf is not None and not math.isinf(pf):
+                    draws.append(pf)
+        else:
+            draws = []
+            for _ in range(n_boot):
+                sample = [pnls[rng.randrange(n)] for _ in range(n)]
+                pf = _profit_factor(sample)
+                if pf is not None and not math.isinf(pf):
+                    draws.append(pf)
+        if len(draws) < n_boot * 0.8:
+            return None
+        draws.sort()
+        idx = max(0, min(len(draws) - 1, int(0.05 * (len(draws) - 1))))
+        return round(draws[idx], 4)
+
+    # Group into ledgers
+    ledgers: dict = defaultdict(list)
+    clusters_per_ledger: dict = defaultdict(list)
+    for r in rows:
+        if not isinstance(r, dict):
+            continue
+        ac = str(r.get("asset_class") or r.get("category") or "").upper().strip()
+        strat = str(r.get("strategy") or r.get("source_system") or "").strip()
+        direction = str(r.get("direction") or "").upper().strip()[:1] or "U"
+        key = (strat, ac, direction)
+        net_pnl = r.get("net_of_cost_pnl_pct")
+        if net_pnl is None:
+            net_pnl = r.get("pnl_pct")
+        try:
+            net_pnl = float(net_pnl) if net_pnl is not None else 0.0
+        except (TypeError, ValueError):
+            net_pnl = 0.0
+        ledgers[key].append(net_pnl)
+        # cluster key: symbol + date
+        ts = r.get("closed_at") or r.get("timestamp") or ""
+        date_str = str(ts)[:10] if ts else "UNKNOWN"
+        clusters_per_ledger[key].append(f"{_normalize_symbol(r.get('symbol',''))}|{date_str}")
+
+    # Evaluate gates per ledger and stamp back
+    ledger_results = {}
+    n_unverified = 0
+    for key, pnls in ledgers.items():
+        strat, ac, direction = key
+        n = len(pnls)
+        pf_gross = _profit_factor([float(p) for p in pnls]) or 0.0
+        pf_net_val = _profit_factor(pnls) or 0.0
+        mdd = _max_drawdown(pnls)
+        ci_lb = _pf_ci_lower(pnls, clusters_per_ledger.get(key))
+
+        reasons = []
+        if n < 100:
+            reasons.append(f"n={n}<100")
+        if pf_net_val is None or pf_net_val < 1.5:
+            reasons.append(f"pf_net={round(pf_net_val, 4) if pf_net_val else 'NA'}<1.5")
+        if ci_lb is None or ci_lb < 1.2:
+            reasons.append(f"pf_ci_lb={ci_lb if ci_lb else 'NA'}<1.2")
+        if mdd > 0.20:
+            reasons.append(f"mdd={mdd}>0.20")
+
+        passed = len(reasons) == 0
+        if not passed:
+            n_unverified += n
+        ledger_results[key] = {
+            "strategy": strat,
+            "asset_class": ac,
+            "direction": direction,
+            "n": n,
+            "pf_gross": round(pf_gross, 6),
+            "pf_net": round(pf_net_val, 6) if pf_net_val else None,
+            "pf_net_ci_lower": ci_lb,
+            "mdd": mdd,
+            "ledger_gate_pass": passed,
+            "ledger_gate_reasons": reasons,
+            "ledger_status": "PASS" if passed else f"UNVERIFIED: {'; '.join(reasons)}",
+        }
+
+    # Stamp back onto rows
+    for r in rows:
+        if not isinstance(r, dict):
+            continue
+        ac = str(r.get("asset_class") or r.get("category") or "").upper().strip()
+        strat = str(r.get("strategy") or r.get("source_system") or "").strip()
+        direction = str(r.get("direction") or "").upper().strip()[:1] or "U"
+        key = (strat, ac, direction)
+        lr = ledger_results.get(key)
+        if lr:
+            r["ledger_gate_pass"] = lr["ledger_gate_pass"]
+            r["ledger_gate_reasons"] = lr["ledger_gate_reasons"]
+            r["ledger_status"] = lr["ledger_status"]
+
+    block = {
+        "enabled": True,
+        "ledgers": list(ledger_results.values()),
+        "n_unverified": n_unverified,
+        "total_ledgers": len(ledger_results),
+        "n_verified": len(rows) - n_unverified,
+        "gates": ["n>=100", "pf_net>=1.5", "pf_net_ci_lower>=1.2", "mdd<=0.20"],
+    }
+    return rows, block
+
+
+def compound_overlap_aware(picks: list[dict]) -> float | None:
+    """Stage A: overlap-aware compound return.
+
+    Replaces the sequential 100%-of-capital model that explodes when N picks
+    share the same exit timestamp (batch close).  Groups picks into
+    non-overlapping (symbol, direction) cohorts and compounds within each.
+
+    Returns the geometric total return, or None if no valid picks.
+    """
+    if not picks:
+        return None
+    # Group by (symbol, direction) — concurrent positions in the same
+    # symbol+direction are treated as one capital commitment.
+    groups: dict = defaultdict(list)
+    for p in picks:
+        if not isinstance(p, dict):
+            continue
+        pnl = p.get("net_of_cost_pnl_pct")
+        if pnl is None:
+            pnl = p.get("pnl_pct")
+        if pnl is None:
+            continue
+        try:
+            pnl = float(pnl) / 100.0 if abs(float(pnl)) > 1.0 else float(pnl)
+        except (TypeError, ValueError):
+            continue
+        key = (_normalize_symbol(p.get("symbol", "")), str(p.get("direction", "")).upper())
+        groups[key].append(pnl)
+
+    # Compound within each symbol-direction group, then aggregate.
+    group_returns = []
+    for _key, pnls in groups.items():
+        # Sort by timestamp for within-group ordering
+        # (picks in the same symbol+direction may overlap; we use mean pnl
+        # as the representative per-group return to avoid double-counting
+        # capital on concurrent positions.)
+        if pnls:
+            group_ret = sum(pnls) / len(pnls)  # mean return per group
+            group_returns.append(group_ret)
+
+    if not group_returns:
+        return None
+    equity = 1.0
+    for r in group_returns:
+        equity *= (1.0 + r)
+    return round(equity - 1.0, 6)
+
+
+def attach_benchmark_column(picks: list[dict]) -> list[dict]:
+    """Stage D: merge benchmark fields from the Task 10 sidecar.
+
+    Reads `audit_dashboard/data/benchmark_ledger_proof.json` (produced by
+    `alpha_engine/benchmark_closed_ledger.py --picks ...`) and stamps
+    `benchmark`, `bench_return_same_window`, `excess_pp` on each pick based on
+    its asset class.
+
+    Fail-open: if the sidecar is absent or stale, no fields are added and the
+    function returns rows unchanged.
+    """
+    sidecar_path = ROOT / "audit_dashboard" / "data" / "benchmark_ledger_proof.json"
+    if not sidecar_path.exists():
+        return picks
+    try:
+        with open(sidecar_path, "r", encoding="utf-8") as f:
+            sidecar = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return picks
+
+    # The sidecar has per-class benchmark returns; build a lookup by asset_class.
+    bench_by_class = {}
+    if isinstance(sidecar, dict):
+        for entry in sidecar.get("results", []) or sidecar.get("by_asset_class", []) or []:
+            ac = str(entry.get("asset_class", "")).upper()
+            if ac:
+                bench_by_class[ac] = entry
+        # Also check for a top-level summary
+        if "summary" in sidecar and isinstance(sidecar["summary"], dict):
+            bench_by_class.setdefault("_summary", sidecar["summary"])
+
+    out = []
+    for p in picks:
+        if not isinstance(p, dict):
+            out.append(p)
+            continue
+        p = dict(p)
+        ac = str(p.get("asset_class") or p.get("category") or "").upper().strip()
+        bench_entry = bench_by_class.get(ac)
+        if bench_entry:
+            p.setdefault("benchmark", bench_entry.get("benchmark_symbol", bench_entry.get("symbol", "")))
+            p.setdefault("bench_return_same_window", bench_entry.get("bench_return_same_window", bench_entry.get("return", None)))
+            p.setdefault("excess_pp", bench_entry.get("excess_pp", None))
+            p.setdefault("bench_verified", bench_entry.get("verified", False))
+        else:
+            p.setdefault("benchmark", None)
+            p.setdefault("bench_return_same_window", None)
+            p.setdefault("excess_pp", None)
+            p.setdefault("bench_verified", False)
+        out.append(p)
+    return out
+
+
 # ── Main generator ──
+
+
+def _build_ledger_measurement_block(results):
+    """Map ledger-gate results -> measurement-hygiene block (for logging)."""
+    ledgers = []
+    n_unverified = 0
+    for (strat, ac), r in results.items():
+        passed = r["verdict"] == "OK"
+        ledgers.append({
+            "strategy": strat,
+            "asset_class": ac,
+            "n": r["n"],
+            "pf_net": r["pf_net"],
+            "pf_net_ci_lower": r["pf_net_ci_lb"],
+            "mdd": r["mdd"],
+            "ledger_gate_pass": passed,
+            "ledger_gate_reasons": list(r["gate_failures"]),
+            "ledger_status": (
+                "PASS" if passed
+                else f"UNVERIFIED: {'; '.join(r['gate_failures'])}"
+            ),
+        })
+        if not passed:
+            n_unverified += r["n"]
+    total_rows = sum(r["n"] for r in results.values())
+    return {
+        "enabled": True,
+        "ledgers": ledgers,
+        "n_unverified": n_unverified,
+        "total_ledgers": len(results),
+        "n_verified": total_rows - n_unverified,
+        "gates": ["n>=100", "pf_net>=1.5", "pf_net_ci_lower>=1.2", "mdd<=20%"],
+    }
 
 
 def generate():
@@ -14754,6 +15163,31 @@ def generate():
             "  Exit normalization (#186): refined exit_reason on %d/%d resolved closed picks",
             _exit_norm_changed,
             len(resolved_closed),
+        )
+
+    # ── Measurement Hygiene V1 (gated) ──
+    # Stage B: stamp net-of-cost on the closed ledger
+    # Stage C: compute per-ledger gates (n>=100, PF_net>=1.5, CI-LB>=1.2, MDD<=20%)
+    # Stage D: attach benchmark columns
+    # Stage A: overlap-aware compounding (used for the headline total_pnl compound metric)
+    _measurement_block = None
+    if MEASUREMENT_HYGIENE_V1:
+        # Stage C: net-of-cost + overlap-aware MUST run before Stage B (gates).
+        resolved_closed = stamp_net_of_cost(resolved_closed)
+        from audit_trail.ledger_gates import compute_ledger_gates
+        # Ordering invariant: the gates consume net_of_cost_pnl_pct and the
+        # overlap-aware MDD curve, so Stage C must precede Stage B.
+        assert "net_of_cost_pnl_pct" in str(resolved_closed[:5]) or all(
+            "net_of_cost_pnl_pct" in (p or {}) for p in resolved_closed[:5]
+        ), "Stage C (net-of-cost) must precede Stage B (ledger gates)"
+        ledger_gate_results = compute_ledger_gates(resolved_closed)
+        _measurement_block = _build_ledger_measurement_block(ledger_gate_results)
+        resolved_closed = attach_benchmark_column(resolved_closed)
+        log.info(
+            "  Measurement Hygiene V1: %d ledgers, %d unverified rows, %d verified rows",
+            _measurement_block.get("total_ledgers", 0),
+            _measurement_block.get("n_unverified", 0),
+            _measurement_block.get("n_verified", 0),
         )
     closed_pnl_concentration = _compute_closed_pnl_concentration_by_source(
         resolved_closed
@@ -18253,6 +18687,22 @@ def generate():
                 )
     except Exception as _e:  # noqa: BLE001
         log.warning("ML feature persistence/edge analytics skipped: %s", _e)
+
+    # ── Measurement Hygiene V1 block (Stage A: overlap-aware compounding) ──
+    if MEASUREMENT_HYGIENE_V1 and _measurement_block is not None:
+        payload.setdefault("summary", {})
+        # Overlap-aware compound total return (net of cost, if stamped)
+        _oa_total = compute_ledger_gates.__doc__  # noqa: just to keep lint quiet
+        payload["summary"]["measurement_hygiene"] = _measurement_block
+        # Headline overlap-aware compound return over the full closed ledger
+        _oa_return = compound_overlap_aware(resolved_closed)
+        payload["summary"]["measurement_hygiene"]["total_pnl_overlap_aware"] = _oa_return
+        log.info(
+            "  Measurement Hygiene V1 payload: %d/%d rows verified, OA return=%.4f%%",
+            _measurement_block.get("n_verified", 0),
+            _measurement_block.get("n_verified", 0) + _measurement_block.get("n_unverified", 0),
+            (_oa_return or 0) * 100,
+        )
 
     # Sanitize inf/-inf/nan to None — JSON spec forbids these literals, and
     # browser JSON.parse() rejects the whole file on the first occurrence
