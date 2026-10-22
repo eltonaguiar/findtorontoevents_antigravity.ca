@@ -61,15 +61,43 @@ COST_MODELS: dict[str, dict[str, float]] = {
         "slippage": 0.005,         # 0.50%
         "total_per_trade": 0.015,  # ~1.50% round-trip
     },
+    "bond": {
+        "commission": 0.0,
+        "spread": 0.0003,          # 3 bps
+        "slippage": 0.0002,        # 2 bps
+        "total_per_trade": 0.0005, # ~0.05% round-trip
+    },
+    "commodity": {
+        "commission": 0.0002,      # 2 bps
+        "spread": 0.0003,          # 3 bps
+        "slippage": 0.0002,        # 2 bps
+        "total_per_trade": 0.0007, # ~0.07% round-trip
+    },
+    "futures": {
+        "commission": 0.00015,     # 1.5 bps
+        "spread": 0.0002,          # 2 bps
+        "slippage": 0.00015,       # 1.5 bps
+        "total_per_trade": 0.0005, # ~0.05% round-trip
+    },
+    "etf": {
+        "commission": 0.0,
+        "spread": 0.0001,          # 1 bps
+        "slippage": 0.0001,        # 1 bps
+        "total_per_trade": 0.0002, # ~0.02% round-trip
+    },
 }
 
 # Mapping from category strings used in config.py / scanner.py to cost model keys
 _CATEGORY_TO_COST_MODEL: dict[str, str] = {
-    "crypto": "crypto_spot",
-    "meme":   "meme_coins",
-    "penny":  "penny_stocks",
-    "forex":  "forex",
-    "stock":  "stocks_etf",
+    "crypto":     "crypto_spot",
+    "meme":       "meme_coins",
+    "penny":      "penny_stocks",
+    "forex":      "forex",
+    "stock":      "stocks_etf",
+    "bond":       "bond",
+    "commodity":  "commodity",
+    "futures":    "futures",
+    "etf":        "etf",
 }
 
 # Symbols known to be major crypto (use tighter crypto_spot model)
