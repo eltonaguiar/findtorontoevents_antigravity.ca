@@ -212,6 +212,42 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 </div>
 
 <div class="card">
+  <h2 style="color:#ef4444;">🚨 3 ULTIMATE P/L BUGS FOUND (2026-10-22)</h2>
+  <details>
+    <summary style="cursor:pointer;color:#ef4444;font-weight:bold;">Click to expand full bug report</summary>
+    <div style="margin-top:12px;line-height:1.6;">
+      <h3 style="color:#ef4444;">Bug 1: Duplicate trades (INFLATES n and P/L up to 5.2x)</h3>
+      <p>The same trade is recorded multiple times with different UUIDs but identical entry/exit prices. Example: IONQ had 64 trades but only 7 distinct entry/exit prices. NIO had 21 trades with 1 distinct entry/exit. AMD had 21 trades with 2 distinct.</p>
+      <p><strong>Impact:</strong> regime_mild_bear SHORT EQUITY showed WR 54.1% raw → 38.5% after dedup. PF 7.84 → 3.05. The "edge" was largely fake.</p>
+      <p><strong>Fix:</strong> Deduplicate by (symbol, entry_price, exit_price) before computing stats.</p>
+
+      <h3 style="color:#ef4444;">Bug 2: Batch-close contamination (21.2% of all closed picks)</h3>
+      <p>2026-05-10 03:16: 11,381 picks closed in 2 seconds with 0.00% pnl (RESOLUTION_TIMEOUT_NULL_TS). 2026-04-11 08:03: 2,301 picks closed in 15 seconds.</p>
+      <p><strong>Impact:</strong> Inflates "CLOSED" count by 21.2%. The 0.00% closes are frozen-exit resolver failures — they should be EXPIRED/ABANDONED, not CLOSED.</p>
+
+      <h3 style="color:#ef4444;">Bug 3: Lookahead contamination (1,239 picks)</h3>
+      <p>1,239 picks closed within 2 minutes of entry. These are not real trades — they are data artifacts.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card">
+  <h2>TRUE October 2026 winners (after dedup + exclusion)</h2>
+  <p style="color:#94a3b8;">All 3 bugs applied: deduplicated by (symbol, entry, exit), batch-closes excluded, lookahead excluded, frozen-exit excluded. These are the REAL edge candidates.</p>
+  <table>
+    <tr><th>Strategy</th><th>Dir</th><th>Asset</th><th>n</th><th>WR</th><th>PF</th><th>One-pos PF</th><th>Bootstrap CI</th><th>P(>0)</th><th>Exit days</th><th>Gate</th></tr>
+    <tr><td>bond_yield_curve_slope</td><td>LONG</td><td>BOND</td><td>18</td><td>72.2%</td><td>9.44</td><td>3.55</td><td>[0.454,1.125]</td><td>1.0000</td><td>8</td><td style="color:#22c55e">PASS</td></tr>
+    <tr><td>rapid_momentum_filter_mut</td><td>SHORT</td><td>CRYPTO</td><td>55</td><td>65.5%</td><td>2.59</td><td>1.33</td><td>[0.543,2.120]</td><td>0.9998</td><td>16</td><td style="color:#22c55e">PASS</td></tr>
+    <tr><td>cvd_divergence</td><td>SHORT</td><td>CRYPTO</td><td>42</td><td>66.7%</td><td>2.60</td><td>1.66</td><td>[0.397,2.003]</td><td>0.9984</td><td>18</td><td style="color:#22c55e">PASS</td></tr>
+    <tr><td>prediction_market_consensus</td><td>SHORT</td><td>CRYPTO</td><td>682</td><td>56.0%</td><td>2.11</td><td>1.11</td><td>[0.670,1.031]</td><td>1.0000</td><td>22</td><td style="color:#22c55e">PASS</td></tr>
+    <tr><td>luxalgo_confluence</td><td>SHORT</td><td>CRYPTO</td><td>206</td><td>54.4%</td><td>1.65</td><td>1.27</td><td>[0.316,1.280]</td><td>1.0000</td><td>21</td><td style="color:#22c55e">PASS</td></tr>
+    <tr><td>forex_zscore_200d_fade</td><td>SHORT</td><td>FOREX</td><td>207</td><td>51.7%</td><td>1.44</td><td>2.53</td><td>[0.005,0.137]</td><td>0.9822</td><td>14</td><td style="color:#22c55e">PASS</td></tr>
+  </table>
+  <p><strong>Regime:</strong> BOND (bond_yield_curve_slope), CRYPTO SHORT (rapid_momentum + cvd_divergence + prediction_market + luxalgo), FOREX SHORT (forex_zscore_200d_fade).</p>
+  <p><strong>These are CANDIDATE status.</strong> Not proven. n is deduplicated. One-position PF is the executable edge. Forward-validation needed.</p>
+</div>
+
+<div class="card">
   <h2>Paper trading status</h2>
   <p>Status JSON: <a href="/audit/data/opencode_paper_trading_status.json">opencode_paper_trading_status.json</a></p>
   <p>Update job: <code>python3 tools/opencode_paper_trading_update.py</code> (run hourly via cron/GHA)</p>
