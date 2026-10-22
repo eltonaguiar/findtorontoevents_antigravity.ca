@@ -40,19 +40,29 @@ th,td { padding:8px; border-bottom:1px solid #334155; text-align:left; }
 </div>
 
 <div class="card">
-  <h2>Per-asset-class best candidates (strict non-artifact gate + bootstrap P&gt;0≥0.95)</h2>
+  <h2>Per-asset-class best candidates (strict gate + bootstrap + independence check)</h2>
   <table>
-    <tr><th>Asset class</th><th>Strategy</th><th>Symbol</th><th>n</th><th>Train PF</th><th>Test PF</th><th>P(>0)</th><th>Status</th></tr>
-    <tr><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>Candidate</td></tr>
-    <tr><td>CRYPTO</td><td>regime_accumulation</td><td>USDCAD=X</td><td>204</td><td>3.88</td><td>2.74</td><td>1.0000</td><td>Candidate</td></tr>
-    <tr><td>CRYPTO</td><td>prediction_market_consensus</td><td>BNBUSDT</td><td>59</td><td>1.94</td><td>1.97</td><td>0.9954</td><td>Candidate</td></tr>
-    <tr><td>FOREX</td><td>cta_fx_multifactor</td><td>USDJPY=X</td><td>75</td><td>1.96</td><td>1.79</td><td>0.9930</td><td>Candidate</td></tr>
-    <tr><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>64</td><td>1.66</td><td>1.99</td><td>0.9730</td><td>Candidate</td></tr>
-    <tr><td>CRYPTO</td><td>luxalgo_confluence</td><td>ETHUSDT</td><td>132</td><td>1.48</td><td>1.47</td><td>0.9728</td><td>Candidate</td></tr>
-    <tr><td>CRYPTO</td><td>regime_accumulation</td><td>AAPL</td><td>76</td><td>1.90</td><td>5.93</td><td>1.0000</td><td>Suspicious (test PF jump)</td></tr>
-    <tr><td>FUTURES</td><td>commodity_term_cot</td><td>HG=F</td><td>815</td><td>2.21</td><td>2.41</td><td>1.0000</td><td>Artifact-flagged (751/815 overlap)</td></tr>
+    <tr><th>Asset class</th><th>Strategy</th><th>Symbol</th><th>n</th><th>Train PF</th><th>Test PF</th><th>P(>0)</th><th>One-pos PF (0.10% cost)</th><th>Status</th></tr>
+    <tr><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>1.20</td><td>Candidate</td></tr>
+    <tr><td>FOREX</td><td>regime_accumulation</td><td>USDCAD=X</td><td>204</td><td>3.88</td><td>2.74</td><td>1.0000</td><td>2.56</td><td>Candidate (best independence)</td></tr>
+    <tr><td>CRYPTO</td><td>prediction_market_consensus</td><td>ETHUSDT</td><td>46</td><td>1.53</td><td>6.45</td><td>0.9992</td><td>0.00 (fails independence)</td><td>Rejected</td></tr>
+    <tr><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>64</td><td>1.66</td><td>1.99</td><td>0.9730</td><td>not tested</td><td>Candidate</td></tr>
+    <tr><td>EQUITY</td><td>smart_money_accumulation</td><td>UNH</td><td>30</td><td>9.24</td><td>6.17</td><td>1.0000</td><td>5.28 (n=3 only)</td><td>Candidate (tiny sample)</td></tr>
+    <tr><td>FUTURES/COMMODITY/ETF/BOND</td><td colspan="8">No cell passes all gates (strict + bootstrap + independence + non-artifact)</td></tr>
   </table>
-</div>
+<div class="card">
+  <h2>Top 5 candidates per asset class (strict non-artifact gate + bootstrap P&gt;0≥0.95)</h2>
+  <table>
+    <tr><th>Rank</th><th>Asset</th><th>Strategy</th><th>Symbol</th><th>n</th><th>Train PF</th><th>Test PF</th><th>P(>0)</th><th>One-pos PF (0.10% cost)</th></tr>
+    <tr><td>1</td><td>CRYPTO</td><td>luxalgo_confluence SHORT</td><td>XRP/ETH/BTC/STX</td><td>404</td><td>1.30-2.39</td><td>1.08-1.47</td><td>1.0000</td><td>1.20</td></tr>
+    <tr><td>2</td><td>FOREX</td><td>regime_accumulation</td><td>USDCAD=X</td><td>204</td><td>3.88</td><td>2.74</td><td>1.0000</td><td>2.56</td></tr>
+    <tr><td>3</td><td>CRYPTO</td><td>prediction_market_consensus</td><td>BNBUSDT</td><td>59</td><td>1.94</td><td>1.97</td><td>0.9954</td><td>not tested</td></tr>
+    <tr><td>4</td><td>FOREX</td><td>cta_fx_multifactor</td><td>USDJPY=X</td><td>75</td><td>1.96</td><td>1.79</td><td>0.9930</td><td>not tested</td></tr>
+    <tr><td>5</td><td>CRYPTO</td><td>high_trust_momentum</td><td>BTCUSDT</td><td>64</td><td>1.66</td><td>1.99</td><td>0.9730</td><td>not tested</td></tr>
+  </table>
+  <p><em>FUTURES, ETF, BOND, COMMODITY: no cell passes all gates (strict + bootstrap + independence + non-artifact). Recommended: use free open-source libraries (backtrader, freqtrade, vectorbt) to build independent strategies for these classes.</em></p>
+
+
 
 <div class="card">
   <h2>Devil's advocate audit (truth check)</h2>
