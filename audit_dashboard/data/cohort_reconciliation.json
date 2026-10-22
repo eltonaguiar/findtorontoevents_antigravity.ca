@@ -1,23 +1,23 @@
 {
   "schema_version": "1.1.0",
-  "generated_utc": "2026-10-22T17:47:11Z",
+  "generated_utc": "2026-10-22T19:20:34Z",
   "comparison_scope": "published-file-vs-published-file",
   "inputs": {
     "dashboard_data": {
       "path": "audit_dashboard/data/dashboard_data.json",
       "present": true,
-      "generated_utc": "2026-10-22T17:40:05.687668+00:00",
+      "generated_utc": "2026-10-22T19:14:11.892383+00:00",
       "records": 3500
     },
     "summary_stats_14d": {
       "path": "audit_dashboard/data/pick_summary_stats_14d.json",
       "present": true,
-      "generated_utc": "2026-10-22T17:47:02+00:00"
+      "generated_utc": "2026-10-22T19:20:23+00:00"
     },
     "summary_stats_48h": {
       "path": "audit_dashboard/data/pick_summary_stats_48h.json",
       "present": true,
-      "generated_utc": "2026-10-22T17:47:02+00:00"
+      "generated_utc": "2026-10-22T19:20:23+00:00"
     }
   },
   "rolling_metrics_by_window": {
@@ -25,34 +25,42 @@
       "window_hours": 336,
       "coverage": {
         "oldest_closed_at": "2026-02-21T07:08:50+00:00",
-        "window_start_utc": "2026-10-08T17:40:05.687668+00:00",
+        "window_start_utc": "2026-10-08T19:14:11.892383+00:00",
         "covers_window": true,
         "status": "complete"
       },
       "by_class": {
-        "CRYPTO": {
-          "n": 799,
-          "wins": 378,
-          "losses": 421,
-          "win_rate": 0.47309136420525655,
+        "ETF": {
+          "n": 43,
+          "wins": 10,
+          "losses": 33,
+          "win_rate": 0.23255813953488372,
           "win_rate_hidden": false,
-          "pf": 1.246415583561214
+          "pf": 0.379730346218746
+        },
+        "CRYPTO": {
+          "n": 829,
+          "wins": 386,
+          "losses": 443,
+          "win_rate": 0.46562123039806996,
+          "win_rate_hidden": false,
+          "pf": 1.2446438573329892
         },
         "FOREX": {
-          "n": 71,
-          "wins": 29,
+          "n": 70,
+          "wins": 28,
           "losses": 12,
-          "win_rate": 0.4084507042253521,
+          "win_rate": 0.4,
           "win_rate_hidden": false,
-          "pf": 4.546819169060464
+          "pf": 4.0213515028375255
         },
-        "ETF": {
-          "n": 42,
-          "wins": 10,
-          "losses": 32,
-          "win_rate": 0.23809523809523808,
-          "win_rate_hidden": false,
-          "pf": 0.4022181468867348
+        "BOND": {
+          "n": 3,
+          "wins": 2,
+          "losses": 1,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 5.210056061667835
         },
         "EQUITY": {
           "n": 67,
@@ -60,15 +68,7 @@
           "losses": 35,
           "win_rate": 0.34328358208955223,
           "win_rate_hidden": false,
-          "pf": 0.8180062110752925
-        },
-        "BOND": {
-          "n": 1,
-          "wins": 0,
-          "losses": 1,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.0
+          "pf": 0.7911287439664785
         },
         "COMMODITY": {
           "n": 7,
@@ -88,13 +88,21 @@
         }
       },
       "by_strategy": {
-        "atr_percentile_gate_scanner": {
-          "n": 3,
-          "wins": 2,
+        "vix_regime_overlay": {
+          "n": 1,
+          "wins": 0,
           "losses": 1,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 1.997599092020255
+          "pf": 0.0
+        },
+        "regime_strong_bear": {
+          "n": 5,
+          "wins": 5,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
         },
         "prediction_market_consensus": {
           "n": 2,
@@ -105,22 +113,14 @@
           "pf": 0.0
         },
         "unknown": {
-          "n": 7,
-          "wins": 3,
+          "n": 6,
+          "wins": 2,
           "losses": 4,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 1.3712931063887845
+          "pf": 0.4789166695091585
         },
         "Price Acceleration Detector": {
-          "n": 2,
-          "wins": 0,
-          "losses": 2,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.0
-        },
-        "regime_accumulation": {
           "n": 1,
           "wins": 0,
           "losses": 1,
@@ -128,13 +128,61 @@
           "win_rate_hidden": true,
           "pf": 0.0
         },
-        "alpha_engine": {
-          "n": 36,
-          "wins": 31,
-          "losses": 5,
-          "win_rate": 0.8611111111111112,
+        "atr_percentile_gate_scanner": {
+          "n": 3,
+          "wins": 3,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
+        },
+        "strong consensus (alpha_engine, luxalgo_filters)": {
+          "n": 79,
+          "wins": 28,
+          "losses": 51,
+          "win_rate": 0.35443037974683544,
           "win_rate_hidden": false,
-          "pf": 12.222255906546211
+          "pf": 1.0839838556675843
+        },
+        "regime_accumulation": {
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.0
+        },
+        "tsmom_28d": {
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.0
+        },
+        "stochastic_momentum_index": {
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 1.460721607216072
+        },
+        "alpha_engine": {
+          "n": 39,
+          "wins": 33,
+          "losses": 6,
+          "win_rate": 0.8461538461538461,
+          "win_rate_hidden": false,
+          "pf": 10.998393958550462
+        },
+        "mega_mutation_macd_rsi_m048": {
+          "n": 24,
+          "wins": 16,
+          "losses": 8,
+          "win_rate": 0.6666666666666666,
+          "win_rate_hidden": false,
+          "pf": 3.8044376936204714
         },
         "forex_rsi2_mean_reversion": {
           "n": 36,
@@ -144,29 +192,29 @@
           "win_rate_hidden": false,
           "pf": 5.883225707257073
         },
-        "luxalgo_confluence": {
-          "n": 387,
-          "wins": 158,
-          "losses": 229,
-          "win_rate": 0.4082687338501292,
-          "win_rate_hidden": false,
-          "pf": 1.134227172580132
-        },
-        "strong consensus (alpha_engine, luxalgo_filters)": {
-          "n": 75,
-          "wins": 29,
-          "losses": 46,
-          "win_rate": 0.38666666666666666,
-          "win_rate_hidden": false,
-          "pf": 0.9464487178279828
-        },
         "strong consensus (alpha_engine, kimi)": {
-          "n": 7,
-          "wins": 1,
+          "n": 8,
+          "wins": 2,
           "losses": 6,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 0.27992557093518244
+          "pf": 0.48206205991807444
+        },
+        "claude_ml_conservative_mut": {
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.0
+        },
+        "luxalgo_confluence": {
+          "n": 391,
+          "wins": 158,
+          "losses": 233,
+          "win_rate": 0.4040920716112532,
+          "win_rate_hidden": false,
+          "pf": 1.1183004303597996
         },
         "vol-contraction-scout": {
           "n": 10,
@@ -192,6 +240,14 @@
           "win_rate_hidden": true,
           "pf": 0.0
         },
+        "stoch-rsi-scout": {
+          "n": 8,
+          "wins": 3,
+          "losses": 5,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.3748706702654071
+        },
         "macd-hidden-div-scout": {
           "n": 7,
           "wins": 1,
@@ -201,20 +257,12 @@
           "pf": 0.2136015325670498
         },
         "mega_mutation_macd_rsi_m017": {
-          "n": 11,
-          "wins": 5,
+          "n": 10,
+          "wins": 4,
           "losses": 6,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 1.5911555092889176
-        },
-        "claude_ml_conservative_mut": {
-          "n": 2,
-          "wins": 0,
-          "losses": 2,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.0
+          "pf": 1.2664557975656632
         },
         "momentum-factor": {
           "n": 11,
@@ -223,6 +271,14 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.3640386579837835
+        },
+        "adx-trend-scout": {
+          "n": 6,
+          "wins": 3,
+          "losses": 3,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.3139778917013778
         },
         "momentum_breakout": {
           "n": 12,
@@ -239,14 +295,6 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.6033285735388252
-        },
-        "mega_mutation_macd_rsi_m048": {
-          "n": 23,
-          "wins": 16,
-          "losses": 7,
-          "win_rate": 0.6956521739130435,
-          "win_rate_hidden": false,
-          "pf": 4.555453346916762
         },
         "cnn_lite_pattern_signal": {
           "n": 1,
@@ -280,14 +328,6 @@
           "win_rate_hidden": true,
           "pf": 0.0
         },
-        "adx_momentum": {
-          "n": 1,
-          "wins": 1,
-          "losses": 0,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": "inf"
-        },
         "rs-breakout-scout": {
           "n": 5,
           "wins": 3,
@@ -297,8 +337,8 @@
           "pf": 1.2304161566707466
         },
         "strong consensus (alpha_engine, kimi, luxalgo_filters)": {
-          "n": 4,
-          "wins": 4,
+          "n": 3,
+          "wins": 3,
           "losses": 0,
           "win_rate": null,
           "win_rate_hidden": true,
@@ -384,14 +424,6 @@
           "win_rate_hidden": true,
           "pf": "inf"
         },
-        "strong consensus (luxalgo_filters, quan_engine)": {
-          "n": 3,
-          "wins": 2,
-          "losses": 1,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.9904369091506369
-        },
         "crypto-rsi-divergence-scout": {
           "n": 4,
           "wins": 2,
@@ -407,14 +439,6 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.8923107689231077
-        },
-        "regime_strong_bear": {
-          "n": 4,
-          "wins": 4,
-          "losses": 0,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": "inf"
         },
         "regime_mild_bull": {
           "n": 1,
@@ -432,26 +456,10 @@
           "win_rate_hidden": true,
           "pf": 3.0807834069334823
         },
-        "stoch-rsi-scout": {
-          "n": 7,
-          "wins": 3,
-          "losses": 4,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.570925751477263
-        },
-        "adx-trend-scout": {
-          "n": 5,
-          "wins": 2,
-          "losses": 3,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.19671579621916052
-        },
         "price-accel-scout": {
-          "n": 5,
+          "n": 4,
           "wins": 0,
-          "losses": 5,
+          "losses": 4,
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.0
@@ -468,14 +476,6 @@
           "n": 3,
           "wins": 0,
           "losses": 3,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.0
-        },
-        "stochastic_momentum_index": {
-          "n": 1,
-          "wins": 0,
-          "losses": 1,
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.0
@@ -497,8 +497,8 @@
           "pf": 0.0
         },
         "clone_hl_copy_PensionFund_24M": {
-          "n": 6,
-          "wins": 6,
+          "n": 8,
+          "wins": 8,
           "losses": 0,
           "win_rate": null,
           "win_rate_hidden": true,
@@ -545,12 +545,12 @@
           "pf": 0.9660389105058367
         },
         "crypto-bb-squeeze-scout": {
-          "n": 10,
+          "n": 9,
           "wins": 6,
-          "losses": 4,
+          "losses": 3,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 0.8872743784765581
+          "pf": 1.2133191896716773
         },
         "vt_equity_two_day_rsi_reversal": {
           "n": 1,
@@ -583,14 +583,6 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 1.7658512231652523
-        },
-        "tsmom_28d": {
-          "n": 1,
-          "wins": 0,
-          "losses": 1,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.0
         },
         "cta_cross_asset_tsmom": {
           "n": 1,
@@ -631,14 +623,6 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.0
-        },
-        "macd_rsi_confluence": {
-          "n": 1,
-          "wins": 1,
-          "losses": 0,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": "inf"
         },
         "aroon-trend-scout": {
           "n": 2,
@@ -702,7 +686,7 @@
           "losses": 32,
           "win_rate": 0.5616438356164384,
           "win_rate_hidden": false,
-          "pf": 1.8000975927130776
+          "pf": 1.8304397209151386
         },
         "st_fear_greed_contrarian (Revival)": {
           "n": 6,
@@ -710,7 +694,7 @@
           "losses": 3,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 1.4528863593720684
+          "pf": 1.4994517063814705
         },
         "hs_Auros_66M": {
           "n": 8,
@@ -727,6 +711,14 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": "inf"
+        },
+        "clone_hl_copy_lb_None": {
+          "n": 19,
+          "wins": 8,
+          "losses": 11,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.948136161095853
         }
       }
     },
@@ -734,52 +726,68 @@
       "window_hours": 48,
       "coverage": {
         "oldest_closed_at": "2026-02-21T07:08:50+00:00",
-        "window_start_utc": "2026-10-20T17:40:05.687668+00:00",
+        "window_start_utc": "2026-10-20T19:14:11.892383+00:00",
         "covers_window": true,
         "status": "complete"
       },
       "by_class": {
-        "CRYPTO": {
-          "n": 203,
-          "wins": 91,
-          "losses": 112,
-          "win_rate": 0.4482758620689655,
-          "win_rate_hidden": false,
-          "pf": 1.391846085107893
-        },
-        "FOREX": {
-          "n": 47,
-          "wins": 17,
-          "losses": 1,
-          "win_rate": 0.3617021276595745,
-          "win_rate_hidden": false,
-          "pf": 26.791
-        },
         "ETF": {
-          "n": 12,
+          "n": 13,
           "wins": 5,
-          "losses": 7,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.8477839931153185
-        },
-        "EQUITY": {
-          "n": 18,
-          "wins": 1,
           "losses": 8,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 0.4128469022214853
+          "pf": 0.6768650405644672
+        },
+        "CRYPTO": {
+          "n": 235,
+          "wins": 106,
+          "losses": 129,
+          "win_rate": 0.451063829787234,
+          "win_rate_hidden": false,
+          "pf": 1.5922541925088916
+        },
+        "FOREX": {
+          "n": 46,
+          "wins": 16,
+          "losses": 1,
+          "win_rate": 0.34782608695652173,
+          "win_rate_hidden": false,
+          "pf": 25.191
+        },
+        "BOND": {
+          "n": 2,
+          "wins": 2,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
+        },
+        "EQUITY": {
+          "n": 19,
+          "wins": 1,
+          "losses": 9,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.33415626043614094
         }
       },
       "by_strategy": {
-        "atr_percentile_gate_scanner": {
+        "vix_regime_overlay": {
           "n": 1,
           "wins": 0,
           "losses": 1,
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.0
+        },
+        "regime_strong_bear": {
+          "n": 1,
+          "wins": 1,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
         },
         "prediction_market_consensus": {
           "n": 1,
@@ -798,14 +806,6 @@
           "pf": 2.3400666666666665
         },
         "Price Acceleration Detector": {
-          "n": 2,
-          "wins": 0,
-          "losses": 2,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.0
-        },
-        "regime_accumulation": {
           "n": 1,
           "wins": 0,
           "losses": 1,
@@ -813,45 +813,93 @@
           "win_rate_hidden": true,
           "pf": 0.0
         },
-        "alpha_engine": {
-          "n": 7,
-          "wins": 7,
+        "atr_percentile_gate_scanner": {
+          "n": 1,
+          "wins": 1,
           "losses": 0,
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": "inf"
         },
-        "forex_rsi2_mean_reversion": {
-          "n": 18,
-          "wins": 17,
+        "strong consensus (alpha_engine, luxalgo_filters)": {
+          "n": 23,
+          "wins": 5,
+          "losses": 18,
+          "win_rate": 0.21739130434782608,
+          "win_rate_hidden": false,
+          "pf": 2.2620156975012726
+        },
+        "regime_accumulation": {
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.0
+        },
+        "tsmom_28d": {
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.0
+        },
+        "stochastic_momentum_index": {
+          "n": 1,
+          "wins": 1,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
+        },
+        "alpha_engine": {
+          "n": 10,
+          "wins": 9,
           "losses": 1,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 26.791
+          "pf": 19.38232044198895
         },
-        "luxalgo_confluence": {
-          "n": 68,
-          "wins": 17,
-          "losses": 51,
-          "win_rate": 0.25,
-          "win_rate_hidden": false,
-          "pf": 0.4755040380826703
-        },
-        "strong consensus (alpha_engine, luxalgo_filters)": {
-          "n": 15,
+        "mega_mutation_macd_rsi_m048": {
+          "n": 4,
           "wins": 3,
-          "losses": 12,
+          "losses": 1,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 1.377355724376916
+          "pf": 3.4351871527883184
+        },
+        "forex_rsi2_mean_reversion": {
+          "n": 17,
+          "wins": 16,
+          "losses": 1,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 25.191
         },
         "strong consensus (alpha_engine, kimi)": {
-          "n": 2,
-          "wins": 1,
+          "n": 3,
+          "wins": 2,
           "losses": 1,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 1.1770235280873578
+          "pf": 2.026961612067995
+        },
+        "claude_ml_conservative_mut": {
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.0
+        },
+        "luxalgo_confluence": {
+          "n": 73,
+          "wins": 17,
+          "losses": 56,
+          "win_rate": 0.2328767123287671,
+          "win_rate_hidden": false,
+          "pf": 0.4347128195603388
         },
         "vol-contraction-scout": {
           "n": 4,
@@ -877,6 +925,14 @@
           "win_rate_hidden": true,
           "pf": 0.0
         },
+        "stoch-rsi-scout": {
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.3359587358768626
+        },
         "macd-hidden-div-scout": {
           "n": 3,
           "wins": 0,
@@ -893,14 +949,6 @@
           "win_rate_hidden": true,
           "pf": "inf"
         },
-        "claude_ml_conservative_mut": {
-          "n": 2,
-          "wins": 0,
-          "losses": 2,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": 0.0
-        },
         "momentum-factor": {
           "n": 2,
           "wins": 0,
@@ -908,6 +956,14 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.0
+        },
+        "adx-trend-scout": {
+          "n": 2,
+          "wins": 2,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
         },
         "momentum_breakout": {
           "n": 1,
@@ -920,14 +976,6 @@
         "ema_momentum_volume": {
           "n": 1,
           "wins": 1,
-          "losses": 0,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": "inf"
-        },
-        "mega_mutation_macd_rsi_m048": {
-          "n": 3,
-          "wins": 3,
           "losses": 0,
           "win_rate": null,
           "win_rate_hidden": true,
@@ -964,14 +1012,6 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": 0.0
-        },
-        "adx_momentum": {
-          "n": 1,
-          "wins": 1,
-          "losses": 0,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": "inf"
         },
         "rs-breakout-scout": {
           "n": 3,
@@ -1014,22 +1054,6 @@
           "pf": 0.0
         },
         "crypto-rsi-divergence-scout": {
-          "n": 1,
-          "wins": 1,
-          "losses": 0,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": "inf"
-        },
-        "stoch-rsi-scout": {
-          "n": 1,
-          "wins": 1,
-          "losses": 0,
-          "win_rate": null,
-          "win_rate_hidden": true,
-          "pf": "inf"
-        },
-        "adx-trend-scout": {
           "n": 1,
           "wins": 1,
           "losses": 0,
@@ -1091,23 +1115,31 @@
           "losses": 32,
           "win_rate": 0.5616438356164384,
           "win_rate_hidden": false,
-          "pf": 1.8000975927130776
+          "pf": 1.8304397209151386
         },
         "st_fear_greed_contrarian (Revival)": {
-          "n": 3,
-          "wins": 1,
+          "n": 5,
+          "wins": 3,
           "losses": 2,
           "win_rate": null,
           "win_rate_hidden": true,
-          "pf": 0.6400136549022897
+          "pf": 2.153767375563714
         },
         "clone_hl_copy_PensionFund_24M": {
-          "n": 5,
-          "wins": 5,
+          "n": 7,
+          "wins": 7,
           "losses": 0,
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": "inf"
+        },
+        "clone_hl_copy_lb_None": {
+          "n": 7,
+          "wins": 5,
+          "losses": 2,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 4.901960784313726
         }
       }
     }
@@ -3207,64 +3239,20 @@
         "strategy": "unknown",
         "source_system": "kimi_riseoftheclaw",
         "metrics": {
-          "n": 55,
-          "wins": 23,
+          "n": 54,
+          "wins": 22,
           "losses": 32,
-          "win_rate": 0.41818181818181815,
+          "win_rate": 0.4074074074074074,
           "win_rate_hidden": false,
-          "pf": 0.8091622493001595
+          "pf": 0.6743577864835633
         },
         "metrics_excl_batch": {
-          "n": 48,
-          "wins": 20,
+          "n": 47,
+          "wins": 19,
           "losses": 28,
-          "win_rate": 0.4166666666666667,
+          "win_rate": 0.40425531914893614,
           "win_rate_hidden": false,
-          "pf": 0.7844446870086231
-        }
-      },
-      {
-        "closed_at": "2026-09-04T12:41:55.602027+00:00",
-        "count": 7,
-        "strategy": "luxalgo_confluence",
-        "source_system": "luxalgo_filters",
-        "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
-          "win_rate_hidden": false,
-          "pf": 1.0014320767539042
-        },
-        "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 486,
-          "losses": 702,
-          "win_rate": 0.4090909090909091,
-          "win_rate_hidden": false,
-          "pf": 0.9898056130853916
-        }
-      },
-      {
-        "closed_at": "2026-09-07T07:41:57.743395+00:00",
-        "count": 5,
-        "strategy": "luxalgo_confluence",
-        "source_system": "luxalgo_filters",
-        "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
-          "win_rate_hidden": false,
-          "pf": 1.0014320767539042
-        },
-        "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 488,
-          "losses": 702,
-          "win_rate": 0.41008403361344536,
-          "win_rate_hidden": false,
-          "pf": 0.9949655906708871
+          "pf": 0.6433755886688439
         }
       },
       {
@@ -3273,20 +3261,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 488,
-          "losses": 702,
-          "win_rate": 0.41008403361344536,
+          "n": 1181,
+          "wins": 477,
+          "losses": 704,
+          "win_rate": 0.4038950042337002,
           "win_rate_hidden": false,
-          "pf": 0.9971730191016813
+          "pf": 0.9717473947335491
         }
       },
       {
@@ -3295,20 +3283,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 489,
-          "losses": 699,
-          "win_rate": 0.4116161616161616,
+          "n": 1179,
+          "wins": 478,
+          "losses": 701,
+          "win_rate": 0.40542832909245125,
           "win_rate_hidden": false,
-          "pf": 1.0015801951096677
+          "pf": 0.9760571354536052
         }
       },
       {
@@ -3317,20 +3305,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 492,
-          "losses": 697,
-          "win_rate": 0.41379310344827586,
+          "n": 1180,
+          "wins": 481,
+          "losses": 699,
+          "win_rate": 0.4076271186440678,
           "win_rate_hidden": false,
-          "pf": 1.0093542763736703
+          "pf": 0.9837849863315665
         }
       },
       {
@@ -3339,20 +3327,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 492,
-          "losses": 698,
-          "win_rate": 0.4134453781512605,
+          "n": 1181,
+          "wins": 481,
+          "losses": 700,
+          "win_rate": 0.4072819644369179,
           "win_rate_hidden": false,
-          "pf": 1.008513066742855
+          "pf": 0.9829666137327152
         }
       },
       {
@@ -3361,20 +3349,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 492,
-          "losses": 697,
-          "win_rate": 0.41379310344827586,
+          "n": 1180,
+          "wins": 481,
+          "losses": 699,
+          "win_rate": 0.4076271186440678,
           "win_rate_hidden": false,
-          "pf": 1.0076564573470208
+          "pf": 0.9821332568260603
         }
       },
       {
@@ -3383,20 +3371,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 487,
-          "losses": 703,
-          "win_rate": 0.4092436974789916,
+          "n": 1181,
+          "wins": 476,
+          "losses": 705,
+          "win_rate": 0.40304826418289585,
           "win_rate_hidden": false,
-          "pf": 0.9940045626379368
+          "pf": 0.9686639808281583
         }
       },
       {
@@ -3405,20 +3393,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1185,
-          "wins": 486,
-          "losses": 699,
-          "win_rate": 0.41012658227848103,
+          "n": 1176,
+          "wins": 475,
+          "losses": 701,
+          "win_rate": 0.4039115646258503,
           "win_rate_hidden": false,
-          "pf": 0.9954590827549988
+          "pf": 0.9699262779782369
         }
       },
       {
@@ -3427,20 +3415,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 490,
-          "losses": 700,
-          "win_rate": 0.4117647058823529,
+          "n": 1181,
+          "wins": 479,
+          "losses": 702,
+          "win_rate": 0.4055884843353091,
           "win_rate_hidden": false,
-          "pf": 1.0022583279371238
+          "pf": 0.9768162198572368
         }
       },
       {
@@ -3449,20 +3437,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 490,
-          "losses": 700,
-          "win_rate": 0.4117647058823529,
+          "n": 1181,
+          "wins": 479,
+          "losses": 702,
+          "win_rate": 0.4055884843353091,
           "win_rate_hidden": false,
-          "pf": 0.998656344320466
+          "pf": 0.9732310558800139
         }
       },
       {
@@ -3471,20 +3459,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 491,
-          "losses": 697,
-          "win_rate": 0.4132996632996633,
+          "n": 1179,
+          "wins": 480,
+          "losses": 699,
+          "win_rate": 0.4071246819338422,
           "win_rate_hidden": false,
-          "pf": 1.0050072367564038
+          "pf": 0.9795193612195653
         }
       },
       {
@@ -3493,20 +3481,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 487,
-          "losses": 702,
-          "win_rate": 0.4095878889823381,
+          "n": 1180,
+          "wins": 476,
+          "losses": 704,
+          "win_rate": 0.4033898305084746,
           "win_rate_hidden": false,
-          "pf": 0.9954392263529095
+          "pf": 0.9700713778337116
         }
       },
       {
@@ -3515,20 +3503,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 490,
-          "losses": 700,
-          "win_rate": 0.4117647058823529,
+          "n": 1181,
+          "wins": 479,
+          "losses": 702,
+          "win_rate": 0.4055884843353091,
           "win_rate_hidden": false,
-          "pf": 1.001585531374028
+          "pf": 0.9761616854652696
         }
       },
       {
@@ -3537,20 +3525,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 490,
-          "losses": 700,
-          "win_rate": 0.4117647058823529,
+          "n": 1181,
+          "wins": 479,
+          "losses": 702,
+          "win_rate": 0.4055884843353091,
           "win_rate_hidden": false,
-          "pf": 1.001226580124797
+          "pf": 0.9758128548104029
         }
       },
       {
@@ -3559,20 +3547,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1186,
-          "wins": 491,
-          "losses": 695,
-          "win_rate": 0.4139966273187184,
+          "n": 1177,
+          "wins": 480,
+          "losses": 697,
+          "win_rate": 0.4078164825828377,
           "win_rate_hidden": false,
-          "pf": 1.0130355721361555
+          "pf": 0.9873281883241841
         }
       },
       {
@@ -3581,20 +3569,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 490,
-          "losses": 700,
-          "win_rate": 0.4117647058823529,
+          "n": 1181,
+          "wins": 479,
+          "losses": 702,
+          "win_rate": 0.4055884843353091,
           "win_rate_hidden": false,
-          "pf": 1.0009680285273306
+          "pf": 0.9755167663155525
         }
       },
       {
@@ -3603,20 +3591,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 492,
-          "losses": 698,
-          "win_rate": 0.4134453781512605,
+          "n": 1181,
+          "wins": 481,
+          "losses": 700,
+          "win_rate": 0.4072819644369179,
           "win_rate_hidden": false,
-          "pf": 1.01199497557688
+          "pf": 0.9863539797104683
         }
       },
       {
@@ -3625,20 +3613,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1187,
-          "wins": 491,
-          "losses": 696,
-          "win_rate": 0.413647851727043,
+          "n": 1178,
+          "wins": 480,
+          "losses": 698,
+          "win_rate": 0.4074702886247878,
           "win_rate_hidden": false,
-          "pf": 1.0160983949217486
+          "pf": 0.9903158904916313
         }
       },
       {
@@ -3647,20 +3635,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 491,
-          "losses": 697,
-          "win_rate": 0.4132996632996633,
+          "n": 1179,
+          "wins": 480,
+          "losses": 699,
+          "win_rate": 0.4071246819338422,
           "win_rate_hidden": false,
-          "pf": 1.0071349884058847
+          "pf": 0.9815532376747168
         }
       },
       {
@@ -3669,20 +3657,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 488,
-          "losses": 700,
-          "win_rate": 0.4107744107744108,
+          "n": 1179,
+          "wins": 477,
+          "losses": 702,
+          "win_rate": 0.40458015267175573,
           "win_rate_hidden": false,
-          "pf": 0.9924953291702093
+          "pf": 0.967107562532208
         }
       },
       {
@@ -3691,20 +3679,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 492,
-          "losses": 696,
-          "win_rate": 0.41414141414141414,
+          "n": 1179,
+          "wins": 481,
+          "losses": 698,
+          "win_rate": 0.4079728583545377,
           "win_rate_hidden": false,
-          "pf": 1.0144746500928543
+          "pf": 0.9887662980695482
         }
       },
       {
@@ -3713,20 +3701,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1187,
-          "wins": 491,
-          "losses": 696,
-          "win_rate": 0.413647851727043,
+          "n": 1178,
+          "wins": 480,
+          "losses": 698,
+          "win_rate": 0.4074702886247878,
           "win_rate_hidden": false,
-          "pf": 1.0089021421784015
+          "pf": 0.9832607379074154
         }
       },
       {
@@ -3735,20 +3723,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 492,
-          "losses": 698,
-          "win_rate": 0.4134453781512605,
+          "n": 1181,
+          "wins": 481,
+          "losses": 700,
+          "win_rate": 0.4072819644369179,
           "win_rate_hidden": false,
-          "pf": 1.008637386318883
+          "pf": 0.983087558459817
         }
       },
       {
@@ -3757,20 +3745,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1183,
-          "wins": 486,
-          "losses": 697,
-          "win_rate": 0.41081994928148774,
+          "n": 1174,
+          "wins": 475,
+          "losses": 699,
+          "win_rate": 0.4045996592844974,
           "win_rate_hidden": false,
-          "pf": 0.9904918291487218
+          "pf": 0.964897604501042
         }
       },
       {
@@ -3779,20 +3767,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1187,
-          "wins": 490,
-          "losses": 697,
-          "win_rate": 0.4128053917438922,
+          "n": 1178,
+          "wins": 479,
+          "losses": 699,
+          "win_rate": 0.4066213921901528,
           "win_rate_hidden": false,
-          "pf": 1.0104239371305002
+          "pf": 0.9847317705470433
         }
       },
       {
@@ -3801,20 +3789,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 491,
-          "losses": 699,
-          "win_rate": 0.4126050420168067,
+          "n": 1181,
+          "wins": 480,
+          "losses": 701,
+          "win_rate": 0.40643522438611346,
           "win_rate_hidden": false,
-          "pf": 1.0032576940781326
+          "pf": 0.9777674029986058
         }
       },
       {
@@ -3823,20 +3811,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1185,
-          "wins": 487,
-          "losses": 698,
-          "win_rate": 0.4109704641350211,
+          "n": 1176,
+          "wins": 476,
+          "losses": 700,
+          "win_rate": 0.40476190476190477,
           "win_rate_hidden": false,
-          "pf": 0.9922701546587177
+          "pf": 0.9667747467876666
         }
       },
       {
@@ -3845,20 +3833,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 487,
-          "losses": 701,
-          "win_rate": 0.4099326599326599,
+          "n": 1179,
+          "wins": 476,
+          "losses": 703,
+          "win_rate": 0.4037319762510602,
           "win_rate_hidden": false,
-          "pf": 0.9942019408328417
+          "pf": 0.9687938725823456
         }
       },
       {
@@ -3867,20 +3855,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 487,
-          "losses": 702,
-          "win_rate": 0.4095878889823381,
+          "n": 1180,
+          "wins": 476,
+          "losses": 704,
+          "win_rate": 0.4033898305084746,
           "win_rate_hidden": false,
-          "pf": 0.9959343081678553
+          "pf": 0.9705631877476972
         }
       },
       {
@@ -3889,20 +3877,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 488,
-          "losses": 700,
-          "win_rate": 0.4107744107744108,
+          "n": 1179,
+          "wins": 477,
+          "losses": 702,
+          "win_rate": 0.40458015267175573,
           "win_rate_hidden": false,
-          "pf": 0.9973077361644647
+          "pf": 0.9718690044317368
         }
       },
       {
@@ -3911,20 +3899,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1181,
-          "wins": 486,
-          "losses": 695,
-          "win_rate": 0.41151566469093986,
+          "n": 1172,
+          "wins": 475,
+          "losses": 697,
+          "win_rate": 0.4052901023890785,
           "win_rate_hidden": false,
-          "pf": 0.9994347736317131
+          "pf": 0.9736996887677335
         }
       },
       {
@@ -3933,20 +3921,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 490,
-          "losses": 700,
-          "win_rate": 0.4117647058823529,
+          "n": 1181,
+          "wins": 479,
+          "losses": 702,
+          "win_rate": 0.4055884843353091,
           "win_rate_hidden": false,
-          "pf": 1.0020692560327662
+          "pf": 0.9766277316699856
         }
       },
       {
@@ -3955,20 +3943,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1182,
-          "wins": 487,
-          "losses": 695,
-          "win_rate": 0.4120135363790186,
+          "n": 1173,
+          "wins": 476,
+          "losses": 697,
+          "win_rate": 0.4057971014492754,
           "win_rate_hidden": false,
-          "pf": 1.002586248715366
+          "pf": 0.9768814281005964
         }
       },
       {
@@ -3977,20 +3965,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 492,
-          "losses": 697,
-          "win_rate": 0.41379310344827586,
+          "n": 1180,
+          "wins": 481,
+          "losses": 699,
+          "win_rate": 0.4076271186440678,
           "win_rate_hidden": false,
-          "pf": 1.0075533098899134
+          "pf": 0.9820329091079779
         }
       },
       {
@@ -3999,20 +3987,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 491,
-          "losses": 699,
-          "win_rate": 0.4126050420168067,
+          "n": 1181,
+          "wins": 480,
+          "losses": 701,
+          "win_rate": 0.40643522438611346,
           "win_rate_hidden": false,
-          "pf": 1.0011343810137359
+          "pf": 0.9757149518726589
         }
       },
       {
@@ -4021,20 +4009,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 492,
-          "losses": 697,
-          "win_rate": 0.41379310344827586,
+          "n": 1180,
+          "wins": 481,
+          "losses": 699,
+          "win_rate": 0.4076271186440678,
           "win_rate_hidden": false,
-          "pf": 1.0067144713530454
+          "pf": 0.981216837807462
         }
       },
       {
@@ -4043,20 +4031,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1181,
-          "wins": 489,
-          "losses": 692,
-          "win_rate": 0.4140558848433531,
+          "n": 1172,
+          "wins": 478,
+          "losses": 694,
+          "win_rate": 0.40784982935153585,
           "win_rate_hidden": false,
-          "pf": 1.0158131572566154
+          "pf": 0.9897079283996438
         }
       },
       {
@@ -4065,20 +4053,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 489,
-          "losses": 700,
-          "win_rate": 0.4112699747687132,
+          "n": 1180,
+          "wins": 478,
+          "losses": 702,
+          "win_rate": 0.40508474576271186,
           "win_rate_hidden": false,
-          "pf": 1.0012867131534098
+          "pf": 0.975844093302582
         }
       },
       {
@@ -4087,20 +4075,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1186,
-          "wins": 489,
-          "losses": 697,
-          "win_rate": 0.4123102866779089,
+          "n": 1177,
+          "wins": 478,
+          "losses": 699,
+          "win_rate": 0.40611724723874254,
           "win_rate_hidden": false,
-          "pf": 1.0029534745202848
+          "pf": 0.9774466622011619
         }
       },
       {
@@ -4109,20 +4097,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1186,
-          "wins": 487,
-          "losses": 699,
-          "win_rate": 0.4106239460370995,
+          "n": 1177,
+          "wins": 476,
+          "losses": 701,
+          "win_rate": 0.40441801189464743,
           "win_rate_hidden": false,
-          "pf": 0.9972931224760729
+          "pf": 0.9718373593804551
         }
       },
       {
@@ -4131,20 +4119,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1187,
-          "wins": 490,
-          "losses": 697,
-          "win_rate": 0.4128053917438922,
+          "n": 1178,
+          "wins": 479,
+          "losses": 699,
+          "win_rate": 0.4066213921901528,
           "win_rate_hidden": false,
-          "pf": 1.0033102879802496
+          "pf": 0.9777921228797983
         }
       },
       {
@@ -4153,20 +4141,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1184,
-          "wins": 492,
-          "losses": 692,
-          "win_rate": 0.4155405405405405,
+          "n": 1175,
+          "wins": 481,
+          "losses": 694,
+          "win_rate": 0.4093617021276596,
           "win_rate_hidden": false,
-          "pf": 1.014603521465558
+          "pf": 0.9888916682657363
         }
       },
       {
@@ -4175,20 +4163,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1185,
-          "wins": 489,
-          "losses": 696,
-          "win_rate": 0.41265822784810124,
+          "n": 1176,
+          "wins": 478,
+          "losses": 698,
+          "win_rate": 0.4064625850340136,
           "win_rate_hidden": false,
-          "pf": 1.0048821496715272
+          "pf": 0.9792826868052411
         }
       },
       {
@@ -4197,20 +4185,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "alpha_engine",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1187,
-          "wins": 489,
-          "losses": 698,
-          "win_rate": 0.4119629317607414,
+          "n": 1178,
+          "wins": 478,
+          "losses": 700,
+          "win_rate": 0.4057724957555178,
           "win_rate_hidden": false,
-          "pf": 1.0030347200239882
+          "pf": 0.9774890671594338
         }
       },
       {
@@ -4219,20 +4207,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1184,
-          "wins": 491,
-          "losses": 693,
-          "win_rate": 0.41469594594594594,
+          "n": 1175,
+          "wins": 480,
+          "losses": 695,
+          "win_rate": 0.4085106382978723,
           "win_rate_hidden": false,
-          "pf": 1.0112526635810364
+          "pf": 0.9855361141243554
         }
       },
       {
@@ -4241,20 +4229,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1183,
-          "wins": 480,
-          "losses": 703,
-          "win_rate": 0.4057480980557904,
+          "n": 1174,
+          "wins": 469,
+          "losses": 705,
+          "win_rate": 0.39948892674616693,
           "win_rate_hidden": false,
-          "pf": 0.9707370190782687
+          "pf": 0.9454394742417536
         }
       },
       {
@@ -4263,20 +4251,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 488,
-          "losses": 702,
-          "win_rate": 0.41008403361344536,
+          "n": 1181,
+          "wins": 477,
+          "losses": 704,
+          "win_rate": 0.4038950042337002,
           "win_rate_hidden": false,
-          "pf": 0.9913468611006798
+          "pf": 0.965987413373403
         }
       },
       {
@@ -4285,20 +4273,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 492,
-          "losses": 696,
-          "win_rate": 0.41414141414141414,
+          "n": 1179,
+          "wins": 481,
+          "losses": 698,
+          "win_rate": 0.4079728583545377,
           "win_rate_hidden": false,
-          "pf": 1.0093333235523203
+          "pf": 0.9837646023651266
         }
       },
       {
@@ -4307,20 +4295,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1184,
-          "wins": 482,
-          "losses": 702,
-          "win_rate": 0.40709459459459457,
+          "n": 1175,
+          "wins": 471,
+          "losses": 704,
+          "win_rate": 0.40085106382978725,
           "win_rate_hidden": false,
-          "pf": 0.985233767124268
+          "pf": 0.959883685246666
         }
       },
       {
@@ -4329,20 +4317,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1183,
-          "wins": 485,
-          "losses": 698,
-          "win_rate": 0.4099746407438715,
+          "n": 1174,
+          "wins": 474,
+          "losses": 700,
+          "win_rate": 0.403747870528109,
           "win_rate_hidden": false,
-          "pf": 0.9944862688982131
+          "pf": 0.9689189919058808
         }
       },
       {
@@ -4351,20 +4339,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1188,
-          "wins": 492,
-          "losses": 696,
-          "win_rate": 0.41414141414141414,
+          "n": 1179,
+          "wins": 481,
+          "losses": 698,
+          "win_rate": 0.4079728583545377,
           "win_rate_hidden": false,
-          "pf": 1.0097798225668049
+          "pf": 0.984198978892332
         }
       },
       {
@@ -4373,20 +4361,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1189,
-          "wins": 486,
-          "losses": 703,
-          "win_rate": 0.4087468460891506,
+          "n": 1180,
+          "wins": 475,
+          "losses": 705,
+          "win_rate": 0.4025423728813559,
           "win_rate_hidden": false,
-          "pf": 0.9918746949616636
+          "pf": 0.9665380526763994
         }
       },
       {
@@ -4395,20 +4383,20 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1190,
-          "wins": 487,
-          "losses": 703,
-          "win_rate": 0.4092436974789916,
+          "n": 1181,
+          "wins": 476,
+          "losses": 705,
+          "win_rate": 0.40304826418289585,
           "win_rate_hidden": false,
-          "pf": 0.9959650670935936
+          "pf": 0.9706208590231561
         }
       },
       {
@@ -4417,24 +4405,24 @@
         "strategy": "luxalgo_confluence",
         "source_system": "luxalgo_filters",
         "metrics": {
-          "n": 1195,
-          "wins": 492,
-          "losses": 703,
-          "win_rate": 0.4117154811715481,
+          "n": 1186,
+          "wins": 481,
+          "losses": 705,
+          "win_rate": 0.40556492411467115,
           "win_rate_hidden": false,
-          "pf": 1.0014320767539042
+          "pf": 0.9760777565911449
         },
         "metrics_excl_batch": {
-          "n": 1186,
-          "wins": 492,
-          "losses": 694,
-          "win_rate": 0.4148397976391231,
+          "n": 1177,
+          "wins": 481,
+          "losses": 696,
+          "win_rate": 0.4086661002548853,
           "win_rate_hidden": false,
-          "pf": 1.010601931521346
+          "pf": 0.9849987656429025
         }
       },
       {
-        "closed_at": "2026-10-22T17:04:26Z",
+        "closed_at": "2026-10-22T18:43:05Z",
         "count": 29,
         "strategy": "MeanReversionBB",
         "source_system": "signal_validation",
@@ -4456,7 +4444,7 @@
         }
       },
       {
-        "closed_at": "2026-10-22T17:04:26Z",
+        "closed_at": "2026-10-22T18:43:05Z",
         "count": 73,
         "strategy": "MomentumEMA",
         "source_system": "signal_validation",
@@ -4466,7 +4454,7 @@
           "losses": 32,
           "win_rate": 0.5616438356164384,
           "win_rate_hidden": false,
-          "pf": 1.8000975927130776
+          "pf": 1.8304397209151386
         },
         "metrics_excl_batch": {
           "n": 0,
@@ -4475,6 +4463,50 @@
           "win_rate": null,
           "win_rate_hidden": true,
           "pf": null
+        }
+      },
+      {
+        "closed_at": "2026-10-22T18:43:05Z",
+        "count": 6,
+        "strategy": "clone_hl_copy_PensionFund_24M",
+        "source_system": "alpha_engine",
+        "metrics": {
+          "n": 8,
+          "wins": 8,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
+        },
+        "metrics_excl_batch": {
+          "n": 2,
+          "wins": 2,
+          "losses": 0,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": "inf"
+        }
+      },
+      {
+        "closed_at": "2026-10-22T18:43:05Z",
+        "count": 7,
+        "strategy": "clone_hl_copy_lb_None",
+        "source_system": "alpha_engine",
+        "metrics": {
+          "n": 19,
+          "wins": 8,
+          "losses": 11,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.948136161095853
+        },
+        "metrics_excl_batch": {
+          "n": 12,
+          "wins": 3,
+          "losses": 9,
+          "win_rate": null,
+          "win_rate_hidden": true,
+          "pf": 0.27597701302684036
         }
       }
     ]
@@ -4487,23 +4519,23 @@
         "cohort": "336h/EQUITY",
         "status": "sample_not_full_cohort",
         "dashboard_n": 67,
-        "summary_n": 2732,
+        "summary_n": 2731,
         "disagree": false
       },
       {
         "file": "14d",
         "cohort": "336h/FOREX",
         "status": "sample_not_full_cohort",
-        "dashboard_n": 71,
-        "summary_n": 867,
+        "dashboard_n": 70,
+        "summary_n": 863,
         "disagree": false
       },
       {
         "file": "14d",
         "cohort": "336h/CRYPTO",
         "status": "sample_not_full_cohort",
-        "dashboard_n": 799,
-        "summary_n": 1685,
+        "dashboard_n": 829,
+        "summary_n": 1693,
         "disagree": false
       },
       {
@@ -4518,15 +4550,15 @@
         "file": "14d",
         "cohort": "336h/ETF",
         "status": "sample_not_full_cohort",
-        "dashboard_n": 42,
-        "summary_n": 241,
+        "dashboard_n": 43,
+        "summary_n": 245,
         "disagree": false
       },
       {
         "file": "14d",
         "cohort": "336h/BOND",
         "status": "sample_not_full_cohort",
-        "dashboard_n": 1,
+        "dashboard_n": 3,
         "summary_n": 23,
         "disagree": false
       },
@@ -4534,40 +4566,50 @@
         "file": "48h",
         "cohort": "48h/CRYPTO",
         "coverage_status": "complete",
-        "dashboard_n": 203,
-        "dashboard_pf": 1.391846085107893,
-        "summary_n": 303,
-        "summary_pf": 0.843,
+        "dashboard_n": 235,
+        "dashboard_pf": 1.5922541925088916,
+        "summary_n": 312,
+        "summary_pf": 0.844,
         "disagree": true
       },
       {
         "file": "48h",
         "cohort": "48h/EQUITY",
         "status": "low_n",
-        "dashboard_n": 18,
+        "dashboard_n": 19,
         "summary_n": 0,
-        "dashboard_pf": 0.4128469022214853,
+        "dashboard_pf": 0.33415626043614094,
         "summary_pf": null,
-        "disagree": false
-      },
-      {
-        "file": "48h",
-        "cohort": "48h/ETF",
-        "status": "low_n",
-        "dashboard_n": 12,
-        "summary_n": 6,
-        "dashboard_pf": 0.8477839931153185,
-        "summary_pf": 0.0,
         "disagree": false
       },
       {
         "file": "48h",
         "cohort": "48h/FOREX",
         "status": "low_n",
-        "dashboard_n": 47,
+        "dashboard_n": 46,
         "summary_n": 15,
-        "dashboard_pf": 26.791,
+        "dashboard_pf": 25.191,
         "summary_pf": 0.0,
+        "disagree": false
+      },
+      {
+        "file": "48h",
+        "cohort": "48h/ETF",
+        "status": "low_n",
+        "dashboard_n": 13,
+        "summary_n": 10,
+        "dashboard_pf": 0.6768650405644672,
+        "summary_pf": 0.0,
+        "disagree": false
+      },
+      {
+        "file": "48h",
+        "cohort": "48h/BOND",
+        "status": "low_n",
+        "dashboard_n": 2,
+        "summary_n": 4,
+        "dashboard_pf": "inf",
+        "summary_pf": "inf",
         "disagree": false
       }
     ],
@@ -4575,7 +4617,7 @@
   },
   "notes": [
     "comparison_scope=published-file-vs-published-file; no live DB read performed",
-    "summary_stats_14d generated_at=2026-10-22T17:47:02+00:00",
-    "summary_stats_48h generated_at=2026-10-22T17:47:02+00:00"
+    "summary_stats_14d generated_at=2026-10-22T19:20:23+00:00",
+    "summary_stats_48h generated_at=2026-10-22T19:20:23+00:00"
   ]
 }
