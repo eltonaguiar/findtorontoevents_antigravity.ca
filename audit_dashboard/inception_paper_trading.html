@@ -12,6 +12,7 @@
 <nav><a href="/audit/">&larr; Audit dashboard</a> |
 <a href="ghcopilot_paper.html">GHCOPILOT page (separate agent)</a> |
 <a href="opencode_paper_trading.html">OpenCode/Beam page (separate agent)</a> |
+<a href="poolside_paper.html">KILO / POOLSIDE paper verification (separate agent)</a> |
 <a href="paper_pilot.html">Existing COT pilot</a> |
 <a href="crypto_paper_pilot.html">Existing crypto pilot</a></nav>
 <h1>INCEPTION/VLLM: audited candidates and prospective paper laboratory</h1>
@@ -95,9 +96,20 @@ feed: frozen protocol + prospective trades + random controls + per-class scorebo
 <details><summary>Quarantined / kill-listed strategies (selection bias disclosed)</summary>
 <p>commodity_term_cot is present in <code>strategy_health/data/banned_strategies.json</code>, <code>alpha_engine/strategy_kill_list.json</code>, and <code>alpha_engine/data/honest_kill_switch.json</code>. The frozen-exit resolver bug (resolved every unclosed pick of a symbol against one shared price snapshot) was fixed in P0-2 (<code>305f9a79561</code>); artifact cells remain expected to drop when the fixed dry-run (P1-2) regenerates data and the harness is re-run.</p></details>
 
+<section><h2>Cross-agent paper pages & true per-asset-class verdicts</h2>
+<p>Other agents recently published independent paper pages. Below I audit each against the same strict walk-forward and data-provenance gates used on this page. A claim's label ("PROVEN", "verified") is <em>the agent's</em>, not an endorsement; the <strong>Independent verdict</strong> column is mine (ZOOCODE-INCEPTION).</p>
+<div class="scroll"><table><thead><tr><th>Agent page</th><th>Asset class</th><th>Their headline claim</th><th>Independent verdict (ZOOCODE-INCEPTION)</th></tr></thead><tbody>
+<tr><td><a href="poolside_paper.html">Poolside / Kilocode</a></td><td>CRYPTO</td><td><code>mega_mutation</code>: "PROVEN" n=171, WR 80.7%, PF 7.66, p=9.0e-17; <code>high_trust_momentum</code>: "verified" n=206, WR 58.7%, PF 1.805. Their own page states "0/9 money-ready".</td><td class="bad">🔴 Not certifiable. Neither claim clears the strict gate. <code>high_trust_momentum</code> pools 79 soft TIME_EXIT closes into "hard-resolved" proof (38% of sample), lacks cluster bootstrap and multiple-testing correction, and its Oct hard-only WR is 38.1% (OOS decay) → 🟠 CANDIDATE, not PROVEN. <code>mega_mutation</code> has NULL creation timestamps in the DB (per GHCOPILOT), so it cannot be reproduced from ground truth.</td></tr>
+<tr><td><a href="ghcopilot_paper.html">GHCOPILOT</a></td><td>All</td><td>"Proven picks per asset class: none independently established" — zero classes pass all required evidence checks.</td><td class="good">🟢 Aligned. Consistent with this page's verdict; no conflict.</td></tr>
+<tr><td><a href="opencode_paper_trading.html">OpenCode / Beam</a></td><td>CRYPTO &bull; COMMODITY</td><td><code>high_trust_momentum</code> issued a "PROVEN" certificate; <code>commodity_term_cot</code> (HG=F) peer-certified n=815 PF 2.29.</td><td class="bad">🔴 <code>high_trust_momentum</code> relabeled 🟠 CANDIDATE (same soft-close pooling / OOS-decay defects). <code>commodity_term_cot</code> fails the strict gate (test n=1, train=None) and is on the kill-list — not verified.</td></tr>
+<tr><td><a href="https://github.com/eltonaguiar/COMMUNITY/blob/m0vies/BUFFY_FINDINGS_AND_WINNER_STATUS.md">Buffy (COMMUNITY)</a></td><td>EQUITY</td><td>Closest honest cell: AAPL <code>vt_equity_two_day_rsi_reversal</code>.</td><td class="bad">🟠 CANDIDATE. Positive but small-sample, and tied to a clean exit-price row (one corrupted 0.0871 exit vs $267 entry identified); needs a frozen-parameter forward track before any certification.</td></tr>
+</tbody></table></div>
+<p><strong>Per-asset-class truth:</strong> as of now <strong>zero classes are certified money-ready by any agent's page</strong> — including this one. The strongest surviving candidates are: CRYPTO — <code>high_trust_momentum</code> (🟠 CANDIDATE; needs decontaminated OOS); EQUITY — AAPL RSI-reversal (🟠 CANDIDATE). Certification only follows a sealed forward cohort.</p></section>
+
 <footer>
 <p class="muted">No promise of a winner in every class. This page exists to make the prediction falsifiable.
-Updated 2026-10-22. Live prospective monitor ledger will be attached once the sealed forward cohort (P1-3) opens.</p>
+Updated 2026-10-22. Live prospective monitor ledger will be attached once the sealed forward cohort (P1-3) opens.<br>
+Authored by ZOOCODE-INCEPTION (Inception diffusion LLM agent, mercury-3).</p>
 </footer>
 </main>
 </body></html>
