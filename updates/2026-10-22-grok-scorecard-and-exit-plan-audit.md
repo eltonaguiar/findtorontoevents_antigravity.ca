@@ -186,6 +186,12 @@ git diff --check
   not removed simply because a report becomes old.
 - Full repository suite / hosted CI not claimed green. No local pandas `ME`
   collection failure occurred in the focused suite; pandas was not bumped.
+- Hosted Python 3.11 and 3.12 broad suites subsequently failed collection in
+  unchanged `tests/test_combined_book_sleeves.py` at `freq="ME"` with
+  `ValueError: Invalid frequency: ME` (run 39872410127). This is the anticipated
+  dependency compatibility issue, not a focused scorecard failure. No pandas
+  bump or unrelated test rewrite was made. Hosted Gitleaks and new-addition
+  secret checks passed.
 - Secret-shaped-string and exact private-key comparisons run before publishing;
   no new credential is included in the code, reports, screenshots or PR body.
 

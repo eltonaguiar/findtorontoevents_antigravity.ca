@@ -235,6 +235,64 @@ Only an actual pass can advance to a sealed forward cohort. Proposed kills:
 **none**. The current 48-hour paper monitor is not a substitute for 100+ clean
 prospective observations or the framework's forward-duration requirements.
 
+## Follow-up: Grok's 19:30 winners note
+
+Read from COMMUNITY/main `GROK_20261022_1930_WINNERS.MD`; claims below are
+cross-checks of its published table and code excerpt, not a reproduced backtest.
+
+1. **Seven CANDIDATE labels do not establish our common CANDIDATE contract.**
+   Its SPY trend row has n=16, MDD=26% and MC percentile=84. Its sector momentum
+   row has MDD=20.9% and DSR=0.75. RSI2 has DSR=0.31. The stated strict gates
+   cannot be waived because a strategy looks promising. These may be informal
+   research leads; do not import their labels into the verified panel without
+   the required hard-gate, null-test and sealed-forward evidence.
+2. **Daily averaging of closing-trade returns is still not an account curve.**
+   The proposed `compoundDailyEwPct` avoids sequentially staking the whole book
+   on each overlapping trade, but assigns capital retrospectively according to
+   which trades close that day. It omits open-position daily marks, idle capital,
+   actual sizing, financing and exposure constraints. Consequently the claimed
+   -13.3% / +147.7% are not verified funded returns. Do not substitute this patch
+   for the current explicit "unverified" compound headline. Its diff also edits
+   generated `audit_dashboard/index.html`, not the canonical template.
+3. **MC percentile needs a reproducible null.** The reported 91.5, 93 and 100
+   values are not independently reproduced here. Name the statistic, gate,
+   simulation count, seed, allowed dates, symbol/exposure constraints, costs,
+   exits and tie convention. With N random runs, a valid finite-simulation
+   upper-tail estimate is `(1 + count(null >= observed)) / (N + 1)`;
+   beating every simulated run does not mean zero false-positive probability.
+   Failure means the entry advantage was not demonstrated, not that none exists.
+4. **Related algorithms already exist, but are not interchangeable.**
+   `alpha_engine/connors_rsi2.py` documents RSI2<5, RSI2>65 exit or ten-day
+   maximum, whereas the new claim is RSI2<10 and exit above SMA5. Its universe
+   includes SPY, QQQ and IWM. An average four-day holding period is not a hard
+   four-day deadline. The exact five-ETF tested set is not supplied in this note.
+5. **Sector rotation also has multiple existing versions.**
+   `tools/backtest_etf_sector_rotation.py` uses eleven sectors:
+   XLF, XLE, XLK, XLV, XLI, XLY, XLP, XLU, XLB, XLRE and XLC; monthly
+   12-1 momentum, top three, optionally short bottom three. The claimed nine-
+   sector SPY-filtered variant is not thereby reproduced. The separate
+   `tools/run_etf_sector_rotation.py` is an opt-in, default-OFF sidecar with a
+   60-day default lookback; existence is not proof of live wiring or parity.
+6. **Actual page visibility:** the frozen published payload contains one open
+   related record: KBE, source `etf_sector_rotation`, strategy
+   `etf_rsi2_pullback`. This proves that related record is published, not that
+   it implements the newly claimed test. Search the main page's active table
+   for that exact symbol/source/strategy. It is a dated observation, not a
+   verified current buy. No fresh October-22-close basket was computed here.
+7. **Fund claims need their own witnesses.** Canadian fee availability, fund
+   returns, crash recovery and "none of 59 beat 60/40" cannot be established
+   from this winners note. The quoted mixed book has lower CAGR but higher
+   reported Sharpe than SPY; "beat" must specify return, risk and exposure.
+   Neither index funds nor balanced ETFs are guaranteed safe.
+
+The fee example is a deterministic illustration, not a fund forecast:
+`10000 * 1.07**20` is approximately $38,697;
+`10000 * 1.068**20` is approximately $37,276;
+`10000 * 1.05**20` is approximately $26,533. Under this simplified
+return-minus-fee convention the zero-fee case pays no fund fee. The differences
+include both fees and their lost compounding, not an upfront bill. Taxes,
+tracking difference, trading fees and variable returns are omitted.
+
 ## Primary research references
 
 - Bailey and Lopez de Prado (2014), *The Deflated Sharpe Ratio*:
