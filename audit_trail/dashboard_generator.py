@@ -4813,6 +4813,40 @@ def _is_auto_expired_pick(pick: dict) -> bool:
     return False
 
 
+_MIN_HOLD_SECONDS = 60  # any resolved "trade" held < 60s is a synthetic/instant fill
+
+
+def _pick_hold_duration_seconds(pick: dict) -> float | None:
+    """Elapsed hold (entry→exit) in seconds, or None if not computable.
+
+    Only returns a value when BOTH an entry and an exit timestamp are present.
+    When either is missing we return None so callers do NOT gate (we never
+    over-reject rows we cannot time).
+    """
+    if not isinstance(pick, dict):
+        return None
+    en_raw = (
+        pick.get("entry_time")
+        or pick.get("entry_ts")
+        or pick.get("opened_at")
+        or pick.get("entry_time_est")
+        or pick.get("timestamp")  # genome/mega_mutation rows stamp entry here
+        or pick.get("created_at")
+    )
+    ex_raw = (
+        pick.get("exit_time")
+        or pick.get("exit_ts")
+        or pick.get("exit_timestamp")
+        or pick.get("closed_at")
+        or pick.get("exit_time_est")
+    )
+    en = _parse_pick_timestamp_utc(en_raw) if en_raw else None
+    ex = _parse_pick_timestamp_utc(ex_raw) if ex_raw else None
+    if en is None or ex is None:
+        return None
+    return (ex - en).total_seconds()
+
+
 def _is_valid_resolved_pick(pick: dict) -> bool:
     """Return True only for picks that should count in performance metrics.
 
@@ -4893,6 +4927,16 @@ def _is_valid_resolved_pick(pick: dict) -> bool:
 
     terminal_status = str(pick.get("status", "") or "").upper().strip()
     if terminal_status in _NON_PERFORMANCE_STATUSES:
+        return False
+
+    # Reject micro-hold / instant synthetic fills (opened and closed within
+    # seconds at same-tick prices). These are backfill/artifact rows, not real
+    # trades, and counting them inflates WR/PF/total PnL with phantom wins.
+    # Evidence: genome/data/closed_picks.json mega_mutation_* — 955 rows held
+    # <60s, 583 recorded WON/TP_HIT, contributing ~+2200% phantom PnL.
+    # Gated ONLY when both timestamps exist; never reject on missing timestamps.
+    _hold_secs = _pick_hold_duration_seconds(pick)
+    if _hold_secs is not None and _hold_secs < _MIN_HOLD_SECONDS:
         return False
 
     if exit_reason in ("", "UNKNOWN"):
