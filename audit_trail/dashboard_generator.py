@@ -14886,6 +14886,37 @@ def _build_ledger_measurement_block(results):
     }
 
 
+def _build_benchmark_sidecar(rows: list[dict]) -> dict:
+    """Build the Task 10 benchmark sidecar for the payload (fail-soft).
+
+    Returns a dict with keys:
+      - ``benchmark_sidecar``: list of per-ledger benchmark dicts, or None
+      - ``benchmark_error``: short error string when the build failed (optional)
+
+    Fail-soft: NEVER raises. A benchmark failure must not break the dashboard.
+    Returns ``{"benchmark_sidecar": None}`` when ``rows`` is empty, when
+    ``build_report`` raises, or when the report carries no ``ledgers``.
+    """
+    if not rows:
+        return {"benchmark_sidecar": None}
+    try:
+        from alpha_engine.benchmark_closed_ledger import build_report
+        report = build_report(
+            rows,
+            prices_by_sym={},  # {} not None: benchmark_ledger calls .get() on it
+            n_boot=10_000,
+            n_perm=10_000,
+            seed=42,
+        )
+        ledgers = report.get("ledgers") if isinstance(report, dict) else None
+        if not ledgers:
+            return {"benchmark_sidecar": None}
+        return {"benchmark_sidecar": ledgers}
+    except Exception as exc:  # noqa: BLE001 — fail-soft by design
+        log.warning("benchmark sidecar build failed (fail-soft): %s", exc)
+        return {"benchmark_sidecar": None, "benchmark_error": str(exc)[:200]}
+
+
 def generate():
     """Main entry point: collect all data, write payload JSON."""
     now = datetime.now(timezone.utc).isoformat()
@@ -15183,6 +15214,12 @@ def generate():
         ledger_gate_results = compute_ledger_gates(resolved_closed)
         _measurement_block = _build_ledger_measurement_block(ledger_gate_results)
         resolved_closed = attach_benchmark_column(resolved_closed)
+        _benchmark_block = _build_benchmark_sidecar(resolved_closed)
+        _measurement_block.update(_benchmark_block)
+        log.info(
+            "  Measurement Hygiene V1: benchmark sidecar %s",
+            "built" if _benchmark_block.get("benchmark_sidecar") else "unavailable",
+        )
         log.info(
             "  Measurement Hygiene V1: %d ledgers, %d unverified rows, %d verified rows",
             _measurement_block.get("total_ledgers", 0),
@@ -18692,7 +18729,6 @@ def generate():
     if MEASUREMENT_HYGIENE_V1 and _measurement_block is not None:
         payload.setdefault("summary", {})
         # Overlap-aware compound total return (net of cost, if stamped)
-        _oa_total = compute_ledger_gates.__doc__  # noqa: just to keep lint quiet
         payload["summary"]["measurement_hygiene"] = _measurement_block
         # Headline overlap-aware compound return over the full closed ledger
         _oa_return = compound_overlap_aware(resolved_closed)
