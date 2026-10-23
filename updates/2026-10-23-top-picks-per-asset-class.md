@@ -52,7 +52,7 @@
 |------|--------|-----|------|
 | VOO / FXAIX / VFV.TO / XUS.TO | Fee edge | Expense ratio near 0.00–0.03% | Fees are the only cost you *control*; the cheapest broad fund wins because less leaks out. |
 | BKLC (US) | Core | 0.00% expense, CAGR 18.42%, MDD 26.14% | Zero-fee S&P baseline. |
-| XEQT / VBAL (Canada) | Core | XEQT 14.41% vs VBAL 8.68% CAGR | XEQT is the all-equity Canadian all-in-one; VBAL is the balanced version. |
+| XEQT / VBAL (Canada) | Core | XEQT 14.25% vs VBAL 7.57% CAGR | XEQT is the all-equity Canadian all-in-one; VBAL is the balanced version. |
 | MRBB + 200d TAA | RESEARCH-VAL | tactical rotation, Sharpe 1.48 vs SPY 1.37 | Moving between broad buckets beats picking single names — but still not forward-proven. |
 
 **Verdict:** Walk-forward confirms **always VOO / FXAIX** beats fund-picking. Stick to the cheapest core.
@@ -115,6 +115,48 @@
 ### 🏷 Penny / Memecoin / Options — NO supported selection
 
 None of these classes had a single honest, forward-tested candidate. No recommendation.
+
+---
+
+## 1B. Machine-Derived Per-Asset-Class Metrics
+
+Direct method read of [`reports/winner_hunt_results.json`](reports/winner_hunt_results.json) (screened strategy counts + gate/FDR status), [`audit_dashboard/data/pf_registry.json`](audit_dashboard/data/pf_registry.json) (canonical view `by_asset_class_policy_clean_net`), and [`reports/mutual_fund_results.json`](reports/mutual_fund_results.json) (benchmark funds). **Interpretation:** *Screened* = winner-hunt strategies tagged to that class; *Picks (n)* = canonical-registry sample size; *win rate / PF / max DD* = registry class-level aggregates. All classes have **0 confirmed winners** — none cleared the combined 4-gate + FDR bar after single-source artifact exclusion.
+
+| Asset Class | Screened | Picks (n) | Win rate | Profit factor | Max DD | 4-gate + FDR winner? | Notes |
+|-------------|----------|-----------|----------|---------------|--------|----------------------|-------|
+| 🪙 Crypto | 557 | 19,128 | 46.14% | 0.287 | ≈1.0 (100%) | ❌ No — 8 passed gates, **all** excluded as single-source artifacts | Registry net PnL ≈ −883% (aggregate, artifact-heavy); SHORT candidates only |
+| 📈 Equity | 18 | 463 | 53.99% | 0.850 | ≈1.0 | ❌ No — 0 gate passers | Best strategy PF 9.13 (`regime_terminal`) but n too small to clear gates; no certified stock pick |
+| 💰 ETF | 3 | 16 | 75.00% | 1.863 | ≈0.99 | ❌ No — 0 gate passers | Only class with PF > 1.5 in registry, but n=16 « 100; fee edge is the only proven edge |
+| 🌍 Forex | 9 | 403 | 37.22% | 0.354 | ≈0.98 | ❌ No — 0 gate passers | Best strategy PF 4.41 but n=38 fails gate; retail-fill data contaminated → abstain |
+| 🛢 Commodity | 7 | 16 | 31.25% | 0.455 | 0.16 | ❌ No — 0 gate passers | Best strategy PF 0.43 — negative edge; gold baselines only |
+| ⛽ Futures | 2 | 12 | 8.33% | 0.447 | 0.18 | ❌ No — 0 gate passers | Negative edge → blocked / abstain |
+| 🏷 Meme | 2 | 12 | 16.67% | 0.072 | 0.49 | ❌ No — 0 gate passers | No supported selection |
+| 🏷 Penny stock | 1 | 1 | 0.00% | 0.000 | 0.01 | ❌ No — 0 gate passers | No supported selection |
+
+> **MDD scale note:** registry `max_drawdown_pct` values above are on a 0–1 fraction scale (1.0 ≈ 100%); equity/crypto aggregates near 1.0 reflect the known-corrupt, artifact-heavy pre-fix scoreboard. Treat all class-level aggregates as research-grade only.
+> **Bond:** appears only in the raw (non-canonical) `by_asset_class` array — n=2, WR 0% — and is dropped from the policy-clean canonical view.
+
+### Benchmark fund comparison (equity / fund-class core)
+
+Walk-forward, net of MER, SPIVA Canada-benchmarked, no lookahead (from `mutual_fund_results.json`):
+
+| Fund | Net CAGR | Vol | Max DD | Sharpe | Sortino | MER |
+|------|----------|-----|--------|--------|---------|-----|
+| TDB902 (TD e-Series US Index) | **17.08%** | 15.6% | −27.5% | 1.09 | 1.51 | 0.35% |
+| XEQT.TO | **14.25%** | 15.4% | −29.8% | 0.94 | 1.29 | 0.20% |
+| TDB911 (TD e-Series International Index) | 10.65% | 15.2% | −27.4% | 0.74 | 1.02 | 0.51% |
+| TDB900 (TD e-Series Canadian Index) | 8.35% | 16.1% | −48.4% | 0.58 | 0.78 | 0.33% |
+| VBAL.TO | 7.57% | 10.0% | −21.2% | 0.78 | 1.04 | 0.24% |
+
+Picker mean net CAGR **11.89%** underperforms the index; hindsight-best window 14.61%. No active fund edge survived walk-forward.
+
+### ELI5 per asset class
+
+- **Crypto:** the scoreboard is so noisy we can't trust "winners"; even the few backtests that looked great were one-source flukes, so we stay out except paper-tested SHORTs.
+- **Equity / Funds:** nobody beat just owning the whole market cheaply; the low-cost index (TDB902 / XEQT) outperformed every active pick across walk-forward windows.
+- **ETF:** a tiny sample can fake a 75% win rate, so the only *defensible* edge is paying the lowest fees.
+- **Forex / Futures / Commodity:** data is contaminated or the edge is negative — nothing to act on.
+- **Meme / Penny:** statistically meaningless samples; no recommendation.
 
 ---
 
